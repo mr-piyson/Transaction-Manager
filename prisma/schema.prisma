@@ -1,0 +1,162 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../node_modules/.prisma/client"
+}
+
+// datasource db {
+//   provider = "sqlite"
+//   url      = env("DATABASE_URL")
+// }
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Account {
+  id        String    @id @default(uuid())
+  email     String    @unique
+  password  String
+  records   Record[]
+  role      String
+  name      String
+  image     String?
+  createdAt DateTime?
+  updatedAt DateTime?
+  Session   Session[]
+}
+
+model Session {
+  id        String   @id @default(uuid())
+  token     String   @unique
+  expiresAt DateTime
+  account   Account  @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  accountId String
+  createdAt DateTime @default(now())
+
+  @@index([accountId])
+}
+
+model Settings {
+  id        String   @id @default(uuid())
+  name      String   @unique
+  value     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([name])
+}
+
+model Record {
+  id       String   @id @default(uuid())
+  category String?
+  name     String?  @default("Untitled")
+  date     DateTime @default(now())
+  image    String?
+  email    String?
+  phone    String?
+  address  String?
+  tables   Table[]
+  desc     String?
+
+  Account   Account? @relation(fields: [accountId], references: [id])
+  accountId String?
+}
+
+model Table {
+  id           Int           @id @default(autoincrement())
+  recordId     String
+  isCompleted  Boolean       @default(false)
+  transactions Transaction[]
+  record       Record        @relation(fields: [recordId], references: [id])
+}
+
+model Transaction {
+  id          Int      @id @default(autoincrement())
+  tableId     Int
+  amount      Int      @default(0)
+  type        String
+  description String?
+  date        DateTime @default(now())
+  qty         Int      @default(1)
+  table       Table    @relation(fields: [tableId], references: [id])
+}
+
+model Ticket {
+  id           Int       @id @default(autoincrement())
+  ticketNo     String    @unique
+  customerName String?
+  description  String?
+  ipAddress    String?
+  status       String?   @default("Open")
+  createdAt    DateTime? @default(now())
+  updatedAt    DateTime? @updatedAt
+  updatedBy    String?
+}
+
+model Part {
+  id          String    @id @default(uuid())
+  partCode    String?
+  description String?
+  quantity    Int?
+  rate        Float?
+  amount      Float?
+  createdAt   DateTime? @default(now())
+  updatedAt   DateTime? @updatedAt
+
+  @@index([partCode])
+}
+
+model Vehicle {
+  id        String   @id @default(uuid())
+  vehicleNo String   @unique
+  type      String?
+  km        Int?
+  driver    String?
+  mechanic  String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model VehicleType {
+  id   String @id @default(uuid())
+  name String @unique
+}
+
+model Employee {
+  id            String    @id @default(uuid())
+  employeeId    String?   @unique
+  name          String?
+  cpr           String?
+  email         String?   @unique
+  department    String?
+  phone         String?
+  role          String?
+  dateOfJoining DateTime?
+  leftDate      DateTime?
+  gender        String?
+  access        Boolean?
+  password      String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@index([email])
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  title     String?
+  message   String?
+  type      String?
+  read      Boolean? @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([type])
+}
