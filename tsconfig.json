@@ -28,6 +28,6 @@
     "**/*.tsx",
     ".next/types/**/*.ts",
     "src/middleware.ts"
-  ],
+, "src/app/App/Assets/page.tss"  ],
   "exclude": ["node_modules", "./src/components/Table/**/*"]
 }

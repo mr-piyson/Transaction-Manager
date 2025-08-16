@@ -94,9 +94,7 @@ export function TeamSwitcher() {
             <AppLogo className="size-7" />
           </div>
           <div className="grid flex-1 text-left text-sm leading-tight">
-            <span className="truncate font-semibold text-lg">
-              IT Service Managemant
-            </span>
+            <span className="truncate font-semibold text-lg">ITSM</span>
             <span className="truncate text-xs"></span>
           </div>
         </SidebarMenuButton>

@@ -7,7 +7,7 @@ import { Account } from "@prisma/client";
 
 export default function Toolbar({ account }: { account: Account | null }) {
   return (
-    <header className="flex  sticky z-10 top-0 bg-sidebar/95 backdrop-blur supports-[backdrop-filter]:bg-sidebar/60 h-12 shrink-0 items-center gap-2 border-b px-4 flex-nowrap ">
+    <header className="flex sticky z-20 top-0 bg-sidebar/95 backdrop-blur supports-[backdrop-filter]:bg-sidebar/60 h-12 shrink-0 items-center gap-2 border-b px-4 flex-nowrap ">
       {/* Left hand side */}
       <div className="h-full w-full flex left flex-1 items-center gap-2 ">
         <SidebarTrigger className="-ml-1" />
