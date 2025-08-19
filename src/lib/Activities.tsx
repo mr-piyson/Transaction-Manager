@@ -1,16 +1,5 @@
-// Make Activities for each role of the user
-// import { Account } from "@prisma/client";
 
-import { Account } from "@prisma/client";
-import { title } from "process";
-
-type ActivityType = {
-  title: string;
-  url: string;
-  icon: string;
-};
-
-export const Activities = (role: string | undefined | null): ActivityType[] => {
+export const Activities = (role: string | undefined | null) => {
   switch (role) {
     case "Admin":
       return [
@@ -37,13 +26,13 @@ export const Activities = (role: string | undefined | null): ActivityType[] => {
         {
           title: "Notifications",
           url: "/App/Notifications",
-          icon: "icon-[mdi--notifications-none]",
+          icon: "icon-[hugeicons--notification-01]",
         },
-        // {
-        //   title: "Assets",
-        //   url: `/App/Assets`,
-        //   icon: "icon-[stash--folder-alt]",
-        // },
+        {
+          title: "Contracts",
+          url: `/App/Contracts`,
+          icon: "icon-[hugeicons--contracts]",
+        },
         {
           title: "Accounts",
           url: "/App/Accounts",

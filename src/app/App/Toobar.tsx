@@ -2,8 +2,9 @@
 import { NavPath } from "@/components/Nav-Path";
 import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar";
-import { AppSidebarUserMenu } from "./App";
 import { Account } from "@prisma/client";
+import { UserMenu } from "./App";
+import { NotificationDropdown } from "./Notifications/notification-dropdown";
 
 export default function Toolbar({ account }: { account: Account | null }) {
   return (
@@ -16,7 +17,8 @@ export default function Toolbar({ account }: { account: Account | null }) {
       </div>
       {/* Right hand side */}
       <div className="right">
-        <AppSidebarUserMenu account={account} />
+        <UserMenu account={account} />
+        <NotificationDropdown/>
       </div>
     </header>
   );

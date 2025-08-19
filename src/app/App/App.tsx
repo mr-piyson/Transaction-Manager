@@ -1,23 +1,20 @@
 "use client";
 
-import {
-  SidebarInset,
-  SidebarProvider,
-  useSidebar,
-} from "@/components/ui/sidebar";
-import { usePathname } from "next/navigation";
-import { NavPath } from "@/components/Nav-Path";
-import Link from "next/link";
-import { ThemeSwitcher } from "@/components/Theme-Provider";
-import { CommandShortcut } from "@/components/ui/command";
 import AppLogo from "@/Assets/Icons/Logo";
+import { ThemeSwitcher } from "@/components/Theme-Provider";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { CommandShortcut } from "@/components/ui/command";
 import {
   SidebarGroup,
+  SidebarInset,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarProvider,
+  useSidebar,
 } from "@/components/ui/sidebar";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 import {
   DropdownMenu,
@@ -103,25 +100,21 @@ export function TeamSwitcher() {
   );
 }
 
-import {
-  Bell,
-  ChevronsUpDown,
-  Loader2,
-  LogOut,
-  Moon,
-  Settings,
-  User2,
-} from "lucide-react";
 import { signOut } from "@/app/Auth/auth.actions";
-import { Account } from "@prisma/client";
+import { Button } from "@/components/ui/button";
 import { Activities } from "@/lib/Activities";
 import { cn } from "@/lib/utils";
+import { Account } from "@prisma/client";
+import {
+  Loader2,
+  LogOut,
+  Moon
+} from "lucide-react";
 import { useEffect, useState } from "react";
 import Toolbar from "./Toobar";
-import { Button } from "@/components/ui/button";
 
 // This component renders the user profile in the sidebar, allowing users to switch themes and log out.
-export function AppSidebarUserMenu({ account }: { account: Account | null }) {
+export function UserMenu({ account }: { account: Account | null }) {
   const { isMobile } = useSidebar();
 
   return (
