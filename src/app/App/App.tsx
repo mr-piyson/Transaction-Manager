@@ -118,7 +118,7 @@ export function UserMenu({ account }: { account: Account | null }) {
       <DropdownMenuTrigger asChild>
         <Button
           variant={"ghost"}
-          className=" data-[state=open]:border-border  border-2 border-transparent px-2"
+          className=" data-[state=open]:border-border  border-2 border-transparent"
         >
           <Avatar className="h-8 w-8">
             <AvatarImage
@@ -127,11 +127,11 @@ export function UserMenu({ account }: { account: Account | null }) {
             />
             <AvatarFallback>{account?.name.charAt(0)}</AvatarFallback>
           </Avatar>
-          <div className="grid flex-1 text-left text-sm leading-tight">
+          <div className="max-sm:hidden grid flex-1 text-left text-sm leading-tight">
             <span className="truncate font-semibold">{account?.name}</span>
             <span className="truncate text-xs">{account?.email}</span>
           </div>
-          <ChevronsUpDown className="ml-auto size-4" />
+          <ChevronsUpDown className="max-sm:hidden ml-auto size-4" />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent

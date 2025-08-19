@@ -16,7 +16,7 @@ export default function Toolbar({ account }: { account: Account | null }) {
         <NavPath />
       </div>
       {/* Right hand side */}
-      <div className="right">
+      <div className="flex items-center gap-2">
         <NotificationDropdown />
         <UserMenu account={account} />
       </div>
