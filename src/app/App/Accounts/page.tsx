@@ -3,6 +3,12 @@
 import { AgGridReact } from "ag-grid-react";
 import { useMemo, useState } from "react";
 
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { useTableTheme } from "@/hooks/use-TableTheme";
+import { AvatarImage } from "@radix-ui/react-avatar";
 import {
   AllCommunityModule,
   ClientSideRowModelModule,
@@ -13,18 +19,12 @@ import {
   RowSelectionOptions,
   ValidationModule,
 } from "ag-grid-community";
-import { useTableTheme } from "@/hooks/use-TableTheme";
-import { Badge } from "@/components/ui/badge";
-import { Edit, Plus, Trash, User2 } from "lucide-react";
-import { AvatarImage } from "@radix-ui/react-avatar";
-import { useIsMobile } from "@/hooks/use-mobile";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { Edit, Plus, User2 } from "lucide-react";
 
-import { AddAccount, DeleteAccount } from "./Account-Dialog";
-import { Account } from "@prisma/client";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Account } from "@prisma/client";
 import useSWR from "swr";
+import { AddAccount, DeleteAccount } from "./Account-Dialog";
 
 // Register the required modules
 ModuleRegistry.registerModules([
@@ -54,7 +54,7 @@ export default function AccountTable() {
     }
   }
 
-  const { data, error, mutate, isLoading } = useSWR("/api/accounts", {
+  const { data, mutate } = useSWR("/api/accounts", {
     fetcher: (url: string) => fetch(url).then((res) => res.json()),
   });
 
@@ -83,7 +83,9 @@ export default function AccountTable() {
                 src={params.value}
                 alt="Image"
               />
-              <AvatarFallback>{params.data.name.charAt(0)}</AvatarFallback>
+              <AvatarFallback className="text-muted-foreground">
+                {params.data.name.charAt(0)}
+              </AvatarFallback>
             </Avatar>
           </div>
         );
