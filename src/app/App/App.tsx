@@ -105,11 +105,7 @@ import { Button } from "@/components/ui/button";
 import { Activities } from "@/lib/Activities";
 import { cn } from "@/lib/utils";
 import { Account } from "@prisma/client";
-import {
-  Loader2,
-  LogOut,
-  Moon
-} from "lucide-react";
+import { ChevronsUpDown, Loader2, LogOut, Moon } from "lucide-react";
 import { useEffect, useState } from "react";
 import Toolbar from "./Toobar";
 
@@ -120,7 +116,10 @@ export function UserMenu({ account }: { account: Account | null }) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button className="bg-transparent hover:bg-transparent data-[state=open]:bg-transparent data-[state=open]:text-primary-foreground h-8 w-8 p-0">
+        <Button
+          variant={"ghost"}
+          className=" data-[state=open]:border-border  border-2 border-transparent px-2"
+        >
           <Avatar className="h-8 w-8">
             <AvatarImage
               src={account?.image ?? undefined}
@@ -128,11 +127,11 @@ export function UserMenu({ account }: { account: Account | null }) {
             />
             <AvatarFallback>{account?.name.charAt(0)}</AvatarFallback>
           </Avatar>
-          {/* <div className="grid flex-1 text-left text-sm leading-tight">
-                <span className="truncate font-semibold">{account?.name}</span>
-                <span className="truncate text-xs">{account?.email}</span>
-              </div> */}
-          {/* <ChevronsUpDown className="ml-auto size-4" /> */}
+          <div className="grid flex-1 text-left text-sm leading-tight">
+            <span className="truncate font-semibold">{account?.name}</span>
+            <span className="truncate text-xs">{account?.email}</span>
+          </div>
+          <ChevronsUpDown className="ml-auto size-4" />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent

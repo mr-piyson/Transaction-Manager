@@ -17,8 +17,8 @@ export default function Toolbar({ account }: { account: Account | null }) {
       </div>
       {/* Right hand side */}
       <div className="right">
+        <NotificationDropdown />
         <UserMenu account={account} />
-        <NotificationDropdown/>
       </div>
     </header>
   );

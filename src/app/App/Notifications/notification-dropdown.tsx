@@ -1,49 +1,59 @@
-"use client"
+"use client";
 
-import { AlertTriangle, Bell, Check, CheckCircle, Clock, Info, Settings, Trash2 } from "lucide-react"
-import * as React from "react"
-
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
 import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuSeparator,
-    DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { ScrollArea } from "@/components/ui/scroll-area"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { cn } from "@/lib/utils"
+  AlertTriangle,
+  Bell,
+  Check,
+  CheckCircle,
+  Clock,
+  Info,
+  Settings,
+  Trash2,
+} from "lucide-react";
+import * as React from "react";
 
-export type NotificationType = "info" | "warning" | "error" | "success"
-export type NotificationPriority = "low" | "medium" | "high" | "critical"
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { cn } from "@/lib/utils";
+
+export type NotificationType = "info" | "warning" | "error" | "success";
+export type NotificationPriority = "low" | "medium" | "high" | "critical";
 
 export interface Notification {
-  id: string
-  title: string
-  message: string
-  type: NotificationType
-  priority: NotificationPriority
-  timestamp: Date
-  isRead: boolean
-  actionUrl?: string
+  id: string;
+  title: string;
+  message: string;
+  type: NotificationType;
+  priority: NotificationPriority;
+  timestamp: Date;
+  isRead: boolean;
+  actionUrl?: string;
   metadata?: {
-    assetId?: string
-    userId?: string
-    category?: string
-  }
+    assetId?: string;
+    userId?: string;
+    category?: string;
+  };
 }
 
 // Simple time formatting function to replace date-fns
 function formatDistanceToNow(date: Date): string {
-  const now = new Date()
-  const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000)
+  const now = new Date();
+  const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
 
-  if (diffInSeconds < 60) return "just now"
-  if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}m ago`
-  if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)}h ago`
-  if (diffInSeconds < 2592000) return `${Math.floor(diffInSeconds / 86400)}d ago`
-  return `${Math.floor(diffInSeconds / 2592000)}mo ago`
+  if (diffInSeconds < 60) return "just now";
+  if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}m ago`;
+  if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)}h ago`;
+  if (diffInSeconds < 2592000)
+    return `${Math.floor(diffInSeconds / 86400)}d ago`;
+  return `${Math.floor(diffInSeconds / 2592000)}mo ago`;
 }
 
 // Mock notification data - in production, this would come from an API
@@ -114,74 +124,94 @@ const mockNotifications: Notification[] = [
     actionUrl: "/backups",
     metadata: { category: "backup" },
   },
-]
+];
 
 const getNotificationIcon = (type: NotificationType) => {
   switch (type) {
     case "error":
-      return <AlertTriangle className="h-4 w-4 text-red-500" />
+      return <AlertTriangle className="h-4 w-4 text-red-500" />;
     case "warning":
-      return <AlertTriangle className="h-4 w-4 text-yellow-500" />
+      return <AlertTriangle className="h-4 w-4 text-yellow-500" />;
     case "success":
-      return <CheckCircle className="h-4 w-4 text-green-500" />
+      return <CheckCircle className="h-4 w-4 text-green-500" />;
     case "info":
     default:
-      return <Info className="h-4 w-4 text-blue-500" />
+      return <Info className="h-4 w-4 text-blue-500" />;
   }
-}
+};
 
 const getPriorityColor = (priority: NotificationPriority) => {
   switch (priority) {
     case "critical":
-      return "bg-red-500"
+      return "bg-red-500";
     case "high":
-      return "bg-orange-500"
+      return "bg-orange-500";
     case "medium":
-      return "bg-yellow-500"
+      return "bg-yellow-500";
     case "low":
     default:
-      return "bg-blue-500"
+      return "bg-blue-500";
   }
-}
+};
 
 interface NotificationItemProps {
-  notification: Notification
-  onMarkAsRead: (id: string) => void
-  onMarkAsUnread: (id: string) => void
-  onDelete: (id: string) => void
-  onClick?: (notification: Notification) => void
+  notification: Notification;
+  onMarkAsRead: (id: string) => void;
+  onMarkAsUnread: (id: string) => void;
+  onDelete: (id: string) => void;
+  onClick?: (notification: Notification) => void;
 }
 
-function NotificationItem({ notification, onMarkAsRead, onMarkAsUnread, onDelete, onClick }: NotificationItemProps) {
+function NotificationItem({
+  notification,
+  onMarkAsRead,
+  onMarkAsUnread,
+  onDelete,
+  onClick,
+}: NotificationItemProps) {
   const handleClick = () => {
     if (!notification.isRead) {
-      onMarkAsRead(notification.id)
+      onMarkAsRead(notification.id);
     }
-    onClick?.(notification)
-  }
+    onClick?.(notification);
+  };
 
   return (
     <div
       className={cn(
         "group relative flex gap-3 p-3 hover:bg-muted/50 cursor-pointer transition-colors",
-        !notification.isRead && "bg-muted/30",
+        !notification.isRead && "bg-muted/30"
       )}
       onClick={handleClick}
     >
       {/* Priority indicator */}
-      <div className={cn("w-1 h-full absolute left-0 top-0", getPriorityColor(notification.priority))} />
+      <div
+        className={cn(
+          "w-1 h-full absolute left-0 top-0",
+          getPriorityColor(notification.priority)
+        )}
+      />
 
       {/* Notification icon */}
-      <div className="flex-shrink-0 mt-1">{getNotificationIcon(notification.type)}</div>
+      <div className="flex-shrink-0 mt-1">
+        {getNotificationIcon(notification.type)}
+      </div>
 
       {/* Content */}
       <div className="flex-1 min-w-0">
         <div className="flex items-start justify-between gap-2">
           <div className="flex-1 min-w-0">
-            <p className={cn("text-sm font-medium truncate", !notification.isRead && "font-semibold")}>
+            <p
+              className={cn(
+                "text-sm font-medium truncate",
+                !notification.isRead && "font-semibold"
+              )}
+            >
               {notification.title}
             </p>
-            <p className="text-sm text-muted-foreground line-clamp-2 mt-1">{notification.message}</p>
+            <p className="text-sm text-muted-foreground line-clamp-2 mt-1">
+              {notification.message}
+            </p>
             <p className="text-xs text-muted-foreground mt-2 flex items-center gap-1">
               <Clock className="h-3 w-3" />
               {formatDistanceToNow(notification.timestamp)}
@@ -189,7 +219,9 @@ function NotificationItem({ notification, onMarkAsRead, onMarkAsUnread, onDelete
           </div>
 
           {/* Unread indicator */}
-          {!notification.isRead && <div className="w-2 h-2 bg-blue-500 rounded-full flex-shrink-0 mt-2" />}
+          {!notification.isRead && (
+            <div className="w-2 h-2 bg-blue-500 rounded-full flex-shrink-0 mt-2" />
+          )}
         </div>
 
         {/* Action buttons (shown on hover) */}
@@ -199,8 +231,10 @@ function NotificationItem({ notification, onMarkAsRead, onMarkAsUnread, onDelete
             size="sm"
             className="h-6 px-2 text-xs"
             onClick={(e) => {
-              e.stopPropagation()
-              notification.isRead ? onMarkAsUnread(notification.id) : onMarkAsRead(notification.id)
+              e.stopPropagation();
+              notification.isRead
+                ? onMarkAsUnread(notification.id)
+                : onMarkAsRead(notification.id);
             }}
           >
             {notification.isRead ? "Mark unread" : "Mark read"}
@@ -210,8 +244,8 @@ function NotificationItem({ notification, onMarkAsRead, onMarkAsUnread, onDelete
             size="sm"
             className="h-6 px-2 text-xs text-red-600 hover:text-red-700"
             onClick={(e) => {
-              e.stopPropagation()
-              onDelete(notification.id)
+              e.stopPropagation();
+              onDelete(notification.id);
             }}
           >
             <Trash2 className="h-3 w-3" />
@@ -219,79 +253,100 @@ function NotificationItem({ notification, onMarkAsRead, onMarkAsUnread, onDelete
         </div>
       </div>
     </div>
-  )
+  );
 }
 
 export function NotificationDropdown() {
-  const [notifications, setNotifications] = React.useState<Notification[]>(mockNotifications)
-  const [isOpen, setIsOpen] = React.useState(false)
-  const [activeTab, setActiveTab] = React.useState("all")
+  const [notifications, setNotifications] =
+    React.useState<Notification[]>(mockNotifications);
+  const [isOpen, setIsOpen] = React.useState(false);
+  const [activeTab, setActiveTab] = React.useState("all");
 
   // Calculate counts
-  const unreadCount = notifications.filter((n) => !n.isRead).length
-  const criticalCount = notifications.filter((n) => n.priority === "critical" && !n.isRead).length
+  const unreadCount = notifications.filter((n) => !n.isRead).length;
+  const criticalCount = notifications.filter(
+    (n) => n.priority === "critical" && !n.isRead
+  ).length;
 
   // Filter notifications based on active tab
   const filteredNotifications = React.useMemo(() => {
     switch (activeTab) {
       case "unread":
-        return notifications.filter((n) => !n.isRead)
+        return notifications.filter((n) => !n.isRead);
       case "critical":
-        return notifications.filter((n) => n.priority === "critical")
+        return notifications.filter((n) => n.priority === "critical");
       default:
-        return notifications
+        return notifications;
     }
-  }, [notifications, activeTab])
+  }, [notifications, activeTab]);
 
   // Handlers
   const handleMarkAsRead = React.useCallback((id: string) => {
-    setNotifications((prev) => prev.map((n) => (n.id === id ? { ...n, isRead: true } : n)))
-  }, [])
+    setNotifications((prev) =>
+      prev.map((n) => (n.id === id ? { ...n, isRead: true } : n))
+    );
+  }, []);
 
   const handleMarkAsUnread = React.useCallback((id: string) => {
-    setNotifications((prev) => prev.map((n) => (n.id === id ? { ...n, isRead: false } : n)))
-  }, [])
+    setNotifications((prev) =>
+      prev.map((n) => (n.id === id ? { ...n, isRead: false } : n))
+    );
+  }, []);
 
   const handleDelete = React.useCallback((id: string) => {
-    setNotifications((prev) => prev.filter((n) => n.id !== id))
-  }, [])
+    setNotifications((prev) => prev.filter((n) => n.id !== id));
+  }, []);
 
   const handleMarkAllAsRead = React.useCallback(() => {
-    setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })))
-  }, [])
+    setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
+  }, []);
 
   const handleClearAll = React.useCallback(() => {
-    setNotifications([])
-  }, [])
+    setNotifications([]);
+  }, []);
 
-  const handleNotificationClick = React.useCallback((notification: Notification) => {
-    if (notification.actionUrl) {
-      // In a real app, you'd navigate to the URL
-      console.log("Navigate to:", notification.actionUrl)
-    }
-    setIsOpen(false)
-  }, [])
+  const handleNotificationClick = React.useCallback(
+    (notification: Notification) => {
+      if (notification.actionUrl) {
+        // In a real app, you'd navigate to the URL
+        console.log("Navigate to:", notification.actionUrl);
+      }
+      setIsOpen(false);
+    },
+    []
+  );
 
   return (
     <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" className="relative">
+        <Button
+          variant="ghost"
+          size="icon"
+          className="relative border-2 border-transparent data-[state=open]:border-border"
+        >
           <Bell className="h-4 w-4" />
           {unreadCount > 0 && (
             <Badge
               className={cn(
                 "absolute -top-1 -right-1 h-5 w-5 rounded-full p-0 text-xs flex items-center justify-center",
-                criticalCount > 0 && "bg-red-500 hover:bg-red-600",
+                criticalCount > 0 && "bg-red-500 hover:bg-red-600"
               )}
             >
               {unreadCount > 99 ? "99+" : unreadCount}
             </Badge>
           )}
-          <span className="sr-only">Notifications {unreadCount > 0 && `(${unreadCount} unread)`}</span>
+          <span className="sr-only">
+            Notifications {unreadCount > 0 && `(${unreadCount} unread)`}
+          </span>
         </Button>
       </DropdownMenuTrigger>
 
-      <DropdownMenuContent className="w-96 p-0" align="end" sideOffset={8} onCloseAutoFocus={(e) => e.preventDefault()}>
+      <DropdownMenuContent
+        className="w-96 p-0"
+        align="end"
+        sideOffset={8}
+        onCloseAutoFocus={(e) => e.preventDefault()}
+      >
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b">
           <div className="flex items-center gap-2">
@@ -304,7 +359,12 @@ export function NotificationDropdown() {
           </div>
           <div className="flex items-center gap-1">
             {unreadCount > 0 && (
-              <Button variant="ghost" size="sm" className="text-xs h-7" onClick={handleMarkAllAsRead}>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="text-xs h-7"
+                onClick={handleMarkAllAsRead}
+              >
                 <Check className="h-3 w-3 mr-1" />
                 Mark all read
               </Button>
@@ -326,7 +386,8 @@ export function NotificationDropdown() {
                 Unread ({unreadCount})
               </TabsTrigger>
               <TabsTrigger value="critical" className="text-xs">
-                Critical ({notifications.filter((n) => n.priority === "critical").length})
+                Critical (
+                {notifications.filter((n) => n.priority === "critical").length})
               </TabsTrigger>
             </TabsList>
           </div>
@@ -354,8 +415,8 @@ export function NotificationDropdown() {
                     {activeTab === "unread"
                       ? "No unread notifications"
                       : activeTab === "critical"
-                        ? "No critical notifications"
-                        : "No notifications"}
+                      ? "No critical notifications"
+                      : "No notifications"}
                   </p>
                 </div>
               )}
@@ -382,5 +443,5 @@ export function NotificationDropdown() {
         )}
       </DropdownMenuContent>
     </DropdownMenu>
-  )
+  );
 }
