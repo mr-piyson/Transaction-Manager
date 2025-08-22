@@ -3,11 +3,14 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "dev": "npx prisma db push; next dev",
+    "dev": "next dev",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "build:Android": "npx cap add android && npx cap sync android && npx cap open android"
+    "build:Android": "npx cap add android && npx cap sync android && npx cap open android",
+    "db:pull": "npx prisma db pull --schema ./prisma/mes.prisma; npx prisma db pull --schema ./prisma/iss.prisma;",
+    "db:generate": "npx prisma generate --schema ./prisma/mes.prisma; npx prisma generate --schema ./prisma/iss.prisma;",
+    "db:push": "npx prisma db push --schema ./prisma/schema.prisma"
   },
   "dependencies": {
     "@capacitor-community/contacts": "^7.0.0",

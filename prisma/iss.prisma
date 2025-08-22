@@ -1,0 +1,355 @@
+generator ISSClient {
+  provider = "prisma-client-js"
+  output   = "../node_modules/.prisma/client"
+}
+
+datasource ISS {
+  provider = "mysql"
+  url      = env("ISS_DATABASE_URL")
+}
+
+model assestOwnerUpdateLogs {
+  id            Int      @id @default(autoincrement())
+  user          Int
+  oldOwnerEmpID Int
+  oldOwnerText  String?  @ISS.VarChar(100)
+  newOwnerID    Int
+  date          DateTime @ISS.DateTime(0)
+  assetID       Int
+}
+
+model assetBooking {
+  id             Int      @id @default(autoincrement())
+  empID          Int
+  assetID        Int
+  bookingDate    DateTime @ISS.Date
+  returnDate     DateTime @ISS.Date
+  bookingPurpose String   @ISS.VarChar(100)
+  status         String   @ISS.VarChar(100)
+  user           Int
+  addedTime      DateTime @ISS.DateTime(0)
+  otherInfo      String?  @ISS.VarChar(100)
+}
+
+model assets {
+  id             Int       @id @default(autoincrement())
+  code           String    @unique(map: "code") @ISS.VarChar(10)
+  serialNumber   String    @unique(map: "serialNumber") @ISS.VarChar(50)
+  deviceName     String?   @ISS.VarChar(50)
+  type           String?   @ISS.VarChar(50)
+  location       String?   @ISS.VarChar(50)
+  manufacturer   String?   @ISS.VarChar(50)
+  model          String?   @ISS.VarChar(50)
+  processor      String?   @ISS.VarChar(50)
+  os             String?   @ISS.VarChar(50)
+  memory         String?   @ISS.VarChar(50)
+  hdd            String?   @ISS.VarChar(50)
+  ip             String?   @ISS.VarChar(50)
+  owner          String?   @ISS.VarChar(50)
+  specification  String?   @ISS.Text
+  inActive       Boolean
+  image          String?   @ISS.VarChar(200)
+  empID          Int?      @default(0)
+  department     String?   @ISS.VarChar(100)
+  firmwareVer    String?   @ISS.VarChar(50)
+  macAddress     String?   @ISS.VarChar(100)
+  deviceStatus   String?   @ISS.VarChar(50)
+  purchaseDate   DateTime? @ISS.Date
+  purchasePrice  String?   @ISS.VarChar(50)
+  warrantyDate   DateTime? @ISS.Date
+  warrantyStatus String?   @ISS.VarChar(50)
+  verified       DateTime? @ISS.DateTime(0)
+}
+
+model changes_logs {
+  id     Int      @id @default(autoincrement())
+  userID Int
+  date   DateTime @ISS.DateTime(0)
+  action String   @ISS.VarChar(50)
+  node   String   @ISS.VarChar(50)
+  nodeID Int
+}
+
+model contracts {
+  id          Int      @id @default(autoincrement())
+  productName String   @ISS.VarChar(100)
+  vendorID    Int
+  startDate   DateTime @ISS.Date
+  endDate     DateTime @ISS.Date
+  notes       String   @ISS.Text
+  support     String   @ISS.Text
+  account     String   @ISS.VarChar(100)
+  cost        String   @ISS.VarChar(50)
+  currency    String   @ISS.VarChar(3)
+  bilingCycle String   @ISS.VarChar(50)
+  inActive    Boolean
+  docslink    String?  @ISS.Text
+}
+
+model employees {
+  id       Int     @id @default(autoincrement())
+  empID    Int     @unique(map: "empID")
+  name     String  @ISS.VarChar(100)
+  user     Int
+  image    String? @ISS.VarChar(200)
+  inActive Boolean
+  email    String? @ISS.VarChar(100)
+}
+
+model employeesDetails {
+  id                          Int     @id @default(autoincrement())
+  empID                       Int
+  license                     String  @ISS.VarChar(100)
+  msProject                   Boolean
+  powerPi                     Boolean
+  authenticationTwoFactor     Boolean
+  authenticationAuthenticator Boolean
+  authenticationPhone         Boolean
+  recipientLimit              String  @ISS.VarChar(50)
+  oneDrive                    Boolean
+  mailType                    String  @ISS.VarChar(50)
+  mailStorageSize             String  @ISS.VarChar(10)
+  onlineMailboxArchive        Boolean
+  onlineArchiveStorageSize    String  @ISS.VarChar(10)
+}
+
+model employeesGroupDetails {
+  id        Int    @id @default(autoincrement())
+  empID     Int
+  groupName String @ISS.VarChar(100)
+}
+
+model items {
+  id       Int     @id @default(autoincrement())
+  name     String  @ISS.VarChar(100)
+  stock    Int
+  brand    String  @ISS.VarChar(100)
+  user     Int
+  img      String  @ISS.VarChar(100)
+  inActive Boolean
+  category String  @ISS.VarChar(100)
+}
+
+model logins_logs {
+  id            Int      @id @default(autoincrement())
+  ip            String   @ISS.VarChar(50)
+  date          DateTime @ISS.DateTime(0)
+  userID        Int
+  login_success Boolean
+}
+
+model printerActions {
+  id          Int      @id @default(autoincrement())
+  printerID   Int
+  actionType  String   @ISS.VarChar(100)
+  actionDate  DateTime @ISS.Date
+  actionBy    String   @ISS.VarChar(100)
+  note        String   @ISS.VarChar(100)
+  itemID      Int
+  requestedBy String   @ISS.VarChar(50)
+  recievedBy  String   @ISS.VarChar(50)
+}
+
+model printerInfo {
+  id            Int      @id @default(autoincrement())
+  printerID     Int
+  model         String?  @ISS.VarChar(100)
+  serialNumber  String?  @ISS.VarChar(50)
+  firmware      String?  @ISS.VarChar(50)
+  RFID          Boolean?
+  darkness      String?  @ISS.VarChar(50)
+  printSpeed    Int?
+  tearOffAdjust Int?
+  printMode     String?  @ISS.VarChar(50)
+  mediaType     String?  @ISS.VarChar(50)
+  sensorSelect  String?  @ISS.VarChar(50)
+  printMethod   String?  @ISS.VarChar(50)
+  printWidth    Int?
+  labelLength   Int?
+  labelTop      Int?
+  leftPosition  Int?
+  manufacturer  String   @ISS.VarChar(100)
+}
+
+model printers {
+  id          Int     @id @default(autoincrement())
+  name        String  @ISS.VarChar(100)
+  location    String  @ISS.VarChar(100)
+  usedBy      String  @ISS.VarChar(100)
+  img         String  @ISS.VarChar(200)
+  inActive    Boolean
+  department  String? @ISS.VarChar(100)
+  printerLink String? @ISS.VarChar(50)
+  empID       Int?
+}
+
+model printersToners {
+  id        Int @id @default(autoincrement())
+  tonerID   Int
+  PrinterID Int
+}
+
+model provide {
+  id         Int      @id @default(autoincrement())
+  date       DateTime @ISS.Date
+  empID      Int
+  requestBy  Int
+  provideBy  String   @ISS.VarChar(50)
+  recievedBy Int
+  notes      String   @ISS.Text
+  user       Int
+}
+
+model provideItems {
+  id        Int @id @default(autoincrement())
+  itemID    Int
+  quantity  Int
+  provideID Int
+}
+
+model purchase {
+  id             Int       @id @default(autoincrement())
+  vendorID       Int
+  quotationDate  DateTime? @ISS.Date
+  buyer          String    @ISS.VarChar(50)
+  poNumber       Int
+  forWho         String    @ISS.Text
+  notes          String    @ISS.Text
+  mrnNumber      String    @ISS.VarChar(50)
+  currentTotal   String    @ISS.VarChar(50)
+  vat            String    @ISS.VarChar(50)
+  grandTotal     String    @ISS.VarChar(50)
+  advanceRequest Boolean
+  LPO            Boolean
+  invoice        Boolean
+  deliveryNote   Boolean
+  mrn            Boolean
+  paidDate       DateTime? @ISS.Date
+  currency       String    @ISS.VarChar(50)
+  user           Int
+  date           DateTime  @ISS.DateTime(0)
+  link           String    @ISS.Text
+  ServiceType    Boolean
+}
+
+model purchaseItems {
+  id         Int    @id @default(autoincrement())
+  purchaseID Int
+  itemID     Int
+  quantity   Int
+  price      String @ISS.VarChar(50)
+}
+
+model purchaseServices {
+  id           Int    @id @default(autoincrement())
+  purchaseID   Int
+  serviceName  String @ISS.VarChar(100)
+  servicePrice String @ISS.VarChar(50)
+}
+
+model requestReplies {
+  id        Int      @id @default(autoincrement())
+  requestID Int
+  reply     String   @ISS.Text
+  replyDate DateTime @ISS.DateTime(0)
+  userID    Int
+}
+
+model requests {
+  id            Int       @id @default(autoincrement())
+  user          Int
+  pgtype        String?   @ISS.VarChar(50)
+  newpg         String?   @ISS.VarChar(100)
+  slctname      String?   @ISS.VarChar(50)
+  otherpg       String?   @ISS.VarChar(100)
+  modifi        String?   @ISS.VarChar(50)
+  descrip       String?   @ISS.Text
+  imagefilePath String?   @ISS.VarChar(200)
+  status        String?   @ISS.VarChar(50)
+  submitDate    DateTime? @ISS.DateTime(0)
+  requestPrio   String?   @ISS.VarChar(50)
+}
+
+model serverActions {
+  id                Int      @id @default(autoincrement())
+  serverID          Int
+  actionType        String   @ISS.VarChar(100)
+  actionDate        DateTime @ISS.DateTime(0)
+  actionDescription String   @ISS.Text
+  actionImage       String?  @ISS.VarChar(100)
+  user              Int
+  actionPeriod      String   @ISS.VarChar(50)
+}
+
+model servers {
+  serverID        Int      @id @default(autoincrement())
+  name            String   @ISS.VarChar(100)
+  type            String   @ISS.VarChar(50)
+  os              String   @ISS.VarChar(50)
+  serverIP        String   @ISS.VarChar(50)
+  host            String   @ISS.VarChar(50)
+  hostIP          String   @ISS.VarChar(50)
+  maintenanceLast DateTime @ISS.Date
+  maintenanceDue  DateTime @ISS.Date
+  cpu             String   @ISS.VarChar(50)
+  ram             String   @ISS.VarChar(50)
+  disk            String   @ISS.VarChar(50)
+  diskType        String   @ISS.VarChar(50)
+  diskAmount      String   @ISS.VarChar(50)
+  location        String   @ISS.VarChar(50)
+  backupStatus    String   @ISS.VarChar(50)
+  backupSoftware  String   @ISS.VarChar(50)
+  descrip         String?  @ISS.VarChar(200)
+  notes           String?  @ISS.Text
+  serverStatus    String   @ISS.VarChar(50)
+  Applications    String   @ISS.VarChar(50)
+  inActive        Boolean?
+  image           String?  @ISS.VarChar(100)
+  disk2           String   @ISS.VarChar(50)
+  diskType2       String   @ISS.VarChar(50)
+  location2       String   @ISS.VarChar(50)
+}
+
+model tapes {
+  id          Int       @id @default(autoincrement())
+  tapeID      String    @unique(map: "tapeID") @ISS.VarChar(50)
+  location    String?   @ISS.VarChar(50)
+  month       String?   @ISS.VarChar(50)
+  year        Int?
+  status      String?   @ISS.VarChar(50)
+  sequenceNum Int?
+  lastWritten DateTime? @ISS.DateTime(0)
+  expire      DateTime? @ISS.DateTime(0)
+  capacity    String?   @ISS.VarChar(50)
+  free        String?   @ISS.VarChar(50)
+  inActive    Boolean
+}
+
+model users {
+  id       Int    @id @default(autoincrement())
+  username String @ISS.VarChar(50)
+  password String @ISS.Text
+  name     String @ISS.VarChar(50)
+  empCode  Int
+  type     String @ISS.VarChar(50)
+  token    String @ISS.VarChar(200)
+  email    String @ISS.VarChar(100)
+}
+
+model vendors {
+  id       Int     @id @default(autoincrement())
+  name     String  @ISS.VarChar(150)
+  notes    String  @ISS.Text
+  user     Int
+  inActive Boolean
+  image    String? @ISS.Text
+}
+
+model vendorsContacts {
+  id             Int     @id @default(autoincrement())
+  vendorID       Int
+  contactType    String  @ISS.VarChar(50)
+  contactName    String  @ISS.VarChar(100)
+  contact        String  @ISS.VarChar(100)
+  personPosition String? @ISS.VarChar(100)
+}
