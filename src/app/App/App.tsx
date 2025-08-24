@@ -14,7 +14,7 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 
 import {
   DropdownMenu,
@@ -182,6 +182,7 @@ export function UserMenu({ account }: { account: Account | null }) {
 // Sidebar navigation for the main activities of the application.
 export function AppSidebarContent(props: { role: string | undefined }) {
   const { isMobile, open, setOpenMobile } = useSidebar();
+  const router = useRouter();
   const path = usePathname();
   const [loading, setLoading] = useState("");
 
@@ -201,41 +202,42 @@ export function AppSidebarContent(props: { role: string | undefined }) {
       <SidebarMenu>
         {Activities(props.role).map(({ title, url, icon }) => (
           <SidebarMenuItem key={title}>
-            <Link href={url} className="flex justify-center items-center">
-              <SidebarMenuButton
-                isActive={isActive(url)}
-                className="flex data-[active=true]:bg-primary data-[active=false]:text-primary-foreground"
-                tooltip={title}
-                size={"lg"}
-                onClick={() => {
-                  const match = path.match(/^\/App\/[^/]+/);
-                  match && match[0] === url ? setLoading("") : setLoading(url);
-                }}
-              >
-                <i
+            <SidebarMenuButton
+              isActive={isActive(url)}
+              className="flex data-[active=true]:bg-primary data-[active=false]:text-primary-foreground"
+              tooltip={title}
+              size={"lg"}
+              onClick={() => {
+                const match = path.match(/^\/App\/[^/]+/);
+                match && match[0] === url ? setLoading("") : setLoading(url);
+                router.push(url);
+              }}
+            >
+              {/* <Link href={url} className="flex justify-center items-center"> */}
+              <i
+                className={cn(
+                  "ms-1 size-6 shrink-0",
+                  icon,
+                  isActive(url) ? "text-white" : "text-foreground/92",
+                  loading === url && !open ? "hidden" : ""
+                )}
+              />
+              <div className="flex items-center justify-between w-full">
+                <span
                   className={cn(
-                    "ms-1 size-6 shrink-0",
-                    icon,
-                    isActive(url) ? "text-white" : "text-foreground/90",
+                    " text-base",
+                    isActive(url) ? "text-white" : "text-foreground/92",
                     loading === url && !open ? "hidden" : ""
                   )}
-                />
-                <div className="flex items-center justify-between w-full">
-                  <span
-                    className={cn(
-                      " text-base",
-                      isActive(url) ? "text-white" : "text-foreground/90",
-                      loading === url && !open ? "hidden" : ""
-                    )}
-                  >
-                    {title}
-                  </span>
-                  {loading === url && (
-                    <Loader2 className="mx-2 size-3 animate-spin text-foreground" />
-                  )}
-                </div>
-              </SidebarMenuButton>
-            </Link>
+                >
+                  {title}
+                </span>
+                {loading === url && (
+                  <Loader2 className="mx-2 size-3 animate-spin text-foreground" />
+                )}
+              </div>
+              {/* </Link> */}
+            </SidebarMenuButton>
           </SidebarMenuItem>
         ))}
       </SidebarMenu>
