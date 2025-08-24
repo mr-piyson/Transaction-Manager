@@ -51,12 +51,9 @@ export default function AccountTable() {
     }
   }
 
-  const { data, error, mutate, isLoading } = useSWR(
-    "http://localhost/ITSM/employees.php",
-    {
-      fetcher: (url: string) => fetch(url).then((res) => res.json()),
-    }
-  );
+  const { data, error, mutate, isLoading } = useSWR("/api/Employees", {
+    fetcher: (url: string) => fetch(url).then((res) => res.json()),
+  });
 
   useMemo(() => {
     if (data) {
@@ -77,7 +74,7 @@ export default function AccountTable() {
       headerName: "Name",
       sortable: true,
       filter: true,
-      flex: 2,
+      flex: 4,
     },
     {
       field: "department",
@@ -94,43 +91,11 @@ export default function AccountTable() {
       flex: 2,
     },
     {
-      field: "date_of_joining",
-      headerName: "Joining Date",
-      sortable: true,
-      filter: true,
-      flex: 1,
-      valueFormatter: (params: any) =>
-        params.value ? new Date(params.value).toLocaleDateString() : "",
-    },
-    {
-      field: "left_date",
-      headerName: "Left Date",
-      sortable: true,
-      filter: true,
-      flex: 2,
-    },
-    {
-      field: "mobile",
+      field: "telephone",
       headerName: "Mobile",
       sortable: true,
       filter: true,
       flex: 1,
-    },
-    {
-      field: "nationality",
-      headerName: "Nationality",
-      sortable: true,
-      filter: true,
-      flex: 1,
-    },
-    {
-      field: "gender",
-      headerName: "Gender",
-      sortable: true,
-      filter: true,
-      flex: 1,
-      valueFormatter: (params: any) =>
-        params.value === "M" ? "Male" : params.value === "F" ? "Female" : "",
     },
     {
       field: "emp_location",
@@ -141,13 +106,6 @@ export default function AccountTable() {
     },
     {
       field: "access",
-      headerName: "access",
-      sortable: true,
-      filter: true,
-      flex: 2,
-    },
-    {
-      field: "left_date",
       headerName: "Status",
       sortable: true,
       filter: true,
@@ -177,14 +135,6 @@ export default function AccountTable() {
       },
     },
   ];
-
-  const rowSelection = useMemo<
-    RowSelectionOptions | "single" | "multiple"
-  >(() => {
-    return {
-      mode: "singleRow",
-    };
-  }, []);
 
   return (
     <div className=" flex flex-col w-full h-full">
@@ -232,7 +182,6 @@ export default function AccountTable() {
         // This will prevent the column from removed when dragged out
         suppressDragLeaveHidesColumns
         // this will allow us to select multiple rows
-        rowSelection={rowSelection}
         onRowSelected={onRowSelected}
         pagination={true}
       />

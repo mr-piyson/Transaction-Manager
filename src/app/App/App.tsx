@@ -181,7 +181,7 @@ export function UserMenu({ account }: { account: Account | null }) {
 
 // Sidebar navigation for the main activities of the application.
 export function AppSidebarContent(props: { role: string | undefined }) {
-  const { setOpenMobile } = useSidebar();
+  const { isMobile, open, setOpenMobile } = useSidebar();
   const path = usePathname();
   const [loading, setLoading] = useState("");
 
@@ -204,6 +204,7 @@ export function AppSidebarContent(props: { role: string | undefined }) {
             <Link href={url} className="flex justify-center items-center">
               <SidebarMenuButton
                 isActive={isActive(url)}
+                className="flex data-[active=true]:bg-primary data-[active=false]:text-primary-foreground"
                 tooltip={title}
                 size={"lg"}
                 onClick={() => {
@@ -213,19 +214,24 @@ export function AppSidebarContent(props: { role: string | undefined }) {
               >
                 <i
                   className={cn(
-                    "size-7 shrink-0",
+                    "ms-1 size-6 shrink-0",
                     icon,
-                    !isActive(url) && "text-muted-foreground"
+                    isActive(url) ? "text-white" : "text-foreground/90",
+                    loading === url && !open ? "hidden" : ""
                   )}
                 />
                 <div className="flex items-center justify-between w-full">
                   <span
-                    className={cn(!isActive(url) && "text-muted-foreground")}
+                    className={cn(
+                      " text-base",
+                      isActive(url) ? "text-white" : "text-foreground/90",
+                      loading === url && !open ? "hidden" : ""
+                    )}
                   >
                     {title}
                   </span>
                   {loading === url && (
-                    <Loader2 className="mr-2 size-3 animate-spin" />
+                    <Loader2 className="mx-2 size-3 animate-spin text-foreground" />
                   )}
                 </div>
               </SidebarMenuButton>
