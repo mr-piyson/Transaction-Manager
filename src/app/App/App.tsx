@@ -41,7 +41,7 @@ export default function App(props: AppProps) {
         <AppSidebar account={props.account} />
         <SidebarInset>
           <Toolbar account={props.account} />
-          {props.children}
+          <div className="w-full h-full overflow-hidden">{props.children}</div>
         </SidebarInset>
       </SidebarProvider>
     </QueryClientProvider>
@@ -70,7 +70,6 @@ export function AppSidebar({ ...props }: AppSidebarProps) {
       <SidebarContent>
         <AppSidebarContent role={props.account?.role} />
       </SidebarContent>
-
       <SidebarRail />
     </Sidebar>
   );
@@ -182,12 +181,14 @@ export function UserMenu({ account }: { account: Account | null }) {
 
 // Sidebar navigation for the main activities of the application.
 export function AppSidebarContent(props: { role: string | undefined }) {
+  const { setOpenMobile } = useSidebar();
   const path = usePathname();
   const [loading, setLoading] = useState("");
 
   useEffect(() => {
     if (loading === path) {
       setLoading("");
+      setOpenMobile(false);
     }
   }, [path]);
 

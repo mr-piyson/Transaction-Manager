@@ -1,10 +1,10 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback, useRef, useEffect } from "react";
 import {
   Search,
   Grid3X3,
-  List,
+  ListIcon,
   Plus,
   Monitor,
   Laptop,
@@ -44,27 +44,43 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Checkbox } from "@/components/ui/checkbox";
+import useSWR from "swr";
+import Image from "next/image";
 
-interface Asset {
-  id: string;
-  code: string;
-  serialNumber: string;
-  deviceName: string;
-  type: string;
-  location: string;
-  department: string;
-  manufacturer: string;
-  model: string;
-  owner: string;
-  processor?: string;
-  os?: string;
-  memory?: string;
-  hdd?: string;
-  ip?: string;
-  specification?: string;
-  image?: string;
-  verified: boolean;
+function useDebounce<T>(value: T, delay: number): T {
+  const [debouncedValue, setDebouncedValue] = useState<T>(value);
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedValue(value);
+    }, delay);
+
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [value, delay]);
+
+  return debouncedValue;
 }
+
+const VirtualizedAssetCard = ({
+  index,
+  style,
+  data,
+}: {
+  index: number;
+  style: any;
+  data: any[];
+}) => {
+  const asset = data[index];
+  return (
+    <div style={style}>
+      <div className="p-2">
+        {/* AssetCard component will be inserted here */}
+      </div>
+    </div>
+  );
+};
 
 const assetCategories = {
   "Computing Devices": [
@@ -96,74 +112,6 @@ const assetCategories = {
   ],
   Communication: [{ name: "Telephone", icon: Phone, color: "rose" }],
 } as const;
-
-// Mock data - replace with actual API call
-const mockAssets: Asset[] = [
-  {
-    id: "1",
-    code: "DT001",
-    serialNumber: "SN123456789",
-    deviceName: "Dell OptiPlex 7090",
-    type: "Desktop",
-    location: "Floor 1",
-    department: "IT",
-    manufacturer: "Dell",
-    model: "OptiPlex 7090",
-    owner: "John Doe",
-    processor: "Intel i7",
-    os: "Windows 11",
-    memory: "16GB",
-    hdd: "512GB SSD",
-    ip: "192.168.1.100",
-    verified: true,
-  },
-  {
-    id: "2",
-    code: "LT002",
-    serialNumber: "SN987654321",
-    deviceName: 'MacBook Pro 16"',
-    type: "Laptop",
-    location: "Floor 2",
-    department: "Design",
-    manufacturer: "Apple",
-    model: "MacBook Pro",
-    owner: "Jane Smith",
-    processor: "M2 Pro",
-    os: "macOS",
-    memory: "32GB",
-    hdd: "1TB SSD",
-    verified: false,
-  },
-  {
-    id: "3",
-    code: "MN003",
-    serialNumber: "SN456789123",
-    deviceName: 'Dell UltraSharp 27"',
-    type: "Monitor",
-    location: "Floor 1",
-    department: "Development",
-    manufacturer: "Dell",
-    model: "U2723QE",
-    owner: "Mike Johnson",
-    verified: true,
-  },
-  {
-    id: "4",
-    code: "SV004",
-    serialNumber: "SN789123456",
-    deviceName: "HP ProLiant DL380",
-    type: "Blade Server",
-    location: "Server Room",
-    department: "Infrastructure",
-    manufacturer: "HP",
-    model: "ProLiant DL380",
-    owner: "IT Team",
-    processor: "Intel Xeon",
-    memory: "128GB",
-    hdd: "4TB RAID",
-    verified: true,
-  },
-];
 
 const getColorClasses = (color: string) => {
   const colorMap = {
@@ -352,54 +300,101 @@ const getColorClasses = (color: string) => {
   return colorMap[color as keyof typeof colorMap] || colorMap.blue;
 };
 
+const fetcher = (url: string) => fetch(url).then((res) => res.json());
+import type { assets as Asset } from "../../../../node_modules/.prisma/iss/client";
+
 export default function AssetsPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
   const [viewMode, setViewMode] = useState<"grid" | "table">("grid");
   const [categoryDropdownOpen, setCategoryDropdownOpen] = useState(false);
+  const [displayCount, setDisplayCount] = useState(20);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+
+  const debouncedSearchQuery = useDebounce(searchQuery, 300);
+
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+
+  const { data, error, isLoading } = useSWR<Asset[]>("/api/Assets", fetcher);
 
   const filteredAssets = useMemo(() => {
-    let filtered = mockAssets;
+    let filtered = data || [];
 
     if (selectedTypes.length > 0) {
       filtered = filtered.filter((asset) => selectedTypes.includes(asset.type));
     }
 
-    if (searchQuery.trim()) {
-      const query = searchQuery.toLowerCase();
+    if (debouncedSearchQuery.trim()) {
+      const query = debouncedSearchQuery.toLowerCase();
       filtered = filtered.filter(
         (asset) =>
-          asset.deviceName.toLowerCase().includes(query) ||
-          asset.manufacturer.toLowerCase().includes(query) ||
-          asset.code.toLowerCase().includes(query) ||
-          asset.serialNumber.toLowerCase().includes(query) ||
-          asset.owner.toLowerCase().includes(query) ||
-          asset.model.toLowerCase().includes(query) ||
+          asset.deviceName?.toLowerCase().includes(query) ||
+          asset.manufacturer?.toLowerCase().includes(query) ||
+          asset.code?.toLowerCase().includes(query) ||
+          asset.serialNumber?.toLowerCase().includes(query) ||
+          asset.owner?.toLowerCase().includes(query) ||
+          asset.model?.toLowerCase().includes(query) ||
           `${asset.location} ${asset.department}`.toLowerCase().includes(query)
       );
     }
 
     return filtered;
-  }, [searchQuery, selectedTypes]);
+  }, [data, debouncedSearchQuery, selectedTypes]);
 
-  const toggleAssetType = (type: string) => {
+  const displayedAssets = useMemo(() => {
+    return filteredAssets.slice(0, displayCount);
+  }, [filteredAssets, displayCount]);
+
+  const toggleAssetType = useCallback((type: string) => {
     setSelectedTypes((prev) =>
       prev.includes(type) ? prev.filter((t) => t !== type) : [...prev, type]
     );
-  };
+  }, []);
 
-  const clearAllFilters = () => {
+  const clearAllFilters = useCallback(() => {
     setSelectedTypes([]);
     setSearchQuery("");
-  };
+  }, []);
 
-  const getAssetTypeConfig = (type: string) => {
+  const handleScroll = useCallback(() => {
+    if (!scrollContainerRef.current) return;
+
+    const { scrollTop, scrollHeight, clientHeight } =
+      scrollContainerRef.current;
+    const isNearBottom = scrollTop + clientHeight >= scrollHeight - 1000;
+
+    if (
+      isNearBottom &&
+      !isLoadingMore &&
+      displayCount < filteredAssets.length
+    ) {
+      setIsLoadingMore(true);
+      setTimeout(() => {
+        setDisplayCount((prev) => Math.min(prev + 20, filteredAssets.length));
+        setIsLoadingMore(false);
+      }, 100);
+    }
+  }, [displayCount, filteredAssets.length, isLoadingMore]);
+
+  useEffect(() => {
+    const container = scrollContainerRef.current;
+    if (container) {
+      container.addEventListener("scroll", handleScroll);
+      return () => container.removeEventListener("scroll", handleScroll);
+    }
+  }, [handleScroll]);
+
+  useEffect(() => {
+    setDisplayCount(20);
+  }, [debouncedSearchQuery, selectedTypes]);
+
+  const getAssetTypeConfig = useCallback((type: string) => {
     for (const category of Object.values(assetCategories)) {
       const found = category.find((t) => t.name === type);
       if (found) return found;
     }
     return { name: type, icon: Monitor, color: "default" as const };
-  };
+  }, []);
 
   const AssetCard = ({ asset }: { asset: Asset }) => {
     const typeConfig = getAssetTypeConfig(asset.type);
@@ -410,13 +405,18 @@ export default function AssetsPage() {
       <Card className="pt-0 h-full group hover:shadow-lg transition-all duration-200 hover:-translate-y-1 border-border/50 hover:border-border overflow-hidden flex flex-col">
         <div className="relative h-48 bg-gradient-to-br from-muted/50 to-muted overflow-hidden">
           {asset.image ? (
-            <img
+            <Image
+              width={300}
+              height={200}
               src={
-                asset.image ||
-                "/placeholder.svg?height=200&width=300&query=IT asset device"
+                "http://iss.bfginternational.com/ISS/itemsImages/" +
+                  asset.image ||
+                "/placeholder.svg?height=200&width=300&query=IT asset device" ||
+                "/placeholder.svg"
               }
               alt={asset.deviceName}
               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+              loading="lazy"
             />
           ) : (
             <div
@@ -530,14 +530,48 @@ export default function AssetsPage() {
     );
   };
 
+  if (isLoading) {
+    return (
+      <div className="mx-auto p-6 space-y-6">
+        <div className="flex items-center justify-center py-12">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+          <span className="ml-2 text-muted-foreground">Loading assets...</span>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="mx-auto p-6 space-y-6">
+        <div className="text-center py-12">
+          <p className="text-destructive">
+            Error loading assets. Please try again.
+          </p>
+          <Button
+            variant="outline"
+            className="mt-4 bg-transparent"
+            onClick={() => window.location.reload()}
+          >
+            Retry
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="container mx-auto p-6 space-y-6">
+    <div className="mx-auto p-6 space-y-6" ref={scrollContainerRef}>
       {/* Search and Controls */}
-      <div className=" top-0 z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-border/40 -mx-6 px-6 py-4">
+      <div className="top-0 z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-border/40 -mx-6 px-6 py-4">
         <div className="space-y-4">
           {/* Search Bar, View Controls, and Add New Asset Button */}
-          <div className="flex flex-col sm:flex-row gap-4">
-            <div className="relative flex-1 max-w-md">
+          <div className="flex flex-wrap flex-col sm:flex-row gap-4">
+            <Button>
+              <Plus className="h-4 w-4 mr-2" />
+              Add New Asset
+            </Button>
+            <div className="relative flex-1 ">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 placeholder="Search by name, code, serial, owner..."
@@ -545,6 +579,11 @@ export default function AssetsPage() {
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-10"
               />
+              {searchQuery !== debouncedSearchQuery && (
+                <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                  <div className="animate-spin rounded-full h-3 w-3 border-b border-muted-foreground"></div>
+                </div>
+              )}
             </div>
 
             <div className="flex items-center gap-2">
@@ -602,7 +641,7 @@ export default function AssetsPage() {
                               const isSelected = selectedTypes.includes(
                                 type.name
                               );
-                              const count = mockAssets.filter(
+                              const count = data?.filter(
                                 (asset) => asset.type === type.name
                               ).length;
                               const colorClasses = getColorClasses(type.color);
@@ -655,15 +694,7 @@ export default function AssetsPage() {
                 size="sm"
                 onClick={() => setViewMode("table")}
               >
-                <List className="h-4 w-4" />
-              </Button>
-
-              <Separator orientation="vertical" className="h-6" />
-
-              {/* Add New Asset Button */}
-              <Button>
-                <Plus className="h-4 w-4 mr-2" />
-                Add New Asset
+                <ListIcon className="h-4 w-4" />
               </Button>
             </div>
           </div>
@@ -709,7 +740,7 @@ export default function AssetsPage() {
 
           <div className="flex items-center justify-between">
             <p className="text-sm text-muted-foreground">
-              Showing {filteredAssets.length} of {mockAssets.length} assets
+              Showing {displayedAssets.length} of {filteredAssets.length} assets
               {selectedTypes.length > 0 &&
                 ` • ${selectedTypes.length} filter${
                   selectedTypes.length > 1 ? "s" : ""
@@ -721,10 +752,36 @@ export default function AssetsPage() {
 
       {/* Assets Display */}
       {viewMode === "grid" ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-          {filteredAssets.map((asset) => (
-            <AssetCard key={asset.id} asset={asset} />
-          ))}
+        <div className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            {displayedAssets.map((asset) => (
+              <AssetCard key={asset.id} asset={asset} />
+            ))}
+          </div>
+
+          {displayCount < filteredAssets.length && (
+            <div className="flex justify-center py-8">
+              {isLoadingMore ? (
+                <div className="flex items-center gap-2">
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
+                  <span className="text-sm text-muted-foreground">
+                    Loading more assets...
+                  </span>
+                </div>
+              ) : (
+                <Button
+                  variant="outline"
+                  onClick={() =>
+                    setDisplayCount((prev) =>
+                      Math.min(prev + 20, filteredAssets.length)
+                    )
+                  }
+                >
+                  Load More ({filteredAssets.length - displayCount} remaining)
+                </Button>
+              )}
+            </div>
+          )}
         </div>
       ) : (
         <Card>
@@ -741,7 +798,7 @@ export default function AssetsPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredAssets.map((asset) => {
+              {displayedAssets.map((asset) => {
                 const typeConfig = getAssetTypeConfig(asset.type);
                 const Icon = typeConfig.icon;
                 return (
@@ -783,6 +840,33 @@ export default function AssetsPage() {
               })}
             </TableBody>
           </Table>
+
+          {displayCount < filteredAssets.length && (
+            <div className="p-4 border-t">
+              <div className="flex justify-center">
+                <Button
+                  variant="outline"
+                  onClick={() =>
+                    setDisplayCount((prev) =>
+                      Math.min(prev + 20, filteredAssets.length)
+                    )
+                  }
+                  disabled={isLoadingMore}
+                >
+                  {isLoadingMore ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary mr-2"></div>
+                      Loading...
+                    </>
+                  ) : (
+                    `Load More (${
+                      filteredAssets.length - displayCount
+                    } remaining)`
+                  )}
+                </Button>
+              </div>
+            </div>
+          )}
         </Card>
       )}
 

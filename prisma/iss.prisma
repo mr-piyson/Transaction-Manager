@@ -1,6 +1,6 @@
 generator ISSClient {
   provider = "prisma-client-js"
-  output   = "../node_modules/.prisma/client"
+  output   = "../node_modules/.prisma/iss"
 }
 
 datasource ISS {

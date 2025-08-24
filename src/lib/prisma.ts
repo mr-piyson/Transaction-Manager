@@ -1,13 +1,11 @@
 import { PrismaClient } from "@prisma/client";
+import { PrismaClient as ISSPrismaClient } from "../../node_modules/.prisma/iss";
+import { PrismaClient as MESPrismaClient } from "../../node_modules/.prisma/mes";
 
-declare global {
-  // eslint-disable-next-line no-var
-  var prisma: PrismaClient;
-}
-
-const prisma = global.prisma || new PrismaClient();
+const mes = new MESPrismaClient();
+const iss = new ISSPrismaClient();
+const prisma = new PrismaClient();
 export default prisma;
-
-if (process.env.NODE_ENV !== "production") global.prisma = prisma;
+export { iss, mes };
 
 // init default settings
