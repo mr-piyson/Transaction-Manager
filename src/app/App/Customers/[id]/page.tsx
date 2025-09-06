@@ -16,6 +16,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 // Mock customer data (same as in customer-page.tsx)
 const mockCustomers = [
@@ -161,11 +162,11 @@ export default function CustomerDetailPage() {
   const getStatusColor = (status: string) => {
     switch (status) {
       case "Active":
-        return "success";
+        return "default";
       case "Inactive":
-        return "warning";
+        return "destructive";
       case "Pending":
-        return "primary";
+        return "warning";
       default:
         return "default";
     }
@@ -174,13 +175,13 @@ export default function CustomerDetailPage() {
   const getOrderStatusColor = (status: string) => {
     switch (status) {
       case "Completed":
-        return "success";
+        return "bg-green-100 text-green-800";
       case "Pending":
-        return "primary";
+        return "bg-yellow-100 text-yellow-800";
       case "Cancelled":
-        return "destructive";
+        return "bg-red-100 text-red-800";
       default:
-        return "warning";
+        return "bg-gray-100 text-gray-800";
     }
   };
 
@@ -215,42 +216,68 @@ export default function CustomerDetailPage() {
         <div className="grid gap-6 lg:grid-cols-3">
           {/* Customer Information */}
           <div className="lg:col-span-2 space-y-6">
+            <Card>
+              <CardContent className="p-6">
+                <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6">
+                  <div className="relative">
+                    <Avatar className="h-32 w-32 sm:h-40 sm:w-40 border-4 border-background shadow-lg">
+                      <AvatarImage
+                        src={`/smiling-woman-curly-brown-hair-headshot.png?key=5gf38&height=160&width=160&query=professional headshot of ${customer.name}`}
+                        alt={customer.name}
+                        className="object-cover"
+                      />
+                      <AvatarFallback className="text-2xl sm:text-3xl font-bold bg-gradient-to-br from-blue-500 to-purple-600 text-white">
+                        {customer.name
+                          .split(" ")
+                          .map((n) => n[0])
+                          .join("")}
+                      </AvatarFallback>
+                    </Avatar>
+                    <Badge
+                      variant={getStatusColor(customer.status)}
+                      withBorder={true}
+                      className={`absolute -bottom-2 -right-2`}
+                    >
+                      {customer.status}
+                    </Badge>
+                  </div>
+                  <div className="flex-1 text-center sm:text-left space-y-2">
+                    <h2 className="text-2xl sm:text-3xl font-bold">
+                      {customer.name}
+                    </h2>
+                    <p className="text-lg text-muted-foreground">
+                      {customer.company}
+                    </p>
+                    <div className="flex flex-wrap justify-center sm:justify-start gap-4 pt-2">
+                      <div className="flex items-center gap-2 text-sm">
+                        <Mail className="h-4 w-4 text-muted-foreground" />
+                        <span>{customer.email}</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-sm">
+                        <Phone className="h-4 w-4 text-muted-foreground" />
+                        <span>{customer.phone}</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-sm">
+                        <MapPin className="h-4 w-4 text-muted-foreground" />
+                        <span>{customer.location}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
             {/* Basic Info Card */}
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <User className="h-5 w-5" />
-                  Customer Information
+                  Additional Information
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid gap-4 md:grid-cols-2">
                   <div className="space-y-3">
-                    <div className="flex items-center gap-3">
-                      <Mail className="h-4 w-4 text-muted-foreground" />
-                      <div>
-                        <p className="text-sm text-muted-foreground">Email</p>
-                        <p className="font-medium">{customer.email}</p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <Phone className="h-4 w-4 text-muted-foreground" />
-                      <div>
-                        <p className="text-sm text-muted-foreground">Phone</p>
-                        <p className="font-medium">{customer.phone}</p>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="space-y-3">
-                    <div className="flex items-center gap-3">
-                      <MapPin className="h-4 w-4 text-muted-foreground" />
-                      <div>
-                        <p className="text-sm text-muted-foreground">
-                          Location
-                        </p>
-                        <p className="font-medium">{customer.location}</p>
-                      </div>
-                    </div>
                     <div className="flex items-center gap-3">
                       <Calendar className="h-4 w-4 text-muted-foreground" />
                       <div>
@@ -258,6 +285,37 @@ export default function CustomerDetailPage() {
                           Join Date
                         </p>
                         <p className="font-medium">{customer.joinDate}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <Calendar className="h-4 w-4 text-muted-foreground" />
+                      <div>
+                        <p className="text-sm text-muted-foreground">
+                          Last Order
+                        </p>
+                        <p className="font-medium">{customer.lastOrder}</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-3">
+                      <DollarSign className="h-4 w-4 text-muted-foreground" />
+                      <div>
+                        <p className="text-sm text-muted-foreground">
+                          Total Spent
+                        </p>
+                        <p className="font-medium">
+                          ${customer.totalSpent.toLocaleString()}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <ShoppingBag className="h-4 w-4 text-muted-foreground" />
+                      <div>
+                        <p className="text-sm text-muted-foreground">
+                          Total Orders
+                        </p>
+                        <p className="font-medium">{customer.totalOrders}</p>
                       </div>
                     </div>
                   </div>
@@ -294,7 +352,7 @@ export default function CustomerDetailPage() {
                         </div>
                       </div>
                       <div className="flex items-center gap-4">
-                        <Badge variant={getOrderStatusColor(order.status)}>
+                        <Badge className={getOrderStatusColor(order.status)}>
                           {order.status}
                         </Badge>
                         <p className="font-semibold">
@@ -310,18 +368,6 @@ export default function CustomerDetailPage() {
 
           {/* Stats Sidebar */}
           <div className="space-y-6">
-            {/* Status Card */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">Status</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <Badge className={getStatusColor(customer.status)}>
-                  {customer.status}
-                </Badge>
-              </CardContent>
-            </Card>
-
             {/* Stats Cards */}
             <Card>
               <CardHeader>

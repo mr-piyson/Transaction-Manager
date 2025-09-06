@@ -2,9 +2,9 @@
 
 <p align="center">
   <picture style="width: 500px">
-    <source media="(prefers-color-scheme: light)" srcset="./src/app/Assets/Images/Banner-Light.png" />
-    <source media="(prefers-color-scheme: dark)" srcset="./src/app/Assets/Images/Banner-Dark.png" />
-    <img src="./src/app/Assets/Images/Banner-Dark.png" width="100%" alt="Transaction Manager logo and name" />
+    <source media="(prefers-color-scheme: light)" srcset="/src/Assets/Images/Banner-Light.png" />
+    <source media="(prefers-color-scheme: dark)" srcset="/src/Assets/Images/Banner-Dark.png" />
+    <img src="/src/Assets/Images/Banner-Dark.png" width="100%" alt="Transaction Manager logo and name" />
   </picture>
 </p>
 
@@ -55,7 +55,6 @@ Contributions are welcome! If you have any ideas, suggestions, or bug reports, p
 
 or join us in Telegram group
 
-
 <a href="https://t.me/+U5HLk3J2cZs1NWQ8">![badge](https://img.shields.io/badge/Telegram-Transaction_Manager-blue?logo=telegram&blue=white)</a>
 
 # Further Work
@@ -65,24 +64,27 @@ or join us in Telegram group
 ## Functional Requirements
 
 ### 1. Sales
+
 Admin should be able to **Create, Read, Update, and Delete (CRUD)** sales.
 
-- Create Invoice  
-- Make the sales relationship between Sales and Inventory  
-- Create a section for non-inventory sales  
+- Create Invoice
+- Make the sales relationship between Sales and Inventory
+- Create a section for non-inventory sales
 
 ### 2. Inventory
+
 Admin should be able to **CRUD** items in the inventory.
 
-- Handle item in and item out  
+- Handle item in and item out
 
 ### 3. Dashboard
+
 Display all important data:
 
-- Total Revenue  
-- Inventory items (in / out)  
-- Inventory status  
-- Sales overview  
+- Total Revenue
+- Inventory items (in / out)
+- Inventory status
+- Sales overview
 
 ## License
 

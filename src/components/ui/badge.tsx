@@ -29,19 +29,42 @@ const badgeVariants = cva(
   }
 );
 
+const badgeBorderVariants = cva("border-1", {
+  variants: {
+    variant: {
+      secondary: "border-transparent",
+      destructive: "border-destructive-foreground",
+      success: "border-success-foreground",
+      warning: "border-warning-foreground",
+      outline: "border-foreground",
+      default: "border-primary",
+    },
+  },
+  defaultVariants: {
+    variant: "default",
+  },
+});
+
 function Badge({
   className,
   variant,
+  withBorder = false,
   asChild = false,
   ...props
 }: React.ComponentProps<"span"> &
-  VariantProps<typeof badgeVariants> & { asChild?: boolean }) {
+  VariantProps<typeof badgeVariants> & { asChild?: boolean } & {
+    withBorder?: boolean;
+  }) {
   const Comp = asChild ? Slot : "span";
 
   return (
     <Comp
       data-slot="badge"
-      className={cn(badgeVariants({ variant }), className)}
+      className={cn(
+        badgeVariants({ variant }),
+        withBorder && badgeBorderVariants({ variant }),
+        className
+      )}
       {...props}
     />
   );

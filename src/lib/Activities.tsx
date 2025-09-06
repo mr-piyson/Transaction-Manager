@@ -19,6 +19,23 @@ export const Activities = (role: string | undefined | null) => {
           title: "Inventory",
           url: "/App/Inventory",
           icon: "icon-[solar--box-outline]",
+          children: [
+            {
+              title: "Assets",
+              url: "/App/Inventory/Assets",
+              icon: "icon-[solar--box-outline]",
+            },
+            {
+              title: "Stock",
+              url: "/App/Inventory/Stock",
+              icon: "icon-[solar--box-outline]",
+            },
+            {
+              title: "Suppliers",
+              url: "/App/Inventory/Suppliers",
+              icon: "icon-[solar--box-outline]",
+            },
+          ],
         },
         {
           title: "Settings",

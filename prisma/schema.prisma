@@ -62,19 +62,10 @@ model Record {
   email    String?
   phone    String?
   address  String?
-  tables   Table[]
   desc     String?
 
   Account   Account? @relation(fields: [accountId], references: [id])
   accountId String?
-}
-
-model Table {
-  id           Int           @id @default(autoincrement())
-  recordId     String
-  isCompleted  Boolean       @default(false)
-  transactions Transaction[]
-  record       Record        @relation(fields: [recordId], references: [id])
 }
 
 model Transaction {
@@ -85,63 +76,68 @@ model Transaction {
   description String?
   date        DateTime @default(now())
   qty         Int      @default(1)
-  table       Table    @relation(fields: [tableId], references: [id])
+  Note        Note?    @relation(fields: [noteId], references: [id])
+  noteId      String?
 }
 
-model JobCard {
-  id              Int          @id @default(autoincrement())
-  date            DateTime?    @default(now())
-  km              String?
-  model           String?
-  vehicleNo       String?
-  manufacturer    String?
-  operator        String?
-  mechanic        String?
-  type            String?
-  department      String?
-  totalAmount     Float?
-  nextServiceDate DateTime?
-  nextServiceKm   String?
-  description     String?
-  createdAt       DateTime     @default(now())
-  updatedAt       DateTime     @updatedAt
-  Part            Part[]
-  vehicleTypeId   String?
-  VehicleType     VehicleType? @relation(fields: [vehicleTypeId], references: [id])
-
-  @@index([date])
-  @@index([vehicleNo])
-}
-
-model Part {
-  id          String    @id @default(uuid())
-  partCode    String?
-  description String?
-  quantity    Int?
-  rate        Float?
-  amount      Float?
-  createdAt   DateTime? @default(now())
-  updatedAt   DateTime? @updatedAt
-
-  JobCard   JobCard? @relation(fields: [jobCardId], references: [id])
-  jobCardId Int?
-
-  @@index([partCode])
-}
-
-model Vehicle {
+model Customer {
   id        String   @id @default(uuid())
-  vehicleNo String   @unique
-  type      String?
-  km        Int?
-  driver    String?
-  mechanic  String?
+  name      String
+  email     String?
+  phone     String   @unique
+  address   String?
+  notes     Note[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
-model VehicleType {
-  id      String    @id @default(uuid())
-  name    String    @unique
-  JobCard JobCard[]
+model Note {
+  id           String        @id @default(uuid())
+  title        String
+  content      String
+  total        Float         @default(0)
+  status       String?
+  avatar       String?
+  transactions Transaction[]
+  active       Boolean       @default(true)
+  updatedAt    DateTime      @updatedAt
+  createdAt    DateTime      @default(now())
+  Customer     Customer?     @relation(fields: [customerId], references: [id])
+  customerId   String?
+}
+
+model Stock {
+  id        String   @id @default(uuid())
+  name      String
+  quantity  Int      @default(0)
+  price     Float    @default(0)
+  revenue   Float    @default(0)
+  barcode   String?
+  qrcode    String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Asset {
+  id        String   @id @default(uuid())
+  name      String
+  quantity  Int      @default(0)
+  price     Float    @default(0)
+  barcode   String?
+  qrcode    String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Employee {
+  id         String   @id @default(uuid())
+  empId      String   @unique
+  name       String
+  email      String   @unique
+  phone      String   @unique
+  address    String?
+  department String?
+  role       String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 }

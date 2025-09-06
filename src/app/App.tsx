@@ -88,7 +88,9 @@ export function TeamSwitcher() {
             <AppLogo className="size-7" />
           </div>
           <div className="grid flex-1 text-left text-sm leading-tight">
-            <span className="truncate font-semibold text-lg">ITSM</span>
+            <span className="truncate font-semibold text-lg">
+              Transaction Manager
+            </span>
             <span className="truncate text-xs"></span>
           </div>
         </SidebarMenuButton>
@@ -99,12 +101,10 @@ export function TeamSwitcher() {
 
 import { signOut } from "@/app/Auth/auth.actions";
 import { Button } from "@/components/ui/button";
-import { Activities } from "@/lib/Activities";
-import { cn } from "@/lib/utils";
 import { Account } from "@prisma/client";
 import { ChevronsUpDown, Loader2, LogOut, Moon } from "lucide-react";
-import { useEffect, useState } from "react";
 import { Toolbar } from "./Toolbar";
+import { AppSidebarContent } from "./Sidebar";
 
 // This component renders the user profile in the sidebar, allowing users to switch themes and log out.
 export function UserMenu({ account }: { account: Account | null }) {
@@ -174,71 +174,5 @@ export function UserMenu({ account }: { account: Account | null }) {
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
-  );
-}
-
-// Sidebar navigation for the main activities of the application.
-export function AppSidebarContent(props: { role: string | undefined }) {
-  const { isMobile, open, setOpenMobile } = useSidebar();
-  const router = useRouter();
-  const path = usePathname();
-  const [loading, setLoading] = useState("");
-
-  useEffect(() => {
-    if (loading === path) {
-      setLoading("");
-      setOpenMobile(false);
-    }
-  }, [path]);
-
-  const isActive = (Activity: string) => {
-    const url = path.split("/").slice(0, 3).join("/");
-    return url === Activity;
-  };
-  return (
-    <SidebarGroup>
-      <SidebarMenu>
-        {Activities(props.role).map(({ title, url, icon }) => (
-          <SidebarMenuItem key={title}>
-            <SidebarMenuButton
-              isActive={isActive(url)}
-              className="flex data-[active=true]:bg-primary data-[active=false]:text-primary-foreground"
-              tooltip={title}
-              size={"lg"}
-              onClick={() => {
-                const match = path.match(/^\/App\/[^/]+/);
-                match && match[0] === url ? setLoading("") : setLoading(url);
-                router.push(url);
-              }}
-            >
-              {/* <Link href={url} className="flex justify-center items-center"> */}
-              <i
-                className={cn(
-                  "ms-1 size-6 shrink-0",
-                  icon,
-                  isActive(url) ? "text-white" : "text-foreground/92",
-                  loading === url && !open && !isMobile ? "hidden" : ""
-                )}
-              />
-              <div className="flex items-center justify-between w-full">
-                <span
-                  className={cn(
-                    " text-base",
-                    isActive(url) ? "text-white" : "text-foreground/92",
-                    loading === url && !open && !isMobile ? "hidden" : ""
-                  )}
-                >
-                  {title}
-                </span>
-                {loading === url && (
-                  <Loader2 className="mx-2 size-3 animate-spin text-foreground" />
-                )}
-              </div>
-              {/* </Link> */}
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-        ))}
-      </SidebarMenu>
-    </SidebarGroup>
   );
 }

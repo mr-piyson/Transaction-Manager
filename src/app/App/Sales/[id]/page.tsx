@@ -118,7 +118,7 @@ export default function DealRecord() {
               <p className="text-muted-foreground text-center mb-4">
                 The deal you're looking for doesn't exist.
               </p>
-              <Button onClick={() => router.push("/")}>
+              <Button onClick={() => router.back()}>
                 <ArrowLeft className="h-4 w-4 mr-2" />
                 Back to Sales Management
               </Button>
@@ -162,7 +162,7 @@ export default function DealRecord() {
         <div className="mb-6">
           <Button
             variant="ghost"
-            onClick={() => router.push("/")}
+            onClick={() => router.back()}
             className="mb-4"
           >
             <ArrowLeft className="h-4 w-4 mr-2" />

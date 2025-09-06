@@ -18,6 +18,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 
 // Mock customer data
@@ -124,12 +125,20 @@ export default function CustomerPage() {
       case "Active":
         return "bg-green-100 text-green-800 hover:bg-green-200";
       case "Inactive":
-        return "bg-gray-100 text-gray-800 hover:bg-gray-200";
+        return "bg-red-100 text-red-800 hover:bg-red-200";
       case "Pending":
         return "bg-yellow-100 text-yellow-800 hover:bg-yellow-200";
       default:
         return "bg-gray-100 text-gray-800 hover:bg-gray-200";
     }
+  };
+
+  const getCustomerInitials = (name: string) => {
+    return name
+      .split(" ")
+      .map((n) => n[0])
+      .join("")
+      .toUpperCase();
   };
 
   const handleViewCustomer = (customerId: number) => {
@@ -139,6 +148,22 @@ export default function CustomerPage() {
   return (
     <div className="min-h-screen bg-background p-6">
       <div className="mx-auto max-w-7xl space-y-6">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-balance">
+              Customer Management
+            </h1>
+            <p className="text-muted-foreground mt-2">
+              Manage and track your customer relationships
+            </p>
+          </div>
+          <Button className="gap-2">
+            <Plus className="h-4 w-4" />
+            Add Customer
+          </Button>
+        </div>
+
         {/* Search Bar */}
         <div className="relative">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -193,11 +218,26 @@ export default function CustomerPage() {
               >
                 <CardHeader className="pb-3">
                   <div className="flex items-start justify-between">
-                    <div>
-                      <CardTitle className="text-lg">{customer.name}</CardTitle>
-                      <p className="text-sm text-muted-foreground mt-1">
-                        {customer.company}
-                      </p>
+                    <div className="flex items-center gap-3">
+                      <Avatar className="h-12 w-12">
+                        <AvatarImage
+                          src={`/abstract-geometric-shapes.png?key=xcqt6&height=48&width=48&query=${encodeURIComponent(
+                            customer.name + " professional headshot"
+                          )}`}
+                          alt={customer.name}
+                        />
+                        <AvatarFallback className="bg-primary/10 text-primary font-semibold">
+                          {getCustomerInitials(customer.name)}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div>
+                        <CardTitle className="text-lg">
+                          {customer.name}
+                        </CardTitle>
+                        <p className="text-sm text-muted-foreground mt-1">
+                          {customer.company}
+                        </p>
+                      </div>
                     </div>
                     <Badge className={getStatusColor(customer.status)}>
                       {customer.status}
@@ -295,11 +335,24 @@ export default function CustomerPage() {
                       onClick={() => handleViewCustomer(customer.id)}
                     >
                       <td className="p-4">
-                        <div>
-                          <p className="font-medium">{customer.name}</p>
-                          <p className="text-sm text-muted-foreground">
-                            {customer.location}
-                          </p>
+                        <div className="flex items-center gap-3">
+                          <Avatar className="h-10 w-10">
+                            <AvatarImage
+                              src={`/abstract-geometric-shapes.png?key=kl2x4&height=40&width=40&query=${encodeURIComponent(
+                                customer.name + " professional headshot"
+                              )}`}
+                              alt={customer.name}
+                            />
+                            <AvatarFallback className="bg-primary/10 text-primary font-semibold text-sm">
+                              {getCustomerInitials(customer.name)}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div>
+                            <p className="font-medium">{customer.name}</p>
+                            <p className="text-sm text-muted-foreground">
+                              {customer.location}
+                            </p>
+                          </div>
                         </div>
                       </td>
                       <td className="p-4">

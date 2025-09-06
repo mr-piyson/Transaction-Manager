@@ -5,7 +5,7 @@ export default async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
 
   // Example: Decode role from cookie or header (use your auth method)
-  const res = await fetch(`${request.nextUrl.origin}/api/session`, {
+  const res = await fetch(`${request.nextUrl.origin}/api/Session`, {
     method: "GET",
     headers: {
       Cookie: request.headers.get("cookie") || "",
