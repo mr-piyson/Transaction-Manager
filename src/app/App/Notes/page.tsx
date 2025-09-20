@@ -651,31 +651,7 @@ export default function TransactionNotesApp() {
     : [];
 
   return (
-    <div className=" bg-background">
-      {/* Header */}
-      {/* <div className="sticky top-0 z-10 bg-card border-b border-border px-4 py-3">
-        <div className="flex items-center justify-between">
-          <div className="flex gap-2">
-            <Button
-              onClick={() => setShowCustomerManager(true)}
-              size="sm"
-              variant="outline"
-            >
-              <Users className="w-4 h-4 mr-1" />
-              Customers
-            </Button>
-            <Button
-              onClick={() => setShowNewNote(true)}
-              size="sm"
-              className="bg-primary text-primary-foreground hover:bg-primary/90"
-            >
-              <Plus className="w-4 h-4 mr-1" />
-              New Note
-            </Button>
-          </div>
-        </div>
-      </div> */}
-
+    <div className="bg-background h-full">
       {/* Main Content */}
       <div className="flex flex-col h-full">
         {/* Notes List or Active Note */}

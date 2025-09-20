@@ -28,6 +28,6 @@
     "**/*.tsx",
     ".next/types/**/*.ts",
     "src/middleware.ts"
-, "scripts/init.js"  ],
+, "scripts/init.ts"  ],
   "exclude": ["node_modules", "./src/components/Table/**/*"]
 }

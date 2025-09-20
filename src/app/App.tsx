@@ -35,12 +35,15 @@ interface AppProps {
 export default function App(props: AppProps) {
   return (
     <QueryClientProvider client={new QueryClient()}>
-      <SidebarProvider className="flex h-full overflow-hidden">
+      <SidebarProvider className="flex h-screen overflow-hidden">
         <AppSidebar account={props.account} />
-        <SidebarInset className="relative min-h-full shrink-0 grow-1">
-          <Toolbar />
-          <ScrollArea className="max-h-full">{props.children}</ScrollArea>
-        </SidebarInset>
+        <div className="relative flex flex-col flex-1 min-h-full">
+          {/* Toolbar fixed at top */}
+          <Toolbar className="sticky top-0 z-10" />
+
+          {/* Scrollable main area */}
+          <div className="flex-1 overflow-auto relative">{props.children}</div>
+        </div>
       </SidebarProvider>
     </QueryClientProvider>
   );
@@ -116,7 +119,6 @@ export function UserMenu() {
     image: "",
     role: "admin",
   };
-  
 
   return (
     <DropdownMenu>

@@ -3,12 +3,13 @@
   "version": "2.0.0",
   "private": true,
   "scripts": {
-    "init": "prisma db push",
     "dev": "next dev --turbopack",
     "build": "next build --turbopack",
     "start": "next start",
     "lint": "next lint",
-    "dev-init": "bun scripts/init.ts",
+    "init": "bun scripts/init.ts",
+    "studio": "npx prisma studio",
+    "db:push": "npx prisma db push",
     "build:Android": "npx cap add android && npx cap sync android && npx cap open android"
   },
   "dependencies": {
