@@ -651,7 +651,7 @@ export default function TransactionNotesApp() {
     : [];
 
   return (
-    <div className="h-full bg-background">
+    <div className=" bg-background">
       {/* Header */}
       {/* <div className="sticky top-0 z-10 bg-card border-b border-border px-4 py-3">
         <div className="flex items-center justify-between">

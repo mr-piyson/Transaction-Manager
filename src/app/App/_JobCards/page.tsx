@@ -15,8 +15,6 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 
-import { JobCard } from "@prisma/client";
-import useSWR, { mutate } from "swr";
 import { useRouter } from "next/navigation";
 import {
   DropdownMenu,

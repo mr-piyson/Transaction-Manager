@@ -35,11 +35,11 @@ interface AppProps {
 export default function App(props: AppProps) {
   return (
     <QueryClientProvider client={new QueryClient()}>
-      <SidebarProvider>
+      <SidebarProvider className="flex h-full overflow-hidden">
         <AppSidebar account={props.account} />
-        <SidebarInset>
-          <Toolbar account={props.account} />
-          <div className="w-full h-full overflow-hidden">{props.children}</div>
+        <SidebarInset className="relative min-h-full shrink-0 grow-1">
+          <Toolbar />
+          <ScrollArea className="max-h-full">{props.children}</ScrollArea>
         </SidebarInset>
       </SidebarProvider>
     </QueryClientProvider>
@@ -105,10 +105,18 @@ import { Account } from "@prisma/client";
 import { ChevronsUpDown, Loader2, LogOut, Moon } from "lucide-react";
 import { Toolbar } from "./Toolbar";
 import { AppSidebarContent } from "./Sidebar";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 // This component renders the user profile in the sidebar, allowing users to switch themes and log out.
-export function UserMenu({ account }: { account: Account | null }) {
+export function UserMenu() {
   const { isMobile } = useSidebar();
+  const account = {
+    name: "John Doe",
+    email: "q3m9t@example.com",
+    image: "",
+    role: "admin",
+  };
+  
 
   return (
     <DropdownMenu>

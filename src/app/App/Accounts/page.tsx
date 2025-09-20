@@ -24,7 +24,6 @@ import { Card, CardContent } from "@/components/ui/card";
 import { AddAccount, DeleteAccount } from "./Account-Dialog";
 import { Account } from "@prisma/client";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import useSWR from "swr";
 
 // Register the required modules
 ModuleRegistry.registerModules([
@@ -53,16 +52,6 @@ export default function AccountTable() {
       setSelectedAccount(undefined);
     }
   }
-
-  const { data, error, mutate, isLoading } = useSWR("/api/accounts", {
-    fetcher: (url: string) => fetch(url).then((res) => res.json()),
-  });
-
-  useMemo(() => {
-    if (data) {
-      setRowData(data);
-    }
-  }, [data]);
 
   const colDefs: ColDef[] = [
     {
@@ -139,16 +128,14 @@ export default function AccountTable() {
       <Card className="flex flex-row p-0 m-0 rounded-none">
         <CardContent className="w-full p-3 space-x-3">
           {/* Add Button */}
-          <AddAccount mutate={mutate}>
-            <Button
-              variant="ghost"
-              className="border-2"
-              aria-label="Add New Account"
-            >
-              <Plus />
-              <span className="max-sm:hidden me-2">New</span>
-            </Button>
-          </AddAccount>
+          <Button
+            variant="ghost"
+            className="border-2"
+            aria-label="Add New Account"
+          >
+            <Plus />
+            <span className="max-sm:hidden me-2">New</span>
+          </Button>
           {/* Edit Button */}
           {selectedAccount && (
             <Button
@@ -158,10 +145,6 @@ export default function AccountTable() {
               <Edit />
               <span className="max-sm:hidden me-2 ">Edit</span>
             </Button>
-          )}
-          {/* Delete Button */}
-          {selectedAccount && (
-            <DeleteAccount mutate={mutate} selectedAccount={selectedAccount} />
           )}
         </CardContent>
       </Card>
