@@ -10,6 +10,7 @@ import {
   SidebarMenuSubItem,
   useSidebar,
 } from "@/components/ui/sidebar";
+import { Activities } from "@/lib/Activities";
 
 // Types
 interface ActivityItem {
@@ -284,7 +285,7 @@ interface AppSidebarContentProps {
   role: string | undefined;
 }
 
-export function AppSidebarContent({ role }: AppSidebarContentProps) {
+export function AppSidebarContent() {
   const { isMobile, open, setOpenMobile } = useSidebar();
   const router = useRouter();
   const path = usePathname();
@@ -292,7 +293,7 @@ export function AppSidebarContent({ role }: AppSidebarContentProps) {
   const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set());
 
   // Memoize activities to prevent unnecessary recalculations
-  const activities = useMemo(() => getActivitiesForRole(role), [role]);
+  const activities = Activities();
 
   // Auto-expand parent items based on current path
   useEffect(() => {

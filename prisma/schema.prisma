@@ -19,30 +19,6 @@ datasource db {
 //   url      = env("DATABASE_URL")
 // }
 
-model Account {
-  id        String    @id @default(uuid())
-  email     String    @unique
-  password  String
-  records   Record[]
-  role      String
-  name      String
-  image     String?
-  createdAt DateTime?
-  updatedAt DateTime?
-  Session   Session[]
-}
-
-model Session {
-  id        String   @id @default(uuid())
-  token     String   @unique
-  expiresAt DateTime
-  account   Account  @relation(fields: [accountId], references: [id], onDelete: Cascade)
-  accountId String
-  createdAt DateTime @default(now())
-
-  @@index([accountId])
-}
-
 model Settings {
   id        String   @id @default(uuid())
   name      String   @unique
@@ -64,7 +40,6 @@ model Record {
   address  String?
   desc     String?
 
-  Account   Account? @relation(fields: [accountId], references: [id])
   accountId String?
 }
 
@@ -158,4 +133,64 @@ model Notification {
   content   String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model User {
+  id            String    @id
+  name          String
+  email         String
+  emailVerified Boolean   @default(false)
+  image         String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @default(now()) @updatedAt
+  sessions      Session[]
+  accounts      Account[]
+
+  @@unique([email])
+  @@map("user")
+}
+
+model Session {
+  id        String   @id
+  expiresAt DateTime
+  token     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  ipAddress String?
+  userAgent String?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([token])
+  @@map("session")
+}
+
+model Account {
+  id                    String    @id
+  accountId             String
+  providerId            String
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@map("account")
+}
+
+model Verification {
+  id         String   @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @default(now()) @updatedAt
+
+  @@map("verification")
 }

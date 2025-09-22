@@ -15,7 +15,8 @@ import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
-import { signUp } from "./auth.actions";
+import { signUp } from "@/lib/auth-client";
+import { toast } from "sonner";
 
 // Define the form schema with Zod
 export const SignUpSchema = z
@@ -92,14 +93,18 @@ export const SignUpForm = (props: any) => {
 
   const onSubmit = async (data: FormData) => {
     setLoading(true);
-    try {
-      await signUp(data);
-      router.push("/App");
-    } catch (error) {
-      console.error("Sign up failed:", error);
-    } finally {
-      setLoading(false);
-    }
+    console.log(data.email);
+    const res = await signUp.email({
+      name: data.name,
+      email: data.email.toString(),
+      password: data.password,
+      image: data.image,
+      callbackURL: "/App",
+    });
+    if (res.data) router.push("/App");
+    if (res.error) toast.error(res.error.message);
+
+    setLoading(false);
   };
 
   return (

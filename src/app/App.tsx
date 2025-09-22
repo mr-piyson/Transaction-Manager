@@ -69,7 +69,7 @@ export function AppSidebar({ ...props }: AppSidebarProps) {
         <TeamSwitcher />
       </SidebarHeader>
       <SidebarContent>
-        <AppSidebarContent role={props.account?.role} />
+        <AppSidebarContent />
       </SidebarContent>
       <SidebarRail />
     </Sidebar>
@@ -102,17 +102,19 @@ export function TeamSwitcher() {
   );
 }
 
-import { signOut } from "@/app/Auth/auth.actions";
 import { Button } from "@/components/ui/button";
 import { Account } from "@prisma/client";
 import { ChevronsUpDown, Loader2, LogOut, Moon } from "lucide-react";
 import { Toolbar } from "./Toolbar";
 import { AppSidebarContent } from "./Sidebar";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { signOut } from "@/lib/auth-client";
+import { toast } from "sonner";
 
 // This component renders the user profile in the sidebar, allowing users to switch themes and log out.
 export function UserMenu() {
   const { isMobile } = useSidebar();
+  const router = useRouter();
   const account = {
     name: "John Doe",
     email: "q3m9t@example.com",
@@ -176,7 +178,9 @@ export function UserMenu() {
         <DropdownMenuSeparator />
         <DropdownMenuItem
           onClick={async () => {
-            await signOut();
+            const res = await signOut();
+            if (res.error) toast.error(res.error.message);
+            if (res.data) router.push("/Auth");
           }}
         >
           <LogOut />
