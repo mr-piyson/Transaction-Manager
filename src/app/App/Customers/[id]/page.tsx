@@ -143,7 +143,7 @@ export default function CustomerDetailPage() {
 
   if (!customer) {
     return (
-      <div className="min-h-screen bg-background p-6">
+      <div className="h-full bg-background p-6">
         <div className="mx-auto max-w-4xl">
           <div className="text-center py-12">
             <h1 className="text-2xl font-bold">Customer Not Found</h1>
@@ -186,7 +186,7 @@ export default function CustomerDetailPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background p-6">
+    <div className="h-full bg-background p-6">
       <div className="mx-auto max-w-6xl space-y-6">
         {/* Header */}
         <div className="flex items-center gap-4">

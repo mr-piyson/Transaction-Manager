@@ -51,8 +51,8 @@ model Transaction {
   description String?
   date        DateTime @default(now())
   qty         Int      @default(1)
-  Note        Note?    @relation(fields: [noteId], references: [id])
   noteId      String?
+  Note        Note?    @relation(fields: [noteId], references: [id])
 }
 
 model Customer {
@@ -69,10 +69,9 @@ model Customer {
 model Note {
   id           String        @id @default(uuid())
   title        String
-  content      String
-  total        Float         @default(0)
+  total        Float?        @default(0)
   status       String?
-  avatar       String?
+  banner       String?
   transactions Transaction[]
   active       Boolean       @default(true)
   updatedAt    DateTime      @updatedAt

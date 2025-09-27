@@ -107,7 +107,7 @@ export default function DealRecord() {
 
   if (!deal) {
     return (
-      <div className="min-h-screen bg-background p-6">
+      <div className="h-full bg-background p-6">
         <div className="max-w-4xl mx-auto">
           <Card>
             <CardContent className="flex flex-col items-center justify-center py-12">
@@ -156,7 +156,7 @@ export default function DealRecord() {
   };
 
   return (
-    <div className="min-h-screen bg-background p-6">
+    <div className="h-full bg-background p-6">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="mb-6">

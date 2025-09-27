@@ -137,11 +137,11 @@ export default function SalesManagement() {
   };
 
   const handleCardClick = (dealId: number) => {
-    router.push(`Sales/${dealId}`);
+    router.push(`App/Sales/${dealId}`);
   };
 
   return (
-    <div className="min-h-screen bg-background p-6">
+    <div className="h-full bg-background p-6">
       <div className="max-w-7xl mx-auto">
         {/* Search and Actions */}
         <div className="flex flex-col sm:flex-row gap-4 mb-6">

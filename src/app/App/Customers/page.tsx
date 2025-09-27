@@ -146,7 +146,7 @@ export default function CustomerPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background p-6">
+    <div className="h-full bg-background p-6">
       <div className="mx-auto max-w-7xl space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
