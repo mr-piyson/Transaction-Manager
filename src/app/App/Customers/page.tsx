@@ -13,6 +13,7 @@ import {
   Phone,
   MapPin,
   Eye,
+  MoreHorizontal,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -20,6 +21,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import Link from "next/link";
 
 // Mock customer data
 const mockCustomers = [
@@ -123,13 +131,13 @@ export default function CustomerPage() {
   const getStatusColor = (status: string) => {
     switch (status) {
       case "Active":
-        return "bg-green-100 text-green-800 hover:bg-green-200";
+        return "success";
       case "Inactive":
-        return "bg-red-100 text-red-800 hover:bg-red-200";
+        return "destructive";
       case "Pending":
-        return "bg-yellow-100 text-yellow-800 hover:bg-yellow-200";
+        return "warning";
       default:
-        return "bg-gray-100 text-gray-800 hover:bg-gray-200";
+        return "default";
     }
   };
 
@@ -142,12 +150,12 @@ export default function CustomerPage() {
   };
 
   const handleViewCustomer = (customerId: number) => {
-    router.push(`Customers/${customerId}`);
+    router.push(`/App/Customers/${customerId}`);
   };
 
   return (
     <div className="h-full bg-background p-6">
-      <div className="mx-auto max-w-7xl space-y-6">
+      <div className="">
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
@@ -210,106 +218,85 @@ export default function CustomerPage() {
 
         {/* Content */}
         {viewMode === "grid" ? (
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {filteredCustomers.map((customer) => (
-              <Card
+              <Link
                 key={customer.id}
+                href={`/App/Customers/${customer.id}`}
                 className="hover:shadow-md transition-shadow"
+                draggable="false"
               >
-                <CardHeader className="pb-3">
-                  <div className="flex items-start justify-between">
-                    <div className="flex items-center gap-3">
-                      <Avatar className="h-12 w-12">
-                        <AvatarImage
-                          src={`/abstract-geometric-shapes.png?key=xcqt6&height=48&width=48&query=${encodeURIComponent(
-                            customer.name + " professional headshot"
-                          )}`}
-                          alt={customer.name}
-                        />
-                        <AvatarFallback className="bg-primary/10 text-primary font-semibold">
-                          {getCustomerInitials(customer.name)}
-                        </AvatarFallback>
-                      </Avatar>
+                <Card
+                  key={customer.id}
+                  className="hover:shadow-md transition-shadow"
+                >
+                  <CardHeader className="pb-3">
+                    <div className="flex items-start justify-between">
+                      <div className="flex items-center gap-3">
+                        <Avatar className="h-12 w-12">
+                          <AvatarImage
+                            src={`/abstract-geometric-shapes.png?key=xcqt6&height=48&width=48&query=${encodeURIComponent(
+                              customer.name + " professional headshot"
+                            )}`}
+                            alt={customer.name}
+                          />
+                          <AvatarFallback className="bg-primary/10 text-primary font-semibold">
+                            {getCustomerInitials(customer.name)}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div>
+                          <CardTitle className="text-lg">
+                            {customer.name}
+                          </CardTitle>
+                          <p className="text-sm text-muted-foreground mt-1">
+                            {customer.company}
+                          </p>
+                        </div>
+                      </div>
+                      <Badge variant={getStatusColor(customer.status)}>
+                        {customer.status}
+                      </Badge>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2 text-sm">
+                        <Mail className="h-4 w-4 text-muted-foreground" />
+                        <span className="truncate">{customer.email}</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-sm">
+                        <Phone className="h-4 w-4 text-muted-foreground" />
+                        <span>{customer.phone}</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-sm">
+                        <MapPin className="h-4 w-4 text-muted-foreground" />
+                        <span>{customer.location}</span>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4 pt-3 border-t">
                       <div>
-                        <CardTitle className="text-lg">
-                          {customer.name}
-                        </CardTitle>
-                        <p className="text-sm text-muted-foreground mt-1">
-                          {customer.company}
+                        <p className="text-xs text-muted-foreground">
+                          Total Orders
+                        </p>
+                        <p className="font-semibold">{customer.totalOrders}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-muted-foreground">
+                          Total Spent
+                        </p>
+                        <p className="font-semibold">
+                          ${customer.totalSpent.toLocaleString()}
                         </p>
                       </div>
                     </div>
-                    <Badge className={getStatusColor(customer.status)}>
-                      {customer.status}
-                    </Badge>
-                  </div>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-2 text-sm">
-                      <Mail className="h-4 w-4 text-muted-foreground" />
-                      <span className="truncate">{customer.email}</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-sm">
-                      <Phone className="h-4 w-4 text-muted-foreground" />
-                      <span>{customer.phone}</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-sm">
-                      <MapPin className="h-4 w-4 text-muted-foreground" />
-                      <span>{customer.location}</span>
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-4 pt-3 border-t">
-                    <div>
-                      <p className="text-xs text-muted-foreground">
-                        Total Orders
-                      </p>
-                      <p className="font-semibold">{customer.totalOrders}</p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-muted-foreground">
-                        Total Spent
-                      </p>
-                      <p className="font-semibold">
-                        ${customer.totalSpent.toLocaleString()}
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="flex gap-2 pt-3">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="flex-1 gap-1 bg-transparent"
-                      onClick={() => handleViewCustomer(customer.id)}
-                    >
-                      <Eye className="h-3 w-3" />
-                      View
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="flex-1 gap-1 bg-transparent"
-                    >
-                      <Edit className="h-3 w-3" />
-                      Edit
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="flex-1 gap-1 bg-transparent"
-                    >
-                      <Trash2 className="h-3 w-3" />
-                      Delete
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
+                  </CardContent>
+                </Card>
+              </Link>
             ))}
           </div>
         ) : (
-          <Card>
+          <Card className="p-0 overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
@@ -383,38 +370,40 @@ export default function CustomerPage() {
                         <p className="text-sm">{customer.lastOrder}</p>
                       </td>
                       <td className="p-4">
-                        <div className="flex gap-2">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="gap-1 bg-transparent"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleViewCustomer(customer.id);
-                            }}
-                          >
-                            <Eye className="h-3 w-3" />
-                            View
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="gap-1 bg-transparent"
-                            onClick={(e) => e.stopPropagation()}
-                          >
-                            <Edit className="h-3 w-3" />
-                            Edit
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="gap-1 bg-transparent"
-                            onClick={(e) => e.stopPropagation()}
-                          >
-                            <Trash2 className="h-3 w-3" />
-                            Delete
-                          </Button>
-                        </div>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" className="h-8 w-8 p-0">
+                              <span className="sr-only">Open menu</span>
+                              <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent>
+                            <DropdownMenuItem
+                              className="gap-1 bg-transparent"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleViewCustomer(customer.id);
+                              }}
+                            >
+                              <Eye className="h-3 w-3" />
+                              View
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              className="gap-1 bg-transparent"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              <Edit className="h-3 w-3" />
+                              Edit
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              className="gap-1 bg-transparent"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              <Trash2 className="h-3 w-3" />
+                              Delete
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
                       </td>
                     </tr>
                   ))}

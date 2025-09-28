@@ -143,7 +143,7 @@ export default function CustomerDetailPage() {
 
   if (!customer) {
     return (
-      <div className="h-full bg-background p-6">
+      <div className="h-full bg-background ">
         <div className="mx-auto max-w-4xl">
           <div className="text-center py-12">
             <h1 className="text-2xl font-bold">Customer Not Found</h1>
@@ -175,13 +175,13 @@ export default function CustomerDetailPage() {
   const getOrderStatusColor = (status: string) => {
     switch (status) {
       case "Completed":
-        return "bg-green-100 text-green-800";
+        return "success";
       case "Pending":
-        return "bg-yellow-100 text-yellow-800";
+        return "warning";
       case "Cancelled":
-        return "bg-red-100 text-red-800";
+        return "destructive";
       default:
-        return "bg-gray-100 text-gray-800";
+        return "default";
     }
   };
 
@@ -190,9 +190,9 @@ export default function CustomerDetailPage() {
       <div className="mx-auto max-w-6xl space-y-6">
         {/* Header */}
         <div className="flex items-center gap-4">
-          <Button variant="outline" size="sm" onClick={() => router.back()}>
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Customers
+          <Button variant="outline" size="lg" onClick={() => router.back()}>
+            <ArrowLeft className="size-5" />
+            <span className="max-sm:hidden">Back</span>
           </Button>
           <div className="flex-1">
             <h1 className="text-3xl font-bold text-balance">{customer.name}</h1>
@@ -205,7 +205,7 @@ export default function CustomerDetailPage() {
             </Button>
             <Button
               variant="outline"
-              className="gap-2 text-destructive hover:text-destructive bg-transparent"
+              className="gap-2 bg-destructive text-destructive-foreground hover:text-white hover:bg-destructive-foreground "
             >
               <Trash2 className="h-4 w-4" />
               Delete
@@ -352,7 +352,7 @@ export default function CustomerDetailPage() {
                         </div>
                       </div>
                       <div className="flex items-center gap-4">
-                        <Badge className={getOrderStatusColor(order.status)}>
+                        <Badge variant={getOrderStatusColor(order.status)}>
                           {order.status}
                         </Badge>
                         <p className="font-semibold">
