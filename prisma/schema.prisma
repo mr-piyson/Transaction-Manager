@@ -14,33 +14,14 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// datasource db {
-//   provider = "postgresql"
-//   url      = env("DATABASE_URL")
-// }
-
 model Settings {
-  id        String   @id @default(uuid())
+  id        Int      @id @default(autoincrement())
   name      String   @unique
   value     String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@index([name])
-}
-
-model Record {
-  id       String   @id @default(uuid())
-  category String?
-  name     String?  @default("Untitled")
-  date     DateTime @default(now())
-  image    String?
-  email    String?
-  phone    String?
-  address  String?
-  desc     String?
-
-  accountId String?
 }
 
 model Transaction {
@@ -51,73 +32,71 @@ model Transaction {
   description String?
   date        DateTime @default(now())
   qty         Int      @default(1)
-  noteId      String?
   Note        Note?    @relation(fields: [noteId], references: [id])
+  noteId      Int?
 }
 
 model Customer {
-  id        String   @id @default(uuid())
+  id        Int      @id @default(autoincrement())
   name      String
   email     String?
   phone     String   @unique
   address   String?
-  notes     Note[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
 model Note {
-  id           String        @id @default(uuid())
+  id           Int           @id @default(autoincrement())
   title        String
   total        Float?        @default(0)
   status       String?
   banner       String?
-  transactions Transaction[]
   active       Boolean       @default(true)
   updatedAt    DateTime      @updatedAt
   createdAt    DateTime      @default(now())
-  Customer     Customer?     @relation(fields: [customerId], references: [id])
   customerId   String?
+  transactions Transaction[]
 }
 
 model Stock {
-  id        String   @id @default(uuid())
+  id        Int      @id @default(autoincrement())
   name      String
   quantity  Int      @default(0)
   price     Float    @default(0)
   revenue   Float    @default(0)
   barcode   String?
-  qrcode    String?
+  code      String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
 model Asset {
-  id        String   @id @default(uuid())
+  id        Int      @id @default(autoincrement())
   name      String
   quantity  Int      @default(0)
   price     Float    @default(0)
   barcode   String?
-  qrcode    String?
+  code      String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
 model Employee {
-  id         String   @id @default(uuid())
-  empId      String   @unique
+  id         Int      @id @default(autoincrement())
   name       String
+  role       String
+  empId      String   @unique
   email      String   @unique
   phone      String   @unique
-  address    String?
   department String?
-  role       String
+  address    String?
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 }
 
 model Supplier {
-  id        String   @id @default(uuid())
+  id        Int      @id @default(autoincrement())
   name      String
   email     String   @unique
   phone     String   @unique
@@ -127,7 +106,7 @@ model Supplier {
 }
 
 model Notification {
-  id        String   @id @default(uuid())
+  id        Int      @id @default(autoincrement())
   title     String
   content   String
   createdAt DateTime @default(now())

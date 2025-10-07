@@ -5,10 +5,8 @@ import {
   BreadcrumbItem,
   BreadcrumbLink,
   BreadcrumbList,
-  BreadcrumbSeparator,
 } from "./ui/breadcrumb";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
-import { RecordDrawer } from "@/components/Record/Records";
 import { Button } from "./ui/button";
 
 export const NavPath: React.FC = () => {

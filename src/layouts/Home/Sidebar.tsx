@@ -9,8 +9,53 @@ import {
   SidebarMenuButton,
   SidebarMenuSubItem,
   useSidebar,
+  Sidebar,
+  SidebarHeader,
+  SidebarContent,
+  SidebarRail,
 } from "@/components/ui/sidebar";
 import { Activities } from "@/lib/Activities";
+import Logo from "@/components/Logo";
+
+interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {}
+
+export function AppSidebar({ ...props }: AppSidebarProps) {
+  return (
+    <Sidebar collapsible="icon" type="Drawer" {...props}>
+      <SidebarHeader>
+        <AppLogo />
+      </SidebarHeader>
+      <SidebarContent>
+        <AppSidebarContent />
+      </SidebarContent>
+      <SidebarRail />
+    </Sidebar>
+  );
+}
+
+function AppLogo() {
+  return (
+    <SidebarMenu>
+      <SidebarMenuItem>
+        <SidebarMenuButton
+          size="lg"
+          className="!opacity-100 data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+          disabled
+        >
+          <div className="flex aspect-square size-8 items-center justify-center rounded-lg  text-sidebar-primary-foreground">
+            <Logo className="size-7" />
+          </div>
+          <div className="grid flex-1 text-left text-sm leading-tight">
+            <span className="truncate font-semibold text-lg">
+              Transaction Manager
+            </span>
+            <span className="truncate text-xs"></span>
+          </div>
+        </SidebarMenuButton>
+      </SidebarMenuItem>
+    </SidebarMenu>
+  );
+}
 
 // Types
 interface ActivityItem {
@@ -326,7 +371,7 @@ export function AppSidebarContent() {
 
   // Optimize the click handler
   const handleItemClick = useCallback(
-    (url: string) => {
+    (url: any) => {
       const currentBaseUrl = path.match(/^\/App\/[^/]+/)?.[0];
 
       if (currentBaseUrl === url) {

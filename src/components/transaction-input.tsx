@@ -11,6 +11,7 @@ import {
   AlertCircle,
   CheckCircle,
 } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface Transaction {
   id: string;
@@ -31,6 +32,7 @@ interface TransactionInputProps {
     amount: number;
     type: "income" | "expense";
   }>;
+  [key: string]: any;
   onQuickAction: (action: any) => void;
 }
 
@@ -39,6 +41,7 @@ export function TransactionInput({
   recentDescriptions,
   quickActions,
   onQuickAction,
+  ...props
 }: TransactionInputProps) {
   const [newTransaction, setNewTransaction] = useState("");
   const [inputMode, setInputMode] = useState<"simple" | "detailed">("simple");
@@ -150,7 +153,7 @@ export function TransactionInput({
   };
 
   return (
-    <div className="absolute bottom-0 left-0 right-0 bg-card border-t border-border">
+    <div className={cn(" bg-card border-t border-border", props.className)}>
       {/* Quick Actions Bar */}
       {showQuickActions && (
         <div className="p-3 border-b border-border">

@@ -247,15 +247,11 @@ export default function NotePage() {
   };
 
   return (
-    <div className="h-full bg-background ">
+    <div className="flex flex-col h-full bg-background ">
       {/* Header */}
       <div className="sticky  top-0 z-10 bg-card border-b border-border px-4 py-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <span className="text-muted-foreground">•</span>
-            <Link href="/notes" className="text-foreground hover:text-primary">
-              Notes
-            </Link>
             <span className="text-muted-foreground">•</span>
             <span className="text-lg font-medium text-foreground">
               {note.title}
@@ -268,54 +264,36 @@ export default function NotePage() {
       </div>
 
       {/* Main Content */}
-      <div className="flex flex-col ">
-        <div className="flex-1 overflow-y-auto p-4 pb-32">
-          {/* Note Header */}
-          <div className="mb-6">
-            <h2 className="text-lg font-semibold text-foreground">
-              {note.title}
-            </h2>
-            {note.customer && (
-              <div className="flex items-center gap-1 text-sm text-muted-foreground mt-1">
-                <User className="w-3 h-3" />
-                <span>{note.customer.name}</span>
-                {note.customer.email && (
-                  <span className="text-xs">• {note.customer.email}</span>
-                )}
-              </div>
-            )}
-          </div>
-
-          {/* Transaction List */}
-          <TransactionList
-            transactions={note.transactions}
-            onEditTransaction={(transaction) => {
-              setEditingTransaction(transaction);
-              setEditTransactionAmount(transaction.amount.toString());
-              setEditTransactionDescription(transaction.description);
-              setEditTransactionType(transaction.type);
-            }}
-            onDeleteTransaction={deleteTransaction}
-            onDuplicateTransaction={duplicateTransaction}
-            onExportTransactions={exportTransactions}
-            showSummary={showTransactionSummary}
-            onToggleSummary={() =>
-              setShowTransactionSummary(!showTransactionSummary)
-            }
-          />
-        </div>
+      <div className="flex-1 flex flex-col overflow-scroll">
+        <TransactionList
+          transactions={note.transactions}
+          onEditTransaction={(transaction) => {
+            setEditingTransaction(transaction);
+            setEditTransactionAmount(transaction.amount.toString());
+            setEditTransactionDescription(transaction.description);
+            setEditTransactionType(transaction.type);
+          }}
+          onDeleteTransaction={deleteTransaction}
+          onDuplicateTransaction={duplicateTransaction}
+          onExportTransactions={exportTransactions}
+          showSummary={showTransactionSummary}
+          onToggleSummary={() =>
+            setShowTransactionSummary(!showTransactionSummary)
+          }
+        />
 
         {/* Transaction Input */}
-        <TransactionInput
-          onAddTransaction={addTransaction}
-          recentDescriptions={recentDescriptions}
-          quickActions={quickActions}
-          onQuickAction={addQuickTransaction}
-        />
       </div>
-
       {/* Transaction Edit Dialog */}
-      {editingTransaction && (
+      <TransactionInput
+        onAddTransaction={addTransaction}
+        recentDescriptions={recentDescriptions}
+        quickActions={quickActions}
+        onQuickAction={addQuickTransaction}
+        className="w-full"
+      />
+
+      {/* {editingTransaction && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
           <div className="bg-card p-6 rounded-lg w-full max-w-md">
             <h3 className="text-lg font-semibold mb-4">Edit Transaction</h3>
@@ -389,7 +367,7 @@ export default function NotePage() {
             </div>
           </div>
         </div>
-      )}
+      )} */}
     </div>
   );
 }

@@ -51,8 +51,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Progress } from "@/components/ui/progress";
-import { SalesChart } from "./Sales-Chart";
-import { InventoryChart } from "./Inventory-Chart";
 
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState("overview");
@@ -194,9 +192,7 @@ export default function Dashboard() {
                     View your sales performance over time
                   </CardDescription>
                 </CardHeader>
-                <CardContent className="px-2">
-                  <SalesChart />
-                </CardContent>
+                <CardContent className="px-2"></CardContent>
               </Card>
               <Card className="lg:col-span-3">
                 <CardHeader>
@@ -205,9 +201,6 @@ export default function Dashboard() {
                     Current inventory levels by category
                   </CardDescription>
                 </CardHeader>
-                <CardContent>
-                  <InventoryChart />
-                </CardContent>
               </Card>
             </div>
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -900,11 +893,6 @@ export default function Dashboard() {
                   </Button>
                 </div>
               </CardHeader>
-              <CardContent>
-                <div className="h-[300px]">
-                  <SalesChart />
-                </div>
-              </CardContent>
             </Card>
             <div className="grid gap-4 md:grid-cols-2">
               <Card>

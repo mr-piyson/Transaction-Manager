@@ -1,7 +1,7 @@
 import React from "react";
 import { getAccount } from "../Auth/auth.actions";
 import { redirect } from "next/navigation";
-import App from "../App";
+import App from "../../layouts/Home/App";
 import { SplashScreen } from "@/components/Splash-Screen";
 
 export default async function Activity_Layout(props: any) {
@@ -9,7 +9,7 @@ export default async function Activity_Layout(props: any) {
   if (!account) redirect("/Auth");
   return (
     <SplashScreen>
-      <App account={account}>{props.children}</App>
+      <App>{props.children}</App>
     </SplashScreen>
   );
 }

@@ -2,17 +2,15 @@
 import prisma from "@/lib/prisma";
 
 const settingNames = [
-  "companyName",
-  "companyAddress",
-  "companyPhone",
-  "companyEmail",
-  "companyLogo",
-  "companyWebsite",
-  "companyTaxId",
-  "companyRegistrationNumber",
-  "companyBankAccount",
-  "companyCurrency",
-  "SecretKey",
+  "name",
+  "address",
+  "phone",
+  "email",
+  "logo",
+  "website",
+  "currency",
+  "secretKey",
+  
 ] as const;
 
 type SettingName = (typeof settingNames)[number];
@@ -22,17 +20,10 @@ export type Settings = {
   value: string;
 };
 
-const defaultSettings: Settings[] = settingNames.map((name) =>
-  name === "SecretKey"
-    ? {
-        name,
-        value: process.env.SECRET_KEY || "",
-      }
-    : {
-        name,
-        value: "",
-      }
-);
+const defaultSettings: Settings[] = settingNames.map((name) => ({
+  name,
+  value: "",
+}));
 
 export async function initializeSettings() {
   // Remove settings not included in settingNames

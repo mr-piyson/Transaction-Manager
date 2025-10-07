@@ -14,6 +14,8 @@ export async function middleware(request: NextRequest) {
 }
 
 // the matcher is used to specify which routes the middleware should run on
+
+// the middleware should run on all routes inside the /App or /api directory
 export const config = {
-  matcher: ["/App/:path*"],
+  matcher: ["/App/:path*", "/api/:path*"],
 };
