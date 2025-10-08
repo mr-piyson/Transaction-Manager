@@ -54,7 +54,7 @@ import { ChevronsUpDown, Loader2, LogOut, Moon } from "lucide-react";
 import { Toolbar } from "./Toolbar";
 import { AppSidebar, AppSidebarContent } from "./Sidebar";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { signOut } from "@/lib/auth-client";
+import {auth} from "@/lib/auth-client";
 import { toast } from "sonner";
 
 // This component renders the user profile in the sidebar, allowing users to switch themes and log out.
@@ -124,9 +124,8 @@ export function UserMenu() {
         <DropdownMenuSeparator />
         <DropdownMenuItem
           onClick={async () => {
-            const res = await signOut();
-            if (res.error) toast.error(res.error.message);
-            if (res.data) router.push("/Auth");
+            const res = await auth.signOut();
+            res.data ? router.push("/Auth") : toast.error(res.error?.message);
           }}
         >
           <LogOut />

@@ -25,7 +25,7 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { useState } from "react";
 import { Loader2 } from "lucide-react";
-import { signIn } from "@/lib/auth-client";
+import {auth} from "@/lib/auth-client";
 
 export const SignInSchema = z.object({
   email: z.string().email(),
@@ -45,17 +45,13 @@ export default function SignInTab() {
 
   async function onSubmit(formData: z.infer<typeof SignInSchema>) {
     setLoading(true);
-    const res = await signIn.email({
+    const res = await auth.signIn.email({
       email: formData.email,
       password: formData.password,
+      callbackURL: "/App",
     });
 
-    if (res.data) {
-      setTimeout(() => {
-        router.push("/");
-      }, 1000); // Simulate a delay for the splash screen
-      // Redirect to the Archive page
-    } else {
+    if (res.error) {
       toast.error(res.error.message); // Show an error message
       setLoading(false);
     }

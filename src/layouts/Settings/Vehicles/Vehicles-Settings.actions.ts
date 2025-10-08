@@ -1,5 +1,4 @@
 "use server";
-import { getAccount } from "@/app/Auth/auth.actions";
 import { VehicleType } from "@prisma/client";
 import prisma from "@/lib/prisma";
 
@@ -30,7 +29,6 @@ export async function addVehicleType(name: string): Promise<{
   data: VehicleType | null;
 }> {
   try {
-    if ((await getAccount())?.role !== "Admin") {
       return {
         success: false,
         error: "You do not have permission to add vehicle types",

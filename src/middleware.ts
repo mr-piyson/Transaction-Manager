@@ -7,15 +7,16 @@ export async function middleware(request: NextRequest) {
   // This is the recommended approach to optimistically redirect users
   // We recommend handling auth checks in each page/route
   if (!sessionCookie) {
-    return NextResponse.redirect(new URL("/", request.url));
+    return NextResponse.redirect(new URL("/Auth", request.url));
   }
-  console.log("Middleware is Running");
   return NextResponse.next();
 }
 
 // the matcher is used to specify which routes the middleware should run on
 
-// the middleware should run on all routes inside the /App or /api directory
+// the middleware should run on all routes inside the /App or /api directory except for /api/auth
 export const config = {
-  matcher: ["/App/:path*", "/api/:path*"],
+  matcher: [
+    "/App/:path*",
+  ]
 };

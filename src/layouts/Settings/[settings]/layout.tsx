@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { cn } from "@/lib/utils";
-import { settingsNavItems } from "@/lib/settings";
+import { settingsNavItems } from "@/lib/Settings";
 import { Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -81,7 +81,7 @@ export default async function SettingsLayout(props: SettingsLayoutProps) {
         </div>
 
         {/* Main Content */}
-        <div className="flex-1">{props.children}</div>
+        <div className=" flex-1 max-w-[100px] ">{props.children}</div>
       </div>
     </div>
   );
