@@ -16,24 +16,34 @@ datasource db {
 
 model Settings {
   id        Int      @id @default(autoincrement())
-  name      String   @unique
-  value     String?
+  tax       Float    @default(0)
+  currency  String   @default("BHD")
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
 
-  @@index([name])
+model TransactionCategory {
+  id            Int           @id @default(autoincrement())
+  name          String        @unique
+  type          String
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  transactionId Int?
+  Transaction   Transaction[]
 }
 
 model Transaction {
-  id          Int      @id @default(autoincrement())
-  tableId     Int
-  amount      Int      @default(0)
-  type        String
-  description String?
-  date        DateTime @default(now())
-  qty         Int      @default(1)
-  Note        Note?    @relation(fields: [noteId], references: [id])
-  noteId      Int?
+  id                    Int                 @id @default(autoincrement())
+  tableId               Int
+  amount                Int                 @default(0)
+  type                  String
+  description           String?
+  date                  DateTime            @default(now())
+  qty                   Int                 @default(1)
+  categoryId            TransactionCategory @relation(fields: [transactionCategoryId], references: [id])
+  Note                  Note?               @relation(fields: [noteId], references: [id])
+  noteId                Int?
+  transactionCategoryId Int
 }
 
 model Customer {
@@ -123,6 +133,7 @@ model User {
   updatedAt     DateTime  @default(now()) @updatedAt
   sessions      Session[]
   accounts      Account[]
+  roleId        Int?
 
   @@unique([email])
   @@map("user")
@@ -171,4 +182,21 @@ model Verification {
   updatedAt  DateTime @default(now()) @updatedAt
 
   @@map("verification")
+}
+
+model Role {
+  id        Int      @id @default(autoincrement())
+  name      String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Privilege {
+  id        Int      @id @default(autoincrement())
+  create    Boolean  @default(false)
+  read      Boolean  @default(false)
+  update    Boolean  @default(false)
+  delete    Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }

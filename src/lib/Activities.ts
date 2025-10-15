@@ -3,38 +3,13 @@
 
 export const Activities = () => [
   {
-    title: "Sales",
-    url: "/App/Sales",
-    icon: "icon-[stash--folder-alt]",
-  },
-  {
-    title: "Accounts",
-    url: "/App/Accounts",
-    icon: "icon-[hugeicons--user-account]",
-  },
-  {
-    title: "Inventory",
-    url: "/App/Inventory",
-    icon: "icon-[solar--box-outline]",
-  },
-  {
-    title: "Settings",
-    url: "/App/Settings",
-    icon: "icon-[solar--settings-linear]",
-  },
-  {
-    title: "Dashboard",
-    url: "/App/Dashboard",
-    icon: "icon-[solar--chart-square-linear]",
-  },
-  {
     title: "Notes",
     url: "/App/Notes",
     icon: "icon-[mage--note]",
   },
   {
-    title: "Customers",
-    url: "/App/Customers",
-    icon: "icon-[bi--people]",
+    title: "Settings",
+    url: "/App/Settings",
+    icon: "icon-[solar--settings-linear]",
   },
 ];

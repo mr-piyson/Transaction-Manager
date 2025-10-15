@@ -55,37 +55,17 @@ Contributions are welcome! If you have any ideas, suggestions, or bug reports, p
 
 or join us in Telegram group
 
-<a href="https://t.me/+U5HLk3J2cZs1NWQ8">![badge](https://img.shields.io/badge/Telegram-Transaction_Manager-blue?logo=telegram&blue=white)</a>
 
 # Further Work
-
-**Due Date:** 19 / 6 / 2025
-
-## Functional Requirements
-
-### 1. Sales
-
-Admin should be able to **Create, Read, Update, and Delete (CRUD)** sales.
-
-- Create Invoice
-- Make the sales relationship between Sales and Inventory
-- Create a section for non-inventory sales
-
-### 2. Inventory
-
-Admin should be able to **CRUD** items in the inventory.
-
-- Handle item in and item out
-
-### 3. Dashboard
-
-Display all important data:
-
-- Total Revenue
-- Inventory items (in / out)
-- Inventory status
-- Sales overview
+ 
 
 ## License
 
 This project is licensed under the [MIT License](LICENSE).
+
+
+build a modern production ready development page using latest shadcn ui  shows the progress of each development stages both all the completed stages and the future ones and each stage is an collapsible card should consist of list of checkboxes of the tasks in that stage and when checkbox is marked as checked the progress bar of the stage increased,
+
+Note the timeline is vertical and the stages are collapsible closed be default except the current stage is opened  and the scroll bar of the page should force in the current stage,
+
+User Can Create Stages and create the tasks for them and mark them as Completed 

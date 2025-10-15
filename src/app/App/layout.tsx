@@ -1,5 +1,5 @@
 import React from "react";
-import App from "../../layouts/Home/App";
+import App from "../../layouts/App/App";
 import { SplashScreen } from "@/components/Splash-Screen";
 
 export default async function Activity_Layout(props: any) {
