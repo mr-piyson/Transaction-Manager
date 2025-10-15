@@ -33,7 +33,7 @@ export const StickyHeader = (props: React.HTMLAttributes<HTMLDivElement>) => {
   useEffect(() => {
     const observer = new IntersectionObserver(
       ([entry]) => {
-        setIsSticky(!entry.isIntersecting);
+              setIsSticky(!entry.isIntersecting);
       },
       { root: null, rootMargin: '0px', threshold: 0 }
     );
