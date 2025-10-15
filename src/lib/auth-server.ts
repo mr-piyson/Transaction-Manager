@@ -35,6 +35,7 @@ export async function getSession(): Promise<Session | null> {
 
     return res.session;
   } catch (error) {
+    console.error(error);
     return null;
   }
 }

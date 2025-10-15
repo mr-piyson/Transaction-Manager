@@ -1,11 +1,10 @@
 "use server";
+import Logo from "@/components/Logo";
 import SignInTab from "./SignIn";
 import SignUpTab from "./SignUp";
-import Logo from "@/components/Logo";
 import { TabSwitcher } from "./TabSwitcher";
 
-export default async function Auth(props: any) {
-  
+export default async function Auth() {
   return (
     <div className="  relative  h-screen items-center justify-center lg:grid  lg:grid-cols-2 ">
       <div className=" max-md:hidden flex justify-between relative h-full flex-col bg-muted-foreground p-10 text-card-foreground lg:flex dark:border-r sm:hidden">
@@ -15,16 +14,7 @@ export default async function Auth(props: any) {
           <span>Transaction Manager</span>
         </div>
         {/* <ImageSlider /> */}
-        <div className="relative z-20">
-          <blockquote className="space-y-2">
-            <p className="text-xl">
-              &ldquo;Transaction Manager is a powerful tool designed to help you
-              manage your financial transactions with ease and efficiency. It
-              offers a seamless user experience and robust features to keep your
-              finances in check.&rdquo;
-            </p>
-          </blockquote>
-        </div>
+        <div className="relative z-20"></div>
       </div>
       <div className="w-full h-full flex flex-col justify-center items-center ">
         <TabSwitcher TabOne={<SignInTab />} TabTow={<SignUpTab />} />
