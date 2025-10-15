@@ -1,8 +1,8 @@
 "use client";
 
-import * as React from "react";
 import { Check, ChevronsUpDown } from "lucide-react";
-import { cn } from "@/lib/utils";
+import * as React from "react";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Command,
@@ -17,8 +17,8 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { Badge } from "@/components/ui/badge";
 import { currencies, getCurrency } from "@/lib/currencies";
+import { cn } from "@/lib/utils";
 
 interface CurrencySelectorProps {
   value: string;
@@ -40,7 +40,7 @@ export function CurrencySelector({ value, onChange }: CurrencySelectorProps) {
           className="w-full justify-between"
         >
           <div className="flex items-center gap-2">
-            <FlagIcon code={selectedCurrency.flag} />
+            <FlagIcon icon={selectedCurrency.icon} />
             <span>
               {selectedCurrency.code} - {selectedCurrency.name}
             </span>
@@ -64,7 +64,7 @@ export function CurrencySelector({ value, onChange }: CurrencySelectorProps) {
                   }}
                 >
                   <div className="flex items-center gap-2 w-full">
-                    <FlagIcon code={currency.flag} />
+                    <FlagIcon icon={currency.icon} />
                     <div className="flex flex-col">
                       <span className="font-medium">
                         {currency.code} ({currency.symbol})
@@ -80,7 +80,7 @@ export function CurrencySelector({ value, onChange }: CurrencySelectorProps) {
                     <Check
                       className={cn(
                         "ml-auto h-4 w-4",
-                        value === currency.code ? "opacity-100" : "opacity-0"
+                        value === currency.code ? "opacity-100" : "opacity-0",
                       )}
                     />
                   </div>
@@ -95,17 +95,13 @@ export function CurrencySelector({ value, onChange }: CurrencySelectorProps) {
 }
 
 // Simple component to display flag icons
-function FlagIcon({ code }: { code: string }) {
+function FlagIcon({ icon }: { icon: string }) {
   return (
     <div className="relative w-5 h-5 overflow-hidden flex items-center justify-center bg-transparent">
-      {code === "btc" ? (
+      {icon === "btc" ? (
         <span className="text-xs">₿</span>
       ) : (
-        <img
-          src={`https://flagcdn.com/w20/${code.toLowerCase()}.png`}
-          alt={`${code} flag`}
-          className="w-5 h-auto object-cover"
-        />
+        <svg className={`${icon} size-5`} />
       )}
     </div>
   );

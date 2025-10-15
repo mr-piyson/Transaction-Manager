@@ -1,9 +1,9 @@
 "use server";
-import prisma from "@/lib/prisma";
+import db from "@/lib/prisma";
 
 export const getSettings = async () => {
   try {
-    const settings = await prisma.settings.findMany({});
+    const settings = await db.settings.findMany({});
     return { success: true, data: settings, error: null };
   } catch (error) {
     return {
@@ -17,10 +17,10 @@ export const getSettings = async () => {
 export const updateSettings = async (data: any[]) => {
   try {
     const updatePromises = data.map((item) =>
-      prisma.settings.updateMany({
+      db.settings.updateMany({
         where: { name: item.name },
         data: { value: item.value },
-      })
+      }),
     );
 
     await Promise.all(updatePromises);

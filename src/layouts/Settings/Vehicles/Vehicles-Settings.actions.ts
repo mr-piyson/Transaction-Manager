@@ -1,6 +1,6 @@
 "use server";
-import { VehicleType } from "@prisma/client";
-import prisma from "@/lib/prisma";
+import type { VehicleType } from "@prisma/client";
+import db from "@/lib/prisma";
 
 export async function getVehicleTypes(): Promise<{
   success: boolean;
@@ -8,7 +8,7 @@ export async function getVehicleTypes(): Promise<{
   data: VehicleType[] | null;
 }> {
   try {
-    const types = await prisma.vehicleType.findMany({});
+    const types = await db.vehicleType.findMany({});
     return {
       success: true,
       error: null,
@@ -36,35 +36,37 @@ export async function addVehicleType(name: string): Promise<{
       };
     }
 
-    if (!name.trim()) {
-      return {
-        success: false,
-        error: "Vehicle type name cannot be empty",
-        data: null,
-      };
-    }
-
-    const type = await prisma.vehicleType.create({
-      data: { name: name.trim() },
-    });
-
+  if (!name.trim()) {
     return {
-      success: true,
-      error: null,
-      data: type,
+      success: false,
+      error: "Vehicle type name cannot be empty",
+      data: null,
     };
-  } catch (error) {
-    return {
+  }
+
+  const type = await db.vehicleType.create({
+    data: { name: name.trim() },
+  });
+
+  return {
+    success: true,
+    error: null,
+    data: type,
+  };
+}
+catch (error)
+{
+  return {
       success: false,
       error: "Error adding vehicle type",
       data: null,
     };
-  }
+}
 }
 
 export async function updateVehicleType(
   id: string,
-  name: string
+  name: string,
 ): Promise<{
   success: boolean;
   error: string | null;
@@ -87,7 +89,7 @@ export async function updateVehicleType(
       };
     }
 
-    const type = await prisma.vehicleType.update({
+    const type = await db.vehicleType.update({
       where: { id },
       data: { name },
     });
@@ -119,7 +121,7 @@ export async function deleteVehicleType(id: string): Promise<{
         data: null,
       };
     }
-    const type = await prisma.vehicleType.delete({
+    const type = await db.vehicleType.delete({
       where: { id },
     });
     return {

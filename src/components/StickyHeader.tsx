@@ -1,30 +1,37 @@
-import { cn } from "@/lib/utils";
 import React, { useEffect, useRef, useState } from "react";
+import { cn } from "@/lib/utils";
 
 type DynamicHeaderTextProps = {
-    isSticky?: boolean;
-    children: React.ReactNode;
-    className?: string;
-    } & React.HTMLAttributes<HTMLSpanElement>;
+  isSticky?: boolean;
+  children: React.ReactNode;
+  className?: string;
+} & React.HTMLAttributes<HTMLSpanElement>;
 
-export const StickyHeaderText = ({ isSticky, children, className, ...props }: DynamicHeaderTextProps) => {
+export const StickyHeaderText = ({
+  isSticky,
+  children,
+  className,
+  ...props
+}: DynamicHeaderTextProps) => {
   return (
     <span
-      className={cn(`
+      className={cn(
+        `
         transition-all duration-300 ease-in-out
-        ${isSticky 
-          ? 'text-xl font-semibold' // Style when sticky
-          : 'text-4xl font-bold'   // Style when not sticky
+        ${
+          isSticky
+            ? "text-xl font-semibold" // Style when sticky
+            : "text-4xl font-bold" // Style when not sticky
         }
-      `, className)}
+      `,
+        className,
+      )}
       {...props}
     >
       {children}
     </span>
   );
 };
-
-
 
 export const StickyHeader = (props: React.HTMLAttributes<HTMLDivElement>) => {
   const [isSticky, setIsSticky] = useState(false);
@@ -33,9 +40,9 @@ export const StickyHeader = (props: React.HTMLAttributes<HTMLDivElement>) => {
   useEffect(() => {
     const observer = new IntersectionObserver(
       ([entry]) => {
-              setIsSticky(!entry.isIntersecting);
+        setIsSticky(!entry.isIntersecting);
       },
-      { root: null, rootMargin: '0px', threshold: 0 }
+      { root: null, rootMargin: "0px", threshold: 0 },
     );
 
     if (sentinelRef.current) {
@@ -56,23 +63,23 @@ export const StickyHeader = (props: React.HTMLAttributes<HTMLDivElement>) => {
 
       {/* The main sticky container. Note it no longer has font-size classes. */}
       <div
-        className={cn(`
+        className={cn(
+          `
           sticky top-0 z-50 p-4 
           flex items-center justify-between
           transition-colors duration-300 ease-in-out
-        `, props.className)}
+        `,
+          props.className,
+        )}
       >
         {/* We map over children to find and inject props into DynamicHeaderText */}
         {React.Children.map(props.children, (child) => {
           // Check if the child is a valid React element and its type is DynamicHeaderText
-          if (
-            React.isValidElement(child) &&
-            child.type === StickyHeaderText
-          ) {
+          if (React.isValidElement(child) && child.type === StickyHeaderText) {
             // If it is, clone it and inject the isSticky prop
             return React.cloneElement(
               child as React.ReactElement<DynamicHeaderTextProps>,
-              { isSticky: isSticky }
+              { isSticky: isSticky },
             );
           }
           // Otherwise, return the child unmodified (e.g., a button, icon, etc.)

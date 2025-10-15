@@ -1,8 +1,7 @@
 #!/usr/bin/env node
 
-import fs from "fs";
 import { execSync } from "child_process";
-import readline from "readline";
+import fs from "fs";
 
 // Types
 interface Colors {
@@ -18,13 +17,6 @@ interface Colors {
 
 interface DefaultValues {
   [key: string]: string;
-}
-
-interface Task {
-  id: string;
-  name: string;
-  description: string;
-  action: () => Promise<void>;
 }
 
 // Colors for console output
@@ -46,7 +38,7 @@ const log = (message: string, color: keyof Colors = "reset"): void => {
 
 const logStep = (step: string, message: string): void => {
   log(
-    `\n${colors.bright}[${step}]${colors.reset} ${colors.cyan}${message}${colors.reset}`
+    `\n${colors.bright}[${step}]${colors.reset} ${colors.cyan}${message}${colors.reset}`,
   );
 };
 
@@ -72,11 +64,11 @@ class EnvSchemaParser {
   ];
 
   static findEnvFile(): string | null {
-    return this.ENV_FILE_PATHS.find(fs.existsSync) || null;
+    return EnvSchemaParser.ENV_FILE_PATHS.find(fs.existsSync) || null;
   }
 
   static parseEnvSchema(): string[] | null {
-    const envFilePath = this.findEnvFile();
+    const envFilePath = EnvSchemaParser.findEnvFile();
 
     if (!envFilePath) {
       logWarning("env.ts file not found. Using default environment variables.");
@@ -140,7 +132,7 @@ class EnvSchemaParser {
 class EnvFileGenerator {
   static generateEnvContent(
     envVars: string[],
-    isExample = false
+    isExample = false,
   ): string | null {
     if (!envVars || envVars.length === 0) {
       return null;
@@ -203,13 +195,13 @@ class TaskManager {
 
           const existingEnvContent = fs.readFileSync(".env", "utf8");
           const missingVars = envVars.filter(
-            (varName) => !existingEnvContent.includes(varName)
+            (varName) => !existingEnvContent.includes(varName),
           );
 
           if (missingVars.length > 0) {
             const missingEnvContent = EnvFileGenerator.generateEnvContent(
               missingVars,
-              true
+              true,
             );
             if (missingEnvContent) {
               fs.appendFileSync(".env", missingEnvContent);
@@ -264,8 +256,7 @@ class TaskManager {
     logStep("DEPS", "Installing dependencies...");
 
     try {
-      // Check if package-lock.json or yarn.lock exists
-      const hasPackageLock = fs.existsSync("package-lock.json");
+      // Check if yarn.lock or pnpm-lock.yaml exists
       const hasYarnLock = fs.existsSync("yarn.lock");
       const hasPnpmLock = fs.existsSync("pnpm-lock.yaml");
       const hasBun = fs.existsSync("bun.lock") || fs.existsSync("bun.lockb");
@@ -306,7 +297,7 @@ class TaskManager {
           logSuccess("Git hooks configured with Husky");
         } else {
           logWarning(
-            "Husky not found in dependencies. Skipping git hooks setup."
+            "Husky not found in dependencies. Skipping git hooks setup.",
           );
         }
       }
