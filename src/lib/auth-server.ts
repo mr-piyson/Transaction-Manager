@@ -32,7 +32,7 @@ export async function getSession(): Promise<Session | null> {
     const res = await auth.api.getSession({
       headers: await headers(),
     });
-
+      
     return res.session;
   } catch (error) {
     console.error(error);
