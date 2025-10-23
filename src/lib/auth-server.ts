@@ -63,3 +63,5 @@ export async function isAuthenticated(): Promise<boolean> {
   const session = await getSession();
   return !!session;
 }
+
+// ============================================
