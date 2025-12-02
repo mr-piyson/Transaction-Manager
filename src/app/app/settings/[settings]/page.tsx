@@ -18,6 +18,8 @@ export default function SettingsTab() {
       return <AppearanceSettings />;
     case "profile":
       return <ProfileSettings />;
+    case "departments":
+      return <></>;
     default:
       return <ProfileSettings />;
   }

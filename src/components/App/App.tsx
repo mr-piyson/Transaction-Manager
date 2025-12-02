@@ -68,7 +68,7 @@ export function UserMenu() {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent
-        className="bg-popover/95 backdrop-blur supports-[backdrop-filter]:bg-popover/85 w-[--radix-dropdown-menu-trigger-width] min-w-56 rounded-lg"
+        className="bg-popover/95 backdrop-blur supports-backdrop-filter:bg-popover/85 w-[--radix-dropdown-menu-trigger-width] min-w-56 rounded-lg"
         side={"bottom"}
         align="end"
         sideOffset={4}
@@ -76,7 +76,7 @@ export function UserMenu() {
         <DropdownMenuLabel className="p-0 font-normal">
           <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
             <Avatar className="h-8 w-8 ">
-              <AvatarImage src={account?.image ?? undefined} alt={account?.name} covered />
+              <AvatarImage src={account?.image ?? undefined} alt={account?.name} />
               <AvatarFallback>{account?.name.charAt(0)}</AvatarFallback>
             </Avatar>
             <div className="grid flex-1 text-left text-sm leading-tight">

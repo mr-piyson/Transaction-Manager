@@ -4,7 +4,7 @@ import { Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Drawer, DrawerContent, DrawerFooter, DrawerHeader, DrawerTrigger } from "@/components/ui/drawer";
 import { DialogTitle } from "@/components/ui/dialog";
-import { settingsNavItems } from "@/lib/routes";
+import { Routes } from "@/lib/routes";
 
 interface SettingsLayoutProps {
   params: Promise<{ settings: string }>;
@@ -14,12 +14,14 @@ interface SettingsLayoutProps {
 export default async function SettingsLayout(props: SettingsLayoutProps) {
   const pathname = (await props.params).settings;
 
+  console.log(Object.values(Routes.settings.children));
+
   const SettingsItemList = () => (
     <>
-      {settingsNavItems.map(item => {
+      {Object.values(Routes.settings.children).map(item => {
         const isActive = pathname === item.title.toLocaleLowerCase();
         return (
-          <Link key={item.href} href={item.href} className={cn("flex items-center px-3 py-2 text-sm rounded-md group", isActive ? "bg-primary text-primary-foreground" : "hover:bg-muted")}>
+          <Link key={item.path} href={item.path} className={cn("flex items-center px-3 py-2 text-sm rounded-md group", isActive ? "bg-primary text-primary-foreground" : "hover:bg-muted")}>
             <svg className={cn(item.icon, "mr-3 h-5 w-5", isActive ? "text-primary-foreground" : "text-muted-foreground group-hover:text-foreground")} />
             <span className={cn(isActive ? "text-primary-foreground" : "text-muted-foreground group-hover:text-foreground")}>{item.title}</span>
           </Link>
@@ -30,7 +32,7 @@ export default async function SettingsLayout(props: SettingsLayoutProps) {
 
   return (
     <div className=" mx-auto  h-full">
-      <div className="flex flex-col md:flex-row gap-8 h-full">
+      <div className="flex flex-col md:flex-row h-full">
         {/* Sidebar */}
         <div className="md:w-64 shrink-0 lg:border-r pr-4 p-8">
           <h1 className="flex items-center justify-between mb-8">
