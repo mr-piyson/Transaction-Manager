@@ -150,7 +150,7 @@ export default function CustomerPage(props: CustomerPageProps) {
 
   return (
     <div className="flex flex-row h-full">
-      <aside className="flex flex-col gap-2 max-w-mid border-r p-2 w-96">
+      <aside className="flex flex-col gap-2 max-w-mid max-sm:w-full border-r p-2 w-96">
         {/* Search Input */}
         <div className="flex flex-row gap-2 items-center">
           <InputGroup className="flex-1">
@@ -214,7 +214,7 @@ export default function CustomerPage(props: CustomerPageProps) {
       </aside>
 
       {/* Main Content Area */}
-      <main className="flex-1 p-4">
+      <main className="max-sm:hidden flex-1 p-4">
         <h1>Customer Details</h1>
         {props.children}
       </main>

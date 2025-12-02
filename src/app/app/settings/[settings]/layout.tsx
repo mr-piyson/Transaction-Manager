@@ -4,7 +4,7 @@ import { Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Drawer, DrawerContent, DrawerFooter, DrawerHeader, DrawerTrigger } from "@/components/ui/drawer";
 import { DialogTitle } from "@/components/ui/dialog";
-import { Routes } from "@/lib/routes";
+import { routes } from "@/lib/routes";
 
 interface SettingsLayoutProps {
   params: Promise<{ settings: string }>;
@@ -14,11 +14,11 @@ interface SettingsLayoutProps {
 export default async function SettingsLayout(props: SettingsLayoutProps) {
   const pathname = (await props.params).settings;
 
-  console.log(Object.values(Routes.settings.children));
+  console.log(Object.values(routes.settings.children));
 
   const SettingsItemList = () => (
     <>
-      {Object.values(Routes.settings.children).map(item => {
+      {Object.values(routes.settings.children).map(item => {
         const isActive = pathname === item.title.toLocaleLowerCase();
         return (
           <Link key={item.path} href={item.path} className={cn("flex items-center px-3 py-2 text-sm rounded-md group", isActive ? "bg-primary text-primary-foreground" : "hover:bg-muted")}>

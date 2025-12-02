@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useAuth } from "@/hooks/use-Auth";
+import { useAuth } from "@/hooks/use-auth";
 
 // SIGN UP SCHEMA
 export const SignUpSchema = z
