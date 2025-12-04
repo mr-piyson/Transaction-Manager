@@ -37,8 +37,9 @@ import { Button } from "@/components/ui/button";
 import { ChevronsUpDown, LogOut, Moon } from "lucide-react";
 import { Toolbar } from "./Toolbar";
 import { AppSidebar } from "./Sidebar";
-import { signOut } from "@/lib/auth";
+// import { signOut } from "@/lib/auth-core";
 import { useTheme } from "next-themes";
+import { signOut } from "@/lib/auth-server";
 
 // This component renders the user profile in the sidebar, allowing users to switch themes and log out.
 export function UserMenu() {

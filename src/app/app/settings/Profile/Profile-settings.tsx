@@ -13,7 +13,6 @@ import useSWR from "swr";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { updateSettings } from "./Profile.actions"; // Assuming this action is correct and available
 
 // Define the schema for the form data (what react-hook-form will manage)
 const CompanyProfileSchema = z.object({
@@ -75,16 +74,10 @@ export function ProfileSettings() {
     // Ensure apiSettings is available and is an array before attempting to populate the form
     if (apiSettings && Array.isArray(apiSettings) && apiSettings.length > 0) {
       const transformedData: CompanyProfileForm = {
-        name:
-          apiSettings.find((item) => item.name === "companyName")?.value || "",
-        address:
-          apiSettings.find((item) => item.name === "companyAddress")?.value ||
-          "",
-        contactNumber:
-          apiSettings.find((item) => item.name === "companyPhone")?.value || "",
-        currency:
-          apiSettings.find((item) => item.name === "companyCurrency")?.value ||
-          "USD", // Default to USD if currency not found
+        name: apiSettings.find(item => item.name === "companyName")?.value || "",
+        address: apiSettings.find(item => item.name === "companyAddress")?.value || "",
+        contactNumber: apiSettings.find(item => item.name === "companyPhone")?.value || "",
+        currency: apiSettings.find(item => item.name === "companyCurrency")?.value || "USD", // Default to USD if currency not found
       };
       // Use `reset` to set all form values at once to the fetched data.
       // This also resets the `isDirty` state.
@@ -104,16 +97,13 @@ export function ProfileSettings() {
 
     try {
       // Call the update action
-      await updateSettings(formattedData);
       toast.success("Profile settings updated successfully");
       // Revalidate SWR cache. When new data is fetched, the useEffect will automatically
       // call `reset()` with the updated data, ensuring the form reflects the latest state.
       mutate();
     } catch (err: any) {
       console.error("Error updating profile settings:", err);
-      toast.error(
-        err.message || "Error updating profile settings. Please try again."
-      );
+      toast.error(err.message || "Error updating profile settings. Please try again.");
     }
   };
 
@@ -122,16 +112,10 @@ export function ProfileSettings() {
     if (apiSettings && Array.isArray(apiSettings) && apiSettings.length > 0) {
       // If settings were loaded, reset to those values
       const transformedData: CompanyProfileForm = {
-        name:
-          apiSettings.find((item) => item.name === "companyName")?.value || "",
-        address:
-          apiSettings.find((item) => item.name === "companyAddress")?.value ||
-          "",
-        contactNumber:
-          apiSettings.find((item) => item.name === "companyPhone")?.value || "",
-        currency:
-          apiSettings.find((item) => item.name === "companyCurrency")?.value ||
-          "USD",
+        name: apiSettings.find(item => item.name === "companyName")?.value || "",
+        address: apiSettings.find(item => item.name === "companyAddress")?.value || "",
+        contactNumber: apiSettings.find(item => item.name === "companyPhone")?.value || "",
+        currency: apiSettings.find(item => item.name === "companyCurrency")?.value || "USD",
       };
       reset(transformedData);
     } else {
@@ -157,12 +141,7 @@ export function ProfileSettings() {
 
   // Show an error message if fetching failed
   if (error) {
-    return (
-      <div className="text-red-500 text-center py-8">
-        Error loading profile settings:{" "}
-        {error.message || "An unknown error occurred."}
-      </div>
-    );
+    return <div className="text-red-500 text-center py-8">Error loading profile settings: {error.message || "An unknown error occurred."}</div>;
   }
 
   // Render the form once data is loaded or if there's no data but no error
@@ -170,12 +149,8 @@ export function ProfileSettings() {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">
-            Company Profile Settings
-          </h1>
-          <p className="text-muted-foreground">
-            Manage your company profile and preferences
-          </p>
+          <h1 className="text-3xl font-bold tracking-tight">Company Profile Settings</h1>
+          <p className="text-muted-foreground">Manage your company profile and preferences</p>
         </div>
       </div>
 
@@ -196,67 +171,32 @@ export function ProfileSettings() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="name">Company Name</Label>
-                  <Input
-                    id="name"
-                    placeholder="Enter company name"
-                    {...register("name")}
-                    autoComplete="off"
-                    autoCorrect="off"
-                  />
-                  {errors.name && (
-                    <p className="text-red-500 text-sm">
-                      {errors.name.message}
-                    </p>
-                  )}
+                  <Input id="name" placeholder="Enter company name" {...register("name")} autoComplete="off" autoCorrect="off" />
+                  {errors.name && <p className="text-red-500 text-sm">{errors.name.message}</p>}
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="address">Company Address</Label>
-                  <Input
-                    id="address"
-                    placeholder="Enter company address"
-                    {...register("address")}
-                    autoComplete="off"
-                    autoCorrect="off"
-                  />
-                  {errors.address && (
-                    <p className="text-red-500 text-sm">
-                      {errors.address.message}
-                    </p>
-                  )}
+                  <Input id="address" placeholder="Enter company address" {...register("address")} autoComplete="off" autoCorrect="off" />
+                  {errors.address && <p className="text-red-500 text-sm">{errors.address.message}</p>}
                 </div>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="contactNumber">Contact Number</Label>
-                  <Input
-                    id="contactNumber"
-                    type="text"
-                    placeholder="+973 173789"
-                    {...register("contactNumber")}
-                    autoComplete="off"
-                    autoCorrect="off"
-                  />
-                  {errors.contactNumber && (
-                    <p className="text-red-500 text-sm">
-                      {errors.contactNumber.message}
-                    </p>
-                  )}
+                  <Input id="contactNumber" type="text" placeholder="+973 173789" {...register("contactNumber")} autoComplete="off" autoCorrect="off" />
+                  {errors.contactNumber && <p className="text-red-500 text-sm">{errors.contactNumber.message}</p>}
                 </div>
                 <div className="space-y-2">
                   <Label>Company Currency</Label>
                   <CurrencySelector
                     value={currentCurrency} // The CurrencySelector now reads its value directly from the form state
-                    onChange={(value) => {
+                    onChange={value => {
                       // When CurrencySelector changes, update the form state
                       setValue("currency", value, { shouldDirty: true }); // Mark the form as dirty
                     }}
                   />
-                  {errors.currency && (
-                    <p className="text-red-500 text-sm">
-                      {errors.currency.message}
-                    </p>
-                  )}
+                  {errors.currency && <p className="text-red-500 text-sm">{errors.currency.message}</p>}
                 </div>
               </div>
             </div>

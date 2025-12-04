@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
   output   = "../node_modules/.prisma/client"
@@ -14,32 +8,33 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model User {
-  id             Int      @id @default(autoincrement())
+model Users {
+  id             Int          @id @default(autoincrement())
   name           String
   email          String
-  emailVerified  Boolean  @default(false)
+  emailVerified  Boolean      @default(false)
   image          String?
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @default(now()) @updatedAt
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @default(now()) @updatedAt
   hashedPassword String
-  tokens         Token[]
+  tokens         Tokens[]
   roleId         Int?
-  role           Role?    @relation(fields: [roleId], references: [id])
+  privileges     Privileges[]
+  role           Role?        @relation(fields: [roleId], references: [id])
 
   @@unique([email])
-  @@map("user")
+  @@map("users")
 }
 
-model Token {
+model Tokens {
   id        Int      @id @default(autoincrement())
   type      String
   value     String   @unique
   expiresAt DateTime
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
-  user      User?    @relation(fields: [userId], references: [id])
   userId    Int?
+  users     Users?   @relation(fields: [userId], references: [id])
 }
 
 model Role {
@@ -47,10 +42,10 @@ model Role {
   name      String   @unique
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  users     User[]
+  users     Users[]
 }
 
-model Privilege {
+model Privileges {
   id        Int      @id @default(autoincrement())
   create    Boolean  @default(false)
   read      Boolean  @default(false)
@@ -58,6 +53,8 @@ model Privilege {
   delete    Boolean  @default(false)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  userId    Int
+  users     Users    @relation(fields: [userId], references: [id])
 }
 
 model Settings {
@@ -68,55 +65,68 @@ model Settings {
   updatedAt DateTime @updatedAt
 }
 
-model TransactionCategory {
-  id            Int           @id @default(autoincrement())
-  name          String        @unique
-  type          String
-  createdAt     DateTime      @default(now())
-  updatedAt     DateTime      @updatedAt
-  transactionId Int?
-  Transaction   Transaction[]
+model Companies {
+  id        Int    @id @default(autoincrement())
+  name      String
+  address   String
+  telephone String
+  logo      String
+  email     String
 }
 
-model Transaction {
-  id                    Int                 @id @default(autoincrement())
+model TransactionCategories {
+  id            Int            @id @default(autoincrement())
+  name          String         @unique
+  type          String
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  transactionId Int?
+  transactions  Transactions[]
+}
+
+model Transactions {
+  id                    Int                    @id @default(autoincrement())
   tableId               Int
-  amount                Int                 @default(0)
+  amount                Int                    @default(0)
   type                  String
   description           String?
-  date                  DateTime            @default(now())
-  qty                   Int                 @default(1)
-  categoryId            TransactionCategory @relation(fields: [transactionCategoryId], references: [id])
-  Note                  Note?               @relation(fields: [noteId], references: [id])
+  date                  DateTime               @default(now())
+  qty                   Int                    @default(1)
+  notes                 Notes?                 @relation(fields: [noteId], references: [id])
   noteId                Int?
-  transactionCategoryId Int
+  transactionCategories TransactionCategories? @relation(fields: [transactionCategoryId], references: [id])
+  transactionCategoryId Int?
 }
 
-model Customer {
-  id        Int      @id @default(autoincrement())
+model Customers {
+  id        Int       @id @default(autoincrement())
   name      String
   email     String?
-  status    String   @default("active")
-  phone     String   @unique
+  code      String
+  image     String?
+  status    String    @default("active")
+  phone     String    @unique
   address   String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+  deletedBy Int?
 }
 
-model Note {
-  id           Int           @id @default(autoincrement())
+model Notes {
+  id           Int            @id @default(autoincrement())
   title        String
-  total        Float?        @default(0)
+  total        Float?         @default(0)
   status       String?
   banner       String?
-  active       Boolean       @default(true)
-  updatedAt    DateTime      @updatedAt
-  createdAt    DateTime      @default(now())
+  active       Boolean        @default(true)
+  updatedAt    DateTime       @updatedAt
+  createdAt    DateTime       @default(now())
   customerId   String?
-  transactions Transaction[]
+  transactions Transactions[]
 }
 
-model Stock {
+model Stocks {
   id        Int      @id @default(autoincrement())
   name      String
   quantity  Int      @default(0)
@@ -128,7 +138,7 @@ model Stock {
   updatedAt DateTime @updatedAt
 }
 
-model Asset {
+model Assets {
   id        Int      @id @default(autoincrement())
   name      String
   quantity  Int      @default(0)
@@ -139,20 +149,29 @@ model Asset {
   updatedAt DateTime @updatedAt
 }
 
-model Employee {
-  id         Int      @id @default(autoincrement())
-  name       String
-  role       String
-  empId      String   @unique
-  email      String   @unique
-  phone      String   @unique
-  department String?
-  address    String?
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+model Departments {
+  id        Int         @id @default(autoincrement())
+  name      String
+  employees Employees[]
 }
 
-model Supplier {
+model Employees {
+  id           Int          @id @default(autoincrement())
+  name         String
+  role         String
+  code         String
+  active       Boolean      @default(true)
+  designation  String
+  email        String       @unique
+  phone        String
+  address      String?
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+  departments  Departments? @relation(fields: [departmentId], references: [id])
+  departmentId Int?
+}
+
+model Suppliers {
   id        Int      @id @default(autoincrement())
   name      String
   email     String   @unique
@@ -162,21 +181,10 @@ model Supplier {
   updatedAt DateTime @updatedAt
 }
 
-model Notification {
+model Notifications {
   id        Int      @id @default(autoincrement())
   title     String
   content   String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-}
-
-model Verification {
-  id         String   @id
-  identifier String
-  value      String
-  expiresAt  DateTime
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @default(now()) @updatedAt
-
-  @@map("verification")
 }
