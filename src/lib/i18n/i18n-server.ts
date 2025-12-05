@@ -6,6 +6,9 @@ import { cookies } from "next/headers";
 import { COOKIE_MAX_AGE, COOKIE_NAME, DEFAULT_LOCALE, LANGUAGE_CONFIG, Locale, TranslationKeys, Translations, translations } from "./i18n-core";
 import { revalidatePath } from "next/cache";
 import { ServerTranslator } from "./i18n-classes";
+import db from "../db";
+import z from "zod";
+import { getCurrentUser } from "../auth/auth-server";
 
 export async function getLocaleFromCookie(): Promise<Locale> {
   const cookieStore = await cookies();
@@ -71,9 +74,12 @@ export async function setLocaleAction(locale: Locale): Promise<{ success: boolea
 
     // Set cookie
     await setLocaleCookie(locale);
+    const user = await getCurrentUser();
 
     // Optional: Save to database
-    // await saveUserLocaleToDatabase(userId, locale);
+    if (user?.userId) {
+      await saveLocaleToDatabase(user.userId, locale);
+    }
 
     // Revalidate all paths to apply new locale
     revalidatePath("/", "layout");
@@ -89,13 +95,14 @@ export async function setLocaleAction(locale: Locale): Promise<{ success: boolea
 }
 
 // Optional: Server action to save to database
-export async function saveLocaleToDatabase(userId: string, locale: Locale): Promise<{ success: boolean; error?: string }> {
+export async function saveLocaleToDatabase(userId: number, locale: Locale): Promise<{ success: boolean; error?: string }> {
   try {
-    // Replace with your actual database call
-    // await db.user.update({
-    //   where: { id: userId },
-    //   data: { locale },
-    // });
+    const userIdNumber = z.coerce.number().safeParse(userId);
+    if (!userIdNumber.success) return { success: false, error: "Invalid userId" };
+    await db.users.update({
+      where: { id: Number(userId) },
+      data: { locale },
+    });
 
     console.log("Saved locale to database:", { userId, locale });
 

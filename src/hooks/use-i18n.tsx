@@ -77,7 +77,7 @@ export function I18nProvider({ children, initialLocale, userId }: I18nProviderPr
 
           // Optional: Save to database
           if (userId) {
-            saveLocaleToDatabase(userId, newLocale).catch(error => {
+            saveLocaleToDatabase(Number(userId), newLocale).catch(error => {
               console.error("Failed to save locale to database:", error);
             });
           }
@@ -121,7 +121,7 @@ export function useI18n() {
   }
 
   const { locale, direction, isRTL, setLocale, t, exists, config, availableLocales, isPending } = ctx;
-  
+
   return {
     locale,
     direction,
