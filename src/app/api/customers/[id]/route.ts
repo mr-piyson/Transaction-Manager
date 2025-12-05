@@ -1,4 +1,4 @@
-import { withAuth } from "@/lib/auth-api";
+import { withAuth } from "@/lib/auth/auth-api";
 import db from "@/lib/db";
 import { Customers } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";

@@ -14,8 +14,6 @@ interface SettingsLayoutProps {
 export default async function SettingsLayout(props: SettingsLayoutProps) {
   const pathname = (await props.params).settings;
 
-  console.log(Object.values(routes.settings.children));
-
   const SettingsItemList = () => (
     <>
       {Object.values(routes.settings.children).map(item => {

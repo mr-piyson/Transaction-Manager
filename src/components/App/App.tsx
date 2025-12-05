@@ -15,6 +15,8 @@ interface AppProps {
 }
 
 export default function App(props: AppProps) {
+  const { direction } = useI18n();
+
   return (
     <QueryClientProvider client={new QueryClient()}>
       <SidebarProvider className="flex h-screen overflow-hidden">
@@ -39,7 +41,8 @@ import { Toolbar } from "./Toolbar";
 import { AppSidebar } from "./Sidebar";
 // import { signOut } from "@/lib/auth-core";
 import { useTheme } from "next-themes";
-import { signOut } from "@/lib/auth-server";
+import { signOut } from "@/lib/auth/auth-server";
+import { useI18n } from "@/hooks/use-i18n";
 
 // This component renders the user profile in the sidebar, allowing users to switch themes and log out.
 export function UserMenu() {

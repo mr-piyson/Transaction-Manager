@@ -6,7 +6,7 @@ import { useTransition } from "react";
 import type { SignInSchema } from "@/components/Auth/SignIn";
 import type { SignUpSchema } from "@/components/Auth/SignUp";
 import type { z } from "zod";
-import { signIn, signOut, signUp } from "@/lib/auth-server";
+import { signIn, signOut, signUp } from "@/lib/auth/auth-server";
 import { toast } from "sonner";
 
 export function useAuth() {

@@ -1,6 +1,5 @@
 import { z } from "zod";
 import { createEnv } from "@t3-oss/env-core";
-import { log } from "./log";
 
 export const env = createEnv({
   server: {
@@ -12,15 +11,10 @@ export const env = createEnv({
   },
   runtimeEnv: process.env,
   onValidationError: issues => {
-    console.error(`❌ Invalid environment variables:`);
+    console.error(`Invalid environment variables:`);
     issues.forEach(issue => {
-      log([
-        { message: issue.path, color: "blue" },
-        { message: " → ", color: "reset" },
-        { message: issue.message, color: "red" },
-      ]);
+      if (issue.path) console.log("\x1b[31m", issue.path[0].toString().trim(), "\x1b[31m", "\x1b[0m=\x1b[0m", "\x1b[32m", '""', "\x1b[32m");
     });
-
     // throw error with out log the zod runtime error log
     process.exit(1);
   },

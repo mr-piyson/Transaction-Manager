@@ -19,20 +19,22 @@ import {
   SidebarGroupContent,
   SidebarMenuSubButton,
 } from "@/components/sidebar";
-import { getTopLevelRoutes, routes } from "@/lib/routes";
 import Logo from "@/components/Logo";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "../ui/collapsible";
 import { SidebarMenuAction, SidebarMenuSub } from "../ui/sidebar";
 import Link from "next/link";
 import { Route } from "next";
+import { useI18n } from "@/hooks/use-i18n";
+import { getTopLevel, routes } from "@/lib/routes";
 
 interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {}
 
 export function AppSidebar({ ...props }: AppSidebarProps) {
   const path = usePathname();
+  const { direction } = useI18n();
 
   return (
-    <Sidebar collapsible="icon" type="Drawer" {...props}>
+    <Sidebar collapsible="icon" side={direction === "ltr" ? "left" : "right"} type="Drawer" {...props}>
       <SidebarHeader>
         <AppLogo />
       </SidebarHeader>
@@ -41,7 +43,7 @@ export function AppSidebar({ ...props }: AppSidebarProps) {
           <SidebarGroupLabel>{path}</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {getTopLevelRoutes(routes).map(route => (
+              {getTopLevel().map(route => (
                 <Collapsible key={route.title}>
                   <SidebarMenuItem className={cn("group")}>
                     <SidebarMenuButton isActive={path === route.path} asChild>

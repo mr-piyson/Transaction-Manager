@@ -5,7 +5,7 @@ import bcryptjs from "bcryptjs";
 import { redirect } from "next/navigation";
 import { cache } from "react";
 import { cookies } from "next/headers";
-import db from "./db";
+import db from "../db";
 import z from "zod";
 import type { SignUpSchema } from "@/components/Auth/SignUp";
 import type { SignInSchema } from "@/components/Auth/SignIn";

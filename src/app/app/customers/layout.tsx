@@ -149,7 +149,7 @@ export default function CustomerPage(props: CustomerPageProps) {
 
   return (
     <div className="flex flex-row h-full">
-      <aside className="flex flex-col gap-2 max-w-mid max-sm:w-full border-r p-2 w-96">
+      <aside className="border-e flex flex-col gap-2 max-w-mid max-sm:w-full p-2 w-96">
         {/* Search Input */}
         <div className="flex flex-row gap-2 items-center">
           <InputGroup className="flex-1">

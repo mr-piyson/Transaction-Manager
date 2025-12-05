@@ -2,8 +2,8 @@
 // Core auth utilities shared between Server Actions and API Routes
 import jwt from "jsonwebtoken";
 import { cookies } from "next/headers";
-import db from "./db";
-import { env } from "./env";
+import { env } from "../env";
+import db from "../db";
 
 // Types
 export interface TokenPayload {

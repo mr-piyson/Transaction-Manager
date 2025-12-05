@@ -1,0 +1,40 @@
+export const ar = {
+  common: {
+    welcome: "مرحبا بك في تطبيقنا",
+    selectLanguage: "اختر اللغة",
+    greeting: "مرحبا بالعالم!",
+    changeLanguage: "تغيير اللغة",
+    loading: "جاري التحميل...",
+    error: "حدث خطأ",
+    save: "حفظ",
+    cancel: "إلغاء",
+    confirm: "تأكيد",
+  },
+  auth: {
+    login: "تسجيل الدخول",
+    logout: "تسجيل الخروج",
+    register: "التسجيل",
+    email: "البريد الإلكتروني",
+    password: "كلمة المرور",
+    forgotPassword: "نسيت كلمة المرور؟",
+  },
+  navigation: {
+    home: "الرئيسية",
+    about: "حول",
+    contact: "اتصل بنا",
+    settings: "الإعدادات",
+  },
+  languages: {
+    english: "الإنجليزية",
+    arabic: "العربية",
+  },
+  routes: {
+    customers: "الغملاء",
+    settings: "الإعدادات",
+    "settings.departments": "الاقستم",
+    "settings.profile": "الملف الشخصي",
+    "settings.account": "حساب المستخدم",
+    "settings.security": "الامان",
+    "settings.appearance": "السمات",
+  },
+};
