@@ -122,7 +122,7 @@ export const UserMenu = memo(function UserMenu() {
       </DropdownMenuTrigger>
 
       <DropdownMenuContent
-        className="bg-popover/95 backdrop-blur supports-[backdrop-filter]:bg-popover/85 w-[--radix-dropdown-menu-trigger-width] min-w-56 rounded-lg"
+        className="bg-popover/95 backdrop-blur supports-backdrop-filter:bg-popover/85 w-[--radix-dropdown-menu-trigger-width] min-w-56 rounded-lg"
         side="bottom"
         align="end"
         sideOffset={4}
