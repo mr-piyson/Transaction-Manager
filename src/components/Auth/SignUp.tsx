@@ -1,7 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Loader2, User } from "lucide-react";
+import { User } from "lucide-react";
 import type React from "react";
 import { useRef, useState } from "react";
 import { useForm } from "react-hook-form";
@@ -12,14 +12,14 @@ import { Card, CardContent, CardDescription, CardTitle } from "@/components/ui/c
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/hooks/use-auth";
+import { Spinner } from "../ui/spinner";
 
 // SIGN UP SCHEMA
 export const SignUpSchema = z
   .object({
     name: z.string().min(1, "Name is required"),
-    email: z.string().email("Please enter a valid email address"),
+    email: z.email("Please enter a valid email address"),
     password: z.string().min(6, "Password must be at least 6 characters"),
-    role: z.enum(["User", "Admin"]).default("Admin"),
     confirmPassword: z.string().min(6, "Password must be at least 6 characters"),
     image: z.string().optional(),
   })
@@ -122,19 +122,19 @@ export default function SignUpTab() {
           {/* Name Field */}
           <div className="grid gap-2">
             <Label htmlFor="name">Full Name</Label>
-            <Input id="name" {...register("name")} className={`border-1 ${errors.name ? "border-red-500" : "border-muted-foreground/50"}`} />
+            <Input id="name" {...register("name")} className={`border ${errors.name ? "border-red-500" : "border-muted-foreground/50"}`} />
             {errors.name && <p className="text-sm text-red-500">{errors.name.message}</p>}
           </div>
           {/* Email Field */}
           <div className="grid gap-2">
             <Label htmlFor="email">Email</Label>
-            <Input id="email" type="email" {...register("email")} className={`border-1 ${errors.email ? "border-red-500" : "border-muted-foreground/50"}`} />
+            <Input id="email" type="email" {...register("email")} className={`border ${errors.email ? "border-red-500" : "border-muted-foreground/50"}`} />
             {errors.email && <p className="text-sm text-red-500">{errors.email.message}</p>}
           </div>
           {/* Password Field */}
           <div className="grid gap-2">
             <Label htmlFor="password">Password</Label>
-            <Input id="password" type="password" {...register("password")} className={`border-1 ${errors.password ? "border-red-500" : "border-muted-foreground/50"}`} />
+            <Input id="password" type="password" {...register("password")} className={`border ${errors.password ? "border-red-500" : "border-muted-foreground/50"}`} />
             {errors.password && <p className="text-sm text-red-500">{errors.password.message}</p>}
           </div>
           {/* Confirm Password Field */}
@@ -145,7 +145,7 @@ export default function SignUpTab() {
           </div>
 
           <Button disabled={loading} type="submit" className="w-full font-bold">
-            {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            {loading && <Spinner className="mr-2 h-4 w-4 " />}
             {!loading && "Sign Up"}
           </Button>
         </form>

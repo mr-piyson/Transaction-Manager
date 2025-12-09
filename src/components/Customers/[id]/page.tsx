@@ -3,9 +3,9 @@ import { useParams, useRouter } from "next/navigation";
 import { ArrowLeft, Edit, Trash2, Mail, Phone, MapPin, Calendar, DollarSign, ShoppingBag, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/badge";
 import { Separator } from "@/components/ui/separator";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
 
 // Mock customer data (same as in customer-page.tsx)
 const mockCustomers = [
@@ -215,7 +215,7 @@ export default function CustomerDetailPage() {
                           .join("")}
                       </AvatarFallback>
                     </Avatar>
-                    <Badge variant={getStatusColor(customer.status)} withBorder={true} className={`absolute -bottom-2 -right-2`}>
+                    <Badge variant={getStatusColor(customer.status)} className={`absolute -bottom-2 -right-2`}>
                       {customer.status}
                     </Badge>
                   </div>

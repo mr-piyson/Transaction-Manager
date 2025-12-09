@@ -1,16 +1,13 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { useRouter, usePathname } from "next/navigation";
-import { Loader2, ChevronDown, ChevronRight, Plus, MoreHorizontal } from "lucide-react";
+import { usePathname, useRouter } from "next/navigation";
+import { ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
   SidebarGroup,
   SidebarMenu,
   SidebarMenuItem,
   SidebarMenuButton,
-  SidebarMenuSubItem,
-  useSidebar,
   Sidebar,
   SidebarHeader,
   SidebarContent,
@@ -18,20 +15,38 @@ import {
   SidebarGroupLabel,
   SidebarGroupContent,
   SidebarMenuSubButton,
+  useSidebar,
 } from "@/components/sidebar";
 import Logo from "@/components/Logo";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "../ui/collapsible";
+// import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "../ui/collapsible";
 import { SidebarMenuAction, SidebarMenuSub } from "../ui/sidebar";
 import Link from "next/link";
 import { Route } from "next";
 import { useI18n } from "@/hooks/use-i18n";
 import { getTopLevel, routes } from "@/lib/routes";
+import { useEffect, useState } from "react";
+import { Spinner } from "../ui/spinner";
 
 interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {}
 
 export function AppSidebar({ ...props }: AppSidebarProps) {
   const path = usePathname();
   const { direction } = useI18n();
+  const { isMobile, open, setOpenMobile } = useSidebar();
+  const router = useRouter();
+  const [loading, setLoading] = useState("");
+
+  useEffect(() => {
+    if (loading === path) {
+      setLoading("");
+      setOpenMobile(false);
+    }
+  }, [path, setOpenMobile, loading]);
+
+  const isActive = (Activity: string) => {
+    const url = path.split("/").slice(0, 3).join("/");
+    return url === Activity;
+  };
 
   return (
     <Sidebar collapsible="icon" side={direction === "ltr" ? "left" : "right"} type="Drawer" {...props}>
@@ -40,43 +55,31 @@ export function AppSidebar({ ...props }: AppSidebarProps) {
       </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>{path}</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {getTopLevel().map(route => (
-                <Collapsible key={route.title}>
-                  <SidebarMenuItem className={cn("group")}>
-                    <SidebarMenuButton isActive={path === route.path} asChild>
-                      <Link href={route.path as Route}>
-                        <svg className={cn(route.icon)}></svg>
-                        <span>{route.title}</span>
-                      </Link>
-                    </SidebarMenuButton>
-                    <CollapsibleTrigger asChild>
-                      <SidebarMenuAction className="hidden bg-sidebar-accent text-sidebar-accent-foreground left-2 data-[state=open]:rotate-90" showOnHover>
-                        <ChevronRight />
-                      </SidebarMenuAction>
-                    </CollapsibleTrigger>
-                    <SidebarMenuAction showOnHover>{/* <Plus className="hidden group-hover:block" /> */}</SidebarMenuAction>
-                    <CollapsibleContent>
-                      <SidebarMenuSub>
-                        {/* {route.children?.map(page => (
-                          <SidebarMenuSubItem key={page.name}>
-                            <SidebarMenuSubButton asChild>
-                              <a href="#">
-                                <span>{page.emoji}</span>
-                                <span>{page.name}</span>
-                              </a>
-                            </SidebarMenuSubButton>
-                          </SidebarMenuSubItem>
-                        ))} */}
-                      </SidebarMenuSub>
-                    </CollapsibleContent>
-                  </SidebarMenuItem>
-                </Collapsible>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
+          <SidebarMenu>
+            {Object.values(routes).map(({ title, path, icon }) => (
+              <SidebarMenuItem key={title}>
+                <SidebarMenuButton
+                  isActive={isActive(path)}
+                  className="flex data-[active=true]:bg-primary data-[active=false]:text-primary-foreground"
+                  tooltip={title}
+                  size={"lg"}
+                  onClick={() => {
+                    const match = path.match(/^\/App\/[^/]+/);
+                    match && match[0] === path ? setLoading("") : setLoading(path);
+                    router.push(path);
+                  }}
+                >
+                  {/* <Link href={url} className="flex justify-center items-center"> */}
+                  <i className={cn("ms-1 size-6 shrink-0", icon, isActive(path) ? "text-white" : "text-foreground/92", loading === path && !open && !isMobile ? "hidden" : "")} />
+                  <div className="flex items-center justify-between w-full">
+                    <span className={cn(" text-base", isActive(path) ? "text-white" : "text-foreground/92", loading === path && !open && !isMobile ? "hidden" : "")}>{title}</span>
+                    {loading === path && <Spinner />}
+                  </div>
+                  {/* </Link> */}
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            ))}
+          </SidebarMenu>
         </SidebarGroup>
       </SidebarContent>
       <SidebarRail />

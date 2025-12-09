@@ -1,14 +1,13 @@
 "use client";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Loader2 } from "lucide-react";
 import { useForm } from "react-hook-form";
-import { toast } from "sonner";
 import z from "zod";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/hooks/use-auth";
+import { Spinner } from "../ui/spinner";
 
 // SIGN IN & SIGN UP SCHEMAS
 export const SignInSchema = z.object({
@@ -68,7 +67,7 @@ export default function SignInTab() {
           </CardContent>
           <CardFooter className="mt-5">
             <Button disabled={loading} type="submit" className="w-full font-bold">
-              {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {loading && <Spinner className="mr-2 h-4 w-4" />}
               {!loading && "Sign In"}
             </Button>
           </CardFooter>

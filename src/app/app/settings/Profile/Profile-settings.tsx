@@ -7,12 +7,12 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { toast } from "sonner";
-import { Loader2 } from "lucide-react";
 import { CurrencySelector } from "@/components/Currency-Selector"; // Assuming this component handles value and onChange correctly
 import useSWR from "swr";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Spinner } from "@/components/ui/spinner";
 
 // Define the schema for the form data (what react-hook-form will manage)
 const CompanyProfileSchema = z.object({
@@ -133,7 +133,7 @@ export function ProfileSettings() {
   if (isFetching && !apiSettings) {
     return (
       <div className="flex justify-center items-center min-h-[200px]">
-        <Loader2 className="h-8 w-8 animate-spin text-gray-500" />
+        <Spinner className="h-8 w-8" />
         <span className="sr-only">Loading settings...</span>
       </div>
     );
@@ -213,7 +213,7 @@ export function ProfileSettings() {
             <Button type="submit" disabled={isSubmitting || !isDirty}>
               {isSubmitting ? (
                 <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  <Spinner className="mr-2 h-4 w-4 " />
                   Saving...
                 </>
               ) : (

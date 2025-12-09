@@ -2,7 +2,6 @@
 
 import React, { useCallback, useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { useVirtualizer } from "@tanstack/react-virtual";
-import { Search, Calendar, Hash, User } from "lucide-react";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { InputGroup, InputGroupInput } from "@/components/ui/input-group";
@@ -50,7 +49,7 @@ const OptimizedAvatar = React.memo(({ src, alt }: { src: string; alt: string }) 
         />
       ) : null}
       <AvatarFallback>
-        <User className="w-5 h-5" />
+        <svg className="w-5 h-5" />
       </AvatarFallback>
     </Avatar>
   );
@@ -68,11 +67,11 @@ const CustomerItem = React.memo(
       </div>
       <div className="text-right text-xs space-y-0.5">
         <p className="flex items-center justify-end gap-1 text-primary">
-          <Hash className="w-3 h-3" />
+          <svg className="w-3 h-3" />
           <span className="font-semibold">{customer.transactionCode}</span>
         </p>
         <p className="flex items-center justify-end gap-1 text-muted-foreground">
-          <Calendar className="w-3 h-3" />
+          <svg className="w-3 h-3" />
           {customer.createdAt}
         </p>
       </div>

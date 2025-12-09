@@ -2,9 +2,9 @@
 
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/badge";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { User, MoreVertical, Edit2, Copy, Trash2 } from "lucide-react";
+import { Badge } from "./ui/badge";
 
 interface Customer {
   id: string;

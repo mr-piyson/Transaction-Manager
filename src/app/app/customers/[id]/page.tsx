@@ -1,11 +1,9 @@
 "use client";
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { AlertCircle, ArrowLeft, Briefcase, Building2, Calendar, Heart, Mail, MapPin, Phone, User, Users, Edit, Trash2, Save, X } from "lucide-react";
 import Link from "next/link";
 import { use, useEffect, useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -137,7 +135,7 @@ export default function EmployeeDetailPage({ params }: { params: Promise<{ id: s
         <div className="flex items-center gap-4">
           <Link href="/app/customers">
             <Button variant="ghost" size="icon">
-              <ArrowLeft className="h-4 w-4" />
+              <svg className="h-4 w-4" />
             </Button>
           </Link>
           <h1 className="max-w-[150px] sm:max-w-[200px] md:max-w-none font-bold tracking-tight truncate text-nowrap">Employee Details</h1>
@@ -154,18 +152,18 @@ export default function EmployeeDetailPage({ params }: { params: Promise<{ id: s
                   setEditedData(employee || {});
                 }}
               >
-                <X className="h-4 w-4 mr-2" />
+                <svg className="h-4 w-4 mr-2" />
                 Cancel
               </Button>
               <Button size="sm" onClick={() => updateMutation.mutate(editedData)} disabled={updateMutation.isPending}>
-                <Save className="h-4 w-4 mr-2" />
+                <svg className="h-4 w-4 mr-2" />
                 Save
               </Button>
             </>
           ) : (
             <>
               <Button variant="outline" size="sm" onClick={() => setIsEditing(true)}>
-                <Edit className="h-4 w-4 mr-2" />
+                <svg className="h-4 w-4 mr-2" />
                 Edit
               </Button>
               <Button
@@ -178,7 +176,7 @@ export default function EmployeeDetailPage({ params }: { params: Promise<{ id: s
                 }}
                 disabled={deleteMutation.isPending}
               >
-                <Trash2 className="h-4 w-4 mr-2" />
+                <svg className="h-4 w-4 mr-2" />
                 Delete
               </Button>
             </>
@@ -261,9 +259,9 @@ export default function EmployeeDetailPage({ params }: { params: Promise<{ id: s
             <CardTitle className="text-lg">Contact Information</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <EditableField icon={Mail} label="Email" value={editedData.email} isEditing={isEditing} onChange={value => setEditedData({ ...editedData, email: value })} type="email" />
-            <EditableField icon={Phone} label="Mobile" value={editedData.phone} isEditing={isEditing} onChange={value => setEditedData({ ...editedData, phone: value })} type="tel" />
-            <EditableField icon={MapPin} label="Address" value={editedData.address} isEditing={isEditing} onChange={value => setEditedData({ ...editedData, address: value })} multiline />
+            <EditableField icon={""} label="Email" value={editedData.email} isEditing={isEditing} onChange={value => setEditedData({ ...editedData, email: value })} type="email" />
+            <EditableField icon={""} label="Mobile" value={editedData.phone} isEditing={isEditing} onChange={value => setEditedData({ ...editedData, phone: value })} type="tel" />
+            <EditableField icon={""} label="Address" value={editedData.address} isEditing={isEditing} onChange={value => setEditedData({ ...editedData, address: value })} multiline />
           </CardContent>
         </Card>
 
@@ -273,9 +271,9 @@ export default function EmployeeDetailPage({ params }: { params: Promise<{ id: s
             <CardTitle className="text-lg">Records</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <EditableField icon={Mail} label="Email" value={editedData.email} isEditing={isEditing} onChange={value => setEditedData({ ...editedData, email: value })} type="email" />
-            <EditableField icon={Phone} label="Mobile" value={editedData.phone} isEditing={isEditing} onChange={value => setEditedData({ ...editedData, phone: value })} type="tel" />
-            <EditableField icon={MapPin} label="Address" value={editedData.address} isEditing={isEditing} onChange={value => setEditedData({ ...editedData, address: value })} multiline />
+            <EditableField icon={""} label="Email" value={editedData.email} isEditing={isEditing} onChange={value => setEditedData({ ...editedData, email: value })} type="email" />
+            <EditableField icon={""} label="Mobile" value={editedData.phone} isEditing={isEditing} onChange={value => setEditedData({ ...editedData, phone: value })} type="tel" />
+            <EditableField icon={""} label="Address" value={editedData.address} isEditing={isEditing} onChange={value => setEditedData({ ...editedData, address: value })} multiline />
           </CardContent>
         </Card>
       </div>

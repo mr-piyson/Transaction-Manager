@@ -5,12 +5,12 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
+import { Badge } from "../ui/badge";
 
 // Mock customer data
 const mockCustomers = [
@@ -188,7 +188,7 @@ export default function CustomerPage() {
         {viewMode === "grid" ? (
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {filteredCustomers.map(customer => (
-              <Link key={customer.id} href={`/App/Customers/${customer.id}`} className="hover:shadow-md transition-shadow" draggable="false">
+              <Link key={customer.id} href={`/app/customers/${customer.id}`} className="hover:shadow-md transition-shadow" draggable="false">
                 <Card key={customer.id} className="hover:shadow-md transition-shadow">
                   <CardHeader className="pb-3">
                     <div className="flex items-start justify-between">

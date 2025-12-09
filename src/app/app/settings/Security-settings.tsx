@@ -3,7 +3,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { AlertTriangle, Terminal } from "lucide-react";
 
 export function SecuritySettings() {
   return (
@@ -36,8 +35,8 @@ export function SecuritySettings() {
 
       <Card>
         <CardContent>
-          <Alert variant={"warning"}>
-            <AlertTriangle className="size-4" />
+          <Alert>
+            <svg className="size-4" />
             <AlertTitle>Warning</AlertTitle>
             <AlertDescription>This Feature is currently in development. You can change your secret key</AlertDescription>
           </Alert>

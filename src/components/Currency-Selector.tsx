@@ -2,12 +2,12 @@
 
 import { Check, ChevronsUpDown } from "lucide-react";
 import * as React from "react";
-import { Badge } from "@/components/badge";
 import { Button } from "@/components/ui/button";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { currencies, getCurrency } from "@/lib/currencies";
 import { cn } from "@/lib/utils";
+import { Badge } from "./ui/badge";
 
 interface CurrencySelectorProps {
   value: string;
