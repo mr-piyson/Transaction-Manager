@@ -37,7 +37,7 @@ export function ProfileSettings() {
     error,
     mutate, // Function to revalidate SWR cache
     isLoading: isFetching,
-  } = useSWR<ApiSetting[]>(`/api/Settings`, async (url: string) => {
+  } = useSWR<ApiSetting[]>(`/api/settings`, async (url: string) => {
     const res = await fetch(url);
     if (!res.ok) {
       // Throw an error to be caught by SWR's error handling

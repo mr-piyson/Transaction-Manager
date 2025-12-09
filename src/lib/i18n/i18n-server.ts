@@ -104,8 +104,6 @@ export async function saveLocaleToDatabase(userId: number, locale: Locale): Prom
       data: { locale },
     });
 
-    console.log("Saved locale to database:", { userId, locale });
-
     return { success: true };
   } catch (error) {
     console.error("Error saving locale to database:", error);

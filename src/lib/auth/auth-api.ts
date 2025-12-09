@@ -34,17 +34,16 @@ type AuthenticatedHandler<T extends string> = (req: NextRequest, ctx: RouteConte
 export function withAuth<T extends string>(route: T, handler: AuthenticatedHandler<T>) {
   return async (req: NextRequest, ctx: RouteContext<T>): Promise<NextResponse> => {
     try {
-      // Check if user is authenticated
       const user = await getCurrentUserAPI();
 
       if (!user) {
         return NextResponse.json({ error: "Unauthorized - Please sign in" }, { status: 401 });
       }
 
-      // Execute the handler with authenticated user
-      return await handler(req, ctx, user);
+      return handler(req, ctx, user);
     } catch (error) {
       console.error("Auth wrapper error:", error);
+
       return NextResponse.json({ error: "Authentication failed" }, { status: 401 });
     }
   };

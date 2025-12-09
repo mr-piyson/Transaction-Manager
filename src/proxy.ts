@@ -9,7 +9,7 @@ const JWT_SECRET = new TextEncoder().encode(process.env.JWT_SECRET_ACCESS!);
 const criticalProtectedRoutes = ["/admin", "/api/admin"];
 const publicAuthRoutes = ["/auth"];
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const accessToken = request.cookies.get("access_token")?.value;
   const refreshToken = request.cookies.get("refresh_token")?.value;
