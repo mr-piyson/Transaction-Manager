@@ -1,5 +1,5 @@
 import { withAuth } from "@/lib/auth/auth-api";
-import db from "@/lib/db";
+import db from "@/lib/database";
 import { NextRequest, NextResponse } from "next/server";
 
 export const GET = withAuth("/api/customers/", async (req, ctx, user) => {

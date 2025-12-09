@@ -1,5 +1,5 @@
 import { withAuth } from "@/lib/auth/auth-api";
-import db from "@/lib/db";
+import db from "@/lib/database";
 import { Customers } from "@prisma/client";
 import { NextResponse } from "next/server";
 import z from "zod";

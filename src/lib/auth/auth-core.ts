@@ -3,7 +3,7 @@
 import jwt from "jsonwebtoken";
 import { cookies } from "next/headers";
 import { env } from "../env";
-import db from "../db";
+import db from "../database";
 
 // Types
 export interface TokenPayload {
