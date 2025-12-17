@@ -202,7 +202,7 @@ export default function CustomerPage() {
                           <p className="text-sm text-muted-foreground mt-1">{customer.company}</p>
                         </div>
                       </div>
-                      <Badge variant={getStatusColor(customer.status)}>{customer.status}</Badge>
+                      <Badge>{customer.status}</Badge>
                     </div>
                   </CardHeader>
                   <CardContent className="space-y-3">
@@ -297,12 +297,14 @@ export default function CustomerPage() {
                       </td>
                       <td className="p-4">
                         <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" className="h-8 w-8 p-0">
-                              <span className="sr-only">Open menu</span>
-                              <MoreHorizontal className="h-4 w-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
+                          <DropdownMenuTrigger
+                            render={
+                              <Button variant="ghost" className="h-8 w-8 p-0">
+                                <span className="sr-only">Open menu</span>
+                                <MoreHorizontal className="h-4 w-4" />
+                              </Button>
+                            }
+                          ></DropdownMenuTrigger>
                           <DropdownMenuContent>
                             <DropdownMenuItem
                               className="gap-1 bg-transparent"

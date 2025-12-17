@@ -1,5 +1,4 @@
 "use client";
-import DevelopmentProgressPage from "@/components/Home/HomePage";
 
 // export default function Home() {
 //   return <DevelopmentProgressPage />;

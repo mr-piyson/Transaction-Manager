@@ -145,7 +145,7 @@ export default function SignUpTab() {
           </div>
 
           <Button disabled={loading} type="submit" className="w-full font-bold">
-            {loading && <Spinner className="mr-2 h-4 w-4 " />}
+            {loading && <Spinner className="ps-2 h-4 w-4 " />}
             {!loading && "Sign Up"}
           </Button>
         </form>

@@ -1,33 +1,20 @@
 "use client";
 
-import React, { useCallback, useEffect, useMemo, useRef, useState, useTransition } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useVirtualizer } from "@tanstack/react-virtual";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { InputGroup, InputGroupInput } from "@/components/ui/input-group";
+import Link from "next/link";
+import { useQuery } from "@tanstack/react-query";
+import axios, { AxiosResponse } from "axios";
+import { Customers } from "@/types/prisma/client";
+import { Button } from "@/components/ui/button";
+import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty";
+import { PlusIcon, RefreshCcwIcon } from "lucide-react";
+import { Spinner } from "@/components/ui/spinner";
+import CreateCustomerDialog from "@/components/Customers/create-customer-dialog";
 
-// --- Types ---
-type Customer = {
-  id: number;
-  name: string;
-  email: string;
-  avatarUrl: string;
-  transactionCode: string;
-  createdAt: string;
-};
-
-const generateMockCustomers = (count: number): Customer[] => {
-  return Array.from({ length: count }).map((_, i) => ({
-    id: i + 1,
-    name: `Customer ${i + 1}`,
-    email: `customer${i + 1}@example.com`,
-    avatarUrl: `https://i.pravatar.cc/150?img=${i % 70}`,
-    transactionCode: `TXN-${(Math.random() * 1e9).toFixed(0).padStart(9, "0")}`,
-    createdAt: new Date(Date.now() - Math.floor(Math.random() * 365) * 24 * 60 * 60 * 1000).toLocaleDateString(),
-  }));
-};
-
-const ALL_CUSTOMERS = generateMockCustomers(2000);
 const ITEM_HEIGHT = 72;
 
 // --- Optimized Avatar with lazy loading and error handling ---
@@ -58,25 +45,38 @@ OptimizedAvatar.displayName = "OptimizedAvatar";
 
 // --- Highly optimized CustomerItem with proper memoization ---
 const CustomerItem = React.memo(
-  ({ customer }: { customer: Customer }) => (
-    <div className="flex items-center gap-3 p-3 cursor-pointer transition-colors hover:bg-accent/50 border-b border-input" style={{ height: `${ITEM_HEIGHT}px` }}>
-      <OptimizedAvatar src={customer.avatarUrl} alt={customer.name} />
-      <div className="flex-1 min-w-0">
-        <p className="font-semibold truncate">{customer.name}</p>
-        <p className="text-sm text-muted-foreground truncate">{customer.email}</p>
+  ({ customer }: { customer: Customers }) => {
+    // Safely handle date conversion
+    const formattedDate = useMemo(() => {
+      if (customer.createdAt instanceof Date) {
+        return customer.createdAt.toLocaleDateString();
+      }
+      if (typeof customer.createdAt === "string") {
+        return new Date(customer.createdAt).toLocaleDateString();
+      }
+      return "N/A";
+    }, [customer.createdAt]);
+
+    return (
+      <div className="flex items-center gap-3 p-3 cursor-pointer transition-colors hover:bg-accent/50 border-b border-input" style={{ height: `${ITEM_HEIGHT}px` }}>
+        <OptimizedAvatar src={customer.image ?? ""} alt={customer.name || "image"} />
+        <div className="flex-1 min-w-0">
+          <p className="font-semibold truncate">{customer.name}</p>
+          <p className="text-sm text-muted-foreground truncate">{customer.email}</p>
+        </div>
+        <div className="text-right text-xs space-y-0.5">
+          <p className="flex items-center justify-end gap-1 text-primary">
+            <svg className="w-3 h-3" />
+            <span className="font-semibold">{customer.code}</span>
+          </p>
+          <p className="flex items-center justify-end gap-1 text-muted-foreground">
+            <svg className="w-3 h-3" />
+            {formattedDate}
+          </p>
+        </div>
       </div>
-      <div className="text-right text-xs space-y-0.5">
-        <p className="flex items-center justify-end gap-1 text-primary">
-          <svg className="w-3 h-3" />
-          <span className="font-semibold">{customer.transactionCode}</span>
-        </p>
-        <p className="flex items-center justify-end gap-1 text-muted-foreground">
-          <svg className="w-3 h-3" />
-          {customer.createdAt}
-        </p>
-      </div>
-    </div>
-  ),
+    );
+  },
   // Custom comparison function - only re-render if customer ID changes
   (prev, next) => prev.customer.id === next.customer.id
 );
@@ -104,28 +104,39 @@ type CustomerPageProps = {
 
 export default function CustomerPage(props: CustomerPageProps) {
   const parentRef = useRef<HTMLDivElement>(null);
-
   const [search, setSearch] = useState("");
-  const debouncedSearch = useDebounce(search, 150); // 150ms debounce
-  const [isPending, startTransition] = useTransition();
+  const debouncedSearch = useDebounce(search, 150);
+
+  const {
+    data: ALL_CUSTOMERS,
+    isLoading,
+    error,
+    refetch,
+  } = useQuery<Customers[], Error>({
+    queryKey: ["customers"],
+    queryFn: async (): Promise<Customers[]> => {
+      const response: AxiosResponse<Customers[]> = await axios.get("/api/customers");
+      return response.data;
+    },
+  });
 
   // Optimized filtering with early exit
   const filteredCustomers = useMemo(() => {
+    if (!ALL_CUSTOMERS) return [];
     if (!debouncedSearch.trim()) return ALL_CUSTOMERS;
 
     const searchLower = debouncedSearch.toLowerCase().trim();
-    const results: Customer[] = [];
+    const results: Customers[] = [];
 
-    // Early exit optimization - stop after finding enough results if needed
     for (let i = 0; i < ALL_CUSTOMERS.length; i++) {
       const customer = ALL_CUSTOMERS[i];
-      if (customer.name.toLowerCase().includes(searchLower) || customer.email.toLowerCase().includes(searchLower) || customer.transactionCode.toLowerCase().includes(searchLower)) {
+      if (customer.name?.toLowerCase().includes(searchLower) || customer.email?.toLowerCase().includes(searchLower) || customer.code?.toLowerCase().includes(searchLower)) {
         results.push(customer);
       }
     }
 
     return results;
-  }, [debouncedSearch]);
+  }, [debouncedSearch, ALL_CUSTOMERS]);
 
   const count = filteredCustomers.length;
 
@@ -134,17 +145,83 @@ export default function CustomerPage(props: CustomerPageProps) {
     count,
     getScrollElement: () => parentRef.current,
     estimateSize: useCallback(() => ITEM_HEIGHT, []),
-    overscan: 10, // Increased overscan for smoother scrolling
-    measureElement: undefined, // Skip measurement for fixed height items
+    overscan: 10,
   });
 
   const virtualItems = virtualizer.getVirtualItems();
 
-  // Handle search input with transition
+  // Handle search input
   const handleSearchChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setSearch(value);
   }, []);
+
+  // Loading state
+  if (isLoading) {
+    return (
+      <div className="flex h-full items-center justify-center">
+        <Spinner />
+        <p className="ms-2 text-muted-foreground">Loading customers...</p>
+      </div>
+    );
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <Empty className="from-muted/50 to-background h-full bg-linear-to-b from-30%">
+        <EmptyHeader>
+          <EmptyMedia variant="icon">
+            <svg className="icon-[lucide-bell]" />
+          </EmptyMedia>
+          <EmptyTitle>Error Loading Customers</EmptyTitle>
+          <EmptyDescription>There was an error loading customers. Please try again.</EmptyDescription>
+        </EmptyHeader>
+        <EmptyContent>
+          <Button onClick={() => refetch()} variant="outline" size="sm">
+            <RefreshCcwIcon />
+            Refresh
+          </Button>
+        </EmptyContent>
+      </Empty>
+    );
+  }
+
+  // Empty data state
+  if (!ALL_CUSTOMERS || ALL_CUSTOMERS.length === 0) {
+    return (
+      <Empty>
+        <EmptyHeader>
+          <EmptyMedia>
+            <div className="*:data-[slot=avatar]:ring-background flex -space-x-2 *:data-[slot=avatar]:size-12 *:data-[slot=avatar]:ring-2 *:data-[slot=avatar]:grayscale">
+              <Avatar>
+                <AvatarImage src="https://github.com/shadcn.png" alt="@shadcn" />
+                <AvatarFallback>CN</AvatarFallback>
+              </Avatar>
+              <Avatar>
+                <AvatarImage src="https://github.com/maxleiter.png" alt="@maxleiter" />
+                <AvatarFallback>LR</AvatarFallback>
+              </Avatar>
+              <Avatar>
+                <AvatarImage src="https://github.com/evilrabbit.png" alt="@evilrabbit" />
+                <AvatarFallback>ER</AvatarFallback>
+              </Avatar>
+            </div>
+          </EmptyMedia>
+          <EmptyTitle>No Customers</EmptyTitle>
+          <EmptyDescription>There are no customers yet. Add your first customer to get started.</EmptyDescription>
+        </EmptyHeader>
+        <EmptyContent>
+          <CreateCustomerDialog>
+            <Button size="sm">
+              <PlusIcon />
+              Add Customer
+            </Button>
+          </CreateCustomerDialog>
+        </EmptyContent>
+      </Empty>
+    );
+  }
 
   return (
     <div className="flex flex-row h-full">
@@ -154,9 +231,6 @@ export default function CustomerPage(props: CustomerPageProps) {
           <InputGroup className="flex-1">
             <InputGroupInput placeholder="Search by Name, Email, or Code..." value={search} onChange={handleSearchChange} autoComplete="off" spellCheck="false" />
           </InputGroup>
-          {/* <Button disabled={search !== debouncedSearch}>
-            <Search className="h-4 w-4" />
-          </Button> */}
         </div>
 
         {/* Scrollable Area */}
@@ -201,7 +275,9 @@ export default function CustomerPage(props: CustomerPageProps) {
                         willChange: "transform",
                       }}
                     >
-                      <CustomerItem customer={customer} />
+                      <Link href={`/app/customers/${customer.id}`}>
+                        <CustomerItem customer={customer} />
+                      </Link>
                     </div>
                   );
                 })}

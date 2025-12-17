@@ -21,17 +21,19 @@ export function CurrencySelector({ value, onChange }: CurrencySelectorProps) {
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
-        <Button variant="outline" role="combobox" aria-expanded={open} className="w-full justify-between">
-          <div className="flex items-center gap-2">
-            <FlagIcon icon={selectedCurrency.icon} />
-            <span>
-              {selectedCurrency.code} - {selectedCurrency.name}
-            </span>
-          </div>
-          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-        </Button>
-      </PopoverTrigger>
+      <PopoverTrigger
+        render={
+          <Button variant="outline" role="combobox" aria-expanded={open} className="w-full justify-between">
+            <div className="flex items-center gap-2">
+              <FlagIcon icon={selectedCurrency.icon} />
+              <span>
+                {selectedCurrency.code} - {selectedCurrency.name}
+              </span>
+            </div>
+            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+          </Button>
+        }
+      ></PopoverTrigger>
       <PopoverContent className="w-[300px] p-0">
         <Command>
           <CommandInput placeholder="Search currency..." />

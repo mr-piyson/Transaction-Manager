@@ -32,7 +32,7 @@ import { useI18n } from "@/hooks/use-i18n";
 import { LANGUAGE_CONFIG, Locale } from "@/lib/i18n/i18n-core";
 
 // Create QueryClient instance outside component to prevent recreation
-const queryClient = new QueryClient({
+export const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       staleTime: 60 * 1000, // 1 minute
@@ -159,7 +159,7 @@ export const UserMenu = memo(function UserMenu() {
 
         <DropdownMenuGroup>
           <DropdownMenuItem onClick={handleThemeToggle}>
-            <Moon className="mr-2 h-4 w-4" />
+            <Moon className="ps-2 h-4 w-4" />
             Dark Mode
             <CommandShortcut>
               <ThemeSwitcher />
@@ -170,12 +170,10 @@ export const UserMenu = memo(function UserMenu() {
         <DropdownMenuSeparator />
 
         <DropdownMenuItem onClick={handleSignOut}>
-          <LogOut className="mr-2 h-4 w-4" />
+          <LogOut className="ps-2 h-4 w-4" />
           Log out
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   );
 });
-
-// Removed LanguageSwitcher as it's unused and redundant with the dropdown menu

@@ -7,7 +7,7 @@ import { useTheme } from "next-themes";
 export function AppearanceSettings() {
   const theme = useTheme();
 
-  const handleThemeChange = (value: string) => {
+  const handleThemeChange = (value: any) => {
     if (value === "system") {
       theme.setTheme("system");
     } else {
@@ -25,7 +25,7 @@ export function AppearanceSettings() {
         <CardContent className="space-y-6">
           <div className="space-y-2">
             <Label>Theme</Label>
-            <RadioGroup defaultValue={theme.theme} className="max-sm:flex max-sm:flex-col grid grid-cols-3 gap-4 pt-2" onValueChange={handleThemeChange}>
+            <RadioGroup value={theme.theme ?? "system"} className="max-sm:flex max-sm:flex-col grid grid-cols-3 gap-4 pt-2" onValueChange={handleThemeChange}>
               <div>
                 <RadioGroupItem value="light" id="theme-light" className="sr-only peer" />
                 <Label

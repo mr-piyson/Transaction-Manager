@@ -1,12 +1,6 @@
 "use client";
 
-import {
-  AlertCircle,
-  CheckCircle,
-  Send,
-  TrendingDown,
-  TrendingUp,
-} from "lucide-react";
+import { AlertCircle, CheckCircle, Send, TrendingDown, TrendingUp } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -22,9 +16,7 @@ interface Transaction {
 }
 
 interface TransactionInputProps {
-  onAddTransaction: (
-    transaction: Omit<Transaction, "id" | "timestamp">,
-  ) => void;
+  onAddTransaction: (transaction: Omit<Transaction, "id" | "timestamp">) => void;
   recentDescriptions: string[];
   quickActions: Array<{
     icon: any;
@@ -36,27 +28,17 @@ interface TransactionInputProps {
   onQuickAction: (action: any) => void;
 }
 
-export function TransactionInput({
-  onAddTransaction,
-  recentDescriptions,
-  quickActions,
-  onQuickAction,
-  ...props
-}: TransactionInputProps) {
+export function TransactionInput({ onAddTransaction, recentDescriptions, quickActions, onQuickAction, ...props }: TransactionInputProps) {
   const [newTransaction, setNewTransaction] = useState("");
   const [inputMode, setInputMode] = useState<"simple" | "detailed">("simple");
-  const [transactionType, setTransactionType] = useState<"income" | "expense">(
-    "expense",
-  );
+  const [transactionType, setTransactionType] = useState<"income" | "expense">("expense");
   const [amount, setAmount] = useState("");
   const [description, setDescription] = useState("");
   const [parseError, setParseError] = useState("");
   const [showQuickActions, setShowQuickActions] = useState(false);
   const [suggestions, setSuggestions] = useState<string[]>([]);
 
-  const parseTransaction = (
-    input: string,
-  ): Omit<Transaction, "id" | "timestamp"> | null => {
+  const parseTransaction = (input: string): Omit<Transaction, "id" | "timestamp"> | null => {
     const patterns = [
       /^([+-]?)(\d+(?:\.\d{2})?)\s+(.+)$/,
       /^(income|expense|in|out|i|e)\s+(\d+(?:\.\d{2})?)\s+(.+)$/i,
@@ -78,16 +60,12 @@ export function TransactionInput({
           description = desc.trim();
         } else if (pattern === patterns[1]) {
           const [, typeStr, amountStr, desc] = match;
-          type = ["expense", "out", "e"].includes(typeStr.toLowerCase())
-            ? "expense"
-            : "income";
+          type = ["expense", "out", "e"].includes(typeStr.toLowerCase()) ? "expense" : "income";
           amount = Number.parseFloat(amountStr);
           description = desc.trim();
         } else if (pattern === patterns[2]) {
           const [, amountStr, typeStr, desc] = match;
-          type = ["expense", "out", "e"].includes(typeStr.toLowerCase())
-            ? "expense"
-            : "income";
+          type = ["expense", "out", "e"].includes(typeStr.toLowerCase()) ? "expense" : "income";
           amount = Number.parseFloat(amountStr);
           description = desc.trim();
         } else {
@@ -143,9 +121,7 @@ export function TransactionInput({
   const handleDescriptionChange = (value: string) => {
     setDescription(value);
     if (value.length > 0) {
-      const filtered = recentDescriptions.filter((desc) =>
-        desc.toLowerCase().includes(value.toLowerCase()),
-      );
+      const filtered = recentDescriptions.filter(desc => desc.toLowerCase().includes(value.toLowerCase()));
       setSuggestions(filtered.slice(0, 5));
     } else {
       setSuggestions([]);
@@ -158,16 +134,9 @@ export function TransactionInput({
       {showQuickActions && (
         <div className="p-3 border-b border-border">
           <div className="flex gap-2 overflow-x-auto">
-            {quickActions.map((action) => (
-              <Button
-                key={action.label}
-                variant="outline"
-                size="sm"
-                onClick={() => onQuickAction(action)}
-                className="flex items-center gap-1 whitespace-nowrap"
-              >
-                <action.icon className="w-3 h-3" />${action.amount}{" "}
-                {action.label}
+            {quickActions.map(action => (
+              <Button key={action.label} variant="outline" size="sm" onClick={() => onQuickAction(action)} className="flex items-center gap-1 whitespace-nowrap">
+                <action.icon className="w-3 h-3" />${action.amount} {action.label}
               </Button>
             ))}
           </div>
@@ -177,44 +146,30 @@ export function TransactionInput({
       <div className="relative p-4">
         {/* Input Mode Toggle */}
         <div className="flex items-center gap-2 mb-3">
-          <Toggle
-            pressed={inputMode === "detailed"}
-            onPressedChange={(pressed) =>
-              setInputMode(pressed ? "detailed" : "simple")
-            }
-            size="sm"
-          >
+          <Toggle pressed={inputMode === "detailed"} onPressedChange={pressed => setInputMode(pressed ? "detailed" : "simple")} size="sm">
             Detailed
           </Toggle>
-          <Toggle
-            pressed={showQuickActions}
-            onPressedChange={setShowQuickActions}
-            size="sm"
-          >
+          <Toggle pressed={showQuickActions} onPressedChange={setShowQuickActions} size="sm">
             Quick Actions
           </Toggle>
           {inputMode === "detailed" && (
             <div className="flex gap-1 ml-auto">
               <Toggle
                 pressed={transactionType === "income"}
-                onPressedChange={(pressed) =>
-                  setTransactionType(pressed ? "income" : "expense")
-                }
+                onPressedChange={pressed => setTransactionType(pressed ? "income" : "expense")}
                 size="sm"
                 className="data-[state=on]:bg-green-600 data-[state=on]:text-white"
               >
-                <TrendingUp className="w-3 h-3 mr-1" />
+                <TrendingUp className="w-3 h-3 ps-1" />
                 Income
               </Toggle>
               <Toggle
                 pressed={transactionType === "expense"}
-                onPressedChange={(pressed) =>
-                  setTransactionType(pressed ? "expense" : "income")
-                }
+                onPressedChange={pressed => setTransactionType(pressed ? "expense" : "income")}
                 size="sm"
                 className="data-[state=on]:bg-red-600 data-[state=on]:text-white"
               >
-                <TrendingDown className="w-3 h-3 mr-1" />
+                <TrendingDown className="w-3 h-3 ps-1" />
                 Expense
               </Toggle>
             </div>
@@ -227,19 +182,15 @@ export function TransactionInput({
             <div className="flex gap-2">
               <Input
                 value={newTransaction}
-                onChange={(e) => {
+                onChange={e => {
                   setNewTransaction(e.target.value);
                   setParseError("");
                 }}
                 placeholder="e.g., +100 Coffee sales or -50 Office supplies"
                 className={`flex-1 ${parseError ? "border-red-500" : ""}`}
-                onKeyPress={(e) => e.key === "Enter" && handleAddTransaction()}
+                onKeyPress={e => e.key === "Enter" && handleAddTransaction()}
               />
-              <Button
-                onClick={handleAddTransaction}
-                disabled={!newTransaction.trim()}
-                className="bg-primary text-primary-foreground hover:bg-primary/90"
-              >
+              <Button onClick={handleAddTransaction} disabled={!newTransaction.trim()} className="bg-primary text-primary-foreground hover:bg-primary/90">
                 <Send className="w-4 h-4" />
               </Button>
             </div>
@@ -249,10 +200,7 @@ export function TransactionInput({
                 {parseError}
               </div>
             ) : (
-              <p className="text-xs text-muted-foreground">
-                Format: +amount description (income) or -amount description
-                (expense)
-              </p>
+              <p className="text-xs text-muted-foreground">Format: +amount description (income) or -amount description (expense)</p>
             )}
           </div>
         ) : (
@@ -262,7 +210,7 @@ export function TransactionInput({
               <div className="flex-1">
                 <Input
                   value={amount}
-                  onChange={(e) => {
+                  onChange={e => {
                     setAmount(e.target.value);
                     setParseError("");
                   }}
@@ -276,12 +224,10 @@ export function TransactionInput({
               <div className="flex-[2] relative">
                 <Input
                   value={description}
-                  onChange={(e) => handleDescriptionChange(e.target.value)}
+                  onChange={e => handleDescriptionChange(e.target.value)}
                   placeholder="Description"
                   className={parseError ? "border-red-500" : ""}
-                  onKeyPress={(e) =>
-                    e.key === "Enter" && handleAddTransaction()
-                  }
+                  onKeyPress={e => e.key === "Enter" && handleAddTransaction()}
                 />
                 {suggestions.length > 0 && (
                   <div className="absolute bottom-full left-0 right-0 bg-popover border border-border rounded-md shadow-md mb-1 max-h-32 overflow-y-auto">
@@ -300,11 +246,7 @@ export function TransactionInput({
                   </div>
                 )}
               </div>
-              <Button
-                onClick={handleAddTransaction}
-                disabled={!amount.trim() || !description.trim()}
-                className="bg-primary text-primary-foreground hover:bg-primary/90"
-              >
+              <Button onClick={handleAddTransaction} disabled={!amount.trim() || !description.trim()} className="bg-primary text-primary-foreground hover:bg-primary/90">
                 <Send className="w-4 h-4" />
               </Button>
             </div>

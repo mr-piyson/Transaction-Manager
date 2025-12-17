@@ -67,7 +67,7 @@ export default function SignInTab() {
           </CardContent>
           <CardFooter className="mt-5">
             <Button disabled={loading} type="submit" className="w-full font-bold">
-              {loading && <Spinner className="mr-2 h-4 w-4" />}
+              {loading && <Spinner className="ps-2 h-4 w-4" />}
               {!loading && "Sign In"}
             </Button>
           </CardFooter>

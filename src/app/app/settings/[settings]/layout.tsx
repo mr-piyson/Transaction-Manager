@@ -20,7 +20,7 @@ export default async function SettingsLayout(props: SettingsLayoutProps) {
         const isActive = pathname === item.title.toLocaleLowerCase();
         return (
           <Link key={item.path} href={item.path} className={cn("flex items-center px-3 py-2 text-sm rounded-md group", isActive ? "bg-primary text-primary-foreground" : "hover:bg-muted")}>
-            <svg className={cn(item.icon, "mr-3 h-5 w-5", isActive ? "text-primary-foreground" : "text-muted-foreground group-hover:text-foreground")} />
+            <svg className={cn(item.icon, "me-3 h-5 w-5", isActive ? "text-primary-foreground" : "text-muted-foreground group-hover:text-foreground")} />
             <span className={cn(isActive ? "text-primary-foreground" : "text-muted-foreground group-hover:text-foreground")}>{item.title}</span>
           </Link>
         );

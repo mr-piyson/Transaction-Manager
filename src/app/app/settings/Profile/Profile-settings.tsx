@@ -213,7 +213,7 @@ export function ProfileSettings() {
             <Button type="submit" disabled={isSubmitting || !isDirty}>
               {isSubmitting ? (
                 <>
-                  <Spinner className="mr-2 h-4 w-4 " />
+                  <Spinner className="ps-2 h-4 w-4 " />
                   Saving...
                 </>
               ) : (

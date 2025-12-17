@@ -63,22 +63,24 @@ export function NoteCard({ note, onClick, onEdit, onDuplicate, onDelete }: NoteC
           </div>
         </div>
         <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="sm">
-              <MoreVertical className="w-4 h-4" />
-            </Button>
-          </DropdownMenuTrigger>
+          <DropdownMenuTrigger
+            render={
+              <Button variant="ghost" size="sm">
+                <MoreVertical className="w-4 h-4" />
+              </Button>
+            }
+          ></DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuItem onClick={onEdit}>
-              <Edit2 className="w-4 h-4 mr-2" />
+              <Edit2 className="w-4 h-4 ps-2" />
               Edit
             </DropdownMenuItem>
             <DropdownMenuItem onClick={onDuplicate}>
-              <Copy className="w-4 h-4 mr-2" />
+              <Copy className="w-4 h-4 ps-2" />
               Duplicate
             </DropdownMenuItem>
             <DropdownMenuItem onClick={onDelete} className="text-destructive focus:text-destructive">
-              <Trash2 className="w-4 h-4 mr-2" />
+              <Trash2 className="w-4 h-4 ps-2" />
               Delete
             </DropdownMenuItem>
           </DropdownMenuContent>

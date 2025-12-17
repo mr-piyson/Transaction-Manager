@@ -1,6 +1,6 @@
 generator client {
   provider = "prisma-client"
-  output   = "./generated/prisma"
+  output   = "../src/types/prisma"
 }
 
 datasource db {
@@ -100,17 +100,15 @@ model Transactions {
 
 model Customers {
   id        Int       @id @default(autoincrement())
-  name      String
+  name      String?
   email     String?
-  code      String
+  code      String?
   image     String?
   status    String    @default("active")
-  phone     String    @unique
+  phone     String?
   address   String?
   createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  deletedAt DateTime?
-  deletedBy Int?
+  updatedAt DateTime? @updatedAt
 }
 
 model Notes {

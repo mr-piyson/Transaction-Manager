@@ -14,6 +14,7 @@ import { useToolbar } from "@/hooks/use-toolbar";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import axios from "axios";
+import { cn } from "@/lib/utils";
 
 async function fetchEmployee(id: string) {
   const response = await fetch(`/api/customers/${id}`);
@@ -45,7 +46,7 @@ async function deleteEmployee(id: string) {
 }
 
 function EditableField({
-  icon: Icon,
+  icon,
   label,
   value,
   isEditing,
@@ -53,7 +54,7 @@ function EditableField({
   multiline = false,
   type = "text",
 }: {
-  icon: any;
+  icon: string;
   label: string;
   value: string | null | undefined;
   isEditing: boolean;
@@ -65,7 +66,7 @@ function EditableField({
 
   return (
     <div className="flex items-start gap-3">
-      <Icon className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
+      <svg className={cn(icon, "h-4 w-4 text-muted-foreground mt-0.5 shrink-0")} />
       <div className="space-y-1 flex-1">
         <p className="text-sm font-medium text-muted-foreground">{label}</p>
         {isEditing ? (
@@ -152,18 +153,18 @@ export default function EmployeeDetailPage({ params }: { params: Promise<{ id: s
                   setEditedData(employee || {});
                 }}
               >
-                <svg className="h-4 w-4 mr-2" />
+                <svg className="h-4 w-4 ps-2" />
                 Cancel
               </Button>
               <Button size="sm" onClick={() => updateMutation.mutate(editedData)} disabled={updateMutation.isPending}>
-                <svg className="h-4 w-4 mr-2" />
+                <svg className="h-4 w-4 ps-2" />
                 Save
               </Button>
             </>
           ) : (
             <>
               <Button variant="outline" size="sm" onClick={() => setIsEditing(true)}>
-                <svg className="h-4 w-4 mr-2" />
+                <svg className="h-4 w-4 ps-2" />
                 Edit
               </Button>
               <Button
@@ -176,7 +177,7 @@ export default function EmployeeDetailPage({ params }: { params: Promise<{ id: s
                 }}
                 disabled={deleteMutation.isPending}
               >
-                <svg className="h-4 w-4 mr-2" />
+                <svg className="h-4 w-4 ps-2" />
                 Delete
               </Button>
             </>
@@ -232,8 +233,8 @@ export default function EmployeeDetailPage({ params }: { params: Promise<{ id: s
         <CardContent className="p-6">
           <div className="flex flex-col md:flex-row sm:items-start gap-6 items-center h-full">
             <Avatar className="h-32 w-32 border-4 border-border">
-              <AvatarImage src={`http://intranet.bfginternational.com:88/storage/employee/${employee.image}`} alt={editedData.name || employee.name} style={{ objectFit: "cover" }} />
-              <AvatarFallback className="text-3xl">{(editedData.name || employee.name).charAt(0)}</AvatarFallback>
+              <AvatarImage src={`http://intranet.bfginternational.com:88/storage/employee/${employee.image}`} alt={editedData.name || employee.name || ""} style={{ objectFit: "cover" }} />
+              <AvatarFallback className="text-3xl">{(editedData.name || employee.name)?.charAt(0)}</AvatarFallback>
             </Avatar>
 
             <div className="flex flex-1 flex-col space-y-4 h-full">

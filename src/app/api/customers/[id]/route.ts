@@ -7,7 +7,7 @@ import z from "zod";
 export const GET = withAuth("/api/customers/[id]", async (req, ctx, user) => {
   try {
     // GET logic here
-    const id = ctx.params.id;
+    const id = (await ctx.params).id;
     const zid = z.number();
     const valid = zid.safeParse(Number(id));
     if (!valid.success) return NextResponse.json({ error: "invalid id" }, { status: 500 });
@@ -27,7 +27,7 @@ export const GET = withAuth("/api/customers/[id]", async (req, ctx, user) => {
 
 export const PATCH = withAuth("/api/customers/[id]", async (req, ctx, user) => {
   try {
-    const id = ctx.params.id;
+    const id = (await ctx.params).id;
     const data = (await req.json()) as Customers;
     const zid = z.number();
     const valid = zid.safeParse(Number(id));
