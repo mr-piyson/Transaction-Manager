@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { Plus } from "lucide-react";
 import axios from "axios";
+import { queryClient } from "../App/App";
 
 export default function CreateCustomerDialog(props: any) {
   const [open, setOpen] = useState(false);
@@ -20,24 +21,19 @@ export default function CreateCustomerDialog(props: any) {
     const formData = new FormData(e.currentTarget);
 
     try {
-      const res = await fetch("/api/customers", {
-        method: "POST",
-        body: formData,
-      });
-
-      if (!res.ok) {
-        throw new Error("Failed to create customer");
-      }
+      const res = await axios.post("/api/customers", formData);
 
       toast.success("Customer created", {
         description: "Successfully create a customer",
       });
+      queryClient.refetchQueries({
+        queryKey: ["customers"],
+      });
 
-      e.currentTarget.reset();
       setOpen(false);
     } catch (error) {
       toast.error("Error", {
-        description: "Something went wrong while creating the customer.",
+        description: `${error}`,
       });
     } finally {
       setLoading(false);
@@ -47,10 +43,12 @@ export default function CreateCustomerDialog(props: any) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        {props.children && (
+        {props.children ? (
+          props.children
+        ) : (
           <Button>
             <Plus />
-            Create Customer
+            Add new Customer
           </Button>
         )}
       </DialogTrigger>

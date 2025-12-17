@@ -11,9 +11,10 @@ import axios, { AxiosResponse } from "axios";
 import { Customers } from "@/types/prisma/client";
 import { Button } from "@/components/ui/button";
 import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty";
-import { PlusIcon, RefreshCcwIcon } from "lucide-react";
+import { Plus, PlusIcon, RefreshCcwIcon } from "lucide-react";
 import { Spinner } from "@/components/ui/spinner";
 import CreateCustomerDialog from "@/components/Customers/create-customer-dialog";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 const ITEM_HEIGHT = 72;
 
@@ -227,10 +228,20 @@ export default function CustomerPage(props: CustomerPageProps) {
     <div className="flex flex-row h-full">
       <aside className="border-e flex flex-col gap-2 max-w-mid max-sm:w-full p-2 w-96">
         {/* Search Input */}
-        <div className="flex flex-row gap-2 items-center">
+        <div className="flex flex-row items-center gap-2">
           <InputGroup className="flex-1">
             <InputGroupInput placeholder="Search by Name, Email, or Code..." value={search} onChange={handleSearchChange} autoComplete="off" spellCheck="false" />
           </InputGroup>
+          <Tooltip delayDuration={1200}>
+            <TooltipTrigger asChild>
+              <CreateCustomerDialog>
+                <Button>
+                  <Plus />
+                </Button>
+              </CreateCustomerDialog>
+            </TooltipTrigger>
+            <TooltipContent>Create new Customer </TooltipContent>
+          </Tooltip>
         </div>
 
         {/* Scrollable Area */}

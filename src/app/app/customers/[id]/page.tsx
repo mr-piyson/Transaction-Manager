@@ -130,66 +130,6 @@ export default function EmployeeDetailPage({ params }: { params: Promise<{ id: s
     }
   }, [employee]);
 
-  useEffect(() => {
-    toolbar.setSlot(
-      <div className="flex items-center gap-4 w-full justify-between">
-        <div className="flex items-center gap-4">
-          <Link href="/app/customers">
-            <Button variant="ghost" size="icon">
-              <svg className="h-4 w-4" />
-            </Button>
-          </Link>
-          <h1 className="max-w-[150px] sm:max-w-[200px] md:max-w-none font-bold tracking-tight truncate text-nowrap">Employee Details</h1>
-        </div>
-
-        <div className="flex items-center gap-2">
-          {isEditing ? (
-            <>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => {
-                  setIsEditing(false);
-                  setEditedData(employee || {});
-                }}
-              >
-                <svg className="h-4 w-4 ps-2" />
-                Cancel
-              </Button>
-              <Button size="sm" onClick={() => updateMutation.mutate(editedData)} disabled={updateMutation.isPending}>
-                <svg className="h-4 w-4 ps-2" />
-                Save
-              </Button>
-            </>
-          ) : (
-            <>
-              <Button variant="outline" size="sm" onClick={() => setIsEditing(true)}>
-                <svg className="h-4 w-4 ps-2" />
-                Edit
-              </Button>
-              <Button
-                variant="destructive"
-                size="sm"
-                onClick={() => {
-                  if (confirm("Are you sure you want to delete this employee?")) {
-                    deleteMutation.mutate();
-                  }
-                }}
-                disabled={deleteMutation.isPending}
-              >
-                <svg className="h-4 w-4 ps-2" />
-                Delete
-              </Button>
-            </>
-          )}
-        </div>
-      </div>
-    );
-    return () => {
-      toolbar.clearSlot();
-    };
-  }, [isEditing, editedData, updateMutation.isPending, deleteMutation.isPending]);
-
   if (employeeError) {
     return (
       <div className="container mx-auto p-6">
