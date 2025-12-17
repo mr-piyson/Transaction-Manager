@@ -65,18 +65,13 @@ export default function CreateCustomerDialog(props: any) {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
-            <Input id="email" name="email" type="email" />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="code">Code</Label>
-            <Input id="code" name="code" />
-          </div>
-
-          <div className="space-y-2">
             <Label htmlFor="phone">Phone</Label>
             <Input id="phone" name="phone" />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="email">Email</Label>
+            <Input id="email" name="email" type="email" />
           </div>
 
           <div className="space-y-2">

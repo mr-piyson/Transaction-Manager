@@ -17,9 +17,8 @@ export const POST = async (req: NextRequest, ctx: { params: {} }) => {
   try {
     const formData = await req.formData();
     const name = formData.get("name") as string | null;
-    const email = formData.get("email") as string | null;
-    const code = formData.get("code") as string | null;
     const phone = formData.get("phone") as string | null;
+    const email = formData.get("email") as string | null;
     const address = formData.get("address") as string | null;
     const image = formData.get("image") as string | null;
 
@@ -28,15 +27,15 @@ export const POST = async (req: NextRequest, ctx: { params: {} }) => {
       return NextResponse.json({ error: "Name is required" }, { status: 400 });
     }
 
+    // Step 1: Insert the customer
     const customer = await db.customers.create({
-      data: {
-        name,
-        email,
-        code,
-        phone,
-        address,
-        image,
-      },
+      data: { name, email, phone, address, image },
+    });
+
+    // Step 2: Update the code based on the auto-incremented ID
+    const updatedCustomer = await db.customers.update({
+      where: { id: customer.id },
+      data: { code: `CUST-${String(customer.id).padStart(6, "0")}` },
     });
 
     return NextResponse.json(customer, { status: 201 });

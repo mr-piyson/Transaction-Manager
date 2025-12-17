@@ -15,6 +15,8 @@ import { Plus, PlusIcon, RefreshCcwIcon } from "lucide-react";
 import { Spinner } from "@/components/ui/spinner";
 import CreateCustomerDialog from "@/components/Customers/create-customer-dialog";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { usePathname } from "next/navigation";
 
 const ITEM_HEIGHT = 72;
 
@@ -63,7 +65,7 @@ const CustomerItem = React.memo(
         <OptimizedAvatar src={customer.image ?? ""} alt={customer.name || "image"} />
         <div className="flex-1 min-w-0">
           <p className="font-semibold truncate">{customer.name}</p>
-          <p className="text-sm text-muted-foreground truncate">{customer.email}</p>
+          <p className="text-sm text-muted-foreground truncate">{customer.phone}</p>
         </div>
         <div className="text-right text-xs space-y-0.5">
           <p className="flex items-center justify-end gap-1 text-primary">
@@ -120,6 +122,8 @@ export default function CustomerPage(props: CustomerPageProps) {
       return response.data;
     },
   });
+  const isMobile = useIsMobile();
+  const isItemSelected = usePathname().split("/").length > 3;
 
   // Optimized filtering with early exit
   const filteredCustomers = useMemo(() => {
@@ -156,6 +160,10 @@ export default function CustomerPage(props: CustomerPageProps) {
     const value = e.target.value;
     setSearch(value);
   }, []);
+
+  if (isMobile && isItemSelected) {
+    return <>{props.children}</>;
+  }
 
   // Loading state
   if (isLoading) {

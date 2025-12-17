@@ -54,6 +54,12 @@ export const routes = {
     path: "/app/customers",
     icon: "icon-[solar--user-broken]",
   },
+  assets: {
+    key: "routes.assets",
+    title: "Assets",
+    path: "/app/assets",
+    icon: "icon-[solar--devices-outline]",
+  },
 } as const;
 
 // Derive a type from the const

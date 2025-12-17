@@ -30,21 +30,21 @@ import { Spinner } from "../ui/spinner";
 interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {}
 
 export function AppSidebar({ ...props }: AppSidebarProps) {
-  const path = usePathname();
+  const currentPath = usePathname();
   const { direction } = useI18n();
   const { isMobile, open, setOpenMobile } = useSidebar();
   const router = useRouter();
   const [loading, setLoading] = useState("");
 
   useEffect(() => {
-    if (loading === path) {
+    if (loading === currentPath) {
       setLoading("");
       setOpenMobile(false);
     }
-  }, [path, setOpenMobile, loading]);
+  }, [currentPath, setOpenMobile, loading]);
 
   const isActive = (Activity: string) => {
-    const url = path.split("/").slice(0, 3).join("/");
+    const url = currentPath.split("/").slice(0, 3).join("/");
     return url === Activity;
   };
 
@@ -60,12 +60,14 @@ export function AppSidebar({ ...props }: AppSidebarProps) {
               <SidebarMenuItem key={title}>
                 <SidebarMenuButton
                   isActive={isActive(path)}
-                  className="flex data-[active=true]:bg-primary data-[active=false]:text-primary-foreground"
+                  className={cn("flex", isActive(path) && "bg-primary!")}
                   tooltip={title}
                   size={"lg"}
                   onClick={() => {
-                    const match = path.match(/^\/App\/[^/]+/);
-                    match && match[0] === path ? setLoading("") : setLoading(path);
+                    if (currentPath === path) {
+                      return;
+                    }
+                    setLoading(path);
                     router.push(path);
                   }}
                 >
