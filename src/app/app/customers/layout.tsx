@@ -181,7 +181,7 @@ export default function CustomerPage(props: CustomerPageProps) {
       <Empty className="from-muted/50 to-background h-full bg-linear-to-b from-30%">
         <EmptyHeader>
           <EmptyMedia variant="icon">
-            <svg className="icon-[lucide-bell]" />
+            <svg className="icon-[lucide--bell]" />
           </EmptyMedia>
           <EmptyTitle>Error Loading Customers</EmptyTitle>
           <EmptyDescription>There was an error loading customers. Please try again.</EmptyDescription>
@@ -307,7 +307,7 @@ export default function CustomerPage(props: CustomerPageProps) {
       </aside>
 
       {/* Main Content Area */}
-      <main className="max-sm:hidden flex-1 p-4">{props.children}</main>
+      <main className="max-sm:hidden flex-1  w-full h-full overflow-y-auto overflow-x-hidden">{props.children}</main>
     </div>
   );
 }
