@@ -79,3 +79,5 @@ export function getTopLevel(selector?: (allRoutes: typeof routes) => RouteConfig
     icon: r.icon,
   }));
 }
+
+export const sidebarRoutes: Route[] = [routes.customers, routes.assets];

@@ -23,7 +23,7 @@ import { SidebarMenuAction, SidebarMenuSub } from "../ui/sidebar";
 import Link from "next/link";
 import { Route } from "next";
 import { useI18n } from "@/hooks/use-i18n";
-import { getTopLevel, routes } from "@/lib/routes";
+import { getTopLevel, routes, sidebarRoutes } from "@/lib/routes";
 import { useEffect, useState } from "react";
 import { Spinner } from "../ui/spinner";
 
@@ -56,7 +56,7 @@ export function AppSidebar({ ...props }: AppSidebarProps) {
       <SidebarContent>
         <SidebarGroup>
           <SidebarMenu>
-            {Object.values(routes).map(({ title, path, icon }) => (
+            {sidebarRoutes.map(({ title, path, icon }) => (
               <SidebarMenuItem key={title}>
                 <SidebarMenuButton
                   isActive={isActive(path)}
