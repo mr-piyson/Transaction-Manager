@@ -1,20 +1,16 @@
 "use client";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { useToolbar } from "@/hooks/use-toolbar";
 import { Customers } from "@/types/prisma/client";
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
-import { Calendar, Check, CircleDot, Copy, Dot, Mail, MapPin, MapPinIcon, Phone } from "lucide-react";
-import { use, useState } from "react";
-import { toast } from "sonner";
+import { Calendar, CircleDot, Dot, Mail, MapPinIcon, Phone } from "lucide-react";
+import { use } from "react";
 import { ContactInput } from "./customer-prop";
 import { Skeleton } from "@/components/ui/skeleton";
+import RecordTable from "./Records-Table";
 
 type CustomerPageProps = {
   children?: React.ReactNode;
@@ -35,8 +31,8 @@ export default function CustomerPage(props: CustomerPageProps) {
   });
 
   return (
-    <div>
-      <Card>
+    <div className="flex flex-col w-full h-full">
+      <Card className="rounded-none border-0">
         <CardContent>
           <div className="flex flex-col items-center md:flex-row gap-6">
             {/* Avatar */}
@@ -47,9 +43,9 @@ export default function CustomerPage(props: CustomerPageProps) {
 
             {/* Title */}
             <div className="flex flex-col gap-8 max-sm:items-center">
-              <span className="items-center text-4xl font-bold max-w-sm text-justify text-wrap">{customer?.name ?? <Skeleton />}</span>
-              <Badge variant={"outline"} className="flex items-center border-primary px-3 gap-2  text-sm ">
-                <Dot className="scale-200 text-primary" /> {customer?.code ?? <Skeleton />}
+              <span className="items-center text-4xl font-bold w-sm text-justify text-wrap">{customer?.name ?? <Skeleton />}</span>
+              <Badge variant={"outline"} className="flex items-center border-primary border-2 x-3 gap-2  text-sm ">
+                {customer?.code ?? <Skeleton />}
               </Badge>
             </div>
             {/* Contact information */}
@@ -62,6 +58,7 @@ export default function CustomerPage(props: CustomerPageProps) {
           </div>
         </CardContent>
       </Card>
+      <RecordTable />
     </div>
   );
 }
