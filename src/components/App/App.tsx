@@ -23,7 +23,7 @@ import {
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
-import { ChevronsUpDown, LogOut, Moon } from "lucide-react";
+import { ChevronsUpDown, LogOut, Moon, Settings } from "lucide-react";
 import { Toolbar } from "./Toolbar";
 import { AppSidebar } from "./Sidebar";
 import { useTheme } from "next-themes";
@@ -143,7 +143,10 @@ export const UserMenu = memo(function UserMenu() {
         <DropdownMenuSeparator />
 
         <DropdownMenuSub>
-          <DropdownMenuSubTrigger>Languages</DropdownMenuSubTrigger>
+          <DropdownMenuSubTrigger>
+            <svg className="icon-[iconoir--translate]" />
+            Languages
+          </DropdownMenuSubTrigger>
           <DropdownMenuPortal>
             <DropdownMenuSubContent>
               {availableLocales.map(loc => (
@@ -159,18 +162,23 @@ export const UserMenu = memo(function UserMenu() {
 
         <DropdownMenuGroup>
           <DropdownMenuItem onClick={handleThemeToggle}>
-            <Moon className="ps-2 h-4 w-4" />
+            <Moon />
             Dark Mode
             <CommandShortcut>
               <ThemeSwitcher />
             </CommandShortcut>
           </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => router.push("/app/settings")}>
+            <Settings />
+            Settings
+            <CommandShortcut></CommandShortcut>
+          </DropdownMenuItem>
         </DropdownMenuGroup>
 
         <DropdownMenuSeparator />
 
-        <DropdownMenuItem onClick={handleSignOut}>
-          <LogOut className="ps-2 h-4 w-4" />
+        <DropdownMenuItem variant="destructive" onClick={handleSignOut}>
+          <LogOut />
           Log out
         </DropdownMenuItem>
       </DropdownMenuContent>

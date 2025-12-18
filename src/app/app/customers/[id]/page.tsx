@@ -45,7 +45,7 @@ export default function CustomerPage(props: CustomerPageProps) {
 
             {/* Title */}
             <div className="flex flex-col gap-8 max-sm:items-center">
-              <span className="items-center text-4xl text-primary font-bold max-w-sm text-justify text-wrap">{customer?.name}</span>
+              <span className="items-center text-4xl font-bold max-w-sm text-justify text-wrap">{customer?.name}</span>
               <Badge variant={"outline"} className="flex items-center border-primary px-3 gap-2  text-sm ">
                 <Dot className="scale-200 text-primary" /> {customer?.code ?? "Empty"}
               </Badge>
