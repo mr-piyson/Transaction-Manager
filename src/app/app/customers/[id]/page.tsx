@@ -6,7 +6,7 @@ import { useToolbar } from "@/hooks/use-toolbar";
 import { Customers } from "@/types/prisma/client";
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
-import { Calendar, CircleDot, Dot, Mail, MapPinIcon, Phone } from "lucide-react";
+import { Calendar, Mail, MapPinIcon, Phone } from "lucide-react";
 import { use } from "react";
 import { ContactInput } from "./customer-prop";
 import { Skeleton } from "@/components/ui/skeleton";

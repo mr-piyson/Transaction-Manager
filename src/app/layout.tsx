@@ -2,10 +2,10 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./../globals.css";
 import { ThemeProvider } from "@/components/Theme-Provider";
-import { Toaster } from "@/components/ui/sonner";
 import { ToolbarProvider } from "@/hooks/use-toolbar";
 import { I18nProvider } from "@/hooks/use-i18n";
 import { getLocale } from "@/lib/i18n/i18n-server";
+import { Toaster } from "@/components/sonner";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -37,7 +37,7 @@ export default async function RootLayout(props: any) {
             <ToolbarProvider>{props.children}</ToolbarProvider>
           </I18nProvider>
         </ThemeProvider>
-        <Toaster position="top-center" />
+        <Toaster position="bottom-center" />
       </body>
     </html>
   );
