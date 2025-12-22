@@ -49,11 +49,11 @@ export default function CustomerPage(props: CustomerPageProps) {
               </Badge>
             </div>
             {/* Contact information */}
-            <div className="max-lg:grid-cols-1 flex-1 gap-2 grid grid-cols-2 grid-rows-2 h-full w-full ">
+            <div className="flex-1 gap-2 grid grid-cols-2 max-lg:grid-cols-1 h-full w-full">
               <ContactInput icon={Phone} label="Phone" value={customer?.phone} />
-              <ContactInput icon={MapPinIcon} label="Phone" value={customer?.address} />
-              <ContactInput icon={Mail} label="Phone" value={customer?.email} />
-              <ContactInput icon={Calendar} label="Phone" value={String(customer?.createdAt)} />
+              <ContactInput icon={MapPinIcon} label="Address" value={customer?.address} />
+              <ContactInput icon={Mail} label="Email" value={customer?.email} />
+              <ContactInput icon={Calendar} label="Date" value={new Date(String(customer?.createdAt)).toLocaleDateString()} />
             </div>
           </div>
         </CardContent>

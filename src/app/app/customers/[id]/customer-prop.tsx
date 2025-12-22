@@ -29,9 +29,7 @@ export function ContactInput({ value, label, icon: Icon, multiline = false, onCo
     }
   };
 
-  if (!value) {
-    return <></>;
-  }
+  if (!value) return <></>;
 
   return (
     <div className="w-full">

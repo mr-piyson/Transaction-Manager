@@ -38,7 +38,7 @@ export default function RecordTable(props: { editable?: boolean }) {
     () => [
       {
         flex: isMobile ? 0 : 1,
-        field: "partCode",
+        field: "code",
         headerName: "Code",
         sortable: true,
         filter: false,
