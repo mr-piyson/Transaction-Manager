@@ -8,94 +8,131 @@ datasource db {
 }
 
 model Users {
-  id             Int          @id @default(autoincrement())
+  id             Int              @id @default(autoincrement())
   name           String
   email          String
-  emailVerified  Boolean      @default(false)
+  emailVerified  Boolean?         @default(false)
   image          String?
-  createdAt      DateTime     @default(now())
-  updatedAt      DateTime     @default(now()) @updatedAt
-  locale         String       @default("en")
-  hashedPassword String
+  createdAt      DateTime?        @default(now())
+  updatedAt      DateTime?        @default(now()) @updatedAt
+  locale         String?          @default("en")
+  hashedPassword String?
   tokens         Tokens[]
   roleId         Int?
   privileges     Privileges[]
-  role           Role?        @relation(fields: [roleId], references: [id])
+  role           Roles[]
+  invoices       Invoices?        @relation(fields: [invoicesId], references: [id])
+  invoicesId     Int?
+  invoiceViewers InvoiceViewers[]
+  invoiceEditors InvoiceEditors[]
 
   @@unique([email])
   @@map("users")
 }
 
 model Tokens {
-  id        Int      @id @default(autoincrement())
-  type      String
-  value     String   @unique
-  expiresAt DateTime
-  createdAt DateTime @default(now())
-  updatedAt DateTime @default(now()) @updatedAt
+  id        Int       @id @default(autoincrement())
+  type      String?
+  value     String?   @unique
+  expiresAt DateTime?
+  createdAt DateTime? @default(now())
+  updatedAt DateTime? @default(now()) @updatedAt
   userId    Int?
-  users     Users?   @relation(fields: [userId], references: [id])
+  users     Users?    @relation(fields: [userId], references: [id])
 }
 
-model Role {
-  id        Int      @id @default(autoincrement())
-  name      String   @unique
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+model Roles {
+  id        Int       @id @default(autoincrement())
+  name      String?   @unique
+  createdAt DateTime? @default(now())
+  updatedAt DateTime? @updatedAt
   users     Users[]
 }
 
 model Privileges {
-  id        Int      @id @default(autoincrement())
-  create    Boolean  @default(false)
-  read      Boolean  @default(false)
-  update    Boolean  @default(false)
-  delete    Boolean  @default(false)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id        Int       @id @default(autoincrement())
+  create    Boolean?  @default(false)
+  read      Boolean?  @default(false)
+  update    Boolean?  @default(false)
+  delete    Boolean?  @default(false)
+  createdAt DateTime? @default(now())
+  updatedAt DateTime? @updatedAt
   userId    Int
-  users     Users    @relation(fields: [userId], references: [id])
-}
-
-model Settings {
-  id        Int      @id @default(autoincrement())
-  tax       Float    @default(0)
-  currency  String   @default("BHD")
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  users     Users     @relation(fields: [userId], references: [id])
 }
 
 model Companies {
-  id        Int    @id @default(autoincrement())
-  name      String
-  address   String
-  telephone String
-  logo      String
-  email     String
+  id              Int     @id @default(autoincrement())
+  name            String?
+  address         String?
+  telephone       String?
+  logo            String?
+  email           String?
+  defaultCurrency String?
+}
+
+model Invoices {
+  id             Int              @id @default(autoincrement())
+  title          String?
+  total          Float?           @default(0)
+  status         String?
+  banner         String?
+  updatedAt      DateTime?        @updatedAt
+  createdAt      DateTime?        @default(now())
+  customerId     String?
+  createdById    Int?
+  transactions   Transactions[]
+  users          Users[]
+  invoiceViewers InvoiceViewers[]
+  invoiceEditors InvoiceEditors[]
+}
+
+model InvoiceViewers {
+  id        Int      @id @default(autoincrement())
+  invoice   Invoices @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  invoiceId Int
+  user      Users    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    Int
+  createdAt DateTime @default(now())
+
+  @@unique([invoiceId, userId]) // a user can appear only once per invoice
+  @@map("invoice_viewers")
+}
+
+model InvoiceEditors {
+  id        Int      @id @default(autoincrement())
+  invoice   Invoices @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  invoiceId Int
+  user      Users    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    Int
+  createdAt DateTime @default(now())
+
+  @@unique([invoiceId, userId]) // a user can appear only once per invoice
+  @@map("invoice_editors")
 }
 
 model TransactionCategories {
   id            Int            @id @default(autoincrement())
-  name          String         @unique
-  type          String
-  createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @updatedAt
+  name          String?
+  type          String?
+  createdAt     DateTime?      @default(now())
+  updatedAt     DateTime?      @updatedAt
   transactionId Int?
   transactions  Transactions[]
 }
 
 model Transactions {
-  id                    Int                    @id @default(autoincrement())
-  tableId               Int
-  amount                Int                    @default(0)
-  type                  String
-  description           String?
-  date                  DateTime               @default(now())
-  qty                   Int                    @default(1)
-  notes                 Notes?                 @relation(fields: [noteId], references: [id])
-  noteId                Int?
-  transactionCategories TransactionCategories? @relation(fields: [transactionCategoryId], references: [id])
-  transactionCategoryId Int?
+  id                      Int                   @id @default(autoincrement())
+  amount                  Float?                @default(0)
+  description             String?
+  date                    DateTime?             @default(now())
+  qty                     Int?                  @default(1)
+  tax                     Float?
+  noteId                  Int?
+  transactionCategoryId   TransactionCategories @relation(fields: [transactionCategoriesId], references: [id])
+  recordsId               Int?
+  transactionCategoriesId Int
+  records                 Invoices?             @relation(fields: [recordsId], references: [id])
 }
 
 model Customers {
@@ -104,47 +141,34 @@ model Customers {
   email     String?
   code      String?
   image     String?
-  status    String    @default("active")
+  status    String?   @default("active")
   phone     String?
   address   String?
-  createdAt DateTime  @default(now())
+  createdAt DateTime? @default(now())
   updatedAt DateTime? @updatedAt
 }
 
-model Notes {
-  id           Int            @id @default(autoincrement())
-  title        String
-  total        Float?         @default(0)
-  status       String?
-  banner       String?
-  active       Boolean        @default(true)
-  updatedAt    DateTime       @updatedAt
-  createdAt    DateTime       @default(now())
-  customerId   String?
-  transactions Transactions[]
-}
-
 model Stocks {
-  id        Int      @id @default(autoincrement())
-  name      String
-  quantity  Int      @default(0)
-  price     Float    @default(0)
-  revenue   Float    @default(0)
+  id        Int       @id @default(autoincrement())
+  name      String?
+  quantity  Int?      @default(0)
+  price     Float?    @default(0)
+  revenue   Float?    @default(0)
   barcode   String?
   code      String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime? @default(now())
+  updatedAt DateTime? @updatedAt
 }
 
 model Assets {
-  id        Int      @id @default(autoincrement())
-  name      String
-  quantity  Int      @default(0)
-  price     Float    @default(0)
+  id        Int       @id @default(autoincrement())
+  name      String?
+  quantity  Int?      @default(0)
+  price     Float?    @default(0)
   barcode   String?
   code      String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime? @default(now())
+  updatedAt DateTime? @updatedAt
 }
 
 model Departments {
@@ -155,34 +179,34 @@ model Departments {
 
 model Employees {
   id           Int          @id @default(autoincrement())
-  name         String
-  role         String
-  code         String
-  active       Boolean      @default(true)
-  designation  String
-  email        String       @unique
-  phone        String
+  name         String?
+  role         String?
+  code         String?
+  active       Boolean?     @default(true)
+  designation  String?
+  email        String?      @unique
+  phone        String?
   address      String?
-  createdAt    DateTime     @default(now())
-  updatedAt    DateTime     @updatedAt
+  createdAt    DateTime?    @default(now())
+  updatedAt    DateTime?    @updatedAt
   departments  Departments? @relation(fields: [departmentId], references: [id])
   departmentId Int?
 }
 
 model Suppliers {
-  id        Int      @id @default(autoincrement())
-  name      String
-  email     String   @unique
-  phone     String   @unique
+  id        Int       @id @default(autoincrement())
+  name      String?
+  email     String?   @unique
+  phone     String?   @unique
   address   String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime? @default(now())
+  updatedAt DateTime? @updatedAt
 }
 
 model Notifications {
-  id        Int      @id @default(autoincrement())
-  title     String
-  content   String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id        Int       @id @default(autoincrement())
+  title     String?
+  content   String?
+  createdAt DateTime? @default(now())
+  updatedAt DateTime? @updatedAt
 }
