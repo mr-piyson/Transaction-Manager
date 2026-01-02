@@ -1,11 +1,10 @@
-import { withAuth } from "@/lib/auth/auth-api";
 import db from "@/lib/database";
 import { NextRequest, NextResponse } from "next/server";
 
-export const GET = async (req: NextRequest, ctx: RouteContext<"/api/customers">) => {
+export const GET = async (req: NextRequest, ctx: RouteContext<"/api/records">) => {
   try {
     // GET logic here
-    const customers = await db.customers.findMany({});
+    const customers = await db.records.findMany({});
     return NextResponse.json(customers);
   } catch (error) {
     console.error(error);
@@ -28,12 +27,12 @@ export const POST = async (req: NextRequest, ctx: { params: {} }) => {
     }
 
     // Step 1: Insert the customer
-    const customer = await db.customers.create({
+    const customer = await db.records.create({
       data: { name, email, phone, address, image },
     });
 
     // Step 2: Update the code based on the auto-incremented ID
-    const updatedCustomer = await db.customers.update({
+    const updatedCustomer = await db.records.update({
       where: { id: customer.id },
       data: { code: `CUST-${String(customer.id).padStart(6, "0")}` },
     });

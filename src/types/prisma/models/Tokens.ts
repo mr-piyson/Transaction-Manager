@@ -197,12 +197,12 @@ export type TokensGroupByArgs<ExtArgs extends runtime.Types.Extensions.InternalA
 
 export type TokensGroupByOutputType = {
   id: number
-  type: string
-  value: string
-  expiresAt: Date
-  createdAt: Date
-  updatedAt: Date
-  userId: number | null
+  type: string | null
+  value: string | null
+  expiresAt: Date | null
+  createdAt: Date | null
+  updatedAt: Date | null
+  userId: number
   _count: TokensCountAggregateOutputType | null
   _avg: TokensAvgAggregateOutputType | null
   _sum: TokensSumAggregateOutputType | null
@@ -230,23 +230,23 @@ export type TokensWhereInput = {
   OR?: Prisma.TokensWhereInput[]
   NOT?: Prisma.TokensWhereInput | Prisma.TokensWhereInput[]
   id?: Prisma.IntFilter<"Tokens"> | number
-  type?: Prisma.StringFilter<"Tokens"> | string
-  value?: Prisma.StringFilter<"Tokens"> | string
-  expiresAt?: Prisma.DateTimeFilter<"Tokens"> | Date | string
-  createdAt?: Prisma.DateTimeFilter<"Tokens"> | Date | string
-  updatedAt?: Prisma.DateTimeFilter<"Tokens"> | Date | string
-  userId?: Prisma.IntNullableFilter<"Tokens"> | number | null
+  type?: Prisma.StringNullableFilter<"Tokens"> | string | null
+  value?: Prisma.StringNullableFilter<"Tokens"> | string | null
+  expiresAt?: Prisma.DateTimeNullableFilter<"Tokens"> | Date | string | null
+  createdAt?: Prisma.DateTimeNullableFilter<"Tokens"> | Date | string | null
+  updatedAt?: Prisma.DateTimeNullableFilter<"Tokens"> | Date | string | null
+  userId?: Prisma.IntFilter<"Tokens"> | number
   users?: Prisma.XOR<Prisma.UsersNullableScalarRelationFilter, Prisma.UsersWhereInput> | null
 }
 
 export type TokensOrderByWithRelationInput = {
   id?: Prisma.SortOrder
-  type?: Prisma.SortOrder
-  value?: Prisma.SortOrder
-  expiresAt?: Prisma.SortOrder
-  createdAt?: Prisma.SortOrder
-  updatedAt?: Prisma.SortOrder
-  userId?: Prisma.SortOrderInput | Prisma.SortOrder
+  type?: Prisma.SortOrderInput | Prisma.SortOrder
+  value?: Prisma.SortOrderInput | Prisma.SortOrder
+  expiresAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  createdAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  updatedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  userId?: Prisma.SortOrder
   users?: Prisma.UsersOrderByWithRelationInput
 }
 
@@ -256,22 +256,22 @@ export type TokensWhereUniqueInput = Prisma.AtLeast<{
   AND?: Prisma.TokensWhereInput | Prisma.TokensWhereInput[]
   OR?: Prisma.TokensWhereInput[]
   NOT?: Prisma.TokensWhereInput | Prisma.TokensWhereInput[]
-  type?: Prisma.StringFilter<"Tokens"> | string
-  expiresAt?: Prisma.DateTimeFilter<"Tokens"> | Date | string
-  createdAt?: Prisma.DateTimeFilter<"Tokens"> | Date | string
-  updatedAt?: Prisma.DateTimeFilter<"Tokens"> | Date | string
-  userId?: Prisma.IntNullableFilter<"Tokens"> | number | null
+  type?: Prisma.StringNullableFilter<"Tokens"> | string | null
+  expiresAt?: Prisma.DateTimeNullableFilter<"Tokens"> | Date | string | null
+  createdAt?: Prisma.DateTimeNullableFilter<"Tokens"> | Date | string | null
+  updatedAt?: Prisma.DateTimeNullableFilter<"Tokens"> | Date | string | null
+  userId?: Prisma.IntFilter<"Tokens"> | number
   users?: Prisma.XOR<Prisma.UsersNullableScalarRelationFilter, Prisma.UsersWhereInput> | null
 }, "id" | "value">
 
 export type TokensOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
-  type?: Prisma.SortOrder
-  value?: Prisma.SortOrder
-  expiresAt?: Prisma.SortOrder
-  createdAt?: Prisma.SortOrder
-  updatedAt?: Prisma.SortOrder
-  userId?: Prisma.SortOrderInput | Prisma.SortOrder
+  type?: Prisma.SortOrderInput | Prisma.SortOrder
+  value?: Prisma.SortOrderInput | Prisma.SortOrder
+  expiresAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  createdAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  updatedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  userId?: Prisma.SortOrder
   _count?: Prisma.TokensCountOrderByAggregateInput
   _avg?: Prisma.TokensAvgOrderByAggregateInput
   _max?: Prisma.TokensMaxOrderByAggregateInput
@@ -284,78 +284,78 @@ export type TokensScalarWhereWithAggregatesInput = {
   OR?: Prisma.TokensScalarWhereWithAggregatesInput[]
   NOT?: Prisma.TokensScalarWhereWithAggregatesInput | Prisma.TokensScalarWhereWithAggregatesInput[]
   id?: Prisma.IntWithAggregatesFilter<"Tokens"> | number
-  type?: Prisma.StringWithAggregatesFilter<"Tokens"> | string
-  value?: Prisma.StringWithAggregatesFilter<"Tokens"> | string
-  expiresAt?: Prisma.DateTimeWithAggregatesFilter<"Tokens"> | Date | string
-  createdAt?: Prisma.DateTimeWithAggregatesFilter<"Tokens"> | Date | string
-  updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Tokens"> | Date | string
-  userId?: Prisma.IntNullableWithAggregatesFilter<"Tokens"> | number | null
+  type?: Prisma.StringNullableWithAggregatesFilter<"Tokens"> | string | null
+  value?: Prisma.StringNullableWithAggregatesFilter<"Tokens"> | string | null
+  expiresAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Tokens"> | Date | string | null
+  createdAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Tokens"> | Date | string | null
+  updatedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Tokens"> | Date | string | null
+  userId?: Prisma.IntWithAggregatesFilter<"Tokens"> | number
 }
 
 export type TokensCreateInput = {
-  type: string
-  value: string
-  expiresAt: Date | string
-  createdAt?: Date | string
-  updatedAt?: Date | string
+  type?: string | null
+  value?: string | null
+  expiresAt?: Date | string | null
+  createdAt?: Date | string | null
+  updatedAt?: Date | string | null
   users?: Prisma.UsersCreateNestedOneWithoutTokensInput
 }
 
 export type TokensUncheckedCreateInput = {
   id?: number
-  type: string
-  value: string
-  expiresAt: Date | string
-  createdAt?: Date | string
-  updatedAt?: Date | string
-  userId?: number | null
+  type?: string | null
+  value?: string | null
+  expiresAt?: Date | string | null
+  createdAt?: Date | string | null
+  updatedAt?: Date | string | null
+  userId: number
 }
 
 export type TokensUpdateInput = {
-  type?: Prisma.StringFieldUpdateOperationsInput | string
-  value?: Prisma.StringFieldUpdateOperationsInput | string
-  expiresAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  type?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  value?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  expiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  updatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   users?: Prisma.UsersUpdateOneWithoutTokensNestedInput
 }
 
 export type TokensUncheckedUpdateInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
-  type?: Prisma.StringFieldUpdateOperationsInput | string
-  value?: Prisma.StringFieldUpdateOperationsInput | string
-  expiresAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  userId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  type?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  value?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  expiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  updatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  userId?: Prisma.IntFieldUpdateOperationsInput | number
 }
 
 export type TokensCreateManyInput = {
   id?: number
-  type: string
-  value: string
-  expiresAt: Date | string
-  createdAt?: Date | string
-  updatedAt?: Date | string
-  userId?: number | null
+  type?: string | null
+  value?: string | null
+  expiresAt?: Date | string | null
+  createdAt?: Date | string | null
+  updatedAt?: Date | string | null
+  userId: number
 }
 
 export type TokensUpdateManyMutationInput = {
-  type?: Prisma.StringFieldUpdateOperationsInput | string
-  value?: Prisma.StringFieldUpdateOperationsInput | string
-  expiresAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  type?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  value?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  expiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  updatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 export type TokensUncheckedUpdateManyInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
-  type?: Prisma.StringFieldUpdateOperationsInput | string
-  value?: Prisma.StringFieldUpdateOperationsInput | string
-  expiresAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  userId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  type?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  value?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  expiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  updatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  userId?: Prisma.IntFieldUpdateOperationsInput | number
 }
 
 export type TokensListRelationFilter = {
@@ -451,20 +451,20 @@ export type TokensUncheckedUpdateManyWithoutUsersNestedInput = {
 }
 
 export type TokensCreateWithoutUsersInput = {
-  type: string
-  value: string
-  expiresAt: Date | string
-  createdAt?: Date | string
-  updatedAt?: Date | string
+  type?: string | null
+  value?: string | null
+  expiresAt?: Date | string | null
+  createdAt?: Date | string | null
+  updatedAt?: Date | string | null
 }
 
 export type TokensUncheckedCreateWithoutUsersInput = {
   id?: number
-  type: string
-  value: string
-  expiresAt: Date | string
-  createdAt?: Date | string
-  updatedAt?: Date | string
+  type?: string | null
+  value?: string | null
+  expiresAt?: Date | string | null
+  createdAt?: Date | string | null
+  updatedAt?: Date | string | null
 }
 
 export type TokensCreateOrConnectWithoutUsersInput = {
@@ -497,47 +497,47 @@ export type TokensScalarWhereInput = {
   OR?: Prisma.TokensScalarWhereInput[]
   NOT?: Prisma.TokensScalarWhereInput | Prisma.TokensScalarWhereInput[]
   id?: Prisma.IntFilter<"Tokens"> | number
-  type?: Prisma.StringFilter<"Tokens"> | string
-  value?: Prisma.StringFilter<"Tokens"> | string
-  expiresAt?: Prisma.DateTimeFilter<"Tokens"> | Date | string
-  createdAt?: Prisma.DateTimeFilter<"Tokens"> | Date | string
-  updatedAt?: Prisma.DateTimeFilter<"Tokens"> | Date | string
-  userId?: Prisma.IntNullableFilter<"Tokens"> | number | null
+  type?: Prisma.StringNullableFilter<"Tokens"> | string | null
+  value?: Prisma.StringNullableFilter<"Tokens"> | string | null
+  expiresAt?: Prisma.DateTimeNullableFilter<"Tokens"> | Date | string | null
+  createdAt?: Prisma.DateTimeNullableFilter<"Tokens"> | Date | string | null
+  updatedAt?: Prisma.DateTimeNullableFilter<"Tokens"> | Date | string | null
+  userId?: Prisma.IntFilter<"Tokens"> | number
 }
 
 export type TokensCreateManyUsersInput = {
   id?: number
-  type: string
-  value: string
-  expiresAt: Date | string
-  createdAt?: Date | string
-  updatedAt?: Date | string
+  type?: string | null
+  value?: string | null
+  expiresAt?: Date | string | null
+  createdAt?: Date | string | null
+  updatedAt?: Date | string | null
 }
 
 export type TokensUpdateWithoutUsersInput = {
-  type?: Prisma.StringFieldUpdateOperationsInput | string
-  value?: Prisma.StringFieldUpdateOperationsInput | string
-  expiresAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  type?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  value?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  expiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  updatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 export type TokensUncheckedUpdateWithoutUsersInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
-  type?: Prisma.StringFieldUpdateOperationsInput | string
-  value?: Prisma.StringFieldUpdateOperationsInput | string
-  expiresAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  type?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  value?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  expiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  updatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 export type TokensUncheckedUpdateManyWithoutUsersInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
-  type?: Prisma.StringFieldUpdateOperationsInput | string
-  value?: Prisma.StringFieldUpdateOperationsInput | string
-  expiresAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  type?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  value?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  expiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  updatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 
@@ -603,12 +603,12 @@ export type $TokensPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: number
-    type: string
-    value: string
-    expiresAt: Date
-    createdAt: Date
-    updatedAt: Date
-    userId: number | null
+    type: string | null
+    value: string | null
+    expiresAt: Date | null
+    createdAt: Date | null
+    updatedAt: Date | null
+    userId: number
   }, ExtArgs["result"]["tokens"]>
   composites: {}
 }

@@ -1,9 +1,10 @@
+import { Route } from "next";
 import { TranslationKeys } from "./i18n/i18n-core";
 
 export type RouteConfig = {
   key: TranslationKeys;
   title: string;
-  path: string;
+  path: Route;
   icon: string;
   children?: Record<string, RouteConfig>;
 };
@@ -50,9 +51,9 @@ export const routes = {
   },
   customers: {
     key: "routes.customers",
-    title: "Customers",
-    path: "/app/customers",
-    icon: "icon-[solar--user-broken]",
+    title: "Records",
+    path: "/app/records",
+    icon: "icon-[hugeicons--note-04]",
   },
   assets: {
     key: "routes.assets",
@@ -65,12 +66,12 @@ export const routes = {
 // Derive a type from the const
 export type Routes = typeof routes;
 
-export type Route = { title: string; path: string; icon: string };
+export type AppRoute = { title: string; path: Route; icon: string };
 
 /**
  * Get top-level routes using an optional selector
  */
-export function getTopLevel(selector?: (allRoutes: typeof routes) => RouteConfig): Route[] {
+export function getTopLevel(selector?: (allRoutes: typeof routes) => RouteConfig): AppRoute[] {
   const selectedRoutes = selector ? Object.values(selector(routes).children ?? {}) : Object.values(routes);
 
   return selectedRoutes.map(r => ({
@@ -80,4 +81,4 @@ export function getTopLevel(selector?: (allRoutes: typeof routes) => RouteConfig
   }));
 }
 
-export const sidebarRoutes: Route[] = [routes.customers, routes.assets];
+export const sidebarRoutes: AppRoute[] = [routes.customers, routes.assets];

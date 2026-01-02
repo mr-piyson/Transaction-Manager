@@ -8,7 +8,6 @@ import { InputGroup, InputGroupInput } from "@/components/ui/input-group";
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import axios, { AxiosResponse } from "axios";
-import { Customers } from "@/types/prisma/client";
 import { Button } from "@/components/ui/button";
 import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty";
 import { Plus, PlusIcon, RefreshCcwIcon } from "lucide-react";
@@ -17,6 +16,7 @@ import CreateCustomerDialog from "@/components/Customers/create-customer-dialog"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { usePathname } from "next/navigation";
+import { Records } from "@/types/prisma/client";
 
 const ITEM_HEIGHT = 72;
 
@@ -48,7 +48,7 @@ OptimizedAvatar.displayName = "OptimizedAvatar";
 
 // --- Highly optimized CustomerItem with proper memoization ---
 const CustomerItem = React.memo(
-  ({ customer }: { customer: Customers }) => {
+  ({ customer }: { customer: Records }) => {
     // Safely handle date conversion
     const formattedDate = useMemo(() => {
       if (customer.createdAt instanceof Date) {
@@ -115,10 +115,10 @@ export default function CustomerPage(props: CustomerPageProps) {
     isLoading,
     error,
     refetch,
-  } = useQuery<Customers[], Error>({
-    queryKey: ["customers"],
-    queryFn: async (): Promise<Customers[]> => {
-      const response: AxiosResponse<Customers[]> = await axios.get("/api/customers");
+  } = useQuery<Records[], Error>({
+    queryKey: ["records"],
+    queryFn: async (): Promise<Records[]> => {
+      const response: AxiosResponse<Records[]> = await axios.get("/api/records");
       return response.data;
     },
   });
@@ -131,7 +131,7 @@ export default function CustomerPage(props: CustomerPageProps) {
     if (!debouncedSearch.trim()) return ALL_CUSTOMERS;
 
     const searchLower = debouncedSearch.toLowerCase().trim();
-    const results: Customers[] = [];
+    const results: Records[] = [];
 
     for (let i = 0; i < ALL_CUSTOMERS.length; i++) {
       const customer = ALL_CUSTOMERS[i];
@@ -294,7 +294,7 @@ export default function CustomerPage(props: CustomerPageProps) {
                         willChange: "transform",
                       }}
                     >
-                      <Link href={`/app/customers/${customer.id}`}>
+                      <Link href={`/app/records/${customer.id}`}>
                         <CustomerItem customer={customer} />
                       </Link>
                     </div>

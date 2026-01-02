@@ -3,7 +3,6 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { useToolbar } from "@/hooks/use-toolbar";
-import { Customers } from "@/types/prisma/client";
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import { Calendar, Mail, MapPinIcon, Phone } from "lucide-react";
@@ -11,6 +10,7 @@ import { use } from "react";
 import { ContactInput } from "./customer-prop";
 import { Skeleton } from "@/components/ui/skeleton";
 import RecordTable from "./Records-Table";
+import { Records } from "@/types/prisma/client";
 
 type CustomerPageProps = {
   children?: React.ReactNode;
@@ -25,9 +25,9 @@ export default function CustomerPage(props: CustomerPageProps) {
     data: customer,
     isLoading,
     error,
-  } = useQuery<Customers>({
+  } = useQuery<Records>({
     queryKey: ["customer", id],
-    queryFn: async () => (await axios.get(`/api/customers/${id}`)).data,
+    queryFn: async () => (await axios.get(`/api/records/${id}`)).data,
   });
 
   return (

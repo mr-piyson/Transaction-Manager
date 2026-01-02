@@ -193,12 +193,12 @@ export type SuppliersGroupByArgs<ExtArgs extends runtime.Types.Extensions.Intern
 
 export type SuppliersGroupByOutputType = {
   id: number
-  name: string
-  email: string
-  phone: string
+  name: string | null
+  email: string | null
+  phone: string | null
   address: string | null
-  createdAt: Date
-  updatedAt: Date
+  createdAt: Date | null
+  updatedAt: Date | null
   _count: SuppliersCountAggregateOutputType | null
   _avg: SuppliersAvgAggregateOutputType | null
   _sum: SuppliersSumAggregateOutputType | null
@@ -226,22 +226,22 @@ export type SuppliersWhereInput = {
   OR?: Prisma.SuppliersWhereInput[]
   NOT?: Prisma.SuppliersWhereInput | Prisma.SuppliersWhereInput[]
   id?: Prisma.IntFilter<"Suppliers"> | number
-  name?: Prisma.StringFilter<"Suppliers"> | string
-  email?: Prisma.StringFilter<"Suppliers"> | string
-  phone?: Prisma.StringFilter<"Suppliers"> | string
+  name?: Prisma.StringNullableFilter<"Suppliers"> | string | null
+  email?: Prisma.StringNullableFilter<"Suppliers"> | string | null
+  phone?: Prisma.StringNullableFilter<"Suppliers"> | string | null
   address?: Prisma.StringNullableFilter<"Suppliers"> | string | null
-  createdAt?: Prisma.DateTimeFilter<"Suppliers"> | Date | string
-  updatedAt?: Prisma.DateTimeFilter<"Suppliers"> | Date | string
+  createdAt?: Prisma.DateTimeNullableFilter<"Suppliers"> | Date | string | null
+  updatedAt?: Prisma.DateTimeNullableFilter<"Suppliers"> | Date | string | null
 }
 
 export type SuppliersOrderByWithRelationInput = {
   id?: Prisma.SortOrder
-  name?: Prisma.SortOrder
-  email?: Prisma.SortOrder
-  phone?: Prisma.SortOrder
+  name?: Prisma.SortOrderInput | Prisma.SortOrder
+  email?: Prisma.SortOrderInput | Prisma.SortOrder
+  phone?: Prisma.SortOrderInput | Prisma.SortOrder
   address?: Prisma.SortOrderInput | Prisma.SortOrder
-  createdAt?: Prisma.SortOrder
-  updatedAt?: Prisma.SortOrder
+  createdAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  updatedAt?: Prisma.SortOrderInput | Prisma.SortOrder
 }
 
 export type SuppliersWhereUniqueInput = Prisma.AtLeast<{
@@ -251,20 +251,20 @@ export type SuppliersWhereUniqueInput = Prisma.AtLeast<{
   AND?: Prisma.SuppliersWhereInput | Prisma.SuppliersWhereInput[]
   OR?: Prisma.SuppliersWhereInput[]
   NOT?: Prisma.SuppliersWhereInput | Prisma.SuppliersWhereInput[]
-  name?: Prisma.StringFilter<"Suppliers"> | string
+  name?: Prisma.StringNullableFilter<"Suppliers"> | string | null
   address?: Prisma.StringNullableFilter<"Suppliers"> | string | null
-  createdAt?: Prisma.DateTimeFilter<"Suppliers"> | Date | string
-  updatedAt?: Prisma.DateTimeFilter<"Suppliers"> | Date | string
+  createdAt?: Prisma.DateTimeNullableFilter<"Suppliers"> | Date | string | null
+  updatedAt?: Prisma.DateTimeNullableFilter<"Suppliers"> | Date | string | null
 }, "id" | "email" | "phone">
 
 export type SuppliersOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
-  name?: Prisma.SortOrder
-  email?: Prisma.SortOrder
-  phone?: Prisma.SortOrder
+  name?: Prisma.SortOrderInput | Prisma.SortOrder
+  email?: Prisma.SortOrderInput | Prisma.SortOrder
+  phone?: Prisma.SortOrderInput | Prisma.SortOrder
   address?: Prisma.SortOrderInput | Prisma.SortOrder
-  createdAt?: Prisma.SortOrder
-  updatedAt?: Prisma.SortOrder
+  createdAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  updatedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   _count?: Prisma.SuppliersCountOrderByAggregateInput
   _avg?: Prisma.SuppliersAvgOrderByAggregateInput
   _max?: Prisma.SuppliersMaxOrderByAggregateInput
@@ -277,79 +277,79 @@ export type SuppliersScalarWhereWithAggregatesInput = {
   OR?: Prisma.SuppliersScalarWhereWithAggregatesInput[]
   NOT?: Prisma.SuppliersScalarWhereWithAggregatesInput | Prisma.SuppliersScalarWhereWithAggregatesInput[]
   id?: Prisma.IntWithAggregatesFilter<"Suppliers"> | number
-  name?: Prisma.StringWithAggregatesFilter<"Suppliers"> | string
-  email?: Prisma.StringWithAggregatesFilter<"Suppliers"> | string
-  phone?: Prisma.StringWithAggregatesFilter<"Suppliers"> | string
+  name?: Prisma.StringNullableWithAggregatesFilter<"Suppliers"> | string | null
+  email?: Prisma.StringNullableWithAggregatesFilter<"Suppliers"> | string | null
+  phone?: Prisma.StringNullableWithAggregatesFilter<"Suppliers"> | string | null
   address?: Prisma.StringNullableWithAggregatesFilter<"Suppliers"> | string | null
-  createdAt?: Prisma.DateTimeWithAggregatesFilter<"Suppliers"> | Date | string
-  updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Suppliers"> | Date | string
+  createdAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Suppliers"> | Date | string | null
+  updatedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Suppliers"> | Date | string | null
 }
 
 export type SuppliersCreateInput = {
-  name: string
-  email: string
-  phone: string
+  name?: string | null
+  email?: string | null
+  phone?: string | null
   address?: string | null
-  createdAt?: Date | string
-  updatedAt?: Date | string
+  createdAt?: Date | string | null
+  updatedAt?: Date | string | null
 }
 
 export type SuppliersUncheckedCreateInput = {
   id?: number
-  name: string
-  email: string
-  phone: string
+  name?: string | null
+  email?: string | null
+  phone?: string | null
   address?: string | null
-  createdAt?: Date | string
-  updatedAt?: Date | string
+  createdAt?: Date | string | null
+  updatedAt?: Date | string | null
 }
 
 export type SuppliersUpdateInput = {
-  name?: Prisma.StringFieldUpdateOperationsInput | string
-  email?: Prisma.StringFieldUpdateOperationsInput | string
-  phone?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  createdAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  updatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 export type SuppliersUncheckedUpdateInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
-  name?: Prisma.StringFieldUpdateOperationsInput | string
-  email?: Prisma.StringFieldUpdateOperationsInput | string
-  phone?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  createdAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  updatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 export type SuppliersCreateManyInput = {
   id?: number
-  name: string
-  email: string
-  phone: string
+  name?: string | null
+  email?: string | null
+  phone?: string | null
   address?: string | null
-  createdAt?: Date | string
-  updatedAt?: Date | string
+  createdAt?: Date | string | null
+  updatedAt?: Date | string | null
 }
 
 export type SuppliersUpdateManyMutationInput = {
-  name?: Prisma.StringFieldUpdateOperationsInput | string
-  email?: Prisma.StringFieldUpdateOperationsInput | string
-  phone?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  createdAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  updatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 export type SuppliersUncheckedUpdateManyInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
-  name?: Prisma.StringFieldUpdateOperationsInput | string
-  email?: Prisma.StringFieldUpdateOperationsInput | string
-  phone?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  createdAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  updatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 export type SuppliersCountOrderByAggregateInput = {
@@ -439,12 +439,12 @@ export type $SuppliersPayload<ExtArgs extends runtime.Types.Extensions.InternalA
   objects: {}
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: number
-    name: string
-    email: string
-    phone: string
+    name: string | null
+    email: string | null
+    phone: string | null
     address: string | null
-    createdAt: Date
-    updatedAt: Date
+    createdAt: Date | null
+    updatedAt: Date | null
   }, ExtArgs["result"]["suppliers"]>
   composites: {}
 }
@@ -1069,7 +1069,7 @@ export type SuppliersCreateArgs<ExtArgs extends runtime.Types.Extensions.Interna
   /**
    * The data needed to create a Suppliers.
    */
-  data: Prisma.XOR<Prisma.SuppliersCreateInput, Prisma.SuppliersUncheckedCreateInput>
+  data?: Prisma.XOR<Prisma.SuppliersCreateInput, Prisma.SuppliersUncheckedCreateInput>
 }
 
 /**

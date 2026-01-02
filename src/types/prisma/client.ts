@@ -50,25 +50,25 @@ export type Users = Prisma.UsersModel
  */
 export type Tokens = Prisma.TokensModel
 /**
- * Model Role
- * 
- */
-export type Role = Prisma.RoleModel
-/**
- * Model Privileges
- * 
- */
-export type Privileges = Prisma.PrivilegesModel
-/**
- * Model Settings
- * 
- */
-export type Settings = Prisma.SettingsModel
-/**
  * Model Companies
  * 
  */
 export type Companies = Prisma.CompaniesModel
+/**
+ * Model Invoices
+ * 
+ */
+export type Invoices = Prisma.InvoicesModel
+/**
+ * Model InvoiceViewers
+ * 
+ */
+export type InvoiceViewers = Prisma.InvoiceViewersModel
+/**
+ * Model InvoiceEditors
+ * 
+ */
+export type InvoiceEditors = Prisma.InvoiceEditorsModel
 /**
  * Model TransactionCategories
  * 
@@ -80,15 +80,10 @@ export type TransactionCategories = Prisma.TransactionCategoriesModel
  */
 export type Transactions = Prisma.TransactionsModel
 /**
- * Model Customers
+ * Model Records
  * 
  */
-export type Customers = Prisma.CustomersModel
-/**
- * Model Notes
- * 
- */
-export type Notes = Prisma.NotesModel
+export type Records = Prisma.RecordsModel
 /**
  * Model Stocks
  * 

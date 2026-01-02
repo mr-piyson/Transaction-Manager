@@ -16,13 +16,8 @@ model Users {
   createdAt      DateTime?        @default(now())
   updatedAt      DateTime?        @default(now()) @updatedAt
   locale         String?          @default("en")
-  hashedPassword String?
+  hashedPassword String
   tokens         Tokens[]
-  roleId         Int?
-  privileges     Privileges[]
-  role           Roles[]
-  invoices       Invoices?        @relation(fields: [invoicesId], references: [id])
-  invoicesId     Int?
   invoiceViewers InvoiceViewers[]
   invoiceEditors InvoiceEditors[]
 
@@ -37,28 +32,8 @@ model Tokens {
   expiresAt DateTime?
   createdAt DateTime? @default(now())
   updatedAt DateTime? @default(now()) @updatedAt
-  userId    Int?
-  users     Users?    @relation(fields: [userId], references: [id])
-}
-
-model Roles {
-  id        Int       @id @default(autoincrement())
-  name      String?   @unique
-  createdAt DateTime? @default(now())
-  updatedAt DateTime? @updatedAt
-  users     Users[]
-}
-
-model Privileges {
-  id        Int       @id @default(autoincrement())
-  create    Boolean?  @default(false)
-  read      Boolean?  @default(false)
-  update    Boolean?  @default(false)
-  delete    Boolean?  @default(false)
-  createdAt DateTime? @default(now())
-  updatedAt DateTime? @updatedAt
   userId    Int
-  users     Users     @relation(fields: [userId], references: [id])
+  users     Users?    @relation(fields: [userId], references: [id])
 }
 
 model Companies {
@@ -82,7 +57,6 @@ model Invoices {
   customerId     String?
   createdById    Int?
   transactions   Transactions[]
-  users          Users[]
   invoiceViewers InvoiceViewers[]
   invoiceEditors InvoiceEditors[]
 }
@@ -135,7 +109,7 @@ model Transactions {
   records                 Invoices?             @relation(fields: [recordsId], references: [id])
 }
 
-model Customers {
+model Records {
   id        Int       @id @default(autoincrement())
   name      String?
   email     String?
@@ -146,6 +120,8 @@ model Customers {
   address   String?
   createdAt DateTime? @default(now())
   updatedAt DateTime? @updatedAt
+  deletedAt DateTime?
+  deletedBy Int?
 }
 
 model Stocks {

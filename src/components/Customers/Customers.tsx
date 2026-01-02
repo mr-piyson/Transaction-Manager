@@ -132,8 +132,8 @@ export default function CustomerPage() {
       .toUpperCase();
   };
 
-  const handleViewCustomer = (customerId: number) => {
-    router.push(`/app/customers/${customerId}`);
+  const handleViewCustomer = (recordId: number) => {
+    router.push(`/app/records/${recordId}`);
   };
 
   return (
@@ -188,7 +188,7 @@ export default function CustomerPage() {
         {viewMode === "grid" ? (
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {filteredCustomers.map(customer => (
-              <Link key={customer.id} href={`/app/customers/${customer.id}`} className="hover:shadow-md transition-shadow" draggable="false">
+              <Link key={customer.id} href={`/app/records/${customer.id}`} className="hover:shadow-md transition-shadow" draggable="false">
                 <Card key={customer.id} className="hover:shadow-md transition-shadow">
                   <CardHeader className="pb-3">
                     <div className="flex items-start justify-between">

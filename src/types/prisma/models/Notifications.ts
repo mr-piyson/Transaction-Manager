@@ -181,10 +181,10 @@ export type NotificationsGroupByArgs<ExtArgs extends runtime.Types.Extensions.In
 
 export type NotificationsGroupByOutputType = {
   id: number
-  title: string
-  content: string
-  createdAt: Date
-  updatedAt: Date
+  title: string | null
+  content: string | null
+  createdAt: Date | null
+  updatedAt: Date | null
   _count: NotificationsCountAggregateOutputType | null
   _avg: NotificationsAvgAggregateOutputType | null
   _sum: NotificationsSumAggregateOutputType | null
@@ -212,18 +212,18 @@ export type NotificationsWhereInput = {
   OR?: Prisma.NotificationsWhereInput[]
   NOT?: Prisma.NotificationsWhereInput | Prisma.NotificationsWhereInput[]
   id?: Prisma.IntFilter<"Notifications"> | number
-  title?: Prisma.StringFilter<"Notifications"> | string
-  content?: Prisma.StringFilter<"Notifications"> | string
-  createdAt?: Prisma.DateTimeFilter<"Notifications"> | Date | string
-  updatedAt?: Prisma.DateTimeFilter<"Notifications"> | Date | string
+  title?: Prisma.StringNullableFilter<"Notifications"> | string | null
+  content?: Prisma.StringNullableFilter<"Notifications"> | string | null
+  createdAt?: Prisma.DateTimeNullableFilter<"Notifications"> | Date | string | null
+  updatedAt?: Prisma.DateTimeNullableFilter<"Notifications"> | Date | string | null
 }
 
 export type NotificationsOrderByWithRelationInput = {
   id?: Prisma.SortOrder
-  title?: Prisma.SortOrder
-  content?: Prisma.SortOrder
-  createdAt?: Prisma.SortOrder
-  updatedAt?: Prisma.SortOrder
+  title?: Prisma.SortOrderInput | Prisma.SortOrder
+  content?: Prisma.SortOrderInput | Prisma.SortOrder
+  createdAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  updatedAt?: Prisma.SortOrderInput | Prisma.SortOrder
 }
 
 export type NotificationsWhereUniqueInput = Prisma.AtLeast<{
@@ -231,18 +231,18 @@ export type NotificationsWhereUniqueInput = Prisma.AtLeast<{
   AND?: Prisma.NotificationsWhereInput | Prisma.NotificationsWhereInput[]
   OR?: Prisma.NotificationsWhereInput[]
   NOT?: Prisma.NotificationsWhereInput | Prisma.NotificationsWhereInput[]
-  title?: Prisma.StringFilter<"Notifications"> | string
-  content?: Prisma.StringFilter<"Notifications"> | string
-  createdAt?: Prisma.DateTimeFilter<"Notifications"> | Date | string
-  updatedAt?: Prisma.DateTimeFilter<"Notifications"> | Date | string
+  title?: Prisma.StringNullableFilter<"Notifications"> | string | null
+  content?: Prisma.StringNullableFilter<"Notifications"> | string | null
+  createdAt?: Prisma.DateTimeNullableFilter<"Notifications"> | Date | string | null
+  updatedAt?: Prisma.DateTimeNullableFilter<"Notifications"> | Date | string | null
 }, "id">
 
 export type NotificationsOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
-  title?: Prisma.SortOrder
-  content?: Prisma.SortOrder
-  createdAt?: Prisma.SortOrder
-  updatedAt?: Prisma.SortOrder
+  title?: Prisma.SortOrderInput | Prisma.SortOrder
+  content?: Prisma.SortOrderInput | Prisma.SortOrder
+  createdAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  updatedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   _count?: Prisma.NotificationsCountOrderByAggregateInput
   _avg?: Prisma.NotificationsAvgOrderByAggregateInput
   _max?: Prisma.NotificationsMaxOrderByAggregateInput
@@ -255,63 +255,63 @@ export type NotificationsScalarWhereWithAggregatesInput = {
   OR?: Prisma.NotificationsScalarWhereWithAggregatesInput[]
   NOT?: Prisma.NotificationsScalarWhereWithAggregatesInput | Prisma.NotificationsScalarWhereWithAggregatesInput[]
   id?: Prisma.IntWithAggregatesFilter<"Notifications"> | number
-  title?: Prisma.StringWithAggregatesFilter<"Notifications"> | string
-  content?: Prisma.StringWithAggregatesFilter<"Notifications"> | string
-  createdAt?: Prisma.DateTimeWithAggregatesFilter<"Notifications"> | Date | string
-  updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Notifications"> | Date | string
+  title?: Prisma.StringNullableWithAggregatesFilter<"Notifications"> | string | null
+  content?: Prisma.StringNullableWithAggregatesFilter<"Notifications"> | string | null
+  createdAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Notifications"> | Date | string | null
+  updatedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Notifications"> | Date | string | null
 }
 
 export type NotificationsCreateInput = {
-  title: string
-  content: string
-  createdAt?: Date | string
-  updatedAt?: Date | string
+  title?: string | null
+  content?: string | null
+  createdAt?: Date | string | null
+  updatedAt?: Date | string | null
 }
 
 export type NotificationsUncheckedCreateInput = {
   id?: number
-  title: string
-  content: string
-  createdAt?: Date | string
-  updatedAt?: Date | string
+  title?: string | null
+  content?: string | null
+  createdAt?: Date | string | null
+  updatedAt?: Date | string | null
 }
 
 export type NotificationsUpdateInput = {
-  title?: Prisma.StringFieldUpdateOperationsInput | string
-  content?: Prisma.StringFieldUpdateOperationsInput | string
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  title?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  content?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  updatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 export type NotificationsUncheckedUpdateInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
-  title?: Prisma.StringFieldUpdateOperationsInput | string
-  content?: Prisma.StringFieldUpdateOperationsInput | string
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  title?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  content?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  updatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 export type NotificationsCreateManyInput = {
   id?: number
-  title: string
-  content: string
-  createdAt?: Date | string
-  updatedAt?: Date | string
+  title?: string | null
+  content?: string | null
+  createdAt?: Date | string | null
+  updatedAt?: Date | string | null
 }
 
 export type NotificationsUpdateManyMutationInput = {
-  title?: Prisma.StringFieldUpdateOperationsInput | string
-  content?: Prisma.StringFieldUpdateOperationsInput | string
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  title?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  content?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  updatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 export type NotificationsUncheckedUpdateManyInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
-  title?: Prisma.StringFieldUpdateOperationsInput | string
-  content?: Prisma.StringFieldUpdateOperationsInput | string
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  title?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  content?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  updatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 export type NotificationsCountOrderByAggregateInput = {
@@ -387,10 +387,10 @@ export type $NotificationsPayload<ExtArgs extends runtime.Types.Extensions.Inter
   objects: {}
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: number
-    title: string
-    content: string
-    createdAt: Date
-    updatedAt: Date
+    title: string | null
+    content: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
   }, ExtArgs["result"]["notifications"]>
   composites: {}
 }
@@ -1013,7 +1013,7 @@ export type NotificationsCreateArgs<ExtArgs extends runtime.Types.Extensions.Int
   /**
    * The data needed to create a Notifications.
    */
-  data: Prisma.XOR<Prisma.NotificationsCreateInput, Prisma.NotificationsUncheckedCreateInput>
+  data?: Prisma.XOR<Prisma.NotificationsCreateInput, Prisma.NotificationsUncheckedCreateInput>
 }
 
 /**

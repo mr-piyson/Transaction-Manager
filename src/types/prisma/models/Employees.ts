@@ -227,16 +227,16 @@ export type EmployeesGroupByArgs<ExtArgs extends runtime.Types.Extensions.Intern
 
 export type EmployeesGroupByOutputType = {
   id: number
-  name: string
-  role: string
-  code: string
-  active: boolean
-  designation: string
-  email: string
-  phone: string
+  name: string | null
+  role: string | null
+  code: string | null
+  active: boolean | null
+  designation: string | null
+  email: string | null
+  phone: string | null
   address: string | null
-  createdAt: Date
-  updatedAt: Date
+  createdAt: Date | null
+  updatedAt: Date | null
   departmentId: number | null
   _count: EmployeesCountAggregateOutputType | null
   _avg: EmployeesAvgAggregateOutputType | null
@@ -265,32 +265,32 @@ export type EmployeesWhereInput = {
   OR?: Prisma.EmployeesWhereInput[]
   NOT?: Prisma.EmployeesWhereInput | Prisma.EmployeesWhereInput[]
   id?: Prisma.IntFilter<"Employees"> | number
-  name?: Prisma.StringFilter<"Employees"> | string
-  role?: Prisma.StringFilter<"Employees"> | string
-  code?: Prisma.StringFilter<"Employees"> | string
-  active?: Prisma.BoolFilter<"Employees"> | boolean
-  designation?: Prisma.StringFilter<"Employees"> | string
-  email?: Prisma.StringFilter<"Employees"> | string
-  phone?: Prisma.StringFilter<"Employees"> | string
+  name?: Prisma.StringNullableFilter<"Employees"> | string | null
+  role?: Prisma.StringNullableFilter<"Employees"> | string | null
+  code?: Prisma.StringNullableFilter<"Employees"> | string | null
+  active?: Prisma.BoolNullableFilter<"Employees"> | boolean | null
+  designation?: Prisma.StringNullableFilter<"Employees"> | string | null
+  email?: Prisma.StringNullableFilter<"Employees"> | string | null
+  phone?: Prisma.StringNullableFilter<"Employees"> | string | null
   address?: Prisma.StringNullableFilter<"Employees"> | string | null
-  createdAt?: Prisma.DateTimeFilter<"Employees"> | Date | string
-  updatedAt?: Prisma.DateTimeFilter<"Employees"> | Date | string
+  createdAt?: Prisma.DateTimeNullableFilter<"Employees"> | Date | string | null
+  updatedAt?: Prisma.DateTimeNullableFilter<"Employees"> | Date | string | null
   departmentId?: Prisma.IntNullableFilter<"Employees"> | number | null
   departments?: Prisma.XOR<Prisma.DepartmentsNullableScalarRelationFilter, Prisma.DepartmentsWhereInput> | null
 }
 
 export type EmployeesOrderByWithRelationInput = {
   id?: Prisma.SortOrder
-  name?: Prisma.SortOrder
-  role?: Prisma.SortOrder
-  code?: Prisma.SortOrder
-  active?: Prisma.SortOrder
-  designation?: Prisma.SortOrder
-  email?: Prisma.SortOrder
-  phone?: Prisma.SortOrder
+  name?: Prisma.SortOrderInput | Prisma.SortOrder
+  role?: Prisma.SortOrderInput | Prisma.SortOrder
+  code?: Prisma.SortOrderInput | Prisma.SortOrder
+  active?: Prisma.SortOrderInput | Prisma.SortOrder
+  designation?: Prisma.SortOrderInput | Prisma.SortOrder
+  email?: Prisma.SortOrderInput | Prisma.SortOrder
+  phone?: Prisma.SortOrderInput | Prisma.SortOrder
   address?: Prisma.SortOrderInput | Prisma.SortOrder
-  createdAt?: Prisma.SortOrder
-  updatedAt?: Prisma.SortOrder
+  createdAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  updatedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   departmentId?: Prisma.SortOrderInput | Prisma.SortOrder
   departments?: Prisma.DepartmentsOrderByWithRelationInput
 }
@@ -301,31 +301,31 @@ export type EmployeesWhereUniqueInput = Prisma.AtLeast<{
   AND?: Prisma.EmployeesWhereInput | Prisma.EmployeesWhereInput[]
   OR?: Prisma.EmployeesWhereInput[]
   NOT?: Prisma.EmployeesWhereInput | Prisma.EmployeesWhereInput[]
-  name?: Prisma.StringFilter<"Employees"> | string
-  role?: Prisma.StringFilter<"Employees"> | string
-  code?: Prisma.StringFilter<"Employees"> | string
-  active?: Prisma.BoolFilter<"Employees"> | boolean
-  designation?: Prisma.StringFilter<"Employees"> | string
-  phone?: Prisma.StringFilter<"Employees"> | string
+  name?: Prisma.StringNullableFilter<"Employees"> | string | null
+  role?: Prisma.StringNullableFilter<"Employees"> | string | null
+  code?: Prisma.StringNullableFilter<"Employees"> | string | null
+  active?: Prisma.BoolNullableFilter<"Employees"> | boolean | null
+  designation?: Prisma.StringNullableFilter<"Employees"> | string | null
+  phone?: Prisma.StringNullableFilter<"Employees"> | string | null
   address?: Prisma.StringNullableFilter<"Employees"> | string | null
-  createdAt?: Prisma.DateTimeFilter<"Employees"> | Date | string
-  updatedAt?: Prisma.DateTimeFilter<"Employees"> | Date | string
+  createdAt?: Prisma.DateTimeNullableFilter<"Employees"> | Date | string | null
+  updatedAt?: Prisma.DateTimeNullableFilter<"Employees"> | Date | string | null
   departmentId?: Prisma.IntNullableFilter<"Employees"> | number | null
   departments?: Prisma.XOR<Prisma.DepartmentsNullableScalarRelationFilter, Prisma.DepartmentsWhereInput> | null
 }, "id" | "email">
 
 export type EmployeesOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
-  name?: Prisma.SortOrder
-  role?: Prisma.SortOrder
-  code?: Prisma.SortOrder
-  active?: Prisma.SortOrder
-  designation?: Prisma.SortOrder
-  email?: Prisma.SortOrder
-  phone?: Prisma.SortOrder
+  name?: Prisma.SortOrderInput | Prisma.SortOrder
+  role?: Prisma.SortOrderInput | Prisma.SortOrder
+  code?: Prisma.SortOrderInput | Prisma.SortOrder
+  active?: Prisma.SortOrderInput | Prisma.SortOrder
+  designation?: Prisma.SortOrderInput | Prisma.SortOrder
+  email?: Prisma.SortOrderInput | Prisma.SortOrder
+  phone?: Prisma.SortOrderInput | Prisma.SortOrder
   address?: Prisma.SortOrderInput | Prisma.SortOrder
-  createdAt?: Prisma.SortOrder
-  updatedAt?: Prisma.SortOrder
+  createdAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  updatedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   departmentId?: Prisma.SortOrderInput | Prisma.SortOrder
   _count?: Prisma.EmployeesCountOrderByAggregateInput
   _avg?: Prisma.EmployeesAvgOrderByAggregateInput
@@ -339,117 +339,117 @@ export type EmployeesScalarWhereWithAggregatesInput = {
   OR?: Prisma.EmployeesScalarWhereWithAggregatesInput[]
   NOT?: Prisma.EmployeesScalarWhereWithAggregatesInput | Prisma.EmployeesScalarWhereWithAggregatesInput[]
   id?: Prisma.IntWithAggregatesFilter<"Employees"> | number
-  name?: Prisma.StringWithAggregatesFilter<"Employees"> | string
-  role?: Prisma.StringWithAggregatesFilter<"Employees"> | string
-  code?: Prisma.StringWithAggregatesFilter<"Employees"> | string
-  active?: Prisma.BoolWithAggregatesFilter<"Employees"> | boolean
-  designation?: Prisma.StringWithAggregatesFilter<"Employees"> | string
-  email?: Prisma.StringWithAggregatesFilter<"Employees"> | string
-  phone?: Prisma.StringWithAggregatesFilter<"Employees"> | string
+  name?: Prisma.StringNullableWithAggregatesFilter<"Employees"> | string | null
+  role?: Prisma.StringNullableWithAggregatesFilter<"Employees"> | string | null
+  code?: Prisma.StringNullableWithAggregatesFilter<"Employees"> | string | null
+  active?: Prisma.BoolNullableWithAggregatesFilter<"Employees"> | boolean | null
+  designation?: Prisma.StringNullableWithAggregatesFilter<"Employees"> | string | null
+  email?: Prisma.StringNullableWithAggregatesFilter<"Employees"> | string | null
+  phone?: Prisma.StringNullableWithAggregatesFilter<"Employees"> | string | null
   address?: Prisma.StringNullableWithAggregatesFilter<"Employees"> | string | null
-  createdAt?: Prisma.DateTimeWithAggregatesFilter<"Employees"> | Date | string
-  updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Employees"> | Date | string
+  createdAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Employees"> | Date | string | null
+  updatedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Employees"> | Date | string | null
   departmentId?: Prisma.IntNullableWithAggregatesFilter<"Employees"> | number | null
 }
 
 export type EmployeesCreateInput = {
-  name: string
-  role: string
-  code: string
-  active?: boolean
-  designation: string
-  email: string
-  phone: string
+  name?: string | null
+  role?: string | null
+  code?: string | null
+  active?: boolean | null
+  designation?: string | null
+  email?: string | null
+  phone?: string | null
   address?: string | null
-  createdAt?: Date | string
-  updatedAt?: Date | string
+  createdAt?: Date | string | null
+  updatedAt?: Date | string | null
   departments?: Prisma.DepartmentsCreateNestedOneWithoutEmployeesInput
 }
 
 export type EmployeesUncheckedCreateInput = {
   id?: number
-  name: string
-  role: string
-  code: string
-  active?: boolean
-  designation: string
-  email: string
-  phone: string
+  name?: string | null
+  role?: string | null
+  code?: string | null
+  active?: boolean | null
+  designation?: string | null
+  email?: string | null
+  phone?: string | null
   address?: string | null
-  createdAt?: Date | string
-  updatedAt?: Date | string
+  createdAt?: Date | string | null
+  updatedAt?: Date | string | null
   departmentId?: number | null
 }
 
 export type EmployeesUpdateInput = {
-  name?: Prisma.StringFieldUpdateOperationsInput | string
-  role?: Prisma.StringFieldUpdateOperationsInput | string
-  code?: Prisma.StringFieldUpdateOperationsInput | string
-  active?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  designation?: Prisma.StringFieldUpdateOperationsInput | string
-  email?: Prisma.StringFieldUpdateOperationsInput | string
-  phone?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  role?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  code?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  active?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  designation?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  createdAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  updatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   departments?: Prisma.DepartmentsUpdateOneWithoutEmployeesNestedInput
 }
 
 export type EmployeesUncheckedUpdateInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
-  name?: Prisma.StringFieldUpdateOperationsInput | string
-  role?: Prisma.StringFieldUpdateOperationsInput | string
-  code?: Prisma.StringFieldUpdateOperationsInput | string
-  active?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  designation?: Prisma.StringFieldUpdateOperationsInput | string
-  email?: Prisma.StringFieldUpdateOperationsInput | string
-  phone?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  role?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  code?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  active?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  designation?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  createdAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  updatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   departmentId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
 }
 
 export type EmployeesCreateManyInput = {
   id?: number
-  name: string
-  role: string
-  code: string
-  active?: boolean
-  designation: string
-  email: string
-  phone: string
+  name?: string | null
+  role?: string | null
+  code?: string | null
+  active?: boolean | null
+  designation?: string | null
+  email?: string | null
+  phone?: string | null
   address?: string | null
-  createdAt?: Date | string
-  updatedAt?: Date | string
+  createdAt?: Date | string | null
+  updatedAt?: Date | string | null
   departmentId?: number | null
 }
 
 export type EmployeesUpdateManyMutationInput = {
-  name?: Prisma.StringFieldUpdateOperationsInput | string
-  role?: Prisma.StringFieldUpdateOperationsInput | string
-  code?: Prisma.StringFieldUpdateOperationsInput | string
-  active?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  designation?: Prisma.StringFieldUpdateOperationsInput | string
-  email?: Prisma.StringFieldUpdateOperationsInput | string
-  phone?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  role?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  code?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  active?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  designation?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  createdAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  updatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 export type EmployeesUncheckedUpdateManyInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
-  name?: Prisma.StringFieldUpdateOperationsInput | string
-  role?: Prisma.StringFieldUpdateOperationsInput | string
-  code?: Prisma.StringFieldUpdateOperationsInput | string
-  active?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  designation?: Prisma.StringFieldUpdateOperationsInput | string
-  email?: Prisma.StringFieldUpdateOperationsInput | string
-  phone?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  role?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  code?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  active?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  designation?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  createdAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  updatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   departmentId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
 }
 
@@ -561,30 +561,30 @@ export type EmployeesUncheckedUpdateManyWithoutDepartmentsNestedInput = {
 }
 
 export type EmployeesCreateWithoutDepartmentsInput = {
-  name: string
-  role: string
-  code: string
-  active?: boolean
-  designation: string
-  email: string
-  phone: string
+  name?: string | null
+  role?: string | null
+  code?: string | null
+  active?: boolean | null
+  designation?: string | null
+  email?: string | null
+  phone?: string | null
   address?: string | null
-  createdAt?: Date | string
-  updatedAt?: Date | string
+  createdAt?: Date | string | null
+  updatedAt?: Date | string | null
 }
 
 export type EmployeesUncheckedCreateWithoutDepartmentsInput = {
   id?: number
-  name: string
-  role: string
-  code: string
-  active?: boolean
-  designation: string
-  email: string
-  phone: string
+  name?: string | null
+  role?: string | null
+  code?: string | null
+  active?: boolean | null
+  designation?: string | null
+  email?: string | null
+  phone?: string | null
   address?: string | null
-  createdAt?: Date | string
-  updatedAt?: Date | string
+  createdAt?: Date | string | null
+  updatedAt?: Date | string | null
 }
 
 export type EmployeesCreateOrConnectWithoutDepartmentsInput = {
@@ -617,72 +617,72 @@ export type EmployeesScalarWhereInput = {
   OR?: Prisma.EmployeesScalarWhereInput[]
   NOT?: Prisma.EmployeesScalarWhereInput | Prisma.EmployeesScalarWhereInput[]
   id?: Prisma.IntFilter<"Employees"> | number
-  name?: Prisma.StringFilter<"Employees"> | string
-  role?: Prisma.StringFilter<"Employees"> | string
-  code?: Prisma.StringFilter<"Employees"> | string
-  active?: Prisma.BoolFilter<"Employees"> | boolean
-  designation?: Prisma.StringFilter<"Employees"> | string
-  email?: Prisma.StringFilter<"Employees"> | string
-  phone?: Prisma.StringFilter<"Employees"> | string
+  name?: Prisma.StringNullableFilter<"Employees"> | string | null
+  role?: Prisma.StringNullableFilter<"Employees"> | string | null
+  code?: Prisma.StringNullableFilter<"Employees"> | string | null
+  active?: Prisma.BoolNullableFilter<"Employees"> | boolean | null
+  designation?: Prisma.StringNullableFilter<"Employees"> | string | null
+  email?: Prisma.StringNullableFilter<"Employees"> | string | null
+  phone?: Prisma.StringNullableFilter<"Employees"> | string | null
   address?: Prisma.StringNullableFilter<"Employees"> | string | null
-  createdAt?: Prisma.DateTimeFilter<"Employees"> | Date | string
-  updatedAt?: Prisma.DateTimeFilter<"Employees"> | Date | string
+  createdAt?: Prisma.DateTimeNullableFilter<"Employees"> | Date | string | null
+  updatedAt?: Prisma.DateTimeNullableFilter<"Employees"> | Date | string | null
   departmentId?: Prisma.IntNullableFilter<"Employees"> | number | null
 }
 
 export type EmployeesCreateManyDepartmentsInput = {
   id?: number
-  name: string
-  role: string
-  code: string
-  active?: boolean
-  designation: string
-  email: string
-  phone: string
+  name?: string | null
+  role?: string | null
+  code?: string | null
+  active?: boolean | null
+  designation?: string | null
+  email?: string | null
+  phone?: string | null
   address?: string | null
-  createdAt?: Date | string
-  updatedAt?: Date | string
+  createdAt?: Date | string | null
+  updatedAt?: Date | string | null
 }
 
 export type EmployeesUpdateWithoutDepartmentsInput = {
-  name?: Prisma.StringFieldUpdateOperationsInput | string
-  role?: Prisma.StringFieldUpdateOperationsInput | string
-  code?: Prisma.StringFieldUpdateOperationsInput | string
-  active?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  designation?: Prisma.StringFieldUpdateOperationsInput | string
-  email?: Prisma.StringFieldUpdateOperationsInput | string
-  phone?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  role?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  code?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  active?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  designation?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  createdAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  updatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 export type EmployeesUncheckedUpdateWithoutDepartmentsInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
-  name?: Prisma.StringFieldUpdateOperationsInput | string
-  role?: Prisma.StringFieldUpdateOperationsInput | string
-  code?: Prisma.StringFieldUpdateOperationsInput | string
-  active?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  designation?: Prisma.StringFieldUpdateOperationsInput | string
-  email?: Prisma.StringFieldUpdateOperationsInput | string
-  phone?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  role?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  code?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  active?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  designation?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  createdAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  updatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 export type EmployeesUncheckedUpdateManyWithoutDepartmentsInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
-  name?: Prisma.StringFieldUpdateOperationsInput | string
-  role?: Prisma.StringFieldUpdateOperationsInput | string
-  code?: Prisma.StringFieldUpdateOperationsInput | string
-  active?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  designation?: Prisma.StringFieldUpdateOperationsInput | string
-  email?: Prisma.StringFieldUpdateOperationsInput | string
-  phone?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  role?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  code?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  active?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  designation?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  createdAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  updatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 
@@ -768,16 +768,16 @@ export type $EmployeesPayload<ExtArgs extends runtime.Types.Extensions.InternalA
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: number
-    name: string
-    role: string
-    code: string
-    active: boolean
-    designation: string
-    email: string
-    phone: string
+    name: string | null
+    role: string | null
+    code: string | null
+    active: boolean | null
+    designation: string | null
+    email: string | null
+    phone: string | null
     address: string | null
-    createdAt: Date
-    updatedAt: Date
+    createdAt: Date | null
+    updatedAt: Date | null
     departmentId: number | null
   }, ExtArgs["result"]["employees"]>
   composites: {}
@@ -1433,7 +1433,7 @@ export type EmployeesCreateArgs<ExtArgs extends runtime.Types.Extensions.Interna
   /**
    * The data needed to create a Employees.
    */
-  data: Prisma.XOR<Prisma.EmployeesCreateInput, Prisma.EmployeesUncheckedCreateInput>
+  data?: Prisma.XOR<Prisma.EmployeesCreateInput, Prisma.EmployeesUncheckedCreateInput>
 }
 
 /**

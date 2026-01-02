@@ -31,7 +31,9 @@ export function CreateStageDialog({ children, onCreateStage }: CreateStageDialog
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger render={<div>{children}</div>}></DialogTrigger>
+      <DialogTrigger asChild>
+        <div>{children}</div>
+      </DialogTrigger>
       <DialogContent className="sm:max-w-[500px]">
         <form onSubmit={handleSubmit}>
           <DialogHeader>

@@ -28,12 +28,10 @@ export type AggregateUsers = {
 
 export type UsersAvgAggregateOutputType = {
   id: number | null
-  roleId: number | null
 }
 
 export type UsersSumAggregateOutputType = {
   id: number | null
-  roleId: number | null
 }
 
 export type UsersMinAggregateOutputType = {
@@ -46,7 +44,6 @@ export type UsersMinAggregateOutputType = {
   updatedAt: Date | null
   locale: string | null
   hashedPassword: string | null
-  roleId: number | null
 }
 
 export type UsersMaxAggregateOutputType = {
@@ -59,7 +56,6 @@ export type UsersMaxAggregateOutputType = {
   updatedAt: Date | null
   locale: string | null
   hashedPassword: string | null
-  roleId: number | null
 }
 
 export type UsersCountAggregateOutputType = {
@@ -72,19 +68,16 @@ export type UsersCountAggregateOutputType = {
   updatedAt: number
   locale: number
   hashedPassword: number
-  roleId: number
   _all: number
 }
 
 
 export type UsersAvgAggregateInputType = {
   id?: true
-  roleId?: true
 }
 
 export type UsersSumAggregateInputType = {
   id?: true
-  roleId?: true
 }
 
 export type UsersMinAggregateInputType = {
@@ -97,7 +90,6 @@ export type UsersMinAggregateInputType = {
   updatedAt?: true
   locale?: true
   hashedPassword?: true
-  roleId?: true
 }
 
 export type UsersMaxAggregateInputType = {
@@ -110,7 +102,6 @@ export type UsersMaxAggregateInputType = {
   updatedAt?: true
   locale?: true
   hashedPassword?: true
-  roleId?: true
 }
 
 export type UsersCountAggregateInputType = {
@@ -123,7 +114,6 @@ export type UsersCountAggregateInputType = {
   updatedAt?: true
   locale?: true
   hashedPassword?: true
-  roleId?: true
   _all?: true
 }
 
@@ -217,13 +207,12 @@ export type UsersGroupByOutputType = {
   id: number
   name: string
   email: string
-  emailVerified: boolean
+  emailVerified: boolean | null
   image: string | null
-  createdAt: Date
-  updatedAt: Date
-  locale: string
+  createdAt: Date | null
+  updatedAt: Date | null
+  locale: string | null
   hashedPassword: string
-  roleId: number | null
   _count: UsersCountAggregateOutputType | null
   _avg: UsersAvgAggregateOutputType | null
   _sum: UsersSumAggregateOutputType | null
@@ -253,32 +242,30 @@ export type UsersWhereInput = {
   id?: Prisma.IntFilter<"Users"> | number
   name?: Prisma.StringFilter<"Users"> | string
   email?: Prisma.StringFilter<"Users"> | string
-  emailVerified?: Prisma.BoolFilter<"Users"> | boolean
+  emailVerified?: Prisma.BoolNullableFilter<"Users"> | boolean | null
   image?: Prisma.StringNullableFilter<"Users"> | string | null
-  createdAt?: Prisma.DateTimeFilter<"Users"> | Date | string
-  updatedAt?: Prisma.DateTimeFilter<"Users"> | Date | string
-  locale?: Prisma.StringFilter<"Users"> | string
+  createdAt?: Prisma.DateTimeNullableFilter<"Users"> | Date | string | null
+  updatedAt?: Prisma.DateTimeNullableFilter<"Users"> | Date | string | null
+  locale?: Prisma.StringNullableFilter<"Users"> | string | null
   hashedPassword?: Prisma.StringFilter<"Users"> | string
-  roleId?: Prisma.IntNullableFilter<"Users"> | number | null
   tokens?: Prisma.TokensListRelationFilter
-  privileges?: Prisma.PrivilegesListRelationFilter
-  role?: Prisma.XOR<Prisma.RoleNullableScalarRelationFilter, Prisma.RoleWhereInput> | null
+  invoiceViewers?: Prisma.InvoiceViewersListRelationFilter
+  invoiceEditors?: Prisma.InvoiceEditorsListRelationFilter
 }
 
 export type UsersOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   name?: Prisma.SortOrder
   email?: Prisma.SortOrder
-  emailVerified?: Prisma.SortOrder
+  emailVerified?: Prisma.SortOrderInput | Prisma.SortOrder
   image?: Prisma.SortOrderInput | Prisma.SortOrder
-  createdAt?: Prisma.SortOrder
-  updatedAt?: Prisma.SortOrder
-  locale?: Prisma.SortOrder
+  createdAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  updatedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  locale?: Prisma.SortOrderInput | Prisma.SortOrder
   hashedPassword?: Prisma.SortOrder
-  roleId?: Prisma.SortOrderInput | Prisma.SortOrder
   tokens?: Prisma.TokensOrderByRelationAggregateInput
-  privileges?: Prisma.PrivilegesOrderByRelationAggregateInput
-  role?: Prisma.RoleOrderByWithRelationInput
+  invoiceViewers?: Prisma.InvoiceViewersOrderByRelationAggregateInput
+  invoiceEditors?: Prisma.InvoiceEditorsOrderByRelationAggregateInput
 }
 
 export type UsersWhereUniqueInput = Prisma.AtLeast<{
@@ -288,29 +275,27 @@ export type UsersWhereUniqueInput = Prisma.AtLeast<{
   OR?: Prisma.UsersWhereInput[]
   NOT?: Prisma.UsersWhereInput | Prisma.UsersWhereInput[]
   name?: Prisma.StringFilter<"Users"> | string
-  emailVerified?: Prisma.BoolFilter<"Users"> | boolean
+  emailVerified?: Prisma.BoolNullableFilter<"Users"> | boolean | null
   image?: Prisma.StringNullableFilter<"Users"> | string | null
-  createdAt?: Prisma.DateTimeFilter<"Users"> | Date | string
-  updatedAt?: Prisma.DateTimeFilter<"Users"> | Date | string
-  locale?: Prisma.StringFilter<"Users"> | string
+  createdAt?: Prisma.DateTimeNullableFilter<"Users"> | Date | string | null
+  updatedAt?: Prisma.DateTimeNullableFilter<"Users"> | Date | string | null
+  locale?: Prisma.StringNullableFilter<"Users"> | string | null
   hashedPassword?: Prisma.StringFilter<"Users"> | string
-  roleId?: Prisma.IntNullableFilter<"Users"> | number | null
   tokens?: Prisma.TokensListRelationFilter
-  privileges?: Prisma.PrivilegesListRelationFilter
-  role?: Prisma.XOR<Prisma.RoleNullableScalarRelationFilter, Prisma.RoleWhereInput> | null
+  invoiceViewers?: Prisma.InvoiceViewersListRelationFilter
+  invoiceEditors?: Prisma.InvoiceEditorsListRelationFilter
 }, "id" | "email">
 
 export type UsersOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   name?: Prisma.SortOrder
   email?: Prisma.SortOrder
-  emailVerified?: Prisma.SortOrder
+  emailVerified?: Prisma.SortOrderInput | Prisma.SortOrder
   image?: Prisma.SortOrderInput | Prisma.SortOrder
-  createdAt?: Prisma.SortOrder
-  updatedAt?: Prisma.SortOrder
-  locale?: Prisma.SortOrder
+  createdAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  updatedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  locale?: Prisma.SortOrderInput | Prisma.SortOrder
   hashedPassword?: Prisma.SortOrder
-  roleId?: Prisma.SortOrderInput | Prisma.SortOrder
   _count?: Prisma.UsersCountOrderByAggregateInput
   _avg?: Prisma.UsersAvgOrderByAggregateInput
   _max?: Prisma.UsersMaxOrderByAggregateInput
@@ -325,94 +310,92 @@ export type UsersScalarWhereWithAggregatesInput = {
   id?: Prisma.IntWithAggregatesFilter<"Users"> | number
   name?: Prisma.StringWithAggregatesFilter<"Users"> | string
   email?: Prisma.StringWithAggregatesFilter<"Users"> | string
-  emailVerified?: Prisma.BoolWithAggregatesFilter<"Users"> | boolean
+  emailVerified?: Prisma.BoolNullableWithAggregatesFilter<"Users"> | boolean | null
   image?: Prisma.StringNullableWithAggregatesFilter<"Users"> | string | null
-  createdAt?: Prisma.DateTimeWithAggregatesFilter<"Users"> | Date | string
-  updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Users"> | Date | string
-  locale?: Prisma.StringWithAggregatesFilter<"Users"> | string
+  createdAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Users"> | Date | string | null
+  updatedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Users"> | Date | string | null
+  locale?: Prisma.StringNullableWithAggregatesFilter<"Users"> | string | null
   hashedPassword?: Prisma.StringWithAggregatesFilter<"Users"> | string
-  roleId?: Prisma.IntNullableWithAggregatesFilter<"Users"> | number | null
 }
 
 export type UsersCreateInput = {
   name: string
   email: string
-  emailVerified?: boolean
+  emailVerified?: boolean | null
   image?: string | null
-  createdAt?: Date | string
-  updatedAt?: Date | string
-  locale?: string
+  createdAt?: Date | string | null
+  updatedAt?: Date | string | null
+  locale?: string | null
   hashedPassword: string
   tokens?: Prisma.TokensCreateNestedManyWithoutUsersInput
-  privileges?: Prisma.PrivilegesCreateNestedManyWithoutUsersInput
-  role?: Prisma.RoleCreateNestedOneWithoutUsersInput
+  invoiceViewers?: Prisma.InvoiceViewersCreateNestedManyWithoutUserInput
+  invoiceEditors?: Prisma.InvoiceEditorsCreateNestedManyWithoutUserInput
 }
 
 export type UsersUncheckedCreateInput = {
   id?: number
   name: string
   email: string
-  emailVerified?: boolean
+  emailVerified?: boolean | null
   image?: string | null
-  createdAt?: Date | string
-  updatedAt?: Date | string
-  locale?: string
+  createdAt?: Date | string | null
+  updatedAt?: Date | string | null
+  locale?: string | null
   hashedPassword: string
-  roleId?: number | null
   tokens?: Prisma.TokensUncheckedCreateNestedManyWithoutUsersInput
-  privileges?: Prisma.PrivilegesUncheckedCreateNestedManyWithoutUsersInput
+  invoiceViewers?: Prisma.InvoiceViewersUncheckedCreateNestedManyWithoutUserInput
+  invoiceEditors?: Prisma.InvoiceEditorsUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UsersUpdateInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.StringFieldUpdateOperationsInput | string
-  emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  emailVerified?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  locale?: Prisma.StringFieldUpdateOperationsInput | string
+  createdAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  updatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  locale?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   hashedPassword?: Prisma.StringFieldUpdateOperationsInput | string
   tokens?: Prisma.TokensUpdateManyWithoutUsersNestedInput
-  privileges?: Prisma.PrivilegesUpdateManyWithoutUsersNestedInput
-  role?: Prisma.RoleUpdateOneWithoutUsersNestedInput
+  invoiceViewers?: Prisma.InvoiceViewersUpdateManyWithoutUserNestedInput
+  invoiceEditors?: Prisma.InvoiceEditorsUpdateManyWithoutUserNestedInput
 }
 
 export type UsersUncheckedUpdateInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   name?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.StringFieldUpdateOperationsInput | string
-  emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  emailVerified?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  locale?: Prisma.StringFieldUpdateOperationsInput | string
+  createdAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  updatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  locale?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   hashedPassword?: Prisma.StringFieldUpdateOperationsInput | string
-  roleId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   tokens?: Prisma.TokensUncheckedUpdateManyWithoutUsersNestedInput
-  privileges?: Prisma.PrivilegesUncheckedUpdateManyWithoutUsersNestedInput
+  invoiceViewers?: Prisma.InvoiceViewersUncheckedUpdateManyWithoutUserNestedInput
+  invoiceEditors?: Prisma.InvoiceEditorsUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UsersCreateManyInput = {
   id?: number
   name: string
   email: string
-  emailVerified?: boolean
+  emailVerified?: boolean | null
   image?: string | null
-  createdAt?: Date | string
-  updatedAt?: Date | string
-  locale?: string
+  createdAt?: Date | string | null
+  updatedAt?: Date | string | null
+  locale?: string | null
   hashedPassword: string
-  roleId?: number | null
 }
 
 export type UsersUpdateManyMutationInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.StringFieldUpdateOperationsInput | string
-  emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  emailVerified?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  locale?: Prisma.StringFieldUpdateOperationsInput | string
+  createdAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  updatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  locale?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   hashedPassword?: Prisma.StringFieldUpdateOperationsInput | string
 }
 
@@ -420,13 +403,12 @@ export type UsersUncheckedUpdateManyInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   name?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.StringFieldUpdateOperationsInput | string
-  emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  emailVerified?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  locale?: Prisma.StringFieldUpdateOperationsInput | string
+  createdAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  updatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  locale?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   hashedPassword?: Prisma.StringFieldUpdateOperationsInput | string
-  roleId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
 }
 
 export type UsersCountOrderByAggregateInput = {
@@ -439,12 +421,10 @@ export type UsersCountOrderByAggregateInput = {
   updatedAt?: Prisma.SortOrder
   locale?: Prisma.SortOrder
   hashedPassword?: Prisma.SortOrder
-  roleId?: Prisma.SortOrder
 }
 
 export type UsersAvgOrderByAggregateInput = {
   id?: Prisma.SortOrder
-  roleId?: Prisma.SortOrder
 }
 
 export type UsersMaxOrderByAggregateInput = {
@@ -457,7 +437,6 @@ export type UsersMaxOrderByAggregateInput = {
   updatedAt?: Prisma.SortOrder
   locale?: Prisma.SortOrder
   hashedPassword?: Prisma.SortOrder
-  roleId?: Prisma.SortOrder
 }
 
 export type UsersMinOrderByAggregateInput = {
@@ -470,27 +449,15 @@ export type UsersMinOrderByAggregateInput = {
   updatedAt?: Prisma.SortOrder
   locale?: Prisma.SortOrder
   hashedPassword?: Prisma.SortOrder
-  roleId?: Prisma.SortOrder
 }
 
 export type UsersSumOrderByAggregateInput = {
   id?: Prisma.SortOrder
-  roleId?: Prisma.SortOrder
 }
 
 export type UsersNullableScalarRelationFilter = {
   is?: Prisma.UsersWhereInput | null
   isNot?: Prisma.UsersWhereInput | null
-}
-
-export type UsersListRelationFilter = {
-  every?: Prisma.UsersWhereInput
-  some?: Prisma.UsersWhereInput
-  none?: Prisma.UsersWhereInput
-}
-
-export type UsersOrderByRelationAggregateInput = {
-  _count?: Prisma.SortOrder
 }
 
 export type UsersScalarRelationFilter = {
@@ -502,28 +469,20 @@ export type StringFieldUpdateOperationsInput = {
   set?: string
 }
 
-export type BoolFieldUpdateOperationsInput = {
-  set?: boolean
+export type NullableBoolFieldUpdateOperationsInput = {
+  set?: boolean | null
 }
 
 export type NullableStringFieldUpdateOperationsInput = {
   set?: string | null
 }
 
-export type DateTimeFieldUpdateOperationsInput = {
-  set?: Date | string
+export type NullableDateTimeFieldUpdateOperationsInput = {
+  set?: Date | string | null
 }
 
 export type IntFieldUpdateOperationsInput = {
   set?: number
-  increment?: number
-  decrement?: number
-  multiply?: number
-  divide?: number
-}
-
-export type NullableIntFieldUpdateOperationsInput = {
-  set?: number | null
   increment?: number
   decrement?: number
   multiply?: number
@@ -546,87 +505,59 @@ export type UsersUpdateOneWithoutTokensNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.UsersUpdateToOneWithWhereWithoutTokensInput, Prisma.UsersUpdateWithoutTokensInput>, Prisma.UsersUncheckedUpdateWithoutTokensInput>
 }
 
-export type UsersCreateNestedManyWithoutRoleInput = {
-  create?: Prisma.XOR<Prisma.UsersCreateWithoutRoleInput, Prisma.UsersUncheckedCreateWithoutRoleInput> | Prisma.UsersCreateWithoutRoleInput[] | Prisma.UsersUncheckedCreateWithoutRoleInput[]
-  connectOrCreate?: Prisma.UsersCreateOrConnectWithoutRoleInput | Prisma.UsersCreateOrConnectWithoutRoleInput[]
-  createMany?: Prisma.UsersCreateManyRoleInputEnvelope
-  connect?: Prisma.UsersWhereUniqueInput | Prisma.UsersWhereUniqueInput[]
-}
-
-export type UsersUncheckedCreateNestedManyWithoutRoleInput = {
-  create?: Prisma.XOR<Prisma.UsersCreateWithoutRoleInput, Prisma.UsersUncheckedCreateWithoutRoleInput> | Prisma.UsersCreateWithoutRoleInput[] | Prisma.UsersUncheckedCreateWithoutRoleInput[]
-  connectOrCreate?: Prisma.UsersCreateOrConnectWithoutRoleInput | Prisma.UsersCreateOrConnectWithoutRoleInput[]
-  createMany?: Prisma.UsersCreateManyRoleInputEnvelope
-  connect?: Prisma.UsersWhereUniqueInput | Prisma.UsersWhereUniqueInput[]
-}
-
-export type UsersUpdateManyWithoutRoleNestedInput = {
-  create?: Prisma.XOR<Prisma.UsersCreateWithoutRoleInput, Prisma.UsersUncheckedCreateWithoutRoleInput> | Prisma.UsersCreateWithoutRoleInput[] | Prisma.UsersUncheckedCreateWithoutRoleInput[]
-  connectOrCreate?: Prisma.UsersCreateOrConnectWithoutRoleInput | Prisma.UsersCreateOrConnectWithoutRoleInput[]
-  upsert?: Prisma.UsersUpsertWithWhereUniqueWithoutRoleInput | Prisma.UsersUpsertWithWhereUniqueWithoutRoleInput[]
-  createMany?: Prisma.UsersCreateManyRoleInputEnvelope
-  set?: Prisma.UsersWhereUniqueInput | Prisma.UsersWhereUniqueInput[]
-  disconnect?: Prisma.UsersWhereUniqueInput | Prisma.UsersWhereUniqueInput[]
-  delete?: Prisma.UsersWhereUniqueInput | Prisma.UsersWhereUniqueInput[]
-  connect?: Prisma.UsersWhereUniqueInput | Prisma.UsersWhereUniqueInput[]
-  update?: Prisma.UsersUpdateWithWhereUniqueWithoutRoleInput | Prisma.UsersUpdateWithWhereUniqueWithoutRoleInput[]
-  updateMany?: Prisma.UsersUpdateManyWithWhereWithoutRoleInput | Prisma.UsersUpdateManyWithWhereWithoutRoleInput[]
-  deleteMany?: Prisma.UsersScalarWhereInput | Prisma.UsersScalarWhereInput[]
-}
-
-export type UsersUncheckedUpdateManyWithoutRoleNestedInput = {
-  create?: Prisma.XOR<Prisma.UsersCreateWithoutRoleInput, Prisma.UsersUncheckedCreateWithoutRoleInput> | Prisma.UsersCreateWithoutRoleInput[] | Prisma.UsersUncheckedCreateWithoutRoleInput[]
-  connectOrCreate?: Prisma.UsersCreateOrConnectWithoutRoleInput | Prisma.UsersCreateOrConnectWithoutRoleInput[]
-  upsert?: Prisma.UsersUpsertWithWhereUniqueWithoutRoleInput | Prisma.UsersUpsertWithWhereUniqueWithoutRoleInput[]
-  createMany?: Prisma.UsersCreateManyRoleInputEnvelope
-  set?: Prisma.UsersWhereUniqueInput | Prisma.UsersWhereUniqueInput[]
-  disconnect?: Prisma.UsersWhereUniqueInput | Prisma.UsersWhereUniqueInput[]
-  delete?: Prisma.UsersWhereUniqueInput | Prisma.UsersWhereUniqueInput[]
-  connect?: Prisma.UsersWhereUniqueInput | Prisma.UsersWhereUniqueInput[]
-  update?: Prisma.UsersUpdateWithWhereUniqueWithoutRoleInput | Prisma.UsersUpdateWithWhereUniqueWithoutRoleInput[]
-  updateMany?: Prisma.UsersUpdateManyWithWhereWithoutRoleInput | Prisma.UsersUpdateManyWithWhereWithoutRoleInput[]
-  deleteMany?: Prisma.UsersScalarWhereInput | Prisma.UsersScalarWhereInput[]
-}
-
-export type UsersCreateNestedOneWithoutPrivilegesInput = {
-  create?: Prisma.XOR<Prisma.UsersCreateWithoutPrivilegesInput, Prisma.UsersUncheckedCreateWithoutPrivilegesInput>
-  connectOrCreate?: Prisma.UsersCreateOrConnectWithoutPrivilegesInput
+export type UsersCreateNestedOneWithoutInvoiceViewersInput = {
+  create?: Prisma.XOR<Prisma.UsersCreateWithoutInvoiceViewersInput, Prisma.UsersUncheckedCreateWithoutInvoiceViewersInput>
+  connectOrCreate?: Prisma.UsersCreateOrConnectWithoutInvoiceViewersInput
   connect?: Prisma.UsersWhereUniqueInput
 }
 
-export type UsersUpdateOneRequiredWithoutPrivilegesNestedInput = {
-  create?: Prisma.XOR<Prisma.UsersCreateWithoutPrivilegesInput, Prisma.UsersUncheckedCreateWithoutPrivilegesInput>
-  connectOrCreate?: Prisma.UsersCreateOrConnectWithoutPrivilegesInput
-  upsert?: Prisma.UsersUpsertWithoutPrivilegesInput
+export type UsersUpdateOneRequiredWithoutInvoiceViewersNestedInput = {
+  create?: Prisma.XOR<Prisma.UsersCreateWithoutInvoiceViewersInput, Prisma.UsersUncheckedCreateWithoutInvoiceViewersInput>
+  connectOrCreate?: Prisma.UsersCreateOrConnectWithoutInvoiceViewersInput
+  upsert?: Prisma.UsersUpsertWithoutInvoiceViewersInput
   connect?: Prisma.UsersWhereUniqueInput
-  update?: Prisma.XOR<Prisma.XOR<Prisma.UsersUpdateToOneWithWhereWithoutPrivilegesInput, Prisma.UsersUpdateWithoutPrivilegesInput>, Prisma.UsersUncheckedUpdateWithoutPrivilegesInput>
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UsersUpdateToOneWithWhereWithoutInvoiceViewersInput, Prisma.UsersUpdateWithoutInvoiceViewersInput>, Prisma.UsersUncheckedUpdateWithoutInvoiceViewersInput>
+}
+
+export type UsersCreateNestedOneWithoutInvoiceEditorsInput = {
+  create?: Prisma.XOR<Prisma.UsersCreateWithoutInvoiceEditorsInput, Prisma.UsersUncheckedCreateWithoutInvoiceEditorsInput>
+  connectOrCreate?: Prisma.UsersCreateOrConnectWithoutInvoiceEditorsInput
+  connect?: Prisma.UsersWhereUniqueInput
+}
+
+export type UsersUpdateOneRequiredWithoutInvoiceEditorsNestedInput = {
+  create?: Prisma.XOR<Prisma.UsersCreateWithoutInvoiceEditorsInput, Prisma.UsersUncheckedCreateWithoutInvoiceEditorsInput>
+  connectOrCreate?: Prisma.UsersCreateOrConnectWithoutInvoiceEditorsInput
+  upsert?: Prisma.UsersUpsertWithoutInvoiceEditorsInput
+  connect?: Prisma.UsersWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UsersUpdateToOneWithWhereWithoutInvoiceEditorsInput, Prisma.UsersUpdateWithoutInvoiceEditorsInput>, Prisma.UsersUncheckedUpdateWithoutInvoiceEditorsInput>
 }
 
 export type UsersCreateWithoutTokensInput = {
   name: string
   email: string
-  emailVerified?: boolean
+  emailVerified?: boolean | null
   image?: string | null
-  createdAt?: Date | string
-  updatedAt?: Date | string
-  locale?: string
+  createdAt?: Date | string | null
+  updatedAt?: Date | string | null
+  locale?: string | null
   hashedPassword: string
-  privileges?: Prisma.PrivilegesCreateNestedManyWithoutUsersInput
-  role?: Prisma.RoleCreateNestedOneWithoutUsersInput
+  invoiceViewers?: Prisma.InvoiceViewersCreateNestedManyWithoutUserInput
+  invoiceEditors?: Prisma.InvoiceEditorsCreateNestedManyWithoutUserInput
 }
 
 export type UsersUncheckedCreateWithoutTokensInput = {
   id?: number
   name: string
   email: string
-  emailVerified?: boolean
+  emailVerified?: boolean | null
   image?: string | null
-  createdAt?: Date | string
-  updatedAt?: Date | string
-  locale?: string
+  createdAt?: Date | string | null
+  updatedAt?: Date | string | null
+  locale?: string | null
   hashedPassword: string
-  roleId?: number | null
-  privileges?: Prisma.PrivilegesUncheckedCreateNestedManyWithoutUsersInput
+  invoiceViewers?: Prisma.InvoiceViewersUncheckedCreateNestedManyWithoutUserInput
+  invoiceEditors?: Prisma.InvoiceEditorsUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UsersCreateOrConnectWithoutTokensInput = {
@@ -648,217 +579,168 @@ export type UsersUpdateToOneWithWhereWithoutTokensInput = {
 export type UsersUpdateWithoutTokensInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.StringFieldUpdateOperationsInput | string
-  emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  emailVerified?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  locale?: Prisma.StringFieldUpdateOperationsInput | string
+  createdAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  updatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  locale?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   hashedPassword?: Prisma.StringFieldUpdateOperationsInput | string
-  privileges?: Prisma.PrivilegesUpdateManyWithoutUsersNestedInput
-  role?: Prisma.RoleUpdateOneWithoutUsersNestedInput
+  invoiceViewers?: Prisma.InvoiceViewersUpdateManyWithoutUserNestedInput
+  invoiceEditors?: Prisma.InvoiceEditorsUpdateManyWithoutUserNestedInput
 }
 
 export type UsersUncheckedUpdateWithoutTokensInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   name?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.StringFieldUpdateOperationsInput | string
-  emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  emailVerified?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  locale?: Prisma.StringFieldUpdateOperationsInput | string
+  createdAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  updatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  locale?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   hashedPassword?: Prisma.StringFieldUpdateOperationsInput | string
-  roleId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  privileges?: Prisma.PrivilegesUncheckedUpdateManyWithoutUsersNestedInput
+  invoiceViewers?: Prisma.InvoiceViewersUncheckedUpdateManyWithoutUserNestedInput
+  invoiceEditors?: Prisma.InvoiceEditorsUncheckedUpdateManyWithoutUserNestedInput
 }
 
-export type UsersCreateWithoutRoleInput = {
+export type UsersCreateWithoutInvoiceViewersInput = {
   name: string
   email: string
-  emailVerified?: boolean
+  emailVerified?: boolean | null
   image?: string | null
-  createdAt?: Date | string
-  updatedAt?: Date | string
-  locale?: string
+  createdAt?: Date | string | null
+  updatedAt?: Date | string | null
+  locale?: string | null
   hashedPassword: string
   tokens?: Prisma.TokensCreateNestedManyWithoutUsersInput
-  privileges?: Prisma.PrivilegesCreateNestedManyWithoutUsersInput
+  invoiceEditors?: Prisma.InvoiceEditorsCreateNestedManyWithoutUserInput
 }
 
-export type UsersUncheckedCreateWithoutRoleInput = {
+export type UsersUncheckedCreateWithoutInvoiceViewersInput = {
   id?: number
   name: string
   email: string
-  emailVerified?: boolean
+  emailVerified?: boolean | null
   image?: string | null
-  createdAt?: Date | string
-  updatedAt?: Date | string
-  locale?: string
+  createdAt?: Date | string | null
+  updatedAt?: Date | string | null
+  locale?: string | null
   hashedPassword: string
   tokens?: Prisma.TokensUncheckedCreateNestedManyWithoutUsersInput
-  privileges?: Prisma.PrivilegesUncheckedCreateNestedManyWithoutUsersInput
+  invoiceEditors?: Prisma.InvoiceEditorsUncheckedCreateNestedManyWithoutUserInput
 }
 
-export type UsersCreateOrConnectWithoutRoleInput = {
+export type UsersCreateOrConnectWithoutInvoiceViewersInput = {
   where: Prisma.UsersWhereUniqueInput
-  create: Prisma.XOR<Prisma.UsersCreateWithoutRoleInput, Prisma.UsersUncheckedCreateWithoutRoleInput>
+  create: Prisma.XOR<Prisma.UsersCreateWithoutInvoiceViewersInput, Prisma.UsersUncheckedCreateWithoutInvoiceViewersInput>
 }
 
-export type UsersCreateManyRoleInputEnvelope = {
-  data: Prisma.UsersCreateManyRoleInput | Prisma.UsersCreateManyRoleInput[]
-}
-
-export type UsersUpsertWithWhereUniqueWithoutRoleInput = {
-  where: Prisma.UsersWhereUniqueInput
-  update: Prisma.XOR<Prisma.UsersUpdateWithoutRoleInput, Prisma.UsersUncheckedUpdateWithoutRoleInput>
-  create: Prisma.XOR<Prisma.UsersCreateWithoutRoleInput, Prisma.UsersUncheckedCreateWithoutRoleInput>
-}
-
-export type UsersUpdateWithWhereUniqueWithoutRoleInput = {
-  where: Prisma.UsersWhereUniqueInput
-  data: Prisma.XOR<Prisma.UsersUpdateWithoutRoleInput, Prisma.UsersUncheckedUpdateWithoutRoleInput>
-}
-
-export type UsersUpdateManyWithWhereWithoutRoleInput = {
-  where: Prisma.UsersScalarWhereInput
-  data: Prisma.XOR<Prisma.UsersUpdateManyMutationInput, Prisma.UsersUncheckedUpdateManyWithoutRoleInput>
-}
-
-export type UsersScalarWhereInput = {
-  AND?: Prisma.UsersScalarWhereInput | Prisma.UsersScalarWhereInput[]
-  OR?: Prisma.UsersScalarWhereInput[]
-  NOT?: Prisma.UsersScalarWhereInput | Prisma.UsersScalarWhereInput[]
-  id?: Prisma.IntFilter<"Users"> | number
-  name?: Prisma.StringFilter<"Users"> | string
-  email?: Prisma.StringFilter<"Users"> | string
-  emailVerified?: Prisma.BoolFilter<"Users"> | boolean
-  image?: Prisma.StringNullableFilter<"Users"> | string | null
-  createdAt?: Prisma.DateTimeFilter<"Users"> | Date | string
-  updatedAt?: Prisma.DateTimeFilter<"Users"> | Date | string
-  locale?: Prisma.StringFilter<"Users"> | string
-  hashedPassword?: Prisma.StringFilter<"Users"> | string
-  roleId?: Prisma.IntNullableFilter<"Users"> | number | null
-}
-
-export type UsersCreateWithoutPrivilegesInput = {
-  name: string
-  email: string
-  emailVerified?: boolean
-  image?: string | null
-  createdAt?: Date | string
-  updatedAt?: Date | string
-  locale?: string
-  hashedPassword: string
-  tokens?: Prisma.TokensCreateNestedManyWithoutUsersInput
-  role?: Prisma.RoleCreateNestedOneWithoutUsersInput
-}
-
-export type UsersUncheckedCreateWithoutPrivilegesInput = {
-  id?: number
-  name: string
-  email: string
-  emailVerified?: boolean
-  image?: string | null
-  createdAt?: Date | string
-  updatedAt?: Date | string
-  locale?: string
-  hashedPassword: string
-  roleId?: number | null
-  tokens?: Prisma.TokensUncheckedCreateNestedManyWithoutUsersInput
-}
-
-export type UsersCreateOrConnectWithoutPrivilegesInput = {
-  where: Prisma.UsersWhereUniqueInput
-  create: Prisma.XOR<Prisma.UsersCreateWithoutPrivilegesInput, Prisma.UsersUncheckedCreateWithoutPrivilegesInput>
-}
-
-export type UsersUpsertWithoutPrivilegesInput = {
-  update: Prisma.XOR<Prisma.UsersUpdateWithoutPrivilegesInput, Prisma.UsersUncheckedUpdateWithoutPrivilegesInput>
-  create: Prisma.XOR<Prisma.UsersCreateWithoutPrivilegesInput, Prisma.UsersUncheckedCreateWithoutPrivilegesInput>
+export type UsersUpsertWithoutInvoiceViewersInput = {
+  update: Prisma.XOR<Prisma.UsersUpdateWithoutInvoiceViewersInput, Prisma.UsersUncheckedUpdateWithoutInvoiceViewersInput>
+  create: Prisma.XOR<Prisma.UsersCreateWithoutInvoiceViewersInput, Prisma.UsersUncheckedCreateWithoutInvoiceViewersInput>
   where?: Prisma.UsersWhereInput
 }
 
-export type UsersUpdateToOneWithWhereWithoutPrivilegesInput = {
+export type UsersUpdateToOneWithWhereWithoutInvoiceViewersInput = {
   where?: Prisma.UsersWhereInput
-  data: Prisma.XOR<Prisma.UsersUpdateWithoutPrivilegesInput, Prisma.UsersUncheckedUpdateWithoutPrivilegesInput>
+  data: Prisma.XOR<Prisma.UsersUpdateWithoutInvoiceViewersInput, Prisma.UsersUncheckedUpdateWithoutInvoiceViewersInput>
 }
 
-export type UsersUpdateWithoutPrivilegesInput = {
+export type UsersUpdateWithoutInvoiceViewersInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.StringFieldUpdateOperationsInput | string
-  emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  emailVerified?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  locale?: Prisma.StringFieldUpdateOperationsInput | string
+  createdAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  updatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  locale?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   hashedPassword?: Prisma.StringFieldUpdateOperationsInput | string
   tokens?: Prisma.TokensUpdateManyWithoutUsersNestedInput
-  role?: Prisma.RoleUpdateOneWithoutUsersNestedInput
+  invoiceEditors?: Prisma.InvoiceEditorsUpdateManyWithoutUserNestedInput
 }
 
-export type UsersUncheckedUpdateWithoutPrivilegesInput = {
+export type UsersUncheckedUpdateWithoutInvoiceViewersInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   name?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.StringFieldUpdateOperationsInput | string
-  emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  emailVerified?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  locale?: Prisma.StringFieldUpdateOperationsInput | string
+  createdAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  updatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  locale?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   hashedPassword?: Prisma.StringFieldUpdateOperationsInput | string
-  roleId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   tokens?: Prisma.TokensUncheckedUpdateManyWithoutUsersNestedInput
+  invoiceEditors?: Prisma.InvoiceEditorsUncheckedUpdateManyWithoutUserNestedInput
 }
 
-export type UsersCreateManyRoleInput = {
+export type UsersCreateWithoutInvoiceEditorsInput = {
+  name: string
+  email: string
+  emailVerified?: boolean | null
+  image?: string | null
+  createdAt?: Date | string | null
+  updatedAt?: Date | string | null
+  locale?: string | null
+  hashedPassword: string
+  tokens?: Prisma.TokensCreateNestedManyWithoutUsersInput
+  invoiceViewers?: Prisma.InvoiceViewersCreateNestedManyWithoutUserInput
+}
+
+export type UsersUncheckedCreateWithoutInvoiceEditorsInput = {
   id?: number
   name: string
   email: string
-  emailVerified?: boolean
+  emailVerified?: boolean | null
   image?: string | null
-  createdAt?: Date | string
-  updatedAt?: Date | string
-  locale?: string
+  createdAt?: Date | string | null
+  updatedAt?: Date | string | null
+  locale?: string | null
   hashedPassword: string
+  tokens?: Prisma.TokensUncheckedCreateNestedManyWithoutUsersInput
+  invoiceViewers?: Prisma.InvoiceViewersUncheckedCreateNestedManyWithoutUserInput
 }
 
-export type UsersUpdateWithoutRoleInput = {
+export type UsersCreateOrConnectWithoutInvoiceEditorsInput = {
+  where: Prisma.UsersWhereUniqueInput
+  create: Prisma.XOR<Prisma.UsersCreateWithoutInvoiceEditorsInput, Prisma.UsersUncheckedCreateWithoutInvoiceEditorsInput>
+}
+
+export type UsersUpsertWithoutInvoiceEditorsInput = {
+  update: Prisma.XOR<Prisma.UsersUpdateWithoutInvoiceEditorsInput, Prisma.UsersUncheckedUpdateWithoutInvoiceEditorsInput>
+  create: Prisma.XOR<Prisma.UsersCreateWithoutInvoiceEditorsInput, Prisma.UsersUncheckedCreateWithoutInvoiceEditorsInput>
+  where?: Prisma.UsersWhereInput
+}
+
+export type UsersUpdateToOneWithWhereWithoutInvoiceEditorsInput = {
+  where?: Prisma.UsersWhereInput
+  data: Prisma.XOR<Prisma.UsersUpdateWithoutInvoiceEditorsInput, Prisma.UsersUncheckedUpdateWithoutInvoiceEditorsInput>
+}
+
+export type UsersUpdateWithoutInvoiceEditorsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.StringFieldUpdateOperationsInput | string
-  emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  emailVerified?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  locale?: Prisma.StringFieldUpdateOperationsInput | string
+  createdAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  updatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  locale?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   hashedPassword?: Prisma.StringFieldUpdateOperationsInput | string
   tokens?: Prisma.TokensUpdateManyWithoutUsersNestedInput
-  privileges?: Prisma.PrivilegesUpdateManyWithoutUsersNestedInput
+  invoiceViewers?: Prisma.InvoiceViewersUpdateManyWithoutUserNestedInput
 }
 
-export type UsersUncheckedUpdateWithoutRoleInput = {
+export type UsersUncheckedUpdateWithoutInvoiceEditorsInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   name?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.StringFieldUpdateOperationsInput | string
-  emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  emailVerified?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  locale?: Prisma.StringFieldUpdateOperationsInput | string
+  createdAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  updatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  locale?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   hashedPassword?: Prisma.StringFieldUpdateOperationsInput | string
   tokens?: Prisma.TokensUncheckedUpdateManyWithoutUsersNestedInput
-  privileges?: Prisma.PrivilegesUncheckedUpdateManyWithoutUsersNestedInput
-}
-
-export type UsersUncheckedUpdateManyWithoutRoleInput = {
-  id?: Prisma.IntFieldUpdateOperationsInput | number
-  name?: Prisma.StringFieldUpdateOperationsInput | string
-  email?: Prisma.StringFieldUpdateOperationsInput | string
-  emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  locale?: Prisma.StringFieldUpdateOperationsInput | string
-  hashedPassword?: Prisma.StringFieldUpdateOperationsInput | string
+  invoiceViewers?: Prisma.InvoiceViewersUncheckedUpdateManyWithoutUserNestedInput
 }
 
 
@@ -868,12 +750,14 @@ export type UsersUncheckedUpdateManyWithoutRoleInput = {
 
 export type UsersCountOutputType = {
   tokens: number
-  privileges: number
+  invoiceViewers: number
+  invoiceEditors: number
 }
 
 export type UsersCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   tokens?: boolean | UsersCountOutputTypeCountTokensArgs
-  privileges?: boolean | UsersCountOutputTypeCountPrivilegesArgs
+  invoiceViewers?: boolean | UsersCountOutputTypeCountInvoiceViewersArgs
+  invoiceEditors?: boolean | UsersCountOutputTypeCountInvoiceEditorsArgs
 }
 
 /**
@@ -896,8 +780,15 @@ export type UsersCountOutputTypeCountTokensArgs<ExtArgs extends runtime.Types.Ex
 /**
  * UsersCountOutputType without action
  */
-export type UsersCountOutputTypeCountPrivilegesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  where?: Prisma.PrivilegesWhereInput
+export type UsersCountOutputTypeCountInvoiceViewersArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.InvoiceViewersWhereInput
+}
+
+/**
+ * UsersCountOutputType without action
+ */
+export type UsersCountOutputTypeCountInvoiceEditorsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.InvoiceEditorsWhereInput
 }
 
 
@@ -911,10 +802,9 @@ export type UsersSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   updatedAt?: boolean
   locale?: boolean
   hashedPassword?: boolean
-  roleId?: boolean
   tokens?: boolean | Prisma.Users$tokensArgs<ExtArgs>
-  privileges?: boolean | Prisma.Users$privilegesArgs<ExtArgs>
-  role?: boolean | Prisma.Users$roleArgs<ExtArgs>
+  invoiceViewers?: boolean | Prisma.Users$invoiceViewersArgs<ExtArgs>
+  invoiceEditors?: boolean | Prisma.Users$invoiceEditorsArgs<ExtArgs>
   _count?: boolean | Prisma.UsersCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["users"]>
 
@@ -928,8 +818,6 @@ export type UsersSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensi
   updatedAt?: boolean
   locale?: boolean
   hashedPassword?: boolean
-  roleId?: boolean
-  role?: boolean | Prisma.Users$roleArgs<ExtArgs>
 }, ExtArgs["result"]["users"]>
 
 export type UsersSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -942,8 +830,6 @@ export type UsersSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensi
   updatedAt?: boolean
   locale?: boolean
   hashedPassword?: boolean
-  roleId?: boolean
-  role?: boolean | Prisma.Users$roleArgs<ExtArgs>
 }, ExtArgs["result"]["users"]>
 
 export type UsersSelectScalar = {
@@ -956,41 +842,35 @@ export type UsersSelectScalar = {
   updatedAt?: boolean
   locale?: boolean
   hashedPassword?: boolean
-  roleId?: boolean
 }
 
-export type UsersOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "email" | "emailVerified" | "image" | "createdAt" | "updatedAt" | "locale" | "hashedPassword" | "roleId", ExtArgs["result"]["users"]>
+export type UsersOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "email" | "emailVerified" | "image" | "createdAt" | "updatedAt" | "locale" | "hashedPassword", ExtArgs["result"]["users"]>
 export type UsersInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   tokens?: boolean | Prisma.Users$tokensArgs<ExtArgs>
-  privileges?: boolean | Prisma.Users$privilegesArgs<ExtArgs>
-  role?: boolean | Prisma.Users$roleArgs<ExtArgs>
+  invoiceViewers?: boolean | Prisma.Users$invoiceViewersArgs<ExtArgs>
+  invoiceEditors?: boolean | Prisma.Users$invoiceEditorsArgs<ExtArgs>
   _count?: boolean | Prisma.UsersCountOutputTypeDefaultArgs<ExtArgs>
 }
-export type UsersIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  role?: boolean | Prisma.Users$roleArgs<ExtArgs>
-}
-export type UsersIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  role?: boolean | Prisma.Users$roleArgs<ExtArgs>
-}
+export type UsersIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
+export type UsersIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
 
 export type $UsersPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "Users"
   objects: {
     tokens: Prisma.$TokensPayload<ExtArgs>[]
-    privileges: Prisma.$PrivilegesPayload<ExtArgs>[]
-    role: Prisma.$RolePayload<ExtArgs> | null
+    invoiceViewers: Prisma.$InvoiceViewersPayload<ExtArgs>[]
+    invoiceEditors: Prisma.$InvoiceEditorsPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: number
     name: string
     email: string
-    emailVerified: boolean
+    emailVerified: boolean | null
     image: string | null
-    createdAt: Date
-    updatedAt: Date
-    locale: string
+    createdAt: Date | null
+    updatedAt: Date | null
+    locale: string | null
     hashedPassword: string
-    roleId: number | null
   }, ExtArgs["result"]["users"]>
   composites: {}
 }
@@ -1386,8 +1266,8 @@ readonly fields: UsersFieldRefs;
 export interface Prisma__UsersClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
   tokens<T extends Prisma.Users$tokensArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Users$tokensArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$TokensPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-  privileges<T extends Prisma.Users$privilegesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Users$privilegesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$PrivilegesPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-  role<T extends Prisma.Users$roleArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Users$roleArgs<ExtArgs>>): Prisma.Prisma__RoleClient<runtime.Types.Result.GetResult<Prisma.$RolePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+  invoiceViewers<T extends Prisma.Users$invoiceViewersArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Users$invoiceViewersArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$InvoiceViewersPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  invoiceEditors<T extends Prisma.Users$invoiceEditorsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Users$invoiceEditorsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$InvoiceEditorsPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1426,7 +1306,6 @@ export interface UsersFieldRefs {
   readonly updatedAt: Prisma.FieldRef<"Users", 'DateTime'>
   readonly locale: Prisma.FieldRef<"Users", 'String'>
   readonly hashedPassword: Prisma.FieldRef<"Users", 'String'>
-  readonly roleId: Prisma.FieldRef<"Users", 'Int'>
 }
     
 
@@ -1674,10 +1553,6 @@ export type UsersCreateManyAndReturnArgs<ExtArgs extends runtime.Types.Extension
    * The data used to create many Users.
    */
   data: Prisma.UsersCreateManyInput | Prisma.UsersCreateManyInput[]
-  /**
-   * Choose, which related nodes to fetch as well
-   */
-  include?: Prisma.UsersIncludeCreateManyAndReturn<ExtArgs> | null
 }
 
 /**
@@ -1748,10 +1623,6 @@ export type UsersUpdateManyAndReturnArgs<ExtArgs extends runtime.Types.Extension
    * Limit how many Users to update.
    */
   limit?: number
-  /**
-   * Choose, which related nodes to fetch as well
-   */
-  include?: Prisma.UsersIncludeUpdateManyAndReturn<ExtArgs> | null
 }
 
 /**
@@ -1845,46 +1716,51 @@ export type Users$tokensArgs<ExtArgs extends runtime.Types.Extensions.InternalAr
 }
 
 /**
- * Users.privileges
+ * Users.invoiceViewers
  */
-export type Users$privilegesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+export type Users$invoiceViewersArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   /**
-   * Select specific fields to fetch from the Privileges
+   * Select specific fields to fetch from the InvoiceViewers
    */
-  select?: Prisma.PrivilegesSelect<ExtArgs> | null
+  select?: Prisma.InvoiceViewersSelect<ExtArgs> | null
   /**
-   * Omit specific fields from the Privileges
+   * Omit specific fields from the InvoiceViewers
    */
-  omit?: Prisma.PrivilegesOmit<ExtArgs> | null
+  omit?: Prisma.InvoiceViewersOmit<ExtArgs> | null
   /**
    * Choose, which related nodes to fetch as well
    */
-  include?: Prisma.PrivilegesInclude<ExtArgs> | null
-  where?: Prisma.PrivilegesWhereInput
-  orderBy?: Prisma.PrivilegesOrderByWithRelationInput | Prisma.PrivilegesOrderByWithRelationInput[]
-  cursor?: Prisma.PrivilegesWhereUniqueInput
+  include?: Prisma.InvoiceViewersInclude<ExtArgs> | null
+  where?: Prisma.InvoiceViewersWhereInput
+  orderBy?: Prisma.InvoiceViewersOrderByWithRelationInput | Prisma.InvoiceViewersOrderByWithRelationInput[]
+  cursor?: Prisma.InvoiceViewersWhereUniqueInput
   take?: number
   skip?: number
-  distinct?: Prisma.PrivilegesScalarFieldEnum | Prisma.PrivilegesScalarFieldEnum[]
+  distinct?: Prisma.InvoiceViewersScalarFieldEnum | Prisma.InvoiceViewersScalarFieldEnum[]
 }
 
 /**
- * Users.role
+ * Users.invoiceEditors
  */
-export type Users$roleArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+export type Users$invoiceEditorsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   /**
-   * Select specific fields to fetch from the Role
+   * Select specific fields to fetch from the InvoiceEditors
    */
-  select?: Prisma.RoleSelect<ExtArgs> | null
+  select?: Prisma.InvoiceEditorsSelect<ExtArgs> | null
   /**
-   * Omit specific fields from the Role
+   * Omit specific fields from the InvoiceEditors
    */
-  omit?: Prisma.RoleOmit<ExtArgs> | null
+  omit?: Prisma.InvoiceEditorsOmit<ExtArgs> | null
   /**
    * Choose, which related nodes to fetch as well
    */
-  include?: Prisma.RoleInclude<ExtArgs> | null
-  where?: Prisma.RoleWhereInput
+  include?: Prisma.InvoiceEditorsInclude<ExtArgs> | null
+  where?: Prisma.InvoiceEditorsWhereInput
+  orderBy?: Prisma.InvoiceEditorsOrderByWithRelationInput | Prisma.InvoiceEditorsOrderByWithRelationInput[]
+  cursor?: Prisma.InvoiceEditorsWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.InvoiceEditorsScalarFieldEnum | Prisma.InvoiceEditorsScalarFieldEnum[]
 }
 
 /**

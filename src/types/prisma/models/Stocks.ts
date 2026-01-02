@@ -217,14 +217,14 @@ export type StocksGroupByArgs<ExtArgs extends runtime.Types.Extensions.InternalA
 
 export type StocksGroupByOutputType = {
   id: number
-  name: string
-  quantity: number
-  price: number
-  revenue: number
+  name: string | null
+  quantity: number | null
+  price: number | null
+  revenue: number | null
   barcode: string | null
   code: string | null
-  createdAt: Date
-  updatedAt: Date
+  createdAt: Date | null
+  updatedAt: Date | null
   _count: StocksCountAggregateOutputType | null
   _avg: StocksAvgAggregateOutputType | null
   _sum: StocksSumAggregateOutputType | null
@@ -252,26 +252,26 @@ export type StocksWhereInput = {
   OR?: Prisma.StocksWhereInput[]
   NOT?: Prisma.StocksWhereInput | Prisma.StocksWhereInput[]
   id?: Prisma.IntFilter<"Stocks"> | number
-  name?: Prisma.StringFilter<"Stocks"> | string
-  quantity?: Prisma.IntFilter<"Stocks"> | number
-  price?: Prisma.FloatFilter<"Stocks"> | number
-  revenue?: Prisma.FloatFilter<"Stocks"> | number
+  name?: Prisma.StringNullableFilter<"Stocks"> | string | null
+  quantity?: Prisma.IntNullableFilter<"Stocks"> | number | null
+  price?: Prisma.FloatNullableFilter<"Stocks"> | number | null
+  revenue?: Prisma.FloatNullableFilter<"Stocks"> | number | null
   barcode?: Prisma.StringNullableFilter<"Stocks"> | string | null
   code?: Prisma.StringNullableFilter<"Stocks"> | string | null
-  createdAt?: Prisma.DateTimeFilter<"Stocks"> | Date | string
-  updatedAt?: Prisma.DateTimeFilter<"Stocks"> | Date | string
+  createdAt?: Prisma.DateTimeNullableFilter<"Stocks"> | Date | string | null
+  updatedAt?: Prisma.DateTimeNullableFilter<"Stocks"> | Date | string | null
 }
 
 export type StocksOrderByWithRelationInput = {
   id?: Prisma.SortOrder
-  name?: Prisma.SortOrder
-  quantity?: Prisma.SortOrder
-  price?: Prisma.SortOrder
-  revenue?: Prisma.SortOrder
+  name?: Prisma.SortOrderInput | Prisma.SortOrder
+  quantity?: Prisma.SortOrderInput | Prisma.SortOrder
+  price?: Prisma.SortOrderInput | Prisma.SortOrder
+  revenue?: Prisma.SortOrderInput | Prisma.SortOrder
   barcode?: Prisma.SortOrderInput | Prisma.SortOrder
   code?: Prisma.SortOrderInput | Prisma.SortOrder
-  createdAt?: Prisma.SortOrder
-  updatedAt?: Prisma.SortOrder
+  createdAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  updatedAt?: Prisma.SortOrderInput | Prisma.SortOrder
 }
 
 export type StocksWhereUniqueInput = Prisma.AtLeast<{
@@ -279,26 +279,26 @@ export type StocksWhereUniqueInput = Prisma.AtLeast<{
   AND?: Prisma.StocksWhereInput | Prisma.StocksWhereInput[]
   OR?: Prisma.StocksWhereInput[]
   NOT?: Prisma.StocksWhereInput | Prisma.StocksWhereInput[]
-  name?: Prisma.StringFilter<"Stocks"> | string
-  quantity?: Prisma.IntFilter<"Stocks"> | number
-  price?: Prisma.FloatFilter<"Stocks"> | number
-  revenue?: Prisma.FloatFilter<"Stocks"> | number
+  name?: Prisma.StringNullableFilter<"Stocks"> | string | null
+  quantity?: Prisma.IntNullableFilter<"Stocks"> | number | null
+  price?: Prisma.FloatNullableFilter<"Stocks"> | number | null
+  revenue?: Prisma.FloatNullableFilter<"Stocks"> | number | null
   barcode?: Prisma.StringNullableFilter<"Stocks"> | string | null
   code?: Prisma.StringNullableFilter<"Stocks"> | string | null
-  createdAt?: Prisma.DateTimeFilter<"Stocks"> | Date | string
-  updatedAt?: Prisma.DateTimeFilter<"Stocks"> | Date | string
+  createdAt?: Prisma.DateTimeNullableFilter<"Stocks"> | Date | string | null
+  updatedAt?: Prisma.DateTimeNullableFilter<"Stocks"> | Date | string | null
 }, "id">
 
 export type StocksOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
-  name?: Prisma.SortOrder
-  quantity?: Prisma.SortOrder
-  price?: Prisma.SortOrder
-  revenue?: Prisma.SortOrder
+  name?: Prisma.SortOrderInput | Prisma.SortOrder
+  quantity?: Prisma.SortOrderInput | Prisma.SortOrder
+  price?: Prisma.SortOrderInput | Prisma.SortOrder
+  revenue?: Prisma.SortOrderInput | Prisma.SortOrder
   barcode?: Prisma.SortOrderInput | Prisma.SortOrder
   code?: Prisma.SortOrderInput | Prisma.SortOrder
-  createdAt?: Prisma.SortOrder
-  updatedAt?: Prisma.SortOrder
+  createdAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  updatedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   _count?: Prisma.StocksCountOrderByAggregateInput
   _avg?: Prisma.StocksAvgOrderByAggregateInput
   _max?: Prisma.StocksMaxOrderByAggregateInput
@@ -311,95 +311,95 @@ export type StocksScalarWhereWithAggregatesInput = {
   OR?: Prisma.StocksScalarWhereWithAggregatesInput[]
   NOT?: Prisma.StocksScalarWhereWithAggregatesInput | Prisma.StocksScalarWhereWithAggregatesInput[]
   id?: Prisma.IntWithAggregatesFilter<"Stocks"> | number
-  name?: Prisma.StringWithAggregatesFilter<"Stocks"> | string
-  quantity?: Prisma.IntWithAggregatesFilter<"Stocks"> | number
-  price?: Prisma.FloatWithAggregatesFilter<"Stocks"> | number
-  revenue?: Prisma.FloatWithAggregatesFilter<"Stocks"> | number
+  name?: Prisma.StringNullableWithAggregatesFilter<"Stocks"> | string | null
+  quantity?: Prisma.IntNullableWithAggregatesFilter<"Stocks"> | number | null
+  price?: Prisma.FloatNullableWithAggregatesFilter<"Stocks"> | number | null
+  revenue?: Prisma.FloatNullableWithAggregatesFilter<"Stocks"> | number | null
   barcode?: Prisma.StringNullableWithAggregatesFilter<"Stocks"> | string | null
   code?: Prisma.StringNullableWithAggregatesFilter<"Stocks"> | string | null
-  createdAt?: Prisma.DateTimeWithAggregatesFilter<"Stocks"> | Date | string
-  updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Stocks"> | Date | string
+  createdAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Stocks"> | Date | string | null
+  updatedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Stocks"> | Date | string | null
 }
 
 export type StocksCreateInput = {
-  name: string
-  quantity?: number
-  price?: number
-  revenue?: number
+  name?: string | null
+  quantity?: number | null
+  price?: number | null
+  revenue?: number | null
   barcode?: string | null
   code?: string | null
-  createdAt?: Date | string
-  updatedAt?: Date | string
+  createdAt?: Date | string | null
+  updatedAt?: Date | string | null
 }
 
 export type StocksUncheckedCreateInput = {
   id?: number
-  name: string
-  quantity?: number
-  price?: number
-  revenue?: number
+  name?: string | null
+  quantity?: number | null
+  price?: number | null
+  revenue?: number | null
   barcode?: string | null
   code?: string | null
-  createdAt?: Date | string
-  updatedAt?: Date | string
+  createdAt?: Date | string | null
+  updatedAt?: Date | string | null
 }
 
 export type StocksUpdateInput = {
-  name?: Prisma.StringFieldUpdateOperationsInput | string
-  quantity?: Prisma.IntFieldUpdateOperationsInput | number
-  price?: Prisma.FloatFieldUpdateOperationsInput | number
-  revenue?: Prisma.FloatFieldUpdateOperationsInput | number
+  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  quantity?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  price?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  revenue?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   barcode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   code?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  createdAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  updatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 export type StocksUncheckedUpdateInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
-  name?: Prisma.StringFieldUpdateOperationsInput | string
-  quantity?: Prisma.IntFieldUpdateOperationsInput | number
-  price?: Prisma.FloatFieldUpdateOperationsInput | number
-  revenue?: Prisma.FloatFieldUpdateOperationsInput | number
+  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  quantity?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  price?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  revenue?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   barcode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   code?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  createdAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  updatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 export type StocksCreateManyInput = {
   id?: number
-  name: string
-  quantity?: number
-  price?: number
-  revenue?: number
+  name?: string | null
+  quantity?: number | null
+  price?: number | null
+  revenue?: number | null
   barcode?: string | null
   code?: string | null
-  createdAt?: Date | string
-  updatedAt?: Date | string
+  createdAt?: Date | string | null
+  updatedAt?: Date | string | null
 }
 
 export type StocksUpdateManyMutationInput = {
-  name?: Prisma.StringFieldUpdateOperationsInput | string
-  quantity?: Prisma.IntFieldUpdateOperationsInput | number
-  price?: Prisma.FloatFieldUpdateOperationsInput | number
-  revenue?: Prisma.FloatFieldUpdateOperationsInput | number
+  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  quantity?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  price?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  revenue?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   barcode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   code?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  createdAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  updatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 export type StocksUncheckedUpdateManyInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
-  name?: Prisma.StringFieldUpdateOperationsInput | string
-  quantity?: Prisma.IntFieldUpdateOperationsInput | number
-  price?: Prisma.FloatFieldUpdateOperationsInput | number
-  revenue?: Prisma.FloatFieldUpdateOperationsInput | number
+  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  quantity?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  price?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  revenue?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   barcode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   code?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  createdAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  updatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 export type StocksCountOrderByAggregateInput = {
@@ -509,14 +509,14 @@ export type $StocksPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs
   objects: {}
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: number
-    name: string
-    quantity: number
-    price: number
-    revenue: number
+    name: string | null
+    quantity: number | null
+    price: number | null
+    revenue: number | null
     barcode: string | null
     code: string | null
-    createdAt: Date
-    updatedAt: Date
+    createdAt: Date | null
+    updatedAt: Date | null
   }, ExtArgs["result"]["stocks"]>
   composites: {}
 }
@@ -1143,7 +1143,7 @@ export type StocksCreateArgs<ExtArgs extends runtime.Types.Extensions.InternalAr
   /**
    * The data needed to create a Stocks.
    */
-  data: Prisma.XOR<Prisma.StocksCreateInput, Prisma.StocksUncheckedCreateInput>
+  data?: Prisma.XOR<Prisma.StocksCreateInput, Prisma.StocksUncheckedCreateInput>
 }
 
 /**

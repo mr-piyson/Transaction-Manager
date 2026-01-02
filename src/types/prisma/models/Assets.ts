@@ -207,13 +207,13 @@ export type AssetsGroupByArgs<ExtArgs extends runtime.Types.Extensions.InternalA
 
 export type AssetsGroupByOutputType = {
   id: number
-  name: string
-  quantity: number
-  price: number
+  name: string | null
+  quantity: number | null
+  price: number | null
   barcode: string | null
   code: string | null
-  createdAt: Date
-  updatedAt: Date
+  createdAt: Date | null
+  updatedAt: Date | null
   _count: AssetsCountAggregateOutputType | null
   _avg: AssetsAvgAggregateOutputType | null
   _sum: AssetsSumAggregateOutputType | null
@@ -241,24 +241,24 @@ export type AssetsWhereInput = {
   OR?: Prisma.AssetsWhereInput[]
   NOT?: Prisma.AssetsWhereInput | Prisma.AssetsWhereInput[]
   id?: Prisma.IntFilter<"Assets"> | number
-  name?: Prisma.StringFilter<"Assets"> | string
-  quantity?: Prisma.IntFilter<"Assets"> | number
-  price?: Prisma.FloatFilter<"Assets"> | number
+  name?: Prisma.StringNullableFilter<"Assets"> | string | null
+  quantity?: Prisma.IntNullableFilter<"Assets"> | number | null
+  price?: Prisma.FloatNullableFilter<"Assets"> | number | null
   barcode?: Prisma.StringNullableFilter<"Assets"> | string | null
   code?: Prisma.StringNullableFilter<"Assets"> | string | null
-  createdAt?: Prisma.DateTimeFilter<"Assets"> | Date | string
-  updatedAt?: Prisma.DateTimeFilter<"Assets"> | Date | string
+  createdAt?: Prisma.DateTimeNullableFilter<"Assets"> | Date | string | null
+  updatedAt?: Prisma.DateTimeNullableFilter<"Assets"> | Date | string | null
 }
 
 export type AssetsOrderByWithRelationInput = {
   id?: Prisma.SortOrder
-  name?: Prisma.SortOrder
-  quantity?: Prisma.SortOrder
-  price?: Prisma.SortOrder
+  name?: Prisma.SortOrderInput | Prisma.SortOrder
+  quantity?: Prisma.SortOrderInput | Prisma.SortOrder
+  price?: Prisma.SortOrderInput | Prisma.SortOrder
   barcode?: Prisma.SortOrderInput | Prisma.SortOrder
   code?: Prisma.SortOrderInput | Prisma.SortOrder
-  createdAt?: Prisma.SortOrder
-  updatedAt?: Prisma.SortOrder
+  createdAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  updatedAt?: Prisma.SortOrderInput | Prisma.SortOrder
 }
 
 export type AssetsWhereUniqueInput = Prisma.AtLeast<{
@@ -266,24 +266,24 @@ export type AssetsWhereUniqueInput = Prisma.AtLeast<{
   AND?: Prisma.AssetsWhereInput | Prisma.AssetsWhereInput[]
   OR?: Prisma.AssetsWhereInput[]
   NOT?: Prisma.AssetsWhereInput | Prisma.AssetsWhereInput[]
-  name?: Prisma.StringFilter<"Assets"> | string
-  quantity?: Prisma.IntFilter<"Assets"> | number
-  price?: Prisma.FloatFilter<"Assets"> | number
+  name?: Prisma.StringNullableFilter<"Assets"> | string | null
+  quantity?: Prisma.IntNullableFilter<"Assets"> | number | null
+  price?: Prisma.FloatNullableFilter<"Assets"> | number | null
   barcode?: Prisma.StringNullableFilter<"Assets"> | string | null
   code?: Prisma.StringNullableFilter<"Assets"> | string | null
-  createdAt?: Prisma.DateTimeFilter<"Assets"> | Date | string
-  updatedAt?: Prisma.DateTimeFilter<"Assets"> | Date | string
+  createdAt?: Prisma.DateTimeNullableFilter<"Assets"> | Date | string | null
+  updatedAt?: Prisma.DateTimeNullableFilter<"Assets"> | Date | string | null
 }, "id">
 
 export type AssetsOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
-  name?: Prisma.SortOrder
-  quantity?: Prisma.SortOrder
-  price?: Prisma.SortOrder
+  name?: Prisma.SortOrderInput | Prisma.SortOrder
+  quantity?: Prisma.SortOrderInput | Prisma.SortOrder
+  price?: Prisma.SortOrderInput | Prisma.SortOrder
   barcode?: Prisma.SortOrderInput | Prisma.SortOrder
   code?: Prisma.SortOrderInput | Prisma.SortOrder
-  createdAt?: Prisma.SortOrder
-  updatedAt?: Prisma.SortOrder
+  createdAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  updatedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   _count?: Prisma.AssetsCountOrderByAggregateInput
   _avg?: Prisma.AssetsAvgOrderByAggregateInput
   _max?: Prisma.AssetsMaxOrderByAggregateInput
@@ -296,87 +296,87 @@ export type AssetsScalarWhereWithAggregatesInput = {
   OR?: Prisma.AssetsScalarWhereWithAggregatesInput[]
   NOT?: Prisma.AssetsScalarWhereWithAggregatesInput | Prisma.AssetsScalarWhereWithAggregatesInput[]
   id?: Prisma.IntWithAggregatesFilter<"Assets"> | number
-  name?: Prisma.StringWithAggregatesFilter<"Assets"> | string
-  quantity?: Prisma.IntWithAggregatesFilter<"Assets"> | number
-  price?: Prisma.FloatWithAggregatesFilter<"Assets"> | number
+  name?: Prisma.StringNullableWithAggregatesFilter<"Assets"> | string | null
+  quantity?: Prisma.IntNullableWithAggregatesFilter<"Assets"> | number | null
+  price?: Prisma.FloatNullableWithAggregatesFilter<"Assets"> | number | null
   barcode?: Prisma.StringNullableWithAggregatesFilter<"Assets"> | string | null
   code?: Prisma.StringNullableWithAggregatesFilter<"Assets"> | string | null
-  createdAt?: Prisma.DateTimeWithAggregatesFilter<"Assets"> | Date | string
-  updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Assets"> | Date | string
+  createdAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Assets"> | Date | string | null
+  updatedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Assets"> | Date | string | null
 }
 
 export type AssetsCreateInput = {
-  name: string
-  quantity?: number
-  price?: number
+  name?: string | null
+  quantity?: number | null
+  price?: number | null
   barcode?: string | null
   code?: string | null
-  createdAt?: Date | string
-  updatedAt?: Date | string
+  createdAt?: Date | string | null
+  updatedAt?: Date | string | null
 }
 
 export type AssetsUncheckedCreateInput = {
   id?: number
-  name: string
-  quantity?: number
-  price?: number
+  name?: string | null
+  quantity?: number | null
+  price?: number | null
   barcode?: string | null
   code?: string | null
-  createdAt?: Date | string
-  updatedAt?: Date | string
+  createdAt?: Date | string | null
+  updatedAt?: Date | string | null
 }
 
 export type AssetsUpdateInput = {
-  name?: Prisma.StringFieldUpdateOperationsInput | string
-  quantity?: Prisma.IntFieldUpdateOperationsInput | number
-  price?: Prisma.FloatFieldUpdateOperationsInput | number
+  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  quantity?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  price?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   barcode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   code?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  createdAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  updatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 export type AssetsUncheckedUpdateInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
-  name?: Prisma.StringFieldUpdateOperationsInput | string
-  quantity?: Prisma.IntFieldUpdateOperationsInput | number
-  price?: Prisma.FloatFieldUpdateOperationsInput | number
+  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  quantity?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  price?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   barcode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   code?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  createdAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  updatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 export type AssetsCreateManyInput = {
   id?: number
-  name: string
-  quantity?: number
-  price?: number
+  name?: string | null
+  quantity?: number | null
+  price?: number | null
   barcode?: string | null
   code?: string | null
-  createdAt?: Date | string
-  updatedAt?: Date | string
+  createdAt?: Date | string | null
+  updatedAt?: Date | string | null
 }
 
 export type AssetsUpdateManyMutationInput = {
-  name?: Prisma.StringFieldUpdateOperationsInput | string
-  quantity?: Prisma.IntFieldUpdateOperationsInput | number
-  price?: Prisma.FloatFieldUpdateOperationsInput | number
+  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  quantity?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  price?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   barcode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   code?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  createdAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  updatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 export type AssetsUncheckedUpdateManyInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
-  name?: Prisma.StringFieldUpdateOperationsInput | string
-  quantity?: Prisma.IntFieldUpdateOperationsInput | number
-  price?: Prisma.FloatFieldUpdateOperationsInput | number
+  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  quantity?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  price?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   barcode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   code?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  createdAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  updatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 export type AssetsCountOrderByAggregateInput = {
@@ -477,13 +477,13 @@ export type $AssetsPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs
   objects: {}
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: number
-    name: string
-    quantity: number
-    price: number
+    name: string | null
+    quantity: number | null
+    price: number | null
     barcode: string | null
     code: string | null
-    createdAt: Date
-    updatedAt: Date
+    createdAt: Date | null
+    updatedAt: Date | null
   }, ExtArgs["result"]["assets"]>
   composites: {}
 }
@@ -1109,7 +1109,7 @@ export type AssetsCreateArgs<ExtArgs extends runtime.Types.Extensions.InternalAr
   /**
    * The data needed to create a Assets.
    */
-  data: Prisma.XOR<Prisma.AssetsCreateInput, Prisma.AssetsUncheckedCreateInput>
+  data?: Prisma.XOR<Prisma.AssetsCreateInput, Prisma.AssetsUncheckedCreateInput>
 }
 
 /**

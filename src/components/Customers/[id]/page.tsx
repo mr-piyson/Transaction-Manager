@@ -215,9 +215,7 @@ export default function CustomerDetailPage() {
                           .join("")}
                       </AvatarFallback>
                     </Avatar>
-                    <Badge variant={getStatusColor(customer.status)} className={`absolute -bottom-2 -right-2`}>
-                      {customer.status}
-                    </Badge>
+                    <Badge className={`absolute -bottom-2 -right-2`}>{customer.status}</Badge>
                   </div>
                   <div className="flex-1 text-center sm:text-left space-y-2">
                     <h2 className="text-2xl sm:text-3xl font-bold">{customer.name}</h2>
@@ -311,7 +309,7 @@ export default function CustomerDetailPage() {
                         </div>
                       </div>
                       <div className="flex items-center gap-4">
-                        <Badge variant={getOrderStatusColor(order.status)}>{order.status}</Badge>
+                        <Badge>{order.status}</Badge>
                         <p className="font-semibold">${order.amount.toLocaleString()}</p>
                       </div>
                     </div>

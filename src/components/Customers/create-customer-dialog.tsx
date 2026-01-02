@@ -21,7 +21,7 @@ export default function CreateCustomerDialog(props: any) {
     const formData = new FormData(e.currentTarget);
 
     try {
-      const res = await axios.post("/api/customers", formData);
+      const res = await axios.post("/api/records", formData);
 
       toast.success("Customer created", {
         description: "Successfully create a customer",
