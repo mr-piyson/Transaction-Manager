@@ -8,14 +8,13 @@ import { ClientSideRowModelModule } from "ag-grid-community"; // Import the miss
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useTableTheme } from "@/hooks/use-tableTheme";
 import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty";
 
 // Register the required modules
 ModuleRegistry.registerModules([AllCommunityModule, ClientSideRowModelModule]);
 
 export default function RecordTable(props: { editable?: boolean }) {
-  const [parts, setParts] = useState([]);
+  const [invoices, setInvoices] = useState([]);
   const tableTheme = useTableTheme();
   const isMobile = useIsMobile();
 
@@ -76,21 +75,43 @@ export default function RecordTable(props: { editable?: boolean }) {
     [props.editable]
   );
 
+  if (invoices.length === 0) {
+    return (
+      <Empty >
+        <EmptyHeader>
+          <EmptyMedia variant="icon">
+            <svg className="icon-[hugeicons--add-invoice]" />
+          </EmptyMedia>
+          <EmptyTitle>No Invoices</EmptyTitle>
+          <EmptyDescription>You haven&apos;t created any invoices yet. Get started by creating your first invoice.</EmptyDescription>
+        </EmptyHeader>
+        <EmptyContent>
+          <div className="flex gap-2">
+            <Button>Create Invoice</Button>
+            <Button variant="outline">Import Invoice</Button>
+          </div>
+        </EmptyContent>
+        <Button variant="link" asChild className="text-muted-foreground" size="sm">
+          <a href="#">
+            Learn More <svg className="icon-[solar--link-bold-duotone]" />
+          </a>
+        </Button>
+      </Empty>
+    );
+  }
+
   return (
-    <div className={cn(isMobile ? "" : "flex flex-col flex-1")}>
-      <div className="grid grid-cols-5 bg-card p-3 border ">
-        <div>
-          <Button>
-            <Plus />
-            Add new Record
-          </Button>
-        </div>
-        <div></div>
-        <div className="font-semibold text-right">Total Amount:</div>
-        <div className="text-right font-medium"> BD</div>
+    <div className="flex-1">
+      <div className="flex gap-2 p-2">
+        <Button>Add</Button>
+        <Button variant={"secondary"} disabled>
+          Edit
+        </Button>
+        <Button variant={"destructive"} disabled>
+          Delete
+        </Button>
       </div>
-      <AgGridReact theme={tableTheme} rowData={parts} columnDefs={colDefs} />
-      <div className="p-2">Hello world</div>
+      <AgGridReact className="h-full" theme={tableTheme} rowData={invoices} columnDefs={colDefs} />
     </div>
   );
 }
