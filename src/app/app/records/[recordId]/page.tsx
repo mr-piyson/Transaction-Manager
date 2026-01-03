@@ -1,24 +1,3 @@
-// "use client";
-// import { useToolbar } from "@/hooks/use-toolbar";
-// import { use } from "react";
-// import InvoicesTable from "./Invoices-Table";
-
-// type CustomerPageProps = {
-//   children?: React.ReactNode;
-//   params: Promise<{ id: string }>;
-// };
-
-// export default function RecordsPage(props: CustomerPageProps) {
-//   const { id } = use(props.params);
-//   const toolbar = useToolbar();
-
-//   return (
-//     <div className="flex flex-col w-full h-full">
-//       <InvoicesTable />
-//     </div>
-//   );
-// }
-
 "use client";
 
 import React, { useCallback, useMemo, useRef, useState } from "react";
@@ -26,49 +5,31 @@ import { useVirtualizer } from "@tanstack/react-virtual";
 import { InputGroup, InputGroupInput } from "@/components/ui/input-group";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Select, SelectContent, SelectItem, SelectSeparator, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, FileText, Trash2, Edit, Search, MoreHorizontalIcon, PenBox, Share } from "lucide-react";
+import { SelectSeparator } from "@/components/ui/select";
+import { FileText, Trash2, Search, MoreHorizontal, PenBox, Share, AlertCircle, FileX } from "lucide-react";
 import { Spinner } from "@/components/ui/spinner";
 import useDebounce from "@/hooks/use-debounce";
 import { Label } from "@/components/ui/label";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import Link from "next/link";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useQuery } from "@tanstack/react-query";
+import axios from "axios";
+import { useParams } from "next/navigation";
+import { Invoices } from "@/types/prisma/client";
 
 const ITEM_HEIGHT = 80;
 
-// Mock invoice data generator
-const generateMockInvoices = (count: number) => {
-  const statuses = ["pending", "done", "draft", "failed"] as const;
-  const invoices = [];
-
-  for (let i = 1; i <= count; i++) {
-    const randomStatus = statuses[Math.floor(Math.random() * statuses.length)];
-    const randomAmount = Math.floor(Math.random() * 100) + 100;
-    const randomDaysAgo = Math.floor(Math.random() * 365);
-    const date = new Date();
-    date.setDate(date.getDate() - randomDaysAgo);
-
-    invoices.push({
-      id: `inv-${i}`,
-      invoiceNumber: `INV-${String(i).padStart(5, "0")}`,
-      amount: randomAmount,
-      status: randomStatus,
-      date: date,
-      clientName: `Client ${String.fromCharCode(65 + (i % 26))}`,
-    });
-  }
-
-  return invoices.sort((a, b) => b.date.getTime() - a.date.getTime());
-};
-
-type Invoice = ReturnType<typeof generateMockInvoices>[0];
+type Invoice = Invoices;
 
 // Optimized Invoice Item Component
 const InvoiceItem = React.memo(
   ({ invoice }: { invoice: Invoice }) => {
     const formattedDate = useMemo(() => {
-      return invoice.date.toLocaleDateString("en-US", {
+      if (!invoice.createdAt) return "N/A";
+      const date = new Date(invoice.createdAt);
+      return date.toLocaleDateString("en-US", {
         weekday: "short",
         month: "short",
         day: "2-digit",
@@ -76,7 +37,8 @@ const InvoiceItem = React.memo(
         hour: "2-digit",
         minute: "2-digit",
       });
-    }, [invoice.date]);
+    }, [invoice.createdAt]);
+    const params = useParams<{ recordId: string }>();
 
     const statusConfig = {
       pending: { variant: "warning" as const, label: "Pending", icon: "icon-[lucide--clock-4]" },
@@ -85,10 +47,11 @@ const InvoiceItem = React.memo(
       failed: { variant: "destructive" as const, label: "Failed", icon: "icon-[lucide--circle-x]" },
     };
 
-    const { variant, label, icon } = statusConfig[invoice.status];
+    const status = invoice.status || "draft";
+    const { variant, label, icon } = statusConfig[status as keyof typeof statusConfig] || statusConfig.draft;
 
     return (
-      <Link href={`/app/records`}>
+      <Link href={`/app/records/${params.recordId}/invoices/${invoice.id}`}>
         <div className="flex items-center gap-4 p-4 cursor-pointer transition-colors hover:bg-accent/50 border-b border-border" style={{ height: `${ITEM_HEIGHT}px` }}>
           <div className="flex items-center justify-center size-10 rounded-lg ">
             <svg className="icon-[hugeicons--file-01] size-7 text-foreground/60" />
@@ -96,7 +59,7 @@ const InvoiceItem = React.memo(
 
           <div className="flex-1 min-w-0 space-y-1">
             <div className="flex items-center gap-2">
-              <p className="font-semibold text-sm">{invoice.invoiceNumber}</p>
+              <p className="font-semibold text-sm">{invoice.title || `Invoice #${invoice.id}`}</p>
               <Badge variant={variant}>
                 <svg className={icon} />
                 {label}
@@ -107,15 +70,15 @@ const InvoiceItem = React.memo(
 
           <div className="flex items-center gap-3">
             <div className="text-right">
-              <p className="font-semibold text-sm">{invoice.amount.toFixed(3)} BD</p>
-              <p className="text-xs text-muted-foreground">{invoice.clientName}</p>
+              <p className="font-semibold text-sm">{invoice.total?.toFixed(3) || "0.000"} BD</p>
+              {/* <p className="text-xs text-muted-foreground">{invoice.clientName || "N/A"}</p> */}
             </div>
 
             <div className="flex items-center gap-1">
               <DropdownMenu modal={false}>
                 <DropdownMenuTrigger asChild>
                   <Button variant="outline" onClick={e => e.preventDefault()} aria-label="Open menu" size="icon-sm">
-                    <MoreHorizontalIcon />
+                    <MoreHorizontal />
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent className="w-40" align="end">
@@ -147,30 +110,74 @@ const InvoiceItem = React.memo(
 );
 InvoiceItem.displayName = "InvoiceItem";
 
+// Empty State Component
+function EmptyState({ hasFilters, onClearFilters }: { hasFilters: boolean; onClearFilters: () => void }) {
+  return (
+    <div className="flex flex-col items-center justify-center h-full p-8 text-center">
+      <div className="rounded-full bg-muted p-6 mb-4">
+        <FileX className="size-12 text-muted-foreground" />
+      </div>
+      <h3 className="text-lg font-semibold mb-2">{hasFilters ? "No invoices found" : "No invoices yet"}</h3>
+      <p className="text-sm text-muted-foreground mb-6 max-w-sm">
+        {hasFilters ? "Try adjusting your search or filters to find what you're looking for." : "Get started by creating your first invoice."}
+      </p>
+      {hasFilters && (
+        <Button variant="outline" onClick={onClearFilters}>
+          Clear filters
+        </Button>
+      )}
+    </div>
+  );
+}
+
+// Error State Component
+function ErrorState({ error, onRetry }: { error: Error; onRetry: () => void }) {
+  return (
+    <div className="flex flex-col items-center justify-center h-full p-8">
+      <Alert variant="destructive" className="max-w-md">
+        <AlertCircle className="h-4 w-4" />
+        <AlertTitle>Error loading invoices</AlertTitle>
+        <AlertDescription className="mt-2">{error.message || "Something went wrong while fetching your invoices."}</AlertDescription>
+      </Alert>
+      <Button variant="outline" onClick={onRetry} className="mt-4">
+        Try again
+      </Button>
+    </div>
+  );
+}
+
+// Loading State Component
+function LoadingState() {
+  return (
+    <div className="flex h-screen items-center justify-center">
+      <Spinner />
+      <p className="ms-2 text-muted-foreground">Loading invoices...</p>
+    </div>
+  );
+}
+
 export default function InvoicesPage() {
   const parentRef = useRef<HTMLDivElement>(null);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
-  const [, set] = useState<string>("all");
-  const [isLoading] = useState(false);
-
+  const params = useParams<{ recordId: string }>();
   const debouncedSearch = useDebounce(search, 200);
 
-  // Generate mock data (in real app, this would come from API)
-  const ALL_INVOICES = useMemo(() => generateMockInvoices(1000), []);
-
-  // Calculate stats
-  const stats = useMemo(() => {
-    const total = ALL_INVOICES.length;
-    const paidAmount = ALL_INVOICES.filter(inv => inv.status === "done").reduce((sum, inv) => sum + inv.amount, 0);
-    const pendingAmount = ALL_INVOICES.filter(inv => inv.status === "pending").reduce((sum, inv) => sum + inv.amount, 0);
-
-    return { total, paidAmount, pendingAmount };
-  }, [ALL_INVOICES]);
+  const {
+    data: invoices,
+    isLoading,
+    error,
+    refetch,
+  } = useQuery<Invoices[]>({
+    queryKey: ["invoices", Number(params.recordId)],
+    queryFn: async () => (await axios.get(`/api/records/${params.recordId}/invoices`)).data,
+  });
 
   // Optimized filtering with multiple filters
   const filteredInvoices = useMemo(() => {
-    let results = ALL_INVOICES;
+    if (!invoices) return [];
+
+    let results = invoices;
 
     // Status filter
     if (statusFilter !== "all") {
@@ -180,13 +187,13 @@ export default function InvoicesPage() {
     // Search filter
     if (debouncedSearch.trim()) {
       const searchLower = debouncedSearch.toLowerCase().trim();
-      results = results.filter(inv => inv.invoiceNumber.toLowerCase().includes(searchLower) || inv.clientName.toLowerCase().includes(searchLower) || inv.amount.toString().includes(searchLower));
+      results = results.filter(inv => inv.id?.toString().includes(searchLower) || inv.total?.toString().includes(searchLower) || inv.title?.toLowerCase().includes(searchLower));
     }
 
     return results;
-  }, [ALL_INVOICES, debouncedSearch, statusFilter]);
+  }, [invoices, debouncedSearch, statusFilter]);
 
-  const count = filteredInvoices.length;
+  const count = filteredInvoices?.length || 0;
 
   // Virtualizer with optimized settings
   const virtualizer = useVirtualizer({
@@ -203,13 +210,21 @@ export default function InvoicesPage() {
     setSearch(e.target.value);
   }, []);
 
+  // Handle clear filters
+  const handleClearFilters = useCallback(() => {
+    setSearch("");
+    setStatusFilter("all");
+  }, []);
+
+  // Check if filters are active
+  const hasActiveFilters = search.trim() !== "" || statusFilter !== "all";
+
   if (isLoading) {
-    return (
-      <div className="flex h-screen items-center justify-center">
-        <Spinner />
-        <p className="ms-2 text-muted-foreground">Loading invoices...</p>
-      </div>
-    );
+    return <LoadingState />;
+  }
+
+  if (error) {
+    return <ErrorState error={error as Error} onRetry={() => refetch()} />;
   }
 
   return (
@@ -221,11 +236,11 @@ export default function InvoicesPage() {
           <InputGroup className="flex-1 w-full min-w-46 bg-card">
             <Label>
               <Search className="size-4 ms-3 text-foreground/60" />
-              <InputGroupInput placeholder="Search..." value={search} onChange={handleSearchChange} autoComplete="off" spellCheck="false" />
+              <InputGroupInput placeholder="Search invoices..." value={search} onChange={handleSearchChange} autoComplete="off" spellCheck="false" />
             </Label>
           </InputGroup>
 
-          <Tabs className="w-full" defaultValue="all" onValueChange={setStatusFilter}>
+          <Tabs className="w-full" value={statusFilter} onValueChange={setStatusFilter}>
             <TabsList className="w-full">
               <TabsTrigger value="all">All</TabsTrigger>
               <TabsTrigger value="draft">In Progress</TabsTrigger>
@@ -235,6 +250,7 @@ export default function InvoicesPage() {
           </Tabs>
         </div>
       </header>
+
       {/* Invoice List with Infinite Scroll */}
       <main className="flex-1 min-h-0 relative">
         <div
@@ -257,22 +273,7 @@ export default function InvoicesPage() {
 
           {/* Empty State */}
           {count === 0 && search === debouncedSearch ? (
-            <div className="flex flex-col items-center justify-center h-full p-8 text-center">
-              <div className="rounded-full bg-muted p-6 mb-4">
-                <FileText className="size-12 text-muted-foreground" />
-              </div>
-              <h3 className="text-lg font-semibold mb-2">No invoices found</h3>
-              <p className="text-sm text-muted-foreground mb-6">{debouncedSearch ? `No invoices matching "${debouncedSearch}"` : "Try adjusting your filters"}</p>
-              <Button
-                variant="outline"
-                onClick={() => {
-                  setSearch("");
-                  setStatusFilter("all");
-                }}
-              >
-                Clear filters
-              </Button>
-            </div>
+            <EmptyState hasFilters={hasActiveFilters} onClearFilters={handleClearFilters} />
           ) : (
             <div
               className="relative w-full"
