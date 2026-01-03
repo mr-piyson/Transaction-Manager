@@ -238,22 +238,23 @@ export default function CustomerPage(props: CustomerPageProps) {
       <aside className="border-e flex flex-col gap-2 max-w-mid max-sm:w-full p-2 w-96">
         {/* Search Input */}
         <div className="flex flex-row items-center gap-2">
+          <Tooltip delayDuration={1200}>
+            <TooltipTrigger asChild>
+              <CreateCustomerDialog>
+                <Button>
+                  <Plus />
+                  New Record
+                </Button>
+              </CreateCustomerDialog>
+            </TooltipTrigger>
+            <TooltipContent>Create new Customer </TooltipContent>
+          </Tooltip>
           <InputGroup className="flex-1">
             <Label>
               <Search className="size-4 ms-3 text-foreground/60" />
               <InputGroupInput placeholder="Search by Name, Email, or Code..." value={search} onChange={handleSearchChange} autoComplete="off" spellCheck="false" />
             </Label>
           </InputGroup>
-          <Tooltip delayDuration={1200}>
-            <TooltipTrigger asChild>
-              <CreateCustomerDialog>
-                <Button>
-                  <Plus />
-                </Button>
-              </CreateCustomerDialog>
-            </TooltipTrigger>
-            <TooltipContent>Create new Customer </TooltipContent>
-          </Tooltip>
         </div>
 
         {/* Scrollable Area */}

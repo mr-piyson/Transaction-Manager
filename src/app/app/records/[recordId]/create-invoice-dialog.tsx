@@ -26,7 +26,7 @@ export default function CreateInvoiceDialog(props: any) {
   const [form, setForm] = React.useState({
     description: "",
     date: new Date(),
-    recordId: params.id,
+    recordId: params.recordId,
   });
 
   function updateField<K extends keyof typeof form>(key: K, value: (typeof form)[K]) {
@@ -46,17 +46,20 @@ export default function CreateInvoiceDialog(props: any) {
       const formData = new FormData();
       formData.append("description", form.description);
       formData.append("date", date.toISOString());
-      formData.append("recordId", params.id as string);
+      formData.append("recordId", params.recordId as string);
 
-      const res = await axios.post(`/api/records/${params.id}`, formData
-      );
+      const res = await axios.post(`/api/records/${params.recordId}`, formData);
 
       toast.success("Invoice created", {
         description: "Successfully created an invoice",
       });
 
       queryClient.refetchQueries({
-        queryKey: ["records", params.id],
+        queryKey: ["records"],
+      });
+
+      queryClient.refetchQueries({
+        queryKey: ["invoices", params.recordId],
       });
 
       // Reset form

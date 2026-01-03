@@ -6,7 +6,7 @@ import { InputGroup, InputGroupInput } from "@/components/ui/input-group";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { SelectSeparator } from "@/components/ui/select";
-import { FileText, Trash2, Search, MoreHorizontal, PenBox, Share, AlertCircle, FileX } from "lucide-react";
+import { Trash2, Search, MoreHorizontal, PenBox, Share, AlertCircle, FileX, Plus } from "lucide-react";
 import { Spinner } from "@/components/ui/spinner";
 import useDebounce from "@/hooks/use-debounce";
 import { Label } from "@/components/ui/label";
@@ -18,6 +18,7 @@ import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import { useParams } from "next/navigation";
 import { Invoices } from "@/types/prisma/client";
+import CreateInvoiceDialog from "./create-invoice-dialog";
 
 const ITEM_HEIGHT = 80;
 
@@ -169,7 +170,7 @@ export default function InvoicesPage() {
     error,
     refetch,
   } = useQuery<Invoices[]>({
-    queryKey: ["invoices", Number(params.recordId)],
+    queryKey: ["invoices", params.recordId],
     queryFn: async () => (await axios.get(`/api/records/${params.recordId}/invoices`)).data,
   });
 
@@ -233,6 +234,12 @@ export default function InvoicesPage() {
       <header className="border-b border-border bg-background">
         {/* Filters */}
         <div className="flex flex-wrap items-center gap-3 p-2">
+          <CreateInvoiceDialog>
+            <Button className=" z-50 ">
+              <Plus className="size-5" />
+              Invoice
+            </Button>
+          </CreateInvoiceDialog>
           <InputGroup className="flex-1 w-full min-w-46 bg-card">
             <Label>
               <Search className="size-4 ms-3 text-foreground/60" />
