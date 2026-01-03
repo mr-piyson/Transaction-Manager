@@ -10,13 +10,14 @@ import { useQuery } from "@tanstack/react-query";
 import axios, { AxiosResponse } from "axios";
 import { Button } from "@/components/ui/button";
 import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty";
-import { Plus, PlusIcon, RefreshCcwIcon } from "lucide-react";
+import { Plus, PlusIcon, RefreshCcwIcon, Search } from "lucide-react";
 import { Spinner } from "@/components/ui/spinner";
 import CreateCustomerDialog from "@/components/Customers/create-customer-dialog";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { usePathname } from "next/navigation";
 import { Records } from "@/types/prisma/client";
+import { Label } from "@/components/ui/label";
 
 const ITEM_HEIGHT = 72;
 
@@ -238,7 +239,10 @@ export default function CustomerPage(props: CustomerPageProps) {
         {/* Search Input */}
         <div className="flex flex-row items-center gap-2">
           <InputGroup className="flex-1">
-            <InputGroupInput placeholder="Search by Name, Email, or Code..." value={search} onChange={handleSearchChange} autoComplete="off" spellCheck="false" />
+            <Label>
+              <Search className="size-4 ms-3 text-foreground/60" />
+              <InputGroupInput placeholder="Search by Name, Email, or Code..." value={search} onChange={handleSearchChange} autoComplete="off" spellCheck="false" />
+            </Label>
           </InputGroup>
           <Tooltip delayDuration={1200}>
             <TooltipTrigger asChild>

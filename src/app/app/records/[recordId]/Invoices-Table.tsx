@@ -14,6 +14,8 @@ import { useQuery } from "@tanstack/react-query";
 import { useParams } from "next/navigation";
 import axios from "axios";
 import { Spinner } from "@/components/ui/spinner";
+import Link from "next/link";
+import { Eye } from "lucide-react";
 
 // Register the required modules
 ModuleRegistry.registerModules([AllCommunityModule, ClientSideRowModelModule]);
@@ -40,15 +42,21 @@ export default function InvoicesTable(props: { editable?: boolean }) {
   const colDefs = useMemo<ColDef[]>(
     () => [
       {
-        width: 48,
+        width: 64,
         field: "id",
-        headerName: "Code",
+        headerName: "",
         sortable: true,
         filter: false,
         // if props.editable is not defined then it will be editable
-        // cellRenderer: data => {
-        //   return <Link className="icon-[lucide-eye] bg-red-500 w-full h-full absolute" href={`/app/records/${params.id}/invoices/${data.value}`}></Link>;
-        // },
+        cellRenderer: (data: any) => {
+          return (
+            <Link href={`/app/records/${recordId}/invoices/${data.value}`}>
+              <Button variant={"ghost"}>
+                <Eye />
+              </Button>
+            </Link>
+          );
+        },
       },
       {
         flex: isMobile ? 0 : 1,

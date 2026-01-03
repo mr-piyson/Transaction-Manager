@@ -60,11 +60,6 @@ export type Companies = Prisma.CompaniesModel
  */
 export type Invoices = Prisma.InvoicesModel
 /**
- * Model TransactionCategories
- * 
- */
-export type TransactionCategories = Prisma.TransactionCategoriesModel
-/**
  * Model Transactions
  * 
  */

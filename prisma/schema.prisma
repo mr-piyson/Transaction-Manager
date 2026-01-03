@@ -60,28 +60,16 @@ model Invoices {
   recordsId Int?
 }
 
-model TransactionCategories {
-  id            Int            @id @default(autoincrement())
-  name          String?
-  type          String?
-  createdAt     DateTime?      @default(now())
-  updatedAt     DateTime?      @updatedAt
-  transactionId Int?
-  transactions  Transactions[]
-}
-
 model Transactions {
-  id                      Int                   @id @default(autoincrement())
-  amount                  Float?                @default(0)
-  description             String?
-  date                    DateTime?             @default(now())
-  qty                     Int?                  @default(1)
-  tax                     Float?
-  noteId                  Int?
-  transactionCategoryId   TransactionCategories @relation(fields: [transactionCategoriesId], references: [id])
-  recordsId               Int?
-  transactionCategoriesId Int
-  records                 Invoices?             @relation(fields: [recordsId], references: [id])
+  id          Int       @id @default(autoincrement())
+  amount      Float     @default(0)
+  type        String
+  description String?
+  date        DateTime  @default(now())
+  qty         Int       @default(1)
+  tax         Float?
+  recordsId   Int?
+  records     Invoices? @relation(fields: [recordsId], references: [id])
 }
 
 model Records {

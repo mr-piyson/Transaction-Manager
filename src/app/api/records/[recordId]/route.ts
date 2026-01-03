@@ -3,13 +3,13 @@ import { NextRequest, NextResponse } from "next/server";
 import z from "zod";
 import { Auth } from "../../../../../models/Auth";
 
-export const GET = async (req: NextRequest, ctx: RouteContext<"/api/records/[id]">) => {
+export const GET = async (req: NextRequest, ctx: RouteContext<"/api/records/[recordId]">) => {
   try {
     // GET logic here
     const user = await Auth.getCurrentUser();
     if (!user) return NextResponse.json({ error: "Unauthed" });
 
-    const id = (await ctx.params).id;
+    const id = (await ctx.params).recordId;
     const zid = z.number();
     const valid = zid.safeParse(Number(id));
     if (!valid.success) return NextResponse.json({ error: "invalid id" }, { status: 500 });

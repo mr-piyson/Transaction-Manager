@@ -55,7 +55,6 @@ export const ModelName = {
   Tokens: 'Tokens',
   Companies: 'Companies',
   Invoices: 'Invoices',
-  TransactionCategories: 'TransactionCategories',
   Transactions: 'Transactions',
   Records: 'Records',
   Stocks: 'Stocks',
@@ -136,28 +135,15 @@ export const InvoicesScalarFieldEnum = {
 export type InvoicesScalarFieldEnum = (typeof InvoicesScalarFieldEnum)[keyof typeof InvoicesScalarFieldEnum]
 
 
-export const TransactionCategoriesScalarFieldEnum = {
-  id: 'id',
-  name: 'name',
-  type: 'type',
-  createdAt: 'createdAt',
-  updatedAt: 'updatedAt',
-  transactionId: 'transactionId'
-} as const
-
-export type TransactionCategoriesScalarFieldEnum = (typeof TransactionCategoriesScalarFieldEnum)[keyof typeof TransactionCategoriesScalarFieldEnum]
-
-
 export const TransactionsScalarFieldEnum = {
   id: 'id',
   amount: 'amount',
+  type: 'type',
   description: 'description',
   date: 'date',
   qty: 'qty',
   tax: 'tax',
-  noteId: 'noteId',
-  recordsId: 'recordsId',
-  transactionCategoriesId: 'transactionCategoriesId'
+  recordsId: 'recordsId'
 } as const
 
 export type TransactionsScalarFieldEnum = (typeof TransactionsScalarFieldEnum)[keyof typeof TransactionsScalarFieldEnum]

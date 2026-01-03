@@ -388,7 +388,6 @@ export const ModelName = {
   Tokens: 'Tokens',
   Companies: 'Companies',
   Invoices: 'Invoices',
-  TransactionCategories: 'TransactionCategories',
   Transactions: 'Transactions',
   Records: 'Records',
   Stocks: 'Stocks',
@@ -412,7 +411,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "users" | "tokens" | "companies" | "invoices" | "transactionCategories" | "transactions" | "records" | "stocks" | "assets" | "departments" | "employees" | "suppliers" | "notifications"
+    modelProps: "users" | "tokens" | "companies" | "invoices" | "transactions" | "records" | "stocks" | "assets" | "departments" | "employees" | "suppliers" | "notifications"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -709,80 +708,6 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         count: {
           args: Prisma.InvoicesCountArgs<ExtArgs>
           result: runtime.Types.Utils.Optional<Prisma.InvoicesCountAggregateOutputType> | number
-        }
-      }
-    }
-    TransactionCategories: {
-      payload: Prisma.$TransactionCategoriesPayload<ExtArgs>
-      fields: Prisma.TransactionCategoriesFieldRefs
-      operations: {
-        findUnique: {
-          args: Prisma.TransactionCategoriesFindUniqueArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$TransactionCategoriesPayload> | null
-        }
-        findUniqueOrThrow: {
-          args: Prisma.TransactionCategoriesFindUniqueOrThrowArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$TransactionCategoriesPayload>
-        }
-        findFirst: {
-          args: Prisma.TransactionCategoriesFindFirstArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$TransactionCategoriesPayload> | null
-        }
-        findFirstOrThrow: {
-          args: Prisma.TransactionCategoriesFindFirstOrThrowArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$TransactionCategoriesPayload>
-        }
-        findMany: {
-          args: Prisma.TransactionCategoriesFindManyArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$TransactionCategoriesPayload>[]
-        }
-        create: {
-          args: Prisma.TransactionCategoriesCreateArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$TransactionCategoriesPayload>
-        }
-        createMany: {
-          args: Prisma.TransactionCategoriesCreateManyArgs<ExtArgs>
-          result: BatchPayload
-        }
-        createManyAndReturn: {
-          args: Prisma.TransactionCategoriesCreateManyAndReturnArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$TransactionCategoriesPayload>[]
-        }
-        delete: {
-          args: Prisma.TransactionCategoriesDeleteArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$TransactionCategoriesPayload>
-        }
-        update: {
-          args: Prisma.TransactionCategoriesUpdateArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$TransactionCategoriesPayload>
-        }
-        deleteMany: {
-          args: Prisma.TransactionCategoriesDeleteManyArgs<ExtArgs>
-          result: BatchPayload
-        }
-        updateMany: {
-          args: Prisma.TransactionCategoriesUpdateManyArgs<ExtArgs>
-          result: BatchPayload
-        }
-        updateManyAndReturn: {
-          args: Prisma.TransactionCategoriesUpdateManyAndReturnArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$TransactionCategoriesPayload>[]
-        }
-        upsert: {
-          args: Prisma.TransactionCategoriesUpsertArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$TransactionCategoriesPayload>
-        }
-        aggregate: {
-          args: Prisma.TransactionCategoriesAggregateArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.AggregateTransactionCategories>
-        }
-        groupBy: {
-          args: Prisma.TransactionCategoriesGroupByArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.TransactionCategoriesGroupByOutputType>[]
-        }
-        count: {
-          args: Prisma.TransactionCategoriesCountArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.TransactionCategoriesCountAggregateOutputType> | number
         }
       }
     }
@@ -1471,28 +1396,15 @@ export const InvoicesScalarFieldEnum = {
 export type InvoicesScalarFieldEnum = (typeof InvoicesScalarFieldEnum)[keyof typeof InvoicesScalarFieldEnum]
 
 
-export const TransactionCategoriesScalarFieldEnum = {
-  id: 'id',
-  name: 'name',
-  type: 'type',
-  createdAt: 'createdAt',
-  updatedAt: 'updatedAt',
-  transactionId: 'transactionId'
-} as const
-
-export type TransactionCategoriesScalarFieldEnum = (typeof TransactionCategoriesScalarFieldEnum)[keyof typeof TransactionCategoriesScalarFieldEnum]
-
-
 export const TransactionsScalarFieldEnum = {
   id: 'id',
   amount: 'amount',
+  type: 'type',
   description: 'description',
   date: 'date',
   qty: 'qty',
   tax: 'tax',
-  noteId: 'noteId',
-  recordsId: 'recordsId',
-  transactionCategoriesId: 'transactionCategoriesId'
+  recordsId: 'recordsId'
 } as const
 
 export type TransactionsScalarFieldEnum = (typeof TransactionsScalarFieldEnum)[keyof typeof TransactionsScalarFieldEnum]
@@ -1750,7 +1662,6 @@ export type GlobalOmitConfig = {
   tokens?: Prisma.TokensOmit
   companies?: Prisma.CompaniesOmit
   invoices?: Prisma.InvoicesOmit
-  transactionCategories?: Prisma.TransactionCategoriesOmit
   transactions?: Prisma.TransactionsOmit
   records?: Prisma.RecordsOmit
   stocks?: Prisma.StocksOmit

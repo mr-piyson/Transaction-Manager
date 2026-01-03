@@ -31,9 +31,7 @@ export type TransactionsAvgAggregateOutputType = {
   amount: number | null
   qty: number | null
   tax: number | null
-  noteId: number | null
   recordsId: number | null
-  transactionCategoriesId: number | null
 }
 
 export type TransactionsSumAggregateOutputType = {
@@ -41,45 +39,40 @@ export type TransactionsSumAggregateOutputType = {
   amount: number | null
   qty: number | null
   tax: number | null
-  noteId: number | null
   recordsId: number | null
-  transactionCategoriesId: number | null
 }
 
 export type TransactionsMinAggregateOutputType = {
   id: number | null
   amount: number | null
+  type: string | null
   description: string | null
   date: Date | null
   qty: number | null
   tax: number | null
-  noteId: number | null
   recordsId: number | null
-  transactionCategoriesId: number | null
 }
 
 export type TransactionsMaxAggregateOutputType = {
   id: number | null
   amount: number | null
+  type: string | null
   description: string | null
   date: Date | null
   qty: number | null
   tax: number | null
-  noteId: number | null
   recordsId: number | null
-  transactionCategoriesId: number | null
 }
 
 export type TransactionsCountAggregateOutputType = {
   id: number
   amount: number
+  type: number
   description: number
   date: number
   qty: number
   tax: number
-  noteId: number
   recordsId: number
-  transactionCategoriesId: number
   _all: number
 }
 
@@ -89,9 +82,7 @@ export type TransactionsAvgAggregateInputType = {
   amount?: true
   qty?: true
   tax?: true
-  noteId?: true
   recordsId?: true
-  transactionCategoriesId?: true
 }
 
 export type TransactionsSumAggregateInputType = {
@@ -99,45 +90,40 @@ export type TransactionsSumAggregateInputType = {
   amount?: true
   qty?: true
   tax?: true
-  noteId?: true
   recordsId?: true
-  transactionCategoriesId?: true
 }
 
 export type TransactionsMinAggregateInputType = {
   id?: true
   amount?: true
+  type?: true
   description?: true
   date?: true
   qty?: true
   tax?: true
-  noteId?: true
   recordsId?: true
-  transactionCategoriesId?: true
 }
 
 export type TransactionsMaxAggregateInputType = {
   id?: true
   amount?: true
+  type?: true
   description?: true
   date?: true
   qty?: true
   tax?: true
-  noteId?: true
   recordsId?: true
-  transactionCategoriesId?: true
 }
 
 export type TransactionsCountAggregateInputType = {
   id?: true
   amount?: true
+  type?: true
   description?: true
   date?: true
   qty?: true
   tax?: true
-  noteId?: true
   recordsId?: true
-  transactionCategoriesId?: true
   _all?: true
 }
 
@@ -229,14 +215,13 @@ export type TransactionsGroupByArgs<ExtArgs extends runtime.Types.Extensions.Int
 
 export type TransactionsGroupByOutputType = {
   id: number
-  amount: number | null
+  amount: number
+  type: string
   description: string | null
-  date: Date | null
-  qty: number | null
+  date: Date
+  qty: number
   tax: number | null
-  noteId: number | null
   recordsId: number | null
-  transactionCategoriesId: number
   _count: TransactionsCountAggregateOutputType | null
   _avg: TransactionsAvgAggregateOutputType | null
   _sum: TransactionsSumAggregateOutputType | null
@@ -264,29 +249,25 @@ export type TransactionsWhereInput = {
   OR?: Prisma.TransactionsWhereInput[]
   NOT?: Prisma.TransactionsWhereInput | Prisma.TransactionsWhereInput[]
   id?: Prisma.IntFilter<"Transactions"> | number
-  amount?: Prisma.FloatNullableFilter<"Transactions"> | number | null
+  amount?: Prisma.FloatFilter<"Transactions"> | number
+  type?: Prisma.StringFilter<"Transactions"> | string
   description?: Prisma.StringNullableFilter<"Transactions"> | string | null
-  date?: Prisma.DateTimeNullableFilter<"Transactions"> | Date | string | null
-  qty?: Prisma.IntNullableFilter<"Transactions"> | number | null
+  date?: Prisma.DateTimeFilter<"Transactions"> | Date | string
+  qty?: Prisma.IntFilter<"Transactions"> | number
   tax?: Prisma.FloatNullableFilter<"Transactions"> | number | null
-  noteId?: Prisma.IntNullableFilter<"Transactions"> | number | null
   recordsId?: Prisma.IntNullableFilter<"Transactions"> | number | null
-  transactionCategoriesId?: Prisma.IntFilter<"Transactions"> | number
-  transactionCategoryId?: Prisma.XOR<Prisma.TransactionCategoriesScalarRelationFilter, Prisma.TransactionCategoriesWhereInput>
   records?: Prisma.XOR<Prisma.InvoicesNullableScalarRelationFilter, Prisma.InvoicesWhereInput> | null
 }
 
 export type TransactionsOrderByWithRelationInput = {
   id?: Prisma.SortOrder
-  amount?: Prisma.SortOrderInput | Prisma.SortOrder
+  amount?: Prisma.SortOrder
+  type?: Prisma.SortOrder
   description?: Prisma.SortOrderInput | Prisma.SortOrder
-  date?: Prisma.SortOrderInput | Prisma.SortOrder
-  qty?: Prisma.SortOrderInput | Prisma.SortOrder
+  date?: Prisma.SortOrder
+  qty?: Prisma.SortOrder
   tax?: Prisma.SortOrderInput | Prisma.SortOrder
-  noteId?: Prisma.SortOrderInput | Prisma.SortOrder
   recordsId?: Prisma.SortOrderInput | Prisma.SortOrder
-  transactionCategoriesId?: Prisma.SortOrder
-  transactionCategoryId?: Prisma.TransactionCategoriesOrderByWithRelationInput
   records?: Prisma.InvoicesOrderByWithRelationInput
 }
 
@@ -295,28 +276,25 @@ export type TransactionsWhereUniqueInput = Prisma.AtLeast<{
   AND?: Prisma.TransactionsWhereInput | Prisma.TransactionsWhereInput[]
   OR?: Prisma.TransactionsWhereInput[]
   NOT?: Prisma.TransactionsWhereInput | Prisma.TransactionsWhereInput[]
-  amount?: Prisma.FloatNullableFilter<"Transactions"> | number | null
+  amount?: Prisma.FloatFilter<"Transactions"> | number
+  type?: Prisma.StringFilter<"Transactions"> | string
   description?: Prisma.StringNullableFilter<"Transactions"> | string | null
-  date?: Prisma.DateTimeNullableFilter<"Transactions"> | Date | string | null
-  qty?: Prisma.IntNullableFilter<"Transactions"> | number | null
+  date?: Prisma.DateTimeFilter<"Transactions"> | Date | string
+  qty?: Prisma.IntFilter<"Transactions"> | number
   tax?: Prisma.FloatNullableFilter<"Transactions"> | number | null
-  noteId?: Prisma.IntNullableFilter<"Transactions"> | number | null
   recordsId?: Prisma.IntNullableFilter<"Transactions"> | number | null
-  transactionCategoriesId?: Prisma.IntFilter<"Transactions"> | number
-  transactionCategoryId?: Prisma.XOR<Prisma.TransactionCategoriesScalarRelationFilter, Prisma.TransactionCategoriesWhereInput>
   records?: Prisma.XOR<Prisma.InvoicesNullableScalarRelationFilter, Prisma.InvoicesWhereInput> | null
 }, "id">
 
 export type TransactionsOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
-  amount?: Prisma.SortOrderInput | Prisma.SortOrder
+  amount?: Prisma.SortOrder
+  type?: Prisma.SortOrder
   description?: Prisma.SortOrderInput | Prisma.SortOrder
-  date?: Prisma.SortOrderInput | Prisma.SortOrder
-  qty?: Prisma.SortOrderInput | Prisma.SortOrder
+  date?: Prisma.SortOrder
+  qty?: Prisma.SortOrder
   tax?: Prisma.SortOrderInput | Prisma.SortOrder
-  noteId?: Prisma.SortOrderInput | Prisma.SortOrder
   recordsId?: Prisma.SortOrderInput | Prisma.SortOrder
-  transactionCategoriesId?: Prisma.SortOrder
   _count?: Prisma.TransactionsCountOrderByAggregateInput
   _avg?: Prisma.TransactionsAvgOrderByAggregateInput
   _max?: Prisma.TransactionsMaxOrderByAggregateInput
@@ -329,93 +307,86 @@ export type TransactionsScalarWhereWithAggregatesInput = {
   OR?: Prisma.TransactionsScalarWhereWithAggregatesInput[]
   NOT?: Prisma.TransactionsScalarWhereWithAggregatesInput | Prisma.TransactionsScalarWhereWithAggregatesInput[]
   id?: Prisma.IntWithAggregatesFilter<"Transactions"> | number
-  amount?: Prisma.FloatNullableWithAggregatesFilter<"Transactions"> | number | null
+  amount?: Prisma.FloatWithAggregatesFilter<"Transactions"> | number
+  type?: Prisma.StringWithAggregatesFilter<"Transactions"> | string
   description?: Prisma.StringNullableWithAggregatesFilter<"Transactions"> | string | null
-  date?: Prisma.DateTimeNullableWithAggregatesFilter<"Transactions"> | Date | string | null
-  qty?: Prisma.IntNullableWithAggregatesFilter<"Transactions"> | number | null
+  date?: Prisma.DateTimeWithAggregatesFilter<"Transactions"> | Date | string
+  qty?: Prisma.IntWithAggregatesFilter<"Transactions"> | number
   tax?: Prisma.FloatNullableWithAggregatesFilter<"Transactions"> | number | null
-  noteId?: Prisma.IntNullableWithAggregatesFilter<"Transactions"> | number | null
   recordsId?: Prisma.IntNullableWithAggregatesFilter<"Transactions"> | number | null
-  transactionCategoriesId?: Prisma.IntWithAggregatesFilter<"Transactions"> | number
 }
 
 export type TransactionsCreateInput = {
-  amount?: number | null
+  amount?: number
+  type: string
   description?: string | null
-  date?: Date | string | null
-  qty?: number | null
+  date?: Date | string
+  qty?: number
   tax?: number | null
-  noteId?: number | null
-  transactionCategoryId: Prisma.TransactionCategoriesCreateNestedOneWithoutTransactionsInput
   records?: Prisma.InvoicesCreateNestedOneWithoutTransactionsInput
 }
 
 export type TransactionsUncheckedCreateInput = {
   id?: number
-  amount?: number | null
+  amount?: number
+  type: string
   description?: string | null
-  date?: Date | string | null
-  qty?: number | null
+  date?: Date | string
+  qty?: number
   tax?: number | null
-  noteId?: number | null
   recordsId?: number | null
-  transactionCategoriesId: number
 }
 
 export type TransactionsUpdateInput = {
-  amount?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  amount?: Prisma.FloatFieldUpdateOperationsInput | number
+  type?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  date?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  qty?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  qty?: Prisma.IntFieldUpdateOperationsInput | number
   tax?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
-  noteId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  transactionCategoryId?: Prisma.TransactionCategoriesUpdateOneRequiredWithoutTransactionsNestedInput
   records?: Prisma.InvoicesUpdateOneWithoutTransactionsNestedInput
 }
 
 export type TransactionsUncheckedUpdateInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
-  amount?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  amount?: Prisma.FloatFieldUpdateOperationsInput | number
+  type?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  date?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  qty?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  qty?: Prisma.IntFieldUpdateOperationsInput | number
   tax?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
-  noteId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   recordsId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  transactionCategoriesId?: Prisma.IntFieldUpdateOperationsInput | number
 }
 
 export type TransactionsCreateManyInput = {
   id?: number
-  amount?: number | null
+  amount?: number
+  type: string
   description?: string | null
-  date?: Date | string | null
-  qty?: number | null
+  date?: Date | string
+  qty?: number
   tax?: number | null
-  noteId?: number | null
   recordsId?: number | null
-  transactionCategoriesId: number
 }
 
 export type TransactionsUpdateManyMutationInput = {
-  amount?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  amount?: Prisma.FloatFieldUpdateOperationsInput | number
+  type?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  date?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  qty?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  qty?: Prisma.IntFieldUpdateOperationsInput | number
   tax?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
-  noteId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
 }
 
 export type TransactionsUncheckedUpdateManyInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
-  amount?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  amount?: Prisma.FloatFieldUpdateOperationsInput | number
+  type?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  date?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  qty?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  qty?: Prisma.IntFieldUpdateOperationsInput | number
   tax?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
-  noteId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   recordsId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  transactionCategoriesId?: Prisma.IntFieldUpdateOperationsInput | number
 }
 
 export type TransactionsListRelationFilter = {
@@ -431,13 +402,12 @@ export type TransactionsOrderByRelationAggregateInput = {
 export type TransactionsCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   amount?: Prisma.SortOrder
+  type?: Prisma.SortOrder
   description?: Prisma.SortOrder
   date?: Prisma.SortOrder
   qty?: Prisma.SortOrder
   tax?: Prisma.SortOrder
-  noteId?: Prisma.SortOrder
   recordsId?: Prisma.SortOrder
-  transactionCategoriesId?: Prisma.SortOrder
 }
 
 export type TransactionsAvgOrderByAggregateInput = {
@@ -445,33 +415,29 @@ export type TransactionsAvgOrderByAggregateInput = {
   amount?: Prisma.SortOrder
   qty?: Prisma.SortOrder
   tax?: Prisma.SortOrder
-  noteId?: Prisma.SortOrder
   recordsId?: Prisma.SortOrder
-  transactionCategoriesId?: Prisma.SortOrder
 }
 
 export type TransactionsMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
   amount?: Prisma.SortOrder
+  type?: Prisma.SortOrder
   description?: Prisma.SortOrder
   date?: Prisma.SortOrder
   qty?: Prisma.SortOrder
   tax?: Prisma.SortOrder
-  noteId?: Prisma.SortOrder
   recordsId?: Prisma.SortOrder
-  transactionCategoriesId?: Prisma.SortOrder
 }
 
 export type TransactionsMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
   amount?: Prisma.SortOrder
+  type?: Prisma.SortOrder
   description?: Prisma.SortOrder
   date?: Prisma.SortOrder
   qty?: Prisma.SortOrder
   tax?: Prisma.SortOrder
-  noteId?: Prisma.SortOrder
   recordsId?: Prisma.SortOrder
-  transactionCategoriesId?: Prisma.SortOrder
 }
 
 export type TransactionsSumOrderByAggregateInput = {
@@ -479,9 +445,7 @@ export type TransactionsSumOrderByAggregateInput = {
   amount?: Prisma.SortOrder
   qty?: Prisma.SortOrder
   tax?: Prisma.SortOrder
-  noteId?: Prisma.SortOrder
   recordsId?: Prisma.SortOrder
-  transactionCategoriesId?: Prisma.SortOrder
 }
 
 export type TransactionsCreateNestedManyWithoutRecordsInput = {
@@ -526,67 +490,35 @@ export type TransactionsUncheckedUpdateManyWithoutRecordsNestedInput = {
   deleteMany?: Prisma.TransactionsScalarWhereInput | Prisma.TransactionsScalarWhereInput[]
 }
 
-export type TransactionsCreateNestedManyWithoutTransactionCategoryIdInput = {
-  create?: Prisma.XOR<Prisma.TransactionsCreateWithoutTransactionCategoryIdInput, Prisma.TransactionsUncheckedCreateWithoutTransactionCategoryIdInput> | Prisma.TransactionsCreateWithoutTransactionCategoryIdInput[] | Prisma.TransactionsUncheckedCreateWithoutTransactionCategoryIdInput[]
-  connectOrCreate?: Prisma.TransactionsCreateOrConnectWithoutTransactionCategoryIdInput | Prisma.TransactionsCreateOrConnectWithoutTransactionCategoryIdInput[]
-  createMany?: Prisma.TransactionsCreateManyTransactionCategoryIdInputEnvelope
-  connect?: Prisma.TransactionsWhereUniqueInput | Prisma.TransactionsWhereUniqueInput[]
+export type FloatFieldUpdateOperationsInput = {
+  set?: number
+  increment?: number
+  decrement?: number
+  multiply?: number
+  divide?: number
 }
 
-export type TransactionsUncheckedCreateNestedManyWithoutTransactionCategoryIdInput = {
-  create?: Prisma.XOR<Prisma.TransactionsCreateWithoutTransactionCategoryIdInput, Prisma.TransactionsUncheckedCreateWithoutTransactionCategoryIdInput> | Prisma.TransactionsCreateWithoutTransactionCategoryIdInput[] | Prisma.TransactionsUncheckedCreateWithoutTransactionCategoryIdInput[]
-  connectOrCreate?: Prisma.TransactionsCreateOrConnectWithoutTransactionCategoryIdInput | Prisma.TransactionsCreateOrConnectWithoutTransactionCategoryIdInput[]
-  createMany?: Prisma.TransactionsCreateManyTransactionCategoryIdInputEnvelope
-  connect?: Prisma.TransactionsWhereUniqueInput | Prisma.TransactionsWhereUniqueInput[]
-}
-
-export type TransactionsUpdateManyWithoutTransactionCategoryIdNestedInput = {
-  create?: Prisma.XOR<Prisma.TransactionsCreateWithoutTransactionCategoryIdInput, Prisma.TransactionsUncheckedCreateWithoutTransactionCategoryIdInput> | Prisma.TransactionsCreateWithoutTransactionCategoryIdInput[] | Prisma.TransactionsUncheckedCreateWithoutTransactionCategoryIdInput[]
-  connectOrCreate?: Prisma.TransactionsCreateOrConnectWithoutTransactionCategoryIdInput | Prisma.TransactionsCreateOrConnectWithoutTransactionCategoryIdInput[]
-  upsert?: Prisma.TransactionsUpsertWithWhereUniqueWithoutTransactionCategoryIdInput | Prisma.TransactionsUpsertWithWhereUniqueWithoutTransactionCategoryIdInput[]
-  createMany?: Prisma.TransactionsCreateManyTransactionCategoryIdInputEnvelope
-  set?: Prisma.TransactionsWhereUniqueInput | Prisma.TransactionsWhereUniqueInput[]
-  disconnect?: Prisma.TransactionsWhereUniqueInput | Prisma.TransactionsWhereUniqueInput[]
-  delete?: Prisma.TransactionsWhereUniqueInput | Prisma.TransactionsWhereUniqueInput[]
-  connect?: Prisma.TransactionsWhereUniqueInput | Prisma.TransactionsWhereUniqueInput[]
-  update?: Prisma.TransactionsUpdateWithWhereUniqueWithoutTransactionCategoryIdInput | Prisma.TransactionsUpdateWithWhereUniqueWithoutTransactionCategoryIdInput[]
-  updateMany?: Prisma.TransactionsUpdateManyWithWhereWithoutTransactionCategoryIdInput | Prisma.TransactionsUpdateManyWithWhereWithoutTransactionCategoryIdInput[]
-  deleteMany?: Prisma.TransactionsScalarWhereInput | Prisma.TransactionsScalarWhereInput[]
-}
-
-export type TransactionsUncheckedUpdateManyWithoutTransactionCategoryIdNestedInput = {
-  create?: Prisma.XOR<Prisma.TransactionsCreateWithoutTransactionCategoryIdInput, Prisma.TransactionsUncheckedCreateWithoutTransactionCategoryIdInput> | Prisma.TransactionsCreateWithoutTransactionCategoryIdInput[] | Prisma.TransactionsUncheckedCreateWithoutTransactionCategoryIdInput[]
-  connectOrCreate?: Prisma.TransactionsCreateOrConnectWithoutTransactionCategoryIdInput | Prisma.TransactionsCreateOrConnectWithoutTransactionCategoryIdInput[]
-  upsert?: Prisma.TransactionsUpsertWithWhereUniqueWithoutTransactionCategoryIdInput | Prisma.TransactionsUpsertWithWhereUniqueWithoutTransactionCategoryIdInput[]
-  createMany?: Prisma.TransactionsCreateManyTransactionCategoryIdInputEnvelope
-  set?: Prisma.TransactionsWhereUniqueInput | Prisma.TransactionsWhereUniqueInput[]
-  disconnect?: Prisma.TransactionsWhereUniqueInput | Prisma.TransactionsWhereUniqueInput[]
-  delete?: Prisma.TransactionsWhereUniqueInput | Prisma.TransactionsWhereUniqueInput[]
-  connect?: Prisma.TransactionsWhereUniqueInput | Prisma.TransactionsWhereUniqueInput[]
-  update?: Prisma.TransactionsUpdateWithWhereUniqueWithoutTransactionCategoryIdInput | Prisma.TransactionsUpdateWithWhereUniqueWithoutTransactionCategoryIdInput[]
-  updateMany?: Prisma.TransactionsUpdateManyWithWhereWithoutTransactionCategoryIdInput | Prisma.TransactionsUpdateManyWithWhereWithoutTransactionCategoryIdInput[]
-  deleteMany?: Prisma.TransactionsScalarWhereInput | Prisma.TransactionsScalarWhereInput[]
+export type DateTimeFieldUpdateOperationsInput = {
+  set?: Date | string
 }
 
 export type TransactionsCreateWithoutRecordsInput = {
-  amount?: number | null
+  amount?: number
+  type: string
   description?: string | null
-  date?: Date | string | null
-  qty?: number | null
+  date?: Date | string
+  qty?: number
   tax?: number | null
-  noteId?: number | null
-  transactionCategoryId: Prisma.TransactionCategoriesCreateNestedOneWithoutTransactionsInput
 }
 
 export type TransactionsUncheckedCreateWithoutRecordsInput = {
   id?: number
-  amount?: number | null
+  amount?: number
+  type: string
   description?: string | null
-  date?: Date | string | null
-  qty?: number | null
+  date?: Date | string
+  qty?: number
   tax?: number | null
-  noteId?: number | null
-  transactionCategoriesId: number
 }
 
 export type TransactionsCreateOrConnectWithoutRecordsInput = {
@@ -619,146 +551,52 @@ export type TransactionsScalarWhereInput = {
   OR?: Prisma.TransactionsScalarWhereInput[]
   NOT?: Prisma.TransactionsScalarWhereInput | Prisma.TransactionsScalarWhereInput[]
   id?: Prisma.IntFilter<"Transactions"> | number
-  amount?: Prisma.FloatNullableFilter<"Transactions"> | number | null
+  amount?: Prisma.FloatFilter<"Transactions"> | number
+  type?: Prisma.StringFilter<"Transactions"> | string
   description?: Prisma.StringNullableFilter<"Transactions"> | string | null
-  date?: Prisma.DateTimeNullableFilter<"Transactions"> | Date | string | null
-  qty?: Prisma.IntNullableFilter<"Transactions"> | number | null
+  date?: Prisma.DateTimeFilter<"Transactions"> | Date | string
+  qty?: Prisma.IntFilter<"Transactions"> | number
   tax?: Prisma.FloatNullableFilter<"Transactions"> | number | null
-  noteId?: Prisma.IntNullableFilter<"Transactions"> | number | null
   recordsId?: Prisma.IntNullableFilter<"Transactions"> | number | null
-  transactionCategoriesId?: Prisma.IntFilter<"Transactions"> | number
-}
-
-export type TransactionsCreateWithoutTransactionCategoryIdInput = {
-  amount?: number | null
-  description?: string | null
-  date?: Date | string | null
-  qty?: number | null
-  tax?: number | null
-  noteId?: number | null
-  records?: Prisma.InvoicesCreateNestedOneWithoutTransactionsInput
-}
-
-export type TransactionsUncheckedCreateWithoutTransactionCategoryIdInput = {
-  id?: number
-  amount?: number | null
-  description?: string | null
-  date?: Date | string | null
-  qty?: number | null
-  tax?: number | null
-  noteId?: number | null
-  recordsId?: number | null
-}
-
-export type TransactionsCreateOrConnectWithoutTransactionCategoryIdInput = {
-  where: Prisma.TransactionsWhereUniqueInput
-  create: Prisma.XOR<Prisma.TransactionsCreateWithoutTransactionCategoryIdInput, Prisma.TransactionsUncheckedCreateWithoutTransactionCategoryIdInput>
-}
-
-export type TransactionsCreateManyTransactionCategoryIdInputEnvelope = {
-  data: Prisma.TransactionsCreateManyTransactionCategoryIdInput | Prisma.TransactionsCreateManyTransactionCategoryIdInput[]
-}
-
-export type TransactionsUpsertWithWhereUniqueWithoutTransactionCategoryIdInput = {
-  where: Prisma.TransactionsWhereUniqueInput
-  update: Prisma.XOR<Prisma.TransactionsUpdateWithoutTransactionCategoryIdInput, Prisma.TransactionsUncheckedUpdateWithoutTransactionCategoryIdInput>
-  create: Prisma.XOR<Prisma.TransactionsCreateWithoutTransactionCategoryIdInput, Prisma.TransactionsUncheckedCreateWithoutTransactionCategoryIdInput>
-}
-
-export type TransactionsUpdateWithWhereUniqueWithoutTransactionCategoryIdInput = {
-  where: Prisma.TransactionsWhereUniqueInput
-  data: Prisma.XOR<Prisma.TransactionsUpdateWithoutTransactionCategoryIdInput, Prisma.TransactionsUncheckedUpdateWithoutTransactionCategoryIdInput>
-}
-
-export type TransactionsUpdateManyWithWhereWithoutTransactionCategoryIdInput = {
-  where: Prisma.TransactionsScalarWhereInput
-  data: Prisma.XOR<Prisma.TransactionsUpdateManyMutationInput, Prisma.TransactionsUncheckedUpdateManyWithoutTransactionCategoryIdInput>
 }
 
 export type TransactionsCreateManyRecordsInput = {
   id?: number
-  amount?: number | null
+  amount?: number
+  type: string
   description?: string | null
-  date?: Date | string | null
-  qty?: number | null
+  date?: Date | string
+  qty?: number
   tax?: number | null
-  noteId?: number | null
-  transactionCategoriesId: number
 }
 
 export type TransactionsUpdateWithoutRecordsInput = {
-  amount?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  amount?: Prisma.FloatFieldUpdateOperationsInput | number
+  type?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  date?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  qty?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  qty?: Prisma.IntFieldUpdateOperationsInput | number
   tax?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
-  noteId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  transactionCategoryId?: Prisma.TransactionCategoriesUpdateOneRequiredWithoutTransactionsNestedInput
 }
 
 export type TransactionsUncheckedUpdateWithoutRecordsInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
-  amount?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  amount?: Prisma.FloatFieldUpdateOperationsInput | number
+  type?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  date?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  qty?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  qty?: Prisma.IntFieldUpdateOperationsInput | number
   tax?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
-  noteId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  transactionCategoriesId?: Prisma.IntFieldUpdateOperationsInput | number
 }
 
 export type TransactionsUncheckedUpdateManyWithoutRecordsInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
-  amount?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  amount?: Prisma.FloatFieldUpdateOperationsInput | number
+  type?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  date?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  qty?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  qty?: Prisma.IntFieldUpdateOperationsInput | number
   tax?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
-  noteId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  transactionCategoriesId?: Prisma.IntFieldUpdateOperationsInput | number
-}
-
-export type TransactionsCreateManyTransactionCategoryIdInput = {
-  id?: number
-  amount?: number | null
-  description?: string | null
-  date?: Date | string | null
-  qty?: number | null
-  tax?: number | null
-  noteId?: number | null
-  recordsId?: number | null
-}
-
-export type TransactionsUpdateWithoutTransactionCategoryIdInput = {
-  amount?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
-  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  date?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  qty?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  tax?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
-  noteId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  records?: Prisma.InvoicesUpdateOneWithoutTransactionsNestedInput
-}
-
-export type TransactionsUncheckedUpdateWithoutTransactionCategoryIdInput = {
-  id?: Prisma.IntFieldUpdateOperationsInput | number
-  amount?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
-  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  date?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  qty?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  tax?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
-  noteId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  recordsId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-}
-
-export type TransactionsUncheckedUpdateManyWithoutTransactionCategoryIdInput = {
-  id?: Prisma.IntFieldUpdateOperationsInput | number
-  amount?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
-  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  date?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  qty?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  tax?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
-  noteId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  recordsId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
 }
 
 
@@ -766,87 +604,75 @@ export type TransactionsUncheckedUpdateManyWithoutTransactionCategoryIdInput = {
 export type TransactionsSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   amount?: boolean
+  type?: boolean
   description?: boolean
   date?: boolean
   qty?: boolean
   tax?: boolean
-  noteId?: boolean
   recordsId?: boolean
-  transactionCategoriesId?: boolean
-  transactionCategoryId?: boolean | Prisma.TransactionCategoriesDefaultArgs<ExtArgs>
   records?: boolean | Prisma.Transactions$recordsArgs<ExtArgs>
 }, ExtArgs["result"]["transactions"]>
 
 export type TransactionsSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   amount?: boolean
+  type?: boolean
   description?: boolean
   date?: boolean
   qty?: boolean
   tax?: boolean
-  noteId?: boolean
   recordsId?: boolean
-  transactionCategoriesId?: boolean
-  transactionCategoryId?: boolean | Prisma.TransactionCategoriesDefaultArgs<ExtArgs>
   records?: boolean | Prisma.Transactions$recordsArgs<ExtArgs>
 }, ExtArgs["result"]["transactions"]>
 
 export type TransactionsSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   amount?: boolean
+  type?: boolean
   description?: boolean
   date?: boolean
   qty?: boolean
   tax?: boolean
-  noteId?: boolean
   recordsId?: boolean
-  transactionCategoriesId?: boolean
-  transactionCategoryId?: boolean | Prisma.TransactionCategoriesDefaultArgs<ExtArgs>
   records?: boolean | Prisma.Transactions$recordsArgs<ExtArgs>
 }, ExtArgs["result"]["transactions"]>
 
 export type TransactionsSelectScalar = {
   id?: boolean
   amount?: boolean
+  type?: boolean
   description?: boolean
   date?: boolean
   qty?: boolean
   tax?: boolean
-  noteId?: boolean
   recordsId?: boolean
-  transactionCategoriesId?: boolean
 }
 
-export type TransactionsOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "amount" | "description" | "date" | "qty" | "tax" | "noteId" | "recordsId" | "transactionCategoriesId", ExtArgs["result"]["transactions"]>
+export type TransactionsOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "amount" | "type" | "description" | "date" | "qty" | "tax" | "recordsId", ExtArgs["result"]["transactions"]>
 export type TransactionsInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  transactionCategoryId?: boolean | Prisma.TransactionCategoriesDefaultArgs<ExtArgs>
   records?: boolean | Prisma.Transactions$recordsArgs<ExtArgs>
 }
 export type TransactionsIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  transactionCategoryId?: boolean | Prisma.TransactionCategoriesDefaultArgs<ExtArgs>
   records?: boolean | Prisma.Transactions$recordsArgs<ExtArgs>
 }
 export type TransactionsIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  transactionCategoryId?: boolean | Prisma.TransactionCategoriesDefaultArgs<ExtArgs>
   records?: boolean | Prisma.Transactions$recordsArgs<ExtArgs>
 }
 
 export type $TransactionsPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "Transactions"
   objects: {
-    transactionCategoryId: Prisma.$TransactionCategoriesPayload<ExtArgs>
     records: Prisma.$InvoicesPayload<ExtArgs> | null
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: number
-    amount: number | null
+    amount: number
+    type: string
     description: string | null
-    date: Date | null
-    qty: number | null
+    date: Date
+    qty: number
     tax: number | null
-    noteId: number | null
     recordsId: number | null
-    transactionCategoriesId: number
   }, ExtArgs["result"]["transactions"]>
   composites: {}
 }
@@ -1241,7 +1067,6 @@ readonly fields: TransactionsFieldRefs;
  */
 export interface Prisma__TransactionsClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
-  transactionCategoryId<T extends Prisma.TransactionCategoriesDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.TransactionCategoriesDefaultArgs<ExtArgs>>): Prisma.Prisma__TransactionCategoriesClient<runtime.Types.Result.GetResult<Prisma.$TransactionCategoriesPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   records<T extends Prisma.Transactions$recordsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Transactions$recordsArgs<ExtArgs>>): Prisma.Prisma__InvoicesClient<runtime.Types.Result.GetResult<Prisma.$InvoicesPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
@@ -1274,13 +1099,12 @@ export interface Prisma__TransactionsClient<T, Null = never, ExtArgs extends run
 export interface TransactionsFieldRefs {
   readonly id: Prisma.FieldRef<"Transactions", 'Int'>
   readonly amount: Prisma.FieldRef<"Transactions", 'Float'>
+  readonly type: Prisma.FieldRef<"Transactions", 'String'>
   readonly description: Prisma.FieldRef<"Transactions", 'String'>
   readonly date: Prisma.FieldRef<"Transactions", 'DateTime'>
   readonly qty: Prisma.FieldRef<"Transactions", 'Int'>
   readonly tax: Prisma.FieldRef<"Transactions", 'Float'>
-  readonly noteId: Prisma.FieldRef<"Transactions", 'Int'>
   readonly recordsId: Prisma.FieldRef<"Transactions", 'Int'>
-  readonly transactionCategoriesId: Prisma.FieldRef<"Transactions", 'Int'>
 }
     
 

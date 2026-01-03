@@ -12,11 +12,11 @@ interface Transaction {
   type: "income" | "expense";
   amount: number;
   description: string;
-  timestamp: Date;
+  date: Date;
 }
 
 interface TransactionInputProps {
-  onAddTransaction: (transaction: Omit<Transaction, "id" | "timestamp">) => void;
+  onAddTransaction: (transaction: Omit<Transaction, "id" | "date">) => void;
   recentDescriptions: string[];
   quickActions: Array<{
     icon: any;
@@ -38,7 +38,7 @@ export function TransactionInput({ onAddTransaction, recentDescriptions, quickAc
   const [showQuickActions, setShowQuickActions] = useState(false);
   const [suggestions, setSuggestions] = useState<string[]>([]);
 
-  const parseTransaction = (input: string): Omit<Transaction, "id" | "timestamp"> | null => {
+  const parseTransaction = (input: string): Omit<Transaction, "id" | "date"> | null => {
     const patterns = [
       /^([+-]?)(\d+(?:\.\d{2})?)\s+(.+)$/,
       /^(income|expense|in|out|i|e)\s+(\d+(?:\.\d{2})?)\s+(.+)$/i,
@@ -83,7 +83,7 @@ export function TransactionInput({ onAddTransaction, recentDescriptions, quickAc
   };
 
   const handleAddTransaction = () => {
-    let parsed: Omit<Transaction, "id" | "timestamp"> | null = null;
+    let parsed: Omit<Transaction, "id" | "date"> | null = null;
     setParseError("");
 
     if (inputMode === "detailed") {
@@ -221,7 +221,7 @@ export function TransactionInput({ onAddTransaction, recentDescriptions, quickAc
                   className={parseError ? "border-red-500" : ""}
                 />
               </div>
-              <div className="flex-[2] relative">
+              <div className="flex-2 relative">
                 <Input
                   value={description}
                   onChange={e => handleDescriptionChange(e.target.value)}

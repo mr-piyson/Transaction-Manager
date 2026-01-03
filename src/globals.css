@@ -34,7 +34,7 @@
   --success: #dcfce7;
   --success-foreground: #166534;
   --border: #cccccc;
-  --input: #dddddd;
+  --input: #d5d5d5;
   --ring: #aba8c1;
   --chart-1: #ff6b1a;
   --chart-2: #1bb3a2;
@@ -69,8 +69,8 @@
   --accent-foreground: #fbfbfb;
   --default: #1a3150;
   --default-foreground: #0099cc;
-  --destructive: #ff4b72;
   --destructive-foreground: #501a2d;
+  --destructive: #ff4b72;
   --success: #36551d;
   --success-foreground: #5dd400;
   --warning: #55500d;
