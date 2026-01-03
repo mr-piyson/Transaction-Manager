@@ -8,18 +8,16 @@ datasource db {
 }
 
 model Users {
-  id             Int              @id @default(autoincrement())
+  id             Int       @id @default(autoincrement())
   name           String
   email          String
-  emailVerified  Boolean?         @default(false)
+  emailVerified  Boolean?  @default(false)
   image          String?
-  createdAt      DateTime?        @default(now())
-  updatedAt      DateTime?        @default(now()) @updatedAt
-  locale         String?          @default("en")
+  createdAt      DateTime? @default(now())
+  updatedAt      DateTime? @default(now()) @updatedAt
+  locale         String?   @default("en")
   hashedPassword String
   tokens         Tokens[]
-  invoiceViewers InvoiceViewers[]
-  invoiceEditors InvoiceEditors[]
 
   @@unique([email])
   @@map("users")
@@ -47,42 +45,19 @@ model Companies {
 }
 
 model Invoices {
-  id             Int              @id @default(autoincrement())
-  title          String?
-  total          Float?           @default(0)
-  status         String?
-  banner         String?
-  updatedAt      DateTime?        @updatedAt
-  createdAt      DateTime?        @default(now())
-  customerId     String?
-  createdById    Int?
-  transactions   Transactions[]
-  invoiceViewers InvoiceViewers[]
-  invoiceEditors InvoiceEditors[]
-}
+  id           Int            @id @default(autoincrement())
+  title        String?
+  total        Float?         @default(0)
+  status       String?
+  date         DateTime?
+  updatedAt    DateTime?      @updatedAt
+  createdAt    DateTime?      @default(now())
+  customerId   String?
+  createdById  Int?
+  transactions Transactions[]
 
-model InvoiceViewers {
-  id        Int      @id @default(autoincrement())
-  invoice   Invoices @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
-  invoiceId Int
-  user      Users    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId    Int
-  createdAt DateTime @default(now())
-
-  @@unique([invoiceId, userId]) // a user can appear only once per invoice
-  @@map("invoice_viewers")
-}
-
-model InvoiceEditors {
-  id        Int      @id @default(autoincrement())
-  invoice   Invoices @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
-  invoiceId Int
-  user      Users    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId    Int
-  createdAt DateTime @default(now())
-
-  @@unique([invoiceId, userId]) // a user can appear only once per invoice
-  @@map("invoice_editors")
+  records   Records? @relation(fields: [recordsId], references: [id])
+  recordsId Int?
 }
 
 model TransactionCategories {
@@ -110,18 +85,19 @@ model Transactions {
 }
 
 model Records {
-  id        Int       @id @default(autoincrement())
+  id        Int        @id @default(autoincrement())
   name      String?
   email     String?
   code      String?
   image     String?
-  status    String?   @default("active")
+  status    String?    @default("active")
   phone     String?
   address   String?
-  createdAt DateTime? @default(now())
-  updatedAt DateTime? @updatedAt
+  createdAt DateTime?  @default(now())
+  updatedAt DateTime?  @updatedAt
   deletedAt DateTime?
   deletedBy Int?
+  Invoices  Invoices[]
 }
 
 model Stocks {

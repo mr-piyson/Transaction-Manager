@@ -30,12 +30,14 @@ export type InvoicesAvgAggregateOutputType = {
   id: number | null
   total: number | null
   createdById: number | null
+  recordsId: number | null
 }
 
 export type InvoicesSumAggregateOutputType = {
   id: number | null
   total: number | null
   createdById: number | null
+  recordsId: number | null
 }
 
 export type InvoicesMinAggregateOutputType = {
@@ -43,11 +45,12 @@ export type InvoicesMinAggregateOutputType = {
   title: string | null
   total: number | null
   status: string | null
-  banner: string | null
+  date: Date | null
   updatedAt: Date | null
   createdAt: Date | null
   customerId: string | null
   createdById: number | null
+  recordsId: number | null
 }
 
 export type InvoicesMaxAggregateOutputType = {
@@ -55,11 +58,12 @@ export type InvoicesMaxAggregateOutputType = {
   title: string | null
   total: number | null
   status: string | null
-  banner: string | null
+  date: Date | null
   updatedAt: Date | null
   createdAt: Date | null
   customerId: string | null
   createdById: number | null
+  recordsId: number | null
 }
 
 export type InvoicesCountAggregateOutputType = {
@@ -67,11 +71,12 @@ export type InvoicesCountAggregateOutputType = {
   title: number
   total: number
   status: number
-  banner: number
+  date: number
   updatedAt: number
   createdAt: number
   customerId: number
   createdById: number
+  recordsId: number
   _all: number
 }
 
@@ -80,12 +85,14 @@ export type InvoicesAvgAggregateInputType = {
   id?: true
   total?: true
   createdById?: true
+  recordsId?: true
 }
 
 export type InvoicesSumAggregateInputType = {
   id?: true
   total?: true
   createdById?: true
+  recordsId?: true
 }
 
 export type InvoicesMinAggregateInputType = {
@@ -93,11 +100,12 @@ export type InvoicesMinAggregateInputType = {
   title?: true
   total?: true
   status?: true
-  banner?: true
+  date?: true
   updatedAt?: true
   createdAt?: true
   customerId?: true
   createdById?: true
+  recordsId?: true
 }
 
 export type InvoicesMaxAggregateInputType = {
@@ -105,11 +113,12 @@ export type InvoicesMaxAggregateInputType = {
   title?: true
   total?: true
   status?: true
-  banner?: true
+  date?: true
   updatedAt?: true
   createdAt?: true
   customerId?: true
   createdById?: true
+  recordsId?: true
 }
 
 export type InvoicesCountAggregateInputType = {
@@ -117,11 +126,12 @@ export type InvoicesCountAggregateInputType = {
   title?: true
   total?: true
   status?: true
-  banner?: true
+  date?: true
   updatedAt?: true
   createdAt?: true
   customerId?: true
   createdById?: true
+  recordsId?: true
   _all?: true
 }
 
@@ -216,11 +226,12 @@ export type InvoicesGroupByOutputType = {
   title: string | null
   total: number | null
   status: string | null
-  banner: string | null
+  date: Date | null
   updatedAt: Date | null
   createdAt: Date | null
   customerId: string | null
   createdById: number | null
+  recordsId: number | null
   _count: InvoicesCountAggregateOutputType | null
   _avg: InvoicesAvgAggregateOutputType | null
   _sum: InvoicesSumAggregateOutputType | null
@@ -251,14 +262,14 @@ export type InvoicesWhereInput = {
   title?: Prisma.StringNullableFilter<"Invoices"> | string | null
   total?: Prisma.FloatNullableFilter<"Invoices"> | number | null
   status?: Prisma.StringNullableFilter<"Invoices"> | string | null
-  banner?: Prisma.StringNullableFilter<"Invoices"> | string | null
+  date?: Prisma.DateTimeNullableFilter<"Invoices"> | Date | string | null
   updatedAt?: Prisma.DateTimeNullableFilter<"Invoices"> | Date | string | null
   createdAt?: Prisma.DateTimeNullableFilter<"Invoices"> | Date | string | null
   customerId?: Prisma.StringNullableFilter<"Invoices"> | string | null
   createdById?: Prisma.IntNullableFilter<"Invoices"> | number | null
+  recordsId?: Prisma.IntNullableFilter<"Invoices"> | number | null
   transactions?: Prisma.TransactionsListRelationFilter
-  invoiceViewers?: Prisma.InvoiceViewersListRelationFilter
-  invoiceEditors?: Prisma.InvoiceEditorsListRelationFilter
+  records?: Prisma.XOR<Prisma.RecordsNullableScalarRelationFilter, Prisma.RecordsWhereInput> | null
 }
 
 export type InvoicesOrderByWithRelationInput = {
@@ -266,14 +277,14 @@ export type InvoicesOrderByWithRelationInput = {
   title?: Prisma.SortOrderInput | Prisma.SortOrder
   total?: Prisma.SortOrderInput | Prisma.SortOrder
   status?: Prisma.SortOrderInput | Prisma.SortOrder
-  banner?: Prisma.SortOrderInput | Prisma.SortOrder
+  date?: Prisma.SortOrderInput | Prisma.SortOrder
   updatedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrderInput | Prisma.SortOrder
   customerId?: Prisma.SortOrderInput | Prisma.SortOrder
   createdById?: Prisma.SortOrderInput | Prisma.SortOrder
+  recordsId?: Prisma.SortOrderInput | Prisma.SortOrder
   transactions?: Prisma.TransactionsOrderByRelationAggregateInput
-  invoiceViewers?: Prisma.InvoiceViewersOrderByRelationAggregateInput
-  invoiceEditors?: Prisma.InvoiceEditorsOrderByRelationAggregateInput
+  records?: Prisma.RecordsOrderByWithRelationInput
 }
 
 export type InvoicesWhereUniqueInput = Prisma.AtLeast<{
@@ -284,14 +295,14 @@ export type InvoicesWhereUniqueInput = Prisma.AtLeast<{
   title?: Prisma.StringNullableFilter<"Invoices"> | string | null
   total?: Prisma.FloatNullableFilter<"Invoices"> | number | null
   status?: Prisma.StringNullableFilter<"Invoices"> | string | null
-  banner?: Prisma.StringNullableFilter<"Invoices"> | string | null
+  date?: Prisma.DateTimeNullableFilter<"Invoices"> | Date | string | null
   updatedAt?: Prisma.DateTimeNullableFilter<"Invoices"> | Date | string | null
   createdAt?: Prisma.DateTimeNullableFilter<"Invoices"> | Date | string | null
   customerId?: Prisma.StringNullableFilter<"Invoices"> | string | null
   createdById?: Prisma.IntNullableFilter<"Invoices"> | number | null
+  recordsId?: Prisma.IntNullableFilter<"Invoices"> | number | null
   transactions?: Prisma.TransactionsListRelationFilter
-  invoiceViewers?: Prisma.InvoiceViewersListRelationFilter
-  invoiceEditors?: Prisma.InvoiceEditorsListRelationFilter
+  records?: Prisma.XOR<Prisma.RecordsNullableScalarRelationFilter, Prisma.RecordsWhereInput> | null
 }, "id">
 
 export type InvoicesOrderByWithAggregationInput = {
@@ -299,11 +310,12 @@ export type InvoicesOrderByWithAggregationInput = {
   title?: Prisma.SortOrderInput | Prisma.SortOrder
   total?: Prisma.SortOrderInput | Prisma.SortOrder
   status?: Prisma.SortOrderInput | Prisma.SortOrder
-  banner?: Prisma.SortOrderInput | Prisma.SortOrder
+  date?: Prisma.SortOrderInput | Prisma.SortOrder
   updatedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrderInput | Prisma.SortOrder
   customerId?: Prisma.SortOrderInput | Prisma.SortOrder
   createdById?: Prisma.SortOrderInput | Prisma.SortOrder
+  recordsId?: Prisma.SortOrderInput | Prisma.SortOrder
   _count?: Prisma.InvoicesCountOrderByAggregateInput
   _avg?: Prisma.InvoicesAvgOrderByAggregateInput
   _max?: Prisma.InvoicesMaxOrderByAggregateInput
@@ -319,25 +331,25 @@ export type InvoicesScalarWhereWithAggregatesInput = {
   title?: Prisma.StringNullableWithAggregatesFilter<"Invoices"> | string | null
   total?: Prisma.FloatNullableWithAggregatesFilter<"Invoices"> | number | null
   status?: Prisma.StringNullableWithAggregatesFilter<"Invoices"> | string | null
-  banner?: Prisma.StringNullableWithAggregatesFilter<"Invoices"> | string | null
+  date?: Prisma.DateTimeNullableWithAggregatesFilter<"Invoices"> | Date | string | null
   updatedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Invoices"> | Date | string | null
   createdAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Invoices"> | Date | string | null
   customerId?: Prisma.StringNullableWithAggregatesFilter<"Invoices"> | string | null
   createdById?: Prisma.IntNullableWithAggregatesFilter<"Invoices"> | number | null
+  recordsId?: Prisma.IntNullableWithAggregatesFilter<"Invoices"> | number | null
 }
 
 export type InvoicesCreateInput = {
   title?: string | null
   total?: number | null
   status?: string | null
-  banner?: string | null
+  date?: Date | string | null
   updatedAt?: Date | string | null
   createdAt?: Date | string | null
   customerId?: string | null
   createdById?: number | null
   transactions?: Prisma.TransactionsCreateNestedManyWithoutRecordsInput
-  invoiceViewers?: Prisma.InvoiceViewersCreateNestedManyWithoutInvoiceInput
-  invoiceEditors?: Prisma.InvoiceEditorsCreateNestedManyWithoutInvoiceInput
+  records?: Prisma.RecordsCreateNestedOneWithoutInvoicesInput
 }
 
 export type InvoicesUncheckedCreateInput = {
@@ -345,28 +357,26 @@ export type InvoicesUncheckedCreateInput = {
   title?: string | null
   total?: number | null
   status?: string | null
-  banner?: string | null
+  date?: Date | string | null
   updatedAt?: Date | string | null
   createdAt?: Date | string | null
   customerId?: string | null
   createdById?: number | null
+  recordsId?: number | null
   transactions?: Prisma.TransactionsUncheckedCreateNestedManyWithoutRecordsInput
-  invoiceViewers?: Prisma.InvoiceViewersUncheckedCreateNestedManyWithoutInvoiceInput
-  invoiceEditors?: Prisma.InvoiceEditorsUncheckedCreateNestedManyWithoutInvoiceInput
 }
 
 export type InvoicesUpdateInput = {
   title?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   total?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   status?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  banner?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  date?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   updatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   customerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdById?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   transactions?: Prisma.TransactionsUpdateManyWithoutRecordsNestedInput
-  invoiceViewers?: Prisma.InvoiceViewersUpdateManyWithoutInvoiceNestedInput
-  invoiceEditors?: Prisma.InvoiceEditorsUpdateManyWithoutInvoiceNestedInput
+  records?: Prisma.RecordsUpdateOneWithoutInvoicesNestedInput
 }
 
 export type InvoicesUncheckedUpdateInput = {
@@ -374,14 +384,13 @@ export type InvoicesUncheckedUpdateInput = {
   title?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   total?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   status?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  banner?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  date?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   updatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   customerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdById?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  recordsId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   transactions?: Prisma.TransactionsUncheckedUpdateManyWithoutRecordsNestedInput
-  invoiceViewers?: Prisma.InvoiceViewersUncheckedUpdateManyWithoutInvoiceNestedInput
-  invoiceEditors?: Prisma.InvoiceEditorsUncheckedUpdateManyWithoutInvoiceNestedInput
 }
 
 export type InvoicesCreateManyInput = {
@@ -389,18 +398,19 @@ export type InvoicesCreateManyInput = {
   title?: string | null
   total?: number | null
   status?: string | null
-  banner?: string | null
+  date?: Date | string | null
   updatedAt?: Date | string | null
   createdAt?: Date | string | null
   customerId?: string | null
   createdById?: number | null
+  recordsId?: number | null
 }
 
 export type InvoicesUpdateManyMutationInput = {
   title?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   total?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   status?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  banner?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  date?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   updatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   customerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -412,11 +422,12 @@ export type InvoicesUncheckedUpdateManyInput = {
   title?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   total?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   status?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  banner?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  date?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   updatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   customerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdById?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  recordsId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
 }
 
 export type InvoicesCountOrderByAggregateInput = {
@@ -424,17 +435,19 @@ export type InvoicesCountOrderByAggregateInput = {
   title?: Prisma.SortOrder
   total?: Prisma.SortOrder
   status?: Prisma.SortOrder
-  banner?: Prisma.SortOrder
+  date?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   customerId?: Prisma.SortOrder
   createdById?: Prisma.SortOrder
+  recordsId?: Prisma.SortOrder
 }
 
 export type InvoicesAvgOrderByAggregateInput = {
   id?: Prisma.SortOrder
   total?: Prisma.SortOrder
   createdById?: Prisma.SortOrder
+  recordsId?: Prisma.SortOrder
 }
 
 export type InvoicesMaxOrderByAggregateInput = {
@@ -442,11 +455,12 @@ export type InvoicesMaxOrderByAggregateInput = {
   title?: Prisma.SortOrder
   total?: Prisma.SortOrder
   status?: Prisma.SortOrder
-  banner?: Prisma.SortOrder
+  date?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   customerId?: Prisma.SortOrder
   createdById?: Prisma.SortOrder
+  recordsId?: Prisma.SortOrder
 }
 
 export type InvoicesMinOrderByAggregateInput = {
@@ -454,27 +468,34 @@ export type InvoicesMinOrderByAggregateInput = {
   title?: Prisma.SortOrder
   total?: Prisma.SortOrder
   status?: Prisma.SortOrder
-  banner?: Prisma.SortOrder
+  date?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   customerId?: Prisma.SortOrder
   createdById?: Prisma.SortOrder
+  recordsId?: Prisma.SortOrder
 }
 
 export type InvoicesSumOrderByAggregateInput = {
   id?: Prisma.SortOrder
   total?: Prisma.SortOrder
   createdById?: Prisma.SortOrder
-}
-
-export type InvoicesScalarRelationFilter = {
-  is?: Prisma.InvoicesWhereInput
-  isNot?: Prisma.InvoicesWhereInput
+  recordsId?: Prisma.SortOrder
 }
 
 export type InvoicesNullableScalarRelationFilter = {
   is?: Prisma.InvoicesWhereInput | null
   isNot?: Prisma.InvoicesWhereInput | null
+}
+
+export type InvoicesListRelationFilter = {
+  every?: Prisma.InvoicesWhereInput
+  some?: Prisma.InvoicesWhereInput
+  none?: Prisma.InvoicesWhereInput
+}
+
+export type InvoicesOrderByRelationAggregateInput = {
+  _count?: Prisma.SortOrder
 }
 
 export type NullableFloatFieldUpdateOperationsInput = {
@@ -493,34 +514,6 @@ export type NullableIntFieldUpdateOperationsInput = {
   divide?: number
 }
 
-export type InvoicesCreateNestedOneWithoutInvoiceViewersInput = {
-  create?: Prisma.XOR<Prisma.InvoicesCreateWithoutInvoiceViewersInput, Prisma.InvoicesUncheckedCreateWithoutInvoiceViewersInput>
-  connectOrCreate?: Prisma.InvoicesCreateOrConnectWithoutInvoiceViewersInput
-  connect?: Prisma.InvoicesWhereUniqueInput
-}
-
-export type InvoicesUpdateOneRequiredWithoutInvoiceViewersNestedInput = {
-  create?: Prisma.XOR<Prisma.InvoicesCreateWithoutInvoiceViewersInput, Prisma.InvoicesUncheckedCreateWithoutInvoiceViewersInput>
-  connectOrCreate?: Prisma.InvoicesCreateOrConnectWithoutInvoiceViewersInput
-  upsert?: Prisma.InvoicesUpsertWithoutInvoiceViewersInput
-  connect?: Prisma.InvoicesWhereUniqueInput
-  update?: Prisma.XOR<Prisma.XOR<Prisma.InvoicesUpdateToOneWithWhereWithoutInvoiceViewersInput, Prisma.InvoicesUpdateWithoutInvoiceViewersInput>, Prisma.InvoicesUncheckedUpdateWithoutInvoiceViewersInput>
-}
-
-export type InvoicesCreateNestedOneWithoutInvoiceEditorsInput = {
-  create?: Prisma.XOR<Prisma.InvoicesCreateWithoutInvoiceEditorsInput, Prisma.InvoicesUncheckedCreateWithoutInvoiceEditorsInput>
-  connectOrCreate?: Prisma.InvoicesCreateOrConnectWithoutInvoiceEditorsInput
-  connect?: Prisma.InvoicesWhereUniqueInput
-}
-
-export type InvoicesUpdateOneRequiredWithoutInvoiceEditorsNestedInput = {
-  create?: Prisma.XOR<Prisma.InvoicesCreateWithoutInvoiceEditorsInput, Prisma.InvoicesUncheckedCreateWithoutInvoiceEditorsInput>
-  connectOrCreate?: Prisma.InvoicesCreateOrConnectWithoutInvoiceEditorsInput
-  upsert?: Prisma.InvoicesUpsertWithoutInvoiceEditorsInput
-  connect?: Prisma.InvoicesWhereUniqueInput
-  update?: Prisma.XOR<Prisma.XOR<Prisma.InvoicesUpdateToOneWithWhereWithoutInvoiceEditorsInput, Prisma.InvoicesUpdateWithoutInvoiceEditorsInput>, Prisma.InvoicesUncheckedUpdateWithoutInvoiceEditorsInput>
-}
-
 export type InvoicesCreateNestedOneWithoutTransactionsInput = {
   create?: Prisma.XOR<Prisma.InvoicesCreateWithoutTransactionsInput, Prisma.InvoicesUncheckedCreateWithoutTransactionsInput>
   connectOrCreate?: Prisma.InvoicesCreateOrConnectWithoutTransactionsInput
@@ -537,157 +530,58 @@ export type InvoicesUpdateOneWithoutTransactionsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.InvoicesUpdateToOneWithWhereWithoutTransactionsInput, Prisma.InvoicesUpdateWithoutTransactionsInput>, Prisma.InvoicesUncheckedUpdateWithoutTransactionsInput>
 }
 
-export type InvoicesCreateWithoutInvoiceViewersInput = {
-  title?: string | null
-  total?: number | null
-  status?: string | null
-  banner?: string | null
-  updatedAt?: Date | string | null
-  createdAt?: Date | string | null
-  customerId?: string | null
-  createdById?: number | null
-  transactions?: Prisma.TransactionsCreateNestedManyWithoutRecordsInput
-  invoiceEditors?: Prisma.InvoiceEditorsCreateNestedManyWithoutInvoiceInput
+export type InvoicesCreateNestedManyWithoutRecordsInput = {
+  create?: Prisma.XOR<Prisma.InvoicesCreateWithoutRecordsInput, Prisma.InvoicesUncheckedCreateWithoutRecordsInput> | Prisma.InvoicesCreateWithoutRecordsInput[] | Prisma.InvoicesUncheckedCreateWithoutRecordsInput[]
+  connectOrCreate?: Prisma.InvoicesCreateOrConnectWithoutRecordsInput | Prisma.InvoicesCreateOrConnectWithoutRecordsInput[]
+  createMany?: Prisma.InvoicesCreateManyRecordsInputEnvelope
+  connect?: Prisma.InvoicesWhereUniqueInput | Prisma.InvoicesWhereUniqueInput[]
 }
 
-export type InvoicesUncheckedCreateWithoutInvoiceViewersInput = {
-  id?: number
-  title?: string | null
-  total?: number | null
-  status?: string | null
-  banner?: string | null
-  updatedAt?: Date | string | null
-  createdAt?: Date | string | null
-  customerId?: string | null
-  createdById?: number | null
-  transactions?: Prisma.TransactionsUncheckedCreateNestedManyWithoutRecordsInput
-  invoiceEditors?: Prisma.InvoiceEditorsUncheckedCreateNestedManyWithoutInvoiceInput
+export type InvoicesUncheckedCreateNestedManyWithoutRecordsInput = {
+  create?: Prisma.XOR<Prisma.InvoicesCreateWithoutRecordsInput, Prisma.InvoicesUncheckedCreateWithoutRecordsInput> | Prisma.InvoicesCreateWithoutRecordsInput[] | Prisma.InvoicesUncheckedCreateWithoutRecordsInput[]
+  connectOrCreate?: Prisma.InvoicesCreateOrConnectWithoutRecordsInput | Prisma.InvoicesCreateOrConnectWithoutRecordsInput[]
+  createMany?: Prisma.InvoicesCreateManyRecordsInputEnvelope
+  connect?: Prisma.InvoicesWhereUniqueInput | Prisma.InvoicesWhereUniqueInput[]
 }
 
-export type InvoicesCreateOrConnectWithoutInvoiceViewersInput = {
-  where: Prisma.InvoicesWhereUniqueInput
-  create: Prisma.XOR<Prisma.InvoicesCreateWithoutInvoiceViewersInput, Prisma.InvoicesUncheckedCreateWithoutInvoiceViewersInput>
+export type InvoicesUpdateManyWithoutRecordsNestedInput = {
+  create?: Prisma.XOR<Prisma.InvoicesCreateWithoutRecordsInput, Prisma.InvoicesUncheckedCreateWithoutRecordsInput> | Prisma.InvoicesCreateWithoutRecordsInput[] | Prisma.InvoicesUncheckedCreateWithoutRecordsInput[]
+  connectOrCreate?: Prisma.InvoicesCreateOrConnectWithoutRecordsInput | Prisma.InvoicesCreateOrConnectWithoutRecordsInput[]
+  upsert?: Prisma.InvoicesUpsertWithWhereUniqueWithoutRecordsInput | Prisma.InvoicesUpsertWithWhereUniqueWithoutRecordsInput[]
+  createMany?: Prisma.InvoicesCreateManyRecordsInputEnvelope
+  set?: Prisma.InvoicesWhereUniqueInput | Prisma.InvoicesWhereUniqueInput[]
+  disconnect?: Prisma.InvoicesWhereUniqueInput | Prisma.InvoicesWhereUniqueInput[]
+  delete?: Prisma.InvoicesWhereUniqueInput | Prisma.InvoicesWhereUniqueInput[]
+  connect?: Prisma.InvoicesWhereUniqueInput | Prisma.InvoicesWhereUniqueInput[]
+  update?: Prisma.InvoicesUpdateWithWhereUniqueWithoutRecordsInput | Prisma.InvoicesUpdateWithWhereUniqueWithoutRecordsInput[]
+  updateMany?: Prisma.InvoicesUpdateManyWithWhereWithoutRecordsInput | Prisma.InvoicesUpdateManyWithWhereWithoutRecordsInput[]
+  deleteMany?: Prisma.InvoicesScalarWhereInput | Prisma.InvoicesScalarWhereInput[]
 }
 
-export type InvoicesUpsertWithoutInvoiceViewersInput = {
-  update: Prisma.XOR<Prisma.InvoicesUpdateWithoutInvoiceViewersInput, Prisma.InvoicesUncheckedUpdateWithoutInvoiceViewersInput>
-  create: Prisma.XOR<Prisma.InvoicesCreateWithoutInvoiceViewersInput, Prisma.InvoicesUncheckedCreateWithoutInvoiceViewersInput>
-  where?: Prisma.InvoicesWhereInput
-}
-
-export type InvoicesUpdateToOneWithWhereWithoutInvoiceViewersInput = {
-  where?: Prisma.InvoicesWhereInput
-  data: Prisma.XOR<Prisma.InvoicesUpdateWithoutInvoiceViewersInput, Prisma.InvoicesUncheckedUpdateWithoutInvoiceViewersInput>
-}
-
-export type InvoicesUpdateWithoutInvoiceViewersInput = {
-  title?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  total?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
-  status?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  banner?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  updatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  createdAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  customerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  createdById?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  transactions?: Prisma.TransactionsUpdateManyWithoutRecordsNestedInput
-  invoiceEditors?: Prisma.InvoiceEditorsUpdateManyWithoutInvoiceNestedInput
-}
-
-export type InvoicesUncheckedUpdateWithoutInvoiceViewersInput = {
-  id?: Prisma.IntFieldUpdateOperationsInput | number
-  title?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  total?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
-  status?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  banner?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  updatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  createdAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  customerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  createdById?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  transactions?: Prisma.TransactionsUncheckedUpdateManyWithoutRecordsNestedInput
-  invoiceEditors?: Prisma.InvoiceEditorsUncheckedUpdateManyWithoutInvoiceNestedInput
-}
-
-export type InvoicesCreateWithoutInvoiceEditorsInput = {
-  title?: string | null
-  total?: number | null
-  status?: string | null
-  banner?: string | null
-  updatedAt?: Date | string | null
-  createdAt?: Date | string | null
-  customerId?: string | null
-  createdById?: number | null
-  transactions?: Prisma.TransactionsCreateNestedManyWithoutRecordsInput
-  invoiceViewers?: Prisma.InvoiceViewersCreateNestedManyWithoutInvoiceInput
-}
-
-export type InvoicesUncheckedCreateWithoutInvoiceEditorsInput = {
-  id?: number
-  title?: string | null
-  total?: number | null
-  status?: string | null
-  banner?: string | null
-  updatedAt?: Date | string | null
-  createdAt?: Date | string | null
-  customerId?: string | null
-  createdById?: number | null
-  transactions?: Prisma.TransactionsUncheckedCreateNestedManyWithoutRecordsInput
-  invoiceViewers?: Prisma.InvoiceViewersUncheckedCreateNestedManyWithoutInvoiceInput
-}
-
-export type InvoicesCreateOrConnectWithoutInvoiceEditorsInput = {
-  where: Prisma.InvoicesWhereUniqueInput
-  create: Prisma.XOR<Prisma.InvoicesCreateWithoutInvoiceEditorsInput, Prisma.InvoicesUncheckedCreateWithoutInvoiceEditorsInput>
-}
-
-export type InvoicesUpsertWithoutInvoiceEditorsInput = {
-  update: Prisma.XOR<Prisma.InvoicesUpdateWithoutInvoiceEditorsInput, Prisma.InvoicesUncheckedUpdateWithoutInvoiceEditorsInput>
-  create: Prisma.XOR<Prisma.InvoicesCreateWithoutInvoiceEditorsInput, Prisma.InvoicesUncheckedCreateWithoutInvoiceEditorsInput>
-  where?: Prisma.InvoicesWhereInput
-}
-
-export type InvoicesUpdateToOneWithWhereWithoutInvoiceEditorsInput = {
-  where?: Prisma.InvoicesWhereInput
-  data: Prisma.XOR<Prisma.InvoicesUpdateWithoutInvoiceEditorsInput, Prisma.InvoicesUncheckedUpdateWithoutInvoiceEditorsInput>
-}
-
-export type InvoicesUpdateWithoutInvoiceEditorsInput = {
-  title?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  total?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
-  status?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  banner?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  updatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  createdAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  customerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  createdById?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  transactions?: Prisma.TransactionsUpdateManyWithoutRecordsNestedInput
-  invoiceViewers?: Prisma.InvoiceViewersUpdateManyWithoutInvoiceNestedInput
-}
-
-export type InvoicesUncheckedUpdateWithoutInvoiceEditorsInput = {
-  id?: Prisma.IntFieldUpdateOperationsInput | number
-  title?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  total?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
-  status?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  banner?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  updatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  createdAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  customerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  createdById?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  transactions?: Prisma.TransactionsUncheckedUpdateManyWithoutRecordsNestedInput
-  invoiceViewers?: Prisma.InvoiceViewersUncheckedUpdateManyWithoutInvoiceNestedInput
+export type InvoicesUncheckedUpdateManyWithoutRecordsNestedInput = {
+  create?: Prisma.XOR<Prisma.InvoicesCreateWithoutRecordsInput, Prisma.InvoicesUncheckedCreateWithoutRecordsInput> | Prisma.InvoicesCreateWithoutRecordsInput[] | Prisma.InvoicesUncheckedCreateWithoutRecordsInput[]
+  connectOrCreate?: Prisma.InvoicesCreateOrConnectWithoutRecordsInput | Prisma.InvoicesCreateOrConnectWithoutRecordsInput[]
+  upsert?: Prisma.InvoicesUpsertWithWhereUniqueWithoutRecordsInput | Prisma.InvoicesUpsertWithWhereUniqueWithoutRecordsInput[]
+  createMany?: Prisma.InvoicesCreateManyRecordsInputEnvelope
+  set?: Prisma.InvoicesWhereUniqueInput | Prisma.InvoicesWhereUniqueInput[]
+  disconnect?: Prisma.InvoicesWhereUniqueInput | Prisma.InvoicesWhereUniqueInput[]
+  delete?: Prisma.InvoicesWhereUniqueInput | Prisma.InvoicesWhereUniqueInput[]
+  connect?: Prisma.InvoicesWhereUniqueInput | Prisma.InvoicesWhereUniqueInput[]
+  update?: Prisma.InvoicesUpdateWithWhereUniqueWithoutRecordsInput | Prisma.InvoicesUpdateWithWhereUniqueWithoutRecordsInput[]
+  updateMany?: Prisma.InvoicesUpdateManyWithWhereWithoutRecordsInput | Prisma.InvoicesUpdateManyWithWhereWithoutRecordsInput[]
+  deleteMany?: Prisma.InvoicesScalarWhereInput | Prisma.InvoicesScalarWhereInput[]
 }
 
 export type InvoicesCreateWithoutTransactionsInput = {
   title?: string | null
   total?: number | null
   status?: string | null
-  banner?: string | null
+  date?: Date | string | null
   updatedAt?: Date | string | null
   createdAt?: Date | string | null
   customerId?: string | null
   createdById?: number | null
-  invoiceViewers?: Prisma.InvoiceViewersCreateNestedManyWithoutInvoiceInput
-  invoiceEditors?: Prisma.InvoiceEditorsCreateNestedManyWithoutInvoiceInput
+  records?: Prisma.RecordsCreateNestedOneWithoutInvoicesInput
 }
 
 export type InvoicesUncheckedCreateWithoutTransactionsInput = {
@@ -695,13 +589,12 @@ export type InvoicesUncheckedCreateWithoutTransactionsInput = {
   title?: string | null
   total?: number | null
   status?: string | null
-  banner?: string | null
+  date?: Date | string | null
   updatedAt?: Date | string | null
   createdAt?: Date | string | null
   customerId?: string | null
   createdById?: number | null
-  invoiceViewers?: Prisma.InvoiceViewersUncheckedCreateNestedManyWithoutInvoiceInput
-  invoiceEditors?: Prisma.InvoiceEditorsUncheckedCreateNestedManyWithoutInvoiceInput
+  recordsId?: number | null
 }
 
 export type InvoicesCreateOrConnectWithoutTransactionsInput = {
@@ -724,13 +617,12 @@ export type InvoicesUpdateWithoutTransactionsInput = {
   title?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   total?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   status?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  banner?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  date?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   updatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   customerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdById?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  invoiceViewers?: Prisma.InvoiceViewersUpdateManyWithoutInvoiceNestedInput
-  invoiceEditors?: Prisma.InvoiceEditorsUpdateManyWithoutInvoiceNestedInput
+  records?: Prisma.RecordsUpdateOneWithoutInvoicesNestedInput
 }
 
 export type InvoicesUncheckedUpdateWithoutTransactionsInput = {
@@ -738,13 +630,127 @@ export type InvoicesUncheckedUpdateWithoutTransactionsInput = {
   title?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   total?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   status?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  banner?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  date?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   updatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   customerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdById?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  invoiceViewers?: Prisma.InvoiceViewersUncheckedUpdateManyWithoutInvoiceNestedInput
-  invoiceEditors?: Prisma.InvoiceEditorsUncheckedUpdateManyWithoutInvoiceNestedInput
+  recordsId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+}
+
+export type InvoicesCreateWithoutRecordsInput = {
+  title?: string | null
+  total?: number | null
+  status?: string | null
+  date?: Date | string | null
+  updatedAt?: Date | string | null
+  createdAt?: Date | string | null
+  customerId?: string | null
+  createdById?: number | null
+  transactions?: Prisma.TransactionsCreateNestedManyWithoutRecordsInput
+}
+
+export type InvoicesUncheckedCreateWithoutRecordsInput = {
+  id?: number
+  title?: string | null
+  total?: number | null
+  status?: string | null
+  date?: Date | string | null
+  updatedAt?: Date | string | null
+  createdAt?: Date | string | null
+  customerId?: string | null
+  createdById?: number | null
+  transactions?: Prisma.TransactionsUncheckedCreateNestedManyWithoutRecordsInput
+}
+
+export type InvoicesCreateOrConnectWithoutRecordsInput = {
+  where: Prisma.InvoicesWhereUniqueInput
+  create: Prisma.XOR<Prisma.InvoicesCreateWithoutRecordsInput, Prisma.InvoicesUncheckedCreateWithoutRecordsInput>
+}
+
+export type InvoicesCreateManyRecordsInputEnvelope = {
+  data: Prisma.InvoicesCreateManyRecordsInput | Prisma.InvoicesCreateManyRecordsInput[]
+}
+
+export type InvoicesUpsertWithWhereUniqueWithoutRecordsInput = {
+  where: Prisma.InvoicesWhereUniqueInput
+  update: Prisma.XOR<Prisma.InvoicesUpdateWithoutRecordsInput, Prisma.InvoicesUncheckedUpdateWithoutRecordsInput>
+  create: Prisma.XOR<Prisma.InvoicesCreateWithoutRecordsInput, Prisma.InvoicesUncheckedCreateWithoutRecordsInput>
+}
+
+export type InvoicesUpdateWithWhereUniqueWithoutRecordsInput = {
+  where: Prisma.InvoicesWhereUniqueInput
+  data: Prisma.XOR<Prisma.InvoicesUpdateWithoutRecordsInput, Prisma.InvoicesUncheckedUpdateWithoutRecordsInput>
+}
+
+export type InvoicesUpdateManyWithWhereWithoutRecordsInput = {
+  where: Prisma.InvoicesScalarWhereInput
+  data: Prisma.XOR<Prisma.InvoicesUpdateManyMutationInput, Prisma.InvoicesUncheckedUpdateManyWithoutRecordsInput>
+}
+
+export type InvoicesScalarWhereInput = {
+  AND?: Prisma.InvoicesScalarWhereInput | Prisma.InvoicesScalarWhereInput[]
+  OR?: Prisma.InvoicesScalarWhereInput[]
+  NOT?: Prisma.InvoicesScalarWhereInput | Prisma.InvoicesScalarWhereInput[]
+  id?: Prisma.IntFilter<"Invoices"> | number
+  title?: Prisma.StringNullableFilter<"Invoices"> | string | null
+  total?: Prisma.FloatNullableFilter<"Invoices"> | number | null
+  status?: Prisma.StringNullableFilter<"Invoices"> | string | null
+  date?: Prisma.DateTimeNullableFilter<"Invoices"> | Date | string | null
+  updatedAt?: Prisma.DateTimeNullableFilter<"Invoices"> | Date | string | null
+  createdAt?: Prisma.DateTimeNullableFilter<"Invoices"> | Date | string | null
+  customerId?: Prisma.StringNullableFilter<"Invoices"> | string | null
+  createdById?: Prisma.IntNullableFilter<"Invoices"> | number | null
+  recordsId?: Prisma.IntNullableFilter<"Invoices"> | number | null
+}
+
+export type InvoicesCreateManyRecordsInput = {
+  id?: number
+  title?: string | null
+  total?: number | null
+  status?: string | null
+  date?: Date | string | null
+  updatedAt?: Date | string | null
+  createdAt?: Date | string | null
+  customerId?: string | null
+  createdById?: number | null
+}
+
+export type InvoicesUpdateWithoutRecordsInput = {
+  title?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  total?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  status?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  date?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  updatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  customerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdById?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  transactions?: Prisma.TransactionsUpdateManyWithoutRecordsNestedInput
+}
+
+export type InvoicesUncheckedUpdateWithoutRecordsInput = {
+  id?: Prisma.IntFieldUpdateOperationsInput | number
+  title?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  total?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  status?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  date?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  updatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  customerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdById?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  transactions?: Prisma.TransactionsUncheckedUpdateManyWithoutRecordsNestedInput
+}
+
+export type InvoicesUncheckedUpdateManyWithoutRecordsInput = {
+  id?: Prisma.IntFieldUpdateOperationsInput | number
+  title?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  total?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  status?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  date?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  updatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  customerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdById?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
 }
 
 
@@ -754,14 +760,10 @@ export type InvoicesUncheckedUpdateWithoutTransactionsInput = {
 
 export type InvoicesCountOutputType = {
   transactions: number
-  invoiceViewers: number
-  invoiceEditors: number
 }
 
 export type InvoicesCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   transactions?: boolean | InvoicesCountOutputTypeCountTransactionsArgs
-  invoiceViewers?: boolean | InvoicesCountOutputTypeCountInvoiceViewersArgs
-  invoiceEditors?: boolean | InvoicesCountOutputTypeCountInvoiceEditorsArgs
 }
 
 /**
@@ -781,34 +783,20 @@ export type InvoicesCountOutputTypeCountTransactionsArgs<ExtArgs extends runtime
   where?: Prisma.TransactionsWhereInput
 }
 
-/**
- * InvoicesCountOutputType without action
- */
-export type InvoicesCountOutputTypeCountInvoiceViewersArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  where?: Prisma.InvoiceViewersWhereInput
-}
-
-/**
- * InvoicesCountOutputType without action
- */
-export type InvoicesCountOutputTypeCountInvoiceEditorsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  where?: Prisma.InvoiceEditorsWhereInput
-}
-
 
 export type InvoicesSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   title?: boolean
   total?: boolean
   status?: boolean
-  banner?: boolean
+  date?: boolean
   updatedAt?: boolean
   createdAt?: boolean
   customerId?: boolean
   createdById?: boolean
+  recordsId?: boolean
   transactions?: boolean | Prisma.Invoices$transactionsArgs<ExtArgs>
-  invoiceViewers?: boolean | Prisma.Invoices$invoiceViewersArgs<ExtArgs>
-  invoiceEditors?: boolean | Prisma.Invoices$invoiceEditorsArgs<ExtArgs>
+  records?: boolean | Prisma.Invoices$recordsArgs<ExtArgs>
   _count?: boolean | Prisma.InvoicesCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["invoices"]>
 
@@ -817,11 +805,13 @@ export type InvoicesSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exte
   title?: boolean
   total?: boolean
   status?: boolean
-  banner?: boolean
+  date?: boolean
   updatedAt?: boolean
   createdAt?: boolean
   customerId?: boolean
   createdById?: boolean
+  recordsId?: boolean
+  records?: boolean | Prisma.Invoices$recordsArgs<ExtArgs>
 }, ExtArgs["result"]["invoices"]>
 
 export type InvoicesSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -829,11 +819,13 @@ export type InvoicesSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exte
   title?: boolean
   total?: boolean
   status?: boolean
-  banner?: boolean
+  date?: boolean
   updatedAt?: boolean
   createdAt?: boolean
   customerId?: boolean
   createdById?: boolean
+  recordsId?: boolean
+  records?: boolean | Prisma.Invoices$recordsArgs<ExtArgs>
 }, ExtArgs["result"]["invoices"]>
 
 export type InvoicesSelectScalar = {
@@ -841,40 +833,44 @@ export type InvoicesSelectScalar = {
   title?: boolean
   total?: boolean
   status?: boolean
-  banner?: boolean
+  date?: boolean
   updatedAt?: boolean
   createdAt?: boolean
   customerId?: boolean
   createdById?: boolean
+  recordsId?: boolean
 }
 
-export type InvoicesOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "title" | "total" | "status" | "banner" | "updatedAt" | "createdAt" | "customerId" | "createdById", ExtArgs["result"]["invoices"]>
+export type InvoicesOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "title" | "total" | "status" | "date" | "updatedAt" | "createdAt" | "customerId" | "createdById" | "recordsId", ExtArgs["result"]["invoices"]>
 export type InvoicesInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   transactions?: boolean | Prisma.Invoices$transactionsArgs<ExtArgs>
-  invoiceViewers?: boolean | Prisma.Invoices$invoiceViewersArgs<ExtArgs>
-  invoiceEditors?: boolean | Prisma.Invoices$invoiceEditorsArgs<ExtArgs>
+  records?: boolean | Prisma.Invoices$recordsArgs<ExtArgs>
   _count?: boolean | Prisma.InvoicesCountOutputTypeDefaultArgs<ExtArgs>
 }
-export type InvoicesIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
-export type InvoicesIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
+export type InvoicesIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  records?: boolean | Prisma.Invoices$recordsArgs<ExtArgs>
+}
+export type InvoicesIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  records?: boolean | Prisma.Invoices$recordsArgs<ExtArgs>
+}
 
 export type $InvoicesPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "Invoices"
   objects: {
     transactions: Prisma.$TransactionsPayload<ExtArgs>[]
-    invoiceViewers: Prisma.$InvoiceViewersPayload<ExtArgs>[]
-    invoiceEditors: Prisma.$InvoiceEditorsPayload<ExtArgs>[]
+    records: Prisma.$RecordsPayload<ExtArgs> | null
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: number
     title: string | null
     total: number | null
     status: string | null
-    banner: string | null
+    date: Date | null
     updatedAt: Date | null
     createdAt: Date | null
     customerId: string | null
     createdById: number | null
+    recordsId: number | null
   }, ExtArgs["result"]["invoices"]>
   composites: {}
 }
@@ -1270,8 +1266,7 @@ readonly fields: InvoicesFieldRefs;
 export interface Prisma__InvoicesClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
   transactions<T extends Prisma.Invoices$transactionsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Invoices$transactionsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$TransactionsPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-  invoiceViewers<T extends Prisma.Invoices$invoiceViewersArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Invoices$invoiceViewersArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$InvoiceViewersPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-  invoiceEditors<T extends Prisma.Invoices$invoiceEditorsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Invoices$invoiceEditorsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$InvoiceEditorsPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  records<T extends Prisma.Invoices$recordsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Invoices$recordsArgs<ExtArgs>>): Prisma.Prisma__RecordsClient<runtime.Types.Result.GetResult<Prisma.$RecordsPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1305,11 +1300,12 @@ export interface InvoicesFieldRefs {
   readonly title: Prisma.FieldRef<"Invoices", 'String'>
   readonly total: Prisma.FieldRef<"Invoices", 'Float'>
   readonly status: Prisma.FieldRef<"Invoices", 'String'>
-  readonly banner: Prisma.FieldRef<"Invoices", 'String'>
+  readonly date: Prisma.FieldRef<"Invoices", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"Invoices", 'DateTime'>
   readonly createdAt: Prisma.FieldRef<"Invoices", 'DateTime'>
   readonly customerId: Prisma.FieldRef<"Invoices", 'String'>
   readonly createdById: Prisma.FieldRef<"Invoices", 'Int'>
+  readonly recordsId: Prisma.FieldRef<"Invoices", 'Int'>
 }
     
 
@@ -1557,6 +1553,10 @@ export type InvoicesCreateManyAndReturnArgs<ExtArgs extends runtime.Types.Extens
    * The data used to create many Invoices.
    */
   data: Prisma.InvoicesCreateManyInput | Prisma.InvoicesCreateManyInput[]
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.InvoicesIncludeCreateManyAndReturn<ExtArgs> | null
 }
 
 /**
@@ -1627,6 +1627,10 @@ export type InvoicesUpdateManyAndReturnArgs<ExtArgs extends runtime.Types.Extens
    * Limit how many Invoices to update.
    */
   limit?: number
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.InvoicesIncludeUpdateManyAndReturn<ExtArgs> | null
 }
 
 /**
@@ -1720,51 +1724,22 @@ export type Invoices$transactionsArgs<ExtArgs extends runtime.Types.Extensions.I
 }
 
 /**
- * Invoices.invoiceViewers
+ * Invoices.records
  */
-export type Invoices$invoiceViewersArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+export type Invoices$recordsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   /**
-   * Select specific fields to fetch from the InvoiceViewers
+   * Select specific fields to fetch from the Records
    */
-  select?: Prisma.InvoiceViewersSelect<ExtArgs> | null
+  select?: Prisma.RecordsSelect<ExtArgs> | null
   /**
-   * Omit specific fields from the InvoiceViewers
+   * Omit specific fields from the Records
    */
-  omit?: Prisma.InvoiceViewersOmit<ExtArgs> | null
+  omit?: Prisma.RecordsOmit<ExtArgs> | null
   /**
    * Choose, which related nodes to fetch as well
    */
-  include?: Prisma.InvoiceViewersInclude<ExtArgs> | null
-  where?: Prisma.InvoiceViewersWhereInput
-  orderBy?: Prisma.InvoiceViewersOrderByWithRelationInput | Prisma.InvoiceViewersOrderByWithRelationInput[]
-  cursor?: Prisma.InvoiceViewersWhereUniqueInput
-  take?: number
-  skip?: number
-  distinct?: Prisma.InvoiceViewersScalarFieldEnum | Prisma.InvoiceViewersScalarFieldEnum[]
-}
-
-/**
- * Invoices.invoiceEditors
- */
-export type Invoices$invoiceEditorsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  /**
-   * Select specific fields to fetch from the InvoiceEditors
-   */
-  select?: Prisma.InvoiceEditorsSelect<ExtArgs> | null
-  /**
-   * Omit specific fields from the InvoiceEditors
-   */
-  omit?: Prisma.InvoiceEditorsOmit<ExtArgs> | null
-  /**
-   * Choose, which related nodes to fetch as well
-   */
-  include?: Prisma.InvoiceEditorsInclude<ExtArgs> | null
-  where?: Prisma.InvoiceEditorsWhereInput
-  orderBy?: Prisma.InvoiceEditorsOrderByWithRelationInput | Prisma.InvoiceEditorsOrderByWithRelationInput[]
-  cursor?: Prisma.InvoiceEditorsWhereUniqueInput
-  take?: number
-  skip?: number
-  distinct?: Prisma.InvoiceEditorsScalarFieldEnum | Prisma.InvoiceEditorsScalarFieldEnum[]
+  include?: Prisma.RecordsInclude<ExtArgs> | null
+  where?: Prisma.RecordsWhereInput
 }
 
 /**

@@ -48,7 +48,7 @@ export default function CreateCustomerDialog(props: any) {
         ) : (
           <Button>
             <Plus />
-            Add new Customer
+            Add new Record
           </Button>
         )}
       </DialogTrigger>

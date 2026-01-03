@@ -388,8 +388,6 @@ export const ModelName = {
   Tokens: 'Tokens',
   Companies: 'Companies',
   Invoices: 'Invoices',
-  InvoiceViewers: 'InvoiceViewers',
-  InvoiceEditors: 'InvoiceEditors',
   TransactionCategories: 'TransactionCategories',
   Transactions: 'Transactions',
   Records: 'Records',
@@ -414,7 +412,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "users" | "tokens" | "companies" | "invoices" | "invoiceViewers" | "invoiceEditors" | "transactionCategories" | "transactions" | "records" | "stocks" | "assets" | "departments" | "employees" | "suppliers" | "notifications"
+    modelProps: "users" | "tokens" | "companies" | "invoices" | "transactionCategories" | "transactions" | "records" | "stocks" | "assets" | "departments" | "employees" | "suppliers" | "notifications"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -711,154 +709,6 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         count: {
           args: Prisma.InvoicesCountArgs<ExtArgs>
           result: runtime.Types.Utils.Optional<Prisma.InvoicesCountAggregateOutputType> | number
-        }
-      }
-    }
-    InvoiceViewers: {
-      payload: Prisma.$InvoiceViewersPayload<ExtArgs>
-      fields: Prisma.InvoiceViewersFieldRefs
-      operations: {
-        findUnique: {
-          args: Prisma.InvoiceViewersFindUniqueArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$InvoiceViewersPayload> | null
-        }
-        findUniqueOrThrow: {
-          args: Prisma.InvoiceViewersFindUniqueOrThrowArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$InvoiceViewersPayload>
-        }
-        findFirst: {
-          args: Prisma.InvoiceViewersFindFirstArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$InvoiceViewersPayload> | null
-        }
-        findFirstOrThrow: {
-          args: Prisma.InvoiceViewersFindFirstOrThrowArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$InvoiceViewersPayload>
-        }
-        findMany: {
-          args: Prisma.InvoiceViewersFindManyArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$InvoiceViewersPayload>[]
-        }
-        create: {
-          args: Prisma.InvoiceViewersCreateArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$InvoiceViewersPayload>
-        }
-        createMany: {
-          args: Prisma.InvoiceViewersCreateManyArgs<ExtArgs>
-          result: BatchPayload
-        }
-        createManyAndReturn: {
-          args: Prisma.InvoiceViewersCreateManyAndReturnArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$InvoiceViewersPayload>[]
-        }
-        delete: {
-          args: Prisma.InvoiceViewersDeleteArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$InvoiceViewersPayload>
-        }
-        update: {
-          args: Prisma.InvoiceViewersUpdateArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$InvoiceViewersPayload>
-        }
-        deleteMany: {
-          args: Prisma.InvoiceViewersDeleteManyArgs<ExtArgs>
-          result: BatchPayload
-        }
-        updateMany: {
-          args: Prisma.InvoiceViewersUpdateManyArgs<ExtArgs>
-          result: BatchPayload
-        }
-        updateManyAndReturn: {
-          args: Prisma.InvoiceViewersUpdateManyAndReturnArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$InvoiceViewersPayload>[]
-        }
-        upsert: {
-          args: Prisma.InvoiceViewersUpsertArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$InvoiceViewersPayload>
-        }
-        aggregate: {
-          args: Prisma.InvoiceViewersAggregateArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.AggregateInvoiceViewers>
-        }
-        groupBy: {
-          args: Prisma.InvoiceViewersGroupByArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.InvoiceViewersGroupByOutputType>[]
-        }
-        count: {
-          args: Prisma.InvoiceViewersCountArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.InvoiceViewersCountAggregateOutputType> | number
-        }
-      }
-    }
-    InvoiceEditors: {
-      payload: Prisma.$InvoiceEditorsPayload<ExtArgs>
-      fields: Prisma.InvoiceEditorsFieldRefs
-      operations: {
-        findUnique: {
-          args: Prisma.InvoiceEditorsFindUniqueArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$InvoiceEditorsPayload> | null
-        }
-        findUniqueOrThrow: {
-          args: Prisma.InvoiceEditorsFindUniqueOrThrowArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$InvoiceEditorsPayload>
-        }
-        findFirst: {
-          args: Prisma.InvoiceEditorsFindFirstArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$InvoiceEditorsPayload> | null
-        }
-        findFirstOrThrow: {
-          args: Prisma.InvoiceEditorsFindFirstOrThrowArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$InvoiceEditorsPayload>
-        }
-        findMany: {
-          args: Prisma.InvoiceEditorsFindManyArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$InvoiceEditorsPayload>[]
-        }
-        create: {
-          args: Prisma.InvoiceEditorsCreateArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$InvoiceEditorsPayload>
-        }
-        createMany: {
-          args: Prisma.InvoiceEditorsCreateManyArgs<ExtArgs>
-          result: BatchPayload
-        }
-        createManyAndReturn: {
-          args: Prisma.InvoiceEditorsCreateManyAndReturnArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$InvoiceEditorsPayload>[]
-        }
-        delete: {
-          args: Prisma.InvoiceEditorsDeleteArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$InvoiceEditorsPayload>
-        }
-        update: {
-          args: Prisma.InvoiceEditorsUpdateArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$InvoiceEditorsPayload>
-        }
-        deleteMany: {
-          args: Prisma.InvoiceEditorsDeleteManyArgs<ExtArgs>
-          result: BatchPayload
-        }
-        updateMany: {
-          args: Prisma.InvoiceEditorsUpdateManyArgs<ExtArgs>
-          result: BatchPayload
-        }
-        updateManyAndReturn: {
-          args: Prisma.InvoiceEditorsUpdateManyAndReturnArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$InvoiceEditorsPayload>[]
-        }
-        upsert: {
-          args: Prisma.InvoiceEditorsUpsertArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$InvoiceEditorsPayload>
-        }
-        aggregate: {
-          args: Prisma.InvoiceEditorsAggregateArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.AggregateInvoiceEditors>
-        }
-        groupBy: {
-          args: Prisma.InvoiceEditorsGroupByArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.InvoiceEditorsGroupByOutputType>[]
-        }
-        count: {
-          args: Prisma.InvoiceEditorsCountArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.InvoiceEditorsCountAggregateOutputType> | number
         }
       }
     }
@@ -1610,34 +1460,15 @@ export const InvoicesScalarFieldEnum = {
   title: 'title',
   total: 'total',
   status: 'status',
-  banner: 'banner',
+  date: 'date',
   updatedAt: 'updatedAt',
   createdAt: 'createdAt',
   customerId: 'customerId',
-  createdById: 'createdById'
+  createdById: 'createdById',
+  recordsId: 'recordsId'
 } as const
 
 export type InvoicesScalarFieldEnum = (typeof InvoicesScalarFieldEnum)[keyof typeof InvoicesScalarFieldEnum]
-
-
-export const InvoiceViewersScalarFieldEnum = {
-  id: 'id',
-  invoiceId: 'invoiceId',
-  userId: 'userId',
-  createdAt: 'createdAt'
-} as const
-
-export type InvoiceViewersScalarFieldEnum = (typeof InvoiceViewersScalarFieldEnum)[keyof typeof InvoiceViewersScalarFieldEnum]
-
-
-export const InvoiceEditorsScalarFieldEnum = {
-  id: 'id',
-  invoiceId: 'invoiceId',
-  userId: 'userId',
-  createdAt: 'createdAt'
-} as const
-
-export type InvoiceEditorsScalarFieldEnum = (typeof InvoiceEditorsScalarFieldEnum)[keyof typeof InvoiceEditorsScalarFieldEnum]
 
 
 export const TransactionCategoriesScalarFieldEnum = {
@@ -1919,8 +1750,6 @@ export type GlobalOmitConfig = {
   tokens?: Prisma.TokensOmit
   companies?: Prisma.CompaniesOmit
   invoices?: Prisma.InvoicesOmit
-  invoiceViewers?: Prisma.InvoiceViewersOmit
-  invoiceEditors?: Prisma.InvoiceEditorsOmit
   transactionCategories?: Prisma.TransactionCategoriesOmit
   transactions?: Prisma.TransactionsOmit
   records?: Prisma.RecordsOmit

@@ -26,3 +26,32 @@ export const GET = async (req: NextRequest, ctx: RouteContext<"/api/records/[id]
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
   }
 };
+
+export const POST = async (req: NextRequest) => {
+  try {
+    // POST logic here
+    const user = await Auth.getCurrentUser();
+    const formData = await req.formData();
+    console.log(formData);
+    const description = formData.get("description");
+    const recordId = formData.get("recordId");
+    const date = formData.get("date");
+
+    if (description && recordId && date) {
+      await db.invoices.create({
+        data: {
+          title: String(description),
+          total: 0,
+          date: new Date(String(date)),
+          recordsId: Number(recordId),
+          createdById: user?.userId,
+        },
+      });
+    }
+
+    return NextResponse.json({});
+  } catch (error) {
+    console.error(error);
+    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+  }
+};

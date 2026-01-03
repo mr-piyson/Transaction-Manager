@@ -55,8 +55,6 @@ export const ModelName = {
   Tokens: 'Tokens',
   Companies: 'Companies',
   Invoices: 'Invoices',
-  InvoiceViewers: 'InvoiceViewers',
-  InvoiceEditors: 'InvoiceEditors',
   TransactionCategories: 'TransactionCategories',
   Transactions: 'Transactions',
   Records: 'Records',
@@ -127,34 +125,15 @@ export const InvoicesScalarFieldEnum = {
   title: 'title',
   total: 'total',
   status: 'status',
-  banner: 'banner',
+  date: 'date',
   updatedAt: 'updatedAt',
   createdAt: 'createdAt',
   customerId: 'customerId',
-  createdById: 'createdById'
+  createdById: 'createdById',
+  recordsId: 'recordsId'
 } as const
 
 export type InvoicesScalarFieldEnum = (typeof InvoicesScalarFieldEnum)[keyof typeof InvoicesScalarFieldEnum]
-
-
-export const InvoiceViewersScalarFieldEnum = {
-  id: 'id',
-  invoiceId: 'invoiceId',
-  userId: 'userId',
-  createdAt: 'createdAt'
-} as const
-
-export type InvoiceViewersScalarFieldEnum = (typeof InvoiceViewersScalarFieldEnum)[keyof typeof InvoiceViewersScalarFieldEnum]
-
-
-export const InvoiceEditorsScalarFieldEnum = {
-  id: 'id',
-  invoiceId: 'invoiceId',
-  userId: 'userId',
-  createdAt: 'createdAt'
-} as const
-
-export type InvoiceEditorsScalarFieldEnum = (typeof InvoiceEditorsScalarFieldEnum)[keyof typeof InvoiceEditorsScalarFieldEnum]
 
 
 export const TransactionCategoriesScalarFieldEnum = {

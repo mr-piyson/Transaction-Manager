@@ -276,6 +276,7 @@ export type RecordsWhereInput = {
   updatedAt?: Prisma.DateTimeNullableFilter<"Records"> | Date | string | null
   deletedAt?: Prisma.DateTimeNullableFilter<"Records"> | Date | string | null
   deletedBy?: Prisma.IntNullableFilter<"Records"> | number | null
+  Invoices?: Prisma.InvoicesListRelationFilter
 }
 
 export type RecordsOrderByWithRelationInput = {
@@ -291,6 +292,7 @@ export type RecordsOrderByWithRelationInput = {
   updatedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   deletedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   deletedBy?: Prisma.SortOrderInput | Prisma.SortOrder
+  Invoices?: Prisma.InvoicesOrderByRelationAggregateInput
 }
 
 export type RecordsWhereUniqueInput = Prisma.AtLeast<{
@@ -309,6 +311,7 @@ export type RecordsWhereUniqueInput = Prisma.AtLeast<{
   updatedAt?: Prisma.DateTimeNullableFilter<"Records"> | Date | string | null
   deletedAt?: Prisma.DateTimeNullableFilter<"Records"> | Date | string | null
   deletedBy?: Prisma.IntNullableFilter<"Records"> | number | null
+  Invoices?: Prisma.InvoicesListRelationFilter
 }, "id">
 
 export type RecordsOrderByWithAggregationInput = {
@@ -361,6 +364,7 @@ export type RecordsCreateInput = {
   updatedAt?: Date | string | null
   deletedAt?: Date | string | null
   deletedBy?: number | null
+  Invoices?: Prisma.InvoicesCreateNestedManyWithoutRecordsInput
 }
 
 export type RecordsUncheckedCreateInput = {
@@ -376,6 +380,7 @@ export type RecordsUncheckedCreateInput = {
   updatedAt?: Date | string | null
   deletedAt?: Date | string | null
   deletedBy?: number | null
+  Invoices?: Prisma.InvoicesUncheckedCreateNestedManyWithoutRecordsInput
 }
 
 export type RecordsUpdateInput = {
@@ -390,6 +395,7 @@ export type RecordsUpdateInput = {
   updatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   deletedBy?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  Invoices?: Prisma.InvoicesUpdateManyWithoutRecordsNestedInput
 }
 
 export type RecordsUncheckedUpdateInput = {
@@ -405,6 +411,7 @@ export type RecordsUncheckedUpdateInput = {
   updatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   deletedBy?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  Invoices?: Prisma.InvoicesUncheckedUpdateManyWithoutRecordsNestedInput
 }
 
 export type RecordsCreateManyInput = {
@@ -449,6 +456,11 @@ export type RecordsUncheckedUpdateManyInput = {
   updatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   deletedBy?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+}
+
+export type RecordsNullableScalarRelationFilter = {
+  is?: Prisma.RecordsWhereInput | null
+  isNot?: Prisma.RecordsWhereInput | null
 }
 
 export type RecordsCountOrderByAggregateInput = {
@@ -506,6 +518,125 @@ export type RecordsSumOrderByAggregateInput = {
   deletedBy?: Prisma.SortOrder
 }
 
+export type RecordsCreateNestedOneWithoutInvoicesInput = {
+  create?: Prisma.XOR<Prisma.RecordsCreateWithoutInvoicesInput, Prisma.RecordsUncheckedCreateWithoutInvoicesInput>
+  connectOrCreate?: Prisma.RecordsCreateOrConnectWithoutInvoicesInput
+  connect?: Prisma.RecordsWhereUniqueInput
+}
+
+export type RecordsUpdateOneWithoutInvoicesNestedInput = {
+  create?: Prisma.XOR<Prisma.RecordsCreateWithoutInvoicesInput, Prisma.RecordsUncheckedCreateWithoutInvoicesInput>
+  connectOrCreate?: Prisma.RecordsCreateOrConnectWithoutInvoicesInput
+  upsert?: Prisma.RecordsUpsertWithoutInvoicesInput
+  disconnect?: Prisma.RecordsWhereInput | boolean
+  delete?: Prisma.RecordsWhereInput | boolean
+  connect?: Prisma.RecordsWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.RecordsUpdateToOneWithWhereWithoutInvoicesInput, Prisma.RecordsUpdateWithoutInvoicesInput>, Prisma.RecordsUncheckedUpdateWithoutInvoicesInput>
+}
+
+export type RecordsCreateWithoutInvoicesInput = {
+  name?: string | null
+  email?: string | null
+  code?: string | null
+  image?: string | null
+  status?: string | null
+  phone?: string | null
+  address?: string | null
+  createdAt?: Date | string | null
+  updatedAt?: Date | string | null
+  deletedAt?: Date | string | null
+  deletedBy?: number | null
+}
+
+export type RecordsUncheckedCreateWithoutInvoicesInput = {
+  id?: number
+  name?: string | null
+  email?: string | null
+  code?: string | null
+  image?: string | null
+  status?: string | null
+  phone?: string | null
+  address?: string | null
+  createdAt?: Date | string | null
+  updatedAt?: Date | string | null
+  deletedAt?: Date | string | null
+  deletedBy?: number | null
+}
+
+export type RecordsCreateOrConnectWithoutInvoicesInput = {
+  where: Prisma.RecordsWhereUniqueInput
+  create: Prisma.XOR<Prisma.RecordsCreateWithoutInvoicesInput, Prisma.RecordsUncheckedCreateWithoutInvoicesInput>
+}
+
+export type RecordsUpsertWithoutInvoicesInput = {
+  update: Prisma.XOR<Prisma.RecordsUpdateWithoutInvoicesInput, Prisma.RecordsUncheckedUpdateWithoutInvoicesInput>
+  create: Prisma.XOR<Prisma.RecordsCreateWithoutInvoicesInput, Prisma.RecordsUncheckedCreateWithoutInvoicesInput>
+  where?: Prisma.RecordsWhereInput
+}
+
+export type RecordsUpdateToOneWithWhereWithoutInvoicesInput = {
+  where?: Prisma.RecordsWhereInput
+  data: Prisma.XOR<Prisma.RecordsUpdateWithoutInvoicesInput, Prisma.RecordsUncheckedUpdateWithoutInvoicesInput>
+}
+
+export type RecordsUpdateWithoutInvoicesInput = {
+  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  code?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  updatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  deletedBy?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+}
+
+export type RecordsUncheckedUpdateWithoutInvoicesInput = {
+  id?: Prisma.IntFieldUpdateOperationsInput | number
+  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  code?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  updatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  deletedBy?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+}
+
+
+/**
+ * Count Type RecordsCountOutputType
+ */
+
+export type RecordsCountOutputType = {
+  Invoices: number
+}
+
+export type RecordsCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  Invoices?: boolean | RecordsCountOutputTypeCountInvoicesArgs
+}
+
+/**
+ * RecordsCountOutputType without action
+ */
+export type RecordsCountOutputTypeDefaultArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the RecordsCountOutputType
+   */
+  select?: Prisma.RecordsCountOutputTypeSelect<ExtArgs> | null
+}
+
+/**
+ * RecordsCountOutputType without action
+ */
+export type RecordsCountOutputTypeCountInvoicesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.InvoicesWhereInput
+}
 
 
 export type RecordsSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -521,6 +652,8 @@ export type RecordsSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   updatedAt?: boolean
   deletedAt?: boolean
   deletedBy?: boolean
+  Invoices?: boolean | Prisma.Records$InvoicesArgs<ExtArgs>
+  _count?: boolean | Prisma.RecordsCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["records"]>
 
 export type RecordsSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -569,10 +702,18 @@ export type RecordsSelectScalar = {
 }
 
 export type RecordsOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "email" | "code" | "image" | "status" | "phone" | "address" | "createdAt" | "updatedAt" | "deletedAt" | "deletedBy", ExtArgs["result"]["records"]>
+export type RecordsInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  Invoices?: boolean | Prisma.Records$InvoicesArgs<ExtArgs>
+  _count?: boolean | Prisma.RecordsCountOutputTypeDefaultArgs<ExtArgs>
+}
+export type RecordsIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
+export type RecordsIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
 
 export type $RecordsPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "Records"
-  objects: {}
+  objects: {
+    Invoices: Prisma.$InvoicesPayload<ExtArgs>[]
+  }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: number
     name: string | null
@@ -980,6 +1121,7 @@ readonly fields: RecordsFieldRefs;
  */
 export interface Prisma__RecordsClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
+  Invoices<T extends Prisma.Records$InvoicesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Records$InvoicesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$InvoicesPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1038,6 +1180,10 @@ export type RecordsFindUniqueArgs<ExtArgs extends runtime.Types.Extensions.Inter
    */
   omit?: Prisma.RecordsOmit<ExtArgs> | null
   /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.RecordsInclude<ExtArgs> | null
+  /**
    * Filter, which Records to fetch.
    */
   where: Prisma.RecordsWhereUniqueInput
@@ -1056,6 +1202,10 @@ export type RecordsFindUniqueOrThrowArgs<ExtArgs extends runtime.Types.Extension
    */
   omit?: Prisma.RecordsOmit<ExtArgs> | null
   /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.RecordsInclude<ExtArgs> | null
+  /**
    * Filter, which Records to fetch.
    */
   where: Prisma.RecordsWhereUniqueInput
@@ -1073,6 +1223,10 @@ export type RecordsFindFirstArgs<ExtArgs extends runtime.Types.Extensions.Intern
    * Omit specific fields from the Records
    */
   omit?: Prisma.RecordsOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.RecordsInclude<ExtArgs> | null
   /**
    * Filter, which Records to fetch.
    */
@@ -1122,6 +1276,10 @@ export type RecordsFindFirstOrThrowArgs<ExtArgs extends runtime.Types.Extensions
    */
   omit?: Prisma.RecordsOmit<ExtArgs> | null
   /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.RecordsInclude<ExtArgs> | null
+  /**
    * Filter, which Records to fetch.
    */
   where?: Prisma.RecordsWhereInput
@@ -1170,6 +1328,10 @@ export type RecordsFindManyArgs<ExtArgs extends runtime.Types.Extensions.Interna
    */
   omit?: Prisma.RecordsOmit<ExtArgs> | null
   /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.RecordsInclude<ExtArgs> | null
+  /**
    * Filter, which Records to fetch.
    */
   where?: Prisma.RecordsWhereInput
@@ -1212,6 +1374,10 @@ export type RecordsCreateArgs<ExtArgs extends runtime.Types.Extensions.InternalA
    * Omit specific fields from the Records
    */
   omit?: Prisma.RecordsOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.RecordsInclude<ExtArgs> | null
   /**
    * The data needed to create a Records.
    */
@@ -1258,6 +1424,10 @@ export type RecordsUpdateArgs<ExtArgs extends runtime.Types.Extensions.InternalA
    * Omit specific fields from the Records
    */
   omit?: Prisma.RecordsOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.RecordsInclude<ExtArgs> | null
   /**
    * The data needed to update a Records.
    */
@@ -1325,6 +1495,10 @@ export type RecordsUpsertArgs<ExtArgs extends runtime.Types.Extensions.InternalA
    */
   omit?: Prisma.RecordsOmit<ExtArgs> | null
   /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.RecordsInclude<ExtArgs> | null
+  /**
    * The filter to search for the Records to update in case it exists.
    */
   where: Prisma.RecordsWhereUniqueInput
@@ -1351,6 +1525,10 @@ export type RecordsDeleteArgs<ExtArgs extends runtime.Types.Extensions.InternalA
    */
   omit?: Prisma.RecordsOmit<ExtArgs> | null
   /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.RecordsInclude<ExtArgs> | null
+  /**
    * Filter which Records to delete.
    */
   where: Prisma.RecordsWhereUniqueInput
@@ -1371,6 +1549,30 @@ export type RecordsDeleteManyArgs<ExtArgs extends runtime.Types.Extensions.Inter
 }
 
 /**
+ * Records.Invoices
+ */
+export type Records$InvoicesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Invoices
+   */
+  select?: Prisma.InvoicesSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Invoices
+   */
+  omit?: Prisma.InvoicesOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.InvoicesInclude<ExtArgs> | null
+  where?: Prisma.InvoicesWhereInput
+  orderBy?: Prisma.InvoicesOrderByWithRelationInput | Prisma.InvoicesOrderByWithRelationInput[]
+  cursor?: Prisma.InvoicesWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.InvoicesScalarFieldEnum | Prisma.InvoicesScalarFieldEnum[]
+}
+
+/**
  * Records without action
  */
 export type RecordsDefaultArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1382,4 +1584,8 @@ export type RecordsDefaultArgs<ExtArgs extends runtime.Types.Extensions.Internal
    * Omit specific fields from the Records
    */
   omit?: Prisma.RecordsOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.RecordsInclude<ExtArgs> | null
 }

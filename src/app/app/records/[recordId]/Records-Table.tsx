@@ -1,7 +1,7 @@
 "use client";
 
 import { AgGridReact } from "ag-grid-react";
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 
 import { AllCommunityModule, ColDef, ModuleRegistry, RowSelectionOptions } from "ag-grid-community";
 import { ClientSideRowModelModule } from "ag-grid-community"; // Import the missing module
@@ -9,22 +9,26 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { useTableTheme } from "@/hooks/use-tableTheme";
 import { Button } from "@/components/ui/button";
 import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty";
+import CreateInvoiceDialog from "./create-invoice-dialog";
+import { useQuery } from "@tanstack/react-query";
+import { useParams } from "next/navigation";
+import axios from "axios";
+import { Spinner } from "@/components/ui/spinner";
 
 // Register the required modules
 ModuleRegistry.registerModules([AllCommunityModule, ClientSideRowModelModule]);
 
-export default function RecordTable(props: { editable?: boolean }) {
-  const [invoices, setInvoices] = useState([]);
+export default function InvoicesTable(props: { editable?: boolean }) {
   const tableTheme = useTableTheme();
   const isMobile = useIsMobile();
+  const { recordId } = useParams();
 
-  const row = {
-    partCode: "",
-    description: "",
-    quantity: 0,
-    rate: 0,
-    amount: 0,
-  };
+  const { data: invoices, isLoading } = useQuery({
+    queryKey: ["invoices", recordId],
+    queryFn: async () => (await axios.get(`/api/records/${recordId}/invoices`)).data,
+  });
+
+  console.log(invoices);
 
   const rowSelection = useMemo<RowSelectionOptions>(() => {
     return {
@@ -36,23 +40,32 @@ export default function RecordTable(props: { editable?: boolean }) {
   const colDefs = useMemo<ColDef[]>(
     () => [
       {
-        flex: isMobile ? 0 : 1,
-        field: "code",
+        width: 48,
+        field: "id",
         headerName: "Code",
         sortable: true,
         filter: false,
         // if props.editable is not defined then it will be editable
-        editable: props?.editable !== undefined ? props.editable : true,
+        // cellRenderer: data => {
+        //   return <Link className="icon-[lucide-eye] bg-red-500 w-full h-full absolute" href={`/app/records/${params.id}/invoices/${data.value}`}></Link>;
+        // },
       },
-
       {
-        flex: isMobile ? 0 : 3,
-        field: "description",
+        flex: isMobile ? 0 : 1,
+        field: "id",
+        headerName: "Code",
+        sortable: true,
+        filter: false,
+        // if props.editable is not defined then it will be editable
+        valueFormatter: value => `INV-`,
+      },
+      {
+        flex: isMobile ? 0 : 2,
+        field: "title",
         sortable: true,
         filter: false,
         editable: props?.editable,
       },
-      // amount column
       {
         flex: isMobile ? 0 : 1,
         filter: false,
@@ -75,9 +88,21 @@ export default function RecordTable(props: { editable?: boolean }) {
     [props.editable]
   );
 
-  if (invoices.length === 0) {
+  if (isLoading) {
+    <Empty className="w-full">
+      <EmptyHeader>
+        <EmptyMedia variant="icon">
+          <Spinner />
+        </EmptyMedia>
+        <EmptyTitle>Loading Invoices ...</EmptyTitle>
+        <EmptyDescription>Please wait while we process your request. Do not refresh the page.</EmptyDescription>
+      </EmptyHeader>
+    </Empty>;
+  }
+
+  if (invoices && invoices.length === 0) {
     return (
-      <Empty >
+      <Empty>
         <EmptyHeader>
           <EmptyMedia variant="icon">
             <svg className="icon-[hugeicons--add-invoice]" />
@@ -87,7 +112,9 @@ export default function RecordTable(props: { editable?: boolean }) {
         </EmptyHeader>
         <EmptyContent>
           <div className="flex gap-2">
-            <Button>Create Invoice</Button>
+            <CreateInvoiceDialog>
+              <Button>Create Invoice</Button>
+            </CreateInvoiceDialog>
             <Button variant="outline">Import Invoice</Button>
           </div>
         </EmptyContent>
@@ -101,7 +128,7 @@ export default function RecordTable(props: { editable?: boolean }) {
   }
 
   return (
-    <div className="flex-1">
+    <div className="flex flex-col flex-1">
       <div className="flex gap-2 p-2">
         <Button>Add</Button>
         <Button variant={"secondary"} disabled>
@@ -111,7 +138,7 @@ export default function RecordTable(props: { editable?: boolean }) {
           Delete
         </Button>
       </div>
-      <AgGridReact className="h-full" theme={tableTheme} rowData={invoices} columnDefs={colDefs} />
+      <AgGridReact suppressMovableColumns className="flex-1" theme={tableTheme} rowData={invoices} columnDefs={colDefs} rowSelection="single" suppressCellFocus />
     </div>
   );
 }

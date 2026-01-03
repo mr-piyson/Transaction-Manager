@@ -12,7 +12,7 @@ export const GET = async (req: NextRequest, ctx: RouteContext<"/api/records">) =
   }
 };
 
-export const POST = async (req: NextRequest, ctx: { params: {} }) => {
+export const POST = async (req: NextRequest) => {
   try {
     const formData = await req.formData();
     const name = formData.get("name") as string | null;

@@ -249,8 +249,6 @@ export type UsersWhereInput = {
   locale?: Prisma.StringNullableFilter<"Users"> | string | null
   hashedPassword?: Prisma.StringFilter<"Users"> | string
   tokens?: Prisma.TokensListRelationFilter
-  invoiceViewers?: Prisma.InvoiceViewersListRelationFilter
-  invoiceEditors?: Prisma.InvoiceEditorsListRelationFilter
 }
 
 export type UsersOrderByWithRelationInput = {
@@ -264,8 +262,6 @@ export type UsersOrderByWithRelationInput = {
   locale?: Prisma.SortOrderInput | Prisma.SortOrder
   hashedPassword?: Prisma.SortOrder
   tokens?: Prisma.TokensOrderByRelationAggregateInput
-  invoiceViewers?: Prisma.InvoiceViewersOrderByRelationAggregateInput
-  invoiceEditors?: Prisma.InvoiceEditorsOrderByRelationAggregateInput
 }
 
 export type UsersWhereUniqueInput = Prisma.AtLeast<{
@@ -282,8 +278,6 @@ export type UsersWhereUniqueInput = Prisma.AtLeast<{
   locale?: Prisma.StringNullableFilter<"Users"> | string | null
   hashedPassword?: Prisma.StringFilter<"Users"> | string
   tokens?: Prisma.TokensListRelationFilter
-  invoiceViewers?: Prisma.InvoiceViewersListRelationFilter
-  invoiceEditors?: Prisma.InvoiceEditorsListRelationFilter
 }, "id" | "email">
 
 export type UsersOrderByWithAggregationInput = {
@@ -328,8 +322,6 @@ export type UsersCreateInput = {
   locale?: string | null
   hashedPassword: string
   tokens?: Prisma.TokensCreateNestedManyWithoutUsersInput
-  invoiceViewers?: Prisma.InvoiceViewersCreateNestedManyWithoutUserInput
-  invoiceEditors?: Prisma.InvoiceEditorsCreateNestedManyWithoutUserInput
 }
 
 export type UsersUncheckedCreateInput = {
@@ -343,8 +335,6 @@ export type UsersUncheckedCreateInput = {
   locale?: string | null
   hashedPassword: string
   tokens?: Prisma.TokensUncheckedCreateNestedManyWithoutUsersInput
-  invoiceViewers?: Prisma.InvoiceViewersUncheckedCreateNestedManyWithoutUserInput
-  invoiceEditors?: Prisma.InvoiceEditorsUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UsersUpdateInput = {
@@ -357,8 +347,6 @@ export type UsersUpdateInput = {
   locale?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   hashedPassword?: Prisma.StringFieldUpdateOperationsInput | string
   tokens?: Prisma.TokensUpdateManyWithoutUsersNestedInput
-  invoiceViewers?: Prisma.InvoiceViewersUpdateManyWithoutUserNestedInput
-  invoiceEditors?: Prisma.InvoiceEditorsUpdateManyWithoutUserNestedInput
 }
 
 export type UsersUncheckedUpdateInput = {
@@ -372,8 +360,6 @@ export type UsersUncheckedUpdateInput = {
   locale?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   hashedPassword?: Prisma.StringFieldUpdateOperationsInput | string
   tokens?: Prisma.TokensUncheckedUpdateManyWithoutUsersNestedInput
-  invoiceViewers?: Prisma.InvoiceViewersUncheckedUpdateManyWithoutUserNestedInput
-  invoiceEditors?: Prisma.InvoiceEditorsUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UsersCreateManyInput = {
@@ -460,11 +446,6 @@ export type UsersNullableScalarRelationFilter = {
   isNot?: Prisma.UsersWhereInput | null
 }
 
-export type UsersScalarRelationFilter = {
-  is?: Prisma.UsersWhereInput
-  isNot?: Prisma.UsersWhereInput
-}
-
 export type StringFieldUpdateOperationsInput = {
   set?: string
 }
@@ -505,34 +486,6 @@ export type UsersUpdateOneWithoutTokensNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.UsersUpdateToOneWithWhereWithoutTokensInput, Prisma.UsersUpdateWithoutTokensInput>, Prisma.UsersUncheckedUpdateWithoutTokensInput>
 }
 
-export type UsersCreateNestedOneWithoutInvoiceViewersInput = {
-  create?: Prisma.XOR<Prisma.UsersCreateWithoutInvoiceViewersInput, Prisma.UsersUncheckedCreateWithoutInvoiceViewersInput>
-  connectOrCreate?: Prisma.UsersCreateOrConnectWithoutInvoiceViewersInput
-  connect?: Prisma.UsersWhereUniqueInput
-}
-
-export type UsersUpdateOneRequiredWithoutInvoiceViewersNestedInput = {
-  create?: Prisma.XOR<Prisma.UsersCreateWithoutInvoiceViewersInput, Prisma.UsersUncheckedCreateWithoutInvoiceViewersInput>
-  connectOrCreate?: Prisma.UsersCreateOrConnectWithoutInvoiceViewersInput
-  upsert?: Prisma.UsersUpsertWithoutInvoiceViewersInput
-  connect?: Prisma.UsersWhereUniqueInput
-  update?: Prisma.XOR<Prisma.XOR<Prisma.UsersUpdateToOneWithWhereWithoutInvoiceViewersInput, Prisma.UsersUpdateWithoutInvoiceViewersInput>, Prisma.UsersUncheckedUpdateWithoutInvoiceViewersInput>
-}
-
-export type UsersCreateNestedOneWithoutInvoiceEditorsInput = {
-  create?: Prisma.XOR<Prisma.UsersCreateWithoutInvoiceEditorsInput, Prisma.UsersUncheckedCreateWithoutInvoiceEditorsInput>
-  connectOrCreate?: Prisma.UsersCreateOrConnectWithoutInvoiceEditorsInput
-  connect?: Prisma.UsersWhereUniqueInput
-}
-
-export type UsersUpdateOneRequiredWithoutInvoiceEditorsNestedInput = {
-  create?: Prisma.XOR<Prisma.UsersCreateWithoutInvoiceEditorsInput, Prisma.UsersUncheckedCreateWithoutInvoiceEditorsInput>
-  connectOrCreate?: Prisma.UsersCreateOrConnectWithoutInvoiceEditorsInput
-  upsert?: Prisma.UsersUpsertWithoutInvoiceEditorsInput
-  connect?: Prisma.UsersWhereUniqueInput
-  update?: Prisma.XOR<Prisma.XOR<Prisma.UsersUpdateToOneWithWhereWithoutInvoiceEditorsInput, Prisma.UsersUpdateWithoutInvoiceEditorsInput>, Prisma.UsersUncheckedUpdateWithoutInvoiceEditorsInput>
-}
-
 export type UsersCreateWithoutTokensInput = {
   name: string
   email: string
@@ -542,8 +495,6 @@ export type UsersCreateWithoutTokensInput = {
   updatedAt?: Date | string | null
   locale?: string | null
   hashedPassword: string
-  invoiceViewers?: Prisma.InvoiceViewersCreateNestedManyWithoutUserInput
-  invoiceEditors?: Prisma.InvoiceEditorsCreateNestedManyWithoutUserInput
 }
 
 export type UsersUncheckedCreateWithoutTokensInput = {
@@ -556,8 +507,6 @@ export type UsersUncheckedCreateWithoutTokensInput = {
   updatedAt?: Date | string | null
   locale?: string | null
   hashedPassword: string
-  invoiceViewers?: Prisma.InvoiceViewersUncheckedCreateNestedManyWithoutUserInput
-  invoiceEditors?: Prisma.InvoiceEditorsUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UsersCreateOrConnectWithoutTokensInput = {
@@ -585,8 +534,6 @@ export type UsersUpdateWithoutTokensInput = {
   updatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   locale?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   hashedPassword?: Prisma.StringFieldUpdateOperationsInput | string
-  invoiceViewers?: Prisma.InvoiceViewersUpdateManyWithoutUserNestedInput
-  invoiceEditors?: Prisma.InvoiceEditorsUpdateManyWithoutUserNestedInput
 }
 
 export type UsersUncheckedUpdateWithoutTokensInput = {
@@ -599,148 +546,6 @@ export type UsersUncheckedUpdateWithoutTokensInput = {
   updatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   locale?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   hashedPassword?: Prisma.StringFieldUpdateOperationsInput | string
-  invoiceViewers?: Prisma.InvoiceViewersUncheckedUpdateManyWithoutUserNestedInput
-  invoiceEditors?: Prisma.InvoiceEditorsUncheckedUpdateManyWithoutUserNestedInput
-}
-
-export type UsersCreateWithoutInvoiceViewersInput = {
-  name: string
-  email: string
-  emailVerified?: boolean | null
-  image?: string | null
-  createdAt?: Date | string | null
-  updatedAt?: Date | string | null
-  locale?: string | null
-  hashedPassword: string
-  tokens?: Prisma.TokensCreateNestedManyWithoutUsersInput
-  invoiceEditors?: Prisma.InvoiceEditorsCreateNestedManyWithoutUserInput
-}
-
-export type UsersUncheckedCreateWithoutInvoiceViewersInput = {
-  id?: number
-  name: string
-  email: string
-  emailVerified?: boolean | null
-  image?: string | null
-  createdAt?: Date | string | null
-  updatedAt?: Date | string | null
-  locale?: string | null
-  hashedPassword: string
-  tokens?: Prisma.TokensUncheckedCreateNestedManyWithoutUsersInput
-  invoiceEditors?: Prisma.InvoiceEditorsUncheckedCreateNestedManyWithoutUserInput
-}
-
-export type UsersCreateOrConnectWithoutInvoiceViewersInput = {
-  where: Prisma.UsersWhereUniqueInput
-  create: Prisma.XOR<Prisma.UsersCreateWithoutInvoiceViewersInput, Prisma.UsersUncheckedCreateWithoutInvoiceViewersInput>
-}
-
-export type UsersUpsertWithoutInvoiceViewersInput = {
-  update: Prisma.XOR<Prisma.UsersUpdateWithoutInvoiceViewersInput, Prisma.UsersUncheckedUpdateWithoutInvoiceViewersInput>
-  create: Prisma.XOR<Prisma.UsersCreateWithoutInvoiceViewersInput, Prisma.UsersUncheckedCreateWithoutInvoiceViewersInput>
-  where?: Prisma.UsersWhereInput
-}
-
-export type UsersUpdateToOneWithWhereWithoutInvoiceViewersInput = {
-  where?: Prisma.UsersWhereInput
-  data: Prisma.XOR<Prisma.UsersUpdateWithoutInvoiceViewersInput, Prisma.UsersUncheckedUpdateWithoutInvoiceViewersInput>
-}
-
-export type UsersUpdateWithoutInvoiceViewersInput = {
-  name?: Prisma.StringFieldUpdateOperationsInput | string
-  email?: Prisma.StringFieldUpdateOperationsInput | string
-  emailVerified?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
-  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  createdAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  updatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  locale?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  hashedPassword?: Prisma.StringFieldUpdateOperationsInput | string
-  tokens?: Prisma.TokensUpdateManyWithoutUsersNestedInput
-  invoiceEditors?: Prisma.InvoiceEditorsUpdateManyWithoutUserNestedInput
-}
-
-export type UsersUncheckedUpdateWithoutInvoiceViewersInput = {
-  id?: Prisma.IntFieldUpdateOperationsInput | number
-  name?: Prisma.StringFieldUpdateOperationsInput | string
-  email?: Prisma.StringFieldUpdateOperationsInput | string
-  emailVerified?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
-  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  createdAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  updatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  locale?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  hashedPassword?: Prisma.StringFieldUpdateOperationsInput | string
-  tokens?: Prisma.TokensUncheckedUpdateManyWithoutUsersNestedInput
-  invoiceEditors?: Prisma.InvoiceEditorsUncheckedUpdateManyWithoutUserNestedInput
-}
-
-export type UsersCreateWithoutInvoiceEditorsInput = {
-  name: string
-  email: string
-  emailVerified?: boolean | null
-  image?: string | null
-  createdAt?: Date | string | null
-  updatedAt?: Date | string | null
-  locale?: string | null
-  hashedPassword: string
-  tokens?: Prisma.TokensCreateNestedManyWithoutUsersInput
-  invoiceViewers?: Prisma.InvoiceViewersCreateNestedManyWithoutUserInput
-}
-
-export type UsersUncheckedCreateWithoutInvoiceEditorsInput = {
-  id?: number
-  name: string
-  email: string
-  emailVerified?: boolean | null
-  image?: string | null
-  createdAt?: Date | string | null
-  updatedAt?: Date | string | null
-  locale?: string | null
-  hashedPassword: string
-  tokens?: Prisma.TokensUncheckedCreateNestedManyWithoutUsersInput
-  invoiceViewers?: Prisma.InvoiceViewersUncheckedCreateNestedManyWithoutUserInput
-}
-
-export type UsersCreateOrConnectWithoutInvoiceEditorsInput = {
-  where: Prisma.UsersWhereUniqueInput
-  create: Prisma.XOR<Prisma.UsersCreateWithoutInvoiceEditorsInput, Prisma.UsersUncheckedCreateWithoutInvoiceEditorsInput>
-}
-
-export type UsersUpsertWithoutInvoiceEditorsInput = {
-  update: Prisma.XOR<Prisma.UsersUpdateWithoutInvoiceEditorsInput, Prisma.UsersUncheckedUpdateWithoutInvoiceEditorsInput>
-  create: Prisma.XOR<Prisma.UsersCreateWithoutInvoiceEditorsInput, Prisma.UsersUncheckedCreateWithoutInvoiceEditorsInput>
-  where?: Prisma.UsersWhereInput
-}
-
-export type UsersUpdateToOneWithWhereWithoutInvoiceEditorsInput = {
-  where?: Prisma.UsersWhereInput
-  data: Prisma.XOR<Prisma.UsersUpdateWithoutInvoiceEditorsInput, Prisma.UsersUncheckedUpdateWithoutInvoiceEditorsInput>
-}
-
-export type UsersUpdateWithoutInvoiceEditorsInput = {
-  name?: Prisma.StringFieldUpdateOperationsInput | string
-  email?: Prisma.StringFieldUpdateOperationsInput | string
-  emailVerified?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
-  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  createdAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  updatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  locale?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  hashedPassword?: Prisma.StringFieldUpdateOperationsInput | string
-  tokens?: Prisma.TokensUpdateManyWithoutUsersNestedInput
-  invoiceViewers?: Prisma.InvoiceViewersUpdateManyWithoutUserNestedInput
-}
-
-export type UsersUncheckedUpdateWithoutInvoiceEditorsInput = {
-  id?: Prisma.IntFieldUpdateOperationsInput | number
-  name?: Prisma.StringFieldUpdateOperationsInput | string
-  email?: Prisma.StringFieldUpdateOperationsInput | string
-  emailVerified?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
-  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  createdAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  updatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  locale?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  hashedPassword?: Prisma.StringFieldUpdateOperationsInput | string
-  tokens?: Prisma.TokensUncheckedUpdateManyWithoutUsersNestedInput
-  invoiceViewers?: Prisma.InvoiceViewersUncheckedUpdateManyWithoutUserNestedInput
 }
 
 
@@ -750,14 +555,10 @@ export type UsersUncheckedUpdateWithoutInvoiceEditorsInput = {
 
 export type UsersCountOutputType = {
   tokens: number
-  invoiceViewers: number
-  invoiceEditors: number
 }
 
 export type UsersCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   tokens?: boolean | UsersCountOutputTypeCountTokensArgs
-  invoiceViewers?: boolean | UsersCountOutputTypeCountInvoiceViewersArgs
-  invoiceEditors?: boolean | UsersCountOutputTypeCountInvoiceEditorsArgs
 }
 
 /**
@@ -777,20 +578,6 @@ export type UsersCountOutputTypeCountTokensArgs<ExtArgs extends runtime.Types.Ex
   where?: Prisma.TokensWhereInput
 }
 
-/**
- * UsersCountOutputType without action
- */
-export type UsersCountOutputTypeCountInvoiceViewersArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  where?: Prisma.InvoiceViewersWhereInput
-}
-
-/**
- * UsersCountOutputType without action
- */
-export type UsersCountOutputTypeCountInvoiceEditorsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  where?: Prisma.InvoiceEditorsWhereInput
-}
-
 
 export type UsersSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -803,8 +590,6 @@ export type UsersSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   locale?: boolean
   hashedPassword?: boolean
   tokens?: boolean | Prisma.Users$tokensArgs<ExtArgs>
-  invoiceViewers?: boolean | Prisma.Users$invoiceViewersArgs<ExtArgs>
-  invoiceEditors?: boolean | Prisma.Users$invoiceEditorsArgs<ExtArgs>
   _count?: boolean | Prisma.UsersCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["users"]>
 
@@ -847,8 +632,6 @@ export type UsersSelectScalar = {
 export type UsersOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "email" | "emailVerified" | "image" | "createdAt" | "updatedAt" | "locale" | "hashedPassword", ExtArgs["result"]["users"]>
 export type UsersInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   tokens?: boolean | Prisma.Users$tokensArgs<ExtArgs>
-  invoiceViewers?: boolean | Prisma.Users$invoiceViewersArgs<ExtArgs>
-  invoiceEditors?: boolean | Prisma.Users$invoiceEditorsArgs<ExtArgs>
   _count?: boolean | Prisma.UsersCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type UsersIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
@@ -858,8 +641,6 @@ export type $UsersPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   name: "Users"
   objects: {
     tokens: Prisma.$TokensPayload<ExtArgs>[]
-    invoiceViewers: Prisma.$InvoiceViewersPayload<ExtArgs>[]
-    invoiceEditors: Prisma.$InvoiceEditorsPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: number
@@ -1266,8 +1047,6 @@ readonly fields: UsersFieldRefs;
 export interface Prisma__UsersClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
   tokens<T extends Prisma.Users$tokensArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Users$tokensArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$TokensPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-  invoiceViewers<T extends Prisma.Users$invoiceViewersArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Users$invoiceViewersArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$InvoiceViewersPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-  invoiceEditors<T extends Prisma.Users$invoiceEditorsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Users$invoiceEditorsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$InvoiceEditorsPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1713,54 +1492,6 @@ export type Users$tokensArgs<ExtArgs extends runtime.Types.Extensions.InternalAr
   take?: number
   skip?: number
   distinct?: Prisma.TokensScalarFieldEnum | Prisma.TokensScalarFieldEnum[]
-}
-
-/**
- * Users.invoiceViewers
- */
-export type Users$invoiceViewersArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  /**
-   * Select specific fields to fetch from the InvoiceViewers
-   */
-  select?: Prisma.InvoiceViewersSelect<ExtArgs> | null
-  /**
-   * Omit specific fields from the InvoiceViewers
-   */
-  omit?: Prisma.InvoiceViewersOmit<ExtArgs> | null
-  /**
-   * Choose, which related nodes to fetch as well
-   */
-  include?: Prisma.InvoiceViewersInclude<ExtArgs> | null
-  where?: Prisma.InvoiceViewersWhereInput
-  orderBy?: Prisma.InvoiceViewersOrderByWithRelationInput | Prisma.InvoiceViewersOrderByWithRelationInput[]
-  cursor?: Prisma.InvoiceViewersWhereUniqueInput
-  take?: number
-  skip?: number
-  distinct?: Prisma.InvoiceViewersScalarFieldEnum | Prisma.InvoiceViewersScalarFieldEnum[]
-}
-
-/**
- * Users.invoiceEditors
- */
-export type Users$invoiceEditorsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  /**
-   * Select specific fields to fetch from the InvoiceEditors
-   */
-  select?: Prisma.InvoiceEditorsSelect<ExtArgs> | null
-  /**
-   * Omit specific fields from the InvoiceEditors
-   */
-  omit?: Prisma.InvoiceEditorsOmit<ExtArgs> | null
-  /**
-   * Choose, which related nodes to fetch as well
-   */
-  include?: Prisma.InvoiceEditorsInclude<ExtArgs> | null
-  where?: Prisma.InvoiceEditorsWhereInput
-  orderBy?: Prisma.InvoiceEditorsOrderByWithRelationInput | Prisma.InvoiceEditorsOrderByWithRelationInput[]
-  cursor?: Prisma.InvoiceEditorsWhereUniqueInput
-  take?: number
-  skip?: number
-  distinct?: Prisma.InvoiceEditorsScalarFieldEnum | Prisma.InvoiceEditorsScalarFieldEnum[]
 }
 
 /**
