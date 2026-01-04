@@ -81,4 +81,4 @@ export function getTopLevel(selector?: (allRoutes: typeof routes) => RouteConfig
   }));
 }
 
-export const sidebarRoutes: AppRoute[] = [routes.customers, routes.assets];
+export const sidebarRoutes: AppRoute[] = [routes.customers];
