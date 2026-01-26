@@ -1,7 +1,7 @@
+import { Auth } from "@/controllers/Auth";
 import db from "@/lib/database";
 import { NextRequest, NextResponse } from "next/server";
 import z from "zod";
-import { Auth } from "../../../../../models/Auth";
 
 export const GET = async (req: NextRequest, ctx: RouteContext<"/api/records/[recordId]">) => {
   try {
@@ -32,7 +32,6 @@ export const POST = async (req: NextRequest) => {
     // POST logic here
     const user = await Auth.getCurrentUser();
     const formData = await req.formData();
-    console.log(formData);
     const description = formData.get("description");
     const recordId = formData.get("recordId");
     const date = formData.get("date");

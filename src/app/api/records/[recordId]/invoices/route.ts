@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { Auth } from "../../../../../../models/Auth";
 import db from "@/lib/database";
+import { Auth } from "@/controllers/Auth";
 
 export async function GET(req: NextRequest, ctx: RouteContext<"/api/records/[recordId]/invoices">) {
   try {

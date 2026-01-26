@@ -27,7 +27,7 @@ export default function CreateCustomerDialog(props: any) {
         description: "Successfully create a customer",
       });
       queryClient.refetchQueries({
-        queryKey: ["customers"],
+        queryKey: ["records"],
       });
 
       setOpen(false);

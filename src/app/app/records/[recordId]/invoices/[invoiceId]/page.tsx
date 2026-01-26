@@ -5,36 +5,38 @@ import { InputGroup, InputGroupInput } from "@/components/ui/input-group";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus, Search } from "lucide-react";
-import useDebounce from "@/hooks/use-debounce";
 import { Transactions } from "@/types/prisma/client";
 import { TransactionList } from "./transaction-list";
 import { Button } from "@/components/ui/button";
 import NewTransactionDialog from "./new-transaction-dialog";
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
+import { useParams } from "next/navigation";
 
 export default function TransactionPage() {
   const [editingTransaction, setEditingTransaction] = useState<Transactions | null>(null);
   const [search, setSearch] = useState("");
   const [typeFilter, setTypeFilter] = useState<string>("all");
 
-  const debouncedSearch = useDebounce(search, 200);
+  const params = useParams();
+
+  const recordId = useMemo(() => {
+    return params.recordId;
+  }, [params]);
+
+  const invoiceId = useMemo(() => {
+    return params.invoiceId;
+  }, [params]);
 
   const { data: transactions } = useQuery<Transactions[]>({
     queryKey: ["invoices"],
-    queryFn: async () => await axios.get(`/api/records/${""}/invoices/${""}`),
+    queryFn: async () => await axios.get(`/api/records/${recordId}/invoices/${invoiceId}`),
   });
 
   return (
-    <div className="flex h-full flex-col bg-background">
+    <div className="relative flex h-full flex-col bg-background">
       {/* Header */}
       <header className="border-b border-border bg-card shadow-sm">
-        <NewTransactionDialog>
-          <Button>
-            <Plus />
-            Add new Transaction
-          </Button>
-        </NewTransactionDialog>
         <div className="flex items-center gap-3 p-2">
           <InputGroup className="flex-1 w-full bg-background">
             <Label>
@@ -57,6 +59,12 @@ export default function TransactionPage() {
       </header>
 
       <TransactionList transactions={transactions} onEdit={setEditingTransaction} />
+      <NewTransactionDialog>
+        <Button className="w-full ">
+          <Plus />
+          Add new Transaction
+        </Button>
+      </NewTransactionDialog>
     </div>
   );
 }
