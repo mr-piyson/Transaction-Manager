@@ -8,7 +8,6 @@ import { revalidatePath } from "next/cache";
 import { ServerTranslator } from "./i18n-classes";
 import db from "../database";
 import z from "zod";
-import { getCurrentUser } from "../auth/auth-server";
 
 export async function getLocaleFromCookie(): Promise<Locale> {
   const cookieStore = await cookies();
@@ -74,12 +73,12 @@ export async function setLocaleAction(locale: Locale): Promise<{ success: boolea
 
     // Set cookie
     await setLocaleCookie(locale);
-    const user = await getCurrentUser();
+    // const user = await Auth.getCurrentUser();
 
     // Optional: Save to database
-    if (user?.userId) {
-      await saveLocaleToDatabase(user.userId, locale);
-    }
+    // if (user?.userId) {
+    //   await saveLocaleToDatabase(user.userId, locale);
+    // }
 
     // Revalidate all paths to apply new locale
     revalidatePath("/", "layout");

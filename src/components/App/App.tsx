@@ -27,9 +27,9 @@ import { ChevronsUpDown, LogOut, Moon, Settings } from "lucide-react";
 import { Toolbar } from "./Toolbar";
 import { AppSidebar } from "./Sidebar";
 import { useTheme } from "next-themes";
-import { signOut } from "@/lib/auth/auth-server";
 import { useI18n } from "@/hooks/use-i18n";
 import { LANGUAGE_CONFIG, Locale } from "@/lib/i18n/i18n-core";
+import axios from "axios";
 
 // Create QueryClient instance outside component to prevent recreation
 export const queryClient = new QueryClient({
@@ -77,7 +77,7 @@ export const UserMenu = memo(function UserMenu() {
       image: "",
       role: "admin",
     }),
-    []
+    [],
   );
 
   // Memoize avatar fallback
@@ -91,7 +91,11 @@ export const UserMenu = memo(function UserMenu() {
   // Memoize sign out handler
   const handleSignOut = useCallback(async () => {
     try {
-      await signOut();
+      const { data } = await axios.delete("/api/auth");
+      if (data.success) {
+        router.push("/auth");
+        router.refresh();
+      }
     } catch (error) {
       console.error("Sign out failed:", error);
     }
@@ -102,7 +106,7 @@ export const UserMenu = memo(function UserMenu() {
     (newLocale: Locale) => {
       setLocale(newLocale);
     },
-    [setLocale]
+    [setLocale],
   );
 
   return (

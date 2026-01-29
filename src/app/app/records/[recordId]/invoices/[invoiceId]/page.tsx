@@ -57,7 +57,7 @@ export default function TransactionPage() {
           </Select>
         </div>
       </header>
-
+      
       <TransactionList transactions={transactions} onEdit={setEditingTransaction} />
       <NewTransactionDialog>
         <Button className="w-full ">

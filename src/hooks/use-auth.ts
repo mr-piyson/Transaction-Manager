@@ -1,66 +1,83 @@
-// src/hooks/useAuth.ts
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useTransition } from "react";
+import { useState } from "react";
 import type { SignInSchema } from "@/components/Auth/SignIn";
 import type { SignUpSchema } from "@/components/Auth/SignUp";
 import type { z } from "zod";
-import { signIn, signOut, signUp } from "@/lib/auth/auth-server";
 import { toast } from "sonner";
+import axios from "axios";
 
 export function useAuth() {
   const router = useRouter();
-  const [isPending, startTransition] = useTransition();
+  const [isLoading, setLoading] = useState(false);
 
   const handleSignIn = async (data: z.infer<typeof SignInSchema>) => {
-    const result = await signIn(data);
+    try {
+      setLoading(true);
+      const { data: result, status } = await axios.post("/api/auth", data);
+      console.log(result);
 
-    if (result.success) {
-      toast.success("Signed in successfully!");
-      startTransition(() => {
+      if (status === 200) {
+        toast.success("Signed in successfully!");
         router.push("/app");
         router.refresh();
-      });
-    }
+      } else if (status !== 200) {
+        toast.error(result.error);
+      }
 
-    if (result.error) {
-      toast.error(result.error);
+      return result;
+    } catch (error) {
+      const errorMessage = axios.isAxiosError(error) ? error.response?.data?.error || "Failed to sign in" : "An unexpected error occurred";
+      toast.error(errorMessage);
+      return { success: false, error: errorMessage };
+    } finally {
+      setLoading(false);
     }
-
-    return result;
   };
 
   const handleSignUp = async (data: z.infer<typeof SignUpSchema>) => {
-    const result = await signUp(data);
+    try {
+      setLoading(true);
+      const res = await axios.put("/api/auth", data).then(res => res.data);
 
-    if (result.success) {
-      toast.success("Account created successfully!");
-      startTransition(() => {
+      if (res.status === 200) {
+        toast.success("Account created successfully!");
         router.push("/app");
         router.refresh();
-      });
-    }
-    if (result.error) {
-      toast.error(result.error);
-    }
+      } else if (res.error) {
+        toast.error(res.error);
+      }
 
-    return result;
+      return res;
+    } catch (error) {
+      const errorMessage = axios.isAxiosError(error) ? error.response?.data?.error || "Failed to create account" : "An unexpected error occurred";
+      toast.error(errorMessage);
+      return { success: false, error: errorMessage };
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleSignOut = async () => {
-    startTransition(async () => {
-      await signOut();
+    try {
+      setLoading(true);
+      await axios.delete("/api/auth");
       toast.success("Signed out successfully!");
       router.push("/auth");
       router.refresh();
-    });
+    } catch (error) {
+      const errorMessage = axios.isAxiosError(error) ? error.response?.data?.error || "Failed to sign out" : "An unexpected error occurred";
+      toast.error(errorMessage);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return {
     signIn: handleSignIn,
     signUp: handleSignUp,
     signOut: handleSignOut,
-    isPending,
+    isLoading,
   };
 }

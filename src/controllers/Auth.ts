@@ -210,7 +210,7 @@ export class Auth {
   /**
    * Logout user and revoke current session token
    */
-  static async logout(): Promise<AuthResult> {
+  static async signOut(): Promise<AuthResult> {
     try {
       const cookieStore = await cookies();
       const refreshToken = cookieStore.get("refresh_token")?.value;
@@ -373,17 +373,6 @@ export class Auth {
       console.error("Get current user error:", error);
       return null;
     }
-  }
-
-  /**
-   * Require authentication - throws if not authenticated
-   */
-  static async requireAuth(): Promise<TokenPayload> {
-    const user = await this.getCurrentUser();
-    if (!user) {
-      throw new Error("Unauthorized");
-    }
-    return user;
   }
 
   /**

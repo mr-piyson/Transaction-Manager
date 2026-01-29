@@ -34,7 +34,7 @@ export default function SignUpTab() {
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   // const [loading, setLoading] = useState(false);
-  const { signUp, isPending: loading } = useAuth();
+  const { signUp, isLoading: loading } = useAuth();
 
   const {
     register,

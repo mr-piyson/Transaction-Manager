@@ -5,13 +5,15 @@ import { NextRequest, NextResponse } from "next/server";
 export async function GET(req: NextRequest, ctx: RouteContext<"/api/records/[recordId]/invoices/[invoiceId]">) {
   try {
     const user = await Auth.getCurrentUser();
-    const { recordId } = await ctx.params;
+    const { invoiceId } = await ctx.params;
 
     const transactions = await db.transactions.findFirst({
       where: {
-        recordsId: Number(recordId),
+        recordsId: Number(invoiceId),
       },
     });
+
+    console.log("Fetched transactions:", transactions);
 
     return NextResponse.json(transactions);
   } catch (error) {

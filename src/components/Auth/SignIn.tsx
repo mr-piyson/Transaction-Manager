@@ -16,7 +16,7 @@ export const SignInSchema = z.object({
 });
 
 export default function SignInTab() {
-  const { signIn, isPending: loading } = useAuth();
+  const { signIn, isLoading: loading } = useAuth();
   const form = useForm<z.infer<typeof SignInSchema>>({
     resolver: zodResolver(SignInSchema),
     defaultValues: {
@@ -50,9 +50,7 @@ export default function SignInTab() {
                   <FormMessage>{form.formState.errors.email?.message}</FormMessage>
                 </FormItem>
               )}
-            >
-              
-            </FormField>
+            ></FormField>
             <FormField
               control={form.control}
               name="password"
@@ -69,7 +67,7 @@ export default function SignInTab() {
           </CardContent>
           <CardFooter className="mt-5">
             <Button disabled={loading} type="submit" className="w-full font-bold">
-              {loading && <Spinner className="ps-2 h-4 w-4" />}
+              {loading && <Spinner />}
               {!loading && "Sign In"}
             </Button>
           </CardFooter>
