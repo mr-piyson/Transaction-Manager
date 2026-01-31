@@ -1,5 +1,5 @@
 "use server";
-import { Auth } from "../../../controllers/Auth";
+import { Auth } from "@controllers/Auth";
 import { redirect } from "next/navigation";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import App from "./App";

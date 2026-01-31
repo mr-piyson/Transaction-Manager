@@ -4,7 +4,9 @@ import { NextRequest, NextResponse } from "next/server";
 export const GET = async (req: NextRequest, ctx: RouteContext<"/api/records">) => {
   try {
     // GET logic here
-    const customers = await db.records.findMany({});
+    const customers = await db.records.findMany({
+      orderBy: { id: "desc" },
+    });
     return NextResponse.json(customers);
   } catch (error) {
     console.error(error);

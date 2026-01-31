@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import db from "@/lib/database";
-import { Auth } from "../../../../../../controllers/Auth";
+import { Auth } from "@controllers/Auth";
 
 export async function GET(req: NextRequest, ctx: RouteContext<"/api/records/[recordId]/invoices">) {
   try {
@@ -11,6 +11,7 @@ export async function GET(req: NextRequest, ctx: RouteContext<"/api/records/[rec
       where: {
         recordsId: Number(recordId),
       },
+      orderBy: { id: "desc" },
     });
     return NextResponse.json(invoices);
   } catch (error) {
