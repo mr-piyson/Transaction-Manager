@@ -1,7 +1,6 @@
 "use client";
 import { ListView } from "@/components/list-view";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
 import { useHeader } from "@/hooks/use-header";
 import { Records } from "@/types/prisma/client";
 import { useQuery } from "@tanstack/react-query";
@@ -33,10 +32,8 @@ export default function RecordsPage(props: RecordsPageProps) {
     header.configureHeader({
       leftContent: (
         <div className="flex h-full w-full items-center gap-4">
-          <Button variant={"ghost"} className="p-1">
-            <ArrowLeft className="size-6" />
-          </Button>
-          <h1 className="text-2xl font-semibold">{`Records`}</h1>
+          <div className="bg-primary w-1 h-8"></div>
+          <h1 className="text-2xl font-semibold pb-1">Records</h1>
         </div>
       ),
     });

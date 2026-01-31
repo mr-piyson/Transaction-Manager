@@ -20,6 +20,7 @@ type RecordPageProps = {
 export default function RecordPage(props: RecordPageProps) {
   const header = useHeader();
   const params = useParams();
+  const router = useRouter();
   const fab = useFab();
 
   const {
@@ -36,7 +37,7 @@ export default function RecordPage(props: RecordPageProps) {
     header.configureHeader({
       leftContent: (
         <div className="flex h-full w-full items-center gap-4">
-          <Button variant={"ghost"} className="p-1">
+          <Button variant={"ghost"} className="p-1" onClick={() => router.back()}>
             <ArrowLeft className="size-6" />
           </Button>
           <h1 className="text-2xl font-semibold">{`Records`}</h1>
