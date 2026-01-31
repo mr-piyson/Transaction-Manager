@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { Plus } from "lucide-react";
 import axios from "axios";
-import { queryClient } from "../App/App";
+import { queryClient } from "@/app/app/App";
 
 export default function CreateCustomerDialog(props: any) {
   const [open, setOpen] = useState(false);

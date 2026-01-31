@@ -1,4 +1,4 @@
-import { Auth } from "@/controllers/Auth";
+import { Auth } from "../../../../controllers/Auth";
 import { NextRequest, NextResponse } from "next/server";
 
 // Sign Out Route Handler

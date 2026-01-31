@@ -1,5 +1,7 @@
-import SettingsLayout from "./[settings]/layout";
+type SettingsPageProps = {
+  children?: React.ReactNode;
+};
 
-export default function SettingsList(props: any) {
-  return <SettingsLayout {...props} />;
+export default function SettingsPage(props: SettingsPageProps) {
+  return <div></div>;
 }

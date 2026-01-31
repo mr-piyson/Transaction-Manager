@@ -8,6 +8,7 @@ export const env = createEnv({
     JWT_SECRET_REFRESH: z.string(),
     ACCESS_TOKEN_EXPIRY: z.string(),
     REFRESH_TOKEN_EXPIRY: z.string(),
+    NODE_ENV: z.enum(["development", "production"]).optional(),
   },
   runtimeEnv: process.env,
   onValidationError: issues => {

@@ -1,31 +1,15 @@
 "use client";
 
 import { usePathname, useRouter } from "next/navigation";
-import { ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
-import {
-  SidebarGroup,
-  SidebarMenu,
-  SidebarMenuItem,
-  SidebarMenuButton,
-  Sidebar,
-  SidebarHeader,
-  SidebarContent,
-  SidebarRail,
-  SidebarGroupLabel,
-  SidebarGroupContent,
-  SidebarMenuSubButton,
-  useSidebar,
-} from "@/components/sidebar";
+import { SidebarGroup, SidebarMenu, SidebarMenuItem, SidebarMenuButton, Sidebar, SidebarHeader, SidebarContent, SidebarRail, useSidebar } from "@/components/sidebar";
 import Logo from "@/components/Logo";
 // import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "../ui/collapsible";
-import { SidebarMenuAction, SidebarMenuSub } from "../ui/sidebar";
 import Link from "next/link";
-import { Route } from "next";
 import { useI18n } from "@/hooks/use-i18n";
-import { getTopLevel, routes, sidebarRoutes } from "@/lib/routes";
+import { sidebarRoutes } from "@/lib/routes";
 import { useEffect, useState } from "react";
-import { Spinner } from "../ui/spinner";
+import { Spinner } from "@/components/ui/spinner";
 
 interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {}
 

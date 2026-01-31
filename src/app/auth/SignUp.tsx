@@ -12,7 +12,7 @@ import { Card, CardContent, CardDescription, CardTitle } from "@/components/ui/c
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/hooks/use-auth";
-import { Spinner } from "../ui/spinner";
+import { Spinner } from "../../components/ui/spinner";
 
 // SIGN UP SCHEMA
 export const SignUpSchema = z

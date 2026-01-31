@@ -59,7 +59,7 @@ export const routes = {
     key: "routes.assets",
     title: "Assets",
     path: "/app/assets",
-    icon: "icon-[solar--devices-outline]",
+    icon: "icon-[streamline-plump--computer-pc-desktop]",
   },
 } as const;
 
@@ -81,4 +81,4 @@ export function getTopLevel(selector?: (allRoutes: typeof routes) => RouteConfig
   }));
 }
 
-export const sidebarRoutes: AppRoute[] = [routes.customers];
+export const sidebarRoutes: AppRoute[] = [routes.customers, routes.assets];

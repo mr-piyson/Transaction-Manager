@@ -2,8 +2,8 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import type { SignInSchema } from "@/components/Auth/SignIn";
-import type { SignUpSchema } from "@/components/Auth/SignUp";
+import type { SignInSchema } from "@/app/auth/SignIn";
+import type { SignUpSchema } from "@/app/auth/SignUp";
 import type { z } from "zod";
 import { toast } from "sonner";
 import axios from "axios";

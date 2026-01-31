@@ -81,7 +81,7 @@ export class Auth {
       const user = await db.users.create({
         data: {
           email: data.email.toLowerCase(),
-          hashedPassword: data.password,
+          hashedPassword: hashedPassword,
           name: data.name,
         },
         select: { id: true, email: true },
@@ -293,6 +293,13 @@ export class Auth {
         }
       }
 
+      // --- DEV MODE BYPASS OPTION ---
+      // If you're in dev and just want to stay logged in regardless of expiry
+      if (env.NODE_ENV === "development" && accessToken) {
+        const decoded = jwt.decode(accessToken) as TokenPayload;
+        if (decoded) return decoded;
+      }
+
       // Try to refresh token
       const refreshToken = cookieStore.get("refresh_token")?.value;
       if (!refreshToken) return null;
@@ -379,6 +386,11 @@ export class Auth {
    * Check if user is authenticated
    */
   static async isAuthenticated(): Promise<boolean> {
+    if (process.env.NODE_ENV === "development") {
+      const cookieStore = await cookies();
+      return cookieStore.has("access_token") || cookieStore.has("refresh_token");
+    }
+
     const user = await this.getCurrentUser();
     return user !== null;
   }

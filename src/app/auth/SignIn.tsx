@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/hooks/use-auth";
-import { Spinner } from "../ui/spinner";
+import { Spinner } from "../../components/ui/spinner";
 
 // SIGN IN & SIGN UP SCHEMAS
 export const SignInSchema = z.object({

@@ -15,7 +15,7 @@ import {
   ContextMenuTrigger,
 } from "@/components/ui/context-menu";
 import { Button } from "../ui/button";
-import { queryClient } from "../App/App";
+import { queryClient } from "@/app/app/App";
 
 export function CustomersContextMenu(props: { id?: number; children?: React.ReactNode }) {
   return (

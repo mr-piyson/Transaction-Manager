@@ -9,9 +9,9 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Calendar } from "@/components/ui/calendar";
 import { useParams } from "next/navigation";
 import axios from "axios";
-import { queryClient } from "@/components/App/App";
 import { toast } from "sonner";
 import { CalendarIcon } from "lucide-react";
+import { queryClient } from "../../App";
 
 /**
  * Dialog component for creating an Invoice

@@ -1,4 +1,4 @@
-import { Auth } from "@/controllers/Auth";
+import { Auth } from "../../../../../../../controllers/Auth";
 import db from "@/lib/database";
 import { NextRequest, NextResponse } from "next/server";
 
