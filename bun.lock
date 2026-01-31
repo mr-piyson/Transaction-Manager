@@ -40,8 +40,9 @@
         "@tanstack/react-query": "^5.90.11",
         "@tanstack/react-table": "^8.21.3",
         "@tanstack/react-virtual": "^3.13.12",
-        "ag-grid-community": "^33.3.2",
-        "ag-grid-react": "^33.3.2",
+        "ag-charts-react": "^13.0.1",
+        "ag-grid-community": "^35.0.1",
+        "ag-grid-react": "^35.0.1",
         "axios": "^1.13.2",
         "bcryptjs": "^3.0.3",
         "class-variance-authority": "^0.7.1",
@@ -511,11 +512,19 @@
 
     "acorn": ["acorn@8.15.0", "", { "bin": { "acorn": "bin/acorn" } }, "sha512-NZyJarBfL7nWwIq+FDL6Zp/yHEhePMNnnJ0y3qfieCrmNvYct8uvtiV41UvlSe6apAfk0fY1FbWx+NwfmpvtTg=="],
 
-    "ag-charts-types": ["ag-charts-types@11.3.2", "", {}, "sha512-trPGqgGYiTeLgtf9nLuztDYOPOFOLbqHn1g2D99phf7QowcwdX0TPx0wfWG8Hm90LjB8IH+G2s3AZe2vrdAtMQ=="],
+    "ag-charts-community": ["ag-charts-community@13.0.1", "", { "dependencies": { "ag-charts-core": "13.0.1", "ag-charts-locale": "13.0.1", "ag-charts-types": "13.0.1" } }, "sha512-N9DSUcpRFIWjXu1g1za18rZdumI1u1bEBuseL+Rh2ldNk/prKCdZifwo4Tsck0jnVDljyXh/G29nbmzmoXmdHQ=="],
 
-    "ag-grid-community": ["ag-grid-community@33.3.2", "", { "dependencies": { "ag-charts-types": "11.3.2" } }, "sha512-9bx0e/+ykOyLvUxHqmdy0cRVANH6JAtv0yZdnBZEXYYqBAwN+G5a4NY+2I1KvoOCYzbk8SnStG7y4hCdVAAWOQ=="],
+    "ag-charts-core": ["ag-charts-core@13.0.1", "", { "dependencies": { "ag-charts-types": "13.0.1" } }, "sha512-z6hqKW22nWoIBQJwcd62Z6nMdBE9uc0VLYVAmNdyHbc5qLkcln2s6zGWOo3Y0QIifdDM1dr4ZXcyVjGHudAVtw=="],
 
-    "ag-grid-react": ["ag-grid-react@33.3.2", "", { "dependencies": { "ag-grid-community": "33.3.2", "prop-types": "^15.8.1" }, "peerDependencies": { "react": "^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0", "react-dom": "^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0" } }, "sha512-5bv4JIJvGov23sduIUIyQTqpa/qhoQrRkQm5pFOQb7RMwusfx6xBPrkLwIIlCJiQ8g0OOinxWzZ2kQ2Zml6tLw=="],
+    "ag-charts-locale": ["ag-charts-locale@13.0.1", "", {}, "sha512-hr2qFe/rQSJVaRWu+Pj9CfbT5Xb7isHqqrW9eOnXFwkkGZTVM1zJai8DyMcrurC9kbRV2e3cf0toQnHkAzsxdg=="],
+
+    "ag-charts-react": ["ag-charts-react@13.0.1", "", { "dependencies": { "ag-charts-community": "13.0.1" }, "peerDependencies": { "react": "^18.0.0 || ^19.0.0" } }, "sha512-ysul7GwwgqErSn53Dex4N96ZSfEwmftEL0Hm6FT7YipHyK+EKTswtqh5gmfSTuNSx7/QebRweWXdlfKTSTZwlw=="],
+
+    "ag-charts-types": ["ag-charts-types@13.0.1", "", {}, "sha512-qg9adyiAaeUaDtWZEEPF45dv55kdJTe6Ghi0EQXCS79h/7KvOd6dxhqGZjPL1zeFl/L9qEXuYgb+LkGStq4mgQ=="],
+
+    "ag-grid-community": ["ag-grid-community@35.0.1", "", { "dependencies": { "ag-charts-types": "13.0.1" } }, "sha512-fYYZdymWKsN9/tZv+R6uZRnuiWYEQr+GHl85ZrB0ixbFcE8opYK4NJI29NnMc9ShYiCBnAO9hj54IFa+FI4aDA=="],
+
+    "ag-grid-react": ["ag-grid-react@35.0.1", "", { "dependencies": { "ag-grid-community": "35.0.1", "prop-types": "^15.8.1" }, "peerDependencies": { "react": "^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0", "react-dom": "^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0" } }, "sha512-NvrrgWUm+DsnsZVFho16srlyBNKSl9nqeSadk63HpHYerq4S4vN/2JCxdNtfqns7SpbYx7GbasbMFCXKYj7Qaw=="],
 
     "aria-hidden": ["aria-hidden@1.2.4", "", { "dependencies": { "tslib": "^2.0.0" } }, "sha512-y+CcFFwelSXpLZk/7fMB2mUbGtX9lKycf1MWJ7CaTIERyitVlyQx6C+sxcROU2BAJ24OiZyK+8wj2i8AlBoS3A=="],
 

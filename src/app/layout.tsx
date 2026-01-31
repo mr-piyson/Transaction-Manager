@@ -37,7 +37,7 @@ export default async function RootLayout(props: any) {
             <ToolbarProvider>{props.children}</ToolbarProvider>
           </I18nProvider>
         </ThemeProvider>
-        <Toaster position="bottom-center" />
+        <Toaster position="top-center" />
       </body>
     </html>
   );

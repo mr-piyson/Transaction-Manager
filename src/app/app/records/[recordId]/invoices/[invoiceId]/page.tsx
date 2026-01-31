@@ -1,22 +1,25 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { InputGroup, InputGroupInput } from "@/components/ui/input-group";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Search } from "lucide-react";
+import { ArrowLeft, Plus, Search } from "lucide-react";
 import { Transactions } from "@/types/prisma/client";
 import { TransactionList } from "./transaction-list";
 import { Button } from "@/components/ui/button";
 import NewTransactionDialog from "./new-transaction-dialog";
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
+import { useHeader } from "@/hooks/use-header";
 
 export default function TransactionPage() {
   const [editingTransaction, setEditingTransaction] = useState<Transactions | null>(null);
   const [search, setSearch] = useState("");
   const [typeFilter, setTypeFilter] = useState<string>("all");
+  const header = useHeader();
+  const router = useRouter();
 
   const params = useParams();
 
@@ -32,6 +35,28 @@ export default function TransactionPage() {
     queryKey: ["invoices"],
     queryFn: async () => await axios.get(`/api/records/${recordId}/invoices/${invoiceId}`),
   });
+
+  useEffect(() => {
+    header.configureHeader({
+      leftContent: (
+        <div className="flex h-full w-full items-center gap-4">
+          <Button
+            variant={"ghost"}
+            className="p-1"
+            onClick={() => {
+              router.back();
+            }}
+          >
+            <ArrowLeft className="size-6" />
+          </Button>
+          <h1 className="text-2xl font-semibold">{`Invoices`}</h1>
+        </div>
+      ),
+    });
+    return () => {
+      header.resetHeader();
+    };
+  }, []);
 
   return (
     <div className="relative flex h-full flex-col bg-background">
@@ -57,7 +82,7 @@ export default function TransactionPage() {
           </Select>
         </div>
       </header>
-      
+
       <TransactionList transactions={transactions} onEdit={setEditingTransaction} />
       <NewTransactionDialog>
         <Button className="w-full ">

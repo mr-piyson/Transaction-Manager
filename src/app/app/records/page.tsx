@@ -1,8 +1,97 @@
 "use client";
-type PageProps = {
+import { ListView } from "@/components/list-view";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+import { useHeader } from "@/hooks/use-header";
+import { Records } from "@/types/prisma/client";
+import { useQuery } from "@tanstack/react-query";
+import axios from "axios";
+import { ArrowLeft, LucideFileText, User2 } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
+
+type RecordsPageProps = {
   children?: React.ReactNode;
 };
 
-export default function Page(props: PageProps) {
-  return <>{props.children}</>;
+export default function RecordsPage(props: RecordsPageProps) {
+  const header = useHeader();
+
+  const {
+    data: records,
+    isLoading,
+    isError,
+  } = useQuery({
+    queryKey: ["records"],
+    queryFn: async () => {
+      const res = await axios.get("/api/records");
+      return res.data;
+    },
+  });
+
+  useEffect(() => {
+    header.configureHeader({
+      leftContent: (
+        <div className="flex h-full w-full items-center gap-4">
+          <Button variant={"ghost"} className="p-1">
+            <ArrowLeft className="size-6" />
+          </Button>
+          <h1 className="text-2xl font-semibold">{`Records`}</h1>
+        </div>
+      ),
+    });
+    return () => {
+      header.resetHeader();
+    };
+  }, []);
+  return (
+    <div className="flex-1 h-full">
+      <ListView<Records>
+        emptyTitle="No Records Found"
+        emptyIcon={<LucideFileText className="size-16 text-muted-foreground" />}
+        emptyDescription={"create new records to get started"}
+        data={records}
+        isLoading={isLoading}
+        isError={isError}
+        itemName="records"
+        useTheme={true}
+        cardRenderer={userCardRenderer}
+        rowHeight={70}
+        searchFields={["name", "phone", "code"]}
+      />
+    </div>
+  );
 }
+
+const userCardRenderer = ({ data }: { data: Records }) => {
+  const router = useRouter();
+  return (
+    <div
+      onClick={() => {
+        router.push(`/app/records/${data.id}`);
+      }}
+      className="flex items-center gap-3 p-3 cursor-pointer transition-colors hover:bg-accent/50 "
+    >
+      <Avatar className="size-10">
+        <AvatarImage src={data.image ?? ""} alt={data.name || "image"} loading="lazy" style={{ transition: "opacity 0.2s" }} />
+        <AvatarFallback>
+          <User2 className="size-6" />
+        </AvatarFallback>
+      </Avatar>
+      <div className="flex-1 min-w-0">
+        <p className="font-semibold truncate">{data.name}</p>
+        <p className="text-sm text-muted-foreground truncate">{data.phone}</p>
+      </div>
+      <div className="text-right text-xs space-y-0.5">
+        <p className="flex items-center justify-end gap-1 text-primary">
+          <svg className="w-3 h-3" />
+          <span className="font-semibold">{data.code}</span>
+        </p>
+        <p className="flex items-center justify-end gap-1 text-muted-foreground">
+          <svg className="w-3 h-3" />
+          {data.createdAt ? new Date(data.createdAt).toLocaleDateString() : "No Date"}
+        </p>
+      </div>
+    </div>
+  );
+};
