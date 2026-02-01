@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./../globals.css";
 import { ThemeProvider } from "@/components/Theme-Provider";
-import { ToolbarProvider } from "@/hooks/use-toolbar";
 import { I18nProvider } from "@/hooks/use-i18n";
 import { getLocale } from "@/lib/i18n/i18n-server";
 import { Toaster } from "@/components/sonner";
@@ -33,9 +32,7 @@ export default async function RootLayout(props: any) {
     <html lang="en" dir={direction} suppressHydrationWarning>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <ThemeProvider attribute={"class"} defaultTheme={"system"} enableSystem={true} storageKey={"theme"}>
-          <I18nProvider initialLocale={locale}>
-            <ToolbarProvider>{props.children}</ToolbarProvider>
-          </I18nProvider>
+          <I18nProvider initialLocale={locale}>{props.children}</I18nProvider>
         </ThemeProvider>
         <Toaster position="top-center" />
       </body>

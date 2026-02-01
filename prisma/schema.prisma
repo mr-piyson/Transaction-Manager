@@ -56,35 +56,44 @@ model Invoices {
   createdById  Int?
   transactions Transactions[]
 
-  records   Records? @relation(fields: [recordsId], references: [id])
-  recordsId Int?
+  customers   Customers? @relation(fields: [customersId], references: [id])
+  customersId Int?
 }
 
 enum InvoiceStatus {
   IN_PROGRESS
   PENDING
   PAID
+  PARTIALLY_PAID
+  CANCELLED
 }
 
 model Transactions {
-  id          Int       @id @default(autoincrement())
-  amount      Float     @default(0)
-  type        String
+  id          Int               @id @default(autoincrement())
+  amount      Float             @default(0)
+  charge      Float?            @default(0)
+  currency    String?
+  discount    Float?            @default(0)
+  type        TransactionStatus @default(PRODUCT)
   description String?
-  date        DateTime  @default(now())
-  qty         Int       @default(1)
+  date        DateTime          @default(now())
+  qty         Int               @default(1)
   tax         Float?
-  recordsId   Int?
-  records     Invoices? @relation(fields: [recordsId], references: [id])
+  invoices    Invoices?         @relation(fields: [invoicesId], references: [id])
+  invoicesId  Int?
 }
 
-model Records {
+enum TransactionStatus {
+  SERVICE
+  PRODUCT
+}
+
+model Customers {
   id        Int        @id @default(autoincrement())
   name      String?
   email     String?
   code      String?
   image     String?
-  status    String?    @default("active")
   phone     String?
   address   String?
   createdAt DateTime?  @default(now())
@@ -92,67 +101,4 @@ model Records {
   deletedAt DateTime?
   deletedBy Int?
   Invoices  Invoices[]
-}
-
-model Stocks {
-  id        Int       @id @default(autoincrement())
-  name      String?
-  quantity  Int?      @default(0)
-  price     Float?    @default(0)
-  revenue   Float?    @default(0)
-  barcode   String?
-  code      String?
-  createdAt DateTime? @default(now())
-  updatedAt DateTime? @updatedAt
-}
-
-model Assets {
-  id        Int       @id @default(autoincrement())
-  name      String?
-  quantity  Int?      @default(0)
-  price     Float?    @default(0)
-  barcode   String?
-  code      String?
-  createdAt DateTime? @default(now())
-  updatedAt DateTime? @updatedAt
-}
-
-model Departments {
-  id        Int         @id @default(autoincrement())
-  name      String
-  employees Employees[]
-}
-
-model Employees {
-  id           Int          @id @default(autoincrement())
-  name         String?
-  role         String?
-  code         String?
-  active       Boolean?     @default(true)
-  designation  String?
-  email        String?      @unique
-  phone        String?
-  address      String?
-  createdAt    DateTime?    @default(now())
-  updatedAt    DateTime?    @updatedAt
-  departments  Departments? @relation(fields: [departmentId], references: [id])
-  departmentId Int?
-}
-
-model Suppliers {
-  id        Int       @id @default(autoincrement())
-  name      String?
-  email     String?   @unique
-  phone     String?   @unique
-  address   String?
-  createdAt DateTime? @default(now())
-  updatedAt DateTime? @updatedAt
-}
-
-model Notifications {
-  id        Int       @id @default(autoincrement())
-  title     String?
-  content   String?
-  createdAt DateTime? @default(now())
-  updatedAt DateTime? @updatedAt
 }
