@@ -23,6 +23,8 @@ export const POST = async (req: NextRequest) => {
     const address = formData.get("address") as string | null;
     const image = formData.get("image") as string | null;
 
+    console.log(formData);
+
     // Optional basic validation
     if (!name) {
       return NextResponse.json({ error: "Name is required" }, { status: 400 });

@@ -11,6 +11,7 @@ import { ArrowLeft, LucideFileText, Plus, User2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import CreateRecordDialog from "./create-record-dialog";
+import { UniversalDialog } from "@/components/dialog";
 
 type RecordsPageProps = {
   children?: React.ReactNode;
@@ -44,11 +45,40 @@ export default function RecordsPage(props: RecordsPageProps) {
     fab.setFabConfig({
       render: () => {
         return (
-          <CreateRecordDialog>
+          <UniversalDialog<Records>
+            title={"Create Record"}
+            fields={[
+              {
+                name: "name",
+                label: "Name",
+                type: "text",
+                required: false,
+              },
+              {
+                name: "phone",
+                label: "Phone",
+                type: "text",
+                required: false,
+              },
+              {
+                name: "email",
+                label: "Email",
+                type: "text",
+                required: false,
+              },
+              {
+                name: "address",
+                label: "Address",
+                type: "text",
+                required: false,
+              },
+            ]}
+            apiEndpoint={"/api/records"}
+          >
             <Button variant="default" size="icon" className="absolute -top-6 left-1/2 -translate-x-1/2 size-14 rounded-full shadow-lg">
               <Plus className="size-7 text-foreground" />
             </Button>
-          </CreateRecordDialog>
+          </UniversalDialog>
         );
       },
     });

@@ -624,40 +624,56 @@ export const UniversalDialog = <T,>({
     mutationFn: async (data: any) => {
       const formData = transformData ? transformData(data) : data;
 
-      // Check if we need to use FormData (for file uploads)
-      const hasFiles = fields.some(field => field.type === "image" || field.type === "file");
+      // ALWAYS create a FormData object to satisfy the server's Content-Type requirement
+      const fd = new FormData();
 
-      let body: any = formData;
-      let headers: HeadersInit = {
-        "Content-Type": "application/json",
-      };
+      Object.keys(formData).forEach(key => {
+        const value = formData[key];
 
-      if (hasFiles) {
-        const fd = new FormData();
-        Object.keys(formData).forEach(key => {
-          const value = formData[key];
-          if (value instanceof File) {
-            fd.append(key, value);
-          } else if (Array.isArray(value) && value[0] instanceof File) {
-            value.forEach(file => fd.append(key, file));
+        // Skip undefined values
+        if (value === undefined || value === null) return;
+
+        if (value instanceof File) {
+          // Handle single file
+          fd.append(key, value);
+        } else if (Array.isArray(value) && value.some(v => v instanceof File)) {
+          // Handle array of files
+          value.forEach(file => {
+            if (file instanceof File) fd.append(key, file);
+          });
+        } else if (Array.isArray(value) || typeof value === "object") {
+          // Handle complex data (arrays/objects) by stringifying them
+          // (This depends on how your backend parses non-file objects in FormData)
+          if (value instanceof Date) {
+            fd.append(key, value.toISOString());
           } else {
             fd.append(key, JSON.stringify(value));
           }
-        });
-        body = fd;
-        headers = {}; // Let browser set Content-Type with boundary
-      } else {
-        body = JSON.stringify(formData);
-      }
+        } else {
+          // Handle primitives (string, number, boolean)
+          fd.append(key, String(value));
+        }
+      });
 
+      // Do NOT set Content-Type header manually.
+      // The browser automatically sets it to "multipart/form-data; boundary=..."
+      // when the body is a FormData instance.
       const response = await fetch(apiEndpoint, {
         method: apiMethod,
-        headers,
-        body: hasFiles ? body : body,
+        body: fd,
       });
 
       if (!response.ok) {
-        throw new Error(`API Error: ${response.statusText}`);
+        // Try to parse error message from server if possible, fallback to statusText
+        let errorMessage = response.statusText;
+        try {
+          const errorData = await response.json();
+          if (errorData.message) errorMessage = errorData.message;
+        } catch (e) {
+          /* ignore json parse error */
+        }
+
+        throw new Error(`API Error: ${errorMessage}`);
       }
 
       return response.json();
