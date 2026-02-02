@@ -12,6 +12,7 @@ import { ArrowLeft, LucideFileText, Plus, User2 } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useMemo } from "react";
 import CreateInvoiceDialog from "./create-invoice-dialog";
+import { UniversalDialog } from "@/components/dialog";
 
 type RecordPageProps = {
   children?: React.ReactNode;

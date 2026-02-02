@@ -21,13 +21,13 @@ export function Header() {
       <div className=" mx-auto px-2 sm:px-6 ">
         <div className="flex h-16 items-center justify-between gap-4">
           {/* Left Section */}
-          <div className="flex items-center gap-4 flex-1">{leftContent}</div>
+          {leftContent && <div className="flex items-center gap-4 flex-1">{leftContent}</div>}
 
           {/* Center Section */}
           {centerContent && <div className="flex items-center justify-center shrink-0">{centerContent}</div>}
 
           {/* Right Section */}
-          <div className="flex items-center gap-4 flex-1 justify-end">{rightContent}</div>
+          {rightContent && <div className="flex items-center gap-4 flex-1 justify-end">{rightContent}</div>}
         </div>
       </div>
     </header>

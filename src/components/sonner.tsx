@@ -21,7 +21,7 @@ const Toaster = ({ ...props }: ToasterProps) => {
       toastOptions={{
         classNames: {
           success: "bg-success! text-white border-green-600",
-          error: "bg-error! text-white border-red-600",
+          error: "bg-destructive-foreground! text-white border-red-600",
           warning: "bg-warning! text-white border-yellow-600",
           info: "bg-primary text-white border-blue-600",
           loading: " text-white border-gray-600",
