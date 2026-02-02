@@ -60,42 +60,12 @@ export type Companies = Prisma.CompaniesModel
  */
 export type Invoices = Prisma.InvoicesModel
 /**
- * Model Transactions
+ * Model InvoiceItems
  * 
  */
-export type Transactions = Prisma.TransactionsModel
+export type InvoiceItems = Prisma.InvoiceItemsModel
 /**
  * Model Records
  * 
  */
 export type Records = Prisma.RecordsModel
-/**
- * Model Stocks
- * 
- */
-export type Stocks = Prisma.StocksModel
-/**
- * Model Assets
- * 
- */
-export type Assets = Prisma.AssetsModel
-/**
- * Model Departments
- * 
- */
-export type Departments = Prisma.DepartmentsModel
-/**
- * Model Employees
- * 
- */
-export type Employees = Prisma.EmployeesModel
-/**
- * Model Suppliers
- * 
- */
-export type Suppliers = Prisma.SuppliersModel
-/**
- * Model Notifications
- * 
- */
-export type Notifications = Prisma.NotificationsModel

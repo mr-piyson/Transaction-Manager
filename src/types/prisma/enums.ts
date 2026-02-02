@@ -12,7 +12,17 @@
 export const InvoiceStatus = {
   IN_PROGRESS: 'IN_PROGRESS',
   PENDING: 'PENDING',
-  PAID: 'PAID'
+  PAID: 'PAID',
+  PARTIALLY_PAID: 'PARTIALLY_PAID',
+  CANCELLED: 'CANCELLED'
 } as const
 
 export type InvoiceStatus = (typeof InvoiceStatus)[keyof typeof InvoiceStatus]
+
+
+export const TransactionStatus = {
+  SERVICE: 'SERVICE',
+  PRODUCT: 'PRODUCT'
+} as const
+
+export type TransactionStatus = (typeof TransactionStatus)[keyof typeof TransactionStatus]

@@ -117,7 +117,7 @@ const invoiceCardRenderer = ({ data: invoice }: { data: Invoices }) => {
 
       <div className="flex-1 min-w-0 space-y-1">
         <div className="flex items-center gap-2">
-          <p className="font-semibold text-sm">{invoice.title || `Invoice #${invoice.id}`}</p>
+          <p className="font-semibold text-sm">{`Invoice #${invoice.id}`}</p>
           <Badge variant={variant}>
             <svg className={icon} />
             {label}
@@ -129,7 +129,7 @@ const invoiceCardRenderer = ({ data: invoice }: { data: Invoices }) => {
       <div className="flex items-center gap-3">
         <div className="text-right">
           <p className="font-semibold text-sm">{invoice.total?.toFixed(3) || "0.000"} BD</p>
-          <p className="font-semibold text-sm text-muted-foreground">{invoice.status}</p>
+          {/* <p className="font-semibold text-sm text-muted-foreground"></p> */}
         </div>
       </div>
     </div>

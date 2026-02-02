@@ -55,14 +55,8 @@ export const ModelName = {
   Tokens: 'Tokens',
   Companies: 'Companies',
   Invoices: 'Invoices',
-  Transactions: 'Transactions',
-  Records: 'Records',
-  Stocks: 'Stocks',
-  Assets: 'Assets',
-  Departments: 'Departments',
-  Employees: 'Employees',
-  Suppliers: 'Suppliers',
-  Notifications: 'Notifications'
+  InvoiceItems: 'InvoiceItems',
+  Records: 'Records'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -135,18 +129,24 @@ export const InvoicesScalarFieldEnum = {
 export type InvoicesScalarFieldEnum = (typeof InvoicesScalarFieldEnum)[keyof typeof InvoicesScalarFieldEnum]
 
 
-export const TransactionsScalarFieldEnum = {
+export const InvoiceItemsScalarFieldEnum = {
   id: 'id',
   amount: 'amount',
+  charge: 'charge',
+  currency: 'currency',
+  discount: 'discount',
   type: 'type',
   description: 'description',
-  date: 'date',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  deletedAt: 'deletedAt',
+  deletedBy: 'deletedBy',
   qty: 'qty',
   tax: 'tax',
-  recordsId: 'recordsId'
+  invoicesId: 'invoicesId'
 } as const
 
-export type TransactionsScalarFieldEnum = (typeof TransactionsScalarFieldEnum)[keyof typeof TransactionsScalarFieldEnum]
+export type InvoiceItemsScalarFieldEnum = (typeof InvoiceItemsScalarFieldEnum)[keyof typeof InvoiceItemsScalarFieldEnum]
 
 
 export const RecordsScalarFieldEnum = {
@@ -155,7 +155,6 @@ export const RecordsScalarFieldEnum = {
   email: 'email',
   code: 'code',
   image: 'image',
-  status: 'status',
   phone: 'phone',
   address: 'address',
   createdAt: 'createdAt',
@@ -165,85 +164,6 @@ export const RecordsScalarFieldEnum = {
 } as const
 
 export type RecordsScalarFieldEnum = (typeof RecordsScalarFieldEnum)[keyof typeof RecordsScalarFieldEnum]
-
-
-export const StocksScalarFieldEnum = {
-  id: 'id',
-  name: 'name',
-  quantity: 'quantity',
-  price: 'price',
-  revenue: 'revenue',
-  barcode: 'barcode',
-  code: 'code',
-  createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
-} as const
-
-export type StocksScalarFieldEnum = (typeof StocksScalarFieldEnum)[keyof typeof StocksScalarFieldEnum]
-
-
-export const AssetsScalarFieldEnum = {
-  id: 'id',
-  name: 'name',
-  quantity: 'quantity',
-  price: 'price',
-  barcode: 'barcode',
-  code: 'code',
-  createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
-} as const
-
-export type AssetsScalarFieldEnum = (typeof AssetsScalarFieldEnum)[keyof typeof AssetsScalarFieldEnum]
-
-
-export const DepartmentsScalarFieldEnum = {
-  id: 'id',
-  name: 'name'
-} as const
-
-export type DepartmentsScalarFieldEnum = (typeof DepartmentsScalarFieldEnum)[keyof typeof DepartmentsScalarFieldEnum]
-
-
-export const EmployeesScalarFieldEnum = {
-  id: 'id',
-  name: 'name',
-  role: 'role',
-  code: 'code',
-  active: 'active',
-  designation: 'designation',
-  email: 'email',
-  phone: 'phone',
-  address: 'address',
-  createdAt: 'createdAt',
-  updatedAt: 'updatedAt',
-  departmentId: 'departmentId'
-} as const
-
-export type EmployeesScalarFieldEnum = (typeof EmployeesScalarFieldEnum)[keyof typeof EmployeesScalarFieldEnum]
-
-
-export const SuppliersScalarFieldEnum = {
-  id: 'id',
-  name: 'name',
-  email: 'email',
-  phone: 'phone',
-  address: 'address',
-  createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
-} as const
-
-export type SuppliersScalarFieldEnum = (typeof SuppliersScalarFieldEnum)[keyof typeof SuppliersScalarFieldEnum]
-
-
-export const NotificationsScalarFieldEnum = {
-  id: 'id',
-  title: 'title',
-  content: 'content',
-  createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
-} as const
-
-export type NotificationsScalarFieldEnum = (typeof NotificationsScalarFieldEnum)[keyof typeof NotificationsScalarFieldEnum]
 
 
 export const SortOrder = {

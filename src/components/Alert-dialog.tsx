@@ -1,7 +1,7 @@
 import { AlertDialog, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { Button } from "../ui/button";
+import { Button } from "./ui/button";
 import { useState } from "react";
-import { Spinner } from "../ui/spinner";
+import { Spinner } from "./ui/spinner";
 
 interface AlertDialogProps {
   title: string;

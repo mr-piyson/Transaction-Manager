@@ -42,7 +42,6 @@ export type RecordsMinAggregateOutputType = {
   email: string | null
   code: string | null
   image: string | null
-  status: string | null
   phone: string | null
   address: string | null
   createdAt: Date | null
@@ -57,7 +56,6 @@ export type RecordsMaxAggregateOutputType = {
   email: string | null
   code: string | null
   image: string | null
-  status: string | null
   phone: string | null
   address: string | null
   createdAt: Date | null
@@ -72,7 +70,6 @@ export type RecordsCountAggregateOutputType = {
   email: number
   code: number
   image: number
-  status: number
   phone: number
   address: number
   createdAt: number
@@ -99,7 +96,6 @@ export type RecordsMinAggregateInputType = {
   email?: true
   code?: true
   image?: true
-  status?: true
   phone?: true
   address?: true
   createdAt?: true
@@ -114,7 +110,6 @@ export type RecordsMaxAggregateInputType = {
   email?: true
   code?: true
   image?: true
-  status?: true
   phone?: true
   address?: true
   createdAt?: true
@@ -129,7 +124,6 @@ export type RecordsCountAggregateInputType = {
   email?: true
   code?: true
   image?: true
-  status?: true
   phone?: true
   address?: true
   createdAt?: true
@@ -231,7 +225,6 @@ export type RecordsGroupByOutputType = {
   email: string | null
   code: string | null
   image: string | null
-  status: string | null
   phone: string | null
   address: string | null
   createdAt: Date | null
@@ -269,7 +262,6 @@ export type RecordsWhereInput = {
   email?: Prisma.StringNullableFilter<"Records"> | string | null
   code?: Prisma.StringNullableFilter<"Records"> | string | null
   image?: Prisma.StringNullableFilter<"Records"> | string | null
-  status?: Prisma.StringNullableFilter<"Records"> | string | null
   phone?: Prisma.StringNullableFilter<"Records"> | string | null
   address?: Prisma.StringNullableFilter<"Records"> | string | null
   createdAt?: Prisma.DateTimeNullableFilter<"Records"> | Date | string | null
@@ -285,7 +277,6 @@ export type RecordsOrderByWithRelationInput = {
   email?: Prisma.SortOrderInput | Prisma.SortOrder
   code?: Prisma.SortOrderInput | Prisma.SortOrder
   image?: Prisma.SortOrderInput | Prisma.SortOrder
-  status?: Prisma.SortOrderInput | Prisma.SortOrder
   phone?: Prisma.SortOrderInput | Prisma.SortOrder
   address?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -304,7 +295,6 @@ export type RecordsWhereUniqueInput = Prisma.AtLeast<{
   email?: Prisma.StringNullableFilter<"Records"> | string | null
   code?: Prisma.StringNullableFilter<"Records"> | string | null
   image?: Prisma.StringNullableFilter<"Records"> | string | null
-  status?: Prisma.StringNullableFilter<"Records"> | string | null
   phone?: Prisma.StringNullableFilter<"Records"> | string | null
   address?: Prisma.StringNullableFilter<"Records"> | string | null
   createdAt?: Prisma.DateTimeNullableFilter<"Records"> | Date | string | null
@@ -320,7 +310,6 @@ export type RecordsOrderByWithAggregationInput = {
   email?: Prisma.SortOrderInput | Prisma.SortOrder
   code?: Prisma.SortOrderInput | Prisma.SortOrder
   image?: Prisma.SortOrderInput | Prisma.SortOrder
-  status?: Prisma.SortOrderInput | Prisma.SortOrder
   phone?: Prisma.SortOrderInput | Prisma.SortOrder
   address?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -343,7 +332,6 @@ export type RecordsScalarWhereWithAggregatesInput = {
   email?: Prisma.StringNullableWithAggregatesFilter<"Records"> | string | null
   code?: Prisma.StringNullableWithAggregatesFilter<"Records"> | string | null
   image?: Prisma.StringNullableWithAggregatesFilter<"Records"> | string | null
-  status?: Prisma.StringNullableWithAggregatesFilter<"Records"> | string | null
   phone?: Prisma.StringNullableWithAggregatesFilter<"Records"> | string | null
   address?: Prisma.StringNullableWithAggregatesFilter<"Records"> | string | null
   createdAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Records"> | Date | string | null
@@ -357,7 +345,6 @@ export type RecordsCreateInput = {
   email?: string | null
   code?: string | null
   image?: string | null
-  status?: string | null
   phone?: string | null
   address?: string | null
   createdAt?: Date | string | null
@@ -373,7 +360,6 @@ export type RecordsUncheckedCreateInput = {
   email?: string | null
   code?: string | null
   image?: string | null
-  status?: string | null
   phone?: string | null
   address?: string | null
   createdAt?: Date | string | null
@@ -388,7 +374,6 @@ export type RecordsUpdateInput = {
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   code?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  status?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -404,7 +389,6 @@ export type RecordsUncheckedUpdateInput = {
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   code?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  status?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -420,7 +404,6 @@ export type RecordsCreateManyInput = {
   email?: string | null
   code?: string | null
   image?: string | null
-  status?: string | null
   phone?: string | null
   address?: string | null
   createdAt?: Date | string | null
@@ -434,7 +417,6 @@ export type RecordsUpdateManyMutationInput = {
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   code?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  status?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -449,7 +431,6 @@ export type RecordsUncheckedUpdateManyInput = {
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   code?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  status?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -469,7 +450,6 @@ export type RecordsCountOrderByAggregateInput = {
   email?: Prisma.SortOrder
   code?: Prisma.SortOrder
   image?: Prisma.SortOrder
-  status?: Prisma.SortOrder
   phone?: Prisma.SortOrder
   address?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -489,7 +469,6 @@ export type RecordsMaxOrderByAggregateInput = {
   email?: Prisma.SortOrder
   code?: Prisma.SortOrder
   image?: Prisma.SortOrder
-  status?: Prisma.SortOrder
   phone?: Prisma.SortOrder
   address?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -504,7 +483,6 @@ export type RecordsMinOrderByAggregateInput = {
   email?: Prisma.SortOrder
   code?: Prisma.SortOrder
   image?: Prisma.SortOrder
-  status?: Prisma.SortOrder
   phone?: Prisma.SortOrder
   address?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -539,7 +517,6 @@ export type RecordsCreateWithoutInvoicesInput = {
   email?: string | null
   code?: string | null
   image?: string | null
-  status?: string | null
   phone?: string | null
   address?: string | null
   createdAt?: Date | string | null
@@ -554,7 +531,6 @@ export type RecordsUncheckedCreateWithoutInvoicesInput = {
   email?: string | null
   code?: string | null
   image?: string | null
-  status?: string | null
   phone?: string | null
   address?: string | null
   createdAt?: Date | string | null
@@ -584,7 +560,6 @@ export type RecordsUpdateWithoutInvoicesInput = {
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   code?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  status?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -599,7 +574,6 @@ export type RecordsUncheckedUpdateWithoutInvoicesInput = {
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   code?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  status?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -645,7 +619,6 @@ export type RecordsSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   email?: boolean
   code?: boolean
   image?: boolean
-  status?: boolean
   phone?: boolean
   address?: boolean
   createdAt?: boolean
@@ -662,7 +635,6 @@ export type RecordsSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exten
   email?: boolean
   code?: boolean
   image?: boolean
-  status?: boolean
   phone?: boolean
   address?: boolean
   createdAt?: boolean
@@ -677,7 +649,6 @@ export type RecordsSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exten
   email?: boolean
   code?: boolean
   image?: boolean
-  status?: boolean
   phone?: boolean
   address?: boolean
   createdAt?: boolean
@@ -692,7 +663,6 @@ export type RecordsSelectScalar = {
   email?: boolean
   code?: boolean
   image?: boolean
-  status?: boolean
   phone?: boolean
   address?: boolean
   createdAt?: boolean
@@ -701,7 +671,7 @@ export type RecordsSelectScalar = {
   deletedBy?: boolean
 }
 
-export type RecordsOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "email" | "code" | "image" | "status" | "phone" | "address" | "createdAt" | "updatedAt" | "deletedAt" | "deletedBy", ExtArgs["result"]["records"]>
+export type RecordsOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "email" | "code" | "image" | "phone" | "address" | "createdAt" | "updatedAt" | "deletedAt" | "deletedBy", ExtArgs["result"]["records"]>
 export type RecordsInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   Invoices?: boolean | Prisma.Records$InvoicesArgs<ExtArgs>
   _count?: boolean | Prisma.RecordsCountOutputTypeDefaultArgs<ExtArgs>
@@ -720,7 +690,6 @@ export type $RecordsPayload<ExtArgs extends runtime.Types.Extensions.InternalArg
     email: string | null
     code: string | null
     image: string | null
-    status: string | null
     phone: string | null
     address: string | null
     createdAt: Date | null
@@ -1156,7 +1125,6 @@ export interface RecordsFieldRefs {
   readonly email: Prisma.FieldRef<"Records", 'String'>
   readonly code: Prisma.FieldRef<"Records", 'String'>
   readonly image: Prisma.FieldRef<"Records", 'String'>
-  readonly status: Prisma.FieldRef<"Records", 'String'>
   readonly phone: Prisma.FieldRef<"Records", 'String'>
   readonly address: Prisma.FieldRef<"Records", 'String'>
   readonly createdAt: Prisma.FieldRef<"Records", 'DateTime'>

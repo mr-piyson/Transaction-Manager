@@ -1,13 +1,16 @@
 "use client";
 import { ListView } from "@/components/list-view";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+import { useFab } from "@/hooks/use-fab";
 import { useHeader } from "@/hooks/use-header";
 import { Records } from "@/types/prisma/client";
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
-import { ArrowLeft, LucideFileText, User2 } from "lucide-react";
+import { ArrowLeft, LucideFileText, Plus, User2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
+import CreateRecordDialog from "./create-record-dialog";
 
 type RecordsPageProps = {
   children?: React.ReactNode;
@@ -15,6 +18,7 @@ type RecordsPageProps = {
 
 export default function RecordsPage(props: RecordsPageProps) {
   const header = useHeader();
+  const fab = useFab();
 
   const {
     data: records,
@@ -36,6 +40,17 @@ export default function RecordsPage(props: RecordsPageProps) {
           <h1 className="text-2xl font-semibold pb-1">Records</h1>
         </div>
       ),
+    });
+    fab.setFabConfig({
+      render: () => {
+        return (
+          <CreateRecordDialog>
+            <Button variant="default" size="icon" className="absolute -top-6 left-1/2 -translate-x-1/2 size-14 rounded-full shadow-lg">
+              <Plus className="size-7 text-foreground" />
+            </Button>
+          </CreateRecordDialog>
+        );
+      },
     });
     return () => {
       header.resetHeader();

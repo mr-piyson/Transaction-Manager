@@ -10,7 +10,7 @@ import { Plus } from "lucide-react";
 import axios from "axios";
 import { queryClient } from "@/app/app/App";
 
-export default function CreateCustomerDialog(props: any) {
+export default function CreateRecordDialog(props: any) {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
 

@@ -1,95 +1,143 @@
 "use client";
-
-import { useState, useMemo, useEffect } from "react";
-import { InputGroup, InputGroupInput } from "@/components/ui/input-group";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowLeft, Plus, Search } from "lucide-react";
-import { Transactions } from "@/types/prisma/client";
-import { TransactionList } from "./transaction-list";
+import { ListView } from "@/components/list-view";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import NewTransactionDialog from "./new-transaction-dialog";
+import { useFab } from "@/hooks/use-fab";
+import { useHeader } from "@/hooks/use-header";
+import { InvoiceItems, Invoices, Records } from "@/types/prisma/client";
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
+import { ArrowLeft, LucideFileText, Plus, User2 } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
-import { useHeader } from "@/hooks/use-header";
+import { useEffect, useMemo } from "react";
+import InvoiceItemDialog from "./InvoiceItemDialog";
 
-export default function TransactionPage() {
-  const [editingTransaction, setEditingTransaction] = useState<Transactions | null>(null);
-  const [search, setSearch] = useState("");
-  const [typeFilter, setTypeFilter] = useState<string>("all");
+type InvoiceItemsPageProps = {
+  children?: React.ReactNode;
+};
+
+export default function InvoiceItemsPage(props: InvoiceItemsPageProps) {
   const header = useHeader();
-  const router = useRouter();
-
   const params = useParams();
+  const router = useRouter();
+  const fab = useFab();
 
-  const recordId = useMemo(() => {
-    return params.recordId;
-  }, [params]);
-
-  const invoiceId = useMemo(() => {
-    return params.invoiceId;
-  }, [params]);
-
-  const { data: transactions } = useQuery<Transactions[]>({
-    queryKey: ["invoices"],
-    queryFn: async () => await axios.get(`/api/records/${recordId}/invoices/${invoiceId}`),
+  const {
+    data: invoices,
+    isLoading,
+    error,
+    refetch,
+  } = useQuery({
+    queryKey: ["invoicesItems"],
+    queryFn: async () => (await axios.get(`/api/records/${params.recordId}/invoices/${params.invoiceId}`)).data,
   });
 
   useEffect(() => {
     header.configureHeader({
       leftContent: (
         <div className="flex h-full w-full items-center gap-4">
-          <Button
-            variant={"ghost"}
-            className="p-1"
-            onClick={() => {
-              router.back();
-            }}
-          >
+          <Button variant={"ghost"} className="p-1" onClick={() => router.back()}>
             <ArrowLeft className="size-6" />
           </Button>
-          <h1 className="text-2xl font-semibold">{`Invoices`}</h1>
+          <h1 className="text-2xl font-semibold">Invoice Items</h1>
         </div>
       ),
     });
+
+    fab.setFabConfig({
+      visible: true,
+      render: () => (
+        <InvoiceItemDialog recordId={params.recordId} invoiceId={params.invoiceId}>
+          <Button variant="default" size="icon" className="absolute -top-6 left-1/2 -translate-x-1/2 size-14 rounded-full shadow-lg">
+            <svg className="icon-[hugeicons--file-01] size-7 text-foreground" />
+          </Button>
+        </InvoiceItemDialog>
+      ),
+    });
+
     return () => {
       header.resetHeader();
+      fab.resetFabConfig();
     };
   }, []);
-
   return (
-    <div className="relative flex h-full flex-col bg-background">
-      {/* Header */}
-      <header className="border-b border-border bg-card shadow-sm">
-        <div className="flex items-center gap-3 p-2">
-          <InputGroup className="flex-1 w-full bg-background">
-            <Label>
-              <Search className="size-4 ms-3 text-foreground/60" />
-              <InputGroupInput placeholder="Search transactions..." value={search} onChange={e => setSearch(e.target.value)} autoComplete="off" spellCheck="false" />
-            </Label>
-          </InputGroup>
-
-          <Select value={typeFilter} onValueChange={setTypeFilter}>
-            <SelectTrigger className="w-36 bg-background">
-              <SelectValue placeholder="All types" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All types</SelectItem>
-              <SelectItem value="income">Income</SelectItem>
-              <SelectItem value="expense">Expense</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-      </header>
-
-      <TransactionList transactions={transactions} onEdit={setEditingTransaction} />
-      <NewTransactionDialog>
-        <Button className="w-full ">
-          <Plus />
-          Add new Transaction
-        </Button>
-      </NewTransactionDialog>
+    <div className="flex-1 h-full">
+      <ListView<InvoiceItems>
+        emptyTitle="No Invoice Items Found"
+        emptyIcon={<LucideFileText className="size-16 text-muted-foreground" />}
+        emptyDescription={"create new invoice items to get started"}
+        data={invoices}
+        isLoading={isLoading}
+        isError={!!error}
+        itemName="invoice items"
+        useTheme={true}
+        cardRenderer={InvoiceItemRow}
+        rowHeight={80}
+        searchFields={[]}
+      />
     </div>
   );
 }
+
+const InvoiceItemRow = ({ data: item }: { data: InvoiceItems }) => {
+  // 1. Calculate Line Total: (Qty * Amount) - Discount + Tax
+  const lineMetrics = useMemo(() => {
+    const subtotal = item.amount * item.qty;
+    const discountVal = item.discount || 0;
+    const taxVal = item.tax || 0;
+    const total = subtotal - discountVal + taxVal;
+
+    return {
+      total: total,
+      hasAdjustments: discountVal > 0 || taxVal > 0,
+    };
+  }, [item]);
+
+  // 2. Format Currency (Bahrain Dinar 3 decimal places as per your sample)
+  const formatMoney = (val: number) => val.toFixed(3);
+
+  return (
+    <div className="flex items-center gap-4 p-4 transition-colors hover:bg-accent/50 border-b border-border last:border-0">
+      {/* Icon Section */}
+      <div className="flex items-center justify-center size-10 rounded-lg bg-secondary/20">
+        {/* Swapped icon for a generic item/product icon */}
+        <span className="icon-[hugeicons--package] size-6 text-foreground/60" />
+      </div>
+
+      {/* Main Content */}
+      <div className="flex-1 min-w-0 space-y-1">
+        <div className="flex items-center gap-2">
+          <p className="font-semibold text-sm truncate">{item.description || `Item #${item.id}`}</p>
+          {/* Optional: Badge for item type */}
+          {item.type !== "PRODUCT" && (
+            <Badge variant="outline" className="text-[10px] h-5 px-1.5">
+              {item.type}
+            </Badge>
+          )}
+        </div>
+
+        {/* Subtext: Calculation details */}
+        <p className="text-xs text-muted-foreground flex items-center gap-1">
+          <span>
+            {item.qty} x {formatMoney(item.amount)}
+          </span>
+          {item.currency || "BD"}
+
+          {/* Show simplified adjustment hints if tax/discount exists */}
+          {lineMetrics.hasAdjustments && <span className="ml-1 text-[10px] opacity-80">(incl. tax/disc)</span>}
+        </p>
+      </div>
+
+      {/* Right Side: Financials */}
+      <div className="flex items-center gap-3">
+        <div className="text-right">
+          <p className="font-semibold text-sm">
+            {formatMoney(lineMetrics.total)} {item.currency || "BD"}
+          </p>
+          {/* Optional: Show discount in red if applied */}
+          {item.discount && item.discount > 0 ? <p className="text-[10px] text-success">-{formatMoney(item.discount)} Disc.</p> : null}
+        </div>
+      </div>
+    </div>
+  );
+};
