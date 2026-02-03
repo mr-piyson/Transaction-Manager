@@ -117,7 +117,6 @@ const generateZodSchema = <T,>(fields: FieldSchema<T>[]) => {
         const textField = field as TextFieldSchema;
         fieldSchema = z.string();
 
-        // Handle required validation - reject empty strings
         if (field.required) {
           fieldSchema = (fieldSchema as z.ZodString).min(1, `${field.label} is required`);
         }
@@ -143,55 +142,31 @@ const generateZodSchema = <T,>(fields: FieldSchema<T>[]) => {
       case "number": {
         const numberField = field as NumberFieldSchema;
 
-        // Create base schema with preprocessing to handle string to number conversion
-        let baseSchema = z.preprocess(
+        // Use z.preprocess to coerce the raw input, then validate with a plain
+        // z.number() chain — avoids required_error / invalid_type_error which
+        // are not available in older Zod versions.
+        fieldSchema = z.preprocess(
           val => {
-            if (val === undefined || val === null || val === "") {
+            if (val === "" || val === undefined || val === null) {
               return field.required ? undefined : null;
             }
             const num = Number(val);
-            return isNaN(num) ? undefined : num;
+            return isNaN(num) ? val : num;
           },
-          field.required
-            ? z.number({
-                required_error: `${field.label} is required`,
-                invalid_type_error: `${field.label} must be a number`,
-              })
-            : z.number().optional().nullable(),
+          (() => {
+            let numSchema = z.number().refine(val => !isNaN(val), { message: `${field.label} must be a number` });
+
+            if (numberField.min !== undefined) {
+              numSchema = numSchema.min(numberField.min, `Min: ${numberField.min}`);
+            }
+            if (numberField.max !== undefined) {
+              numSchema = numSchema.max(numberField.max, `Max: ${numberField.max}`);
+            }
+
+            return field.required ? numSchema : numSchema.optional().nullable();
+          })(),
         );
 
-        fieldSchema = baseSchema;
-
-        // Apply min/max constraints after preprocessing
-        if (numberField.min !== undefined || numberField.max !== undefined) {
-          fieldSchema = z.preprocess(
-            val => {
-              if (val === undefined || val === null || val === "") {
-                return field.required ? undefined : null;
-              }
-              const num = Number(val);
-              return isNaN(num) ? undefined : num;
-            },
-            (() => {
-              let numSchema = field.required
-                ? z.number({
-                    required_error: `${field.label} is required`,
-                    invalid_type_error: `${field.label} must be a number`,
-                  })
-                : z.number().optional().nullable();
-
-              if (numberField.min !== undefined) {
-                numSchema = (numSchema as z.ZodNumber).min(numberField.min, `Minimum value is ${numberField.min}`);
-              }
-
-              if (numberField.max !== undefined) {
-                numSchema = (numSchema as z.ZodNumber).max(numberField.max, `Maximum value is ${numberField.max}`);
-              }
-
-              return numSchema;
-            })(),
-          );
-        }
         break;
       }
 
@@ -204,11 +179,10 @@ const generateZodSchema = <T,>(fields: FieldSchema<T>[]) => {
         break;
 
       case "date":
+        // Avoid required_error / invalid_type_error — use plain z.date() with
+        // .refine() for the "required" message instead.
         if (field.required) {
-          fieldSchema = z.date({
-            required_error: `${field.label} is required`,
-            invalid_type_error: `${field.label} must be a valid date`,
-          });
+          fieldSchema = z.date().refine(val => val instanceof Date && !isNaN(val.getTime()), { message: `${field.label} is required` });
         } else {
           fieldSchema = z.date().optional().nullable();
         }
@@ -334,7 +308,7 @@ const renderField = <T,>(field: FieldSchema<T>, form: any, isSubmitting: boolean
                 <textarea
                   placeholder={field.placeholder}
                   disabled={isSubmitting}
-                  className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                  className="flex min-h-20 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                   {...formField}
                   value={formField.value || ""}
                 />
@@ -491,7 +465,6 @@ const renderField = <T,>(field: FieldSchema<T>, form: any, isSubmitting: boolean
                       onChange={e => {
                         const files = Array.from(e.target.files || []);
 
-                        // Validate file size
                         if (fileField.maxSize) {
                           const invalidFiles = files.filter(file => file.size > fileField.maxSize! * 1024 * 1024);
                           if (invalidFiles.length > 0) {
@@ -585,11 +558,9 @@ export const UniversalDialog = <T,>({
     defaultValues: fields.reduce(
       (acc, field) => {
         const fieldName = String(field.name);
-        // Ensure default values are never undefined to prevent controlled/uncontrolled warnings
         if (field.defaultValue !== undefined) {
           acc[fieldName] = field.defaultValue;
         } else {
-          // Set appropriate default based on field type
           switch (field.type) {
             case "text":
             case "email":
@@ -625,59 +596,44 @@ export const UniversalDialog = <T,>({
     mutationFn: async (data: any) => {
       const formData = transformData ? transformData(data) : data;
 
-      // 1. Create FormData instance
       const fd = new FormData();
 
-      // 2. Populate FormData
       Object.keys(formData).forEach(key => {
         const value = formData[key];
 
-        // Skip undefined/null values
         if (value === undefined || value === null) return;
 
         if (value instanceof File) {
-          // Handle single file
           fd.append(key, value);
         } else if (Array.isArray(value) && value.some(v => v instanceof File)) {
-          // Handle array of files (e.g., multiple file upload)
           value.forEach(file => {
             if (file instanceof File) fd.append(key, file);
           });
         } else if (value instanceof Date) {
-          // Handle Dates
           fd.append(key, value.toISOString());
         } else if (typeof value === "object") {
-          // Handle Objects/Arrays (non-files) by stringifying
-          // This allows sending complex JSON structures inside a FormData field
           fd.append(key, JSON.stringify(value));
         } else {
-          // Handle primitives (string, number, boolean)
           fd.append(key, String(value));
         }
       });
 
       try {
-        // 3. Make the Axios request
-        // Axios automatically sets 'multipart/form-data' header when data is FormData
         const response = await axios({
           method: apiMethod,
           url: apiEndpoint,
           data: fd,
           headers: {
-            // Explicitly setting this ensures the boundary is handled correctly by Axios/Browser
             "Content-Type": "multipart/form-data",
           },
         });
 
         return response.data;
       } catch (error) {
-        // 4. Handle Axios Errors
         if (axios.isAxiosError(error)) {
-          // Try to extract the specific error message from the backend response
           const serverMessage = error.response?.data?.message || error.response?.data?.error || error.message;
           throw new Error(serverMessage);
         }
-        // Fallback for non-axios errors
         throw new Error("An unexpected error occurred");
       }
     },
@@ -697,7 +653,6 @@ export const UniversalDialog = <T,>({
     mutation.mutate(data);
   };
 
-  // Group fields by rows based on width
   const groupedFields: FieldSchema<T>[][] = [];
   let currentRow: FieldSchema<T>[] = [];
 
