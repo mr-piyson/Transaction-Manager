@@ -4,7 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
 import { z } from "zod";
 import { toast } from "sonner";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
@@ -14,6 +14,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { CalendarIcon, Loader2, Upload, X } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
+import axios from "axios";
 
 // ============================================================================
 // TYPES & INTERFACES
@@ -624,59 +625,61 @@ export const UniversalDialog = <T,>({
     mutationFn: async (data: any) => {
       const formData = transformData ? transformData(data) : data;
 
-      // ALWAYS create a FormData object to satisfy the server's Content-Type requirement
+      // 1. Create FormData instance
       const fd = new FormData();
 
+      // 2. Populate FormData
       Object.keys(formData).forEach(key => {
         const value = formData[key];
 
-        // Skip undefined values
+        // Skip undefined/null values
         if (value === undefined || value === null) return;
 
         if (value instanceof File) {
           // Handle single file
           fd.append(key, value);
         } else if (Array.isArray(value) && value.some(v => v instanceof File)) {
-          // Handle array of files
+          // Handle array of files (e.g., multiple file upload)
           value.forEach(file => {
             if (file instanceof File) fd.append(key, file);
           });
-        } else if (Array.isArray(value) || typeof value === "object") {
-          // Handle complex data (arrays/objects) by stringifying them
-          // (This depends on how your backend parses non-file objects in FormData)
-          if (value instanceof Date) {
-            fd.append(key, value.toISOString());
-          } else {
-            fd.append(key, JSON.stringify(value));
-          }
+        } else if (value instanceof Date) {
+          // Handle Dates
+          fd.append(key, value.toISOString());
+        } else if (typeof value === "object") {
+          // Handle Objects/Arrays (non-files) by stringifying
+          // This allows sending complex JSON structures inside a FormData field
+          fd.append(key, JSON.stringify(value));
         } else {
           // Handle primitives (string, number, boolean)
           fd.append(key, String(value));
         }
       });
 
-      // Do NOT set Content-Type header manually.
-      // The browser automatically sets it to "multipart/form-data; boundary=..."
-      // when the body is a FormData instance.
-      const response = await fetch(apiEndpoint, {
-        method: apiMethod,
-        body: fd,
-      });
+      try {
+        // 3. Make the Axios request
+        // Axios automatically sets 'multipart/form-data' header when data is FormData
+        const response = await axios({
+          method: apiMethod,
+          url: apiEndpoint,
+          data: fd,
+          headers: {
+            // Explicitly setting this ensures the boundary is handled correctly by Axios/Browser
+            "Content-Type": "multipart/form-data",
+          },
+        });
 
-      if (!response.ok) {
-        // Try to parse error message from server if possible, fallback to statusText
-        let errorMessage = response.statusText;
-        try {
-          const errorData = await response.json();
-          if (errorData.message) errorMessage = errorData.message;
-        } catch (e) {
-          /* ignore json parse error */
+        return response.data;
+      } catch (error) {
+        // 4. Handle Axios Errors
+        if (axios.isAxiosError(error)) {
+          // Try to extract the specific error message from the backend response
+          const serverMessage = error.response?.data?.message || error.response?.data?.error || error.message;
+          throw new Error(serverMessage);
         }
-
-        throw new Error(`API Error: ${errorMessage}`);
+        // Fallback for non-axios errors
+        throw new Error("An unexpected error occurred");
       }
-
-      return response.json();
     },
     onSuccess: data => {
       toast.success("Operation completed successfully!");
@@ -737,11 +740,21 @@ export const UniversalDialog = <T,>({
               </div>
             ))}
 
-            <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => onOpenChange?.(false)} disabled={mutation.isPending}>
-                {cancelLabel}
-              </Button>
-              <Button type="submit" disabled={mutation.isPending}>
+            <DialogFooter className="flex flex-row w-full px-12">
+              <DialogClose asChild>
+                <Button
+                  type="button"
+                  className="flex-1"
+                  variant="outline"
+                  onClick={() => {
+                    form.reset();
+                  }}
+                  disabled={mutation.isPending}
+                >
+                  {cancelLabel}
+                </Button>
+              </DialogClose>
+              <Button type="submit" className="flex-1" disabled={mutation.isPending}>
                 {mutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 {submitLabel}
               </Button>

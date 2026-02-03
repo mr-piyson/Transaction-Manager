@@ -12,6 +12,7 @@ import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import CreateRecordDialog from "./create-record-dialog";
 import { UniversalDialog } from "@/components/dialog";
+import { queryClient } from "../App";
 
 type RecordsPageProps = {
   children?: React.ReactNode;
@@ -74,6 +75,12 @@ export default function RecordsPage(props: RecordsPageProps) {
               },
             ]}
             apiEndpoint={"/api/records"}
+            onSuccess={() => {
+              console.log("Hello Muntadher");
+              queryClient.refetchQueries({
+                queryKey: ["records"],
+              });
+            }}
           >
             <Button variant="default" size="icon" className="absolute -top-6 left-1/2 -translate-x-1/2 size-14 rounded-full shadow-lg">
               <Plus className="size-7 text-foreground" />
