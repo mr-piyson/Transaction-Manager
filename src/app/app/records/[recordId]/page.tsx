@@ -74,7 +74,7 @@ export default function RecordPage(props: RecordPageProps) {
         itemName="invoices"
         useTheme={true}
         cardRenderer={invoiceCardRenderer}
-        rowHeight={80}
+        rowHeight={75}
         searchFields={["title", "status", "total"]}
       />
     </div>

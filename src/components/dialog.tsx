@@ -1,14 +1,14 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
 import { z } from "zod";
 import { toast } from "sonner";
-import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectSeparator, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { CalendarIcon, Loader2, Upload, X } from "lucide-react";
@@ -281,7 +281,7 @@ const renderField = <T,>(field: FieldSchema<T>, form: any, isSubmitting: boolean
             <FormItem className={field.width === "half" ? "flex-1" : "w-full"}>
               <FormLabel>
                 {field.label}
-                {field.required && <span className="text-red-500 ml-1">*</span>}
+                {field.required && <span className="text-destructive ml-1">*</span>}
               </FormLabel>
               <FormControl>
                 <Input type={field.type} placeholder={field.placeholder} disabled={isSubmitting} {...formField} value={formField.value || ""} />
@@ -302,7 +302,7 @@ const renderField = <T,>(field: FieldSchema<T>, form: any, isSubmitting: boolean
             <FormItem className={field.width === "half" ? "flex-1" : "w-full"}>
               <FormLabel>
                 {field.label}
-                {field.required && <span className="text-red-500 ml-1">*</span>}
+                {field.required && <span className="text-destructive ml-1">*</span>}
               </FormLabel>
               <FormControl>
                 <textarea
@@ -551,6 +551,34 @@ export const UniversalDialog = <T,>({
   transformData,
   children,
 }: UniversalDialogProps<T>) => {
+  // ---------------------------------------------------------------------------
+  // Controlled / uncontrolled open-state management
+  // ---------------------------------------------------------------------------
+  // `isControlled` is true when the caller supplies `open` (even if it is
+  // currently `false`).  In that case every open/close decision is owned by the
+  // parent; we only *notify* via onOpenChange.  Otherwise we own the state
+  // internally and the trigger / cancel / success path flip it directly.
+  const isControlled = open !== undefined;
+  const [internalOpen, setInternalOpen] = useState(false);
+  const effectiveOpen = isControlled ? open : internalOpen;
+
+  // Single source of truth for every open/close transition.
+  // Radix Dialog, the trigger, cancel, and onSuccess all go through here.
+  const handleOpenChange = (nextOpen: boolean) => {
+    if (!isControlled) setInternalOpen(nextOpen);
+    onOpenChange?.(nextOpen);
+  };
+
+  // Resets the form AND closes — used by cancel, onSuccess, and the Escape key
+  // (via Radix's own onOpenChange → handleOpenChange above).
+  const closeDialog = () => {
+    form.reset();
+    handleOpenChange(false);
+  };
+
+  // ---------------------------------------------------------------------------
+  // Form & schema
+  // ---------------------------------------------------------------------------
   const [zodSchema] = useState(() => generateZodSchema<T>(fields));
 
   const form = useForm({
@@ -592,6 +620,9 @@ export const UniversalDialog = <T,>({
     ),
   });
 
+  // ---------------------------------------------------------------------------
+  // Mutation
+  // ---------------------------------------------------------------------------
   const mutation = useMutation({
     mutationFn: async (data: any) => {
       const formData = transformData ? transformData(data) : data;
@@ -639,8 +670,7 @@ export const UniversalDialog = <T,>({
     },
     onSuccess: data => {
       toast.success("Operation completed successfully!");
-      form.reset();
-      onOpenChange?.(false);
+      closeDialog(); // reset + close — works in both controlled and uncontrolled
       onSuccess?.(data);
     },
     onError: (error: any) => {
@@ -653,33 +683,52 @@ export const UniversalDialog = <T,>({
     mutation.mutate(data);
   };
 
-  const groupedFields: FieldSchema<T>[][] = [];
-  let currentRow: FieldSchema<T>[] = [];
+  // ---------------------------------------------------------------------------
+  // Field-row layout (memoised — only re-runs when the fields array changes)
+  // ---------------------------------------------------------------------------
+  const groupedFields = useMemo(() => {
+    const rows: FieldSchema<T>[][] = [];
+    let currentRow: FieldSchema<T>[] = [];
 
-  fields.forEach(field => {
-    if (field.width === "full") {
-      if (currentRow.length > 0) {
-        groupedFields.push(currentRow);
-        currentRow = [];
+    fields.forEach(field => {
+      if (field.width === "full") {
+        if (currentRow.length > 0) {
+          rows.push(currentRow);
+          currentRow = [];
+        }
+        rows.push([field]);
+      } else {
+        currentRow.push(field);
+        if (currentRow.length === 2) {
+          rows.push(currentRow);
+          currentRow = [];
+        }
       }
-      groupedFields.push([field]);
-    } else {
-      currentRow.push(field);
-      if (currentRow.length === 2) {
-        groupedFields.push(currentRow);
-        currentRow = [];
-      }
-    }
-  });
+    });
 
-  if (currentRow.length > 0) {
-    groupedFields.push(currentRow);
-  }
+    if (currentRow.length > 0) rows.push(currentRow);
+    return rows;
+  }, [fields]);
+
+  // ---------------------------------------------------------------------------
+  // Render
+  // ---------------------------------------------------------------------------
+  // Only mount a DialogTrigger when children are provided AND the component is
+  // not fully controlled.  A controlled consumer has its own trigger; rendering
+  // one here would fight its open state.
+  const trigger =
+    !isControlled && children ? (
+      <DialogTrigger asChild>{children}</DialogTrigger>
+    ) : !isControlled ? (
+      <DialogTrigger asChild>
+        <Button>{title}</Button>
+      </DialogTrigger>
+    ) : null;
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogTrigger asChild>{children ?? <Button>{title}</Button>}</DialogTrigger>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+    <Dialog open={effectiveOpen} onOpenChange={handleOpenChange}>
+      {trigger}
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto   ">
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
           {description && <DialogDescription>{description}</DialogDescription>}
@@ -694,21 +743,10 @@ export const UniversalDialog = <T,>({
                 ))}
               </div>
             ))}
-
-            <DialogFooter className="flex flex-row w-full px-12">
-              <DialogClose asChild>
-                <Button
-                  type="button"
-                  className="flex-1"
-                  variant="outline"
-                  onClick={() => {
-                    form.reset();
-                  }}
-                  disabled={mutation.isPending}
-                >
-                  {cancelLabel}
-                </Button>
-              </DialogClose>
+            <DialogFooter className="flex flex-row w-full pt-4">
+              <Button type="button" className="flex-1" variant="outline" onClick={closeDialog} disabled={mutation.isPending}>
+                {cancelLabel}
+              </Button>
               <Button type="submit" className="flex-1" disabled={mutation.isPending}>
                 {mutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 {submitLabel}

@@ -52,24 +52,16 @@ export default function RecordsPage(props: RecordsPageProps) {
               {
                 name: "name",
                 label: "Name",
+                width: "full",
                 type: "text",
+                minLength: 3,
                 required: false,
+                description: "Enter the name of the customer",
               },
               {
                 name: "phone",
                 label: "Phone",
-                type: "text",
-                required: false,
-              },
-              {
-                name: "email",
-                label: "Email",
-                type: "text",
-                required: false,
-              },
-              {
-                name: "address",
-                label: "Address",
+                width: "full",
                 type: "text",
                 required: false,
               },

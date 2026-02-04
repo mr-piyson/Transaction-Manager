@@ -8,15 +8,15 @@ export async function GET(req: NextRequest, ctx: RouteContext<"/api/records/[rec
     const user = await Auth.getCurrentUser();
     const invoiceId = (await ctx.params).invoiceId;
 
-    const transactions = await db.invoiceItems.findMany({
+    const invoiceItems = await db.invoiceItems.findMany({
       where: {
         invoicesId: Number(invoiceId),
       },
     });
 
-    console.log("Fetched transactions:", transactions);
+    console.log("Fetched transactions:", invoiceItems);
 
-    return NextResponse.json(transactions);
+    return NextResponse.json(invoiceItems);
   } catch (error) {
     console.error(error);
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });

@@ -18,7 +18,7 @@ type InvoiceItemsPageProps = {
 
 export default function InvoiceItemsPage(props: InvoiceItemsPageProps) {
   const header = useHeader();
-  const params = useParams();
+  const { invoiceId, recordId } = useParams();
   const router = useRouter();
   const fab = useFab();
 
@@ -28,8 +28,8 @@ export default function InvoiceItemsPage(props: InvoiceItemsPageProps) {
     error,
     refetch,
   } = useQuery({
-    queryKey: ["invoicesItems"],
-    queryFn: async () => (await axios.get(`/api/records/${params.recordId}/invoices/${params.invoiceId}`)).data,
+    queryKey: ["invoicesItems", invoiceId],
+    queryFn: async () => (await axios.get(`/api/records/${recordId}/invoices/${invoiceId}`)).data,
   });
 
   useEffect(() => {
@@ -47,7 +47,7 @@ export default function InvoiceItemsPage(props: InvoiceItemsPageProps) {
     fab.setFabConfig({
       visible: true,
       render: () => (
-        <InvoiceItemDialog recordId={params.recordId} invoiceId={params.invoiceId}>
+        <InvoiceItemDialog recordId={recordId} invoiceId={invoiceId}>
           <Button variant="default" size="icon" className="absolute -top-6 left-1/2 -translate-x-1/2 size-14 rounded-full shadow-lg">
             <svg className="icon-[hugeicons--file-01] size-7 text-foreground" />
           </Button>
