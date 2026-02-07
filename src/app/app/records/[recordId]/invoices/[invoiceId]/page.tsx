@@ -7,10 +7,11 @@ import { useHeader } from "@/hooks/use-header";
 import { InvoiceItems, Invoices, Records } from "@/types/prisma/client";
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
-import { ArrowLeft, LucideFileText, Plus, User2 } from "lucide-react";
+import { ArrowLeft, LucideFileText, Pen, Plus, Trash2, User2 } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useMemo } from "react";
 import InvoiceItemDialog from "./InvoiceItemDialog";
+import { UniversalContextMenu } from "@/components/context-menu";
 
 type InvoiceItemsPageProps = {
   children?: React.ReactNode;
@@ -72,7 +73,7 @@ export default function InvoiceItemsPage(props: InvoiceItemsPageProps) {
         itemName="invoice items"
         useTheme={true}
         cardRenderer={InvoiceItemRow}
-        rowHeight={80}
+        rowHeight={70}
         searchFields={[]}
       />
     </div>
@@ -97,47 +98,65 @@ const InvoiceItemRow = ({ data: item }: { data: InvoiceItems }) => {
   const formatMoney = (val: number) => val.toFixed(3);
 
   return (
-    <div className="flex items-center gap-4 p-4 transition-colors hover:bg-accent/50 border-b border-border last:border-0">
-      {/* Icon Section */}
-      <div className="flex items-center justify-center size-10 rounded-lg bg-secondary/20">
-        {/* Swapped icon for a generic item/product icon */}
-        <span className="icon-[hugeicons--package] size-6 text-foreground/60" />
-      </div>
-
-      {/* Main Content */}
-      <div className="flex-1 min-w-0 space-y-1">
-        <div className="flex items-center gap-2">
-          <p className="font-semibold text-sm truncate">{item.description || `Item #${item.id}`}</p>
-          {/* Optional: Badge for item type */}
-          {item.type !== "PRODUCT" && (
-            <Badge variant="outline" className="text-[10px] h-5 px-1.5">
-              {item.type}
-            </Badge>
-          )}
+    <UniversalContextMenu
+      items={[
+        {
+          id: "update",
+          label: "Update",
+          icon: <Pen />,
+          onClick: () => {},
+        },
+        {
+          id: "delete",
+          label: "Delete",
+          icon: <Trash2 />,
+          destructive: true,
+          onClick: () => {},
+        },
+      ]}
+    >
+      <div className="flex items-center gap-4 p-4 transition-colors hover:bg-accent/50 border-b border-border last:border-0">
+        {/* Icon Section */}
+        <div className="flex items-center justify-center size-10 rounded-lg bg-secondary/20">
+          {/* Swapped icon for a generic item/product icon */}
+          <span className="icon-[hugeicons--package] size-6 text-foreground/60" />
         </div>
 
-        {/* Subtext: Calculation details */}
-        <p className="text-xs text-muted-foreground flex items-center gap-1">
-          <span>
-            {item.qty} x {formatMoney(item.amount)}
-          </span>
-          {item.currency || "BD"}
+        {/* Main Content */}
+        <div className="flex-1 min-w-0 space-y-1">
+          <div className="flex items-center gap-2">
+            <p className="font-semibold text-sm truncate">{item.description || `Item #${item.id}`}</p>
+            {/* Optional: Badge for item type */}
+            {item.type !== "PRODUCT" && (
+              <Badge variant="outline" className="text-[10px] h-5 px-1.5">
+                {item.type}
+              </Badge>
+            )}
+          </div>
 
-          {/* Show simplified adjustment hints if tax/discount exists */}
-          {lineMetrics.hasAdjustments && <span className="ml-1 text-[10px] opacity-80">(incl. tax/disc)</span>}
-        </p>
-      </div>
+          {/* Subtext: Calculation details */}
+          <p className="text-xs text-muted-foreground flex items-center gap-1">
+            <span>
+              {item.qty} x {formatMoney(item.amount)}
+            </span>
+            {item.currency || "BD"}
 
-      {/* Right Side: Financials */}
-      <div className="flex items-center gap-3">
-        <div className="text-right">
-          <p className="font-semibold text-sm">
-            {formatMoney(lineMetrics.total)} {item.currency || "BD"}
+            {/* Show simplified adjustment hints if tax/discount exists */}
+            {lineMetrics.hasAdjustments && <span className="ml-1 text-[10px] opacity-80">(incl. tax/disc)</span>}
           </p>
-          {/* Optional: Show discount in red if applied */}
-          {item.discount && item.discount > 0 ? <p className="text-[10px] text-success">-{formatMoney(item.discount)} Disc.</p> : null}
+        </div>
+
+        {/* Right Side: Financials */}
+        <div className="flex items-center gap-3">
+          <div className="text-right">
+            <p className="font-semibold text-sm">
+              {formatMoney(lineMetrics.total)} {item.currency || "BD"}
+            </p>
+            {/* Optional: Show discount in red if applied */}
+            {item.discount && item.discount > 0 ? <p className="text-[10px] text-success">-{formatMoney(item.discount)} Disc.</p> : null}
+          </div>
         </div>
       </div>
-    </div>
+    </UniversalContextMenu>
   );
 };

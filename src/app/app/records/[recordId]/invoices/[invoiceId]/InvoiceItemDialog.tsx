@@ -21,10 +21,10 @@ import { queryClient } from "@/app/app/App";
  */
 const itemSchema = z.object({
   description: z.string().min(1, "Description is required"),
-  qty: z.coerce.number().min(1, "Qty must be at least 1"),
-  amount: z.coerce.number().min(0, "Amount cannot be negative"),
-  discount: z.coerce.number().optional().default(0),
-  tax: z.coerce.number().optional().default(0),
+  qty: z.number().min(1, "Qty must be at least 1"),
+  amount: z.number().min(0, "Amount cannot be negative"),
+  discount: z.number().optional().default(0),
+  tax: z.number().optional().default(0),
 });
 
 type ItemFormValues = z.infer<typeof itemSchema>;
@@ -47,7 +47,6 @@ export default function InvoiceItemDialog({ children, recordId, invoiceId, initi
       description: initialData?.description || "",
       qty: initialData?.qty || 1,
       amount: initialData?.amount || 0,
-      discount: initialData?.discount || 0,
       tax: initialData?.tax || 0,
     },
   });
