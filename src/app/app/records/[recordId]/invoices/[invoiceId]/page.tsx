@@ -75,7 +75,7 @@ export default function InvoiceItemsPage(props: InvoiceItemsPageProps) {
           ]}
           apiMethod="POST"
           apiEndpoint={`/api/records/${recordId}/invoices/${invoiceId}`}
-          onSuccess={() => refetch}
+          onSuccess={() => refetch()}
         >
           <Button variant="default" size="icon" className="absolute -top-6 left-1/2 -translate-x-1/2 size-14 rounded-full shadow-lg">
             <svg className="icon-[hugeicons--file-01] size-7 text-foreground" />
@@ -143,6 +143,9 @@ const InvoiceItemRow = ({ data: item }: { data: InvoiceItems }) => {
           try {
             const res = await axios.delete(`/api/records/${recordId}/invoices/${invoiceId}`, { params: { itemId: item.id } });
             if (res.data.error) toast.error(res.data.error);
+            queryClient.refetchQueries({
+              queryKey: ["invoicesItems", invoiceId],
+            });
           } catch (e) {}
         },
       },
