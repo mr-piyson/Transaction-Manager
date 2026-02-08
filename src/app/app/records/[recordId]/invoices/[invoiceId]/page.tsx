@@ -4,14 +4,16 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useFab } from "@/hooks/use-fab";
 import { useHeader } from "@/hooks/use-header";
-import { InvoiceItems, Invoices, Records } from "@/types/prisma/client";
+import { InvoiceItems } from "@/types/prisma/client";
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
-import { ArrowLeft, LucideFileText, Pen, Plus, Trash2, User2 } from "lucide-react";
+import { ArrowLeft, LucideFileText, Pen, Trash2 } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useMemo } from "react";
-import InvoiceItemDialog from "./InvoiceItemDialog";
 import { UniversalContextMenu } from "@/components/context-menu";
+import { UniversalDialog } from "@/components/dialog";
+import { queryClient } from "@/app/app/App";
+import { toast } from "sonner";
 
 type InvoiceItemsPageProps = {
   children?: React.ReactNode;
@@ -48,11 +50,37 @@ export default function InvoiceItemsPage(props: InvoiceItemsPageProps) {
     fab.setFabConfig({
       visible: true,
       render: () => (
-        <InvoiceItemDialog recordId={recordId} invoiceId={invoiceId}>
+        <UniversalDialog
+          title={""}
+          fields={[
+            {
+              name: "title",
+              type: "text",
+              width: "full",
+              label: "Name :",
+            },
+            {
+              defaultValue: 0,
+              name: "amount",
+              type: "number",
+              label: "Unit Price :",
+            },
+            ,
+            {
+              defaultValue: 0,
+              name: "qty",
+              type: "number",
+              label: "Quantity :",
+            },
+          ]}
+          apiMethod="POST"
+          apiEndpoint={`/api/records/${recordId}/invoices/${invoiceId}`}
+          onSuccess={() => refetch}
+        >
           <Button variant="default" size="icon" className="absolute -top-6 left-1/2 -translate-x-1/2 size-14 rounded-full shadow-lg">
             <svg className="icon-[hugeicons--file-01] size-7 text-foreground" />
           </Button>
-        </InvoiceItemDialog>
+        </UniversalDialog>
       ),
     });
 
@@ -81,6 +109,7 @@ export default function InvoiceItemsPage(props: InvoiceItemsPageProps) {
 }
 
 const InvoiceItemRow = ({ data: item }: { data: InvoiceItems }) => {
+  const { invoiceId, recordId } = useParams();
   // 1. Calculate Line Total: (Qty * Amount) - Discount + Tax
   const lineMetrics = useMemo(() => {
     const subtotal = item.amount * item.qty;
@@ -97,24 +126,32 @@ const InvoiceItemRow = ({ data: item }: { data: InvoiceItems }) => {
   // 2. Format Currency (Bahrain Dinar 3 decimal places as per your sample)
   const formatMoney = (val: number) => val.toFixed(3);
 
+  const context_menu_conf = useMemo(
+    () => [
+      {
+        id: "update",
+        label: "Update",
+        icon: <Pen />,
+        onClick: () => {},
+      },
+      {
+        id: "delete",
+        label: "Delete",
+        icon: <Trash2 className="text-destructive" />,
+        destructive: true,
+        onClick: async () => {
+          try {
+            const res = await axios.delete(`/api/records/${recordId}/invoices/${invoiceId}`, { params: { itemId: item.id } });
+            if (res.data.error) toast.error(res.data.error);
+          } catch (e) {}
+        },
+      },
+    ],
+    [],
+  );
+
   return (
-    <UniversalContextMenu
-      items={[
-        {
-          id: "update",
-          label: "Update",
-          icon: <Pen />,
-          onClick: () => {},
-        },
-        {
-          id: "delete",
-          label: "Delete",
-          icon: <Trash2 />,
-          destructive: true,
-          onClick: () => {},
-        },
-      ]}
-    >
+    <UniversalContextMenu items={context_menu_conf}>
       <div className="flex items-center gap-4 p-4 transition-colors hover:bg-accent/50 border-b border-border last:border-0">
         {/* Icon Section */}
         <div className="flex items-center justify-center size-10 rounded-lg bg-secondary/20">

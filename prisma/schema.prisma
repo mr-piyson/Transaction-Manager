@@ -69,24 +69,25 @@ enum InvoiceStatus {
 }
 
 model InvoiceItems {
-  id          Int               @id @default(autoincrement())
-  amount      Float             @default(0)
-  charge      Float?            @default(0)
+  id          Int             @id @default(autoincrement())
+  amount      Float           @default(0)
+  charge      Float?          @default(0)
   currency    String?
-  discount    Float?            @default(0)
-  type        TransactionStatus @default(PRODUCT)
+  discount    Float?          @default(0)
+  type        TransactionType @default(PRODUCT)
+  title       String
   description String?
-  createdAt   DateTime?         @default(now())
-  updatedAt   DateTime?         @updatedAt
+  createdAt   DateTime?       @default(now())
+  updatedAt   DateTime?       @updatedAt
   deletedAt   DateTime?
   deletedBy   Int?
-  qty         Int               @default(1)
+  qty         Int             @default(1)
   tax         Float?
-  invoices    Invoices?         @relation(fields: [invoicesId], references: [id])
+  invoices    Invoices?       @relation(fields: [invoicesId], references: [id])
   invoicesId  Int?
 }
 
-enum TransactionStatus {
+enum TransactionType {
   SERVICE
   PRODUCT
 }

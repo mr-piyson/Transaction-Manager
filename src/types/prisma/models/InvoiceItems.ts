@@ -54,7 +54,8 @@ export type InvoiceItemsMinAggregateOutputType = {
   charge: number | null
   currency: string | null
   discount: number | null
-  type: $Enums.TransactionStatus | null
+  type: $Enums.TransactionType | null
+  title: string | null
   description: string | null
   createdAt: Date | null
   updatedAt: Date | null
@@ -71,7 +72,8 @@ export type InvoiceItemsMaxAggregateOutputType = {
   charge: number | null
   currency: string | null
   discount: number | null
-  type: $Enums.TransactionStatus | null
+  type: $Enums.TransactionType | null
+  title: string | null
   description: string | null
   createdAt: Date | null
   updatedAt: Date | null
@@ -89,6 +91,7 @@ export type InvoiceItemsCountAggregateOutputType = {
   currency: number
   discount: number
   type: number
+  title: number
   description: number
   createdAt: number
   updatedAt: number
@@ -130,6 +133,7 @@ export type InvoiceItemsMinAggregateInputType = {
   currency?: true
   discount?: true
   type?: true
+  title?: true
   description?: true
   createdAt?: true
   updatedAt?: true
@@ -147,6 +151,7 @@ export type InvoiceItemsMaxAggregateInputType = {
   currency?: true
   discount?: true
   type?: true
+  title?: true
   description?: true
   createdAt?: true
   updatedAt?: true
@@ -164,6 +169,7 @@ export type InvoiceItemsCountAggregateInputType = {
   currency?: true
   discount?: true
   type?: true
+  title?: true
   description?: true
   createdAt?: true
   updatedAt?: true
@@ -267,7 +273,8 @@ export type InvoiceItemsGroupByOutputType = {
   charge: number | null
   currency: string | null
   discount: number | null
-  type: $Enums.TransactionStatus
+  type: $Enums.TransactionType
+  title: string
   description: string | null
   createdAt: Date | null
   updatedAt: Date | null
@@ -307,7 +314,8 @@ export type InvoiceItemsWhereInput = {
   charge?: Prisma.FloatNullableFilter<"InvoiceItems"> | number | null
   currency?: Prisma.StringNullableFilter<"InvoiceItems"> | string | null
   discount?: Prisma.FloatNullableFilter<"InvoiceItems"> | number | null
-  type?: Prisma.EnumTransactionStatusFilter<"InvoiceItems"> | $Enums.TransactionStatus
+  type?: Prisma.EnumTransactionTypeFilter<"InvoiceItems"> | $Enums.TransactionType
+  title?: Prisma.StringFilter<"InvoiceItems"> | string
   description?: Prisma.StringNullableFilter<"InvoiceItems"> | string | null
   createdAt?: Prisma.DateTimeNullableFilter<"InvoiceItems"> | Date | string | null
   updatedAt?: Prisma.DateTimeNullableFilter<"InvoiceItems"> | Date | string | null
@@ -326,6 +334,7 @@ export type InvoiceItemsOrderByWithRelationInput = {
   currency?: Prisma.SortOrderInput | Prisma.SortOrder
   discount?: Prisma.SortOrderInput | Prisma.SortOrder
   type?: Prisma.SortOrder
+  title?: Prisma.SortOrder
   description?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrderInput | Prisma.SortOrder
   updatedAt?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -346,7 +355,8 @@ export type InvoiceItemsWhereUniqueInput = Prisma.AtLeast<{
   charge?: Prisma.FloatNullableFilter<"InvoiceItems"> | number | null
   currency?: Prisma.StringNullableFilter<"InvoiceItems"> | string | null
   discount?: Prisma.FloatNullableFilter<"InvoiceItems"> | number | null
-  type?: Prisma.EnumTransactionStatusFilter<"InvoiceItems"> | $Enums.TransactionStatus
+  type?: Prisma.EnumTransactionTypeFilter<"InvoiceItems"> | $Enums.TransactionType
+  title?: Prisma.StringFilter<"InvoiceItems"> | string
   description?: Prisma.StringNullableFilter<"InvoiceItems"> | string | null
   createdAt?: Prisma.DateTimeNullableFilter<"InvoiceItems"> | Date | string | null
   updatedAt?: Prisma.DateTimeNullableFilter<"InvoiceItems"> | Date | string | null
@@ -365,6 +375,7 @@ export type InvoiceItemsOrderByWithAggregationInput = {
   currency?: Prisma.SortOrderInput | Prisma.SortOrder
   discount?: Prisma.SortOrderInput | Prisma.SortOrder
   type?: Prisma.SortOrder
+  title?: Prisma.SortOrder
   description?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrderInput | Prisma.SortOrder
   updatedAt?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -389,7 +400,8 @@ export type InvoiceItemsScalarWhereWithAggregatesInput = {
   charge?: Prisma.FloatNullableWithAggregatesFilter<"InvoiceItems"> | number | null
   currency?: Prisma.StringNullableWithAggregatesFilter<"InvoiceItems"> | string | null
   discount?: Prisma.FloatNullableWithAggregatesFilter<"InvoiceItems"> | number | null
-  type?: Prisma.EnumTransactionStatusWithAggregatesFilter<"InvoiceItems"> | $Enums.TransactionStatus
+  type?: Prisma.EnumTransactionTypeWithAggregatesFilter<"InvoiceItems"> | $Enums.TransactionType
+  title?: Prisma.StringWithAggregatesFilter<"InvoiceItems"> | string
   description?: Prisma.StringNullableWithAggregatesFilter<"InvoiceItems"> | string | null
   createdAt?: Prisma.DateTimeNullableWithAggregatesFilter<"InvoiceItems"> | Date | string | null
   updatedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"InvoiceItems"> | Date | string | null
@@ -405,7 +417,8 @@ export type InvoiceItemsCreateInput = {
   charge?: number | null
   currency?: string | null
   discount?: number | null
-  type?: $Enums.TransactionStatus
+  type?: $Enums.TransactionType
+  title: string
   description?: string | null
   createdAt?: Date | string | null
   updatedAt?: Date | string | null
@@ -422,7 +435,8 @@ export type InvoiceItemsUncheckedCreateInput = {
   charge?: number | null
   currency?: string | null
   discount?: number | null
-  type?: $Enums.TransactionStatus
+  type?: $Enums.TransactionType
+  title: string
   description?: string | null
   createdAt?: Date | string | null
   updatedAt?: Date | string | null
@@ -438,7 +452,8 @@ export type InvoiceItemsUpdateInput = {
   charge?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   currency?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   discount?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
-  type?: Prisma.EnumTransactionStatusFieldUpdateOperationsInput | $Enums.TransactionStatus
+  type?: Prisma.EnumTransactionTypeFieldUpdateOperationsInput | $Enums.TransactionType
+  title?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   updatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -455,7 +470,8 @@ export type InvoiceItemsUncheckedUpdateInput = {
   charge?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   currency?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   discount?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
-  type?: Prisma.EnumTransactionStatusFieldUpdateOperationsInput | $Enums.TransactionStatus
+  type?: Prisma.EnumTransactionTypeFieldUpdateOperationsInput | $Enums.TransactionType
+  title?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   updatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -472,7 +488,8 @@ export type InvoiceItemsCreateManyInput = {
   charge?: number | null
   currency?: string | null
   discount?: number | null
-  type?: $Enums.TransactionStatus
+  type?: $Enums.TransactionType
+  title: string
   description?: string | null
   createdAt?: Date | string | null
   updatedAt?: Date | string | null
@@ -488,7 +505,8 @@ export type InvoiceItemsUpdateManyMutationInput = {
   charge?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   currency?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   discount?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
-  type?: Prisma.EnumTransactionStatusFieldUpdateOperationsInput | $Enums.TransactionStatus
+  type?: Prisma.EnumTransactionTypeFieldUpdateOperationsInput | $Enums.TransactionType
+  title?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   updatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -504,7 +522,8 @@ export type InvoiceItemsUncheckedUpdateManyInput = {
   charge?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   currency?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   discount?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
-  type?: Prisma.EnumTransactionStatusFieldUpdateOperationsInput | $Enums.TransactionStatus
+  type?: Prisma.EnumTransactionTypeFieldUpdateOperationsInput | $Enums.TransactionType
+  title?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   updatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -532,6 +551,7 @@ export type InvoiceItemsCountOrderByAggregateInput = {
   currency?: Prisma.SortOrder
   discount?: Prisma.SortOrder
   type?: Prisma.SortOrder
+  title?: Prisma.SortOrder
   description?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -560,6 +580,7 @@ export type InvoiceItemsMaxOrderByAggregateInput = {
   currency?: Prisma.SortOrder
   discount?: Prisma.SortOrder
   type?: Prisma.SortOrder
+  title?: Prisma.SortOrder
   description?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -577,6 +598,7 @@ export type InvoiceItemsMinOrderByAggregateInput = {
   currency?: Prisma.SortOrder
   discount?: Prisma.SortOrder
   type?: Prisma.SortOrder
+  title?: Prisma.SortOrder
   description?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -648,8 +670,8 @@ export type FloatFieldUpdateOperationsInput = {
   divide?: number
 }
 
-export type EnumTransactionStatusFieldUpdateOperationsInput = {
-  set?: $Enums.TransactionStatus
+export type EnumTransactionTypeFieldUpdateOperationsInput = {
+  set?: $Enums.TransactionType
 }
 
 export type InvoiceItemsCreateWithoutInvoicesInput = {
@@ -657,7 +679,8 @@ export type InvoiceItemsCreateWithoutInvoicesInput = {
   charge?: number | null
   currency?: string | null
   discount?: number | null
-  type?: $Enums.TransactionStatus
+  type?: $Enums.TransactionType
+  title: string
   description?: string | null
   createdAt?: Date | string | null
   updatedAt?: Date | string | null
@@ -673,7 +696,8 @@ export type InvoiceItemsUncheckedCreateWithoutInvoicesInput = {
   charge?: number | null
   currency?: string | null
   discount?: number | null
-  type?: $Enums.TransactionStatus
+  type?: $Enums.TransactionType
+  title: string
   description?: string | null
   createdAt?: Date | string | null
   updatedAt?: Date | string | null
@@ -717,7 +741,8 @@ export type InvoiceItemsScalarWhereInput = {
   charge?: Prisma.FloatNullableFilter<"InvoiceItems"> | number | null
   currency?: Prisma.StringNullableFilter<"InvoiceItems"> | string | null
   discount?: Prisma.FloatNullableFilter<"InvoiceItems"> | number | null
-  type?: Prisma.EnumTransactionStatusFilter<"InvoiceItems"> | $Enums.TransactionStatus
+  type?: Prisma.EnumTransactionTypeFilter<"InvoiceItems"> | $Enums.TransactionType
+  title?: Prisma.StringFilter<"InvoiceItems"> | string
   description?: Prisma.StringNullableFilter<"InvoiceItems"> | string | null
   createdAt?: Prisma.DateTimeNullableFilter<"InvoiceItems"> | Date | string | null
   updatedAt?: Prisma.DateTimeNullableFilter<"InvoiceItems"> | Date | string | null
@@ -734,7 +759,8 @@ export type InvoiceItemsCreateManyInvoicesInput = {
   charge?: number | null
   currency?: string | null
   discount?: number | null
-  type?: $Enums.TransactionStatus
+  type?: $Enums.TransactionType
+  title: string
   description?: string | null
   createdAt?: Date | string | null
   updatedAt?: Date | string | null
@@ -749,7 +775,8 @@ export type InvoiceItemsUpdateWithoutInvoicesInput = {
   charge?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   currency?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   discount?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
-  type?: Prisma.EnumTransactionStatusFieldUpdateOperationsInput | $Enums.TransactionStatus
+  type?: Prisma.EnumTransactionTypeFieldUpdateOperationsInput | $Enums.TransactionType
+  title?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   updatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -765,7 +792,8 @@ export type InvoiceItemsUncheckedUpdateWithoutInvoicesInput = {
   charge?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   currency?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   discount?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
-  type?: Prisma.EnumTransactionStatusFieldUpdateOperationsInput | $Enums.TransactionStatus
+  type?: Prisma.EnumTransactionTypeFieldUpdateOperationsInput | $Enums.TransactionType
+  title?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   updatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -781,7 +809,8 @@ export type InvoiceItemsUncheckedUpdateManyWithoutInvoicesInput = {
   charge?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   currency?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   discount?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
-  type?: Prisma.EnumTransactionStatusFieldUpdateOperationsInput | $Enums.TransactionStatus
+  type?: Prisma.EnumTransactionTypeFieldUpdateOperationsInput | $Enums.TransactionType
+  title?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   updatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -800,6 +829,7 @@ export type InvoiceItemsSelect<ExtArgs extends runtime.Types.Extensions.Internal
   currency?: boolean
   discount?: boolean
   type?: boolean
+  title?: boolean
   description?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -818,6 +848,7 @@ export type InvoiceItemsSelectCreateManyAndReturn<ExtArgs extends runtime.Types.
   currency?: boolean
   discount?: boolean
   type?: boolean
+  title?: boolean
   description?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -836,6 +867,7 @@ export type InvoiceItemsSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.
   currency?: boolean
   discount?: boolean
   type?: boolean
+  title?: boolean
   description?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -854,6 +886,7 @@ export type InvoiceItemsSelectScalar = {
   currency?: boolean
   discount?: boolean
   type?: boolean
+  title?: boolean
   description?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -864,7 +897,7 @@ export type InvoiceItemsSelectScalar = {
   invoicesId?: boolean
 }
 
-export type InvoiceItemsOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "amount" | "charge" | "currency" | "discount" | "type" | "description" | "createdAt" | "updatedAt" | "deletedAt" | "deletedBy" | "qty" | "tax" | "invoicesId", ExtArgs["result"]["invoiceItems"]>
+export type InvoiceItemsOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "amount" | "charge" | "currency" | "discount" | "type" | "title" | "description" | "createdAt" | "updatedAt" | "deletedAt" | "deletedBy" | "qty" | "tax" | "invoicesId", ExtArgs["result"]["invoiceItems"]>
 export type InvoiceItemsInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   invoices?: boolean | Prisma.InvoiceItems$invoicesArgs<ExtArgs>
 }
@@ -886,7 +919,8 @@ export type $InvoiceItemsPayload<ExtArgs extends runtime.Types.Extensions.Intern
     charge: number | null
     currency: string | null
     discount: number | null
-    type: $Enums.TransactionStatus
+    type: $Enums.TransactionType
+    title: string
     description: string | null
     createdAt: Date | null
     updatedAt: Date | null
@@ -1324,7 +1358,8 @@ export interface InvoiceItemsFieldRefs {
   readonly charge: Prisma.FieldRef<"InvoiceItems", 'Float'>
   readonly currency: Prisma.FieldRef<"InvoiceItems", 'String'>
   readonly discount: Prisma.FieldRef<"InvoiceItems", 'Float'>
-  readonly type: Prisma.FieldRef<"InvoiceItems", 'TransactionStatus'>
+  readonly type: Prisma.FieldRef<"InvoiceItems", 'TransactionType'>
+  readonly title: Prisma.FieldRef<"InvoiceItems", 'String'>
   readonly description: Prisma.FieldRef<"InvoiceItems", 'String'>
   readonly createdAt: Prisma.FieldRef<"InvoiceItems", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"InvoiceItems", 'DateTime'>
@@ -1551,7 +1586,7 @@ export type InvoiceItemsCreateArgs<ExtArgs extends runtime.Types.Extensions.Inte
   /**
    * The data needed to create a InvoiceItems.
    */
-  data?: Prisma.XOR<Prisma.InvoiceItemsCreateInput, Prisma.InvoiceItemsUncheckedCreateInput>
+  data: Prisma.XOR<Prisma.InvoiceItemsCreateInput, Prisma.InvoiceItemsUncheckedCreateInput>
 }
 
 /**

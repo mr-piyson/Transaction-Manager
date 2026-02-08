@@ -20,9 +20,9 @@ export const InvoiceStatus = {
 export type InvoiceStatus = (typeof InvoiceStatus)[keyof typeof InvoiceStatus]
 
 
-export const TransactionStatus = {
+export const TransactionType = {
   SERVICE: 'SERVICE',
   PRODUCT: 'PRODUCT'
 } as const
 
-export type TransactionStatus = (typeof TransactionStatus)[keyof typeof TransactionStatus]
+export type TransactionType = (typeof TransactionType)[keyof typeof TransactionType]

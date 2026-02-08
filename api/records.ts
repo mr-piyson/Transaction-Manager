@@ -1,33 +1,36 @@
 import db from "@/lib/database";
-import { NextRequest, NextResponse } from "next/server";
+import { Hono } from "hono";
 
-export const GET = async (req: NextRequest, ctx: RouteContext<"/api/records">) => {
+export const recordsRoute = new Hono();
+
+// ------------------------------------------------------------------
+// RECORDS API Handler
+// ------------------------------------------------------------------
+recordsRoute.get("/records", async c => {
   try {
     // GET logic here
     const customers = await db.records.findMany({
       orderBy: { id: "desc" },
     });
-    return NextResponse.json(customers);
+    return c.json(customers);
   } catch (error) {
     console.error(error);
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+    return c.json({ error: "Internal Server Error" }, { status: 500 });
   }
-};
+});
 
-export const POST = async (req: NextRequest) => {
+recordsRoute.post("/records", async c => {
   try {
-    const formData = await req.formData();
+    const formData = await c.req.formData();
     const name = formData.get("name") as string | null;
     const phone = formData.get("phone") as string | null;
     const email = formData.get("email") as string | null;
     const address = formData.get("address") as string | null;
     const image = formData.get("image") as string | null;
 
-    console.log(formData);
-
     // Optional basic validation
     if (!name) {
-      return NextResponse.json({ error: "Name is required" }, { status: 400 });
+      return c.json({ error: "Name is required" }, { status: 400 });
     }
 
     // Step 1: Insert the customer
@@ -41,9 +44,9 @@ export const POST = async (req: NextRequest) => {
       data: { code: `CUST-${String(customer.id).padStart(6, "0")}` },
     });
 
-    return NextResponse.json(customer, { status: 201 });
+    return c.json(customer, { status: 201 });
   } catch (error) {
     console.error("Create customer error:", error);
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+    return c.json({ error: "Internal Server Error" }, { status: 500 });
   }
-};
+});
