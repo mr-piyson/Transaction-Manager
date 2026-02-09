@@ -2,7 +2,7 @@ import db from "@/lib/database";
 import { Records, Users } from "@/types/prisma/client";
 
 class Record {
-  static async getAllCustomer() {
+  static async getAllCustomers() {
     return await db.records.findMany({});
   }
 

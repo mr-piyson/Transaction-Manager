@@ -1,7 +1,7 @@
 "use client";
 import { ListView } from "@/components/list-view";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/button";
 import { useFab } from "@/hooks/use-fab";
 import { useHeader } from "@/hooks/use-header";
 import { InvoiceItems } from "@/types/prisma/client";
@@ -35,15 +35,38 @@ export default function InvoiceItemsPage(props: InvoiceItemsPageProps) {
     queryFn: async () => (await axios.get(`/api/records/${recordId}/invoices/${invoiceId}`)).data,
   });
 
+  const invoiceItems = Array.isArray(invoices) ? invoices : [];
+  const hasInvoices = invoiceItems.length > 0;
+
+  const handlePay = async (items: InvoiceItems[]) => {
+    if (!items.length) return;
+    try {
+      await axios.post(`/api/records/${recordId}/invoices/${invoiceId}/pay`, { items });
+      await refetch();
+    } finally {
+    }
+  };
+
   useEffect(() => {
+    console.log(invoices);
     header.configureHeader({
       leftContent: (
         <div className="flex h-full w-full items-center gap-4">
           <Button variant={"ghost"} className="p-1" onClick={() => router.back()}>
             <ArrowLeft className="size-6" />
           </Button>
-          <h1 className="text-2xl font-semibold">Invoice Items</h1>
+          <h1 className="text-2xl font-semibold">INV-{invoiceId}</h1>
         </div>
+      ),
+      rightContent: (
+        <>
+          <Button variant="default" disabled={isLoading || !!error || !hasInvoices} onClick={() => router.push(`/app/records/${recordId}/invoices/${invoiceId}/invoice`)}>
+            Invoice
+          </Button>
+          <Button variant="default" disabled={isLoading || !!error || !hasInvoices} onClick={() => handlePay(invoiceItems)}>
+            Pay
+          </Button>
+        </>
       ),
     });
 
@@ -66,7 +89,7 @@ export default function InvoiceItemsPage(props: InvoiceItemsPageProps) {
               label: "Unit Price :",
             },
             {
-              defaultValue: 0,
+              defaultValue: 1,
               name: "qty",
               type: "number",
               label: "Quantity :",
@@ -87,7 +110,8 @@ export default function InvoiceItemsPage(props: InvoiceItemsPageProps) {
       header.resetHeader();
       fab.resetFabConfig();
     };
-  }, []);
+  }, [invoices]);
+
   return (
     <div className="flex-1 h-full">
       <ListView<InvoiceItems>

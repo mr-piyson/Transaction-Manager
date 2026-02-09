@@ -25,7 +25,6 @@ authRoute.post("/", async c => {
       email,
       password,
     });
-
     if (result.success) {
       return c.json({ message: "Sign in successful" }, { status: 200 });
     } else {
