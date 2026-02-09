@@ -65,7 +65,6 @@ export default function InvoiceItemsPage(props: InvoiceItemsPageProps) {
               type: "number",
               label: "Unit Price :",
             },
-            ,
             {
               defaultValue: 0,
               name: "qty",
