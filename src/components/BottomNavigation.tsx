@@ -37,7 +37,7 @@ export function BottomNavigation({ sidebarContent, onFabClick, fabIcon, classNam
   return (
     <>
       {/* Bottom Navigation Bar */}
-      <nav className={cn("bottom-0 left-0 right-0 z-40 border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80", className)}>
+      <nav className={cn("print:hidden bottom-0 left-0 right-0 z-40 border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80", className)}>
         <div className="relative mx-auto flex h-16 max-w-lg items-center justify-between px-6">
           {/* Sidebar Trigger */}
           <Button variant="ghost" size="icon" onClick={() => openSidebar()} aria-label="Open sidebar menu" className="size-11 rounded-full">

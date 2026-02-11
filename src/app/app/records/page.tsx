@@ -37,7 +37,7 @@ export default function RecordsPage(props: RecordsPageProps) {
   useEffect(() => {
     header.configureHeader({
       leftContent: (
-        <div className="flex h-full w-full items-center gap-4">
+        <div className="flex h-full w-full items-center gap-4 print:hidden">
           <div className="bg-primary w-1 h-8"></div>
           <h1 className="text-2xl font-semibold pb-1">Records</h1>
         </div>

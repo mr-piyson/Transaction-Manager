@@ -148,6 +148,13 @@ invoicesRoute.post("/records/:recordId/invoices/:invoiceId", async c => {
       invoiceId: z.coerce.number().int().positive(),
     });
 
+    // Parse URL params
+    const parsed = params_schema.safeParse(c.req.param());
+    if (!parsed.success) {
+      return c.json({ error: "Invalid recordId or invoiceId" }, 400);
+    }
+    const { recordId, invoiceId } = parsed.data;
+
     const form_data_schema = z.object({
       title: z.string().min(1), // title should be string
       description: z.string().optional(),
@@ -155,13 +162,6 @@ invoicesRoute.post("/records/:recordId/invoices/:invoiceId", async c => {
       amount: z.coerce.number().optional().default(0),
       tax: z.coerce.number().optional().default(0),
     });
-
-    // Parse URL params
-    const parsed = params_schema.safeParse(c.req.param());
-    if (!parsed.success) {
-      return c.json({ error: "Invalid recordId or invoiceId" }, 400);
-    }
-    const { recordId, invoiceId } = parsed.data;
 
     // Parse form data
     const formData = await c.req.formData();
@@ -229,5 +229,64 @@ invoicesRoute.delete("/records/:recordId/invoices/:invoiceId", async c => {
   } catch (err) {
     console.error(err);
     return c.json({ error: "Internal Server Error" }, 500);
+  }
+});
+
+//---------------------------------------------------
+//  Get Invoice Data for generating invoice
+//---------------------------------------------------
+
+invoicesRoute.get("/records/:recordId/invoices/:invoiceId/invoice", async c => {
+  try {
+    const params_schema = z.object({
+      recordId: z.coerce.number().int().positive(),
+      invoiceId: z.coerce.number().int().positive(),
+    });
+
+    // Parse URL params
+    const parsed = params_schema.safeParse(c.req.param());
+    if (!parsed.success) {
+      return c.json({ error: "Invalid recordId or invoiceId" }, 400);
+    }
+    const { recordId, invoiceId } = parsed.data;
+
+    // Fetch invoice with all relations
+    const invoice = await prisma.invoices.findUnique({
+      where: {
+        id: invoiceId,
+      },
+      include: {
+        records: true,
+        invoiceItems: {
+          orderBy: {
+            id: "asc",
+          },
+        },
+      },
+    });
+
+    if (!invoice) {
+      return c.json({ error: "Invoice not found" }, { status: 404 });
+    }
+
+    // Fetch company information (assuming there's only one company or get the first one)
+    const company = await prisma.companies.findFirst();
+
+    return c.json({
+      invoice,
+      company: company || {
+        id: 0,
+        name: null,
+        address: null,
+        telephone: null,
+        logo: null,
+        email: null,
+        vat: null,
+        defaultCurrency: "BD",
+      },
+    });
+  } catch (error) {
+    console.error("Error fetching invoice:", error);
+    return c.json({ error: "Internal server error" }, { status: 500 });
   }
 });

@@ -293,13 +293,6 @@ export class Auth {
         }
       }
 
-      // --- DEV MODE BYPASS OPTION ---
-      // If you're in dev and just want to stay logged in regardless of expiry
-      if (env.NODE_ENV === "development" && accessToken) {
-        const decoded = jwt.decode(accessToken) as TokenPayload;
-        if (decoded) return decoded;
-      }
-
       // Try to refresh token
       const refreshToken = cookieStore.get("refresh_token")?.value;
       if (!refreshToken) return null;

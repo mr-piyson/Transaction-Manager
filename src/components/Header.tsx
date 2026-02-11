@@ -11,7 +11,7 @@ export function Header() {
   return (
     <header
       className={cn(
-        "w-full z-50 transition-all duration-300",
+        "w-full z-50 transition-all duration-300 print:hidden",
         sticky && "sticky top-0",
         transparent ? "bg-transparent" : "bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60",
         showBorder && "border-b border-border",
