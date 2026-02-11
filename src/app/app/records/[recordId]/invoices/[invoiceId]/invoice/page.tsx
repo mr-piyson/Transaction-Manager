@@ -109,24 +109,36 @@ export default function InvoicePage() {
       // Wait for transform to apply
       await new Promise(resolve => setTimeout(resolve, 100));
 
-      const canvas = await html2canvas(invoiceRef.current, {
-        scale: 2,
-        useCORS: true,
-        logging: false,
-        allowTaint: true,
-      });
-
-      const imgData = canvas.toDataURL("image/png");
+      // Get all pages
+      const pages = invoiceRef.current.querySelectorAll(".invoice-page");
       const pdf = new jsPDF({
         orientation: "portrait",
         unit: "mm",
         format: "a4",
       });
 
-      const imgWidth = 210;
-      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+      for (let i = 0; i < pages.length; i++) {
+        const page = pages[i] as HTMLElement;
 
-      pdf.addImage(imgData, "PNG", 0, 0, imgWidth, imgHeight);
+        const canvas = await html2canvas(page, {
+          scale: 2,
+          useCORS: true,
+          logging: false,
+          allowTaint: true,
+          backgroundColor: "#ffffff",
+        });
+
+        const imgData = canvas.toDataURL("image/png");
+        const imgWidth = 210;
+        const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+        if (i > 0) {
+          pdf.addPage();
+        }
+
+        pdf.addImage(imgData, "PNG", 0, 0, imgWidth, imgHeight);
+      }
+
       pdf.save(`invoice-${data?.invoice.id}.pdf`);
 
       // Restore original transform
@@ -207,8 +219,90 @@ export default function InvoicePage() {
     return colors[status as keyof typeof colors] || "bg-gray-100 text-gray-800";
   };
 
+  // Split items into pages (approximately 15 items per page to allow for header/footer)
+  const ITEMS_PER_PAGE = 15;
+  const totalPages = Math.ceil(invoice.invoiceItems.length / ITEMS_PER_PAGE);
+  const itemPages: (typeof invoice.invoiceItems)[] = [];
+
+  for (let i = 0; i < totalPages; i++) {
+    const start = i * ITEMS_PER_PAGE;
+    const end = start + ITEMS_PER_PAGE;
+    itemPages.push(invoice.invoiceItems.slice(start, end));
+  }
+
+  // Header component to repeat on each page
+  const InvoiceHeader = ({ pageNumber, totalPages }: { pageNumber: number; totalPages: number }) => (
+    <div className="invoice-header border-b-2 border-gray-300 pb-6 mb-6">
+      <div className="flex justify-between items-start">
+        {/* Company Info */}
+        <div className="max-w-[50%]">
+          {company.logo && <img src={company.logo} alt={company.name || "Company Logo"} className="h-12 mb-3 object-contain" />}
+          <h2 className="text-xl font-bold mb-1">{company.name || "Company Name"}</h2>
+          <address className="text-xs text-gray-600 not-italic">
+            {company.address && (
+              <>
+                {company.address}
+                <br />
+              </>
+            )}
+            {company.telephone && (
+              <>
+                Tel: {company.telephone}
+                <br />
+              </>
+            )}
+            {company.email && (
+              <>
+                Email: {company.email}
+                <br />
+              </>
+            )}
+            {company.vat && <>VAT: {company.vat}</>}
+          </address>
+        </div>
+
+        {/* Invoice Details */}
+        <div className="text-right">
+          <h1 className="text-2xl font-bold text-gray-800 mb-3">INVOICE</h1>
+          <div className="space-y-1 text-xs">
+            <div className="grid grid-cols-2 gap-x-3 gap-y-1">
+              <span className="text-gray-600 font-semibold text-right">Invoice #:</span>
+              <span className="font-medium">INV-{invoice.id.toString().padStart(5, "0")}</span>
+
+              <span className="text-gray-600 font-semibold text-right">Date:</span>
+              <span className="font-medium">{invoice.date ? new Date(invoice.date).toLocaleDateString("en-GB") : "N/A"}</span>
+
+              <span className="text-gray-600 font-semibold text-right">Status:</span>
+              <span>
+                <span className={`px-2 py-1 rounded text-xs font-semibold ${getStatusColor(invoice.status)}`}>{invoice.status.replace("_", " ")}</span>
+              </span>
+
+              <span className="text-gray-600 font-semibold text-right">Page:</span>
+              <span className="font-medium">
+                {pageNumber} of {totalPages}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
+  // Footer component to repeat on each page
+  const InvoiceFooter = ({ pageNumber, totalPages }: { pageNumber: number; totalPages: number }) => (
+    <div className="invoice-footer mt-auto pt-4 border-t border-gray-200">
+      <div className="flex justify-between items-center text-xs text-gray-500">
+        <span>Invoice #{invoice.id.toString().padStart(5, "0")}</span>
+        <span>
+          Page {pageNumber} of {totalPages}
+        </span>
+        <span>{company.name || ""}</span>
+      </div>
+    </div>
+  );
+
   return (
-    <div className=" bg-background">
+    <div className="bg-background">
       {/* Action Buttons - Fixed on mobile, floating on desktop */}
       <div className="sticky top-0 z-10 bg-card border-b shadow-sm print:hidden">
         <div className="container mx-auto px-4 py-3">
@@ -247,10 +341,10 @@ export default function InvoicePage() {
         className="container mx-auto py-4 md:py-8 px-4"
       >
         <div className="flex justify-center">
-          <div>
+          <div ref={invoiceRef} className="space-y-4">
+            {/* First Page */}
             <div
-              ref={invoiceRef}
-              className="invoice bg-white shadow-lg print:shadow-none"
+              className="invoice-page bg-white shadow-lg print:shadow-none print:page-break-after-always flex flex-col"
               style={{
                 width: "210mm",
                 minHeight: "297mm",
@@ -258,61 +352,12 @@ export default function InvoicePage() {
                 boxSizing: "border-box",
               }}
             >
-              {/* Header */}
-              <div className="invoice-header border-b-2 border-gray-300 pb-6 mb-8">
-                <div className="flex justify-between items-start">
-                  {/* Company Info */}
-                  <div className="max-w-[50%]">
-                    {company.logo && <img src={company.logo} alt={company.name || "Company Logo"} className="h-16 mb-4 object-contain" />}
-                    <h2 className="text-2xl font-bold mb-2">{company.name || "Company Name"}</h2>
-                    <address className="text-sm text-gray-600 not-italic">
-                      {company.address && (
-                        <>
-                          {company.address}
-                          <br />
-                        </>
-                      )}
-                      {company.telephone && (
-                        <>
-                          Tel: {company.telephone}
-                          <br />
-                        </>
-                      )}
-                      {company.email && (
-                        <>
-                          Email: {company.email}
-                          <br />
-                        </>
-                      )}
-                      {company.vat && <>VAT: {company.vat}</>}
-                    </address>
-                  </div>
+              <InvoiceHeader pageNumber={1} totalPages={totalPages} />
 
-                  {/* Invoice Details */}
-                  <div className="text-right">
-                    <h1 className="text-3xl font-bold text-gray-800 mb-4">INVOICE</h1>
-                    <div className="space-y-2 text-sm">
-                      <div className="grid grid-cols-2 gap-x-4 gap-y-1">
-                        <span className="text-gray-600 font-semibold text-right">Invoice #:</span>
-                        <span className="font-medium">INV-{invoice.id.toString().padStart(5, "0")}</span>
-
-                        <span className="text-gray-600 font-semibold text-right">Date:</span>
-                        <span className="font-medium">{invoice.date ? new Date(invoice.date).toLocaleDateString("en-GB") : "N/A"}</span>
-
-                        <span className="text-gray-600 font-semibold text-right">Status:</span>
-                        <span>
-                          <span className={`px-2 py-1 rounded text-xs font-semibold ${getStatusColor(invoice.status)}`}>{invoice.status.replace("_", " ")}</span>
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Bill To Section */}
-              <div className="mb-8">
+              {/* Bill To Section - Only on first page */}
+              <div className="mb-6">
                 <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
-                  <h3 className="font-semibold text-gray-800 mb-3">Bill To:</h3>
+                  <h3 className="font-semibold text-gray-800 mb-2">Bill To:</h3>
                   {invoice.records ? (
                     <div className="text-sm space-y-1">
                       <p className="font-semibold text-gray-900">{invoice.records.name || "N/A"}</p>
@@ -327,7 +372,7 @@ export default function InvoicePage() {
                 </div>
               </div>
 
-              {/* Invoice Title */}
+              {/* Invoice Title - Only on first page */}
               {invoice.title && (
                 <div className="mb-6">
                   <h3 className="font-semibold text-gray-800 mb-2">Invoice Description:</h3>
@@ -335,8 +380,8 @@ export default function InvoicePage() {
                 </div>
               )}
 
-              {/* Items Table */}
-              <div className="mb-8">
+              {/* Items Table - First Page */}
+              <div className="mb-6 flex-grow">
                 <Table>
                   <TableHeader>
                     <TableRow className="bg-gray-100 hover:bg-gray-100">
@@ -348,7 +393,7 @@ export default function InvoicePage() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {invoice.invoiceItems.map(item => {
+                    {itemPages[0]?.map(item => {
                       const itemTotal = item.qty * item.amount;
                       return (
                         <TableRow key={item.id} className="hover:bg-gray-50">
@@ -375,57 +420,183 @@ export default function InvoicePage() {
                 </Table>
               </div>
 
-              {/* Totals Section */}
-              <div className="flex justify-end mb-12">
-                <div className="w-80">
-                  <div className="space-y-2">
-                    <div className="flex justify-between text-sm">
-                      <span className="text-gray-600">Subtotal:</span>
-                      <span className="font-medium">
-                        {subtotal.toFixed(3)} {currency}
-                      </span>
-                    </div>
+              {/* Show totals only if this is the last page */}
+              {totalPages === 1 && (
+                <>
+                  {/* Totals Section */}
+                  <div className="flex justify-end mb-8">
+                    <div className="w-80">
+                      <div className="space-y-2">
+                        <div className="flex justify-between text-sm">
+                          <span className="text-gray-600">Subtotal:</span>
+                          <span className="font-medium">
+                            {subtotal.toFixed(3)} {currency}
+                          </span>
+                        </div>
 
-                    {totalTax > 0 && (
-                      <div className="flex justify-between text-sm">
-                        <span className="text-gray-600">Tax:</span>
-                        <span className="font-medium">
-                          {totalTax.toFixed(3)} {currency}
-                        </span>
+                        {totalTax > 0 && (
+                          <div className="flex justify-between text-sm">
+                            <span className="text-gray-600">Tax:</span>
+                            <span className="font-medium">
+                              {totalTax.toFixed(3)} {currency}
+                            </span>
+                          </div>
+                        )}
+
+                        <div className="border-t-2 border-gray-300 pt-2 flex justify-between text-lg font-bold">
+                          <span>Total:</span>
+                          <span>
+                            {grandTotal.toFixed(3)} {currency}
+                          </span>
+                        </div>
                       </div>
-                    )}
-
-                    <div className="border-t-2 border-gray-300 pt-2 flex justify-between text-lg font-bold">
-                      <span>Total:</span>
-                      <span>
-                        {grandTotal.toFixed(3)} {currency}
-                      </span>
                     </div>
                   </div>
-                </div>
-              </div>
 
-              {/* Footer - Signature Section */}
-              <div className="mt-16 pt-8 border-t border-gray-300">
-                <div className="grid grid-cols-2 gap-12">
-                  <div>
-                    <p className="font-semibold text-gray-700 mb-16">Authorized Signature</p>
-                    <div className="border-b-2 border-gray-400 w-64"></div>
-                    <p className="text-xs text-gray-500 mt-2">{company.name || ""}</p>
+                  {/* Footer - Signature Section */}
+                  <div className="mt-8 pt-6 border-t border-gray-300">
+                    <div className="grid grid-cols-2 gap-12">
+                      <div>
+                        <p className="font-semibold text-gray-700 mb-12">Authorized Signature</p>
+                        <div className="border-b-2 border-gray-400 w-48"></div>
+                        <p className="text-xs text-gray-500 mt-2">{company.name || ""}</p>
+                      </div>
+                      <div>
+                        <p className="font-semibold text-gray-700 mb-12">Customer Signature</p>
+                        <div className="border-b-2 border-gray-400 w-48"></div>
+                        <p className="text-xs text-gray-500 mt-2">{invoice.records?.name || ""}</p>
+                      </div>
+                    </div>
                   </div>
-                  <div>
-                    <p className="font-semibold text-gray-700 mb-16">Customer Signature</p>
-                    <div className="border-b-2 border-gray-400 w-64"></div>
-                    <p className="text-xs text-gray-500 mt-2">{invoice.records?.name || ""}</p>
-                  </div>
-                </div>
-              </div>
 
-              {/* Footer Note */}
-              <div className="mt-12 text-center text-xs text-gray-500">
-                <p>Thank you for your business!</p>
-              </div>
+                  {/* Footer Note */}
+                  <div className="mt-8 text-center text-xs text-gray-500">
+                    <p>Thank you for your business!</p>
+                  </div>
+                </>
+              )}
+
+              <InvoiceFooter pageNumber={1} totalPages={totalPages} />
             </div>
+
+            {/* Subsequent Pages */}
+            {itemPages.slice(1).map((pageItems, pageIndex) => {
+              const pageNumber = pageIndex + 2;
+              const isLastPage = pageNumber === totalPages;
+
+              return (
+                <div
+                  key={pageNumber}
+                  className="invoice-page bg-white shadow-lg print:shadow-none print:page-break-after-always flex flex-col"
+                  style={{
+                    width: "210mm",
+                    minHeight: "297mm",
+                    padding: "15mm",
+                    boxSizing: "border-box",
+                  }}
+                >
+                  <InvoiceHeader pageNumber={pageNumber} totalPages={totalPages} />
+
+                  {/* Items Table - Continuation */}
+                  <div className="mb-6 flex-grow">
+                    <Table>
+                      <TableHeader>
+                        <TableRow className="bg-gray-100 hover:bg-gray-100">
+                          <TableHead className="font-semibold text-gray-800">Description</TableHead>
+                          <TableHead className="font-semibold text-gray-800">Type</TableHead>
+                          <TableHead className="font-semibold text-gray-800 text-right">Qty</TableHead>
+                          <TableHead className="font-semibold text-gray-800 text-right">Rate</TableHead>
+                          <TableHead className="font-semibold text-gray-800 text-right">Amount</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {pageItems.map(item => {
+                          const itemTotal = item.qty * item.amount;
+                          return (
+                            <TableRow key={item.id} className="hover:bg-gray-50">
+                              <TableCell>
+                                <div>
+                                  <p className="font-medium text-gray-900">{item.title}</p>
+                                  {item.description && <p className="text-xs text-gray-500 mt-1">{item.description}</p>}
+                                </div>
+                              </TableCell>
+                              <TableCell>
+                                <span className="text-xs px-2 py-1 bg-gray-100 rounded">{item.type}</span>
+                              </TableCell>
+                              <TableCell className="text-right">{item.qty}</TableCell>
+                              <TableCell className="text-right">
+                                {item.amount.toFixed(3)} {currency}
+                              </TableCell>
+                              <TableCell className="text-right font-medium">
+                                {itemTotal.toFixed(3)} {currency}
+                              </TableCell>
+                            </TableRow>
+                          );
+                        })}
+                      </TableBody>
+                    </Table>
+                  </div>
+
+                  {/* Show totals only on last page */}
+                  {isLastPage && (
+                    <>
+                      {/* Totals Section */}
+                      <div className="flex justify-end mb-8">
+                        <div className="w-80">
+                          <div className="space-y-2">
+                            <div className="flex justify-between text-sm">
+                              <span className="text-gray-600">Subtotal:</span>
+                              <span className="font-medium">
+                                {subtotal.toFixed(3)} {currency}
+                              </span>
+                            </div>
+
+                            {totalTax > 0 && (
+                              <div className="flex justify-between text-sm">
+                                <span className="text-gray-600">Tax:</span>
+                                <span className="font-medium">
+                                  {totalTax.toFixed(3)} {currency}
+                                </span>
+                              </div>
+                            )}
+
+                            <div className="border-t-2 border-gray-300 pt-2 flex justify-between text-lg font-bold">
+                              <span>Total:</span>
+                              <span>
+                                {grandTotal.toFixed(3)} {currency}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Footer - Signature Section */}
+                      <div className="mt-8 pt-6 border-t border-gray-300">
+                        <div className="grid grid-cols-2 gap-12">
+                          <div>
+                            <p className="font-semibold text-gray-700 mb-12">Authorized Signature</p>
+                            <div className="border-b-2 border-gray-400 w-48"></div>
+                            <p className="text-xs text-gray-500 mt-2">{company.name || ""}</p>
+                          </div>
+                          <div>
+                            <p className="font-semibold text-gray-700 mb-12">Customer Signature</p>
+                            <div className="border-b-2 border-gray-400 w-48"></div>
+                            <p className="text-xs text-gray-500 mt-2">{invoice.records?.name || ""}</p>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Footer Note */}
+                      <div className="mt-8 text-center text-xs text-gray-500">
+                        <p>Thank you for your business!</p>
+                      </div>
+                    </>
+                  )}
+
+                  <InvoiceFooter pageNumber={pageNumber} totalPages={totalPages} />
+                </div>
+              );
+            })}
           </div>
         </div>
       </div>
@@ -438,13 +609,10 @@ export default function InvoicePage() {
             padding: 0;
             background: white;
           }
-          .invoice-wrapper {
-            transform: scale(1) !important;
-          }
-          .invoice {
+          .invoice-page {
             box-shadow: none !important;
             margin: 0 !important;
-            page-break-after: always;
+            transform: scale(1) !important;
           }
           @page {
             size: A4;
