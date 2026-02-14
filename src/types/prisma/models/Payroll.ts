@@ -27,6 +27,8 @@ export type AggregatePayroll = {
 }
 
 export type PayrollAvgAggregateOutputType = {
+  id: number | null
+  employeeId: number | null
   baseSalary: runtime.Decimal | null
   overtime: runtime.Decimal | null
   bonus: runtime.Decimal | null
@@ -43,6 +45,8 @@ export type PayrollAvgAggregateOutputType = {
 }
 
 export type PayrollSumAggregateOutputType = {
+  id: number | null
+  employeeId: number | null
   baseSalary: runtime.Decimal | null
   overtime: runtime.Decimal | null
   bonus: runtime.Decimal | null
@@ -59,9 +63,9 @@ export type PayrollSumAggregateOutputType = {
 }
 
 export type PayrollMinAggregateOutputType = {
-  id: string | null
+  id: number | null
   payrollNumber: string | null
-  employeeId: string | null
+  employeeId: number | null
   payPeriodStart: Date | null
   payPeriodEnd: Date | null
   payDate: Date | null
@@ -88,9 +92,9 @@ export type PayrollMinAggregateOutputType = {
 }
 
 export type PayrollMaxAggregateOutputType = {
-  id: string | null
+  id: number | null
   payrollNumber: string | null
-  employeeId: string | null
+  employeeId: number | null
   payPeriodStart: Date | null
   payPeriodEnd: Date | null
   payDate: Date | null
@@ -148,6 +152,8 @@ export type PayrollCountAggregateOutputType = {
 
 
 export type PayrollAvgAggregateInputType = {
+  id?: true
+  employeeId?: true
   baseSalary?: true
   overtime?: true
   bonus?: true
@@ -164,6 +170,8 @@ export type PayrollAvgAggregateInputType = {
 }
 
 export type PayrollSumAggregateInputType = {
+  id?: true
+  employeeId?: true
   baseSalary?: true
   overtime?: true
   bonus?: true
@@ -354,9 +362,9 @@ export type PayrollGroupByArgs<ExtArgs extends runtime.Types.Extensions.Internal
 }
 
 export type PayrollGroupByOutputType = {
-  id: string
+  id: number
   payrollNumber: string
-  employeeId: string
+  employeeId: number
   payPeriodStart: Date
   payPeriodEnd: Date
   payDate: Date
@@ -406,9 +414,9 @@ export type PayrollWhereInput = {
   AND?: Prisma.PayrollWhereInput | Prisma.PayrollWhereInput[]
   OR?: Prisma.PayrollWhereInput[]
   NOT?: Prisma.PayrollWhereInput | Prisma.PayrollWhereInput[]
-  id?: Prisma.StringFilter<"Payroll"> | string
+  id?: Prisma.IntFilter<"Payroll"> | number
   payrollNumber?: Prisma.StringFilter<"Payroll"> | string
-  employeeId?: Prisma.StringFilter<"Payroll"> | string
+  employeeId?: Prisma.IntFilter<"Payroll"> | number
   payPeriodStart?: Prisma.DateTimeFilter<"Payroll"> | Date | string
   payPeriodEnd?: Prisma.DateTimeFilter<"Payroll"> | Date | string
   payDate?: Prisma.DateTimeFilter<"Payroll"> | Date | string
@@ -466,12 +474,12 @@ export type PayrollOrderByWithRelationInput = {
 }
 
 export type PayrollWhereUniqueInput = Prisma.AtLeast<{
-  id?: string
+  id?: number
   AND?: Prisma.PayrollWhereInput | Prisma.PayrollWhereInput[]
   OR?: Prisma.PayrollWhereInput[]
   NOT?: Prisma.PayrollWhereInput | Prisma.PayrollWhereInput[]
   payrollNumber?: Prisma.StringFilter<"Payroll"> | string
-  employeeId?: Prisma.StringFilter<"Payroll"> | string
+  employeeId?: Prisma.IntFilter<"Payroll"> | number
   payPeriodStart?: Prisma.DateTimeFilter<"Payroll"> | Date | string
   payPeriodEnd?: Prisma.DateTimeFilter<"Payroll"> | Date | string
   payDate?: Prisma.DateTimeFilter<"Payroll"> | Date | string
@@ -536,9 +544,9 @@ export type PayrollScalarWhereWithAggregatesInput = {
   AND?: Prisma.PayrollScalarWhereWithAggregatesInput | Prisma.PayrollScalarWhereWithAggregatesInput[]
   OR?: Prisma.PayrollScalarWhereWithAggregatesInput[]
   NOT?: Prisma.PayrollScalarWhereWithAggregatesInput | Prisma.PayrollScalarWhereWithAggregatesInput[]
-  id?: Prisma.StringWithAggregatesFilter<"Payroll"> | string
+  id?: Prisma.IntWithAggregatesFilter<"Payroll"> | number
   payrollNumber?: Prisma.StringWithAggregatesFilter<"Payroll"> | string
-  employeeId?: Prisma.StringWithAggregatesFilter<"Payroll"> | string
+  employeeId?: Prisma.IntWithAggregatesFilter<"Payroll"> | number
   payPeriodStart?: Prisma.DateTimeWithAggregatesFilter<"Payroll"> | Date | string
   payPeriodEnd?: Prisma.DateTimeWithAggregatesFilter<"Payroll"> | Date | string
   payDate?: Prisma.DateTimeWithAggregatesFilter<"Payroll"> | Date | string
@@ -565,7 +573,6 @@ export type PayrollScalarWhereWithAggregatesInput = {
 }
 
 export type PayrollCreateInput = {
-  id?: string
   payrollNumber: string
   payPeriodStart: Date | string
   payPeriodEnd: Date | string
@@ -594,9 +601,9 @@ export type PayrollCreateInput = {
 }
 
 export type PayrollUncheckedCreateInput = {
-  id?: string
+  id?: number
   payrollNumber: string
-  employeeId: string
+  employeeId: number
   payPeriodStart: Date | string
   payPeriodEnd: Date | string
   payDate: Date | string
@@ -623,7 +630,6 @@ export type PayrollUncheckedCreateInput = {
 }
 
 export type PayrollUpdateInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   payrollNumber?: Prisma.StringFieldUpdateOperationsInput | string
   payPeriodStart?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   payPeriodEnd?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -652,9 +658,9 @@ export type PayrollUpdateInput = {
 }
 
 export type PayrollUncheckedUpdateInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   payrollNumber?: Prisma.StringFieldUpdateOperationsInput | string
-  employeeId?: Prisma.StringFieldUpdateOperationsInput | string
+  employeeId?: Prisma.IntFieldUpdateOperationsInput | number
   payPeriodStart?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   payPeriodEnd?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   payDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -681,9 +687,9 @@ export type PayrollUncheckedUpdateInput = {
 }
 
 export type PayrollCreateManyInput = {
-  id?: string
+  id?: number
   payrollNumber: string
-  employeeId: string
+  employeeId: number
   payPeriodStart: Date | string
   payPeriodEnd: Date | string
   payDate: Date | string
@@ -710,7 +716,6 @@ export type PayrollCreateManyInput = {
 }
 
 export type PayrollUpdateManyMutationInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   payrollNumber?: Prisma.StringFieldUpdateOperationsInput | string
   payPeriodStart?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   payPeriodEnd?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -738,9 +743,9 @@ export type PayrollUpdateManyMutationInput = {
 }
 
 export type PayrollUncheckedUpdateManyInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   payrollNumber?: Prisma.StringFieldUpdateOperationsInput | string
-  employeeId?: Prisma.StringFieldUpdateOperationsInput | string
+  employeeId?: Prisma.IntFieldUpdateOperationsInput | number
   payPeriodStart?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   payPeriodEnd?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   payDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -806,6 +811,8 @@ export type PayrollCountOrderByAggregateInput = {
 }
 
 export type PayrollAvgOrderByAggregateInput = {
+  id?: Prisma.SortOrder
+  employeeId?: Prisma.SortOrder
   baseSalary?: Prisma.SortOrder
   overtime?: Prisma.SortOrder
   bonus?: Prisma.SortOrder
@@ -880,6 +887,8 @@ export type PayrollMinOrderByAggregateInput = {
 }
 
 export type PayrollSumOrderByAggregateInput = {
+  id?: Prisma.SortOrder
+  employeeId?: Prisma.SortOrder
   baseSalary?: Prisma.SortOrder
   overtime?: Prisma.SortOrder
   bonus?: Prisma.SortOrder
@@ -942,7 +951,6 @@ export type EnumPayrollStatusFieldUpdateOperationsInput = {
 }
 
 export type PayrollCreateWithoutEmployeeInput = {
-  id?: string
   payrollNumber: string
   payPeriodStart: Date | string
   payPeriodEnd: Date | string
@@ -970,7 +978,7 @@ export type PayrollCreateWithoutEmployeeInput = {
 }
 
 export type PayrollUncheckedCreateWithoutEmployeeInput = {
-  id?: string
+  id?: number
   payrollNumber: string
   payPeriodStart: Date | string
   payPeriodEnd: Date | string
@@ -1027,9 +1035,9 @@ export type PayrollScalarWhereInput = {
   AND?: Prisma.PayrollScalarWhereInput | Prisma.PayrollScalarWhereInput[]
   OR?: Prisma.PayrollScalarWhereInput[]
   NOT?: Prisma.PayrollScalarWhereInput | Prisma.PayrollScalarWhereInput[]
-  id?: Prisma.StringFilter<"Payroll"> | string
+  id?: Prisma.IntFilter<"Payroll"> | number
   payrollNumber?: Prisma.StringFilter<"Payroll"> | string
-  employeeId?: Prisma.StringFilter<"Payroll"> | string
+  employeeId?: Prisma.IntFilter<"Payroll"> | number
   payPeriodStart?: Prisma.DateTimeFilter<"Payroll"> | Date | string
   payPeriodEnd?: Prisma.DateTimeFilter<"Payroll"> | Date | string
   payDate?: Prisma.DateTimeFilter<"Payroll"> | Date | string
@@ -1056,7 +1064,7 @@ export type PayrollScalarWhereInput = {
 }
 
 export type PayrollCreateManyEmployeeInput = {
-  id?: string
+  id?: number
   payrollNumber: string
   payPeriodStart: Date | string
   payPeriodEnd: Date | string
@@ -1084,7 +1092,6 @@ export type PayrollCreateManyEmployeeInput = {
 }
 
 export type PayrollUpdateWithoutEmployeeInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   payrollNumber?: Prisma.StringFieldUpdateOperationsInput | string
   payPeriodStart?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   payPeriodEnd?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1112,7 +1119,7 @@ export type PayrollUpdateWithoutEmployeeInput = {
 }
 
 export type PayrollUncheckedUpdateWithoutEmployeeInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   payrollNumber?: Prisma.StringFieldUpdateOperationsInput | string
   payPeriodStart?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   payPeriodEnd?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1140,7 +1147,7 @@ export type PayrollUncheckedUpdateWithoutEmployeeInput = {
 }
 
 export type PayrollUncheckedUpdateManyWithoutEmployeeInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   payrollNumber?: Prisma.StringFieldUpdateOperationsInput | string
   payPeriodStart?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   payPeriodEnd?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1305,9 +1312,9 @@ export type $PayrollPayload<ExtArgs extends runtime.Types.Extensions.InternalArg
     employee: Prisma.$EmployeePayload<ExtArgs>
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
-    id: string
+    id: number
     payrollNumber: string
-    employeeId: string
+    employeeId: number
     payPeriodStart: Date
     payPeriodEnd: Date
     payDate: Date
@@ -1755,9 +1762,9 @@ export interface Prisma__PayrollClient<T, Null = never, ExtArgs extends runtime.
  * Fields of the Payroll model
  */
 export interface PayrollFieldRefs {
-  readonly id: Prisma.FieldRef<"Payroll", 'String'>
+  readonly id: Prisma.FieldRef<"Payroll", 'Int'>
   readonly payrollNumber: Prisma.FieldRef<"Payroll", 'String'>
-  readonly employeeId: Prisma.FieldRef<"Payroll", 'String'>
+  readonly employeeId: Prisma.FieldRef<"Payroll", 'Int'>
   readonly payPeriodStart: Prisma.FieldRef<"Payroll", 'DateTime'>
   readonly payPeriodEnd: Prisma.FieldRef<"Payroll", 'DateTime'>
   readonly payDate: Prisma.FieldRef<"Payroll", 'DateTime'>

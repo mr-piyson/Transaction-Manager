@@ -27,33 +27,39 @@ export type AggregateBOMItem = {
 }
 
 export type BOMItemAvgAggregateOutputType = {
+  id: number | null
   quantity: runtime.Decimal | null
   unitCost: runtime.Decimal | null
+  productId: number | null
+  componentId: number | null
 }
 
 export type BOMItemSumAggregateOutputType = {
+  id: number | null
   quantity: runtime.Decimal | null
   unitCost: runtime.Decimal | null
+  productId: number | null
+  componentId: number | null
 }
 
 export type BOMItemMinAggregateOutputType = {
-  id: string | null
+  id: number | null
   quantity: runtime.Decimal | null
   unitCost: runtime.Decimal | null
   notes: string | null
-  productId: string | null
-  componentId: string | null
+  productId: number | null
+  componentId: number | null
   createdAt: Date | null
   updatedAt: Date | null
 }
 
 export type BOMItemMaxAggregateOutputType = {
-  id: string | null
+  id: number | null
   quantity: runtime.Decimal | null
   unitCost: runtime.Decimal | null
   notes: string | null
-  productId: string | null
-  componentId: string | null
+  productId: number | null
+  componentId: number | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -72,13 +78,19 @@ export type BOMItemCountAggregateOutputType = {
 
 
 export type BOMItemAvgAggregateInputType = {
+  id?: true
   quantity?: true
   unitCost?: true
+  productId?: true
+  componentId?: true
 }
 
 export type BOMItemSumAggregateInputType = {
+  id?: true
   quantity?: true
   unitCost?: true
+  productId?: true
+  componentId?: true
 }
 
 export type BOMItemMinAggregateInputType = {
@@ -202,12 +214,12 @@ export type BOMItemGroupByArgs<ExtArgs extends runtime.Types.Extensions.Internal
 }
 
 export type BOMItemGroupByOutputType = {
-  id: string
+  id: number
   quantity: runtime.Decimal
   unitCost: runtime.Decimal | null
   notes: string | null
-  productId: string
-  componentId: string
+  productId: number
+  componentId: number
   createdAt: Date
   updatedAt: Date
   _count: BOMItemCountAggregateOutputType | null
@@ -236,12 +248,12 @@ export type BOMItemWhereInput = {
   AND?: Prisma.BOMItemWhereInput | Prisma.BOMItemWhereInput[]
   OR?: Prisma.BOMItemWhereInput[]
   NOT?: Prisma.BOMItemWhereInput | Prisma.BOMItemWhereInput[]
-  id?: Prisma.StringFilter<"BOMItem"> | string
+  id?: Prisma.IntFilter<"BOMItem"> | number
   quantity?: Prisma.DecimalFilter<"BOMItem"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   unitCost?: Prisma.DecimalNullableFilter<"BOMItem"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   notes?: Prisma.StringNullableFilter<"BOMItem"> | string | null
-  productId?: Prisma.StringFilter<"BOMItem"> | string
-  componentId?: Prisma.StringFilter<"BOMItem"> | string
+  productId?: Prisma.IntFilter<"BOMItem"> | number
+  componentId?: Prisma.IntFilter<"BOMItem"> | number
   createdAt?: Prisma.DateTimeFilter<"BOMItem"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"BOMItem"> | Date | string
   product?: Prisma.XOR<Prisma.ProductScalarRelationFilter, Prisma.ProductWhereInput>
@@ -262,7 +274,7 @@ export type BOMItemOrderByWithRelationInput = {
 }
 
 export type BOMItemWhereUniqueInput = Prisma.AtLeast<{
-  id?: string
+  id?: number
   productId_componentId?: Prisma.BOMItemProductIdComponentIdCompoundUniqueInput
   AND?: Prisma.BOMItemWhereInput | Prisma.BOMItemWhereInput[]
   OR?: Prisma.BOMItemWhereInput[]
@@ -270,8 +282,8 @@ export type BOMItemWhereUniqueInput = Prisma.AtLeast<{
   quantity?: Prisma.DecimalFilter<"BOMItem"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   unitCost?: Prisma.DecimalNullableFilter<"BOMItem"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   notes?: Prisma.StringNullableFilter<"BOMItem"> | string | null
-  productId?: Prisma.StringFilter<"BOMItem"> | string
-  componentId?: Prisma.StringFilter<"BOMItem"> | string
+  productId?: Prisma.IntFilter<"BOMItem"> | number
+  componentId?: Prisma.IntFilter<"BOMItem"> | number
   createdAt?: Prisma.DateTimeFilter<"BOMItem"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"BOMItem"> | Date | string
   product?: Prisma.XOR<Prisma.ProductScalarRelationFilter, Prisma.ProductWhereInput>
@@ -298,18 +310,17 @@ export type BOMItemScalarWhereWithAggregatesInput = {
   AND?: Prisma.BOMItemScalarWhereWithAggregatesInput | Prisma.BOMItemScalarWhereWithAggregatesInput[]
   OR?: Prisma.BOMItemScalarWhereWithAggregatesInput[]
   NOT?: Prisma.BOMItemScalarWhereWithAggregatesInput | Prisma.BOMItemScalarWhereWithAggregatesInput[]
-  id?: Prisma.StringWithAggregatesFilter<"BOMItem"> | string
+  id?: Prisma.IntWithAggregatesFilter<"BOMItem"> | number
   quantity?: Prisma.DecimalWithAggregatesFilter<"BOMItem"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   unitCost?: Prisma.DecimalNullableWithAggregatesFilter<"BOMItem"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   notes?: Prisma.StringNullableWithAggregatesFilter<"BOMItem"> | string | null
-  productId?: Prisma.StringWithAggregatesFilter<"BOMItem"> | string
-  componentId?: Prisma.StringWithAggregatesFilter<"BOMItem"> | string
+  productId?: Prisma.IntWithAggregatesFilter<"BOMItem"> | number
+  componentId?: Prisma.IntWithAggregatesFilter<"BOMItem"> | number
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"BOMItem"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"BOMItem"> | Date | string
 }
 
 export type BOMItemCreateInput = {
-  id?: string
   quantity: runtime.Decimal | runtime.DecimalJsLike | number | string
   unitCost?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   notes?: string | null
@@ -320,18 +331,17 @@ export type BOMItemCreateInput = {
 }
 
 export type BOMItemUncheckedCreateInput = {
-  id?: string
+  id?: number
   quantity: runtime.Decimal | runtime.DecimalJsLike | number | string
   unitCost?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   notes?: string | null
-  productId: string
-  componentId: string
+  productId: number
+  componentId: number
   createdAt?: Date | string
   updatedAt?: Date | string
 }
 
 export type BOMItemUpdateInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   quantity?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   unitCost?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -342,29 +352,28 @@ export type BOMItemUpdateInput = {
 }
 
 export type BOMItemUncheckedUpdateInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   quantity?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   unitCost?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  productId?: Prisma.StringFieldUpdateOperationsInput | string
-  componentId?: Prisma.StringFieldUpdateOperationsInput | string
+  productId?: Prisma.IntFieldUpdateOperationsInput | number
+  componentId?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type BOMItemCreateManyInput = {
-  id?: string
+  id?: number
   quantity: runtime.Decimal | runtime.DecimalJsLike | number | string
   unitCost?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   notes?: string | null
-  productId: string
-  componentId: string
+  productId: number
+  componentId: number
   createdAt?: Date | string
   updatedAt?: Date | string
 }
 
 export type BOMItemUpdateManyMutationInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   quantity?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   unitCost?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -373,12 +382,12 @@ export type BOMItemUpdateManyMutationInput = {
 }
 
 export type BOMItemUncheckedUpdateManyInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   quantity?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   unitCost?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  productId?: Prisma.StringFieldUpdateOperationsInput | string
-  componentId?: Prisma.StringFieldUpdateOperationsInput | string
+  productId?: Prisma.IntFieldUpdateOperationsInput | number
+  componentId?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -394,8 +403,8 @@ export type BOMItemOrderByRelationAggregateInput = {
 }
 
 export type BOMItemProductIdComponentIdCompoundUniqueInput = {
-  productId: string
-  componentId: string
+  productId: number
+  componentId: number
 }
 
 export type BOMItemCountOrderByAggregateInput = {
@@ -410,8 +419,11 @@ export type BOMItemCountOrderByAggregateInput = {
 }
 
 export type BOMItemAvgOrderByAggregateInput = {
+  id?: Prisma.SortOrder
   quantity?: Prisma.SortOrder
   unitCost?: Prisma.SortOrder
+  productId?: Prisma.SortOrder
+  componentId?: Prisma.SortOrder
 }
 
 export type BOMItemMaxOrderByAggregateInput = {
@@ -437,8 +449,11 @@ export type BOMItemMinOrderByAggregateInput = {
 }
 
 export type BOMItemSumOrderByAggregateInput = {
+  id?: Prisma.SortOrder
   quantity?: Prisma.SortOrder
   unitCost?: Prisma.SortOrder
+  productId?: Prisma.SortOrder
+  componentId?: Prisma.SortOrder
 }
 
 export type BOMItemCreateNestedManyWithoutProductInput = {
@@ -526,7 +541,6 @@ export type BOMItemUncheckedUpdateManyWithoutComponentNestedInput = {
 }
 
 export type BOMItemCreateWithoutProductInput = {
-  id?: string
   quantity: runtime.Decimal | runtime.DecimalJsLike | number | string
   unitCost?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   notes?: string | null
@@ -536,11 +550,11 @@ export type BOMItemCreateWithoutProductInput = {
 }
 
 export type BOMItemUncheckedCreateWithoutProductInput = {
-  id?: string
+  id?: number
   quantity: runtime.Decimal | runtime.DecimalJsLike | number | string
   unitCost?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   notes?: string | null
-  componentId: string
+  componentId: number
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -556,7 +570,6 @@ export type BOMItemCreateManyProductInputEnvelope = {
 }
 
 export type BOMItemCreateWithoutComponentInput = {
-  id?: string
   quantity: runtime.Decimal | runtime.DecimalJsLike | number | string
   unitCost?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   notes?: string | null
@@ -566,11 +579,11 @@ export type BOMItemCreateWithoutComponentInput = {
 }
 
 export type BOMItemUncheckedCreateWithoutComponentInput = {
-  id?: string
+  id?: number
   quantity: runtime.Decimal | runtime.DecimalJsLike | number | string
   unitCost?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   notes?: string | null
-  productId: string
+  productId: number
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -605,12 +618,12 @@ export type BOMItemScalarWhereInput = {
   AND?: Prisma.BOMItemScalarWhereInput | Prisma.BOMItemScalarWhereInput[]
   OR?: Prisma.BOMItemScalarWhereInput[]
   NOT?: Prisma.BOMItemScalarWhereInput | Prisma.BOMItemScalarWhereInput[]
-  id?: Prisma.StringFilter<"BOMItem"> | string
+  id?: Prisma.IntFilter<"BOMItem"> | number
   quantity?: Prisma.DecimalFilter<"BOMItem"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   unitCost?: Prisma.DecimalNullableFilter<"BOMItem"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   notes?: Prisma.StringNullableFilter<"BOMItem"> | string | null
-  productId?: Prisma.StringFilter<"BOMItem"> | string
-  componentId?: Prisma.StringFilter<"BOMItem"> | string
+  productId?: Prisma.IntFilter<"BOMItem"> | number
+  componentId?: Prisma.IntFilter<"BOMItem"> | number
   createdAt?: Prisma.DateTimeFilter<"BOMItem"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"BOMItem"> | Date | string
 }
@@ -632,27 +645,26 @@ export type BOMItemUpdateManyWithWhereWithoutComponentInput = {
 }
 
 export type BOMItemCreateManyProductInput = {
-  id?: string
+  id?: number
   quantity: runtime.Decimal | runtime.DecimalJsLike | number | string
   unitCost?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   notes?: string | null
-  componentId: string
+  componentId: number
   createdAt?: Date | string
   updatedAt?: Date | string
 }
 
 export type BOMItemCreateManyComponentInput = {
-  id?: string
+  id?: number
   quantity: runtime.Decimal | runtime.DecimalJsLike | number | string
   unitCost?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   notes?: string | null
-  productId: string
+  productId: number
   createdAt?: Date | string
   updatedAt?: Date | string
 }
 
 export type BOMItemUpdateWithoutProductInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   quantity?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   unitCost?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -662,27 +674,26 @@ export type BOMItemUpdateWithoutProductInput = {
 }
 
 export type BOMItemUncheckedUpdateWithoutProductInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   quantity?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   unitCost?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  componentId?: Prisma.StringFieldUpdateOperationsInput | string
+  componentId?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type BOMItemUncheckedUpdateManyWithoutProductInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   quantity?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   unitCost?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  componentId?: Prisma.StringFieldUpdateOperationsInput | string
+  componentId?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type BOMItemUpdateWithoutComponentInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   quantity?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   unitCost?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -692,21 +703,21 @@ export type BOMItemUpdateWithoutComponentInput = {
 }
 
 export type BOMItemUncheckedUpdateWithoutComponentInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   quantity?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   unitCost?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  productId?: Prisma.StringFieldUpdateOperationsInput | string
+  productId?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type BOMItemUncheckedUpdateManyWithoutComponentInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   quantity?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   unitCost?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  productId?: Prisma.StringFieldUpdateOperationsInput | string
+  productId?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -784,12 +795,12 @@ export type $BOMItemPayload<ExtArgs extends runtime.Types.Extensions.InternalArg
     component: Prisma.$ProductPayload<ExtArgs>
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
-    id: string
+    id: number
     quantity: runtime.Decimal
     unitCost: runtime.Decimal | null
     notes: string | null
-    productId: string
-    componentId: string
+    productId: number
+    componentId: number
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["bOMItem"]>
@@ -1217,12 +1228,12 @@ export interface Prisma__BOMItemClient<T, Null = never, ExtArgs extends runtime.
  * Fields of the BOMItem model
  */
 export interface BOMItemFieldRefs {
-  readonly id: Prisma.FieldRef<"BOMItem", 'String'>
+  readonly id: Prisma.FieldRef<"BOMItem", 'Int'>
   readonly quantity: Prisma.FieldRef<"BOMItem", 'Decimal'>
   readonly unitCost: Prisma.FieldRef<"BOMItem", 'Decimal'>
   readonly notes: Prisma.FieldRef<"BOMItem", 'String'>
-  readonly productId: Prisma.FieldRef<"BOMItem", 'String'>
-  readonly componentId: Prisma.FieldRef<"BOMItem", 'String'>
+  readonly productId: Prisma.FieldRef<"BOMItem", 'Int'>
+  readonly componentId: Prisma.FieldRef<"BOMItem", 'Int'>
   readonly createdAt: Prisma.FieldRef<"BOMItem", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"BOMItem", 'DateTime'>
 }

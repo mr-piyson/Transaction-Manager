@@ -27,17 +27,25 @@ export type AggregateCustomer = {
 }
 
 export type CustomerAvgAggregateOutputType = {
+  id: number | null
   creditLimit: runtime.Decimal | null
   creditBalance: runtime.Decimal | null
+  paymentTermId: number | null
+  tenantId: number | null
+  salesRepId: number | null
 }
 
 export type CustomerSumAggregateOutputType = {
+  id: number | null
   creditLimit: runtime.Decimal | null
   creditBalance: runtime.Decimal | null
+  paymentTermId: number | null
+  tenantId: number | null
+  salesRepId: number | null
 }
 
 export type CustomerMinAggregateOutputType = {
-  id: string | null
+  id: number | null
   customerNumber: string | null
   name: string | null
   type: $Enums.CustomerType | null
@@ -50,7 +58,7 @@ export type CustomerMinAggregateOutputType = {
   registrationNumber: string | null
   creditLimit: runtime.Decimal | null
   creditBalance: runtime.Decimal | null
-  paymentTermId: string | null
+  paymentTermId: number | null
   billingAddress: string | null
   billingCity: string | null
   billingState: string | null
@@ -64,14 +72,14 @@ export type CustomerMinAggregateOutputType = {
   status: $Enums.CustomerStatus | null
   category: string | null
   source: string | null
-  tenantId: string | null
-  salesRepId: string | null
+  tenantId: number | null
+  salesRepId: number | null
   createdAt: Date | null
   updatedAt: Date | null
 }
 
 export type CustomerMaxAggregateOutputType = {
-  id: string | null
+  id: number | null
   customerNumber: string | null
   name: string | null
   type: $Enums.CustomerType | null
@@ -84,7 +92,7 @@ export type CustomerMaxAggregateOutputType = {
   registrationNumber: string | null
   creditLimit: runtime.Decimal | null
   creditBalance: runtime.Decimal | null
-  paymentTermId: string | null
+  paymentTermId: number | null
   billingAddress: string | null
   billingCity: string | null
   billingState: string | null
@@ -98,8 +106,8 @@ export type CustomerMaxAggregateOutputType = {
   status: $Enums.CustomerStatus | null
   category: string | null
   source: string | null
-  tenantId: string | null
-  salesRepId: string | null
+  tenantId: number | null
+  salesRepId: number | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -141,13 +149,21 @@ export type CustomerCountAggregateOutputType = {
 
 
 export type CustomerAvgAggregateInputType = {
+  id?: true
   creditLimit?: true
   creditBalance?: true
+  paymentTermId?: true
+  tenantId?: true
+  salesRepId?: true
 }
 
 export type CustomerSumAggregateInputType = {
+  id?: true
   creditLimit?: true
   creditBalance?: true
+  paymentTermId?: true
+  tenantId?: true
+  salesRepId?: true
 }
 
 export type CustomerMinAggregateInputType = {
@@ -340,7 +356,7 @@ export type CustomerGroupByArgs<ExtArgs extends runtime.Types.Extensions.Interna
 }
 
 export type CustomerGroupByOutputType = {
-  id: string
+  id: number
   customerNumber: string
   name: string
   type: $Enums.CustomerType
@@ -353,7 +369,7 @@ export type CustomerGroupByOutputType = {
   registrationNumber: string | null
   creditLimit: runtime.Decimal | null
   creditBalance: runtime.Decimal
-  paymentTermId: string | null
+  paymentTermId: number | null
   billingAddress: string | null
   billingCity: string | null
   billingState: string | null
@@ -367,8 +383,8 @@ export type CustomerGroupByOutputType = {
   status: $Enums.CustomerStatus
   category: string | null
   source: string | null
-  tenantId: string
-  salesRepId: string | null
+  tenantId: number
+  salesRepId: number | null
   createdAt: Date
   updatedAt: Date
   _count: CustomerCountAggregateOutputType | null
@@ -397,7 +413,7 @@ export type CustomerWhereInput = {
   AND?: Prisma.CustomerWhereInput | Prisma.CustomerWhereInput[]
   OR?: Prisma.CustomerWhereInput[]
   NOT?: Prisma.CustomerWhereInput | Prisma.CustomerWhereInput[]
-  id?: Prisma.StringFilter<"Customer"> | string
+  id?: Prisma.IntFilter<"Customer"> | number
   customerNumber?: Prisma.StringFilter<"Customer"> | string
   name?: Prisma.StringFilter<"Customer"> | string
   type?: Prisma.EnumCustomerTypeFilter<"Customer"> | $Enums.CustomerType
@@ -410,7 +426,7 @@ export type CustomerWhereInput = {
   registrationNumber?: Prisma.StringNullableFilter<"Customer"> | string | null
   creditLimit?: Prisma.DecimalNullableFilter<"Customer"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   creditBalance?: Prisma.DecimalFilter<"Customer"> | runtime.Decimal | runtime.DecimalJsLike | number | string
-  paymentTermId?: Prisma.StringNullableFilter<"Customer"> | string | null
+  paymentTermId?: Prisma.IntNullableFilter<"Customer"> | number | null
   billingAddress?: Prisma.StringNullableFilter<"Customer"> | string | null
   billingCity?: Prisma.StringNullableFilter<"Customer"> | string | null
   billingState?: Prisma.StringNullableFilter<"Customer"> | string | null
@@ -424,8 +440,8 @@ export type CustomerWhereInput = {
   status?: Prisma.EnumCustomerStatusFilter<"Customer"> | $Enums.CustomerStatus
   category?: Prisma.StringNullableFilter<"Customer"> | string | null
   source?: Prisma.StringNullableFilter<"Customer"> | string | null
-  tenantId?: Prisma.StringFilter<"Customer"> | string
-  salesRepId?: Prisma.StringNullableFilter<"Customer"> | string | null
+  tenantId?: Prisma.IntFilter<"Customer"> | number
+  salesRepId?: Prisma.IntNullableFilter<"Customer"> | number | null
   createdAt?: Prisma.DateTimeFilter<"Customer"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Customer"> | Date | string
   paymentTerm?: Prisma.XOR<Prisma.PaymentTermNullableScalarRelationFilter, Prisma.PaymentTermWhereInput> | null
@@ -483,7 +499,7 @@ export type CustomerOrderByWithRelationInput = {
 }
 
 export type CustomerWhereUniqueInput = Prisma.AtLeast<{
-  id?: string
+  id?: number
   tenantId_customerNumber?: Prisma.CustomerTenantIdCustomerNumberCompoundUniqueInput
   AND?: Prisma.CustomerWhereInput | Prisma.CustomerWhereInput[]
   OR?: Prisma.CustomerWhereInput[]
@@ -500,7 +516,7 @@ export type CustomerWhereUniqueInput = Prisma.AtLeast<{
   registrationNumber?: Prisma.StringNullableFilter<"Customer"> | string | null
   creditLimit?: Prisma.DecimalNullableFilter<"Customer"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   creditBalance?: Prisma.DecimalFilter<"Customer"> | runtime.Decimal | runtime.DecimalJsLike | number | string
-  paymentTermId?: Prisma.StringNullableFilter<"Customer"> | string | null
+  paymentTermId?: Prisma.IntNullableFilter<"Customer"> | number | null
   billingAddress?: Prisma.StringNullableFilter<"Customer"> | string | null
   billingCity?: Prisma.StringNullableFilter<"Customer"> | string | null
   billingState?: Prisma.StringNullableFilter<"Customer"> | string | null
@@ -514,8 +530,8 @@ export type CustomerWhereUniqueInput = Prisma.AtLeast<{
   status?: Prisma.EnumCustomerStatusFilter<"Customer"> | $Enums.CustomerStatus
   category?: Prisma.StringNullableFilter<"Customer"> | string | null
   source?: Prisma.StringNullableFilter<"Customer"> | string | null
-  tenantId?: Prisma.StringFilter<"Customer"> | string
-  salesRepId?: Prisma.StringNullableFilter<"Customer"> | string | null
+  tenantId?: Prisma.IntFilter<"Customer"> | number
+  salesRepId?: Prisma.IntNullableFilter<"Customer"> | number | null
   createdAt?: Prisma.DateTimeFilter<"Customer"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Customer"> | Date | string
   paymentTerm?: Prisma.XOR<Prisma.PaymentTermNullableScalarRelationFilter, Prisma.PaymentTermWhereInput> | null
@@ -572,7 +588,7 @@ export type CustomerScalarWhereWithAggregatesInput = {
   AND?: Prisma.CustomerScalarWhereWithAggregatesInput | Prisma.CustomerScalarWhereWithAggregatesInput[]
   OR?: Prisma.CustomerScalarWhereWithAggregatesInput[]
   NOT?: Prisma.CustomerScalarWhereWithAggregatesInput | Prisma.CustomerScalarWhereWithAggregatesInput[]
-  id?: Prisma.StringWithAggregatesFilter<"Customer"> | string
+  id?: Prisma.IntWithAggregatesFilter<"Customer"> | number
   customerNumber?: Prisma.StringWithAggregatesFilter<"Customer"> | string
   name?: Prisma.StringWithAggregatesFilter<"Customer"> | string
   type?: Prisma.EnumCustomerTypeWithAggregatesFilter<"Customer"> | $Enums.CustomerType
@@ -585,7 +601,7 @@ export type CustomerScalarWhereWithAggregatesInput = {
   registrationNumber?: Prisma.StringNullableWithAggregatesFilter<"Customer"> | string | null
   creditLimit?: Prisma.DecimalNullableWithAggregatesFilter<"Customer"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   creditBalance?: Prisma.DecimalWithAggregatesFilter<"Customer"> | runtime.Decimal | runtime.DecimalJsLike | number | string
-  paymentTermId?: Prisma.StringNullableWithAggregatesFilter<"Customer"> | string | null
+  paymentTermId?: Prisma.IntNullableWithAggregatesFilter<"Customer"> | number | null
   billingAddress?: Prisma.StringNullableWithAggregatesFilter<"Customer"> | string | null
   billingCity?: Prisma.StringNullableWithAggregatesFilter<"Customer"> | string | null
   billingState?: Prisma.StringNullableWithAggregatesFilter<"Customer"> | string | null
@@ -599,14 +615,13 @@ export type CustomerScalarWhereWithAggregatesInput = {
   status?: Prisma.EnumCustomerStatusWithAggregatesFilter<"Customer"> | $Enums.CustomerStatus
   category?: Prisma.StringNullableWithAggregatesFilter<"Customer"> | string | null
   source?: Prisma.StringNullableWithAggregatesFilter<"Customer"> | string | null
-  tenantId?: Prisma.StringWithAggregatesFilter<"Customer"> | string
-  salesRepId?: Prisma.StringNullableWithAggregatesFilter<"Customer"> | string | null
+  tenantId?: Prisma.IntWithAggregatesFilter<"Customer"> | number
+  salesRepId?: Prisma.IntNullableWithAggregatesFilter<"Customer"> | number | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Customer"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Customer"> | Date | string
 }
 
 export type CustomerCreateInput = {
-  id?: string
   customerNumber: string
   name: string
   type?: $Enums.CustomerType
@@ -632,7 +647,7 @@ export type CustomerCreateInput = {
   status?: $Enums.CustomerStatus
   category?: string | null
   source?: string | null
-  salesRepId?: string | null
+  salesRepId?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   paymentTerm?: Prisma.PaymentTermCreateNestedOneWithoutCustomersInput
@@ -647,7 +662,7 @@ export type CustomerCreateInput = {
 }
 
 export type CustomerUncheckedCreateInput = {
-  id?: string
+  id?: number
   customerNumber: string
   name: string
   type?: $Enums.CustomerType
@@ -660,7 +675,7 @@ export type CustomerUncheckedCreateInput = {
   registrationNumber?: string | null
   creditLimit?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   creditBalance?: runtime.Decimal | runtime.DecimalJsLike | number | string
-  paymentTermId?: string | null
+  paymentTermId?: number | null
   billingAddress?: string | null
   billingCity?: string | null
   billingState?: string | null
@@ -674,8 +689,8 @@ export type CustomerUncheckedCreateInput = {
   status?: $Enums.CustomerStatus
   category?: string | null
   source?: string | null
-  tenantId: string
-  salesRepId?: string | null
+  tenantId: number
+  salesRepId?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   contacts?: Prisma.CustomerContactUncheckedCreateNestedManyWithoutCustomerInput
@@ -688,7 +703,6 @@ export type CustomerUncheckedCreateInput = {
 }
 
 export type CustomerUpdateInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   customerNumber?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumCustomerTypeFieldUpdateOperationsInput | $Enums.CustomerType
@@ -714,7 +728,7 @@ export type CustomerUpdateInput = {
   status?: Prisma.EnumCustomerStatusFieldUpdateOperationsInput | $Enums.CustomerStatus
   category?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   source?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  salesRepId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  salesRepId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   paymentTerm?: Prisma.PaymentTermUpdateOneWithoutCustomersNestedInput
@@ -729,7 +743,7 @@ export type CustomerUpdateInput = {
 }
 
 export type CustomerUncheckedUpdateInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   customerNumber?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumCustomerTypeFieldUpdateOperationsInput | $Enums.CustomerType
@@ -742,7 +756,7 @@ export type CustomerUncheckedUpdateInput = {
   registrationNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   creditLimit?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   creditBalance?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  paymentTermId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  paymentTermId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   billingAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   billingCity?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   billingState?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -756,8 +770,8 @@ export type CustomerUncheckedUpdateInput = {
   status?: Prisma.EnumCustomerStatusFieldUpdateOperationsInput | $Enums.CustomerStatus
   category?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   source?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  tenantId?: Prisma.StringFieldUpdateOperationsInput | string
-  salesRepId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tenantId?: Prisma.IntFieldUpdateOperationsInput | number
+  salesRepId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   contacts?: Prisma.CustomerContactUncheckedUpdateManyWithoutCustomerNestedInput
@@ -770,7 +784,7 @@ export type CustomerUncheckedUpdateInput = {
 }
 
 export type CustomerCreateManyInput = {
-  id?: string
+  id?: number
   customerNumber: string
   name: string
   type?: $Enums.CustomerType
@@ -783,7 +797,7 @@ export type CustomerCreateManyInput = {
   registrationNumber?: string | null
   creditLimit?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   creditBalance?: runtime.Decimal | runtime.DecimalJsLike | number | string
-  paymentTermId?: string | null
+  paymentTermId?: number | null
   billingAddress?: string | null
   billingCity?: string | null
   billingState?: string | null
@@ -797,14 +811,13 @@ export type CustomerCreateManyInput = {
   status?: $Enums.CustomerStatus
   category?: string | null
   source?: string | null
-  tenantId: string
-  salesRepId?: string | null
+  tenantId: number
+  salesRepId?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
 
 export type CustomerUpdateManyMutationInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   customerNumber?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumCustomerTypeFieldUpdateOperationsInput | $Enums.CustomerType
@@ -830,13 +843,13 @@ export type CustomerUpdateManyMutationInput = {
   status?: Prisma.EnumCustomerStatusFieldUpdateOperationsInput | $Enums.CustomerStatus
   category?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   source?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  salesRepId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  salesRepId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type CustomerUncheckedUpdateManyInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   customerNumber?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumCustomerTypeFieldUpdateOperationsInput | $Enums.CustomerType
@@ -849,7 +862,7 @@ export type CustomerUncheckedUpdateManyInput = {
   registrationNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   creditLimit?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   creditBalance?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  paymentTermId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  paymentTermId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   billingAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   billingCity?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   billingState?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -863,8 +876,8 @@ export type CustomerUncheckedUpdateManyInput = {
   status?: Prisma.EnumCustomerStatusFieldUpdateOperationsInput | $Enums.CustomerStatus
   category?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   source?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  tenantId?: Prisma.StringFieldUpdateOperationsInput | string
-  salesRepId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tenantId?: Prisma.IntFieldUpdateOperationsInput | number
+  salesRepId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -880,7 +893,7 @@ export type CustomerOrderByRelationAggregateInput = {
 }
 
 export type CustomerTenantIdCustomerNumberCompoundUniqueInput = {
-  tenantId: string
+  tenantId: number
   customerNumber: string
 }
 
@@ -919,8 +932,12 @@ export type CustomerCountOrderByAggregateInput = {
 }
 
 export type CustomerAvgOrderByAggregateInput = {
+  id?: Prisma.SortOrder
   creditLimit?: Prisma.SortOrder
   creditBalance?: Prisma.SortOrder
+  paymentTermId?: Prisma.SortOrder
+  tenantId?: Prisma.SortOrder
+  salesRepId?: Prisma.SortOrder
 }
 
 export type CustomerMaxOrderByAggregateInput = {
@@ -992,8 +1009,12 @@ export type CustomerMinOrderByAggregateInput = {
 }
 
 export type CustomerSumOrderByAggregateInput = {
+  id?: Prisma.SortOrder
   creditLimit?: Prisma.SortOrder
   creditBalance?: Prisma.SortOrder
+  paymentTermId?: Prisma.SortOrder
+  tenantId?: Prisma.SortOrder
+  salesRepId?: Prisma.SortOrder
 }
 
 export type CustomerScalarRelationFilter = {
@@ -1199,7 +1220,6 @@ export type CustomerUncheckedUpdateManyWithoutPaymentTermNestedInput = {
 }
 
 export type CustomerCreateWithoutTenantInput = {
-  id?: string
   customerNumber: string
   name: string
   type?: $Enums.CustomerType
@@ -1225,7 +1245,7 @@ export type CustomerCreateWithoutTenantInput = {
   status?: $Enums.CustomerStatus
   category?: string | null
   source?: string | null
-  salesRepId?: string | null
+  salesRepId?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   paymentTerm?: Prisma.PaymentTermCreateNestedOneWithoutCustomersInput
@@ -1239,7 +1259,7 @@ export type CustomerCreateWithoutTenantInput = {
 }
 
 export type CustomerUncheckedCreateWithoutTenantInput = {
-  id?: string
+  id?: number
   customerNumber: string
   name: string
   type?: $Enums.CustomerType
@@ -1252,7 +1272,7 @@ export type CustomerUncheckedCreateWithoutTenantInput = {
   registrationNumber?: string | null
   creditLimit?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   creditBalance?: runtime.Decimal | runtime.DecimalJsLike | number | string
-  paymentTermId?: string | null
+  paymentTermId?: number | null
   billingAddress?: string | null
   billingCity?: string | null
   billingState?: string | null
@@ -1266,7 +1286,7 @@ export type CustomerUncheckedCreateWithoutTenantInput = {
   status?: $Enums.CustomerStatus
   category?: string | null
   source?: string | null
-  salesRepId?: string | null
+  salesRepId?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   contacts?: Prisma.CustomerContactUncheckedCreateNestedManyWithoutCustomerInput
@@ -1308,7 +1328,7 @@ export type CustomerScalarWhereInput = {
   AND?: Prisma.CustomerScalarWhereInput | Prisma.CustomerScalarWhereInput[]
   OR?: Prisma.CustomerScalarWhereInput[]
   NOT?: Prisma.CustomerScalarWhereInput | Prisma.CustomerScalarWhereInput[]
-  id?: Prisma.StringFilter<"Customer"> | string
+  id?: Prisma.IntFilter<"Customer"> | number
   customerNumber?: Prisma.StringFilter<"Customer"> | string
   name?: Prisma.StringFilter<"Customer"> | string
   type?: Prisma.EnumCustomerTypeFilter<"Customer"> | $Enums.CustomerType
@@ -1321,7 +1341,7 @@ export type CustomerScalarWhereInput = {
   registrationNumber?: Prisma.StringNullableFilter<"Customer"> | string | null
   creditLimit?: Prisma.DecimalNullableFilter<"Customer"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   creditBalance?: Prisma.DecimalFilter<"Customer"> | runtime.Decimal | runtime.DecimalJsLike | number | string
-  paymentTermId?: Prisma.StringNullableFilter<"Customer"> | string | null
+  paymentTermId?: Prisma.IntNullableFilter<"Customer"> | number | null
   billingAddress?: Prisma.StringNullableFilter<"Customer"> | string | null
   billingCity?: Prisma.StringNullableFilter<"Customer"> | string | null
   billingState?: Prisma.StringNullableFilter<"Customer"> | string | null
@@ -1335,14 +1355,13 @@ export type CustomerScalarWhereInput = {
   status?: Prisma.EnumCustomerStatusFilter<"Customer"> | $Enums.CustomerStatus
   category?: Prisma.StringNullableFilter<"Customer"> | string | null
   source?: Prisma.StringNullableFilter<"Customer"> | string | null
-  tenantId?: Prisma.StringFilter<"Customer"> | string
-  salesRepId?: Prisma.StringNullableFilter<"Customer"> | string | null
+  tenantId?: Prisma.IntFilter<"Customer"> | number
+  salesRepId?: Prisma.IntNullableFilter<"Customer"> | number | null
   createdAt?: Prisma.DateTimeFilter<"Customer"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Customer"> | Date | string
 }
 
 export type CustomerCreateWithoutContactsInput = {
-  id?: string
   customerNumber: string
   name: string
   type?: $Enums.CustomerType
@@ -1368,7 +1387,7 @@ export type CustomerCreateWithoutContactsInput = {
   status?: $Enums.CustomerStatus
   category?: string | null
   source?: string | null
-  salesRepId?: string | null
+  salesRepId?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   paymentTerm?: Prisma.PaymentTermCreateNestedOneWithoutCustomersInput
@@ -1382,7 +1401,7 @@ export type CustomerCreateWithoutContactsInput = {
 }
 
 export type CustomerUncheckedCreateWithoutContactsInput = {
-  id?: string
+  id?: number
   customerNumber: string
   name: string
   type?: $Enums.CustomerType
@@ -1395,7 +1414,7 @@ export type CustomerUncheckedCreateWithoutContactsInput = {
   registrationNumber?: string | null
   creditLimit?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   creditBalance?: runtime.Decimal | runtime.DecimalJsLike | number | string
-  paymentTermId?: string | null
+  paymentTermId?: number | null
   billingAddress?: string | null
   billingCity?: string | null
   billingState?: string | null
@@ -1409,8 +1428,8 @@ export type CustomerUncheckedCreateWithoutContactsInput = {
   status?: $Enums.CustomerStatus
   category?: string | null
   source?: string | null
-  tenantId: string
-  salesRepId?: string | null
+  tenantId: number
+  salesRepId?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   orders?: Prisma.SalesOrderUncheckedCreateNestedManyWithoutCustomerInput
@@ -1438,7 +1457,6 @@ export type CustomerUpdateToOneWithWhereWithoutContactsInput = {
 }
 
 export type CustomerUpdateWithoutContactsInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   customerNumber?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumCustomerTypeFieldUpdateOperationsInput | $Enums.CustomerType
@@ -1464,7 +1482,7 @@ export type CustomerUpdateWithoutContactsInput = {
   status?: Prisma.EnumCustomerStatusFieldUpdateOperationsInput | $Enums.CustomerStatus
   category?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   source?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  salesRepId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  salesRepId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   paymentTerm?: Prisma.PaymentTermUpdateOneWithoutCustomersNestedInput
@@ -1478,7 +1496,7 @@ export type CustomerUpdateWithoutContactsInput = {
 }
 
 export type CustomerUncheckedUpdateWithoutContactsInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   customerNumber?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumCustomerTypeFieldUpdateOperationsInput | $Enums.CustomerType
@@ -1491,7 +1509,7 @@ export type CustomerUncheckedUpdateWithoutContactsInput = {
   registrationNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   creditLimit?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   creditBalance?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  paymentTermId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  paymentTermId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   billingAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   billingCity?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   billingState?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1505,8 +1523,8 @@ export type CustomerUncheckedUpdateWithoutContactsInput = {
   status?: Prisma.EnumCustomerStatusFieldUpdateOperationsInput | $Enums.CustomerStatus
   category?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   source?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  tenantId?: Prisma.StringFieldUpdateOperationsInput | string
-  salesRepId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tenantId?: Prisma.IntFieldUpdateOperationsInput | number
+  salesRepId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   orders?: Prisma.SalesOrderUncheckedUpdateManyWithoutCustomerNestedInput
@@ -1518,7 +1536,6 @@ export type CustomerUncheckedUpdateWithoutContactsInput = {
 }
 
 export type CustomerCreateWithoutNotesInput = {
-  id?: string
   customerNumber: string
   name: string
   type?: $Enums.CustomerType
@@ -1544,7 +1561,7 @@ export type CustomerCreateWithoutNotesInput = {
   status?: $Enums.CustomerStatus
   category?: string | null
   source?: string | null
-  salesRepId?: string | null
+  salesRepId?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   paymentTerm?: Prisma.PaymentTermCreateNestedOneWithoutCustomersInput
@@ -1558,7 +1575,7 @@ export type CustomerCreateWithoutNotesInput = {
 }
 
 export type CustomerUncheckedCreateWithoutNotesInput = {
-  id?: string
+  id?: number
   customerNumber: string
   name: string
   type?: $Enums.CustomerType
@@ -1571,7 +1588,7 @@ export type CustomerUncheckedCreateWithoutNotesInput = {
   registrationNumber?: string | null
   creditLimit?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   creditBalance?: runtime.Decimal | runtime.DecimalJsLike | number | string
-  paymentTermId?: string | null
+  paymentTermId?: number | null
   billingAddress?: string | null
   billingCity?: string | null
   billingState?: string | null
@@ -1585,8 +1602,8 @@ export type CustomerUncheckedCreateWithoutNotesInput = {
   status?: $Enums.CustomerStatus
   category?: string | null
   source?: string | null
-  tenantId: string
-  salesRepId?: string | null
+  tenantId: number
+  salesRepId?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   contacts?: Prisma.CustomerContactUncheckedCreateNestedManyWithoutCustomerInput
@@ -1614,7 +1631,6 @@ export type CustomerUpdateToOneWithWhereWithoutNotesInput = {
 }
 
 export type CustomerUpdateWithoutNotesInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   customerNumber?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumCustomerTypeFieldUpdateOperationsInput | $Enums.CustomerType
@@ -1640,7 +1656,7 @@ export type CustomerUpdateWithoutNotesInput = {
   status?: Prisma.EnumCustomerStatusFieldUpdateOperationsInput | $Enums.CustomerStatus
   category?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   source?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  salesRepId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  salesRepId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   paymentTerm?: Prisma.PaymentTermUpdateOneWithoutCustomersNestedInput
@@ -1654,7 +1670,7 @@ export type CustomerUpdateWithoutNotesInput = {
 }
 
 export type CustomerUncheckedUpdateWithoutNotesInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   customerNumber?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumCustomerTypeFieldUpdateOperationsInput | $Enums.CustomerType
@@ -1667,7 +1683,7 @@ export type CustomerUncheckedUpdateWithoutNotesInput = {
   registrationNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   creditLimit?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   creditBalance?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  paymentTermId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  paymentTermId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   billingAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   billingCity?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   billingState?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1681,8 +1697,8 @@ export type CustomerUncheckedUpdateWithoutNotesInput = {
   status?: Prisma.EnumCustomerStatusFieldUpdateOperationsInput | $Enums.CustomerStatus
   category?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   source?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  tenantId?: Prisma.StringFieldUpdateOperationsInput | string
-  salesRepId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tenantId?: Prisma.IntFieldUpdateOperationsInput | number
+  salesRepId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   contacts?: Prisma.CustomerContactUncheckedUpdateManyWithoutCustomerNestedInput
@@ -1694,7 +1710,6 @@ export type CustomerUncheckedUpdateWithoutNotesInput = {
 }
 
 export type CustomerCreateWithoutQuotationsInput = {
-  id?: string
   customerNumber: string
   name: string
   type?: $Enums.CustomerType
@@ -1720,7 +1735,7 @@ export type CustomerCreateWithoutQuotationsInput = {
   status?: $Enums.CustomerStatus
   category?: string | null
   source?: string | null
-  salesRepId?: string | null
+  salesRepId?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   paymentTerm?: Prisma.PaymentTermCreateNestedOneWithoutCustomersInput
@@ -1734,7 +1749,7 @@ export type CustomerCreateWithoutQuotationsInput = {
 }
 
 export type CustomerUncheckedCreateWithoutQuotationsInput = {
-  id?: string
+  id?: number
   customerNumber: string
   name: string
   type?: $Enums.CustomerType
@@ -1747,7 +1762,7 @@ export type CustomerUncheckedCreateWithoutQuotationsInput = {
   registrationNumber?: string | null
   creditLimit?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   creditBalance?: runtime.Decimal | runtime.DecimalJsLike | number | string
-  paymentTermId?: string | null
+  paymentTermId?: number | null
   billingAddress?: string | null
   billingCity?: string | null
   billingState?: string | null
@@ -1761,8 +1776,8 @@ export type CustomerUncheckedCreateWithoutQuotationsInput = {
   status?: $Enums.CustomerStatus
   category?: string | null
   source?: string | null
-  tenantId: string
-  salesRepId?: string | null
+  tenantId: number
+  salesRepId?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   contacts?: Prisma.CustomerContactUncheckedCreateNestedManyWithoutCustomerInput
@@ -1790,7 +1805,6 @@ export type CustomerUpdateToOneWithWhereWithoutQuotationsInput = {
 }
 
 export type CustomerUpdateWithoutQuotationsInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   customerNumber?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumCustomerTypeFieldUpdateOperationsInput | $Enums.CustomerType
@@ -1816,7 +1830,7 @@ export type CustomerUpdateWithoutQuotationsInput = {
   status?: Prisma.EnumCustomerStatusFieldUpdateOperationsInput | $Enums.CustomerStatus
   category?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   source?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  salesRepId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  salesRepId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   paymentTerm?: Prisma.PaymentTermUpdateOneWithoutCustomersNestedInput
@@ -1830,7 +1844,7 @@ export type CustomerUpdateWithoutQuotationsInput = {
 }
 
 export type CustomerUncheckedUpdateWithoutQuotationsInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   customerNumber?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumCustomerTypeFieldUpdateOperationsInput | $Enums.CustomerType
@@ -1843,7 +1857,7 @@ export type CustomerUncheckedUpdateWithoutQuotationsInput = {
   registrationNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   creditLimit?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   creditBalance?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  paymentTermId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  paymentTermId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   billingAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   billingCity?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   billingState?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1857,8 +1871,8 @@ export type CustomerUncheckedUpdateWithoutQuotationsInput = {
   status?: Prisma.EnumCustomerStatusFieldUpdateOperationsInput | $Enums.CustomerStatus
   category?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   source?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  tenantId?: Prisma.StringFieldUpdateOperationsInput | string
-  salesRepId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tenantId?: Prisma.IntFieldUpdateOperationsInput | number
+  salesRepId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   contacts?: Prisma.CustomerContactUncheckedUpdateManyWithoutCustomerNestedInput
@@ -1870,7 +1884,6 @@ export type CustomerUncheckedUpdateWithoutQuotationsInput = {
 }
 
 export type CustomerCreateWithoutOrdersInput = {
-  id?: string
   customerNumber: string
   name: string
   type?: $Enums.CustomerType
@@ -1896,7 +1909,7 @@ export type CustomerCreateWithoutOrdersInput = {
   status?: $Enums.CustomerStatus
   category?: string | null
   source?: string | null
-  salesRepId?: string | null
+  salesRepId?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   paymentTerm?: Prisma.PaymentTermCreateNestedOneWithoutCustomersInput
@@ -1910,7 +1923,7 @@ export type CustomerCreateWithoutOrdersInput = {
 }
 
 export type CustomerUncheckedCreateWithoutOrdersInput = {
-  id?: string
+  id?: number
   customerNumber: string
   name: string
   type?: $Enums.CustomerType
@@ -1923,7 +1936,7 @@ export type CustomerUncheckedCreateWithoutOrdersInput = {
   registrationNumber?: string | null
   creditLimit?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   creditBalance?: runtime.Decimal | runtime.DecimalJsLike | number | string
-  paymentTermId?: string | null
+  paymentTermId?: number | null
   billingAddress?: string | null
   billingCity?: string | null
   billingState?: string | null
@@ -1937,8 +1950,8 @@ export type CustomerUncheckedCreateWithoutOrdersInput = {
   status?: $Enums.CustomerStatus
   category?: string | null
   source?: string | null
-  tenantId: string
-  salesRepId?: string | null
+  tenantId: number
+  salesRepId?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   contacts?: Prisma.CustomerContactUncheckedCreateNestedManyWithoutCustomerInput
@@ -1966,7 +1979,6 @@ export type CustomerUpdateToOneWithWhereWithoutOrdersInput = {
 }
 
 export type CustomerUpdateWithoutOrdersInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   customerNumber?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumCustomerTypeFieldUpdateOperationsInput | $Enums.CustomerType
@@ -1992,7 +2004,7 @@ export type CustomerUpdateWithoutOrdersInput = {
   status?: Prisma.EnumCustomerStatusFieldUpdateOperationsInput | $Enums.CustomerStatus
   category?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   source?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  salesRepId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  salesRepId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   paymentTerm?: Prisma.PaymentTermUpdateOneWithoutCustomersNestedInput
@@ -2006,7 +2018,7 @@ export type CustomerUpdateWithoutOrdersInput = {
 }
 
 export type CustomerUncheckedUpdateWithoutOrdersInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   customerNumber?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumCustomerTypeFieldUpdateOperationsInput | $Enums.CustomerType
@@ -2019,7 +2031,7 @@ export type CustomerUncheckedUpdateWithoutOrdersInput = {
   registrationNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   creditLimit?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   creditBalance?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  paymentTermId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  paymentTermId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   billingAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   billingCity?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   billingState?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2033,8 +2045,8 @@ export type CustomerUncheckedUpdateWithoutOrdersInput = {
   status?: Prisma.EnumCustomerStatusFieldUpdateOperationsInput | $Enums.CustomerStatus
   category?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   source?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  tenantId?: Prisma.StringFieldUpdateOperationsInput | string
-  salesRepId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tenantId?: Prisma.IntFieldUpdateOperationsInput | number
+  salesRepId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   contacts?: Prisma.CustomerContactUncheckedUpdateManyWithoutCustomerNestedInput
@@ -2046,7 +2058,6 @@ export type CustomerUncheckedUpdateWithoutOrdersInput = {
 }
 
 export type CustomerCreateWithoutShipmentsInput = {
-  id?: string
   customerNumber: string
   name: string
   type?: $Enums.CustomerType
@@ -2072,7 +2083,7 @@ export type CustomerCreateWithoutShipmentsInput = {
   status?: $Enums.CustomerStatus
   category?: string | null
   source?: string | null
-  salesRepId?: string | null
+  salesRepId?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   paymentTerm?: Prisma.PaymentTermCreateNestedOneWithoutCustomersInput
@@ -2086,7 +2097,7 @@ export type CustomerCreateWithoutShipmentsInput = {
 }
 
 export type CustomerUncheckedCreateWithoutShipmentsInput = {
-  id?: string
+  id?: number
   customerNumber: string
   name: string
   type?: $Enums.CustomerType
@@ -2099,7 +2110,7 @@ export type CustomerUncheckedCreateWithoutShipmentsInput = {
   registrationNumber?: string | null
   creditLimit?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   creditBalance?: runtime.Decimal | runtime.DecimalJsLike | number | string
-  paymentTermId?: string | null
+  paymentTermId?: number | null
   billingAddress?: string | null
   billingCity?: string | null
   billingState?: string | null
@@ -2113,8 +2124,8 @@ export type CustomerUncheckedCreateWithoutShipmentsInput = {
   status?: $Enums.CustomerStatus
   category?: string | null
   source?: string | null
-  tenantId: string
-  salesRepId?: string | null
+  tenantId: number
+  salesRepId?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   contacts?: Prisma.CustomerContactUncheckedCreateNestedManyWithoutCustomerInput
@@ -2142,7 +2153,6 @@ export type CustomerUpdateToOneWithWhereWithoutShipmentsInput = {
 }
 
 export type CustomerUpdateWithoutShipmentsInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   customerNumber?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumCustomerTypeFieldUpdateOperationsInput | $Enums.CustomerType
@@ -2168,7 +2178,7 @@ export type CustomerUpdateWithoutShipmentsInput = {
   status?: Prisma.EnumCustomerStatusFieldUpdateOperationsInput | $Enums.CustomerStatus
   category?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   source?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  salesRepId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  salesRepId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   paymentTerm?: Prisma.PaymentTermUpdateOneWithoutCustomersNestedInput
@@ -2182,7 +2192,7 @@ export type CustomerUpdateWithoutShipmentsInput = {
 }
 
 export type CustomerUncheckedUpdateWithoutShipmentsInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   customerNumber?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumCustomerTypeFieldUpdateOperationsInput | $Enums.CustomerType
@@ -2195,7 +2205,7 @@ export type CustomerUncheckedUpdateWithoutShipmentsInput = {
   registrationNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   creditLimit?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   creditBalance?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  paymentTermId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  paymentTermId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   billingAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   billingCity?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   billingState?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2209,8 +2219,8 @@ export type CustomerUncheckedUpdateWithoutShipmentsInput = {
   status?: Prisma.EnumCustomerStatusFieldUpdateOperationsInput | $Enums.CustomerStatus
   category?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   source?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  tenantId?: Prisma.StringFieldUpdateOperationsInput | string
-  salesRepId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tenantId?: Prisma.IntFieldUpdateOperationsInput | number
+  salesRepId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   contacts?: Prisma.CustomerContactUncheckedUpdateManyWithoutCustomerNestedInput
@@ -2222,7 +2232,6 @@ export type CustomerUncheckedUpdateWithoutShipmentsInput = {
 }
 
 export type CustomerCreateWithoutInvoicesInput = {
-  id?: string
   customerNumber: string
   name: string
   type?: $Enums.CustomerType
@@ -2248,7 +2257,7 @@ export type CustomerCreateWithoutInvoicesInput = {
   status?: $Enums.CustomerStatus
   category?: string | null
   source?: string | null
-  salesRepId?: string | null
+  salesRepId?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   paymentTerm?: Prisma.PaymentTermCreateNestedOneWithoutCustomersInput
@@ -2262,7 +2271,7 @@ export type CustomerCreateWithoutInvoicesInput = {
 }
 
 export type CustomerUncheckedCreateWithoutInvoicesInput = {
-  id?: string
+  id?: number
   customerNumber: string
   name: string
   type?: $Enums.CustomerType
@@ -2275,7 +2284,7 @@ export type CustomerUncheckedCreateWithoutInvoicesInput = {
   registrationNumber?: string | null
   creditLimit?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   creditBalance?: runtime.Decimal | runtime.DecimalJsLike | number | string
-  paymentTermId?: string | null
+  paymentTermId?: number | null
   billingAddress?: string | null
   billingCity?: string | null
   billingState?: string | null
@@ -2289,8 +2298,8 @@ export type CustomerUncheckedCreateWithoutInvoicesInput = {
   status?: $Enums.CustomerStatus
   category?: string | null
   source?: string | null
-  tenantId: string
-  salesRepId?: string | null
+  tenantId: number
+  salesRepId?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   contacts?: Prisma.CustomerContactUncheckedCreateNestedManyWithoutCustomerInput
@@ -2318,7 +2327,6 @@ export type CustomerUpdateToOneWithWhereWithoutInvoicesInput = {
 }
 
 export type CustomerUpdateWithoutInvoicesInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   customerNumber?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumCustomerTypeFieldUpdateOperationsInput | $Enums.CustomerType
@@ -2344,7 +2352,7 @@ export type CustomerUpdateWithoutInvoicesInput = {
   status?: Prisma.EnumCustomerStatusFieldUpdateOperationsInput | $Enums.CustomerStatus
   category?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   source?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  salesRepId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  salesRepId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   paymentTerm?: Prisma.PaymentTermUpdateOneWithoutCustomersNestedInput
@@ -2358,7 +2366,7 @@ export type CustomerUpdateWithoutInvoicesInput = {
 }
 
 export type CustomerUncheckedUpdateWithoutInvoicesInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   customerNumber?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumCustomerTypeFieldUpdateOperationsInput | $Enums.CustomerType
@@ -2371,7 +2379,7 @@ export type CustomerUncheckedUpdateWithoutInvoicesInput = {
   registrationNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   creditLimit?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   creditBalance?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  paymentTermId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  paymentTermId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   billingAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   billingCity?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   billingState?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2385,8 +2393,8 @@ export type CustomerUncheckedUpdateWithoutInvoicesInput = {
   status?: Prisma.EnumCustomerStatusFieldUpdateOperationsInput | $Enums.CustomerStatus
   category?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   source?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  tenantId?: Prisma.StringFieldUpdateOperationsInput | string
-  salesRepId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tenantId?: Prisma.IntFieldUpdateOperationsInput | number
+  salesRepId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   contacts?: Prisma.CustomerContactUncheckedUpdateManyWithoutCustomerNestedInput
@@ -2398,7 +2406,6 @@ export type CustomerUncheckedUpdateWithoutInvoicesInput = {
 }
 
 export type CustomerCreateWithoutPaymentsInput = {
-  id?: string
   customerNumber: string
   name: string
   type?: $Enums.CustomerType
@@ -2424,7 +2431,7 @@ export type CustomerCreateWithoutPaymentsInput = {
   status?: $Enums.CustomerStatus
   category?: string | null
   source?: string | null
-  salesRepId?: string | null
+  salesRepId?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   paymentTerm?: Prisma.PaymentTermCreateNestedOneWithoutCustomersInput
@@ -2438,7 +2445,7 @@ export type CustomerCreateWithoutPaymentsInput = {
 }
 
 export type CustomerUncheckedCreateWithoutPaymentsInput = {
-  id?: string
+  id?: number
   customerNumber: string
   name: string
   type?: $Enums.CustomerType
@@ -2451,7 +2458,7 @@ export type CustomerUncheckedCreateWithoutPaymentsInput = {
   registrationNumber?: string | null
   creditLimit?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   creditBalance?: runtime.Decimal | runtime.DecimalJsLike | number | string
-  paymentTermId?: string | null
+  paymentTermId?: number | null
   billingAddress?: string | null
   billingCity?: string | null
   billingState?: string | null
@@ -2465,8 +2472,8 @@ export type CustomerUncheckedCreateWithoutPaymentsInput = {
   status?: $Enums.CustomerStatus
   category?: string | null
   source?: string | null
-  tenantId: string
-  salesRepId?: string | null
+  tenantId: number
+  salesRepId?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   contacts?: Prisma.CustomerContactUncheckedCreateNestedManyWithoutCustomerInput
@@ -2494,7 +2501,6 @@ export type CustomerUpdateToOneWithWhereWithoutPaymentsInput = {
 }
 
 export type CustomerUpdateWithoutPaymentsInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   customerNumber?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumCustomerTypeFieldUpdateOperationsInput | $Enums.CustomerType
@@ -2520,7 +2526,7 @@ export type CustomerUpdateWithoutPaymentsInput = {
   status?: Prisma.EnumCustomerStatusFieldUpdateOperationsInput | $Enums.CustomerStatus
   category?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   source?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  salesRepId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  salesRepId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   paymentTerm?: Prisma.PaymentTermUpdateOneWithoutCustomersNestedInput
@@ -2534,7 +2540,7 @@ export type CustomerUpdateWithoutPaymentsInput = {
 }
 
 export type CustomerUncheckedUpdateWithoutPaymentsInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   customerNumber?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumCustomerTypeFieldUpdateOperationsInput | $Enums.CustomerType
@@ -2547,7 +2553,7 @@ export type CustomerUncheckedUpdateWithoutPaymentsInput = {
   registrationNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   creditLimit?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   creditBalance?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  paymentTermId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  paymentTermId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   billingAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   billingCity?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   billingState?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2561,8 +2567,8 @@ export type CustomerUncheckedUpdateWithoutPaymentsInput = {
   status?: Prisma.EnumCustomerStatusFieldUpdateOperationsInput | $Enums.CustomerStatus
   category?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   source?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  tenantId?: Prisma.StringFieldUpdateOperationsInput | string
-  salesRepId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tenantId?: Prisma.IntFieldUpdateOperationsInput | number
+  salesRepId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   contacts?: Prisma.CustomerContactUncheckedUpdateManyWithoutCustomerNestedInput
@@ -2574,7 +2580,6 @@ export type CustomerUncheckedUpdateWithoutPaymentsInput = {
 }
 
 export type CustomerCreateWithoutPaymentTermInput = {
-  id?: string
   customerNumber: string
   name: string
   type?: $Enums.CustomerType
@@ -2600,7 +2605,7 @@ export type CustomerCreateWithoutPaymentTermInput = {
   status?: $Enums.CustomerStatus
   category?: string | null
   source?: string | null
-  salesRepId?: string | null
+  salesRepId?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   tenant: Prisma.TenantCreateNestedOneWithoutCustomersInput
@@ -2614,7 +2619,7 @@ export type CustomerCreateWithoutPaymentTermInput = {
 }
 
 export type CustomerUncheckedCreateWithoutPaymentTermInput = {
-  id?: string
+  id?: number
   customerNumber: string
   name: string
   type?: $Enums.CustomerType
@@ -2640,8 +2645,8 @@ export type CustomerUncheckedCreateWithoutPaymentTermInput = {
   status?: $Enums.CustomerStatus
   category?: string | null
   source?: string | null
-  tenantId: string
-  salesRepId?: string | null
+  tenantId: number
+  salesRepId?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   contacts?: Prisma.CustomerContactUncheckedCreateNestedManyWithoutCustomerInput
@@ -2680,7 +2685,7 @@ export type CustomerUpdateManyWithWhereWithoutPaymentTermInput = {
 }
 
 export type CustomerCreateManyTenantInput = {
-  id?: string
+  id?: number
   customerNumber: string
   name: string
   type?: $Enums.CustomerType
@@ -2693,7 +2698,7 @@ export type CustomerCreateManyTenantInput = {
   registrationNumber?: string | null
   creditLimit?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   creditBalance?: runtime.Decimal | runtime.DecimalJsLike | number | string
-  paymentTermId?: string | null
+  paymentTermId?: number | null
   billingAddress?: string | null
   billingCity?: string | null
   billingState?: string | null
@@ -2707,13 +2712,12 @@ export type CustomerCreateManyTenantInput = {
   status?: $Enums.CustomerStatus
   category?: string | null
   source?: string | null
-  salesRepId?: string | null
+  salesRepId?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
 
 export type CustomerUpdateWithoutTenantInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   customerNumber?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumCustomerTypeFieldUpdateOperationsInput | $Enums.CustomerType
@@ -2739,7 +2743,7 @@ export type CustomerUpdateWithoutTenantInput = {
   status?: Prisma.EnumCustomerStatusFieldUpdateOperationsInput | $Enums.CustomerStatus
   category?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   source?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  salesRepId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  salesRepId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   paymentTerm?: Prisma.PaymentTermUpdateOneWithoutCustomersNestedInput
@@ -2753,7 +2757,7 @@ export type CustomerUpdateWithoutTenantInput = {
 }
 
 export type CustomerUncheckedUpdateWithoutTenantInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   customerNumber?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumCustomerTypeFieldUpdateOperationsInput | $Enums.CustomerType
@@ -2766,7 +2770,7 @@ export type CustomerUncheckedUpdateWithoutTenantInput = {
   registrationNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   creditLimit?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   creditBalance?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  paymentTermId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  paymentTermId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   billingAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   billingCity?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   billingState?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2780,7 +2784,7 @@ export type CustomerUncheckedUpdateWithoutTenantInput = {
   status?: Prisma.EnumCustomerStatusFieldUpdateOperationsInput | $Enums.CustomerStatus
   category?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   source?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  salesRepId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  salesRepId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   contacts?: Prisma.CustomerContactUncheckedUpdateManyWithoutCustomerNestedInput
@@ -2793,7 +2797,7 @@ export type CustomerUncheckedUpdateWithoutTenantInput = {
 }
 
 export type CustomerUncheckedUpdateManyWithoutTenantInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   customerNumber?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumCustomerTypeFieldUpdateOperationsInput | $Enums.CustomerType
@@ -2806,7 +2810,7 @@ export type CustomerUncheckedUpdateManyWithoutTenantInput = {
   registrationNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   creditLimit?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   creditBalance?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  paymentTermId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  paymentTermId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   billingAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   billingCity?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   billingState?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2820,13 +2824,13 @@ export type CustomerUncheckedUpdateManyWithoutTenantInput = {
   status?: Prisma.EnumCustomerStatusFieldUpdateOperationsInput | $Enums.CustomerStatus
   category?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   source?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  salesRepId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  salesRepId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type CustomerCreateManyPaymentTermInput = {
-  id?: string
+  id?: number
   customerNumber: string
   name: string
   type?: $Enums.CustomerType
@@ -2852,14 +2856,13 @@ export type CustomerCreateManyPaymentTermInput = {
   status?: $Enums.CustomerStatus
   category?: string | null
   source?: string | null
-  tenantId: string
-  salesRepId?: string | null
+  tenantId: number
+  salesRepId?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
 
 export type CustomerUpdateWithoutPaymentTermInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   customerNumber?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumCustomerTypeFieldUpdateOperationsInput | $Enums.CustomerType
@@ -2885,7 +2888,7 @@ export type CustomerUpdateWithoutPaymentTermInput = {
   status?: Prisma.EnumCustomerStatusFieldUpdateOperationsInput | $Enums.CustomerStatus
   category?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   source?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  salesRepId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  salesRepId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   tenant?: Prisma.TenantUpdateOneRequiredWithoutCustomersNestedInput
@@ -2899,7 +2902,7 @@ export type CustomerUpdateWithoutPaymentTermInput = {
 }
 
 export type CustomerUncheckedUpdateWithoutPaymentTermInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   customerNumber?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumCustomerTypeFieldUpdateOperationsInput | $Enums.CustomerType
@@ -2925,8 +2928,8 @@ export type CustomerUncheckedUpdateWithoutPaymentTermInput = {
   status?: Prisma.EnumCustomerStatusFieldUpdateOperationsInput | $Enums.CustomerStatus
   category?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   source?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  tenantId?: Prisma.StringFieldUpdateOperationsInput | string
-  salesRepId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tenantId?: Prisma.IntFieldUpdateOperationsInput | number
+  salesRepId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   contacts?: Prisma.CustomerContactUncheckedUpdateManyWithoutCustomerNestedInput
@@ -2939,7 +2942,7 @@ export type CustomerUncheckedUpdateWithoutPaymentTermInput = {
 }
 
 export type CustomerUncheckedUpdateManyWithoutPaymentTermInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   customerNumber?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumCustomerTypeFieldUpdateOperationsInput | $Enums.CustomerType
@@ -2965,8 +2968,8 @@ export type CustomerUncheckedUpdateManyWithoutPaymentTermInput = {
   status?: Prisma.EnumCustomerStatusFieldUpdateOperationsInput | $Enums.CustomerStatus
   category?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   source?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  tenantId?: Prisma.StringFieldUpdateOperationsInput | string
-  salesRepId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tenantId?: Prisma.IntFieldUpdateOperationsInput | number
+  salesRepId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -3242,7 +3245,7 @@ export type $CustomerPayload<ExtArgs extends runtime.Types.Extensions.InternalAr
     notes: Prisma.$CustomerNotePayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
-    id: string
+    id: number
     customerNumber: string
     name: string
     type: $Enums.CustomerType
@@ -3255,7 +3258,7 @@ export type $CustomerPayload<ExtArgs extends runtime.Types.Extensions.InternalAr
     registrationNumber: string | null
     creditLimit: runtime.Decimal | null
     creditBalance: runtime.Decimal
-    paymentTermId: string | null
+    paymentTermId: number | null
     billingAddress: string | null
     billingCity: string | null
     billingState: string | null
@@ -3269,8 +3272,8 @@ export type $CustomerPayload<ExtArgs extends runtime.Types.Extensions.InternalAr
     status: $Enums.CustomerStatus
     category: string | null
     source: string | null
-    tenantId: string
-    salesRepId: string | null
+    tenantId: number
+    salesRepId: number | null
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["customer"]>
@@ -3705,7 +3708,7 @@ export interface Prisma__CustomerClient<T, Null = never, ExtArgs extends runtime
  * Fields of the Customer model
  */
 export interface CustomerFieldRefs {
-  readonly id: Prisma.FieldRef<"Customer", 'String'>
+  readonly id: Prisma.FieldRef<"Customer", 'Int'>
   readonly customerNumber: Prisma.FieldRef<"Customer", 'String'>
   readonly name: Prisma.FieldRef<"Customer", 'String'>
   readonly type: Prisma.FieldRef<"Customer", 'CustomerType'>
@@ -3718,7 +3721,7 @@ export interface CustomerFieldRefs {
   readonly registrationNumber: Prisma.FieldRef<"Customer", 'String'>
   readonly creditLimit: Prisma.FieldRef<"Customer", 'Decimal'>
   readonly creditBalance: Prisma.FieldRef<"Customer", 'Decimal'>
-  readonly paymentTermId: Prisma.FieldRef<"Customer", 'String'>
+  readonly paymentTermId: Prisma.FieldRef<"Customer", 'Int'>
   readonly billingAddress: Prisma.FieldRef<"Customer", 'String'>
   readonly billingCity: Prisma.FieldRef<"Customer", 'String'>
   readonly billingState: Prisma.FieldRef<"Customer", 'String'>
@@ -3732,8 +3735,8 @@ export interface CustomerFieldRefs {
   readonly status: Prisma.FieldRef<"Customer", 'CustomerStatus'>
   readonly category: Prisma.FieldRef<"Customer", 'String'>
   readonly source: Prisma.FieldRef<"Customer", 'String'>
-  readonly tenantId: Prisma.FieldRef<"Customer", 'String'>
-  readonly salesRepId: Prisma.FieldRef<"Customer", 'String'>
+  readonly tenantId: Prisma.FieldRef<"Customer", 'Int'>
+  readonly salesRepId: Prisma.FieldRef<"Customer", 'Int'>
   readonly createdAt: Prisma.FieldRef<"Customer", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"Customer", 'DateTime'>
 }

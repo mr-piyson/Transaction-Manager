@@ -27,22 +27,26 @@ export type AggregateLeave = {
 }
 
 export type LeaveAvgAggregateOutputType = {
+  id: number | null
   totalDays: runtime.Decimal | null
+  employeeId: number | null
 }
 
 export type LeaveSumAggregateOutputType = {
+  id: number | null
   totalDays: runtime.Decimal | null
+  employeeId: number | null
 }
 
 export type LeaveMinAggregateOutputType = {
-  id: string | null
+  id: number | null
   leaveType: $Enums.LeaveType | null
   startDate: Date | null
   endDate: Date | null
   totalDays: runtime.Decimal | null
   reason: string | null
   status: $Enums.LeaveStatus | null
-  employeeId: string | null
+  employeeId: number | null
   approvedBy: string | null
   approvedAt: Date | null
   rejectionReason: string | null
@@ -51,14 +55,14 @@ export type LeaveMinAggregateOutputType = {
 }
 
 export type LeaveMaxAggregateOutputType = {
-  id: string | null
+  id: number | null
   leaveType: $Enums.LeaveType | null
   startDate: Date | null
   endDate: Date | null
   totalDays: runtime.Decimal | null
   reason: string | null
   status: $Enums.LeaveStatus | null
-  employeeId: string | null
+  employeeId: number | null
   approvedBy: string | null
   approvedAt: Date | null
   rejectionReason: string | null
@@ -85,11 +89,15 @@ export type LeaveCountAggregateOutputType = {
 
 
 export type LeaveAvgAggregateInputType = {
+  id?: true
   totalDays?: true
+  employeeId?: true
 }
 
 export type LeaveSumAggregateInputType = {
+  id?: true
   totalDays?: true
+  employeeId?: true
 }
 
 export type LeaveMinAggregateInputType = {
@@ -228,14 +236,14 @@ export type LeaveGroupByArgs<ExtArgs extends runtime.Types.Extensions.InternalAr
 }
 
 export type LeaveGroupByOutputType = {
-  id: string
+  id: number
   leaveType: $Enums.LeaveType
   startDate: Date
   endDate: Date
   totalDays: runtime.Decimal
   reason: string
   status: $Enums.LeaveStatus
-  employeeId: string
+  employeeId: number
   approvedBy: string | null
   approvedAt: Date | null
   rejectionReason: string | null
@@ -267,14 +275,14 @@ export type LeaveWhereInput = {
   AND?: Prisma.LeaveWhereInput | Prisma.LeaveWhereInput[]
   OR?: Prisma.LeaveWhereInput[]
   NOT?: Prisma.LeaveWhereInput | Prisma.LeaveWhereInput[]
-  id?: Prisma.StringFilter<"Leave"> | string
+  id?: Prisma.IntFilter<"Leave"> | number
   leaveType?: Prisma.EnumLeaveTypeFilter<"Leave"> | $Enums.LeaveType
   startDate?: Prisma.DateTimeFilter<"Leave"> | Date | string
   endDate?: Prisma.DateTimeFilter<"Leave"> | Date | string
   totalDays?: Prisma.DecimalFilter<"Leave"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   reason?: Prisma.StringFilter<"Leave"> | string
   status?: Prisma.EnumLeaveStatusFilter<"Leave"> | $Enums.LeaveStatus
-  employeeId?: Prisma.StringFilter<"Leave"> | string
+  employeeId?: Prisma.IntFilter<"Leave"> | number
   approvedBy?: Prisma.StringNullableFilter<"Leave"> | string | null
   approvedAt?: Prisma.DateTimeNullableFilter<"Leave"> | Date | string | null
   rejectionReason?: Prisma.StringNullableFilter<"Leave"> | string | null
@@ -301,7 +309,7 @@ export type LeaveOrderByWithRelationInput = {
 }
 
 export type LeaveWhereUniqueInput = Prisma.AtLeast<{
-  id?: string
+  id?: number
   AND?: Prisma.LeaveWhereInput | Prisma.LeaveWhereInput[]
   OR?: Prisma.LeaveWhereInput[]
   NOT?: Prisma.LeaveWhereInput | Prisma.LeaveWhereInput[]
@@ -311,7 +319,7 @@ export type LeaveWhereUniqueInput = Prisma.AtLeast<{
   totalDays?: Prisma.DecimalFilter<"Leave"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   reason?: Prisma.StringFilter<"Leave"> | string
   status?: Prisma.EnumLeaveStatusFilter<"Leave"> | $Enums.LeaveStatus
-  employeeId?: Prisma.StringFilter<"Leave"> | string
+  employeeId?: Prisma.IntFilter<"Leave"> | number
   approvedBy?: Prisma.StringNullableFilter<"Leave"> | string | null
   approvedAt?: Prisma.DateTimeNullableFilter<"Leave"> | Date | string | null
   rejectionReason?: Prisma.StringNullableFilter<"Leave"> | string | null
@@ -345,14 +353,14 @@ export type LeaveScalarWhereWithAggregatesInput = {
   AND?: Prisma.LeaveScalarWhereWithAggregatesInput | Prisma.LeaveScalarWhereWithAggregatesInput[]
   OR?: Prisma.LeaveScalarWhereWithAggregatesInput[]
   NOT?: Prisma.LeaveScalarWhereWithAggregatesInput | Prisma.LeaveScalarWhereWithAggregatesInput[]
-  id?: Prisma.StringWithAggregatesFilter<"Leave"> | string
+  id?: Prisma.IntWithAggregatesFilter<"Leave"> | number
   leaveType?: Prisma.EnumLeaveTypeWithAggregatesFilter<"Leave"> | $Enums.LeaveType
   startDate?: Prisma.DateTimeWithAggregatesFilter<"Leave"> | Date | string
   endDate?: Prisma.DateTimeWithAggregatesFilter<"Leave"> | Date | string
   totalDays?: Prisma.DecimalWithAggregatesFilter<"Leave"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   reason?: Prisma.StringWithAggregatesFilter<"Leave"> | string
   status?: Prisma.EnumLeaveStatusWithAggregatesFilter<"Leave"> | $Enums.LeaveStatus
-  employeeId?: Prisma.StringWithAggregatesFilter<"Leave"> | string
+  employeeId?: Prisma.IntWithAggregatesFilter<"Leave"> | number
   approvedBy?: Prisma.StringNullableWithAggregatesFilter<"Leave"> | string | null
   approvedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Leave"> | Date | string | null
   rejectionReason?: Prisma.StringNullableWithAggregatesFilter<"Leave"> | string | null
@@ -361,7 +369,6 @@ export type LeaveScalarWhereWithAggregatesInput = {
 }
 
 export type LeaveCreateInput = {
-  id?: string
   leaveType: $Enums.LeaveType
   startDate: Date | string
   endDate: Date | string
@@ -377,14 +384,14 @@ export type LeaveCreateInput = {
 }
 
 export type LeaveUncheckedCreateInput = {
-  id?: string
+  id?: number
   leaveType: $Enums.LeaveType
   startDate: Date | string
   endDate: Date | string
   totalDays: runtime.Decimal | runtime.DecimalJsLike | number | string
   reason: string
   status?: $Enums.LeaveStatus
-  employeeId: string
+  employeeId: number
   approvedBy?: string | null
   approvedAt?: Date | string | null
   rejectionReason?: string | null
@@ -393,7 +400,6 @@ export type LeaveUncheckedCreateInput = {
 }
 
 export type LeaveUpdateInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   leaveType?: Prisma.EnumLeaveTypeFieldUpdateOperationsInput | $Enums.LeaveType
   startDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   endDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -409,14 +415,14 @@ export type LeaveUpdateInput = {
 }
 
 export type LeaveUncheckedUpdateInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   leaveType?: Prisma.EnumLeaveTypeFieldUpdateOperationsInput | $Enums.LeaveType
   startDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   endDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   totalDays?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   reason?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumLeaveStatusFieldUpdateOperationsInput | $Enums.LeaveStatus
-  employeeId?: Prisma.StringFieldUpdateOperationsInput | string
+  employeeId?: Prisma.IntFieldUpdateOperationsInput | number
   approvedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   approvedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   rejectionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -425,14 +431,14 @@ export type LeaveUncheckedUpdateInput = {
 }
 
 export type LeaveCreateManyInput = {
-  id?: string
+  id?: number
   leaveType: $Enums.LeaveType
   startDate: Date | string
   endDate: Date | string
   totalDays: runtime.Decimal | runtime.DecimalJsLike | number | string
   reason: string
   status?: $Enums.LeaveStatus
-  employeeId: string
+  employeeId: number
   approvedBy?: string | null
   approvedAt?: Date | string | null
   rejectionReason?: string | null
@@ -441,7 +447,6 @@ export type LeaveCreateManyInput = {
 }
 
 export type LeaveUpdateManyMutationInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   leaveType?: Prisma.EnumLeaveTypeFieldUpdateOperationsInput | $Enums.LeaveType
   startDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   endDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -456,14 +461,14 @@ export type LeaveUpdateManyMutationInput = {
 }
 
 export type LeaveUncheckedUpdateManyInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   leaveType?: Prisma.EnumLeaveTypeFieldUpdateOperationsInput | $Enums.LeaveType
   startDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   endDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   totalDays?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   reason?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumLeaveStatusFieldUpdateOperationsInput | $Enums.LeaveStatus
-  employeeId?: Prisma.StringFieldUpdateOperationsInput | string
+  employeeId?: Prisma.IntFieldUpdateOperationsInput | number
   approvedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   approvedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   rejectionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -498,7 +503,9 @@ export type LeaveCountOrderByAggregateInput = {
 }
 
 export type LeaveAvgOrderByAggregateInput = {
+  id?: Prisma.SortOrder
   totalDays?: Prisma.SortOrder
+  employeeId?: Prisma.SortOrder
 }
 
 export type LeaveMaxOrderByAggregateInput = {
@@ -534,7 +541,9 @@ export type LeaveMinOrderByAggregateInput = {
 }
 
 export type LeaveSumOrderByAggregateInput = {
+  id?: Prisma.SortOrder
   totalDays?: Prisma.SortOrder
+  employeeId?: Prisma.SortOrder
 }
 
 export type LeaveCreateNestedManyWithoutEmployeeInput = {
@@ -588,7 +597,6 @@ export type EnumLeaveStatusFieldUpdateOperationsInput = {
 }
 
 export type LeaveCreateWithoutEmployeeInput = {
-  id?: string
   leaveType: $Enums.LeaveType
   startDate: Date | string
   endDate: Date | string
@@ -603,7 +611,7 @@ export type LeaveCreateWithoutEmployeeInput = {
 }
 
 export type LeaveUncheckedCreateWithoutEmployeeInput = {
-  id?: string
+  id?: number
   leaveType: $Enums.LeaveType
   startDate: Date | string
   endDate: Date | string
@@ -647,14 +655,14 @@ export type LeaveScalarWhereInput = {
   AND?: Prisma.LeaveScalarWhereInput | Prisma.LeaveScalarWhereInput[]
   OR?: Prisma.LeaveScalarWhereInput[]
   NOT?: Prisma.LeaveScalarWhereInput | Prisma.LeaveScalarWhereInput[]
-  id?: Prisma.StringFilter<"Leave"> | string
+  id?: Prisma.IntFilter<"Leave"> | number
   leaveType?: Prisma.EnumLeaveTypeFilter<"Leave"> | $Enums.LeaveType
   startDate?: Prisma.DateTimeFilter<"Leave"> | Date | string
   endDate?: Prisma.DateTimeFilter<"Leave"> | Date | string
   totalDays?: Prisma.DecimalFilter<"Leave"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   reason?: Prisma.StringFilter<"Leave"> | string
   status?: Prisma.EnumLeaveStatusFilter<"Leave"> | $Enums.LeaveStatus
-  employeeId?: Prisma.StringFilter<"Leave"> | string
+  employeeId?: Prisma.IntFilter<"Leave"> | number
   approvedBy?: Prisma.StringNullableFilter<"Leave"> | string | null
   approvedAt?: Prisma.DateTimeNullableFilter<"Leave"> | Date | string | null
   rejectionReason?: Prisma.StringNullableFilter<"Leave"> | string | null
@@ -663,7 +671,7 @@ export type LeaveScalarWhereInput = {
 }
 
 export type LeaveCreateManyEmployeeInput = {
-  id?: string
+  id?: number
   leaveType: $Enums.LeaveType
   startDate: Date | string
   endDate: Date | string
@@ -678,7 +686,6 @@ export type LeaveCreateManyEmployeeInput = {
 }
 
 export type LeaveUpdateWithoutEmployeeInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   leaveType?: Prisma.EnumLeaveTypeFieldUpdateOperationsInput | $Enums.LeaveType
   startDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   endDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -693,7 +700,7 @@ export type LeaveUpdateWithoutEmployeeInput = {
 }
 
 export type LeaveUncheckedUpdateWithoutEmployeeInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   leaveType?: Prisma.EnumLeaveTypeFieldUpdateOperationsInput | $Enums.LeaveType
   startDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   endDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -708,7 +715,7 @@ export type LeaveUncheckedUpdateWithoutEmployeeInput = {
 }
 
 export type LeaveUncheckedUpdateManyWithoutEmployeeInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   leaveType?: Prisma.EnumLeaveTypeFieldUpdateOperationsInput | $Enums.LeaveType
   startDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   endDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -808,14 +815,14 @@ export type $LeavePayload<ExtArgs extends runtime.Types.Extensions.InternalArgs 
     employee: Prisma.$EmployeePayload<ExtArgs>
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
-    id: string
+    id: number
     leaveType: $Enums.LeaveType
     startDate: Date
     endDate: Date
     totalDays: runtime.Decimal
     reason: string
     status: $Enums.LeaveStatus
-    employeeId: string
+    employeeId: number
     approvedBy: string | null
     approvedAt: Date | null
     rejectionReason: string | null
@@ -1245,14 +1252,14 @@ export interface Prisma__LeaveClient<T, Null = never, ExtArgs extends runtime.Ty
  * Fields of the Leave model
  */
 export interface LeaveFieldRefs {
-  readonly id: Prisma.FieldRef<"Leave", 'String'>
+  readonly id: Prisma.FieldRef<"Leave", 'Int'>
   readonly leaveType: Prisma.FieldRef<"Leave", 'LeaveType'>
   readonly startDate: Prisma.FieldRef<"Leave", 'DateTime'>
   readonly endDate: Prisma.FieldRef<"Leave", 'DateTime'>
   readonly totalDays: Prisma.FieldRef<"Leave", 'Decimal'>
   readonly reason: Prisma.FieldRef<"Leave", 'String'>
   readonly status: Prisma.FieldRef<"Leave", 'LeaveStatus'>
-  readonly employeeId: Prisma.FieldRef<"Leave", 'String'>
+  readonly employeeId: Prisma.FieldRef<"Leave", 'Int'>
   readonly approvedBy: Prisma.FieldRef<"Leave", 'String'>
   readonly approvedAt: Prisma.FieldRef<"Leave", 'DateTime'>
   readonly rejectionReason: Prisma.FieldRef<"Leave", 'String'>

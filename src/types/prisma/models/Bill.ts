@@ -27,25 +27,31 @@ export type AggregateBill = {
 }
 
 export type BillAvgAggregateOutputType = {
+  id: number | null
   subtotal: runtime.Decimal | null
   discountAmount: runtime.Decimal | null
   taxAmount: runtime.Decimal | null
   totalAmount: runtime.Decimal | null
   paidAmount: runtime.Decimal | null
   balanceAmount: runtime.Decimal | null
+  supplierId: number | null
+  purchaseOrderId: number | null
 }
 
 export type BillSumAggregateOutputType = {
+  id: number | null
   subtotal: runtime.Decimal | null
   discountAmount: runtime.Decimal | null
   taxAmount: runtime.Decimal | null
   totalAmount: runtime.Decimal | null
   paidAmount: runtime.Decimal | null
   balanceAmount: runtime.Decimal | null
+  supplierId: number | null
+  purchaseOrderId: number | null
 }
 
 export type BillMinAggregateOutputType = {
-  id: string | null
+  id: number | null
   billNumber: string | null
   billDate: Date | null
   dueDate: Date | null
@@ -59,8 +65,8 @@ export type BillMinAggregateOutputType = {
   balanceAmount: runtime.Decimal | null
   currency: string | null
   notes: string | null
-  supplierId: string | null
-  purchaseOrderId: string | null
+  supplierId: number | null
+  purchaseOrderId: number | null
   createdBy: string | null
   approvedBy: string | null
   approvedAt: Date | null
@@ -69,7 +75,7 @@ export type BillMinAggregateOutputType = {
 }
 
 export type BillMaxAggregateOutputType = {
-  id: string | null
+  id: number | null
   billNumber: string | null
   billDate: Date | null
   dueDate: Date | null
@@ -83,8 +89,8 @@ export type BillMaxAggregateOutputType = {
   balanceAmount: runtime.Decimal | null
   currency: string | null
   notes: string | null
-  supplierId: string | null
-  purchaseOrderId: string | null
+  supplierId: number | null
+  purchaseOrderId: number | null
   createdBy: string | null
   approvedBy: string | null
   approvedAt: Date | null
@@ -119,21 +125,27 @@ export type BillCountAggregateOutputType = {
 
 
 export type BillAvgAggregateInputType = {
+  id?: true
   subtotal?: true
   discountAmount?: true
   taxAmount?: true
   totalAmount?: true
   paidAmount?: true
   balanceAmount?: true
+  supplierId?: true
+  purchaseOrderId?: true
 }
 
 export type BillSumAggregateInputType = {
+  id?: true
   subtotal?: true
   discountAmount?: true
   taxAmount?: true
   totalAmount?: true
   paidAmount?: true
   balanceAmount?: true
+  supplierId?: true
+  purchaseOrderId?: true
 }
 
 export type BillMinAggregateInputType = {
@@ -296,7 +308,7 @@ export type BillGroupByArgs<ExtArgs extends runtime.Types.Extensions.InternalArg
 }
 
 export type BillGroupByOutputType = {
-  id: string
+  id: number
   billNumber: string
   billDate: Date
   dueDate: Date
@@ -310,8 +322,8 @@ export type BillGroupByOutputType = {
   balanceAmount: runtime.Decimal
   currency: string
   notes: string | null
-  supplierId: string
-  purchaseOrderId: string | null
+  supplierId: number
+  purchaseOrderId: number | null
   createdBy: string
   approvedBy: string | null
   approvedAt: Date | null
@@ -343,7 +355,7 @@ export type BillWhereInput = {
   AND?: Prisma.BillWhereInput | Prisma.BillWhereInput[]
   OR?: Prisma.BillWhereInput[]
   NOT?: Prisma.BillWhereInput | Prisma.BillWhereInput[]
-  id?: Prisma.StringFilter<"Bill"> | string
+  id?: Prisma.IntFilter<"Bill"> | number
   billNumber?: Prisma.StringFilter<"Bill"> | string
   billDate?: Prisma.DateTimeFilter<"Bill"> | Date | string
   dueDate?: Prisma.DateTimeFilter<"Bill"> | Date | string
@@ -357,8 +369,8 @@ export type BillWhereInput = {
   balanceAmount?: Prisma.DecimalFilter<"Bill"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   currency?: Prisma.StringFilter<"Bill"> | string
   notes?: Prisma.StringNullableFilter<"Bill"> | string | null
-  supplierId?: Prisma.StringFilter<"Bill"> | string
-  purchaseOrderId?: Prisma.StringNullableFilter<"Bill"> | string | null
+  supplierId?: Prisma.IntFilter<"Bill"> | number
+  purchaseOrderId?: Prisma.IntNullableFilter<"Bill"> | number | null
   createdBy?: Prisma.StringFilter<"Bill"> | string
   approvedBy?: Prisma.StringNullableFilter<"Bill"> | string | null
   approvedAt?: Prisma.DateTimeNullableFilter<"Bill"> | Date | string | null
@@ -397,7 +409,7 @@ export type BillOrderByWithRelationInput = {
 }
 
 export type BillWhereUniqueInput = Prisma.AtLeast<{
-  id?: string
+  id?: number
   AND?: Prisma.BillWhereInput | Prisma.BillWhereInput[]
   OR?: Prisma.BillWhereInput[]
   NOT?: Prisma.BillWhereInput | Prisma.BillWhereInput[]
@@ -414,8 +426,8 @@ export type BillWhereUniqueInput = Prisma.AtLeast<{
   balanceAmount?: Prisma.DecimalFilter<"Bill"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   currency?: Prisma.StringFilter<"Bill"> | string
   notes?: Prisma.StringNullableFilter<"Bill"> | string | null
-  supplierId?: Prisma.StringFilter<"Bill"> | string
-  purchaseOrderId?: Prisma.StringNullableFilter<"Bill"> | string | null
+  supplierId?: Prisma.IntFilter<"Bill"> | number
+  purchaseOrderId?: Prisma.IntNullableFilter<"Bill"> | number | null
   createdBy?: Prisma.StringFilter<"Bill"> | string
   approvedBy?: Prisma.StringNullableFilter<"Bill"> | string | null
   approvedAt?: Prisma.DateTimeNullableFilter<"Bill"> | Date | string | null
@@ -459,7 +471,7 @@ export type BillScalarWhereWithAggregatesInput = {
   AND?: Prisma.BillScalarWhereWithAggregatesInput | Prisma.BillScalarWhereWithAggregatesInput[]
   OR?: Prisma.BillScalarWhereWithAggregatesInput[]
   NOT?: Prisma.BillScalarWhereWithAggregatesInput | Prisma.BillScalarWhereWithAggregatesInput[]
-  id?: Prisma.StringWithAggregatesFilter<"Bill"> | string
+  id?: Prisma.IntWithAggregatesFilter<"Bill"> | number
   billNumber?: Prisma.StringWithAggregatesFilter<"Bill"> | string
   billDate?: Prisma.DateTimeWithAggregatesFilter<"Bill"> | Date | string
   dueDate?: Prisma.DateTimeWithAggregatesFilter<"Bill"> | Date | string
@@ -473,8 +485,8 @@ export type BillScalarWhereWithAggregatesInput = {
   balanceAmount?: Prisma.DecimalWithAggregatesFilter<"Bill"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   currency?: Prisma.StringWithAggregatesFilter<"Bill"> | string
   notes?: Prisma.StringNullableWithAggregatesFilter<"Bill"> | string | null
-  supplierId?: Prisma.StringWithAggregatesFilter<"Bill"> | string
-  purchaseOrderId?: Prisma.StringNullableWithAggregatesFilter<"Bill"> | string | null
+  supplierId?: Prisma.IntWithAggregatesFilter<"Bill"> | number
+  purchaseOrderId?: Prisma.IntNullableWithAggregatesFilter<"Bill"> | number | null
   createdBy?: Prisma.StringWithAggregatesFilter<"Bill"> | string
   approvedBy?: Prisma.StringNullableWithAggregatesFilter<"Bill"> | string | null
   approvedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Bill"> | Date | string | null
@@ -483,7 +495,6 @@ export type BillScalarWhereWithAggregatesInput = {
 }
 
 export type BillCreateInput = {
-  id?: string
   billNumber: string
   billDate: Date | string
   dueDate: Date | string
@@ -497,7 +508,7 @@ export type BillCreateInput = {
   balanceAmount: runtime.Decimal | runtime.DecimalJsLike | number | string
   currency?: string
   notes?: string | null
-  supplierId: string
+  supplierId: number
   createdBy: string
   approvedBy?: string | null
   approvedAt?: Date | string | null
@@ -509,7 +520,7 @@ export type BillCreateInput = {
 }
 
 export type BillUncheckedCreateInput = {
-  id?: string
+  id?: number
   billNumber: string
   billDate: Date | string
   dueDate: Date | string
@@ -523,8 +534,8 @@ export type BillUncheckedCreateInput = {
   balanceAmount: runtime.Decimal | runtime.DecimalJsLike | number | string
   currency?: string
   notes?: string | null
-  supplierId: string
-  purchaseOrderId?: string | null
+  supplierId: number
+  purchaseOrderId?: number | null
   createdBy: string
   approvedBy?: string | null
   approvedAt?: Date | string | null
@@ -535,7 +546,6 @@ export type BillUncheckedCreateInput = {
 }
 
 export type BillUpdateInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   billNumber?: Prisma.StringFieldUpdateOperationsInput | string
   billDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   dueDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -549,7 +559,7 @@ export type BillUpdateInput = {
   balanceAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   currency?: Prisma.StringFieldUpdateOperationsInput | string
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  supplierId?: Prisma.StringFieldUpdateOperationsInput | string
+  supplierId?: Prisma.IntFieldUpdateOperationsInput | number
   createdBy?: Prisma.StringFieldUpdateOperationsInput | string
   approvedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   approvedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -561,7 +571,7 @@ export type BillUpdateInput = {
 }
 
 export type BillUncheckedUpdateInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   billNumber?: Prisma.StringFieldUpdateOperationsInput | string
   billDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   dueDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -575,8 +585,8 @@ export type BillUncheckedUpdateInput = {
   balanceAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   currency?: Prisma.StringFieldUpdateOperationsInput | string
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  supplierId?: Prisma.StringFieldUpdateOperationsInput | string
-  purchaseOrderId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  supplierId?: Prisma.IntFieldUpdateOperationsInput | number
+  purchaseOrderId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdBy?: Prisma.StringFieldUpdateOperationsInput | string
   approvedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   approvedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -587,7 +597,7 @@ export type BillUncheckedUpdateInput = {
 }
 
 export type BillCreateManyInput = {
-  id?: string
+  id?: number
   billNumber: string
   billDate: Date | string
   dueDate: Date | string
@@ -601,8 +611,8 @@ export type BillCreateManyInput = {
   balanceAmount: runtime.Decimal | runtime.DecimalJsLike | number | string
   currency?: string
   notes?: string | null
-  supplierId: string
-  purchaseOrderId?: string | null
+  supplierId: number
+  purchaseOrderId?: number | null
   createdBy: string
   approvedBy?: string | null
   approvedAt?: Date | string | null
@@ -611,7 +621,6 @@ export type BillCreateManyInput = {
 }
 
 export type BillUpdateManyMutationInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   billNumber?: Prisma.StringFieldUpdateOperationsInput | string
   billDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   dueDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -625,7 +634,7 @@ export type BillUpdateManyMutationInput = {
   balanceAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   currency?: Prisma.StringFieldUpdateOperationsInput | string
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  supplierId?: Prisma.StringFieldUpdateOperationsInput | string
+  supplierId?: Prisma.IntFieldUpdateOperationsInput | number
   createdBy?: Prisma.StringFieldUpdateOperationsInput | string
   approvedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   approvedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -634,7 +643,7 @@ export type BillUpdateManyMutationInput = {
 }
 
 export type BillUncheckedUpdateManyInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   billNumber?: Prisma.StringFieldUpdateOperationsInput | string
   billDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   dueDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -648,8 +657,8 @@ export type BillUncheckedUpdateManyInput = {
   balanceAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   currency?: Prisma.StringFieldUpdateOperationsInput | string
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  supplierId?: Prisma.StringFieldUpdateOperationsInput | string
-  purchaseOrderId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  supplierId?: Prisma.IntFieldUpdateOperationsInput | number
+  purchaseOrderId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdBy?: Prisma.StringFieldUpdateOperationsInput | string
   approvedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   approvedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -692,12 +701,15 @@ export type BillCountOrderByAggregateInput = {
 }
 
 export type BillAvgOrderByAggregateInput = {
+  id?: Prisma.SortOrder
   subtotal?: Prisma.SortOrder
   discountAmount?: Prisma.SortOrder
   taxAmount?: Prisma.SortOrder
   totalAmount?: Prisma.SortOrder
   paidAmount?: Prisma.SortOrder
   balanceAmount?: Prisma.SortOrder
+  supplierId?: Prisma.SortOrder
+  purchaseOrderId?: Prisma.SortOrder
 }
 
 export type BillMaxOrderByAggregateInput = {
@@ -749,12 +761,15 @@ export type BillMinOrderByAggregateInput = {
 }
 
 export type BillSumOrderByAggregateInput = {
+  id?: Prisma.SortOrder
   subtotal?: Prisma.SortOrder
   discountAmount?: Prisma.SortOrder
   taxAmount?: Prisma.SortOrder
   totalAmount?: Prisma.SortOrder
   paidAmount?: Prisma.SortOrder
   balanceAmount?: Prisma.SortOrder
+  supplierId?: Prisma.SortOrder
+  purchaseOrderId?: Prisma.SortOrder
 }
 
 export type BillScalarRelationFilter = {
@@ -844,7 +859,6 @@ export type BillUpdateOneWithoutPaymentsNestedInput = {
 }
 
 export type BillCreateWithoutPurchaseOrderInput = {
-  id?: string
   billNumber: string
   billDate: Date | string
   dueDate: Date | string
@@ -858,7 +872,7 @@ export type BillCreateWithoutPurchaseOrderInput = {
   balanceAmount: runtime.Decimal | runtime.DecimalJsLike | number | string
   currency?: string
   notes?: string | null
-  supplierId: string
+  supplierId: number
   createdBy: string
   approvedBy?: string | null
   approvedAt?: Date | string | null
@@ -869,7 +883,7 @@ export type BillCreateWithoutPurchaseOrderInput = {
 }
 
 export type BillUncheckedCreateWithoutPurchaseOrderInput = {
-  id?: string
+  id?: number
   billNumber: string
   billDate: Date | string
   dueDate: Date | string
@@ -883,7 +897,7 @@ export type BillUncheckedCreateWithoutPurchaseOrderInput = {
   balanceAmount: runtime.Decimal | runtime.DecimalJsLike | number | string
   currency?: string
   notes?: string | null
-  supplierId: string
+  supplierId: number
   createdBy: string
   approvedBy?: string | null
   approvedAt?: Date | string | null
@@ -923,7 +937,7 @@ export type BillScalarWhereInput = {
   AND?: Prisma.BillScalarWhereInput | Prisma.BillScalarWhereInput[]
   OR?: Prisma.BillScalarWhereInput[]
   NOT?: Prisma.BillScalarWhereInput | Prisma.BillScalarWhereInput[]
-  id?: Prisma.StringFilter<"Bill"> | string
+  id?: Prisma.IntFilter<"Bill"> | number
   billNumber?: Prisma.StringFilter<"Bill"> | string
   billDate?: Prisma.DateTimeFilter<"Bill"> | Date | string
   dueDate?: Prisma.DateTimeFilter<"Bill"> | Date | string
@@ -937,8 +951,8 @@ export type BillScalarWhereInput = {
   balanceAmount?: Prisma.DecimalFilter<"Bill"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   currency?: Prisma.StringFilter<"Bill"> | string
   notes?: Prisma.StringNullableFilter<"Bill"> | string | null
-  supplierId?: Prisma.StringFilter<"Bill"> | string
-  purchaseOrderId?: Prisma.StringNullableFilter<"Bill"> | string | null
+  supplierId?: Prisma.IntFilter<"Bill"> | number
+  purchaseOrderId?: Prisma.IntNullableFilter<"Bill"> | number | null
   createdBy?: Prisma.StringFilter<"Bill"> | string
   approvedBy?: Prisma.StringNullableFilter<"Bill"> | string | null
   approvedAt?: Prisma.DateTimeNullableFilter<"Bill"> | Date | string | null
@@ -947,7 +961,6 @@ export type BillScalarWhereInput = {
 }
 
 export type BillCreateWithoutDebitNotesInput = {
-  id?: string
   billNumber: string
   billDate: Date | string
   dueDate: Date | string
@@ -961,7 +974,7 @@ export type BillCreateWithoutDebitNotesInput = {
   balanceAmount: runtime.Decimal | runtime.DecimalJsLike | number | string
   currency?: string
   notes?: string | null
-  supplierId: string
+  supplierId: number
   createdBy: string
   approvedBy?: string | null
   approvedAt?: Date | string | null
@@ -972,7 +985,7 @@ export type BillCreateWithoutDebitNotesInput = {
 }
 
 export type BillUncheckedCreateWithoutDebitNotesInput = {
-  id?: string
+  id?: number
   billNumber: string
   billDate: Date | string
   dueDate: Date | string
@@ -986,8 +999,8 @@ export type BillUncheckedCreateWithoutDebitNotesInput = {
   balanceAmount: runtime.Decimal | runtime.DecimalJsLike | number | string
   currency?: string
   notes?: string | null
-  supplierId: string
-  purchaseOrderId?: string | null
+  supplierId: number
+  purchaseOrderId?: number | null
   createdBy: string
   approvedBy?: string | null
   approvedAt?: Date | string | null
@@ -1013,7 +1026,6 @@ export type BillUpdateToOneWithWhereWithoutDebitNotesInput = {
 }
 
 export type BillUpdateWithoutDebitNotesInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   billNumber?: Prisma.StringFieldUpdateOperationsInput | string
   billDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   dueDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1027,7 +1039,7 @@ export type BillUpdateWithoutDebitNotesInput = {
   balanceAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   currency?: Prisma.StringFieldUpdateOperationsInput | string
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  supplierId?: Prisma.StringFieldUpdateOperationsInput | string
+  supplierId?: Prisma.IntFieldUpdateOperationsInput | number
   createdBy?: Prisma.StringFieldUpdateOperationsInput | string
   approvedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   approvedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1038,7 +1050,7 @@ export type BillUpdateWithoutDebitNotesInput = {
 }
 
 export type BillUncheckedUpdateWithoutDebitNotesInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   billNumber?: Prisma.StringFieldUpdateOperationsInput | string
   billDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   dueDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1052,8 +1064,8 @@ export type BillUncheckedUpdateWithoutDebitNotesInput = {
   balanceAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   currency?: Prisma.StringFieldUpdateOperationsInput | string
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  supplierId?: Prisma.StringFieldUpdateOperationsInput | string
-  purchaseOrderId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  supplierId?: Prisma.IntFieldUpdateOperationsInput | number
+  purchaseOrderId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdBy?: Prisma.StringFieldUpdateOperationsInput | string
   approvedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   approvedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1063,7 +1075,6 @@ export type BillUncheckedUpdateWithoutDebitNotesInput = {
 }
 
 export type BillCreateWithoutPaymentsInput = {
-  id?: string
   billNumber: string
   billDate: Date | string
   dueDate: Date | string
@@ -1077,7 +1088,7 @@ export type BillCreateWithoutPaymentsInput = {
   balanceAmount: runtime.Decimal | runtime.DecimalJsLike | number | string
   currency?: string
   notes?: string | null
-  supplierId: string
+  supplierId: number
   createdBy: string
   approvedBy?: string | null
   approvedAt?: Date | string | null
@@ -1088,7 +1099,7 @@ export type BillCreateWithoutPaymentsInput = {
 }
 
 export type BillUncheckedCreateWithoutPaymentsInput = {
-  id?: string
+  id?: number
   billNumber: string
   billDate: Date | string
   dueDate: Date | string
@@ -1102,8 +1113,8 @@ export type BillUncheckedCreateWithoutPaymentsInput = {
   balanceAmount: runtime.Decimal | runtime.DecimalJsLike | number | string
   currency?: string
   notes?: string | null
-  supplierId: string
-  purchaseOrderId?: string | null
+  supplierId: number
+  purchaseOrderId?: number | null
   createdBy: string
   approvedBy?: string | null
   approvedAt?: Date | string | null
@@ -1129,7 +1140,6 @@ export type BillUpdateToOneWithWhereWithoutPaymentsInput = {
 }
 
 export type BillUpdateWithoutPaymentsInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   billNumber?: Prisma.StringFieldUpdateOperationsInput | string
   billDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   dueDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1143,7 +1153,7 @@ export type BillUpdateWithoutPaymentsInput = {
   balanceAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   currency?: Prisma.StringFieldUpdateOperationsInput | string
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  supplierId?: Prisma.StringFieldUpdateOperationsInput | string
+  supplierId?: Prisma.IntFieldUpdateOperationsInput | number
   createdBy?: Prisma.StringFieldUpdateOperationsInput | string
   approvedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   approvedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1154,7 +1164,7 @@ export type BillUpdateWithoutPaymentsInput = {
 }
 
 export type BillUncheckedUpdateWithoutPaymentsInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   billNumber?: Prisma.StringFieldUpdateOperationsInput | string
   billDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   dueDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1168,8 +1178,8 @@ export type BillUncheckedUpdateWithoutPaymentsInput = {
   balanceAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   currency?: Prisma.StringFieldUpdateOperationsInput | string
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  supplierId?: Prisma.StringFieldUpdateOperationsInput | string
-  purchaseOrderId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  supplierId?: Prisma.IntFieldUpdateOperationsInput | number
+  purchaseOrderId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdBy?: Prisma.StringFieldUpdateOperationsInput | string
   approvedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   approvedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1179,7 +1189,7 @@ export type BillUncheckedUpdateWithoutPaymentsInput = {
 }
 
 export type BillCreateManyPurchaseOrderInput = {
-  id?: string
+  id?: number
   billNumber: string
   billDate: Date | string
   dueDate: Date | string
@@ -1193,7 +1203,7 @@ export type BillCreateManyPurchaseOrderInput = {
   balanceAmount: runtime.Decimal | runtime.DecimalJsLike | number | string
   currency?: string
   notes?: string | null
-  supplierId: string
+  supplierId: number
   createdBy: string
   approvedBy?: string | null
   approvedAt?: Date | string | null
@@ -1202,7 +1212,6 @@ export type BillCreateManyPurchaseOrderInput = {
 }
 
 export type BillUpdateWithoutPurchaseOrderInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   billNumber?: Prisma.StringFieldUpdateOperationsInput | string
   billDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   dueDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1216,7 +1225,7 @@ export type BillUpdateWithoutPurchaseOrderInput = {
   balanceAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   currency?: Prisma.StringFieldUpdateOperationsInput | string
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  supplierId?: Prisma.StringFieldUpdateOperationsInput | string
+  supplierId?: Prisma.IntFieldUpdateOperationsInput | number
   createdBy?: Prisma.StringFieldUpdateOperationsInput | string
   approvedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   approvedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1227,7 +1236,7 @@ export type BillUpdateWithoutPurchaseOrderInput = {
 }
 
 export type BillUncheckedUpdateWithoutPurchaseOrderInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   billNumber?: Prisma.StringFieldUpdateOperationsInput | string
   billDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   dueDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1241,7 +1250,7 @@ export type BillUncheckedUpdateWithoutPurchaseOrderInput = {
   balanceAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   currency?: Prisma.StringFieldUpdateOperationsInput | string
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  supplierId?: Prisma.StringFieldUpdateOperationsInput | string
+  supplierId?: Prisma.IntFieldUpdateOperationsInput | number
   createdBy?: Prisma.StringFieldUpdateOperationsInput | string
   approvedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   approvedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1252,7 +1261,7 @@ export type BillUncheckedUpdateWithoutPurchaseOrderInput = {
 }
 
 export type BillUncheckedUpdateManyWithoutPurchaseOrderInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   billNumber?: Prisma.StringFieldUpdateOperationsInput | string
   billDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   dueDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1266,7 +1275,7 @@ export type BillUncheckedUpdateManyWithoutPurchaseOrderInput = {
   balanceAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   currency?: Prisma.StringFieldUpdateOperationsInput | string
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  supplierId?: Prisma.StringFieldUpdateOperationsInput | string
+  supplierId?: Prisma.IntFieldUpdateOperationsInput | number
   createdBy?: Prisma.StringFieldUpdateOperationsInput | string
   approvedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   approvedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1438,7 +1447,7 @@ export type $BillPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     debitNotes: Prisma.$DebitNotePayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
-    id: string
+    id: number
     billNumber: string
     billDate: Date
     dueDate: Date
@@ -1452,8 +1461,8 @@ export type $BillPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     balanceAmount: runtime.Decimal
     currency: string
     notes: string | null
-    supplierId: string
-    purchaseOrderId: string | null
+    supplierId: number
+    purchaseOrderId: number | null
     createdBy: string
     approvedBy: string | null
     approvedAt: Date | null
@@ -1885,7 +1894,7 @@ export interface Prisma__BillClient<T, Null = never, ExtArgs extends runtime.Typ
  * Fields of the Bill model
  */
 export interface BillFieldRefs {
-  readonly id: Prisma.FieldRef<"Bill", 'String'>
+  readonly id: Prisma.FieldRef<"Bill", 'Int'>
   readonly billNumber: Prisma.FieldRef<"Bill", 'String'>
   readonly billDate: Prisma.FieldRef<"Bill", 'DateTime'>
   readonly dueDate: Prisma.FieldRef<"Bill", 'DateTime'>
@@ -1899,8 +1908,8 @@ export interface BillFieldRefs {
   readonly balanceAmount: Prisma.FieldRef<"Bill", 'Decimal'>
   readonly currency: Prisma.FieldRef<"Bill", 'String'>
   readonly notes: Prisma.FieldRef<"Bill", 'String'>
-  readonly supplierId: Prisma.FieldRef<"Bill", 'String'>
-  readonly purchaseOrderId: Prisma.FieldRef<"Bill", 'String'>
+  readonly supplierId: Prisma.FieldRef<"Bill", 'Int'>
+  readonly purchaseOrderId: Prisma.FieldRef<"Bill", 'Int'>
   readonly createdBy: Prisma.FieldRef<"Bill", 'String'>
   readonly approvedBy: Prisma.FieldRef<"Bill", 'String'>
   readonly approvedAt: Prisma.FieldRef<"Bill", 'DateTime'>

@@ -27,33 +27,37 @@ export type AggregateDebitNote = {
 }
 
 export type DebitNoteAvgAggregateOutputType = {
+  id: number | null
   amount: runtime.Decimal | null
+  billId: number | null
 }
 
 export type DebitNoteSumAggregateOutputType = {
+  id: number | null
   amount: runtime.Decimal | null
+  billId: number | null
 }
 
 export type DebitNoteMinAggregateOutputType = {
-  id: string | null
+  id: number | null
   debitNoteNumber: string | null
   date: Date | null
   reason: string | null
   amount: runtime.Decimal | null
   status: string | null
-  billId: string | null
+  billId: number | null
   createdAt: Date | null
   updatedAt: Date | null
 }
 
 export type DebitNoteMaxAggregateOutputType = {
-  id: string | null
+  id: number | null
   debitNoteNumber: string | null
   date: Date | null
   reason: string | null
   amount: runtime.Decimal | null
   status: string | null
-  billId: string | null
+  billId: number | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -73,11 +77,15 @@ export type DebitNoteCountAggregateOutputType = {
 
 
 export type DebitNoteAvgAggregateInputType = {
+  id?: true
   amount?: true
+  billId?: true
 }
 
 export type DebitNoteSumAggregateInputType = {
+  id?: true
   amount?: true
+  billId?: true
 }
 
 export type DebitNoteMinAggregateInputType = {
@@ -204,13 +212,13 @@ export type DebitNoteGroupByArgs<ExtArgs extends runtime.Types.Extensions.Intern
 }
 
 export type DebitNoteGroupByOutputType = {
-  id: string
+  id: number
   debitNoteNumber: string
   date: Date
   reason: string
   amount: runtime.Decimal
   status: string
-  billId: string
+  billId: number
   createdAt: Date
   updatedAt: Date
   _count: DebitNoteCountAggregateOutputType | null
@@ -239,13 +247,13 @@ export type DebitNoteWhereInput = {
   AND?: Prisma.DebitNoteWhereInput | Prisma.DebitNoteWhereInput[]
   OR?: Prisma.DebitNoteWhereInput[]
   NOT?: Prisma.DebitNoteWhereInput | Prisma.DebitNoteWhereInput[]
-  id?: Prisma.StringFilter<"DebitNote"> | string
+  id?: Prisma.IntFilter<"DebitNote"> | number
   debitNoteNumber?: Prisma.StringFilter<"DebitNote"> | string
   date?: Prisma.DateTimeFilter<"DebitNote"> | Date | string
   reason?: Prisma.StringFilter<"DebitNote"> | string
   amount?: Prisma.DecimalFilter<"DebitNote"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   status?: Prisma.StringFilter<"DebitNote"> | string
-  billId?: Prisma.StringFilter<"DebitNote"> | string
+  billId?: Prisma.IntFilter<"DebitNote"> | number
   createdAt?: Prisma.DateTimeFilter<"DebitNote"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"DebitNote"> | Date | string
   bill?: Prisma.XOR<Prisma.BillScalarRelationFilter, Prisma.BillWhereInput>
@@ -265,7 +273,7 @@ export type DebitNoteOrderByWithRelationInput = {
 }
 
 export type DebitNoteWhereUniqueInput = Prisma.AtLeast<{
-  id?: string
+  id?: number
   AND?: Prisma.DebitNoteWhereInput | Prisma.DebitNoteWhereInput[]
   OR?: Prisma.DebitNoteWhereInput[]
   NOT?: Prisma.DebitNoteWhereInput | Prisma.DebitNoteWhereInput[]
@@ -274,7 +282,7 @@ export type DebitNoteWhereUniqueInput = Prisma.AtLeast<{
   reason?: Prisma.StringFilter<"DebitNote"> | string
   amount?: Prisma.DecimalFilter<"DebitNote"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   status?: Prisma.StringFilter<"DebitNote"> | string
-  billId?: Prisma.StringFilter<"DebitNote"> | string
+  billId?: Prisma.IntFilter<"DebitNote"> | number
   createdAt?: Prisma.DateTimeFilter<"DebitNote"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"DebitNote"> | Date | string
   bill?: Prisma.XOR<Prisma.BillScalarRelationFilter, Prisma.BillWhereInput>
@@ -301,19 +309,18 @@ export type DebitNoteScalarWhereWithAggregatesInput = {
   AND?: Prisma.DebitNoteScalarWhereWithAggregatesInput | Prisma.DebitNoteScalarWhereWithAggregatesInput[]
   OR?: Prisma.DebitNoteScalarWhereWithAggregatesInput[]
   NOT?: Prisma.DebitNoteScalarWhereWithAggregatesInput | Prisma.DebitNoteScalarWhereWithAggregatesInput[]
-  id?: Prisma.StringWithAggregatesFilter<"DebitNote"> | string
+  id?: Prisma.IntWithAggregatesFilter<"DebitNote"> | number
   debitNoteNumber?: Prisma.StringWithAggregatesFilter<"DebitNote"> | string
   date?: Prisma.DateTimeWithAggregatesFilter<"DebitNote"> | Date | string
   reason?: Prisma.StringWithAggregatesFilter<"DebitNote"> | string
   amount?: Prisma.DecimalWithAggregatesFilter<"DebitNote"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   status?: Prisma.StringWithAggregatesFilter<"DebitNote"> | string
-  billId?: Prisma.StringWithAggregatesFilter<"DebitNote"> | string
+  billId?: Prisma.IntWithAggregatesFilter<"DebitNote"> | number
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"DebitNote"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"DebitNote"> | Date | string
 }
 
 export type DebitNoteCreateInput = {
-  id?: string
   debitNoteNumber: string
   date: Date | string
   reason: string
@@ -325,19 +332,18 @@ export type DebitNoteCreateInput = {
 }
 
 export type DebitNoteUncheckedCreateInput = {
-  id?: string
+  id?: number
   debitNoteNumber: string
   date: Date | string
   reason: string
   amount: runtime.Decimal | runtime.DecimalJsLike | number | string
   status?: string
-  billId: string
+  billId: number
   createdAt?: Date | string
   updatedAt?: Date | string
 }
 
 export type DebitNoteUpdateInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   debitNoteNumber?: Prisma.StringFieldUpdateOperationsInput | string
   date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   reason?: Prisma.StringFieldUpdateOperationsInput | string
@@ -349,31 +355,30 @@ export type DebitNoteUpdateInput = {
 }
 
 export type DebitNoteUncheckedUpdateInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   debitNoteNumber?: Prisma.StringFieldUpdateOperationsInput | string
   date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   reason?: Prisma.StringFieldUpdateOperationsInput | string
   amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   status?: Prisma.StringFieldUpdateOperationsInput | string
-  billId?: Prisma.StringFieldUpdateOperationsInput | string
+  billId?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type DebitNoteCreateManyInput = {
-  id?: string
+  id?: number
   debitNoteNumber: string
   date: Date | string
   reason: string
   amount: runtime.Decimal | runtime.DecimalJsLike | number | string
   status?: string
-  billId: string
+  billId: number
   createdAt?: Date | string
   updatedAt?: Date | string
 }
 
 export type DebitNoteUpdateManyMutationInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   debitNoteNumber?: Prisma.StringFieldUpdateOperationsInput | string
   date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   reason?: Prisma.StringFieldUpdateOperationsInput | string
@@ -384,13 +389,13 @@ export type DebitNoteUpdateManyMutationInput = {
 }
 
 export type DebitNoteUncheckedUpdateManyInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   debitNoteNumber?: Prisma.StringFieldUpdateOperationsInput | string
   date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   reason?: Prisma.StringFieldUpdateOperationsInput | string
   amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   status?: Prisma.StringFieldUpdateOperationsInput | string
-  billId?: Prisma.StringFieldUpdateOperationsInput | string
+  billId?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -418,7 +423,9 @@ export type DebitNoteCountOrderByAggregateInput = {
 }
 
 export type DebitNoteAvgOrderByAggregateInput = {
+  id?: Prisma.SortOrder
   amount?: Prisma.SortOrder
+  billId?: Prisma.SortOrder
 }
 
 export type DebitNoteMaxOrderByAggregateInput = {
@@ -446,7 +453,9 @@ export type DebitNoteMinOrderByAggregateInput = {
 }
 
 export type DebitNoteSumOrderByAggregateInput = {
+  id?: Prisma.SortOrder
   amount?: Prisma.SortOrder
+  billId?: Prisma.SortOrder
 }
 
 export type DebitNoteCreateNestedManyWithoutBillInput = {
@@ -492,7 +501,6 @@ export type DebitNoteUncheckedUpdateManyWithoutBillNestedInput = {
 }
 
 export type DebitNoteCreateWithoutBillInput = {
-  id?: string
   debitNoteNumber: string
   date: Date | string
   reason: string
@@ -503,7 +511,7 @@ export type DebitNoteCreateWithoutBillInput = {
 }
 
 export type DebitNoteUncheckedCreateWithoutBillInput = {
-  id?: string
+  id?: number
   debitNoteNumber: string
   date: Date | string
   reason: string
@@ -543,19 +551,19 @@ export type DebitNoteScalarWhereInput = {
   AND?: Prisma.DebitNoteScalarWhereInput | Prisma.DebitNoteScalarWhereInput[]
   OR?: Prisma.DebitNoteScalarWhereInput[]
   NOT?: Prisma.DebitNoteScalarWhereInput | Prisma.DebitNoteScalarWhereInput[]
-  id?: Prisma.StringFilter<"DebitNote"> | string
+  id?: Prisma.IntFilter<"DebitNote"> | number
   debitNoteNumber?: Prisma.StringFilter<"DebitNote"> | string
   date?: Prisma.DateTimeFilter<"DebitNote"> | Date | string
   reason?: Prisma.StringFilter<"DebitNote"> | string
   amount?: Prisma.DecimalFilter<"DebitNote"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   status?: Prisma.StringFilter<"DebitNote"> | string
-  billId?: Prisma.StringFilter<"DebitNote"> | string
+  billId?: Prisma.IntFilter<"DebitNote"> | number
   createdAt?: Prisma.DateTimeFilter<"DebitNote"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"DebitNote"> | Date | string
 }
 
 export type DebitNoteCreateManyBillInput = {
-  id?: string
+  id?: number
   debitNoteNumber: string
   date: Date | string
   reason: string
@@ -566,7 +574,6 @@ export type DebitNoteCreateManyBillInput = {
 }
 
 export type DebitNoteUpdateWithoutBillInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   debitNoteNumber?: Prisma.StringFieldUpdateOperationsInput | string
   date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   reason?: Prisma.StringFieldUpdateOperationsInput | string
@@ -577,7 +584,7 @@ export type DebitNoteUpdateWithoutBillInput = {
 }
 
 export type DebitNoteUncheckedUpdateWithoutBillInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   debitNoteNumber?: Prisma.StringFieldUpdateOperationsInput | string
   date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   reason?: Prisma.StringFieldUpdateOperationsInput | string
@@ -588,7 +595,7 @@ export type DebitNoteUncheckedUpdateWithoutBillInput = {
 }
 
 export type DebitNoteUncheckedUpdateManyWithoutBillInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   debitNoteNumber?: Prisma.StringFieldUpdateOperationsInput | string
   date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   reason?: Prisma.StringFieldUpdateOperationsInput | string
@@ -668,13 +675,13 @@ export type $DebitNotePayload<ExtArgs extends runtime.Types.Extensions.InternalA
     bill: Prisma.$BillPayload<ExtArgs>
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
-    id: string
+    id: number
     debitNoteNumber: string
     date: Date
     reason: string
     amount: runtime.Decimal
     status: string
-    billId: string
+    billId: number
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["debitNote"]>
@@ -1101,13 +1108,13 @@ export interface Prisma__DebitNoteClient<T, Null = never, ExtArgs extends runtim
  * Fields of the DebitNote model
  */
 export interface DebitNoteFieldRefs {
-  readonly id: Prisma.FieldRef<"DebitNote", 'String'>
+  readonly id: Prisma.FieldRef<"DebitNote", 'Int'>
   readonly debitNoteNumber: Prisma.FieldRef<"DebitNote", 'String'>
   readonly date: Prisma.FieldRef<"DebitNote", 'DateTime'>
   readonly reason: Prisma.FieldRef<"DebitNote", 'String'>
   readonly amount: Prisma.FieldRef<"DebitNote", 'Decimal'>
   readonly status: Prisma.FieldRef<"DebitNote", 'String'>
-  readonly billId: Prisma.FieldRef<"DebitNote", 'String'>
+  readonly billId: Prisma.FieldRef<"DebitNote", 'Int'>
   readonly createdAt: Prisma.FieldRef<"DebitNote", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"DebitNote", 'DateTime'>
 }

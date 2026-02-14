@@ -27,25 +27,33 @@ export type AggregateTimesheet = {
 }
 
 export type TimesheetAvgAggregateOutputType = {
+  id: number | null
   hours: runtime.Decimal | null
   hourlyRate: runtime.Decimal | null
+  employeeId: number | null
+  projectId: number | null
+  taskId: number | null
 }
 
 export type TimesheetSumAggregateOutputType = {
+  id: number | null
   hours: runtime.Decimal | null
   hourlyRate: runtime.Decimal | null
+  employeeId: number | null
+  projectId: number | null
+  taskId: number | null
 }
 
 export type TimesheetMinAggregateOutputType = {
-  id: string | null
+  id: number | null
   date: Date | null
   hours: runtime.Decimal | null
   description: string | null
   isBillable: boolean | null
   hourlyRate: runtime.Decimal | null
-  employeeId: string | null
-  projectId: string | null
-  taskId: string | null
+  employeeId: number | null
+  projectId: number | null
+  taskId: number | null
   approvedBy: string | null
   approvedAt: Date | null
   createdAt: Date | null
@@ -53,15 +61,15 @@ export type TimesheetMinAggregateOutputType = {
 }
 
 export type TimesheetMaxAggregateOutputType = {
-  id: string | null
+  id: number | null
   date: Date | null
   hours: runtime.Decimal | null
   description: string | null
   isBillable: boolean | null
   hourlyRate: runtime.Decimal | null
-  employeeId: string | null
-  projectId: string | null
-  taskId: string | null
+  employeeId: number | null
+  projectId: number | null
+  taskId: number | null
   approvedBy: string | null
   approvedAt: Date | null
   createdAt: Date | null
@@ -87,13 +95,21 @@ export type TimesheetCountAggregateOutputType = {
 
 
 export type TimesheetAvgAggregateInputType = {
+  id?: true
   hours?: true
   hourlyRate?: true
+  employeeId?: true
+  projectId?: true
+  taskId?: true
 }
 
 export type TimesheetSumAggregateInputType = {
+  id?: true
   hours?: true
   hourlyRate?: true
+  employeeId?: true
+  projectId?: true
+  taskId?: true
 }
 
 export type TimesheetMinAggregateInputType = {
@@ -232,15 +248,15 @@ export type TimesheetGroupByArgs<ExtArgs extends runtime.Types.Extensions.Intern
 }
 
 export type TimesheetGroupByOutputType = {
-  id: string
+  id: number
   date: Date
   hours: runtime.Decimal
   description: string | null
   isBillable: boolean
   hourlyRate: runtime.Decimal | null
-  employeeId: string
-  projectId: string | null
-  taskId: string | null
+  employeeId: number
+  projectId: number | null
+  taskId: number | null
   approvedBy: string | null
   approvedAt: Date | null
   createdAt: Date
@@ -271,15 +287,15 @@ export type TimesheetWhereInput = {
   AND?: Prisma.TimesheetWhereInput | Prisma.TimesheetWhereInput[]
   OR?: Prisma.TimesheetWhereInput[]
   NOT?: Prisma.TimesheetWhereInput | Prisma.TimesheetWhereInput[]
-  id?: Prisma.StringFilter<"Timesheet"> | string
+  id?: Prisma.IntFilter<"Timesheet"> | number
   date?: Prisma.DateTimeFilter<"Timesheet"> | Date | string
   hours?: Prisma.DecimalFilter<"Timesheet"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   description?: Prisma.StringNullableFilter<"Timesheet"> | string | null
   isBillable?: Prisma.BoolFilter<"Timesheet"> | boolean
   hourlyRate?: Prisma.DecimalNullableFilter<"Timesheet"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  employeeId?: Prisma.StringFilter<"Timesheet"> | string
-  projectId?: Prisma.StringNullableFilter<"Timesheet"> | string | null
-  taskId?: Prisma.StringNullableFilter<"Timesheet"> | string | null
+  employeeId?: Prisma.IntFilter<"Timesheet"> | number
+  projectId?: Prisma.IntNullableFilter<"Timesheet"> | number | null
+  taskId?: Prisma.IntNullableFilter<"Timesheet"> | number | null
   approvedBy?: Prisma.StringNullableFilter<"Timesheet"> | string | null
   approvedAt?: Prisma.DateTimeNullableFilter<"Timesheet"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"Timesheet"> | Date | string
@@ -307,7 +323,7 @@ export type TimesheetOrderByWithRelationInput = {
 }
 
 export type TimesheetWhereUniqueInput = Prisma.AtLeast<{
-  id?: string
+  id?: number
   AND?: Prisma.TimesheetWhereInput | Prisma.TimesheetWhereInput[]
   OR?: Prisma.TimesheetWhereInput[]
   NOT?: Prisma.TimesheetWhereInput | Prisma.TimesheetWhereInput[]
@@ -316,9 +332,9 @@ export type TimesheetWhereUniqueInput = Prisma.AtLeast<{
   description?: Prisma.StringNullableFilter<"Timesheet"> | string | null
   isBillable?: Prisma.BoolFilter<"Timesheet"> | boolean
   hourlyRate?: Prisma.DecimalNullableFilter<"Timesheet"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  employeeId?: Prisma.StringFilter<"Timesheet"> | string
-  projectId?: Prisma.StringNullableFilter<"Timesheet"> | string | null
-  taskId?: Prisma.StringNullableFilter<"Timesheet"> | string | null
+  employeeId?: Prisma.IntFilter<"Timesheet"> | number
+  projectId?: Prisma.IntNullableFilter<"Timesheet"> | number | null
+  taskId?: Prisma.IntNullableFilter<"Timesheet"> | number | null
   approvedBy?: Prisma.StringNullableFilter<"Timesheet"> | string | null
   approvedAt?: Prisma.DateTimeNullableFilter<"Timesheet"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"Timesheet"> | Date | string
@@ -352,15 +368,15 @@ export type TimesheetScalarWhereWithAggregatesInput = {
   AND?: Prisma.TimesheetScalarWhereWithAggregatesInput | Prisma.TimesheetScalarWhereWithAggregatesInput[]
   OR?: Prisma.TimesheetScalarWhereWithAggregatesInput[]
   NOT?: Prisma.TimesheetScalarWhereWithAggregatesInput | Prisma.TimesheetScalarWhereWithAggregatesInput[]
-  id?: Prisma.StringWithAggregatesFilter<"Timesheet"> | string
+  id?: Prisma.IntWithAggregatesFilter<"Timesheet"> | number
   date?: Prisma.DateTimeWithAggregatesFilter<"Timesheet"> | Date | string
   hours?: Prisma.DecimalWithAggregatesFilter<"Timesheet"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   description?: Prisma.StringNullableWithAggregatesFilter<"Timesheet"> | string | null
   isBillable?: Prisma.BoolWithAggregatesFilter<"Timesheet"> | boolean
   hourlyRate?: Prisma.DecimalNullableWithAggregatesFilter<"Timesheet"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  employeeId?: Prisma.StringWithAggregatesFilter<"Timesheet"> | string
-  projectId?: Prisma.StringNullableWithAggregatesFilter<"Timesheet"> | string | null
-  taskId?: Prisma.StringNullableWithAggregatesFilter<"Timesheet"> | string | null
+  employeeId?: Prisma.IntWithAggregatesFilter<"Timesheet"> | number
+  projectId?: Prisma.IntNullableWithAggregatesFilter<"Timesheet"> | number | null
+  taskId?: Prisma.IntNullableWithAggregatesFilter<"Timesheet"> | number | null
   approvedBy?: Prisma.StringNullableWithAggregatesFilter<"Timesheet"> | string | null
   approvedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Timesheet"> | Date | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Timesheet"> | Date | string
@@ -368,13 +384,12 @@ export type TimesheetScalarWhereWithAggregatesInput = {
 }
 
 export type TimesheetCreateInput = {
-  id?: string
   date: Date | string
   hours: runtime.Decimal | runtime.DecimalJsLike | number | string
   description?: string | null
   isBillable?: boolean
   hourlyRate?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  employeeId: string
+  employeeId: number
   approvedBy?: string | null
   approvedAt?: Date | string | null
   createdAt?: Date | string
@@ -384,15 +399,15 @@ export type TimesheetCreateInput = {
 }
 
 export type TimesheetUncheckedCreateInput = {
-  id?: string
+  id?: number
   date: Date | string
   hours: runtime.Decimal | runtime.DecimalJsLike | number | string
   description?: string | null
   isBillable?: boolean
   hourlyRate?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  employeeId: string
-  projectId?: string | null
-  taskId?: string | null
+  employeeId: number
+  projectId?: number | null
+  taskId?: number | null
   approvedBy?: string | null
   approvedAt?: Date | string | null
   createdAt?: Date | string
@@ -400,13 +415,12 @@ export type TimesheetUncheckedCreateInput = {
 }
 
 export type TimesheetUpdateInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   hours?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isBillable?: Prisma.BoolFieldUpdateOperationsInput | boolean
   hourlyRate?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  employeeId?: Prisma.StringFieldUpdateOperationsInput | string
+  employeeId?: Prisma.IntFieldUpdateOperationsInput | number
   approvedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   approvedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -416,15 +430,15 @@ export type TimesheetUpdateInput = {
 }
 
 export type TimesheetUncheckedUpdateInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   hours?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isBillable?: Prisma.BoolFieldUpdateOperationsInput | boolean
   hourlyRate?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  employeeId?: Prisma.StringFieldUpdateOperationsInput | string
-  projectId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  taskId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  employeeId?: Prisma.IntFieldUpdateOperationsInput | number
+  projectId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  taskId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   approvedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   approvedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -432,15 +446,15 @@ export type TimesheetUncheckedUpdateInput = {
 }
 
 export type TimesheetCreateManyInput = {
-  id?: string
+  id?: number
   date: Date | string
   hours: runtime.Decimal | runtime.DecimalJsLike | number | string
   description?: string | null
   isBillable?: boolean
   hourlyRate?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  employeeId: string
-  projectId?: string | null
-  taskId?: string | null
+  employeeId: number
+  projectId?: number | null
+  taskId?: number | null
   approvedBy?: string | null
   approvedAt?: Date | string | null
   createdAt?: Date | string
@@ -448,13 +462,12 @@ export type TimesheetCreateManyInput = {
 }
 
 export type TimesheetUpdateManyMutationInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   hours?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isBillable?: Prisma.BoolFieldUpdateOperationsInput | boolean
   hourlyRate?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  employeeId?: Prisma.StringFieldUpdateOperationsInput | string
+  employeeId?: Prisma.IntFieldUpdateOperationsInput | number
   approvedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   approvedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -462,15 +475,15 @@ export type TimesheetUpdateManyMutationInput = {
 }
 
 export type TimesheetUncheckedUpdateManyInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   hours?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isBillable?: Prisma.BoolFieldUpdateOperationsInput | boolean
   hourlyRate?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  employeeId?: Prisma.StringFieldUpdateOperationsInput | string
-  projectId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  taskId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  employeeId?: Prisma.IntFieldUpdateOperationsInput | number
+  projectId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  taskId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   approvedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   approvedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -504,8 +517,12 @@ export type TimesheetCountOrderByAggregateInput = {
 }
 
 export type TimesheetAvgOrderByAggregateInput = {
+  id?: Prisma.SortOrder
   hours?: Prisma.SortOrder
   hourlyRate?: Prisma.SortOrder
+  employeeId?: Prisma.SortOrder
+  projectId?: Prisma.SortOrder
+  taskId?: Prisma.SortOrder
 }
 
 export type TimesheetMaxOrderByAggregateInput = {
@@ -541,8 +558,12 @@ export type TimesheetMinOrderByAggregateInput = {
 }
 
 export type TimesheetSumOrderByAggregateInput = {
+  id?: Prisma.SortOrder
   hours?: Prisma.SortOrder
   hourlyRate?: Prisma.SortOrder
+  employeeId?: Prisma.SortOrder
+  projectId?: Prisma.SortOrder
+  taskId?: Prisma.SortOrder
 }
 
 export type TimesheetCreateNestedManyWithoutProjectInput = {
@@ -630,13 +651,12 @@ export type TimesheetUncheckedUpdateManyWithoutTaskNestedInput = {
 }
 
 export type TimesheetCreateWithoutProjectInput = {
-  id?: string
   date: Date | string
   hours: runtime.Decimal | runtime.DecimalJsLike | number | string
   description?: string | null
   isBillable?: boolean
   hourlyRate?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  employeeId: string
+  employeeId: number
   approvedBy?: string | null
   approvedAt?: Date | string | null
   createdAt?: Date | string
@@ -645,14 +665,14 @@ export type TimesheetCreateWithoutProjectInput = {
 }
 
 export type TimesheetUncheckedCreateWithoutProjectInput = {
-  id?: string
+  id?: number
   date: Date | string
   hours: runtime.Decimal | runtime.DecimalJsLike | number | string
   description?: string | null
   isBillable?: boolean
   hourlyRate?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  employeeId: string
-  taskId?: string | null
+  employeeId: number
+  taskId?: number | null
   approvedBy?: string | null
   approvedAt?: Date | string | null
   createdAt?: Date | string
@@ -689,15 +709,15 @@ export type TimesheetScalarWhereInput = {
   AND?: Prisma.TimesheetScalarWhereInput | Prisma.TimesheetScalarWhereInput[]
   OR?: Prisma.TimesheetScalarWhereInput[]
   NOT?: Prisma.TimesheetScalarWhereInput | Prisma.TimesheetScalarWhereInput[]
-  id?: Prisma.StringFilter<"Timesheet"> | string
+  id?: Prisma.IntFilter<"Timesheet"> | number
   date?: Prisma.DateTimeFilter<"Timesheet"> | Date | string
   hours?: Prisma.DecimalFilter<"Timesheet"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   description?: Prisma.StringNullableFilter<"Timesheet"> | string | null
   isBillable?: Prisma.BoolFilter<"Timesheet"> | boolean
   hourlyRate?: Prisma.DecimalNullableFilter<"Timesheet"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  employeeId?: Prisma.StringFilter<"Timesheet"> | string
-  projectId?: Prisma.StringNullableFilter<"Timesheet"> | string | null
-  taskId?: Prisma.StringNullableFilter<"Timesheet"> | string | null
+  employeeId?: Prisma.IntFilter<"Timesheet"> | number
+  projectId?: Prisma.IntNullableFilter<"Timesheet"> | number | null
+  taskId?: Prisma.IntNullableFilter<"Timesheet"> | number | null
   approvedBy?: Prisma.StringNullableFilter<"Timesheet"> | string | null
   approvedAt?: Prisma.DateTimeNullableFilter<"Timesheet"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"Timesheet"> | Date | string
@@ -705,13 +725,12 @@ export type TimesheetScalarWhereInput = {
 }
 
 export type TimesheetCreateWithoutTaskInput = {
-  id?: string
   date: Date | string
   hours: runtime.Decimal | runtime.DecimalJsLike | number | string
   description?: string | null
   isBillable?: boolean
   hourlyRate?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  employeeId: string
+  employeeId: number
   approvedBy?: string | null
   approvedAt?: Date | string | null
   createdAt?: Date | string
@@ -720,14 +739,14 @@ export type TimesheetCreateWithoutTaskInput = {
 }
 
 export type TimesheetUncheckedCreateWithoutTaskInput = {
-  id?: string
+  id?: number
   date: Date | string
   hours: runtime.Decimal | runtime.DecimalJsLike | number | string
   description?: string | null
   isBillable?: boolean
   hourlyRate?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  employeeId: string
-  projectId?: string | null
+  employeeId: number
+  projectId?: number | null
   approvedBy?: string | null
   approvedAt?: Date | string | null
   createdAt?: Date | string
@@ -761,14 +780,14 @@ export type TimesheetUpdateManyWithWhereWithoutTaskInput = {
 }
 
 export type TimesheetCreateManyProjectInput = {
-  id?: string
+  id?: number
   date: Date | string
   hours: runtime.Decimal | runtime.DecimalJsLike | number | string
   description?: string | null
   isBillable?: boolean
   hourlyRate?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  employeeId: string
-  taskId?: string | null
+  employeeId: number
+  taskId?: number | null
   approvedBy?: string | null
   approvedAt?: Date | string | null
   createdAt?: Date | string
@@ -776,13 +795,12 @@ export type TimesheetCreateManyProjectInput = {
 }
 
 export type TimesheetUpdateWithoutProjectInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   hours?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isBillable?: Prisma.BoolFieldUpdateOperationsInput | boolean
   hourlyRate?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  employeeId?: Prisma.StringFieldUpdateOperationsInput | string
+  employeeId?: Prisma.IntFieldUpdateOperationsInput | number
   approvedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   approvedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -791,14 +809,14 @@ export type TimesheetUpdateWithoutProjectInput = {
 }
 
 export type TimesheetUncheckedUpdateWithoutProjectInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   hours?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isBillable?: Prisma.BoolFieldUpdateOperationsInput | boolean
   hourlyRate?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  employeeId?: Prisma.StringFieldUpdateOperationsInput | string
-  taskId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  employeeId?: Prisma.IntFieldUpdateOperationsInput | number
+  taskId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   approvedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   approvedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -806,14 +824,14 @@ export type TimesheetUncheckedUpdateWithoutProjectInput = {
 }
 
 export type TimesheetUncheckedUpdateManyWithoutProjectInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   hours?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isBillable?: Prisma.BoolFieldUpdateOperationsInput | boolean
   hourlyRate?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  employeeId?: Prisma.StringFieldUpdateOperationsInput | string
-  taskId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  employeeId?: Prisma.IntFieldUpdateOperationsInput | number
+  taskId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   approvedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   approvedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -821,14 +839,14 @@ export type TimesheetUncheckedUpdateManyWithoutProjectInput = {
 }
 
 export type TimesheetCreateManyTaskInput = {
-  id?: string
+  id?: number
   date: Date | string
   hours: runtime.Decimal | runtime.DecimalJsLike | number | string
   description?: string | null
   isBillable?: boolean
   hourlyRate?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  employeeId: string
-  projectId?: string | null
+  employeeId: number
+  projectId?: number | null
   approvedBy?: string | null
   approvedAt?: Date | string | null
   createdAt?: Date | string
@@ -836,13 +854,12 @@ export type TimesheetCreateManyTaskInput = {
 }
 
 export type TimesheetUpdateWithoutTaskInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   hours?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isBillable?: Prisma.BoolFieldUpdateOperationsInput | boolean
   hourlyRate?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  employeeId?: Prisma.StringFieldUpdateOperationsInput | string
+  employeeId?: Prisma.IntFieldUpdateOperationsInput | number
   approvedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   approvedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -851,14 +868,14 @@ export type TimesheetUpdateWithoutTaskInput = {
 }
 
 export type TimesheetUncheckedUpdateWithoutTaskInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   hours?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isBillable?: Prisma.BoolFieldUpdateOperationsInput | boolean
   hourlyRate?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  employeeId?: Prisma.StringFieldUpdateOperationsInput | string
-  projectId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  employeeId?: Prisma.IntFieldUpdateOperationsInput | number
+  projectId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   approvedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   approvedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -866,14 +883,14 @@ export type TimesheetUncheckedUpdateWithoutTaskInput = {
 }
 
 export type TimesheetUncheckedUpdateManyWithoutTaskInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   hours?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isBillable?: Prisma.BoolFieldUpdateOperationsInput | boolean
   hourlyRate?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  employeeId?: Prisma.StringFieldUpdateOperationsInput | string
-  projectId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  employeeId?: Prisma.IntFieldUpdateOperationsInput | number
+  projectId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   approvedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   approvedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -973,15 +990,15 @@ export type $TimesheetPayload<ExtArgs extends runtime.Types.Extensions.InternalA
     task: Prisma.$TaskPayload<ExtArgs> | null
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
-    id: string
+    id: number
     date: Date
     hours: runtime.Decimal
     description: string | null
     isBillable: boolean
     hourlyRate: runtime.Decimal | null
-    employeeId: string
-    projectId: string | null
-    taskId: string | null
+    employeeId: number
+    projectId: number | null
+    taskId: number | null
     approvedBy: string | null
     approvedAt: Date | null
     createdAt: Date
@@ -1411,15 +1428,15 @@ export interface Prisma__TimesheetClient<T, Null = never, ExtArgs extends runtim
  * Fields of the Timesheet model
  */
 export interface TimesheetFieldRefs {
-  readonly id: Prisma.FieldRef<"Timesheet", 'String'>
+  readonly id: Prisma.FieldRef<"Timesheet", 'Int'>
   readonly date: Prisma.FieldRef<"Timesheet", 'DateTime'>
   readonly hours: Prisma.FieldRef<"Timesheet", 'Decimal'>
   readonly description: Prisma.FieldRef<"Timesheet", 'String'>
   readonly isBillable: Prisma.FieldRef<"Timesheet", 'Boolean'>
   readonly hourlyRate: Prisma.FieldRef<"Timesheet", 'Decimal'>
-  readonly employeeId: Prisma.FieldRef<"Timesheet", 'String'>
-  readonly projectId: Prisma.FieldRef<"Timesheet", 'String'>
-  readonly taskId: Prisma.FieldRef<"Timesheet", 'String'>
+  readonly employeeId: Prisma.FieldRef<"Timesheet", 'Int'>
+  readonly projectId: Prisma.FieldRef<"Timesheet", 'Int'>
+  readonly taskId: Prisma.FieldRef<"Timesheet", 'Int'>
   readonly approvedBy: Prisma.FieldRef<"Timesheet", 'String'>
   readonly approvedAt: Prisma.FieldRef<"Timesheet", 'DateTime'>
   readonly createdAt: Prisma.FieldRef<"Timesheet", 'DateTime'>

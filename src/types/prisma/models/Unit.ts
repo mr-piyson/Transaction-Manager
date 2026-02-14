@@ -20,12 +20,22 @@ export type UnitModel = runtime.Types.Result.DefaultSelection<Prisma.$UnitPayloa
 
 export type AggregateUnit = {
   _count: UnitCountAggregateOutputType | null
+  _avg: UnitAvgAggregateOutputType | null
+  _sum: UnitSumAggregateOutputType | null
   _min: UnitMinAggregateOutputType | null
   _max: UnitMaxAggregateOutputType | null
 }
 
+export type UnitAvgAggregateOutputType = {
+  id: number | null
+}
+
+export type UnitSumAggregateOutputType = {
+  id: number | null
+}
+
 export type UnitMinAggregateOutputType = {
-  id: string | null
+  id: number | null
   name: string | null
   abbreviation: string | null
   type: string | null
@@ -34,7 +44,7 @@ export type UnitMinAggregateOutputType = {
 }
 
 export type UnitMaxAggregateOutputType = {
-  id: string | null
+  id: number | null
   name: string | null
   abbreviation: string | null
   type: string | null
@@ -52,6 +62,14 @@ export type UnitCountAggregateOutputType = {
   _all: number
 }
 
+
+export type UnitAvgAggregateInputType = {
+  id?: true
+}
+
+export type UnitSumAggregateInputType = {
+  id?: true
+}
 
 export type UnitMinAggregateInputType = {
   id?: true
@@ -119,6 +137,18 @@ export type UnitAggregateArgs<ExtArgs extends runtime.Types.Extensions.InternalA
   /**
    * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
    * 
+   * Select which fields to average
+  **/
+  _avg?: UnitAvgAggregateInputType
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+   * 
+   * Select which fields to sum
+  **/
+  _sum?: UnitSumAggregateInputType
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+   * 
    * Select which fields to find the minimum value
   **/
   _min?: UnitMinAggregateInputType
@@ -149,18 +179,22 @@ export type UnitGroupByArgs<ExtArgs extends runtime.Types.Extensions.InternalArg
   take?: number
   skip?: number
   _count?: UnitCountAggregateInputType | true
+  _avg?: UnitAvgAggregateInputType
+  _sum?: UnitSumAggregateInputType
   _min?: UnitMinAggregateInputType
   _max?: UnitMaxAggregateInputType
 }
 
 export type UnitGroupByOutputType = {
-  id: string
+  id: number
   name: string
   abbreviation: string
   type: string | null
   createdAt: Date
   updatedAt: Date
   _count: UnitCountAggregateOutputType | null
+  _avg: UnitAvgAggregateOutputType | null
+  _sum: UnitSumAggregateOutputType | null
   _min: UnitMinAggregateOutputType | null
   _max: UnitMaxAggregateOutputType | null
 }
@@ -184,7 +218,7 @@ export type UnitWhereInput = {
   AND?: Prisma.UnitWhereInput | Prisma.UnitWhereInput[]
   OR?: Prisma.UnitWhereInput[]
   NOT?: Prisma.UnitWhereInput | Prisma.UnitWhereInput[]
-  id?: Prisma.StringFilter<"Unit"> | string
+  id?: Prisma.IntFilter<"Unit"> | number
   name?: Prisma.StringFilter<"Unit"> | string
   abbreviation?: Prisma.StringFilter<"Unit"> | string
   type?: Prisma.StringNullableFilter<"Unit"> | string | null
@@ -204,7 +238,7 @@ export type UnitOrderByWithRelationInput = {
 }
 
 export type UnitWhereUniqueInput = Prisma.AtLeast<{
-  id?: string
+  id?: number
   abbreviation?: string
   AND?: Prisma.UnitWhereInput | Prisma.UnitWhereInput[]
   OR?: Prisma.UnitWhereInput[]
@@ -224,15 +258,17 @@ export type UnitOrderByWithAggregationInput = {
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.UnitCountOrderByAggregateInput
+  _avg?: Prisma.UnitAvgOrderByAggregateInput
   _max?: Prisma.UnitMaxOrderByAggregateInput
   _min?: Prisma.UnitMinOrderByAggregateInput
+  _sum?: Prisma.UnitSumOrderByAggregateInput
 }
 
 export type UnitScalarWhereWithAggregatesInput = {
   AND?: Prisma.UnitScalarWhereWithAggregatesInput | Prisma.UnitScalarWhereWithAggregatesInput[]
   OR?: Prisma.UnitScalarWhereWithAggregatesInput[]
   NOT?: Prisma.UnitScalarWhereWithAggregatesInput | Prisma.UnitScalarWhereWithAggregatesInput[]
-  id?: Prisma.StringWithAggregatesFilter<"Unit"> | string
+  id?: Prisma.IntWithAggregatesFilter<"Unit"> | number
   name?: Prisma.StringWithAggregatesFilter<"Unit"> | string
   abbreviation?: Prisma.StringWithAggregatesFilter<"Unit"> | string
   type?: Prisma.StringNullableWithAggregatesFilter<"Unit"> | string | null
@@ -241,7 +277,6 @@ export type UnitScalarWhereWithAggregatesInput = {
 }
 
 export type UnitCreateInput = {
-  id?: string
   name: string
   abbreviation: string
   type?: string | null
@@ -251,7 +286,7 @@ export type UnitCreateInput = {
 }
 
 export type UnitUncheckedCreateInput = {
-  id?: string
+  id?: number
   name: string
   abbreviation: string
   type?: string | null
@@ -261,7 +296,6 @@ export type UnitUncheckedCreateInput = {
 }
 
 export type UnitUpdateInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   abbreviation?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -271,7 +305,7 @@ export type UnitUpdateInput = {
 }
 
 export type UnitUncheckedUpdateInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   name?: Prisma.StringFieldUpdateOperationsInput | string
   abbreviation?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -281,7 +315,7 @@ export type UnitUncheckedUpdateInput = {
 }
 
 export type UnitCreateManyInput = {
-  id?: string
+  id?: number
   name: string
   abbreviation: string
   type?: string | null
@@ -290,7 +324,6 @@ export type UnitCreateManyInput = {
 }
 
 export type UnitUpdateManyMutationInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   abbreviation?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -299,7 +332,7 @@ export type UnitUpdateManyMutationInput = {
 }
 
 export type UnitUncheckedUpdateManyInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   name?: Prisma.StringFieldUpdateOperationsInput | string
   abbreviation?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -321,6 +354,10 @@ export type UnitCountOrderByAggregateInput = {
   updatedAt?: Prisma.SortOrder
 }
 
+export type UnitAvgOrderByAggregateInput = {
+  id?: Prisma.SortOrder
+}
+
 export type UnitMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
   name?: Prisma.SortOrder
@@ -337,6 +374,10 @@ export type UnitMinOrderByAggregateInput = {
   type?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+}
+
+export type UnitSumOrderByAggregateInput = {
+  id?: Prisma.SortOrder
 }
 
 export type UnitCreateNestedOneWithoutProductsInput = {
@@ -356,7 +397,6 @@ export type UnitUpdateOneWithoutProductsNestedInput = {
 }
 
 export type UnitCreateWithoutProductsInput = {
-  id?: string
   name: string
   abbreviation: string
   type?: string | null
@@ -365,7 +405,7 @@ export type UnitCreateWithoutProductsInput = {
 }
 
 export type UnitUncheckedCreateWithoutProductsInput = {
-  id?: string
+  id?: number
   name: string
   abbreviation: string
   type?: string | null
@@ -390,7 +430,6 @@ export type UnitUpdateToOneWithWhereWithoutProductsInput = {
 }
 
 export type UnitUpdateWithoutProductsInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   abbreviation?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -399,7 +438,7 @@ export type UnitUpdateWithoutProductsInput = {
 }
 
 export type UnitUncheckedUpdateWithoutProductsInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   name?: Prisma.StringFieldUpdateOperationsInput | string
   abbreviation?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -490,7 +529,7 @@ export type $UnitPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     products: Prisma.$ProductPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
-    id: string
+    id: number
     name: string
     abbreviation: string
     type: string | null
@@ -920,7 +959,7 @@ export interface Prisma__UnitClient<T, Null = never, ExtArgs extends runtime.Typ
  * Fields of the Unit model
  */
 export interface UnitFieldRefs {
-  readonly id: Prisma.FieldRef<"Unit", 'String'>
+  readonly id: Prisma.FieldRef<"Unit", 'Int'>
   readonly name: Prisma.FieldRef<"Unit", 'String'>
   readonly abbreviation: Prisma.FieldRef<"Unit", 'String'>
   readonly type: Prisma.FieldRef<"Unit", 'String'>

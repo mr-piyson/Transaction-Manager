@@ -27,17 +27,23 @@ export type AggregateSupplier = {
 }
 
 export type SupplierAvgAggregateOutputType = {
+  id: number | null
   creditLimit: runtime.Decimal | null
+  paymentTermId: number | null
   rating: runtime.Decimal | null
+  tenantId: number | null
 }
 
 export type SupplierSumAggregateOutputType = {
+  id: number | null
   creditLimit: runtime.Decimal | null
+  paymentTermId: number | null
   rating: runtime.Decimal | null
+  tenantId: number | null
 }
 
 export type SupplierMinAggregateOutputType = {
-  id: string | null
+  id: number | null
   supplierNumber: string | null
   name: string | null
   type: $Enums.SupplierType | null
@@ -49,7 +55,7 @@ export type SupplierMinAggregateOutputType = {
   taxId: string | null
   registrationNumber: string | null
   creditLimit: runtime.Decimal | null
-  paymentTermId: string | null
+  paymentTermId: number | null
   address: string | null
   city: string | null
   state: string | null
@@ -57,13 +63,13 @@ export type SupplierMinAggregateOutputType = {
   postalCode: string | null
   status: $Enums.SupplierStatus | null
   rating: runtime.Decimal | null
-  tenantId: string | null
+  tenantId: number | null
   createdAt: Date | null
   updatedAt: Date | null
 }
 
 export type SupplierMaxAggregateOutputType = {
-  id: string | null
+  id: number | null
   supplierNumber: string | null
   name: string | null
   type: $Enums.SupplierType | null
@@ -75,7 +81,7 @@ export type SupplierMaxAggregateOutputType = {
   taxId: string | null
   registrationNumber: string | null
   creditLimit: runtime.Decimal | null
-  paymentTermId: string | null
+  paymentTermId: number | null
   address: string | null
   city: string | null
   state: string | null
@@ -83,7 +89,7 @@ export type SupplierMaxAggregateOutputType = {
   postalCode: string | null
   status: $Enums.SupplierStatus | null
   rating: runtime.Decimal | null
-  tenantId: string | null
+  tenantId: number | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -117,13 +123,19 @@ export type SupplierCountAggregateOutputType = {
 
 
 export type SupplierAvgAggregateInputType = {
+  id?: true
   creditLimit?: true
+  paymentTermId?: true
   rating?: true
+  tenantId?: true
 }
 
 export type SupplierSumAggregateInputType = {
+  id?: true
   creditLimit?: true
+  paymentTermId?: true
   rating?: true
+  tenantId?: true
 }
 
 export type SupplierMinAggregateInputType = {
@@ -292,7 +304,7 @@ export type SupplierGroupByArgs<ExtArgs extends runtime.Types.Extensions.Interna
 }
 
 export type SupplierGroupByOutputType = {
-  id: string
+  id: number
   supplierNumber: string
   name: string
   type: $Enums.SupplierType
@@ -304,7 +316,7 @@ export type SupplierGroupByOutputType = {
   taxId: string | null
   registrationNumber: string | null
   creditLimit: runtime.Decimal | null
-  paymentTermId: string | null
+  paymentTermId: number | null
   address: string | null
   city: string | null
   state: string | null
@@ -312,7 +324,7 @@ export type SupplierGroupByOutputType = {
   postalCode: string | null
   status: $Enums.SupplierStatus
   rating: runtime.Decimal | null
-  tenantId: string
+  tenantId: number
   createdAt: Date
   updatedAt: Date
   _count: SupplierCountAggregateOutputType | null
@@ -341,7 +353,7 @@ export type SupplierWhereInput = {
   AND?: Prisma.SupplierWhereInput | Prisma.SupplierWhereInput[]
   OR?: Prisma.SupplierWhereInput[]
   NOT?: Prisma.SupplierWhereInput | Prisma.SupplierWhereInput[]
-  id?: Prisma.StringFilter<"Supplier"> | string
+  id?: Prisma.IntFilter<"Supplier"> | number
   supplierNumber?: Prisma.StringFilter<"Supplier"> | string
   name?: Prisma.StringFilter<"Supplier"> | string
   type?: Prisma.EnumSupplierTypeFilter<"Supplier"> | $Enums.SupplierType
@@ -353,7 +365,7 @@ export type SupplierWhereInput = {
   taxId?: Prisma.StringNullableFilter<"Supplier"> | string | null
   registrationNumber?: Prisma.StringNullableFilter<"Supplier"> | string | null
   creditLimit?: Prisma.DecimalNullableFilter<"Supplier"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  paymentTermId?: Prisma.StringNullableFilter<"Supplier"> | string | null
+  paymentTermId?: Prisma.IntNullableFilter<"Supplier"> | number | null
   address?: Prisma.StringNullableFilter<"Supplier"> | string | null
   city?: Prisma.StringNullableFilter<"Supplier"> | string | null
   state?: Prisma.StringNullableFilter<"Supplier"> | string | null
@@ -361,7 +373,7 @@ export type SupplierWhereInput = {
   postalCode?: Prisma.StringNullableFilter<"Supplier"> | string | null
   status?: Prisma.EnumSupplierStatusFilter<"Supplier"> | $Enums.SupplierStatus
   rating?: Prisma.DecimalNullableFilter<"Supplier"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  tenantId?: Prisma.StringFilter<"Supplier"> | string
+  tenantId?: Prisma.IntFilter<"Supplier"> | number
   createdAt?: Prisma.DateTimeFilter<"Supplier"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Supplier"> | Date | string
   paymentTerm?: Prisma.XOR<Prisma.PaymentTermNullableScalarRelationFilter, Prisma.PaymentTermWhereInput> | null
@@ -405,7 +417,7 @@ export type SupplierOrderByWithRelationInput = {
 }
 
 export type SupplierWhereUniqueInput = Prisma.AtLeast<{
-  id?: string
+  id?: number
   tenantId_supplierNumber?: Prisma.SupplierTenantIdSupplierNumberCompoundUniqueInput
   AND?: Prisma.SupplierWhereInput | Prisma.SupplierWhereInput[]
   OR?: Prisma.SupplierWhereInput[]
@@ -421,7 +433,7 @@ export type SupplierWhereUniqueInput = Prisma.AtLeast<{
   taxId?: Prisma.StringNullableFilter<"Supplier"> | string | null
   registrationNumber?: Prisma.StringNullableFilter<"Supplier"> | string | null
   creditLimit?: Prisma.DecimalNullableFilter<"Supplier"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  paymentTermId?: Prisma.StringNullableFilter<"Supplier"> | string | null
+  paymentTermId?: Prisma.IntNullableFilter<"Supplier"> | number | null
   address?: Prisma.StringNullableFilter<"Supplier"> | string | null
   city?: Prisma.StringNullableFilter<"Supplier"> | string | null
   state?: Prisma.StringNullableFilter<"Supplier"> | string | null
@@ -429,7 +441,7 @@ export type SupplierWhereUniqueInput = Prisma.AtLeast<{
   postalCode?: Prisma.StringNullableFilter<"Supplier"> | string | null
   status?: Prisma.EnumSupplierStatusFilter<"Supplier"> | $Enums.SupplierStatus
   rating?: Prisma.DecimalNullableFilter<"Supplier"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  tenantId?: Prisma.StringFilter<"Supplier"> | string
+  tenantId?: Prisma.IntFilter<"Supplier"> | number
   createdAt?: Prisma.DateTimeFilter<"Supplier"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Supplier"> | Date | string
   paymentTerm?: Prisma.XOR<Prisma.PaymentTermNullableScalarRelationFilter, Prisma.PaymentTermWhereInput> | null
@@ -475,7 +487,7 @@ export type SupplierScalarWhereWithAggregatesInput = {
   AND?: Prisma.SupplierScalarWhereWithAggregatesInput | Prisma.SupplierScalarWhereWithAggregatesInput[]
   OR?: Prisma.SupplierScalarWhereWithAggregatesInput[]
   NOT?: Prisma.SupplierScalarWhereWithAggregatesInput | Prisma.SupplierScalarWhereWithAggregatesInput[]
-  id?: Prisma.StringWithAggregatesFilter<"Supplier"> | string
+  id?: Prisma.IntWithAggregatesFilter<"Supplier"> | number
   supplierNumber?: Prisma.StringWithAggregatesFilter<"Supplier"> | string
   name?: Prisma.StringWithAggregatesFilter<"Supplier"> | string
   type?: Prisma.EnumSupplierTypeWithAggregatesFilter<"Supplier"> | $Enums.SupplierType
@@ -487,7 +499,7 @@ export type SupplierScalarWhereWithAggregatesInput = {
   taxId?: Prisma.StringNullableWithAggregatesFilter<"Supplier"> | string | null
   registrationNumber?: Prisma.StringNullableWithAggregatesFilter<"Supplier"> | string | null
   creditLimit?: Prisma.DecimalNullableWithAggregatesFilter<"Supplier"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  paymentTermId?: Prisma.StringNullableWithAggregatesFilter<"Supplier"> | string | null
+  paymentTermId?: Prisma.IntNullableWithAggregatesFilter<"Supplier"> | number | null
   address?: Prisma.StringNullableWithAggregatesFilter<"Supplier"> | string | null
   city?: Prisma.StringNullableWithAggregatesFilter<"Supplier"> | string | null
   state?: Prisma.StringNullableWithAggregatesFilter<"Supplier"> | string | null
@@ -495,13 +507,12 @@ export type SupplierScalarWhereWithAggregatesInput = {
   postalCode?: Prisma.StringNullableWithAggregatesFilter<"Supplier"> | string | null
   status?: Prisma.EnumSupplierStatusWithAggregatesFilter<"Supplier"> | $Enums.SupplierStatus
   rating?: Prisma.DecimalNullableWithAggregatesFilter<"Supplier"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  tenantId?: Prisma.StringWithAggregatesFilter<"Supplier"> | string
+  tenantId?: Prisma.IntWithAggregatesFilter<"Supplier"> | number
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Supplier"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Supplier"> | Date | string
 }
 
 export type SupplierCreateInput = {
-  id?: string
   supplierNumber: string
   name: string
   type?: $Enums.SupplierType
@@ -531,7 +542,7 @@ export type SupplierCreateInput = {
 }
 
 export type SupplierUncheckedCreateInput = {
-  id?: string
+  id?: number
   supplierNumber: string
   name: string
   type?: $Enums.SupplierType
@@ -543,7 +554,7 @@ export type SupplierUncheckedCreateInput = {
   taxId?: string | null
   registrationNumber?: string | null
   creditLimit?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  paymentTermId?: string | null
+  paymentTermId?: number | null
   address?: string | null
   city?: string | null
   state?: string | null
@@ -551,7 +562,7 @@ export type SupplierUncheckedCreateInput = {
   postalCode?: string | null
   status?: $Enums.SupplierStatus
   rating?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  tenantId: string
+  tenantId: number
   createdAt?: Date | string
   updatedAt?: Date | string
   contacts?: Prisma.SupplierContactUncheckedCreateNestedManyWithoutSupplierInput
@@ -561,7 +572,6 @@ export type SupplierUncheckedCreateInput = {
 }
 
 export type SupplierUpdateInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   supplierNumber?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSupplierTypeFieldUpdateOperationsInput | $Enums.SupplierType
@@ -591,7 +601,7 @@ export type SupplierUpdateInput = {
 }
 
 export type SupplierUncheckedUpdateInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   supplierNumber?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSupplierTypeFieldUpdateOperationsInput | $Enums.SupplierType
@@ -603,7 +613,7 @@ export type SupplierUncheckedUpdateInput = {
   taxId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   registrationNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   creditLimit?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  paymentTermId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  paymentTermId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   state?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -611,7 +621,7 @@ export type SupplierUncheckedUpdateInput = {
   postalCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumSupplierStatusFieldUpdateOperationsInput | $Enums.SupplierStatus
   rating?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  tenantId?: Prisma.StringFieldUpdateOperationsInput | string
+  tenantId?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   contacts?: Prisma.SupplierContactUncheckedUpdateManyWithoutSupplierNestedInput
@@ -621,7 +631,7 @@ export type SupplierUncheckedUpdateInput = {
 }
 
 export type SupplierCreateManyInput = {
-  id?: string
+  id?: number
   supplierNumber: string
   name: string
   type?: $Enums.SupplierType
@@ -633,7 +643,7 @@ export type SupplierCreateManyInput = {
   taxId?: string | null
   registrationNumber?: string | null
   creditLimit?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  paymentTermId?: string | null
+  paymentTermId?: number | null
   address?: string | null
   city?: string | null
   state?: string | null
@@ -641,13 +651,12 @@ export type SupplierCreateManyInput = {
   postalCode?: string | null
   status?: $Enums.SupplierStatus
   rating?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  tenantId: string
+  tenantId: number
   createdAt?: Date | string
   updatedAt?: Date | string
 }
 
 export type SupplierUpdateManyMutationInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   supplierNumber?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSupplierTypeFieldUpdateOperationsInput | $Enums.SupplierType
@@ -671,7 +680,7 @@ export type SupplierUpdateManyMutationInput = {
 }
 
 export type SupplierUncheckedUpdateManyInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   supplierNumber?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSupplierTypeFieldUpdateOperationsInput | $Enums.SupplierType
@@ -683,7 +692,7 @@ export type SupplierUncheckedUpdateManyInput = {
   taxId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   registrationNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   creditLimit?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  paymentTermId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  paymentTermId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   state?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -691,7 +700,7 @@ export type SupplierUncheckedUpdateManyInput = {
   postalCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumSupplierStatusFieldUpdateOperationsInput | $Enums.SupplierStatus
   rating?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  tenantId?: Prisma.StringFieldUpdateOperationsInput | string
+  tenantId?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -712,7 +721,7 @@ export type SupplierNullableScalarRelationFilter = {
 }
 
 export type SupplierTenantIdSupplierNumberCompoundUniqueInput = {
-  tenantId: string
+  tenantId: number
   supplierNumber: string
 }
 
@@ -743,8 +752,11 @@ export type SupplierCountOrderByAggregateInput = {
 }
 
 export type SupplierAvgOrderByAggregateInput = {
+  id?: Prisma.SortOrder
   creditLimit?: Prisma.SortOrder
+  paymentTermId?: Prisma.SortOrder
   rating?: Prisma.SortOrder
+  tenantId?: Prisma.SortOrder
 }
 
 export type SupplierMaxOrderByAggregateInput = {
@@ -800,8 +812,11 @@ export type SupplierMinOrderByAggregateInput = {
 }
 
 export type SupplierSumOrderByAggregateInput = {
+  id?: Prisma.SortOrder
   creditLimit?: Prisma.SortOrder
+  paymentTermId?: Prisma.SortOrder
   rating?: Prisma.SortOrder
+  tenantId?: Prisma.SortOrder
 }
 
 export type SupplierScalarRelationFilter = {
@@ -962,7 +977,6 @@ export type SupplierUncheckedUpdateManyWithoutPaymentTermNestedInput = {
 }
 
 export type SupplierCreateWithoutTenantInput = {
-  id?: string
   supplierNumber: string
   name: string
   type?: $Enums.SupplierType
@@ -991,7 +1005,7 @@ export type SupplierCreateWithoutTenantInput = {
 }
 
 export type SupplierUncheckedCreateWithoutTenantInput = {
-  id?: string
+  id?: number
   supplierNumber: string
   name: string
   type?: $Enums.SupplierType
@@ -1003,7 +1017,7 @@ export type SupplierUncheckedCreateWithoutTenantInput = {
   taxId?: string | null
   registrationNumber?: string | null
   creditLimit?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  paymentTermId?: string | null
+  paymentTermId?: number | null
   address?: string | null
   city?: string | null
   state?: string | null
@@ -1049,7 +1063,7 @@ export type SupplierScalarWhereInput = {
   AND?: Prisma.SupplierScalarWhereInput | Prisma.SupplierScalarWhereInput[]
   OR?: Prisma.SupplierScalarWhereInput[]
   NOT?: Prisma.SupplierScalarWhereInput | Prisma.SupplierScalarWhereInput[]
-  id?: Prisma.StringFilter<"Supplier"> | string
+  id?: Prisma.IntFilter<"Supplier"> | number
   supplierNumber?: Prisma.StringFilter<"Supplier"> | string
   name?: Prisma.StringFilter<"Supplier"> | string
   type?: Prisma.EnumSupplierTypeFilter<"Supplier"> | $Enums.SupplierType
@@ -1061,7 +1075,7 @@ export type SupplierScalarWhereInput = {
   taxId?: Prisma.StringNullableFilter<"Supplier"> | string | null
   registrationNumber?: Prisma.StringNullableFilter<"Supplier"> | string | null
   creditLimit?: Prisma.DecimalNullableFilter<"Supplier"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  paymentTermId?: Prisma.StringNullableFilter<"Supplier"> | string | null
+  paymentTermId?: Prisma.IntNullableFilter<"Supplier"> | number | null
   address?: Prisma.StringNullableFilter<"Supplier"> | string | null
   city?: Prisma.StringNullableFilter<"Supplier"> | string | null
   state?: Prisma.StringNullableFilter<"Supplier"> | string | null
@@ -1069,13 +1083,12 @@ export type SupplierScalarWhereInput = {
   postalCode?: Prisma.StringNullableFilter<"Supplier"> | string | null
   status?: Prisma.EnumSupplierStatusFilter<"Supplier"> | $Enums.SupplierStatus
   rating?: Prisma.DecimalNullableFilter<"Supplier"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  tenantId?: Prisma.StringFilter<"Supplier"> | string
+  tenantId?: Prisma.IntFilter<"Supplier"> | number
   createdAt?: Prisma.DateTimeFilter<"Supplier"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Supplier"> | Date | string
 }
 
 export type SupplierCreateWithoutProductsInput = {
-  id?: string
   supplierNumber: string
   name: string
   type?: $Enums.SupplierType
@@ -1104,7 +1117,7 @@ export type SupplierCreateWithoutProductsInput = {
 }
 
 export type SupplierUncheckedCreateWithoutProductsInput = {
-  id?: string
+  id?: number
   supplierNumber: string
   name: string
   type?: $Enums.SupplierType
@@ -1116,7 +1129,7 @@ export type SupplierUncheckedCreateWithoutProductsInput = {
   taxId?: string | null
   registrationNumber?: string | null
   creditLimit?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  paymentTermId?: string | null
+  paymentTermId?: number | null
   address?: string | null
   city?: string | null
   state?: string | null
@@ -1124,7 +1137,7 @@ export type SupplierUncheckedCreateWithoutProductsInput = {
   postalCode?: string | null
   status?: $Enums.SupplierStatus
   rating?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  tenantId: string
+  tenantId: number
   createdAt?: Date | string
   updatedAt?: Date | string
   contacts?: Prisma.SupplierContactUncheckedCreateNestedManyWithoutSupplierInput
@@ -1149,7 +1162,6 @@ export type SupplierUpdateToOneWithWhereWithoutProductsInput = {
 }
 
 export type SupplierUpdateWithoutProductsInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   supplierNumber?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSupplierTypeFieldUpdateOperationsInput | $Enums.SupplierType
@@ -1178,7 +1190,7 @@ export type SupplierUpdateWithoutProductsInput = {
 }
 
 export type SupplierUncheckedUpdateWithoutProductsInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   supplierNumber?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSupplierTypeFieldUpdateOperationsInput | $Enums.SupplierType
@@ -1190,7 +1202,7 @@ export type SupplierUncheckedUpdateWithoutProductsInput = {
   taxId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   registrationNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   creditLimit?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  paymentTermId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  paymentTermId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   state?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1198,7 +1210,7 @@ export type SupplierUncheckedUpdateWithoutProductsInput = {
   postalCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumSupplierStatusFieldUpdateOperationsInput | $Enums.SupplierStatus
   rating?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  tenantId?: Prisma.StringFieldUpdateOperationsInput | string
+  tenantId?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   contacts?: Prisma.SupplierContactUncheckedUpdateManyWithoutSupplierNestedInput
@@ -1207,7 +1219,6 @@ export type SupplierUncheckedUpdateWithoutProductsInput = {
 }
 
 export type SupplierCreateWithoutContactsInput = {
-  id?: string
   supplierNumber: string
   name: string
   type?: $Enums.SupplierType
@@ -1236,7 +1247,7 @@ export type SupplierCreateWithoutContactsInput = {
 }
 
 export type SupplierUncheckedCreateWithoutContactsInput = {
-  id?: string
+  id?: number
   supplierNumber: string
   name: string
   type?: $Enums.SupplierType
@@ -1248,7 +1259,7 @@ export type SupplierUncheckedCreateWithoutContactsInput = {
   taxId?: string | null
   registrationNumber?: string | null
   creditLimit?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  paymentTermId?: string | null
+  paymentTermId?: number | null
   address?: string | null
   city?: string | null
   state?: string | null
@@ -1256,7 +1267,7 @@ export type SupplierUncheckedCreateWithoutContactsInput = {
   postalCode?: string | null
   status?: $Enums.SupplierStatus
   rating?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  tenantId: string
+  tenantId: number
   createdAt?: Date | string
   updatedAt?: Date | string
   purchaseOrders?: Prisma.PurchaseOrderUncheckedCreateNestedManyWithoutSupplierInput
@@ -1281,7 +1292,6 @@ export type SupplierUpdateToOneWithWhereWithoutContactsInput = {
 }
 
 export type SupplierUpdateWithoutContactsInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   supplierNumber?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSupplierTypeFieldUpdateOperationsInput | $Enums.SupplierType
@@ -1310,7 +1320,7 @@ export type SupplierUpdateWithoutContactsInput = {
 }
 
 export type SupplierUncheckedUpdateWithoutContactsInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   supplierNumber?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSupplierTypeFieldUpdateOperationsInput | $Enums.SupplierType
@@ -1322,7 +1332,7 @@ export type SupplierUncheckedUpdateWithoutContactsInput = {
   taxId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   registrationNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   creditLimit?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  paymentTermId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  paymentTermId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   state?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1330,7 +1340,7 @@ export type SupplierUncheckedUpdateWithoutContactsInput = {
   postalCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumSupplierStatusFieldUpdateOperationsInput | $Enums.SupplierStatus
   rating?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  tenantId?: Prisma.StringFieldUpdateOperationsInput | string
+  tenantId?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   purchaseOrders?: Prisma.PurchaseOrderUncheckedUpdateManyWithoutSupplierNestedInput
@@ -1339,7 +1349,6 @@ export type SupplierUncheckedUpdateWithoutContactsInput = {
 }
 
 export type SupplierCreateWithoutPurchaseOrdersInput = {
-  id?: string
   supplierNumber: string
   name: string
   type?: $Enums.SupplierType
@@ -1368,7 +1377,7 @@ export type SupplierCreateWithoutPurchaseOrdersInput = {
 }
 
 export type SupplierUncheckedCreateWithoutPurchaseOrdersInput = {
-  id?: string
+  id?: number
   supplierNumber: string
   name: string
   type?: $Enums.SupplierType
@@ -1380,7 +1389,7 @@ export type SupplierUncheckedCreateWithoutPurchaseOrdersInput = {
   taxId?: string | null
   registrationNumber?: string | null
   creditLimit?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  paymentTermId?: string | null
+  paymentTermId?: number | null
   address?: string | null
   city?: string | null
   state?: string | null
@@ -1388,7 +1397,7 @@ export type SupplierUncheckedCreateWithoutPurchaseOrdersInput = {
   postalCode?: string | null
   status?: $Enums.SupplierStatus
   rating?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  tenantId: string
+  tenantId: number
   createdAt?: Date | string
   updatedAt?: Date | string
   contacts?: Prisma.SupplierContactUncheckedCreateNestedManyWithoutSupplierInput
@@ -1413,7 +1422,6 @@ export type SupplierUpdateToOneWithWhereWithoutPurchaseOrdersInput = {
 }
 
 export type SupplierUpdateWithoutPurchaseOrdersInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   supplierNumber?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSupplierTypeFieldUpdateOperationsInput | $Enums.SupplierType
@@ -1442,7 +1450,7 @@ export type SupplierUpdateWithoutPurchaseOrdersInput = {
 }
 
 export type SupplierUncheckedUpdateWithoutPurchaseOrdersInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   supplierNumber?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSupplierTypeFieldUpdateOperationsInput | $Enums.SupplierType
@@ -1454,7 +1462,7 @@ export type SupplierUncheckedUpdateWithoutPurchaseOrdersInput = {
   taxId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   registrationNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   creditLimit?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  paymentTermId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  paymentTermId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   state?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1462,7 +1470,7 @@ export type SupplierUncheckedUpdateWithoutPurchaseOrdersInput = {
   postalCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumSupplierStatusFieldUpdateOperationsInput | $Enums.SupplierStatus
   rating?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  tenantId?: Prisma.StringFieldUpdateOperationsInput | string
+  tenantId?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   contacts?: Prisma.SupplierContactUncheckedUpdateManyWithoutSupplierNestedInput
@@ -1471,7 +1479,6 @@ export type SupplierUncheckedUpdateWithoutPurchaseOrdersInput = {
 }
 
 export type SupplierCreateWithoutPaymentsInput = {
-  id?: string
   supplierNumber: string
   name: string
   type?: $Enums.SupplierType
@@ -1500,7 +1507,7 @@ export type SupplierCreateWithoutPaymentsInput = {
 }
 
 export type SupplierUncheckedCreateWithoutPaymentsInput = {
-  id?: string
+  id?: number
   supplierNumber: string
   name: string
   type?: $Enums.SupplierType
@@ -1512,7 +1519,7 @@ export type SupplierUncheckedCreateWithoutPaymentsInput = {
   taxId?: string | null
   registrationNumber?: string | null
   creditLimit?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  paymentTermId?: string | null
+  paymentTermId?: number | null
   address?: string | null
   city?: string | null
   state?: string | null
@@ -1520,7 +1527,7 @@ export type SupplierUncheckedCreateWithoutPaymentsInput = {
   postalCode?: string | null
   status?: $Enums.SupplierStatus
   rating?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  tenantId: string
+  tenantId: number
   createdAt?: Date | string
   updatedAt?: Date | string
   contacts?: Prisma.SupplierContactUncheckedCreateNestedManyWithoutSupplierInput
@@ -1545,7 +1552,6 @@ export type SupplierUpdateToOneWithWhereWithoutPaymentsInput = {
 }
 
 export type SupplierUpdateWithoutPaymentsInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   supplierNumber?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSupplierTypeFieldUpdateOperationsInput | $Enums.SupplierType
@@ -1574,7 +1580,7 @@ export type SupplierUpdateWithoutPaymentsInput = {
 }
 
 export type SupplierUncheckedUpdateWithoutPaymentsInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   supplierNumber?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSupplierTypeFieldUpdateOperationsInput | $Enums.SupplierType
@@ -1586,7 +1592,7 @@ export type SupplierUncheckedUpdateWithoutPaymentsInput = {
   taxId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   registrationNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   creditLimit?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  paymentTermId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  paymentTermId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   state?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1594,7 +1600,7 @@ export type SupplierUncheckedUpdateWithoutPaymentsInput = {
   postalCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumSupplierStatusFieldUpdateOperationsInput | $Enums.SupplierStatus
   rating?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  tenantId?: Prisma.StringFieldUpdateOperationsInput | string
+  tenantId?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   contacts?: Prisma.SupplierContactUncheckedUpdateManyWithoutSupplierNestedInput
@@ -1603,7 +1609,6 @@ export type SupplierUncheckedUpdateWithoutPaymentsInput = {
 }
 
 export type SupplierCreateWithoutPaymentTermInput = {
-  id?: string
   supplierNumber: string
   name: string
   type?: $Enums.SupplierType
@@ -1632,7 +1637,7 @@ export type SupplierCreateWithoutPaymentTermInput = {
 }
 
 export type SupplierUncheckedCreateWithoutPaymentTermInput = {
-  id?: string
+  id?: number
   supplierNumber: string
   name: string
   type?: $Enums.SupplierType
@@ -1651,7 +1656,7 @@ export type SupplierUncheckedCreateWithoutPaymentTermInput = {
   postalCode?: string | null
   status?: $Enums.SupplierStatus
   rating?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  tenantId: string
+  tenantId: number
   createdAt?: Date | string
   updatedAt?: Date | string
   contacts?: Prisma.SupplierContactUncheckedCreateNestedManyWithoutSupplierInput
@@ -1687,7 +1692,7 @@ export type SupplierUpdateManyWithWhereWithoutPaymentTermInput = {
 }
 
 export type SupplierCreateManyTenantInput = {
-  id?: string
+  id?: number
   supplierNumber: string
   name: string
   type?: $Enums.SupplierType
@@ -1699,7 +1704,7 @@ export type SupplierCreateManyTenantInput = {
   taxId?: string | null
   registrationNumber?: string | null
   creditLimit?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  paymentTermId?: string | null
+  paymentTermId?: number | null
   address?: string | null
   city?: string | null
   state?: string | null
@@ -1712,7 +1717,6 @@ export type SupplierCreateManyTenantInput = {
 }
 
 export type SupplierUpdateWithoutTenantInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   supplierNumber?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSupplierTypeFieldUpdateOperationsInput | $Enums.SupplierType
@@ -1741,7 +1745,7 @@ export type SupplierUpdateWithoutTenantInput = {
 }
 
 export type SupplierUncheckedUpdateWithoutTenantInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   supplierNumber?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSupplierTypeFieldUpdateOperationsInput | $Enums.SupplierType
@@ -1753,7 +1757,7 @@ export type SupplierUncheckedUpdateWithoutTenantInput = {
   taxId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   registrationNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   creditLimit?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  paymentTermId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  paymentTermId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   state?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1770,7 +1774,7 @@ export type SupplierUncheckedUpdateWithoutTenantInput = {
 }
 
 export type SupplierUncheckedUpdateManyWithoutTenantInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   supplierNumber?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSupplierTypeFieldUpdateOperationsInput | $Enums.SupplierType
@@ -1782,7 +1786,7 @@ export type SupplierUncheckedUpdateManyWithoutTenantInput = {
   taxId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   registrationNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   creditLimit?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  paymentTermId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  paymentTermId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   address?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   state?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1795,7 +1799,7 @@ export type SupplierUncheckedUpdateManyWithoutTenantInput = {
 }
 
 export type SupplierCreateManyPaymentTermInput = {
-  id?: string
+  id?: number
   supplierNumber: string
   name: string
   type?: $Enums.SupplierType
@@ -1814,13 +1818,12 @@ export type SupplierCreateManyPaymentTermInput = {
   postalCode?: string | null
   status?: $Enums.SupplierStatus
   rating?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  tenantId: string
+  tenantId: number
   createdAt?: Date | string
   updatedAt?: Date | string
 }
 
 export type SupplierUpdateWithoutPaymentTermInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   supplierNumber?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSupplierTypeFieldUpdateOperationsInput | $Enums.SupplierType
@@ -1849,7 +1852,7 @@ export type SupplierUpdateWithoutPaymentTermInput = {
 }
 
 export type SupplierUncheckedUpdateWithoutPaymentTermInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   supplierNumber?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSupplierTypeFieldUpdateOperationsInput | $Enums.SupplierType
@@ -1868,7 +1871,7 @@ export type SupplierUncheckedUpdateWithoutPaymentTermInput = {
   postalCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumSupplierStatusFieldUpdateOperationsInput | $Enums.SupplierStatus
   rating?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  tenantId?: Prisma.StringFieldUpdateOperationsInput | string
+  tenantId?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   contacts?: Prisma.SupplierContactUncheckedUpdateManyWithoutSupplierNestedInput
@@ -1878,7 +1881,7 @@ export type SupplierUncheckedUpdateWithoutPaymentTermInput = {
 }
 
 export type SupplierUncheckedUpdateManyWithoutPaymentTermInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   supplierNumber?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumSupplierTypeFieldUpdateOperationsInput | $Enums.SupplierType
@@ -1897,7 +1900,7 @@ export type SupplierUncheckedUpdateManyWithoutPaymentTermInput = {
   postalCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumSupplierStatusFieldUpdateOperationsInput | $Enums.SupplierStatus
   rating?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
-  tenantId?: Prisma.StringFieldUpdateOperationsInput | string
+  tenantId?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -2105,7 +2108,7 @@ export type $SupplierPayload<ExtArgs extends runtime.Types.Extensions.InternalAr
     payments: Prisma.$PaymentPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
-    id: string
+    id: number
     supplierNumber: string
     name: string
     type: $Enums.SupplierType
@@ -2117,7 +2120,7 @@ export type $SupplierPayload<ExtArgs extends runtime.Types.Extensions.InternalAr
     taxId: string | null
     registrationNumber: string | null
     creditLimit: runtime.Decimal | null
-    paymentTermId: string | null
+    paymentTermId: number | null
     address: string | null
     city: string | null
     state: string | null
@@ -2125,7 +2128,7 @@ export type $SupplierPayload<ExtArgs extends runtime.Types.Extensions.InternalAr
     postalCode: string | null
     status: $Enums.SupplierStatus
     rating: runtime.Decimal | null
-    tenantId: string
+    tenantId: number
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["supplier"]>
@@ -2557,7 +2560,7 @@ export interface Prisma__SupplierClient<T, Null = never, ExtArgs extends runtime
  * Fields of the Supplier model
  */
 export interface SupplierFieldRefs {
-  readonly id: Prisma.FieldRef<"Supplier", 'String'>
+  readonly id: Prisma.FieldRef<"Supplier", 'Int'>
   readonly supplierNumber: Prisma.FieldRef<"Supplier", 'String'>
   readonly name: Prisma.FieldRef<"Supplier", 'String'>
   readonly type: Prisma.FieldRef<"Supplier", 'SupplierType'>
@@ -2569,7 +2572,7 @@ export interface SupplierFieldRefs {
   readonly taxId: Prisma.FieldRef<"Supplier", 'String'>
   readonly registrationNumber: Prisma.FieldRef<"Supplier", 'String'>
   readonly creditLimit: Prisma.FieldRef<"Supplier", 'Decimal'>
-  readonly paymentTermId: Prisma.FieldRef<"Supplier", 'String'>
+  readonly paymentTermId: Prisma.FieldRef<"Supplier", 'Int'>
   readonly address: Prisma.FieldRef<"Supplier", 'String'>
   readonly city: Prisma.FieldRef<"Supplier", 'String'>
   readonly state: Prisma.FieldRef<"Supplier", 'String'>
@@ -2577,7 +2580,7 @@ export interface SupplierFieldRefs {
   readonly postalCode: Prisma.FieldRef<"Supplier", 'String'>
   readonly status: Prisma.FieldRef<"Supplier", 'SupplierStatus'>
   readonly rating: Prisma.FieldRef<"Supplier", 'Decimal'>
-  readonly tenantId: Prisma.FieldRef<"Supplier", 'String'>
+  readonly tenantId: Prisma.FieldRef<"Supplier", 'Int'>
   readonly createdAt: Prisma.FieldRef<"Supplier", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"Supplier", 'DateTime'>
 }

@@ -27,19 +27,23 @@ export type AggregatePaymentTerm = {
 }
 
 export type PaymentTermAvgAggregateOutputType = {
+  id: number | null
   dueDays: number | null
   discountPercent: runtime.Decimal | null
   discountDays: number | null
+  tenantId: number | null
 }
 
 export type PaymentTermSumAggregateOutputType = {
+  id: number | null
   dueDays: number | null
   discountPercent: runtime.Decimal | null
   discountDays: number | null
+  tenantId: number | null
 }
 
 export type PaymentTermMinAggregateOutputType = {
-  id: string | null
+  id: number | null
   name: string | null
   description: string | null
   dueDays: number | null
@@ -48,11 +52,11 @@ export type PaymentTermMinAggregateOutputType = {
   isActive: boolean | null
   createdAt: Date | null
   updatedAt: Date | null
-  tenantId: string | null
+  tenantId: number | null
 }
 
 export type PaymentTermMaxAggregateOutputType = {
-  id: string | null
+  id: number | null
   name: string | null
   description: string | null
   dueDays: number | null
@@ -61,7 +65,7 @@ export type PaymentTermMaxAggregateOutputType = {
   isActive: boolean | null
   createdAt: Date | null
   updatedAt: Date | null
-  tenantId: string | null
+  tenantId: number | null
 }
 
 export type PaymentTermCountAggregateOutputType = {
@@ -80,15 +84,19 @@ export type PaymentTermCountAggregateOutputType = {
 
 
 export type PaymentTermAvgAggregateInputType = {
+  id?: true
   dueDays?: true
   discountPercent?: true
   discountDays?: true
+  tenantId?: true
 }
 
 export type PaymentTermSumAggregateInputType = {
+  id?: true
   dueDays?: true
   discountPercent?: true
   discountDays?: true
+  tenantId?: true
 }
 
 export type PaymentTermMinAggregateInputType = {
@@ -218,7 +226,7 @@ export type PaymentTermGroupByArgs<ExtArgs extends runtime.Types.Extensions.Inte
 }
 
 export type PaymentTermGroupByOutputType = {
-  id: string
+  id: number
   name: string
   description: string | null
   dueDays: number
@@ -227,7 +235,7 @@ export type PaymentTermGroupByOutputType = {
   isActive: boolean
   createdAt: Date
   updatedAt: Date
-  tenantId: string | null
+  tenantId: number | null
   _count: PaymentTermCountAggregateOutputType | null
   _avg: PaymentTermAvgAggregateOutputType | null
   _sum: PaymentTermSumAggregateOutputType | null
@@ -254,7 +262,7 @@ export type PaymentTermWhereInput = {
   AND?: Prisma.PaymentTermWhereInput | Prisma.PaymentTermWhereInput[]
   OR?: Prisma.PaymentTermWhereInput[]
   NOT?: Prisma.PaymentTermWhereInput | Prisma.PaymentTermWhereInput[]
-  id?: Prisma.StringFilter<"PaymentTerm"> | string
+  id?: Prisma.IntFilter<"PaymentTerm"> | number
   name?: Prisma.StringFilter<"PaymentTerm"> | string
   description?: Prisma.StringNullableFilter<"PaymentTerm"> | string | null
   dueDays?: Prisma.IntFilter<"PaymentTerm"> | number
@@ -263,7 +271,7 @@ export type PaymentTermWhereInput = {
   isActive?: Prisma.BoolFilter<"PaymentTerm"> | boolean
   createdAt?: Prisma.DateTimeFilter<"PaymentTerm"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"PaymentTerm"> | Date | string
-  tenantId?: Prisma.StringNullableFilter<"PaymentTerm"> | string | null
+  tenantId?: Prisma.IntNullableFilter<"PaymentTerm"> | number | null
   customers?: Prisma.CustomerListRelationFilter
   suppliers?: Prisma.SupplierListRelationFilter
   salesOrders?: Prisma.SalesOrderListRelationFilter
@@ -292,7 +300,7 @@ export type PaymentTermOrderByWithRelationInput = {
 }
 
 export type PaymentTermWhereUniqueInput = Prisma.AtLeast<{
-  id?: string
+  id?: number
   AND?: Prisma.PaymentTermWhereInput | Prisma.PaymentTermWhereInput[]
   OR?: Prisma.PaymentTermWhereInput[]
   NOT?: Prisma.PaymentTermWhereInput | Prisma.PaymentTermWhereInput[]
@@ -304,7 +312,7 @@ export type PaymentTermWhereUniqueInput = Prisma.AtLeast<{
   isActive?: Prisma.BoolFilter<"PaymentTerm"> | boolean
   createdAt?: Prisma.DateTimeFilter<"PaymentTerm"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"PaymentTerm"> | Date | string
-  tenantId?: Prisma.StringNullableFilter<"PaymentTerm"> | string | null
+  tenantId?: Prisma.IntNullableFilter<"PaymentTerm"> | number | null
   customers?: Prisma.CustomerListRelationFilter
   suppliers?: Prisma.SupplierListRelationFilter
   salesOrders?: Prisma.SalesOrderListRelationFilter
@@ -335,7 +343,7 @@ export type PaymentTermScalarWhereWithAggregatesInput = {
   AND?: Prisma.PaymentTermScalarWhereWithAggregatesInput | Prisma.PaymentTermScalarWhereWithAggregatesInput[]
   OR?: Prisma.PaymentTermScalarWhereWithAggregatesInput[]
   NOT?: Prisma.PaymentTermScalarWhereWithAggregatesInput | Prisma.PaymentTermScalarWhereWithAggregatesInput[]
-  id?: Prisma.StringWithAggregatesFilter<"PaymentTerm"> | string
+  id?: Prisma.IntWithAggregatesFilter<"PaymentTerm"> | number
   name?: Prisma.StringWithAggregatesFilter<"PaymentTerm"> | string
   description?: Prisma.StringNullableWithAggregatesFilter<"PaymentTerm"> | string | null
   dueDays?: Prisma.IntWithAggregatesFilter<"PaymentTerm"> | number
@@ -344,11 +352,10 @@ export type PaymentTermScalarWhereWithAggregatesInput = {
   isActive?: Prisma.BoolWithAggregatesFilter<"PaymentTerm"> | boolean
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"PaymentTerm"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"PaymentTerm"> | Date | string
-  tenantId?: Prisma.StringNullableWithAggregatesFilter<"PaymentTerm"> | string | null
+  tenantId?: Prisma.IntNullableWithAggregatesFilter<"PaymentTerm"> | number | null
 }
 
 export type PaymentTermCreateInput = {
-  id?: string
   name: string
   description?: string | null
   dueDays: number
@@ -366,7 +373,7 @@ export type PaymentTermCreateInput = {
 }
 
 export type PaymentTermUncheckedCreateInput = {
-  id?: string
+  id?: number
   name: string
   description?: string | null
   dueDays: number
@@ -375,7 +382,7 @@ export type PaymentTermUncheckedCreateInput = {
   isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
-  tenantId?: string | null
+  tenantId?: number | null
   customers?: Prisma.CustomerUncheckedCreateNestedManyWithoutPaymentTermInput
   suppliers?: Prisma.SupplierUncheckedCreateNestedManyWithoutPaymentTermInput
   salesOrders?: Prisma.SalesOrderUncheckedCreateNestedManyWithoutPaymentTermInput
@@ -384,7 +391,6 @@ export type PaymentTermUncheckedCreateInput = {
 }
 
 export type PaymentTermUpdateInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dueDays?: Prisma.IntFieldUpdateOperationsInput | number
@@ -402,7 +408,7 @@ export type PaymentTermUpdateInput = {
 }
 
 export type PaymentTermUncheckedUpdateInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   name?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dueDays?: Prisma.IntFieldUpdateOperationsInput | number
@@ -411,7 +417,7 @@ export type PaymentTermUncheckedUpdateInput = {
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  tenantId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tenantId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   customers?: Prisma.CustomerUncheckedUpdateManyWithoutPaymentTermNestedInput
   suppliers?: Prisma.SupplierUncheckedUpdateManyWithoutPaymentTermNestedInput
   salesOrders?: Prisma.SalesOrderUncheckedUpdateManyWithoutPaymentTermNestedInput
@@ -420,7 +426,7 @@ export type PaymentTermUncheckedUpdateInput = {
 }
 
 export type PaymentTermCreateManyInput = {
-  id?: string
+  id?: number
   name: string
   description?: string | null
   dueDays: number
@@ -429,11 +435,10 @@ export type PaymentTermCreateManyInput = {
   isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
-  tenantId?: string | null
+  tenantId?: number | null
 }
 
 export type PaymentTermUpdateManyMutationInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dueDays?: Prisma.IntFieldUpdateOperationsInput | number
@@ -445,7 +450,7 @@ export type PaymentTermUpdateManyMutationInput = {
 }
 
 export type PaymentTermUncheckedUpdateManyInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   name?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dueDays?: Prisma.IntFieldUpdateOperationsInput | number
@@ -454,7 +459,7 @@ export type PaymentTermUncheckedUpdateManyInput = {
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  tenantId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tenantId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
 }
 
 export type PaymentTermListRelationFilter = {
@@ -486,9 +491,11 @@ export type PaymentTermCountOrderByAggregateInput = {
 }
 
 export type PaymentTermAvgOrderByAggregateInput = {
+  id?: Prisma.SortOrder
   dueDays?: Prisma.SortOrder
   discountPercent?: Prisma.SortOrder
   discountDays?: Prisma.SortOrder
+  tenantId?: Prisma.SortOrder
 }
 
 export type PaymentTermMaxOrderByAggregateInput = {
@@ -518,9 +525,11 @@ export type PaymentTermMinOrderByAggregateInput = {
 }
 
 export type PaymentTermSumOrderByAggregateInput = {
+  id?: Prisma.SortOrder
   dueDays?: Prisma.SortOrder
   discountPercent?: Prisma.SortOrder
   discountDays?: Prisma.SortOrder
+  tenantId?: Prisma.SortOrder
 }
 
 export type PaymentTermCreateNestedManyWithoutTenantInput = {
@@ -646,7 +655,6 @@ export type PaymentTermUpdateOneWithoutInvoicesNestedInput = {
 }
 
 export type PaymentTermCreateWithoutTenantInput = {
-  id?: string
   name: string
   description?: string | null
   dueDays: number
@@ -663,7 +671,7 @@ export type PaymentTermCreateWithoutTenantInput = {
 }
 
 export type PaymentTermUncheckedCreateWithoutTenantInput = {
-  id?: string
+  id?: number
   name: string
   description?: string | null
   dueDays: number
@@ -709,7 +717,7 @@ export type PaymentTermScalarWhereInput = {
   AND?: Prisma.PaymentTermScalarWhereInput | Prisma.PaymentTermScalarWhereInput[]
   OR?: Prisma.PaymentTermScalarWhereInput[]
   NOT?: Prisma.PaymentTermScalarWhereInput | Prisma.PaymentTermScalarWhereInput[]
-  id?: Prisma.StringFilter<"PaymentTerm"> | string
+  id?: Prisma.IntFilter<"PaymentTerm"> | number
   name?: Prisma.StringFilter<"PaymentTerm"> | string
   description?: Prisma.StringNullableFilter<"PaymentTerm"> | string | null
   dueDays?: Prisma.IntFilter<"PaymentTerm"> | number
@@ -718,11 +726,10 @@ export type PaymentTermScalarWhereInput = {
   isActive?: Prisma.BoolFilter<"PaymentTerm"> | boolean
   createdAt?: Prisma.DateTimeFilter<"PaymentTerm"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"PaymentTerm"> | Date | string
-  tenantId?: Prisma.StringNullableFilter<"PaymentTerm"> | string | null
+  tenantId?: Prisma.IntNullableFilter<"PaymentTerm"> | number | null
 }
 
 export type PaymentTermCreateWithoutCustomersInput = {
-  id?: string
   name: string
   description?: string | null
   dueDays: number
@@ -739,7 +746,7 @@ export type PaymentTermCreateWithoutCustomersInput = {
 }
 
 export type PaymentTermUncheckedCreateWithoutCustomersInput = {
-  id?: string
+  id?: number
   name: string
   description?: string | null
   dueDays: number
@@ -748,7 +755,7 @@ export type PaymentTermUncheckedCreateWithoutCustomersInput = {
   isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
-  tenantId?: string | null
+  tenantId?: number | null
   suppliers?: Prisma.SupplierUncheckedCreateNestedManyWithoutPaymentTermInput
   salesOrders?: Prisma.SalesOrderUncheckedCreateNestedManyWithoutPaymentTermInput
   purchaseOrders?: Prisma.PurchaseOrderUncheckedCreateNestedManyWithoutPaymentTermInput
@@ -772,7 +779,6 @@ export type PaymentTermUpdateToOneWithWhereWithoutCustomersInput = {
 }
 
 export type PaymentTermUpdateWithoutCustomersInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dueDays?: Prisma.IntFieldUpdateOperationsInput | number
@@ -789,7 +795,7 @@ export type PaymentTermUpdateWithoutCustomersInput = {
 }
 
 export type PaymentTermUncheckedUpdateWithoutCustomersInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   name?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dueDays?: Prisma.IntFieldUpdateOperationsInput | number
@@ -798,7 +804,7 @@ export type PaymentTermUncheckedUpdateWithoutCustomersInput = {
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  tenantId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tenantId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   suppliers?: Prisma.SupplierUncheckedUpdateManyWithoutPaymentTermNestedInput
   salesOrders?: Prisma.SalesOrderUncheckedUpdateManyWithoutPaymentTermNestedInput
   purchaseOrders?: Prisma.PurchaseOrderUncheckedUpdateManyWithoutPaymentTermNestedInput
@@ -806,7 +812,6 @@ export type PaymentTermUncheckedUpdateWithoutCustomersInput = {
 }
 
 export type PaymentTermCreateWithoutSalesOrdersInput = {
-  id?: string
   name: string
   description?: string | null
   dueDays: number
@@ -823,7 +828,7 @@ export type PaymentTermCreateWithoutSalesOrdersInput = {
 }
 
 export type PaymentTermUncheckedCreateWithoutSalesOrdersInput = {
-  id?: string
+  id?: number
   name: string
   description?: string | null
   dueDays: number
@@ -832,7 +837,7 @@ export type PaymentTermUncheckedCreateWithoutSalesOrdersInput = {
   isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
-  tenantId?: string | null
+  tenantId?: number | null
   customers?: Prisma.CustomerUncheckedCreateNestedManyWithoutPaymentTermInput
   suppliers?: Prisma.SupplierUncheckedCreateNestedManyWithoutPaymentTermInput
   purchaseOrders?: Prisma.PurchaseOrderUncheckedCreateNestedManyWithoutPaymentTermInput
@@ -856,7 +861,6 @@ export type PaymentTermUpdateToOneWithWhereWithoutSalesOrdersInput = {
 }
 
 export type PaymentTermUpdateWithoutSalesOrdersInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dueDays?: Prisma.IntFieldUpdateOperationsInput | number
@@ -873,7 +877,7 @@ export type PaymentTermUpdateWithoutSalesOrdersInput = {
 }
 
 export type PaymentTermUncheckedUpdateWithoutSalesOrdersInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   name?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dueDays?: Prisma.IntFieldUpdateOperationsInput | number
@@ -882,7 +886,7 @@ export type PaymentTermUncheckedUpdateWithoutSalesOrdersInput = {
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  tenantId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tenantId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   customers?: Prisma.CustomerUncheckedUpdateManyWithoutPaymentTermNestedInput
   suppliers?: Prisma.SupplierUncheckedUpdateManyWithoutPaymentTermNestedInput
   purchaseOrders?: Prisma.PurchaseOrderUncheckedUpdateManyWithoutPaymentTermNestedInput
@@ -890,7 +894,6 @@ export type PaymentTermUncheckedUpdateWithoutSalesOrdersInput = {
 }
 
 export type PaymentTermCreateWithoutSuppliersInput = {
-  id?: string
   name: string
   description?: string | null
   dueDays: number
@@ -907,7 +910,7 @@ export type PaymentTermCreateWithoutSuppliersInput = {
 }
 
 export type PaymentTermUncheckedCreateWithoutSuppliersInput = {
-  id?: string
+  id?: number
   name: string
   description?: string | null
   dueDays: number
@@ -916,7 +919,7 @@ export type PaymentTermUncheckedCreateWithoutSuppliersInput = {
   isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
-  tenantId?: string | null
+  tenantId?: number | null
   customers?: Prisma.CustomerUncheckedCreateNestedManyWithoutPaymentTermInput
   salesOrders?: Prisma.SalesOrderUncheckedCreateNestedManyWithoutPaymentTermInput
   purchaseOrders?: Prisma.PurchaseOrderUncheckedCreateNestedManyWithoutPaymentTermInput
@@ -940,7 +943,6 @@ export type PaymentTermUpdateToOneWithWhereWithoutSuppliersInput = {
 }
 
 export type PaymentTermUpdateWithoutSuppliersInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dueDays?: Prisma.IntFieldUpdateOperationsInput | number
@@ -957,7 +959,7 @@ export type PaymentTermUpdateWithoutSuppliersInput = {
 }
 
 export type PaymentTermUncheckedUpdateWithoutSuppliersInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   name?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dueDays?: Prisma.IntFieldUpdateOperationsInput | number
@@ -966,7 +968,7 @@ export type PaymentTermUncheckedUpdateWithoutSuppliersInput = {
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  tenantId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tenantId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   customers?: Prisma.CustomerUncheckedUpdateManyWithoutPaymentTermNestedInput
   salesOrders?: Prisma.SalesOrderUncheckedUpdateManyWithoutPaymentTermNestedInput
   purchaseOrders?: Prisma.PurchaseOrderUncheckedUpdateManyWithoutPaymentTermNestedInput
@@ -974,7 +976,6 @@ export type PaymentTermUncheckedUpdateWithoutSuppliersInput = {
 }
 
 export type PaymentTermCreateWithoutPurchaseOrdersInput = {
-  id?: string
   name: string
   description?: string | null
   dueDays: number
@@ -991,7 +992,7 @@ export type PaymentTermCreateWithoutPurchaseOrdersInput = {
 }
 
 export type PaymentTermUncheckedCreateWithoutPurchaseOrdersInput = {
-  id?: string
+  id?: number
   name: string
   description?: string | null
   dueDays: number
@@ -1000,7 +1001,7 @@ export type PaymentTermUncheckedCreateWithoutPurchaseOrdersInput = {
   isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
-  tenantId?: string | null
+  tenantId?: number | null
   customers?: Prisma.CustomerUncheckedCreateNestedManyWithoutPaymentTermInput
   suppliers?: Prisma.SupplierUncheckedCreateNestedManyWithoutPaymentTermInput
   salesOrders?: Prisma.SalesOrderUncheckedCreateNestedManyWithoutPaymentTermInput
@@ -1024,7 +1025,6 @@ export type PaymentTermUpdateToOneWithWhereWithoutPurchaseOrdersInput = {
 }
 
 export type PaymentTermUpdateWithoutPurchaseOrdersInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dueDays?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1041,7 +1041,7 @@ export type PaymentTermUpdateWithoutPurchaseOrdersInput = {
 }
 
 export type PaymentTermUncheckedUpdateWithoutPurchaseOrdersInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   name?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dueDays?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1050,7 +1050,7 @@ export type PaymentTermUncheckedUpdateWithoutPurchaseOrdersInput = {
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  tenantId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tenantId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   customers?: Prisma.CustomerUncheckedUpdateManyWithoutPaymentTermNestedInput
   suppliers?: Prisma.SupplierUncheckedUpdateManyWithoutPaymentTermNestedInput
   salesOrders?: Prisma.SalesOrderUncheckedUpdateManyWithoutPaymentTermNestedInput
@@ -1058,7 +1058,6 @@ export type PaymentTermUncheckedUpdateWithoutPurchaseOrdersInput = {
 }
 
 export type PaymentTermCreateWithoutInvoicesInput = {
-  id?: string
   name: string
   description?: string | null
   dueDays: number
@@ -1075,7 +1074,7 @@ export type PaymentTermCreateWithoutInvoicesInput = {
 }
 
 export type PaymentTermUncheckedCreateWithoutInvoicesInput = {
-  id?: string
+  id?: number
   name: string
   description?: string | null
   dueDays: number
@@ -1084,7 +1083,7 @@ export type PaymentTermUncheckedCreateWithoutInvoicesInput = {
   isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
-  tenantId?: string | null
+  tenantId?: number | null
   customers?: Prisma.CustomerUncheckedCreateNestedManyWithoutPaymentTermInput
   suppliers?: Prisma.SupplierUncheckedCreateNestedManyWithoutPaymentTermInput
   salesOrders?: Prisma.SalesOrderUncheckedCreateNestedManyWithoutPaymentTermInput
@@ -1108,7 +1107,6 @@ export type PaymentTermUpdateToOneWithWhereWithoutInvoicesInput = {
 }
 
 export type PaymentTermUpdateWithoutInvoicesInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dueDays?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1125,7 +1123,7 @@ export type PaymentTermUpdateWithoutInvoicesInput = {
 }
 
 export type PaymentTermUncheckedUpdateWithoutInvoicesInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   name?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dueDays?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1134,7 +1132,7 @@ export type PaymentTermUncheckedUpdateWithoutInvoicesInput = {
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  tenantId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tenantId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   customers?: Prisma.CustomerUncheckedUpdateManyWithoutPaymentTermNestedInput
   suppliers?: Prisma.SupplierUncheckedUpdateManyWithoutPaymentTermNestedInput
   salesOrders?: Prisma.SalesOrderUncheckedUpdateManyWithoutPaymentTermNestedInput
@@ -1142,7 +1140,7 @@ export type PaymentTermUncheckedUpdateWithoutInvoicesInput = {
 }
 
 export type PaymentTermCreateManyTenantInput = {
-  id?: string
+  id?: number
   name: string
   description?: string | null
   dueDays: number
@@ -1154,7 +1152,6 @@ export type PaymentTermCreateManyTenantInput = {
 }
 
 export type PaymentTermUpdateWithoutTenantInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dueDays?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1171,7 +1168,7 @@ export type PaymentTermUpdateWithoutTenantInput = {
 }
 
 export type PaymentTermUncheckedUpdateWithoutTenantInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   name?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dueDays?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1188,7 +1185,7 @@ export type PaymentTermUncheckedUpdateWithoutTenantInput = {
 }
 
 export type PaymentTermUncheckedUpdateManyWithoutTenantInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   name?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   dueDays?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1355,7 +1352,7 @@ export type $PaymentTermPayload<ExtArgs extends runtime.Types.Extensions.Interna
     tenant: Prisma.$TenantPayload<ExtArgs> | null
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
-    id: string
+    id: number
     name: string
     description: string | null
     dueDays: number
@@ -1364,7 +1361,7 @@ export type $PaymentTermPayload<ExtArgs extends runtime.Types.Extensions.Interna
     isActive: boolean
     createdAt: Date
     updatedAt: Date
-    tenantId: string | null
+    tenantId: number | null
   }, ExtArgs["result"]["paymentTerm"]>
   composites: {}
 }
@@ -1794,7 +1791,7 @@ export interface Prisma__PaymentTermClient<T, Null = never, ExtArgs extends runt
  * Fields of the PaymentTerm model
  */
 export interface PaymentTermFieldRefs {
-  readonly id: Prisma.FieldRef<"PaymentTerm", 'String'>
+  readonly id: Prisma.FieldRef<"PaymentTerm", 'Int'>
   readonly name: Prisma.FieldRef<"PaymentTerm", 'String'>
   readonly description: Prisma.FieldRef<"PaymentTerm", 'String'>
   readonly dueDays: Prisma.FieldRef<"PaymentTerm", 'Int'>
@@ -1803,7 +1800,7 @@ export interface PaymentTermFieldRefs {
   readonly isActive: Prisma.FieldRef<"PaymentTerm", 'Boolean'>
   readonly createdAt: Prisma.FieldRef<"PaymentTerm", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"PaymentTerm", 'DateTime'>
-  readonly tenantId: Prisma.FieldRef<"PaymentTerm", 'String'>
+  readonly tenantId: Prisma.FieldRef<"PaymentTerm", 'Int'>
 }
     
 

@@ -27,43 +27,49 @@ export type AggregateStockAdjustmentItem = {
 }
 
 export type StockAdjustmentItemAvgAggregateOutputType = {
+  id: number | null
+  warehouseId: number | null
   systemQuantity: runtime.Decimal | null
   physicalQuantity: runtime.Decimal | null
   difference: runtime.Decimal | null
   unitCost: runtime.Decimal | null
   totalValue: runtime.Decimal | null
+  adjustmentId: number | null
 }
 
 export type StockAdjustmentItemSumAggregateOutputType = {
+  id: number | null
+  warehouseId: number | null
   systemQuantity: runtime.Decimal | null
   physicalQuantity: runtime.Decimal | null
   difference: runtime.Decimal | null
   unitCost: runtime.Decimal | null
   totalValue: runtime.Decimal | null
+  adjustmentId: number | null
 }
 
 export type StockAdjustmentItemMinAggregateOutputType = {
-  id: string | null
+  id: number | null
   productId: string | null
-  warehouseId: string | null
+  warehouseId: number | null
   systemQuantity: runtime.Decimal | null
   physicalQuantity: runtime.Decimal | null
   difference: runtime.Decimal | null
   unitCost: runtime.Decimal | null
   totalValue: runtime.Decimal | null
-  adjustmentId: string | null
+  adjustmentId: number | null
 }
 
 export type StockAdjustmentItemMaxAggregateOutputType = {
-  id: string | null
+  id: number | null
   productId: string | null
-  warehouseId: string | null
+  warehouseId: number | null
   systemQuantity: runtime.Decimal | null
   physicalQuantity: runtime.Decimal | null
   difference: runtime.Decimal | null
   unitCost: runtime.Decimal | null
   totalValue: runtime.Decimal | null
-  adjustmentId: string | null
+  adjustmentId: number | null
 }
 
 export type StockAdjustmentItemCountAggregateOutputType = {
@@ -81,19 +87,25 @@ export type StockAdjustmentItemCountAggregateOutputType = {
 
 
 export type StockAdjustmentItemAvgAggregateInputType = {
+  id?: true
+  warehouseId?: true
   systemQuantity?: true
   physicalQuantity?: true
   difference?: true
   unitCost?: true
   totalValue?: true
+  adjustmentId?: true
 }
 
 export type StockAdjustmentItemSumAggregateInputType = {
+  id?: true
+  warehouseId?: true
   systemQuantity?: true
   physicalQuantity?: true
   difference?: true
   unitCost?: true
   totalValue?: true
+  adjustmentId?: true
 }
 
 export type StockAdjustmentItemMinAggregateInputType = {
@@ -220,15 +232,15 @@ export type StockAdjustmentItemGroupByArgs<ExtArgs extends runtime.Types.Extensi
 }
 
 export type StockAdjustmentItemGroupByOutputType = {
-  id: string
+  id: number
   productId: string
-  warehouseId: string
+  warehouseId: number
   systemQuantity: runtime.Decimal
   physicalQuantity: runtime.Decimal
   difference: runtime.Decimal
   unitCost: runtime.Decimal
   totalValue: runtime.Decimal
-  adjustmentId: string
+  adjustmentId: number
   _count: StockAdjustmentItemCountAggregateOutputType | null
   _avg: StockAdjustmentItemAvgAggregateOutputType | null
   _sum: StockAdjustmentItemSumAggregateOutputType | null
@@ -255,15 +267,15 @@ export type StockAdjustmentItemWhereInput = {
   AND?: Prisma.StockAdjustmentItemWhereInput | Prisma.StockAdjustmentItemWhereInput[]
   OR?: Prisma.StockAdjustmentItemWhereInput[]
   NOT?: Prisma.StockAdjustmentItemWhereInput | Prisma.StockAdjustmentItemWhereInput[]
-  id?: Prisma.StringFilter<"StockAdjustmentItem"> | string
+  id?: Prisma.IntFilter<"StockAdjustmentItem"> | number
   productId?: Prisma.StringFilter<"StockAdjustmentItem"> | string
-  warehouseId?: Prisma.StringFilter<"StockAdjustmentItem"> | string
+  warehouseId?: Prisma.IntFilter<"StockAdjustmentItem"> | number
   systemQuantity?: Prisma.DecimalFilter<"StockAdjustmentItem"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   physicalQuantity?: Prisma.DecimalFilter<"StockAdjustmentItem"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   difference?: Prisma.DecimalFilter<"StockAdjustmentItem"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   unitCost?: Prisma.DecimalFilter<"StockAdjustmentItem"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   totalValue?: Prisma.DecimalFilter<"StockAdjustmentItem"> | runtime.Decimal | runtime.DecimalJsLike | number | string
-  adjustmentId?: Prisma.StringFilter<"StockAdjustmentItem"> | string
+  adjustmentId?: Prisma.IntFilter<"StockAdjustmentItem"> | number
   adjustment?: Prisma.XOR<Prisma.StockAdjustmentScalarRelationFilter, Prisma.StockAdjustmentWhereInput>
 }
 
@@ -281,18 +293,18 @@ export type StockAdjustmentItemOrderByWithRelationInput = {
 }
 
 export type StockAdjustmentItemWhereUniqueInput = Prisma.AtLeast<{
-  id?: string
+  id?: number
   AND?: Prisma.StockAdjustmentItemWhereInput | Prisma.StockAdjustmentItemWhereInput[]
   OR?: Prisma.StockAdjustmentItemWhereInput[]
   NOT?: Prisma.StockAdjustmentItemWhereInput | Prisma.StockAdjustmentItemWhereInput[]
   productId?: Prisma.StringFilter<"StockAdjustmentItem"> | string
-  warehouseId?: Prisma.StringFilter<"StockAdjustmentItem"> | string
+  warehouseId?: Prisma.IntFilter<"StockAdjustmentItem"> | number
   systemQuantity?: Prisma.DecimalFilter<"StockAdjustmentItem"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   physicalQuantity?: Prisma.DecimalFilter<"StockAdjustmentItem"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   difference?: Prisma.DecimalFilter<"StockAdjustmentItem"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   unitCost?: Prisma.DecimalFilter<"StockAdjustmentItem"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   totalValue?: Prisma.DecimalFilter<"StockAdjustmentItem"> | runtime.Decimal | runtime.DecimalJsLike | number | string
-  adjustmentId?: Prisma.StringFilter<"StockAdjustmentItem"> | string
+  adjustmentId?: Prisma.IntFilter<"StockAdjustmentItem"> | number
   adjustment?: Prisma.XOR<Prisma.StockAdjustmentScalarRelationFilter, Prisma.StockAdjustmentWhereInput>
 }, "id">
 
@@ -317,21 +329,20 @@ export type StockAdjustmentItemScalarWhereWithAggregatesInput = {
   AND?: Prisma.StockAdjustmentItemScalarWhereWithAggregatesInput | Prisma.StockAdjustmentItemScalarWhereWithAggregatesInput[]
   OR?: Prisma.StockAdjustmentItemScalarWhereWithAggregatesInput[]
   NOT?: Prisma.StockAdjustmentItemScalarWhereWithAggregatesInput | Prisma.StockAdjustmentItemScalarWhereWithAggregatesInput[]
-  id?: Prisma.StringWithAggregatesFilter<"StockAdjustmentItem"> | string
+  id?: Prisma.IntWithAggregatesFilter<"StockAdjustmentItem"> | number
   productId?: Prisma.StringWithAggregatesFilter<"StockAdjustmentItem"> | string
-  warehouseId?: Prisma.StringWithAggregatesFilter<"StockAdjustmentItem"> | string
+  warehouseId?: Prisma.IntWithAggregatesFilter<"StockAdjustmentItem"> | number
   systemQuantity?: Prisma.DecimalWithAggregatesFilter<"StockAdjustmentItem"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   physicalQuantity?: Prisma.DecimalWithAggregatesFilter<"StockAdjustmentItem"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   difference?: Prisma.DecimalWithAggregatesFilter<"StockAdjustmentItem"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   unitCost?: Prisma.DecimalWithAggregatesFilter<"StockAdjustmentItem"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   totalValue?: Prisma.DecimalWithAggregatesFilter<"StockAdjustmentItem"> | runtime.Decimal | runtime.DecimalJsLike | number | string
-  adjustmentId?: Prisma.StringWithAggregatesFilter<"StockAdjustmentItem"> | string
+  adjustmentId?: Prisma.IntWithAggregatesFilter<"StockAdjustmentItem"> | number
 }
 
 export type StockAdjustmentItemCreateInput = {
-  id?: string
   productId: string
-  warehouseId: string
+  warehouseId: number
   systemQuantity: runtime.Decimal | runtime.DecimalJsLike | number | string
   physicalQuantity: runtime.Decimal | runtime.DecimalJsLike | number | string
   difference: runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -341,21 +352,20 @@ export type StockAdjustmentItemCreateInput = {
 }
 
 export type StockAdjustmentItemUncheckedCreateInput = {
-  id?: string
+  id?: number
   productId: string
-  warehouseId: string
+  warehouseId: number
   systemQuantity: runtime.Decimal | runtime.DecimalJsLike | number | string
   physicalQuantity: runtime.Decimal | runtime.DecimalJsLike | number | string
   difference: runtime.Decimal | runtime.DecimalJsLike | number | string
   unitCost: runtime.Decimal | runtime.DecimalJsLike | number | string
   totalValue: runtime.Decimal | runtime.DecimalJsLike | number | string
-  adjustmentId: string
+  adjustmentId: number
 }
 
 export type StockAdjustmentItemUpdateInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   productId?: Prisma.StringFieldUpdateOperationsInput | string
-  warehouseId?: Prisma.StringFieldUpdateOperationsInput | string
+  warehouseId?: Prisma.IntFieldUpdateOperationsInput | number
   systemQuantity?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   physicalQuantity?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   difference?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -365,33 +375,32 @@ export type StockAdjustmentItemUpdateInput = {
 }
 
 export type StockAdjustmentItemUncheckedUpdateInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   productId?: Prisma.StringFieldUpdateOperationsInput | string
-  warehouseId?: Prisma.StringFieldUpdateOperationsInput | string
+  warehouseId?: Prisma.IntFieldUpdateOperationsInput | number
   systemQuantity?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   physicalQuantity?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   difference?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   unitCost?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   totalValue?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  adjustmentId?: Prisma.StringFieldUpdateOperationsInput | string
+  adjustmentId?: Prisma.IntFieldUpdateOperationsInput | number
 }
 
 export type StockAdjustmentItemCreateManyInput = {
-  id?: string
+  id?: number
   productId: string
-  warehouseId: string
+  warehouseId: number
   systemQuantity: runtime.Decimal | runtime.DecimalJsLike | number | string
   physicalQuantity: runtime.Decimal | runtime.DecimalJsLike | number | string
   difference: runtime.Decimal | runtime.DecimalJsLike | number | string
   unitCost: runtime.Decimal | runtime.DecimalJsLike | number | string
   totalValue: runtime.Decimal | runtime.DecimalJsLike | number | string
-  adjustmentId: string
+  adjustmentId: number
 }
 
 export type StockAdjustmentItemUpdateManyMutationInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   productId?: Prisma.StringFieldUpdateOperationsInput | string
-  warehouseId?: Prisma.StringFieldUpdateOperationsInput | string
+  warehouseId?: Prisma.IntFieldUpdateOperationsInput | number
   systemQuantity?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   physicalQuantity?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   difference?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -400,15 +409,15 @@ export type StockAdjustmentItemUpdateManyMutationInput = {
 }
 
 export type StockAdjustmentItemUncheckedUpdateManyInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   productId?: Prisma.StringFieldUpdateOperationsInput | string
-  warehouseId?: Prisma.StringFieldUpdateOperationsInput | string
+  warehouseId?: Prisma.IntFieldUpdateOperationsInput | number
   systemQuantity?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   physicalQuantity?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   difference?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   unitCost?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   totalValue?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  adjustmentId?: Prisma.StringFieldUpdateOperationsInput | string
+  adjustmentId?: Prisma.IntFieldUpdateOperationsInput | number
 }
 
 export type StockAdjustmentItemListRelationFilter = {
@@ -434,11 +443,14 @@ export type StockAdjustmentItemCountOrderByAggregateInput = {
 }
 
 export type StockAdjustmentItemAvgOrderByAggregateInput = {
+  id?: Prisma.SortOrder
+  warehouseId?: Prisma.SortOrder
   systemQuantity?: Prisma.SortOrder
   physicalQuantity?: Prisma.SortOrder
   difference?: Prisma.SortOrder
   unitCost?: Prisma.SortOrder
   totalValue?: Prisma.SortOrder
+  adjustmentId?: Prisma.SortOrder
 }
 
 export type StockAdjustmentItemMaxOrderByAggregateInput = {
@@ -466,11 +478,14 @@ export type StockAdjustmentItemMinOrderByAggregateInput = {
 }
 
 export type StockAdjustmentItemSumOrderByAggregateInput = {
+  id?: Prisma.SortOrder
+  warehouseId?: Prisma.SortOrder
   systemQuantity?: Prisma.SortOrder
   physicalQuantity?: Prisma.SortOrder
   difference?: Prisma.SortOrder
   unitCost?: Prisma.SortOrder
   totalValue?: Prisma.SortOrder
+  adjustmentId?: Prisma.SortOrder
 }
 
 export type StockAdjustmentItemCreateNestedManyWithoutAdjustmentInput = {
@@ -516,9 +531,8 @@ export type StockAdjustmentItemUncheckedUpdateManyWithoutAdjustmentNestedInput =
 }
 
 export type StockAdjustmentItemCreateWithoutAdjustmentInput = {
-  id?: string
   productId: string
-  warehouseId: string
+  warehouseId: number
   systemQuantity: runtime.Decimal | runtime.DecimalJsLike | number | string
   physicalQuantity: runtime.Decimal | runtime.DecimalJsLike | number | string
   difference: runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -527,9 +541,9 @@ export type StockAdjustmentItemCreateWithoutAdjustmentInput = {
 }
 
 export type StockAdjustmentItemUncheckedCreateWithoutAdjustmentInput = {
-  id?: string
+  id?: number
   productId: string
-  warehouseId: string
+  warehouseId: number
   systemQuantity: runtime.Decimal | runtime.DecimalJsLike | number | string
   physicalQuantity: runtime.Decimal | runtime.DecimalJsLike | number | string
   difference: runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -567,21 +581,21 @@ export type StockAdjustmentItemScalarWhereInput = {
   AND?: Prisma.StockAdjustmentItemScalarWhereInput | Prisma.StockAdjustmentItemScalarWhereInput[]
   OR?: Prisma.StockAdjustmentItemScalarWhereInput[]
   NOT?: Prisma.StockAdjustmentItemScalarWhereInput | Prisma.StockAdjustmentItemScalarWhereInput[]
-  id?: Prisma.StringFilter<"StockAdjustmentItem"> | string
+  id?: Prisma.IntFilter<"StockAdjustmentItem"> | number
   productId?: Prisma.StringFilter<"StockAdjustmentItem"> | string
-  warehouseId?: Prisma.StringFilter<"StockAdjustmentItem"> | string
+  warehouseId?: Prisma.IntFilter<"StockAdjustmentItem"> | number
   systemQuantity?: Prisma.DecimalFilter<"StockAdjustmentItem"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   physicalQuantity?: Prisma.DecimalFilter<"StockAdjustmentItem"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   difference?: Prisma.DecimalFilter<"StockAdjustmentItem"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   unitCost?: Prisma.DecimalFilter<"StockAdjustmentItem"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   totalValue?: Prisma.DecimalFilter<"StockAdjustmentItem"> | runtime.Decimal | runtime.DecimalJsLike | number | string
-  adjustmentId?: Prisma.StringFilter<"StockAdjustmentItem"> | string
+  adjustmentId?: Prisma.IntFilter<"StockAdjustmentItem"> | number
 }
 
 export type StockAdjustmentItemCreateManyAdjustmentInput = {
-  id?: string
+  id?: number
   productId: string
-  warehouseId: string
+  warehouseId: number
   systemQuantity: runtime.Decimal | runtime.DecimalJsLike | number | string
   physicalQuantity: runtime.Decimal | runtime.DecimalJsLike | number | string
   difference: runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -590,9 +604,8 @@ export type StockAdjustmentItemCreateManyAdjustmentInput = {
 }
 
 export type StockAdjustmentItemUpdateWithoutAdjustmentInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   productId?: Prisma.StringFieldUpdateOperationsInput | string
-  warehouseId?: Prisma.StringFieldUpdateOperationsInput | string
+  warehouseId?: Prisma.IntFieldUpdateOperationsInput | number
   systemQuantity?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   physicalQuantity?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   difference?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -601,9 +614,9 @@ export type StockAdjustmentItemUpdateWithoutAdjustmentInput = {
 }
 
 export type StockAdjustmentItemUncheckedUpdateWithoutAdjustmentInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   productId?: Prisma.StringFieldUpdateOperationsInput | string
-  warehouseId?: Prisma.StringFieldUpdateOperationsInput | string
+  warehouseId?: Prisma.IntFieldUpdateOperationsInput | number
   systemQuantity?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   physicalQuantity?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   difference?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -612,9 +625,9 @@ export type StockAdjustmentItemUncheckedUpdateWithoutAdjustmentInput = {
 }
 
 export type StockAdjustmentItemUncheckedUpdateManyWithoutAdjustmentInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   productId?: Prisma.StringFieldUpdateOperationsInput | string
-  warehouseId?: Prisma.StringFieldUpdateOperationsInput | string
+  warehouseId?: Prisma.IntFieldUpdateOperationsInput | number
   systemQuantity?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   physicalQuantity?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   difference?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -692,15 +705,15 @@ export type $StockAdjustmentItemPayload<ExtArgs extends runtime.Types.Extensions
     adjustment: Prisma.$StockAdjustmentPayload<ExtArgs>
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
-    id: string
+    id: number
     productId: string
-    warehouseId: string
+    warehouseId: number
     systemQuantity: runtime.Decimal
     physicalQuantity: runtime.Decimal
     difference: runtime.Decimal
     unitCost: runtime.Decimal
     totalValue: runtime.Decimal
-    adjustmentId: string
+    adjustmentId: number
   }, ExtArgs["result"]["stockAdjustmentItem"]>
   composites: {}
 }
@@ -1125,15 +1138,15 @@ export interface Prisma__StockAdjustmentItemClient<T, Null = never, ExtArgs exte
  * Fields of the StockAdjustmentItem model
  */
 export interface StockAdjustmentItemFieldRefs {
-  readonly id: Prisma.FieldRef<"StockAdjustmentItem", 'String'>
+  readonly id: Prisma.FieldRef<"StockAdjustmentItem", 'Int'>
   readonly productId: Prisma.FieldRef<"StockAdjustmentItem", 'String'>
-  readonly warehouseId: Prisma.FieldRef<"StockAdjustmentItem", 'String'>
+  readonly warehouseId: Prisma.FieldRef<"StockAdjustmentItem", 'Int'>
   readonly systemQuantity: Prisma.FieldRef<"StockAdjustmentItem", 'Decimal'>
   readonly physicalQuantity: Prisma.FieldRef<"StockAdjustmentItem", 'Decimal'>
   readonly difference: Prisma.FieldRef<"StockAdjustmentItem", 'Decimal'>
   readonly unitCost: Prisma.FieldRef<"StockAdjustmentItem", 'Decimal'>
   readonly totalValue: Prisma.FieldRef<"StockAdjustmentItem", 'Decimal'>
-  readonly adjustmentId: Prisma.FieldRef<"StockAdjustmentItem", 'String'>
+  readonly adjustmentId: Prisma.FieldRef<"StockAdjustmentItem", 'Int'>
 }
     
 

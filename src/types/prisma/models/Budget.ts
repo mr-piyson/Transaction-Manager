@@ -27,17 +27,23 @@ export type AggregateBudget = {
 }
 
 export type BudgetAvgAggregateOutputType = {
+  id: number | null
   fiscalYear: number | null
   totalAmount: runtime.Decimal | null
+  tenantId: number | null
+  departmentId: number | null
 }
 
 export type BudgetSumAggregateOutputType = {
+  id: number | null
   fiscalYear: number | null
   totalAmount: runtime.Decimal | null
+  tenantId: number | null
+  departmentId: number | null
 }
 
 export type BudgetMinAggregateOutputType = {
-  id: string | null
+  id: number | null
   name: string | null
   fiscalYear: number | null
   period: $Enums.BudgetPeriod | null
@@ -45,8 +51,8 @@ export type BudgetMinAggregateOutputType = {
   endDate: Date | null
   totalAmount: runtime.Decimal | null
   status: $Enums.BudgetStatus | null
-  tenantId: string | null
-  departmentId: string | null
+  tenantId: number | null
+  departmentId: number | null
   createdBy: string | null
   approvedBy: string | null
   approvedAt: Date | null
@@ -55,7 +61,7 @@ export type BudgetMinAggregateOutputType = {
 }
 
 export type BudgetMaxAggregateOutputType = {
-  id: string | null
+  id: number | null
   name: string | null
   fiscalYear: number | null
   period: $Enums.BudgetPeriod | null
@@ -63,8 +69,8 @@ export type BudgetMaxAggregateOutputType = {
   endDate: Date | null
   totalAmount: runtime.Decimal | null
   status: $Enums.BudgetStatus | null
-  tenantId: string | null
-  departmentId: string | null
+  tenantId: number | null
+  departmentId: number | null
   createdBy: string | null
   approvedBy: string | null
   approvedAt: Date | null
@@ -93,13 +99,19 @@ export type BudgetCountAggregateOutputType = {
 
 
 export type BudgetAvgAggregateInputType = {
+  id?: true
   fiscalYear?: true
   totalAmount?: true
+  tenantId?: true
+  departmentId?: true
 }
 
 export type BudgetSumAggregateInputType = {
+  id?: true
   fiscalYear?: true
   totalAmount?: true
+  tenantId?: true
+  departmentId?: true
 }
 
 export type BudgetMinAggregateInputType = {
@@ -244,7 +256,7 @@ export type BudgetGroupByArgs<ExtArgs extends runtime.Types.Extensions.InternalA
 }
 
 export type BudgetGroupByOutputType = {
-  id: string
+  id: number
   name: string
   fiscalYear: number
   period: $Enums.BudgetPeriod
@@ -252,8 +264,8 @@ export type BudgetGroupByOutputType = {
   endDate: Date
   totalAmount: runtime.Decimal
   status: $Enums.BudgetStatus
-  tenantId: string
-  departmentId: string | null
+  tenantId: number
+  departmentId: number | null
   createdBy: string
   approvedBy: string | null
   approvedAt: Date | null
@@ -285,7 +297,7 @@ export type BudgetWhereInput = {
   AND?: Prisma.BudgetWhereInput | Prisma.BudgetWhereInput[]
   OR?: Prisma.BudgetWhereInput[]
   NOT?: Prisma.BudgetWhereInput | Prisma.BudgetWhereInput[]
-  id?: Prisma.StringFilter<"Budget"> | string
+  id?: Prisma.IntFilter<"Budget"> | number
   name?: Prisma.StringFilter<"Budget"> | string
   fiscalYear?: Prisma.IntFilter<"Budget"> | number
   period?: Prisma.EnumBudgetPeriodFilter<"Budget"> | $Enums.BudgetPeriod
@@ -293,8 +305,8 @@ export type BudgetWhereInput = {
   endDate?: Prisma.DateTimeFilter<"Budget"> | Date | string
   totalAmount?: Prisma.DecimalFilter<"Budget"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   status?: Prisma.EnumBudgetStatusFilter<"Budget"> | $Enums.BudgetStatus
-  tenantId?: Prisma.StringFilter<"Budget"> | string
-  departmentId?: Prisma.StringNullableFilter<"Budget"> | string | null
+  tenantId?: Prisma.IntFilter<"Budget"> | number
+  departmentId?: Prisma.IntNullableFilter<"Budget"> | number | null
   createdBy?: Prisma.StringFilter<"Budget"> | string
   approvedBy?: Prisma.StringNullableFilter<"Budget"> | string | null
   approvedAt?: Prisma.DateTimeNullableFilter<"Budget"> | Date | string | null
@@ -325,7 +337,7 @@ export type BudgetOrderByWithRelationInput = {
 }
 
 export type BudgetWhereUniqueInput = Prisma.AtLeast<{
-  id?: string
+  id?: number
   AND?: Prisma.BudgetWhereInput | Prisma.BudgetWhereInput[]
   OR?: Prisma.BudgetWhereInput[]
   NOT?: Prisma.BudgetWhereInput | Prisma.BudgetWhereInput[]
@@ -336,8 +348,8 @@ export type BudgetWhereUniqueInput = Prisma.AtLeast<{
   endDate?: Prisma.DateTimeFilter<"Budget"> | Date | string
   totalAmount?: Prisma.DecimalFilter<"Budget"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   status?: Prisma.EnumBudgetStatusFilter<"Budget"> | $Enums.BudgetStatus
-  tenantId?: Prisma.StringFilter<"Budget"> | string
-  departmentId?: Prisma.StringNullableFilter<"Budget"> | string | null
+  tenantId?: Prisma.IntFilter<"Budget"> | number
+  departmentId?: Prisma.IntNullableFilter<"Budget"> | number | null
   createdBy?: Prisma.StringFilter<"Budget"> | string
   approvedBy?: Prisma.StringNullableFilter<"Budget"> | string | null
   approvedAt?: Prisma.DateTimeNullableFilter<"Budget"> | Date | string | null
@@ -374,7 +386,7 @@ export type BudgetScalarWhereWithAggregatesInput = {
   AND?: Prisma.BudgetScalarWhereWithAggregatesInput | Prisma.BudgetScalarWhereWithAggregatesInput[]
   OR?: Prisma.BudgetScalarWhereWithAggregatesInput[]
   NOT?: Prisma.BudgetScalarWhereWithAggregatesInput | Prisma.BudgetScalarWhereWithAggregatesInput[]
-  id?: Prisma.StringWithAggregatesFilter<"Budget"> | string
+  id?: Prisma.IntWithAggregatesFilter<"Budget"> | number
   name?: Prisma.StringWithAggregatesFilter<"Budget"> | string
   fiscalYear?: Prisma.IntWithAggregatesFilter<"Budget"> | number
   period?: Prisma.EnumBudgetPeriodWithAggregatesFilter<"Budget"> | $Enums.BudgetPeriod
@@ -382,8 +394,8 @@ export type BudgetScalarWhereWithAggregatesInput = {
   endDate?: Prisma.DateTimeWithAggregatesFilter<"Budget"> | Date | string
   totalAmount?: Prisma.DecimalWithAggregatesFilter<"Budget"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   status?: Prisma.EnumBudgetStatusWithAggregatesFilter<"Budget"> | $Enums.BudgetStatus
-  tenantId?: Prisma.StringWithAggregatesFilter<"Budget"> | string
-  departmentId?: Prisma.StringNullableWithAggregatesFilter<"Budget"> | string | null
+  tenantId?: Prisma.IntWithAggregatesFilter<"Budget"> | number
+  departmentId?: Prisma.IntNullableWithAggregatesFilter<"Budget"> | number | null
   createdBy?: Prisma.StringWithAggregatesFilter<"Budget"> | string
   approvedBy?: Prisma.StringNullableWithAggregatesFilter<"Budget"> | string | null
   approvedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Budget"> | Date | string | null
@@ -392,7 +404,6 @@ export type BudgetScalarWhereWithAggregatesInput = {
 }
 
 export type BudgetCreateInput = {
-  id?: string
   name: string
   fiscalYear: number
   period?: $Enums.BudgetPeriod
@@ -400,7 +411,7 @@ export type BudgetCreateInput = {
   endDate: Date | string
   totalAmount: runtime.Decimal | runtime.DecimalJsLike | number | string
   status?: $Enums.BudgetStatus
-  departmentId?: string | null
+  departmentId?: number | null
   createdBy: string
   approvedBy?: string | null
   approvedAt?: Date | string | null
@@ -411,7 +422,7 @@ export type BudgetCreateInput = {
 }
 
 export type BudgetUncheckedCreateInput = {
-  id?: string
+  id?: number
   name: string
   fiscalYear: number
   period?: $Enums.BudgetPeriod
@@ -419,8 +430,8 @@ export type BudgetUncheckedCreateInput = {
   endDate: Date | string
   totalAmount: runtime.Decimal | runtime.DecimalJsLike | number | string
   status?: $Enums.BudgetStatus
-  tenantId: string
-  departmentId?: string | null
+  tenantId: number
+  departmentId?: number | null
   createdBy: string
   approvedBy?: string | null
   approvedAt?: Date | string | null
@@ -430,7 +441,6 @@ export type BudgetUncheckedCreateInput = {
 }
 
 export type BudgetUpdateInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   fiscalYear?: Prisma.IntFieldUpdateOperationsInput | number
   period?: Prisma.EnumBudgetPeriodFieldUpdateOperationsInput | $Enums.BudgetPeriod
@@ -438,7 +448,7 @@ export type BudgetUpdateInput = {
   endDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   totalAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   status?: Prisma.EnumBudgetStatusFieldUpdateOperationsInput | $Enums.BudgetStatus
-  departmentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  departmentId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdBy?: Prisma.StringFieldUpdateOperationsInput | string
   approvedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   approvedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -449,7 +459,7 @@ export type BudgetUpdateInput = {
 }
 
 export type BudgetUncheckedUpdateInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   name?: Prisma.StringFieldUpdateOperationsInput | string
   fiscalYear?: Prisma.IntFieldUpdateOperationsInput | number
   period?: Prisma.EnumBudgetPeriodFieldUpdateOperationsInput | $Enums.BudgetPeriod
@@ -457,8 +467,8 @@ export type BudgetUncheckedUpdateInput = {
   endDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   totalAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   status?: Prisma.EnumBudgetStatusFieldUpdateOperationsInput | $Enums.BudgetStatus
-  tenantId?: Prisma.StringFieldUpdateOperationsInput | string
-  departmentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tenantId?: Prisma.IntFieldUpdateOperationsInput | number
+  departmentId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdBy?: Prisma.StringFieldUpdateOperationsInput | string
   approvedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   approvedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -468,7 +478,7 @@ export type BudgetUncheckedUpdateInput = {
 }
 
 export type BudgetCreateManyInput = {
-  id?: string
+  id?: number
   name: string
   fiscalYear: number
   period?: $Enums.BudgetPeriod
@@ -476,8 +486,8 @@ export type BudgetCreateManyInput = {
   endDate: Date | string
   totalAmount: runtime.Decimal | runtime.DecimalJsLike | number | string
   status?: $Enums.BudgetStatus
-  tenantId: string
-  departmentId?: string | null
+  tenantId: number
+  departmentId?: number | null
   createdBy: string
   approvedBy?: string | null
   approvedAt?: Date | string | null
@@ -486,7 +496,6 @@ export type BudgetCreateManyInput = {
 }
 
 export type BudgetUpdateManyMutationInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   fiscalYear?: Prisma.IntFieldUpdateOperationsInput | number
   period?: Prisma.EnumBudgetPeriodFieldUpdateOperationsInput | $Enums.BudgetPeriod
@@ -494,7 +503,7 @@ export type BudgetUpdateManyMutationInput = {
   endDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   totalAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   status?: Prisma.EnumBudgetStatusFieldUpdateOperationsInput | $Enums.BudgetStatus
-  departmentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  departmentId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdBy?: Prisma.StringFieldUpdateOperationsInput | string
   approvedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   approvedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -503,7 +512,7 @@ export type BudgetUpdateManyMutationInput = {
 }
 
 export type BudgetUncheckedUpdateManyInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   name?: Prisma.StringFieldUpdateOperationsInput | string
   fiscalYear?: Prisma.IntFieldUpdateOperationsInput | number
   period?: Prisma.EnumBudgetPeriodFieldUpdateOperationsInput | $Enums.BudgetPeriod
@@ -511,8 +520,8 @@ export type BudgetUncheckedUpdateManyInput = {
   endDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   totalAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   status?: Prisma.EnumBudgetStatusFieldUpdateOperationsInput | $Enums.BudgetStatus
-  tenantId?: Prisma.StringFieldUpdateOperationsInput | string
-  departmentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tenantId?: Prisma.IntFieldUpdateOperationsInput | number
+  departmentId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdBy?: Prisma.StringFieldUpdateOperationsInput | string
   approvedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   approvedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -549,8 +558,11 @@ export type BudgetCountOrderByAggregateInput = {
 }
 
 export type BudgetAvgOrderByAggregateInput = {
+  id?: Prisma.SortOrder
   fiscalYear?: Prisma.SortOrder
   totalAmount?: Prisma.SortOrder
+  tenantId?: Prisma.SortOrder
+  departmentId?: Prisma.SortOrder
 }
 
 export type BudgetMaxOrderByAggregateInput = {
@@ -590,8 +602,11 @@ export type BudgetMinOrderByAggregateInput = {
 }
 
 export type BudgetSumOrderByAggregateInput = {
+  id?: Prisma.SortOrder
   fiscalYear?: Prisma.SortOrder
   totalAmount?: Prisma.SortOrder
+  tenantId?: Prisma.SortOrder
+  departmentId?: Prisma.SortOrder
 }
 
 export type BudgetScalarRelationFilter = {
@@ -664,7 +679,6 @@ export type BudgetUpdateOneRequiredWithoutItemsNestedInput = {
 }
 
 export type BudgetCreateWithoutTenantInput = {
-  id?: string
   name: string
   fiscalYear: number
   period?: $Enums.BudgetPeriod
@@ -672,7 +686,7 @@ export type BudgetCreateWithoutTenantInput = {
   endDate: Date | string
   totalAmount: runtime.Decimal | runtime.DecimalJsLike | number | string
   status?: $Enums.BudgetStatus
-  departmentId?: string | null
+  departmentId?: number | null
   createdBy: string
   approvedBy?: string | null
   approvedAt?: Date | string | null
@@ -682,7 +696,7 @@ export type BudgetCreateWithoutTenantInput = {
 }
 
 export type BudgetUncheckedCreateWithoutTenantInput = {
-  id?: string
+  id?: number
   name: string
   fiscalYear: number
   period?: $Enums.BudgetPeriod
@@ -690,7 +704,7 @@ export type BudgetUncheckedCreateWithoutTenantInput = {
   endDate: Date | string
   totalAmount: runtime.Decimal | runtime.DecimalJsLike | number | string
   status?: $Enums.BudgetStatus
-  departmentId?: string | null
+  departmentId?: number | null
   createdBy: string
   approvedBy?: string | null
   approvedAt?: Date | string | null
@@ -729,7 +743,7 @@ export type BudgetScalarWhereInput = {
   AND?: Prisma.BudgetScalarWhereInput | Prisma.BudgetScalarWhereInput[]
   OR?: Prisma.BudgetScalarWhereInput[]
   NOT?: Prisma.BudgetScalarWhereInput | Prisma.BudgetScalarWhereInput[]
-  id?: Prisma.StringFilter<"Budget"> | string
+  id?: Prisma.IntFilter<"Budget"> | number
   name?: Prisma.StringFilter<"Budget"> | string
   fiscalYear?: Prisma.IntFilter<"Budget"> | number
   period?: Prisma.EnumBudgetPeriodFilter<"Budget"> | $Enums.BudgetPeriod
@@ -737,8 +751,8 @@ export type BudgetScalarWhereInput = {
   endDate?: Prisma.DateTimeFilter<"Budget"> | Date | string
   totalAmount?: Prisma.DecimalFilter<"Budget"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   status?: Prisma.EnumBudgetStatusFilter<"Budget"> | $Enums.BudgetStatus
-  tenantId?: Prisma.StringFilter<"Budget"> | string
-  departmentId?: Prisma.StringNullableFilter<"Budget"> | string | null
+  tenantId?: Prisma.IntFilter<"Budget"> | number
+  departmentId?: Prisma.IntNullableFilter<"Budget"> | number | null
   createdBy?: Prisma.StringFilter<"Budget"> | string
   approvedBy?: Prisma.StringNullableFilter<"Budget"> | string | null
   approvedAt?: Prisma.DateTimeNullableFilter<"Budget"> | Date | string | null
@@ -747,7 +761,6 @@ export type BudgetScalarWhereInput = {
 }
 
 export type BudgetCreateWithoutItemsInput = {
-  id?: string
   name: string
   fiscalYear: number
   period?: $Enums.BudgetPeriod
@@ -755,7 +768,7 @@ export type BudgetCreateWithoutItemsInput = {
   endDate: Date | string
   totalAmount: runtime.Decimal | runtime.DecimalJsLike | number | string
   status?: $Enums.BudgetStatus
-  departmentId?: string | null
+  departmentId?: number | null
   createdBy: string
   approvedBy?: string | null
   approvedAt?: Date | string | null
@@ -765,7 +778,7 @@ export type BudgetCreateWithoutItemsInput = {
 }
 
 export type BudgetUncheckedCreateWithoutItemsInput = {
-  id?: string
+  id?: number
   name: string
   fiscalYear: number
   period?: $Enums.BudgetPeriod
@@ -773,8 +786,8 @@ export type BudgetUncheckedCreateWithoutItemsInput = {
   endDate: Date | string
   totalAmount: runtime.Decimal | runtime.DecimalJsLike | number | string
   status?: $Enums.BudgetStatus
-  tenantId: string
-  departmentId?: string | null
+  tenantId: number
+  departmentId?: number | null
   createdBy: string
   approvedBy?: string | null
   approvedAt?: Date | string | null
@@ -799,7 +812,6 @@ export type BudgetUpdateToOneWithWhereWithoutItemsInput = {
 }
 
 export type BudgetUpdateWithoutItemsInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   fiscalYear?: Prisma.IntFieldUpdateOperationsInput | number
   period?: Prisma.EnumBudgetPeriodFieldUpdateOperationsInput | $Enums.BudgetPeriod
@@ -807,7 +819,7 @@ export type BudgetUpdateWithoutItemsInput = {
   endDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   totalAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   status?: Prisma.EnumBudgetStatusFieldUpdateOperationsInput | $Enums.BudgetStatus
-  departmentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  departmentId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdBy?: Prisma.StringFieldUpdateOperationsInput | string
   approvedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   approvedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -817,7 +829,7 @@ export type BudgetUpdateWithoutItemsInput = {
 }
 
 export type BudgetUncheckedUpdateWithoutItemsInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   name?: Prisma.StringFieldUpdateOperationsInput | string
   fiscalYear?: Prisma.IntFieldUpdateOperationsInput | number
   period?: Prisma.EnumBudgetPeriodFieldUpdateOperationsInput | $Enums.BudgetPeriod
@@ -825,8 +837,8 @@ export type BudgetUncheckedUpdateWithoutItemsInput = {
   endDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   totalAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   status?: Prisma.EnumBudgetStatusFieldUpdateOperationsInput | $Enums.BudgetStatus
-  tenantId?: Prisma.StringFieldUpdateOperationsInput | string
-  departmentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tenantId?: Prisma.IntFieldUpdateOperationsInput | number
+  departmentId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdBy?: Prisma.StringFieldUpdateOperationsInput | string
   approvedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   approvedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -835,7 +847,7 @@ export type BudgetUncheckedUpdateWithoutItemsInput = {
 }
 
 export type BudgetCreateManyTenantInput = {
-  id?: string
+  id?: number
   name: string
   fiscalYear: number
   period?: $Enums.BudgetPeriod
@@ -843,7 +855,7 @@ export type BudgetCreateManyTenantInput = {
   endDate: Date | string
   totalAmount: runtime.Decimal | runtime.DecimalJsLike | number | string
   status?: $Enums.BudgetStatus
-  departmentId?: string | null
+  departmentId?: number | null
   createdBy: string
   approvedBy?: string | null
   approvedAt?: Date | string | null
@@ -852,7 +864,6 @@ export type BudgetCreateManyTenantInput = {
 }
 
 export type BudgetUpdateWithoutTenantInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   fiscalYear?: Prisma.IntFieldUpdateOperationsInput | number
   period?: Prisma.EnumBudgetPeriodFieldUpdateOperationsInput | $Enums.BudgetPeriod
@@ -860,7 +871,7 @@ export type BudgetUpdateWithoutTenantInput = {
   endDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   totalAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   status?: Prisma.EnumBudgetStatusFieldUpdateOperationsInput | $Enums.BudgetStatus
-  departmentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  departmentId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdBy?: Prisma.StringFieldUpdateOperationsInput | string
   approvedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   approvedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -870,7 +881,7 @@ export type BudgetUpdateWithoutTenantInput = {
 }
 
 export type BudgetUncheckedUpdateWithoutTenantInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   name?: Prisma.StringFieldUpdateOperationsInput | string
   fiscalYear?: Prisma.IntFieldUpdateOperationsInput | number
   period?: Prisma.EnumBudgetPeriodFieldUpdateOperationsInput | $Enums.BudgetPeriod
@@ -878,7 +889,7 @@ export type BudgetUncheckedUpdateWithoutTenantInput = {
   endDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   totalAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   status?: Prisma.EnumBudgetStatusFieldUpdateOperationsInput | $Enums.BudgetStatus
-  departmentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  departmentId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdBy?: Prisma.StringFieldUpdateOperationsInput | string
   approvedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   approvedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -888,7 +899,7 @@ export type BudgetUncheckedUpdateWithoutTenantInput = {
 }
 
 export type BudgetUncheckedUpdateManyWithoutTenantInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   name?: Prisma.StringFieldUpdateOperationsInput | string
   fiscalYear?: Prisma.IntFieldUpdateOperationsInput | number
   period?: Prisma.EnumBudgetPeriodFieldUpdateOperationsInput | $Enums.BudgetPeriod
@@ -896,7 +907,7 @@ export type BudgetUncheckedUpdateManyWithoutTenantInput = {
   endDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   totalAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   status?: Prisma.EnumBudgetStatusFieldUpdateOperationsInput | $Enums.BudgetStatus
-  departmentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  departmentId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdBy?: Prisma.StringFieldUpdateOperationsInput | string
   approvedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   approvedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1032,7 +1043,7 @@ export type $BudgetPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs
     items: Prisma.$BudgetItemPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
-    id: string
+    id: number
     name: string
     fiscalYear: number
     period: $Enums.BudgetPeriod
@@ -1040,8 +1051,8 @@ export type $BudgetPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs
     endDate: Date
     totalAmount: runtime.Decimal
     status: $Enums.BudgetStatus
-    tenantId: string
-    departmentId: string | null
+    tenantId: number
+    departmentId: number | null
     createdBy: string
     approvedBy: string | null
     approvedAt: Date | null
@@ -1472,7 +1483,7 @@ export interface Prisma__BudgetClient<T, Null = never, ExtArgs extends runtime.T
  * Fields of the Budget model
  */
 export interface BudgetFieldRefs {
-  readonly id: Prisma.FieldRef<"Budget", 'String'>
+  readonly id: Prisma.FieldRef<"Budget", 'Int'>
   readonly name: Prisma.FieldRef<"Budget", 'String'>
   readonly fiscalYear: Prisma.FieldRef<"Budget", 'Int'>
   readonly period: Prisma.FieldRef<"Budget", 'BudgetPeriod'>
@@ -1480,8 +1491,8 @@ export interface BudgetFieldRefs {
   readonly endDate: Prisma.FieldRef<"Budget", 'DateTime'>
   readonly totalAmount: Prisma.FieldRef<"Budget", 'Decimal'>
   readonly status: Prisma.FieldRef<"Budget", 'BudgetStatus'>
-  readonly tenantId: Prisma.FieldRef<"Budget", 'String'>
-  readonly departmentId: Prisma.FieldRef<"Budget", 'String'>
+  readonly tenantId: Prisma.FieldRef<"Budget", 'Int'>
+  readonly departmentId: Prisma.FieldRef<"Budget", 'Int'>
   readonly createdBy: Prisma.FieldRef<"Budget", 'String'>
   readonly approvedBy: Prisma.FieldRef<"Budget", 'String'>
   readonly approvedAt: Prisma.FieldRef<"Budget", 'DateTime'>

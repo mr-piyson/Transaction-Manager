@@ -27,15 +27,25 @@ export type AggregateEmployee = {
 }
 
 export type EmployeeAvgAggregateOutputType = {
+  id: number | null
   salary: runtime.Decimal | null
+  tenantId: number | null
+  userId: number | null
+  departmentId: number | null
+  managerId: number | null
 }
 
 export type EmployeeSumAggregateOutputType = {
+  id: number | null
   salary: runtime.Decimal | null
+  tenantId: number | null
+  userId: number | null
+  departmentId: number | null
+  managerId: number | null
 }
 
 export type EmployeeMinAggregateOutputType = {
-  id: string | null
+  id: number | null
   code: string | null
   firstName: string | null
   middleName: string | null
@@ -73,16 +83,16 @@ export type EmployeeMinAggregateOutputType = {
   taxId: string | null
   passportNumber: string | null
   drivingLicense: string | null
-  tenantId: string | null
-  userId: string | null
-  departmentId: string | null
-  managerId: string | null
+  tenantId: number | null
+  userId: number | null
+  departmentId: number | null
+  managerId: number | null
   createdAt: Date | null
   updatedAt: Date | null
 }
 
 export type EmployeeMaxAggregateOutputType = {
-  id: string | null
+  id: number | null
   code: string | null
   firstName: string | null
   middleName: string | null
@@ -120,10 +130,10 @@ export type EmployeeMaxAggregateOutputType = {
   taxId: string | null
   passportNumber: string | null
   drivingLicense: string | null
-  tenantId: string | null
-  userId: string | null
-  departmentId: string | null
-  managerId: string | null
+  tenantId: number | null
+  userId: number | null
+  departmentId: number | null
+  managerId: number | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -178,11 +188,21 @@ export type EmployeeCountAggregateOutputType = {
 
 
 export type EmployeeAvgAggregateInputType = {
+  id?: true
   salary?: true
+  tenantId?: true
+  userId?: true
+  departmentId?: true
+  managerId?: true
 }
 
 export type EmployeeSumAggregateInputType = {
+  id?: true
   salary?: true
+  tenantId?: true
+  userId?: true
+  departmentId?: true
+  managerId?: true
 }
 
 export type EmployeeMinAggregateInputType = {
@@ -414,7 +434,7 @@ export type EmployeeGroupByArgs<ExtArgs extends runtime.Types.Extensions.Interna
 }
 
 export type EmployeeGroupByOutputType = {
-  id: string
+  id: number
   code: string
   firstName: string
   middleName: string | null
@@ -452,10 +472,10 @@ export type EmployeeGroupByOutputType = {
   taxId: string | null
   passportNumber: string | null
   drivingLicense: string | null
-  tenantId: string
-  userId: string | null
-  departmentId: string | null
-  managerId: string | null
+  tenantId: number
+  userId: number | null
+  departmentId: number | null
+  managerId: number | null
   createdAt: Date
   updatedAt: Date
   _count: EmployeeCountAggregateOutputType | null
@@ -484,7 +504,7 @@ export type EmployeeWhereInput = {
   AND?: Prisma.EmployeeWhereInput | Prisma.EmployeeWhereInput[]
   OR?: Prisma.EmployeeWhereInput[]
   NOT?: Prisma.EmployeeWhereInput | Prisma.EmployeeWhereInput[]
-  id?: Prisma.StringFilter<"Employee"> | string
+  id?: Prisma.IntFilter<"Employee"> | number
   code?: Prisma.StringFilter<"Employee"> | string
   firstName?: Prisma.StringFilter<"Employee"> | string
   middleName?: Prisma.StringNullableFilter<"Employee"> | string | null
@@ -522,10 +542,10 @@ export type EmployeeWhereInput = {
   taxId?: Prisma.StringNullableFilter<"Employee"> | string | null
   passportNumber?: Prisma.StringNullableFilter<"Employee"> | string | null
   drivingLicense?: Prisma.StringNullableFilter<"Employee"> | string | null
-  tenantId?: Prisma.StringFilter<"Employee"> | string
-  userId?: Prisma.StringNullableFilter<"Employee"> | string | null
-  departmentId?: Prisma.StringNullableFilter<"Employee"> | string | null
-  managerId?: Prisma.StringNullableFilter<"Employee"> | string | null
+  tenantId?: Prisma.IntFilter<"Employee"> | number
+  userId?: Prisma.IntNullableFilter<"Employee"> | number | null
+  departmentId?: Prisma.IntNullableFilter<"Employee"> | number | null
+  managerId?: Prisma.IntNullableFilter<"Employee"> | number | null
   createdAt?: Prisma.DateTimeFilter<"Employee"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Employee"> | Date | string
   tenant?: Prisma.XOR<Prisma.TenantScalarRelationFilter, Prisma.TenantWhereInput>
@@ -602,8 +622,8 @@ export type EmployeeOrderByWithRelationInput = {
 }
 
 export type EmployeeWhereUniqueInput = Prisma.AtLeast<{
-  id?: string
-  userId?: string
+  id?: number
+  userId?: number
   tenantId_code?: Prisma.EmployeeTenantIdCodeCompoundUniqueInput
   AND?: Prisma.EmployeeWhereInput | Prisma.EmployeeWhereInput[]
   OR?: Prisma.EmployeeWhereInput[]
@@ -645,9 +665,9 @@ export type EmployeeWhereUniqueInput = Prisma.AtLeast<{
   taxId?: Prisma.StringNullableFilter<"Employee"> | string | null
   passportNumber?: Prisma.StringNullableFilter<"Employee"> | string | null
   drivingLicense?: Prisma.StringNullableFilter<"Employee"> | string | null
-  tenantId?: Prisma.StringFilter<"Employee"> | string
-  departmentId?: Prisma.StringNullableFilter<"Employee"> | string | null
-  managerId?: Prisma.StringNullableFilter<"Employee"> | string | null
+  tenantId?: Prisma.IntFilter<"Employee"> | number
+  departmentId?: Prisma.IntNullableFilter<"Employee"> | number | null
+  managerId?: Prisma.IntNullableFilter<"Employee"> | number | null
   createdAt?: Prisma.DateTimeFilter<"Employee"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Employee"> | Date | string
   tenant?: Prisma.XOR<Prisma.TenantScalarRelationFilter, Prisma.TenantWhereInput>
@@ -720,7 +740,7 @@ export type EmployeeScalarWhereWithAggregatesInput = {
   AND?: Prisma.EmployeeScalarWhereWithAggregatesInput | Prisma.EmployeeScalarWhereWithAggregatesInput[]
   OR?: Prisma.EmployeeScalarWhereWithAggregatesInput[]
   NOT?: Prisma.EmployeeScalarWhereWithAggregatesInput | Prisma.EmployeeScalarWhereWithAggregatesInput[]
-  id?: Prisma.StringWithAggregatesFilter<"Employee"> | string
+  id?: Prisma.IntWithAggregatesFilter<"Employee"> | number
   code?: Prisma.StringWithAggregatesFilter<"Employee"> | string
   firstName?: Prisma.StringWithAggregatesFilter<"Employee"> | string
   middleName?: Prisma.StringNullableWithAggregatesFilter<"Employee"> | string | null
@@ -758,16 +778,15 @@ export type EmployeeScalarWhereWithAggregatesInput = {
   taxId?: Prisma.StringNullableWithAggregatesFilter<"Employee"> | string | null
   passportNumber?: Prisma.StringNullableWithAggregatesFilter<"Employee"> | string | null
   drivingLicense?: Prisma.StringNullableWithAggregatesFilter<"Employee"> | string | null
-  tenantId?: Prisma.StringWithAggregatesFilter<"Employee"> | string
-  userId?: Prisma.StringNullableWithAggregatesFilter<"Employee"> | string | null
-  departmentId?: Prisma.StringNullableWithAggregatesFilter<"Employee"> | string | null
-  managerId?: Prisma.StringNullableWithAggregatesFilter<"Employee"> | string | null
+  tenantId?: Prisma.IntWithAggregatesFilter<"Employee"> | number
+  userId?: Prisma.IntNullableWithAggregatesFilter<"Employee"> | number | null
+  departmentId?: Prisma.IntNullableWithAggregatesFilter<"Employee"> | number | null
+  managerId?: Prisma.IntNullableWithAggregatesFilter<"Employee"> | number | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Employee"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Employee"> | Date | string
 }
 
 export type EmployeeCreateInput = {
-  id?: string
   code: string
   firstName: string
   middleName?: string | null
@@ -805,7 +824,7 @@ export type EmployeeCreateInput = {
   taxId?: string | null
   passportNumber?: string | null
   drivingLicense?: string | null
-  userId?: string | null
+  userId?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   tenant: Prisma.TenantCreateNestedOneWithoutEmployeesInput
@@ -823,7 +842,7 @@ export type EmployeeCreateInput = {
 }
 
 export type EmployeeUncheckedCreateInput = {
-  id?: string
+  id?: number
   code: string
   firstName: string
   middleName?: string | null
@@ -861,10 +880,10 @@ export type EmployeeUncheckedCreateInput = {
   taxId?: string | null
   passportNumber?: string | null
   drivingLicense?: string | null
-  tenantId: string
-  userId?: string | null
-  departmentId?: string | null
-  managerId?: string | null
+  tenantId: number
+  userId?: number | null
+  departmentId?: number | null
+  managerId?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   user?: Prisma.UserUncheckedCreateNestedOneWithoutEmployeeInput
@@ -879,7 +898,6 @@ export type EmployeeUncheckedCreateInput = {
 }
 
 export type EmployeeUpdateInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   code?: Prisma.StringFieldUpdateOperationsInput | string
   firstName?: Prisma.StringFieldUpdateOperationsInput | string
   middleName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -917,7 +935,7 @@ export type EmployeeUpdateInput = {
   taxId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   passportNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   drivingLicense?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  userId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  userId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   tenant?: Prisma.TenantUpdateOneRequiredWithoutEmployeesNestedInput
@@ -935,7 +953,7 @@ export type EmployeeUpdateInput = {
 }
 
 export type EmployeeUncheckedUpdateInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   code?: Prisma.StringFieldUpdateOperationsInput | string
   firstName?: Prisma.StringFieldUpdateOperationsInput | string
   middleName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -973,10 +991,10 @@ export type EmployeeUncheckedUpdateInput = {
   taxId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   passportNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   drivingLicense?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  tenantId?: Prisma.StringFieldUpdateOperationsInput | string
-  userId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  departmentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  managerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tenantId?: Prisma.IntFieldUpdateOperationsInput | number
+  userId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  departmentId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  managerId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   user?: Prisma.UserUncheckedUpdateOneWithoutEmployeeNestedInput
@@ -991,7 +1009,7 @@ export type EmployeeUncheckedUpdateInput = {
 }
 
 export type EmployeeCreateManyInput = {
-  id?: string
+  id?: number
   code: string
   firstName: string
   middleName?: string | null
@@ -1029,16 +1047,15 @@ export type EmployeeCreateManyInput = {
   taxId?: string | null
   passportNumber?: string | null
   drivingLicense?: string | null
-  tenantId: string
-  userId?: string | null
-  departmentId?: string | null
-  managerId?: string | null
+  tenantId: number
+  userId?: number | null
+  departmentId?: number | null
+  managerId?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
 
 export type EmployeeUpdateManyMutationInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   code?: Prisma.StringFieldUpdateOperationsInput | string
   firstName?: Prisma.StringFieldUpdateOperationsInput | string
   middleName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1076,13 +1093,13 @@ export type EmployeeUpdateManyMutationInput = {
   taxId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   passportNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   drivingLicense?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  userId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  userId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type EmployeeUncheckedUpdateManyInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   code?: Prisma.StringFieldUpdateOperationsInput | string
   firstName?: Prisma.StringFieldUpdateOperationsInput | string
   middleName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1120,10 +1137,10 @@ export type EmployeeUncheckedUpdateManyInput = {
   taxId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   passportNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   drivingLicense?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  tenantId?: Prisma.StringFieldUpdateOperationsInput | string
-  userId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  departmentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  managerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tenantId?: Prisma.IntFieldUpdateOperationsInput | number
+  userId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  departmentId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  managerId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -1144,7 +1161,7 @@ export type EmployeeNullableScalarRelationFilter = {
 }
 
 export type EmployeeTenantIdCodeCompoundUniqueInput = {
-  tenantId: string
+  tenantId: number
   code: string
 }
 
@@ -1196,7 +1213,12 @@ export type EmployeeCountOrderByAggregateInput = {
 }
 
 export type EmployeeAvgOrderByAggregateInput = {
+  id?: Prisma.SortOrder
   salary?: Prisma.SortOrder
+  tenantId?: Prisma.SortOrder
+  userId?: Prisma.SortOrder
+  departmentId?: Prisma.SortOrder
+  managerId?: Prisma.SortOrder
 }
 
 export type EmployeeMaxOrderByAggregateInput = {
@@ -1294,7 +1316,12 @@ export type EmployeeMinOrderByAggregateInput = {
 }
 
 export type EmployeeSumOrderByAggregateInput = {
+  id?: Prisma.SortOrder
   salary?: Prisma.SortOrder
+  tenantId?: Prisma.SortOrder
+  userId?: Prisma.SortOrder
+  departmentId?: Prisma.SortOrder
+  managerId?: Prisma.SortOrder
 }
 
 export type EmployeeScalarRelationFilter = {
@@ -1587,7 +1614,6 @@ export type EmployeeUpdateOneRequiredWithoutExpensesNestedInput = {
 }
 
 export type EmployeeCreateWithoutTenantInput = {
-  id?: string
   code: string
   firstName: string
   middleName?: string | null
@@ -1625,7 +1651,7 @@ export type EmployeeCreateWithoutTenantInput = {
   taxId?: string | null
   passportNumber?: string | null
   drivingLicense?: string | null
-  userId?: string | null
+  userId?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   user?: Prisma.UserCreateNestedOneWithoutEmployeeInput
@@ -1642,7 +1668,7 @@ export type EmployeeCreateWithoutTenantInput = {
 }
 
 export type EmployeeUncheckedCreateWithoutTenantInput = {
-  id?: string
+  id?: number
   code: string
   firstName: string
   middleName?: string | null
@@ -1680,9 +1706,9 @@ export type EmployeeUncheckedCreateWithoutTenantInput = {
   taxId?: string | null
   passportNumber?: string | null
   drivingLicense?: string | null
-  userId?: string | null
-  departmentId?: string | null
-  managerId?: string | null
+  userId?: number | null
+  departmentId?: number | null
+  managerId?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   user?: Prisma.UserUncheckedCreateNestedOneWithoutEmployeeInput
@@ -1726,7 +1752,7 @@ export type EmployeeScalarWhereInput = {
   AND?: Prisma.EmployeeScalarWhereInput | Prisma.EmployeeScalarWhereInput[]
   OR?: Prisma.EmployeeScalarWhereInput[]
   NOT?: Prisma.EmployeeScalarWhereInput | Prisma.EmployeeScalarWhereInput[]
-  id?: Prisma.StringFilter<"Employee"> | string
+  id?: Prisma.IntFilter<"Employee"> | number
   code?: Prisma.StringFilter<"Employee"> | string
   firstName?: Prisma.StringFilter<"Employee"> | string
   middleName?: Prisma.StringNullableFilter<"Employee"> | string | null
@@ -1764,16 +1790,15 @@ export type EmployeeScalarWhereInput = {
   taxId?: Prisma.StringNullableFilter<"Employee"> | string | null
   passportNumber?: Prisma.StringNullableFilter<"Employee"> | string | null
   drivingLicense?: Prisma.StringNullableFilter<"Employee"> | string | null
-  tenantId?: Prisma.StringFilter<"Employee"> | string
-  userId?: Prisma.StringNullableFilter<"Employee"> | string | null
-  departmentId?: Prisma.StringNullableFilter<"Employee"> | string | null
-  managerId?: Prisma.StringNullableFilter<"Employee"> | string | null
+  tenantId?: Prisma.IntFilter<"Employee"> | number
+  userId?: Prisma.IntNullableFilter<"Employee"> | number | null
+  departmentId?: Prisma.IntNullableFilter<"Employee"> | number | null
+  managerId?: Prisma.IntNullableFilter<"Employee"> | number | null
   createdAt?: Prisma.DateTimeFilter<"Employee"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Employee"> | Date | string
 }
 
 export type EmployeeCreateWithoutUserInput = {
-  id?: string
   code: string
   firstName: string
   middleName?: string | null
@@ -1811,7 +1836,7 @@ export type EmployeeCreateWithoutUserInput = {
   taxId?: string | null
   passportNumber?: string | null
   drivingLicense?: string | null
-  userId?: string | null
+  userId?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   tenant: Prisma.TenantCreateNestedOneWithoutEmployeesInput
@@ -1828,7 +1853,7 @@ export type EmployeeCreateWithoutUserInput = {
 }
 
 export type EmployeeUncheckedCreateWithoutUserInput = {
-  id?: string
+  id?: number
   code: string
   firstName: string
   middleName?: string | null
@@ -1866,10 +1891,10 @@ export type EmployeeUncheckedCreateWithoutUserInput = {
   taxId?: string | null
   passportNumber?: string | null
   drivingLicense?: string | null
-  tenantId: string
-  userId?: string | null
-  departmentId?: string | null
-  managerId?: string | null
+  tenantId: number
+  userId?: number | null
+  departmentId?: number | null
+  managerId?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   subordinates?: Prisma.EmployeeUncheckedCreateNestedManyWithoutManagerInput
@@ -1899,7 +1924,6 @@ export type EmployeeUpdateToOneWithWhereWithoutUserInput = {
 }
 
 export type EmployeeUpdateWithoutUserInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   code?: Prisma.StringFieldUpdateOperationsInput | string
   firstName?: Prisma.StringFieldUpdateOperationsInput | string
   middleName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1937,7 +1961,7 @@ export type EmployeeUpdateWithoutUserInput = {
   taxId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   passportNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   drivingLicense?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  userId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  userId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   tenant?: Prisma.TenantUpdateOneRequiredWithoutEmployeesNestedInput
@@ -1954,7 +1978,7 @@ export type EmployeeUpdateWithoutUserInput = {
 }
 
 export type EmployeeUncheckedUpdateWithoutUserInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   code?: Prisma.StringFieldUpdateOperationsInput | string
   firstName?: Prisma.StringFieldUpdateOperationsInput | string
   middleName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1992,10 +2016,10 @@ export type EmployeeUncheckedUpdateWithoutUserInput = {
   taxId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   passportNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   drivingLicense?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  tenantId?: Prisma.StringFieldUpdateOperationsInput | string
-  userId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  departmentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  managerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tenantId?: Prisma.IntFieldUpdateOperationsInput | number
+  userId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  departmentId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  managerId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   subordinates?: Prisma.EmployeeUncheckedUpdateManyWithoutManagerNestedInput
@@ -2009,7 +2033,6 @@ export type EmployeeUncheckedUpdateWithoutUserInput = {
 }
 
 export type EmployeeCreateWithoutSubordinatesInput = {
-  id?: string
   code: string
   firstName: string
   middleName?: string | null
@@ -2047,7 +2070,7 @@ export type EmployeeCreateWithoutSubordinatesInput = {
   taxId?: string | null
   passportNumber?: string | null
   drivingLicense?: string | null
-  userId?: string | null
+  userId?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   tenant: Prisma.TenantCreateNestedOneWithoutEmployeesInput
@@ -2064,7 +2087,7 @@ export type EmployeeCreateWithoutSubordinatesInput = {
 }
 
 export type EmployeeUncheckedCreateWithoutSubordinatesInput = {
-  id?: string
+  id?: number
   code: string
   firstName: string
   middleName?: string | null
@@ -2102,10 +2125,10 @@ export type EmployeeUncheckedCreateWithoutSubordinatesInput = {
   taxId?: string | null
   passportNumber?: string | null
   drivingLicense?: string | null
-  tenantId: string
-  userId?: string | null
-  departmentId?: string | null
-  managerId?: string | null
+  tenantId: number
+  userId?: number | null
+  departmentId?: number | null
+  managerId?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   user?: Prisma.UserUncheckedCreateNestedOneWithoutEmployeeInput
@@ -2124,7 +2147,6 @@ export type EmployeeCreateOrConnectWithoutSubordinatesInput = {
 }
 
 export type EmployeeCreateWithoutManagerInput = {
-  id?: string
   code: string
   firstName: string
   middleName?: string | null
@@ -2162,7 +2184,7 @@ export type EmployeeCreateWithoutManagerInput = {
   taxId?: string | null
   passportNumber?: string | null
   drivingLicense?: string | null
-  userId?: string | null
+  userId?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   tenant: Prisma.TenantCreateNestedOneWithoutEmployeesInput
@@ -2179,7 +2201,7 @@ export type EmployeeCreateWithoutManagerInput = {
 }
 
 export type EmployeeUncheckedCreateWithoutManagerInput = {
-  id?: string
+  id?: number
   code: string
   firstName: string
   middleName?: string | null
@@ -2217,9 +2239,9 @@ export type EmployeeUncheckedCreateWithoutManagerInput = {
   taxId?: string | null
   passportNumber?: string | null
   drivingLicense?: string | null
-  tenantId: string
-  userId?: string | null
-  departmentId?: string | null
+  tenantId: number
+  userId?: number | null
+  departmentId?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   user?: Prisma.UserUncheckedCreateNestedOneWithoutEmployeeInput
@@ -2255,7 +2277,6 @@ export type EmployeeUpdateToOneWithWhereWithoutSubordinatesInput = {
 }
 
 export type EmployeeUpdateWithoutSubordinatesInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   code?: Prisma.StringFieldUpdateOperationsInput | string
   firstName?: Prisma.StringFieldUpdateOperationsInput | string
   middleName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2293,7 +2314,7 @@ export type EmployeeUpdateWithoutSubordinatesInput = {
   taxId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   passportNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   drivingLicense?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  userId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  userId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   tenant?: Prisma.TenantUpdateOneRequiredWithoutEmployeesNestedInput
@@ -2310,7 +2331,7 @@ export type EmployeeUpdateWithoutSubordinatesInput = {
 }
 
 export type EmployeeUncheckedUpdateWithoutSubordinatesInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   code?: Prisma.StringFieldUpdateOperationsInput | string
   firstName?: Prisma.StringFieldUpdateOperationsInput | string
   middleName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2348,10 +2369,10 @@ export type EmployeeUncheckedUpdateWithoutSubordinatesInput = {
   taxId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   passportNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   drivingLicense?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  tenantId?: Prisma.StringFieldUpdateOperationsInput | string
-  userId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  departmentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  managerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tenantId?: Prisma.IntFieldUpdateOperationsInput | number
+  userId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  departmentId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  managerId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   user?: Prisma.UserUncheckedUpdateOneWithoutEmployeeNestedInput
@@ -2381,7 +2402,6 @@ export type EmployeeUpdateManyWithWhereWithoutManagerInput = {
 }
 
 export type EmployeeCreateWithoutDepartmentInput = {
-  id?: string
   code: string
   firstName: string
   middleName?: string | null
@@ -2419,7 +2439,7 @@ export type EmployeeCreateWithoutDepartmentInput = {
   taxId?: string | null
   passportNumber?: string | null
   drivingLicense?: string | null
-  userId?: string | null
+  userId?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   tenant: Prisma.TenantCreateNestedOneWithoutEmployeesInput
@@ -2436,7 +2456,7 @@ export type EmployeeCreateWithoutDepartmentInput = {
 }
 
 export type EmployeeUncheckedCreateWithoutDepartmentInput = {
-  id?: string
+  id?: number
   code: string
   firstName: string
   middleName?: string | null
@@ -2474,9 +2494,9 @@ export type EmployeeUncheckedCreateWithoutDepartmentInput = {
   taxId?: string | null
   passportNumber?: string | null
   drivingLicense?: string | null
-  tenantId: string
-  userId?: string | null
-  managerId?: string | null
+  tenantId: number
+  userId?: number | null
+  managerId?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   user?: Prisma.UserUncheckedCreateNestedOneWithoutEmployeeInput
@@ -2517,7 +2537,6 @@ export type EmployeeUpdateManyWithWhereWithoutDepartmentInput = {
 }
 
 export type EmployeeCreateWithoutPayrollsInput = {
-  id?: string
   code: string
   firstName: string
   middleName?: string | null
@@ -2555,7 +2574,7 @@ export type EmployeeCreateWithoutPayrollsInput = {
   taxId?: string | null
   passportNumber?: string | null
   drivingLicense?: string | null
-  userId?: string | null
+  userId?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   tenant: Prisma.TenantCreateNestedOneWithoutEmployeesInput
@@ -2572,7 +2591,7 @@ export type EmployeeCreateWithoutPayrollsInput = {
 }
 
 export type EmployeeUncheckedCreateWithoutPayrollsInput = {
-  id?: string
+  id?: number
   code: string
   firstName: string
   middleName?: string | null
@@ -2610,10 +2629,10 @@ export type EmployeeUncheckedCreateWithoutPayrollsInput = {
   taxId?: string | null
   passportNumber?: string | null
   drivingLicense?: string | null
-  tenantId: string
-  userId?: string | null
-  departmentId?: string | null
-  managerId?: string | null
+  tenantId: number
+  userId?: number | null
+  departmentId?: number | null
+  managerId?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   user?: Prisma.UserUncheckedCreateNestedOneWithoutEmployeeInput
@@ -2643,7 +2662,6 @@ export type EmployeeUpdateToOneWithWhereWithoutPayrollsInput = {
 }
 
 export type EmployeeUpdateWithoutPayrollsInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   code?: Prisma.StringFieldUpdateOperationsInput | string
   firstName?: Prisma.StringFieldUpdateOperationsInput | string
   middleName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2681,7 +2699,7 @@ export type EmployeeUpdateWithoutPayrollsInput = {
   taxId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   passportNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   drivingLicense?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  userId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  userId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   tenant?: Prisma.TenantUpdateOneRequiredWithoutEmployeesNestedInput
@@ -2698,7 +2716,7 @@ export type EmployeeUpdateWithoutPayrollsInput = {
 }
 
 export type EmployeeUncheckedUpdateWithoutPayrollsInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   code?: Prisma.StringFieldUpdateOperationsInput | string
   firstName?: Prisma.StringFieldUpdateOperationsInput | string
   middleName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2736,10 +2754,10 @@ export type EmployeeUncheckedUpdateWithoutPayrollsInput = {
   taxId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   passportNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   drivingLicense?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  tenantId?: Prisma.StringFieldUpdateOperationsInput | string
-  userId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  departmentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  managerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tenantId?: Prisma.IntFieldUpdateOperationsInput | number
+  userId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  departmentId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  managerId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   user?: Prisma.UserUncheckedUpdateOneWithoutEmployeeNestedInput
@@ -2753,7 +2771,6 @@ export type EmployeeUncheckedUpdateWithoutPayrollsInput = {
 }
 
 export type EmployeeCreateWithoutLeavesInput = {
-  id?: string
   code: string
   firstName: string
   middleName?: string | null
@@ -2791,7 +2808,7 @@ export type EmployeeCreateWithoutLeavesInput = {
   taxId?: string | null
   passportNumber?: string | null
   drivingLicense?: string | null
-  userId?: string | null
+  userId?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   tenant: Prisma.TenantCreateNestedOneWithoutEmployeesInput
@@ -2808,7 +2825,7 @@ export type EmployeeCreateWithoutLeavesInput = {
 }
 
 export type EmployeeUncheckedCreateWithoutLeavesInput = {
-  id?: string
+  id?: number
   code: string
   firstName: string
   middleName?: string | null
@@ -2846,10 +2863,10 @@ export type EmployeeUncheckedCreateWithoutLeavesInput = {
   taxId?: string | null
   passportNumber?: string | null
   drivingLicense?: string | null
-  tenantId: string
-  userId?: string | null
-  departmentId?: string | null
-  managerId?: string | null
+  tenantId: number
+  userId?: number | null
+  departmentId?: number | null
+  managerId?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   user?: Prisma.UserUncheckedCreateNestedOneWithoutEmployeeInput
@@ -2879,7 +2896,6 @@ export type EmployeeUpdateToOneWithWhereWithoutLeavesInput = {
 }
 
 export type EmployeeUpdateWithoutLeavesInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   code?: Prisma.StringFieldUpdateOperationsInput | string
   firstName?: Prisma.StringFieldUpdateOperationsInput | string
   middleName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2917,7 +2933,7 @@ export type EmployeeUpdateWithoutLeavesInput = {
   taxId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   passportNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   drivingLicense?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  userId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  userId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   tenant?: Prisma.TenantUpdateOneRequiredWithoutEmployeesNestedInput
@@ -2934,7 +2950,7 @@ export type EmployeeUpdateWithoutLeavesInput = {
 }
 
 export type EmployeeUncheckedUpdateWithoutLeavesInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   code?: Prisma.StringFieldUpdateOperationsInput | string
   firstName?: Prisma.StringFieldUpdateOperationsInput | string
   middleName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2972,10 +2988,10 @@ export type EmployeeUncheckedUpdateWithoutLeavesInput = {
   taxId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   passportNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   drivingLicense?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  tenantId?: Prisma.StringFieldUpdateOperationsInput | string
-  userId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  departmentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  managerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tenantId?: Prisma.IntFieldUpdateOperationsInput | number
+  userId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  departmentId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  managerId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   user?: Prisma.UserUncheckedUpdateOneWithoutEmployeeNestedInput
@@ -2989,7 +3005,6 @@ export type EmployeeUncheckedUpdateWithoutLeavesInput = {
 }
 
 export type EmployeeCreateWithoutAttendancesInput = {
-  id?: string
   code: string
   firstName: string
   middleName?: string | null
@@ -3027,7 +3042,7 @@ export type EmployeeCreateWithoutAttendancesInput = {
   taxId?: string | null
   passportNumber?: string | null
   drivingLicense?: string | null
-  userId?: string | null
+  userId?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   tenant: Prisma.TenantCreateNestedOneWithoutEmployeesInput
@@ -3044,7 +3059,7 @@ export type EmployeeCreateWithoutAttendancesInput = {
 }
 
 export type EmployeeUncheckedCreateWithoutAttendancesInput = {
-  id?: string
+  id?: number
   code: string
   firstName: string
   middleName?: string | null
@@ -3082,10 +3097,10 @@ export type EmployeeUncheckedCreateWithoutAttendancesInput = {
   taxId?: string | null
   passportNumber?: string | null
   drivingLicense?: string | null
-  tenantId: string
-  userId?: string | null
-  departmentId?: string | null
-  managerId?: string | null
+  tenantId: number
+  userId?: number | null
+  departmentId?: number | null
+  managerId?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   user?: Prisma.UserUncheckedCreateNestedOneWithoutEmployeeInput
@@ -3115,7 +3130,6 @@ export type EmployeeUpdateToOneWithWhereWithoutAttendancesInput = {
 }
 
 export type EmployeeUpdateWithoutAttendancesInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   code?: Prisma.StringFieldUpdateOperationsInput | string
   firstName?: Prisma.StringFieldUpdateOperationsInput | string
   middleName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -3153,7 +3167,7 @@ export type EmployeeUpdateWithoutAttendancesInput = {
   taxId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   passportNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   drivingLicense?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  userId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  userId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   tenant?: Prisma.TenantUpdateOneRequiredWithoutEmployeesNestedInput
@@ -3170,7 +3184,7 @@ export type EmployeeUpdateWithoutAttendancesInput = {
 }
 
 export type EmployeeUncheckedUpdateWithoutAttendancesInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   code?: Prisma.StringFieldUpdateOperationsInput | string
   firstName?: Prisma.StringFieldUpdateOperationsInput | string
   middleName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -3208,10 +3222,10 @@ export type EmployeeUncheckedUpdateWithoutAttendancesInput = {
   taxId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   passportNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   drivingLicense?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  tenantId?: Prisma.StringFieldUpdateOperationsInput | string
-  userId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  departmentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  managerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tenantId?: Prisma.IntFieldUpdateOperationsInput | number
+  userId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  departmentId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  managerId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   user?: Prisma.UserUncheckedUpdateOneWithoutEmployeeNestedInput
@@ -3225,7 +3239,6 @@ export type EmployeeUncheckedUpdateWithoutAttendancesInput = {
 }
 
 export type EmployeeCreateWithoutPerformanceInput = {
-  id?: string
   code: string
   firstName: string
   middleName?: string | null
@@ -3263,7 +3276,7 @@ export type EmployeeCreateWithoutPerformanceInput = {
   taxId?: string | null
   passportNumber?: string | null
   drivingLicense?: string | null
-  userId?: string | null
+  userId?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   tenant: Prisma.TenantCreateNestedOneWithoutEmployeesInput
@@ -3280,7 +3293,7 @@ export type EmployeeCreateWithoutPerformanceInput = {
 }
 
 export type EmployeeUncheckedCreateWithoutPerformanceInput = {
-  id?: string
+  id?: number
   code: string
   firstName: string
   middleName?: string | null
@@ -3318,10 +3331,10 @@ export type EmployeeUncheckedCreateWithoutPerformanceInput = {
   taxId?: string | null
   passportNumber?: string | null
   drivingLicense?: string | null
-  tenantId: string
-  userId?: string | null
-  departmentId?: string | null
-  managerId?: string | null
+  tenantId: number
+  userId?: number | null
+  departmentId?: number | null
+  managerId?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   user?: Prisma.UserUncheckedCreateNestedOneWithoutEmployeeInput
@@ -3351,7 +3364,6 @@ export type EmployeeUpdateToOneWithWhereWithoutPerformanceInput = {
 }
 
 export type EmployeeUpdateWithoutPerformanceInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   code?: Prisma.StringFieldUpdateOperationsInput | string
   firstName?: Prisma.StringFieldUpdateOperationsInput | string
   middleName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -3389,7 +3401,7 @@ export type EmployeeUpdateWithoutPerformanceInput = {
   taxId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   passportNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   drivingLicense?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  userId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  userId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   tenant?: Prisma.TenantUpdateOneRequiredWithoutEmployeesNestedInput
@@ -3406,7 +3418,7 @@ export type EmployeeUpdateWithoutPerformanceInput = {
 }
 
 export type EmployeeUncheckedUpdateWithoutPerformanceInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   code?: Prisma.StringFieldUpdateOperationsInput | string
   firstName?: Prisma.StringFieldUpdateOperationsInput | string
   middleName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -3444,10 +3456,10 @@ export type EmployeeUncheckedUpdateWithoutPerformanceInput = {
   taxId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   passportNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   drivingLicense?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  tenantId?: Prisma.StringFieldUpdateOperationsInput | string
-  userId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  departmentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  managerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tenantId?: Prisma.IntFieldUpdateOperationsInput | number
+  userId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  departmentId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  managerId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   user?: Prisma.UserUncheckedUpdateOneWithoutEmployeeNestedInput
@@ -3461,7 +3473,6 @@ export type EmployeeUncheckedUpdateWithoutPerformanceInput = {
 }
 
 export type EmployeeCreateWithoutDocumentsInput = {
-  id?: string
   code: string
   firstName: string
   middleName?: string | null
@@ -3499,7 +3510,7 @@ export type EmployeeCreateWithoutDocumentsInput = {
   taxId?: string | null
   passportNumber?: string | null
   drivingLicense?: string | null
-  userId?: string | null
+  userId?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   tenant: Prisma.TenantCreateNestedOneWithoutEmployeesInput
@@ -3516,7 +3527,7 @@ export type EmployeeCreateWithoutDocumentsInput = {
 }
 
 export type EmployeeUncheckedCreateWithoutDocumentsInput = {
-  id?: string
+  id?: number
   code: string
   firstName: string
   middleName?: string | null
@@ -3554,10 +3565,10 @@ export type EmployeeUncheckedCreateWithoutDocumentsInput = {
   taxId?: string | null
   passportNumber?: string | null
   drivingLicense?: string | null
-  tenantId: string
-  userId?: string | null
-  departmentId?: string | null
-  managerId?: string | null
+  tenantId: number
+  userId?: number | null
+  departmentId?: number | null
+  managerId?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   user?: Prisma.UserUncheckedCreateNestedOneWithoutEmployeeInput
@@ -3587,7 +3598,6 @@ export type EmployeeUpdateToOneWithWhereWithoutDocumentsInput = {
 }
 
 export type EmployeeUpdateWithoutDocumentsInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   code?: Prisma.StringFieldUpdateOperationsInput | string
   firstName?: Prisma.StringFieldUpdateOperationsInput | string
   middleName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -3625,7 +3635,7 @@ export type EmployeeUpdateWithoutDocumentsInput = {
   taxId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   passportNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   drivingLicense?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  userId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  userId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   tenant?: Prisma.TenantUpdateOneRequiredWithoutEmployeesNestedInput
@@ -3642,7 +3652,7 @@ export type EmployeeUpdateWithoutDocumentsInput = {
 }
 
 export type EmployeeUncheckedUpdateWithoutDocumentsInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   code?: Prisma.StringFieldUpdateOperationsInput | string
   firstName?: Prisma.StringFieldUpdateOperationsInput | string
   middleName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -3680,10 +3690,10 @@ export type EmployeeUncheckedUpdateWithoutDocumentsInput = {
   taxId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   passportNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   drivingLicense?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  tenantId?: Prisma.StringFieldUpdateOperationsInput | string
-  userId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  departmentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  managerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tenantId?: Prisma.IntFieldUpdateOperationsInput | number
+  userId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  departmentId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  managerId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   user?: Prisma.UserUncheckedUpdateOneWithoutEmployeeNestedInput
@@ -3697,7 +3707,6 @@ export type EmployeeUncheckedUpdateWithoutDocumentsInput = {
 }
 
 export type EmployeeCreateWithoutBenefitsInput = {
-  id?: string
   code: string
   firstName: string
   middleName?: string | null
@@ -3735,7 +3744,7 @@ export type EmployeeCreateWithoutBenefitsInput = {
   taxId?: string | null
   passportNumber?: string | null
   drivingLicense?: string | null
-  userId?: string | null
+  userId?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   tenant: Prisma.TenantCreateNestedOneWithoutEmployeesInput
@@ -3752,7 +3761,7 @@ export type EmployeeCreateWithoutBenefitsInput = {
 }
 
 export type EmployeeUncheckedCreateWithoutBenefitsInput = {
-  id?: string
+  id?: number
   code: string
   firstName: string
   middleName?: string | null
@@ -3790,10 +3799,10 @@ export type EmployeeUncheckedCreateWithoutBenefitsInput = {
   taxId?: string | null
   passportNumber?: string | null
   drivingLicense?: string | null
-  tenantId: string
-  userId?: string | null
-  departmentId?: string | null
-  managerId?: string | null
+  tenantId: number
+  userId?: number | null
+  departmentId?: number | null
+  managerId?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   user?: Prisma.UserUncheckedCreateNestedOneWithoutEmployeeInput
@@ -3823,7 +3832,6 @@ export type EmployeeUpdateToOneWithWhereWithoutBenefitsInput = {
 }
 
 export type EmployeeUpdateWithoutBenefitsInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   code?: Prisma.StringFieldUpdateOperationsInput | string
   firstName?: Prisma.StringFieldUpdateOperationsInput | string
   middleName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -3861,7 +3869,7 @@ export type EmployeeUpdateWithoutBenefitsInput = {
   taxId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   passportNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   drivingLicense?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  userId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  userId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   tenant?: Prisma.TenantUpdateOneRequiredWithoutEmployeesNestedInput
@@ -3878,7 +3886,7 @@ export type EmployeeUpdateWithoutBenefitsInput = {
 }
 
 export type EmployeeUncheckedUpdateWithoutBenefitsInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   code?: Prisma.StringFieldUpdateOperationsInput | string
   firstName?: Prisma.StringFieldUpdateOperationsInput | string
   middleName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -3916,10 +3924,10 @@ export type EmployeeUncheckedUpdateWithoutBenefitsInput = {
   taxId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   passportNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   drivingLicense?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  tenantId?: Prisma.StringFieldUpdateOperationsInput | string
-  userId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  departmentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  managerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tenantId?: Prisma.IntFieldUpdateOperationsInput | number
+  userId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  departmentId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  managerId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   user?: Prisma.UserUncheckedUpdateOneWithoutEmployeeNestedInput
@@ -3933,7 +3941,6 @@ export type EmployeeUncheckedUpdateWithoutBenefitsInput = {
 }
 
 export type EmployeeCreateWithoutExpensesInput = {
-  id?: string
   code: string
   firstName: string
   middleName?: string | null
@@ -3971,7 +3978,7 @@ export type EmployeeCreateWithoutExpensesInput = {
   taxId?: string | null
   passportNumber?: string | null
   drivingLicense?: string | null
-  userId?: string | null
+  userId?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   tenant: Prisma.TenantCreateNestedOneWithoutEmployeesInput
@@ -3988,7 +3995,7 @@ export type EmployeeCreateWithoutExpensesInput = {
 }
 
 export type EmployeeUncheckedCreateWithoutExpensesInput = {
-  id?: string
+  id?: number
   code: string
   firstName: string
   middleName?: string | null
@@ -4026,10 +4033,10 @@ export type EmployeeUncheckedCreateWithoutExpensesInput = {
   taxId?: string | null
   passportNumber?: string | null
   drivingLicense?: string | null
-  tenantId: string
-  userId?: string | null
-  departmentId?: string | null
-  managerId?: string | null
+  tenantId: number
+  userId?: number | null
+  departmentId?: number | null
+  managerId?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   user?: Prisma.UserUncheckedCreateNestedOneWithoutEmployeeInput
@@ -4059,7 +4066,6 @@ export type EmployeeUpdateToOneWithWhereWithoutExpensesInput = {
 }
 
 export type EmployeeUpdateWithoutExpensesInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   code?: Prisma.StringFieldUpdateOperationsInput | string
   firstName?: Prisma.StringFieldUpdateOperationsInput | string
   middleName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -4097,7 +4103,7 @@ export type EmployeeUpdateWithoutExpensesInput = {
   taxId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   passportNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   drivingLicense?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  userId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  userId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   tenant?: Prisma.TenantUpdateOneRequiredWithoutEmployeesNestedInput
@@ -4114,7 +4120,7 @@ export type EmployeeUpdateWithoutExpensesInput = {
 }
 
 export type EmployeeUncheckedUpdateWithoutExpensesInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   code?: Prisma.StringFieldUpdateOperationsInput | string
   firstName?: Prisma.StringFieldUpdateOperationsInput | string
   middleName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -4152,10 +4158,10 @@ export type EmployeeUncheckedUpdateWithoutExpensesInput = {
   taxId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   passportNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   drivingLicense?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  tenantId?: Prisma.StringFieldUpdateOperationsInput | string
-  userId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  departmentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  managerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tenantId?: Prisma.IntFieldUpdateOperationsInput | number
+  userId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  departmentId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  managerId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   user?: Prisma.UserUncheckedUpdateOneWithoutEmployeeNestedInput
@@ -4169,7 +4175,7 @@ export type EmployeeUncheckedUpdateWithoutExpensesInput = {
 }
 
 export type EmployeeCreateManyTenantInput = {
-  id?: string
+  id?: number
   code: string
   firstName: string
   middleName?: string | null
@@ -4207,15 +4213,14 @@ export type EmployeeCreateManyTenantInput = {
   taxId?: string | null
   passportNumber?: string | null
   drivingLicense?: string | null
-  userId?: string | null
-  departmentId?: string | null
-  managerId?: string | null
+  userId?: number | null
+  departmentId?: number | null
+  managerId?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
 
 export type EmployeeUpdateWithoutTenantInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   code?: Prisma.StringFieldUpdateOperationsInput | string
   firstName?: Prisma.StringFieldUpdateOperationsInput | string
   middleName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -4253,7 +4258,7 @@ export type EmployeeUpdateWithoutTenantInput = {
   taxId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   passportNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   drivingLicense?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  userId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  userId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   user?: Prisma.UserUpdateOneWithoutEmployeeNestedInput
@@ -4270,7 +4275,7 @@ export type EmployeeUpdateWithoutTenantInput = {
 }
 
 export type EmployeeUncheckedUpdateWithoutTenantInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   code?: Prisma.StringFieldUpdateOperationsInput | string
   firstName?: Prisma.StringFieldUpdateOperationsInput | string
   middleName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -4308,9 +4313,9 @@ export type EmployeeUncheckedUpdateWithoutTenantInput = {
   taxId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   passportNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   drivingLicense?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  userId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  departmentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  managerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  userId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  departmentId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  managerId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   user?: Prisma.UserUncheckedUpdateOneWithoutEmployeeNestedInput
@@ -4325,7 +4330,7 @@ export type EmployeeUncheckedUpdateWithoutTenantInput = {
 }
 
 export type EmployeeUncheckedUpdateManyWithoutTenantInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   code?: Prisma.StringFieldUpdateOperationsInput | string
   firstName?: Prisma.StringFieldUpdateOperationsInput | string
   middleName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -4363,15 +4368,15 @@ export type EmployeeUncheckedUpdateManyWithoutTenantInput = {
   taxId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   passportNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   drivingLicense?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  userId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  departmentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  managerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  userId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  departmentId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  managerId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type EmployeeCreateManyManagerInput = {
-  id?: string
+  id?: number
   code: string
   firstName: string
   middleName?: string | null
@@ -4409,15 +4414,14 @@ export type EmployeeCreateManyManagerInput = {
   taxId?: string | null
   passportNumber?: string | null
   drivingLicense?: string | null
-  tenantId: string
-  userId?: string | null
-  departmentId?: string | null
+  tenantId: number
+  userId?: number | null
+  departmentId?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
 
 export type EmployeeUpdateWithoutManagerInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   code?: Prisma.StringFieldUpdateOperationsInput | string
   firstName?: Prisma.StringFieldUpdateOperationsInput | string
   middleName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -4455,7 +4459,7 @@ export type EmployeeUpdateWithoutManagerInput = {
   taxId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   passportNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   drivingLicense?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  userId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  userId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   tenant?: Prisma.TenantUpdateOneRequiredWithoutEmployeesNestedInput
@@ -4472,7 +4476,7 @@ export type EmployeeUpdateWithoutManagerInput = {
 }
 
 export type EmployeeUncheckedUpdateWithoutManagerInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   code?: Prisma.StringFieldUpdateOperationsInput | string
   firstName?: Prisma.StringFieldUpdateOperationsInput | string
   middleName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -4510,9 +4514,9 @@ export type EmployeeUncheckedUpdateWithoutManagerInput = {
   taxId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   passportNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   drivingLicense?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  tenantId?: Prisma.StringFieldUpdateOperationsInput | string
-  userId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  departmentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tenantId?: Prisma.IntFieldUpdateOperationsInput | number
+  userId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  departmentId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   user?: Prisma.UserUncheckedUpdateOneWithoutEmployeeNestedInput
@@ -4527,7 +4531,7 @@ export type EmployeeUncheckedUpdateWithoutManagerInput = {
 }
 
 export type EmployeeUncheckedUpdateManyWithoutManagerInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   code?: Prisma.StringFieldUpdateOperationsInput | string
   firstName?: Prisma.StringFieldUpdateOperationsInput | string
   middleName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -4565,15 +4569,15 @@ export type EmployeeUncheckedUpdateManyWithoutManagerInput = {
   taxId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   passportNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   drivingLicense?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  tenantId?: Prisma.StringFieldUpdateOperationsInput | string
-  userId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  departmentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tenantId?: Prisma.IntFieldUpdateOperationsInput | number
+  userId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  departmentId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type EmployeeCreateManyDepartmentInput = {
-  id?: string
+  id?: number
   code: string
   firstName: string
   middleName?: string | null
@@ -4611,15 +4615,14 @@ export type EmployeeCreateManyDepartmentInput = {
   taxId?: string | null
   passportNumber?: string | null
   drivingLicense?: string | null
-  tenantId: string
-  userId?: string | null
-  managerId?: string | null
+  tenantId: number
+  userId?: number | null
+  managerId?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
 
 export type EmployeeUpdateWithoutDepartmentInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   code?: Prisma.StringFieldUpdateOperationsInput | string
   firstName?: Prisma.StringFieldUpdateOperationsInput | string
   middleName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -4657,7 +4660,7 @@ export type EmployeeUpdateWithoutDepartmentInput = {
   taxId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   passportNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   drivingLicense?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  userId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  userId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   tenant?: Prisma.TenantUpdateOneRequiredWithoutEmployeesNestedInput
@@ -4674,7 +4677,7 @@ export type EmployeeUpdateWithoutDepartmentInput = {
 }
 
 export type EmployeeUncheckedUpdateWithoutDepartmentInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   code?: Prisma.StringFieldUpdateOperationsInput | string
   firstName?: Prisma.StringFieldUpdateOperationsInput | string
   middleName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -4712,9 +4715,9 @@ export type EmployeeUncheckedUpdateWithoutDepartmentInput = {
   taxId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   passportNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   drivingLicense?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  tenantId?: Prisma.StringFieldUpdateOperationsInput | string
-  userId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  managerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tenantId?: Prisma.IntFieldUpdateOperationsInput | number
+  userId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  managerId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   user?: Prisma.UserUncheckedUpdateOneWithoutEmployeeNestedInput
@@ -4729,7 +4732,7 @@ export type EmployeeUncheckedUpdateWithoutDepartmentInput = {
 }
 
 export type EmployeeUncheckedUpdateManyWithoutDepartmentInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   code?: Prisma.StringFieldUpdateOperationsInput | string
   firstName?: Prisma.StringFieldUpdateOperationsInput | string
   middleName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -4767,9 +4770,9 @@ export type EmployeeUncheckedUpdateManyWithoutDepartmentInput = {
   taxId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   passportNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   drivingLicense?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  tenantId?: Prisma.StringFieldUpdateOperationsInput | string
-  userId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  managerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tenantId?: Prisma.IntFieldUpdateOperationsInput | number
+  userId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  managerId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -5119,7 +5122,7 @@ export type $EmployeePayload<ExtArgs extends runtime.Types.Extensions.InternalAr
     benefits: Prisma.$EmployeeBenefitPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
-    id: string
+    id: number
     code: string
     firstName: string
     middleName: string | null
@@ -5157,10 +5160,10 @@ export type $EmployeePayload<ExtArgs extends runtime.Types.Extensions.InternalAr
     taxId: string | null
     passportNumber: string | null
     drivingLicense: string | null
-    tenantId: string
-    userId: string | null
-    departmentId: string | null
-    managerId: string | null
+    tenantId: number
+    userId: number | null
+    departmentId: number | null
+    managerId: number | null
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["employee"]>
@@ -5598,7 +5601,7 @@ export interface Prisma__EmployeeClient<T, Null = never, ExtArgs extends runtime
  * Fields of the Employee model
  */
 export interface EmployeeFieldRefs {
-  readonly id: Prisma.FieldRef<"Employee", 'String'>
+  readonly id: Prisma.FieldRef<"Employee", 'Int'>
   readonly code: Prisma.FieldRef<"Employee", 'String'>
   readonly firstName: Prisma.FieldRef<"Employee", 'String'>
   readonly middleName: Prisma.FieldRef<"Employee", 'String'>
@@ -5636,10 +5639,10 @@ export interface EmployeeFieldRefs {
   readonly taxId: Prisma.FieldRef<"Employee", 'String'>
   readonly passportNumber: Prisma.FieldRef<"Employee", 'String'>
   readonly drivingLicense: Prisma.FieldRef<"Employee", 'String'>
-  readonly tenantId: Prisma.FieldRef<"Employee", 'String'>
-  readonly userId: Prisma.FieldRef<"Employee", 'String'>
-  readonly departmentId: Prisma.FieldRef<"Employee", 'String'>
-  readonly managerId: Prisma.FieldRef<"Employee", 'String'>
+  readonly tenantId: Prisma.FieldRef<"Employee", 'Int'>
+  readonly userId: Prisma.FieldRef<"Employee", 'Int'>
+  readonly departmentId: Prisma.FieldRef<"Employee", 'Int'>
+  readonly managerId: Prisma.FieldRef<"Employee", 'Int'>
   readonly createdAt: Prisma.FieldRef<"Employee", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"Employee", 'DateTime'>
 }

@@ -27,17 +27,23 @@ export type AggregateTask = {
 }
 
 export type TaskAvgAggregateOutputType = {
+  id: number | null
   estimatedHours: runtime.Decimal | null
   actualHours: runtime.Decimal | null
+  projectId: number | null
+  parentTaskId: number | null
 }
 
 export type TaskSumAggregateOutputType = {
+  id: number | null
   estimatedHours: runtime.Decimal | null
   actualHours: runtime.Decimal | null
+  projectId: number | null
+  parentTaskId: number | null
 }
 
 export type TaskMinAggregateOutputType = {
-  id: string | null
+  id: number | null
   title: string | null
   description: string | null
   priority: $Enums.TaskPriority | null
@@ -47,16 +53,16 @@ export type TaskMinAggregateOutputType = {
   completedDate: Date | null
   estimatedHours: runtime.Decimal | null
   actualHours: runtime.Decimal | null
-  projectId: string | null
+  projectId: number | null
   assignedTo: string | null
-  parentTaskId: string | null
+  parentTaskId: number | null
   createdBy: string | null
   createdAt: Date | null
   updatedAt: Date | null
 }
 
 export type TaskMaxAggregateOutputType = {
-  id: string | null
+  id: number | null
   title: string | null
   description: string | null
   priority: $Enums.TaskPriority | null
@@ -66,9 +72,9 @@ export type TaskMaxAggregateOutputType = {
   completedDate: Date | null
   estimatedHours: runtime.Decimal | null
   actualHours: runtime.Decimal | null
-  projectId: string | null
+  projectId: number | null
   assignedTo: string | null
-  parentTaskId: string | null
+  parentTaskId: number | null
   createdBy: string | null
   createdAt: Date | null
   updatedAt: Date | null
@@ -96,13 +102,19 @@ export type TaskCountAggregateOutputType = {
 
 
 export type TaskAvgAggregateInputType = {
+  id?: true
   estimatedHours?: true
   actualHours?: true
+  projectId?: true
+  parentTaskId?: true
 }
 
 export type TaskSumAggregateInputType = {
+  id?: true
   estimatedHours?: true
   actualHours?: true
+  projectId?: true
+  parentTaskId?: true
 }
 
 export type TaskMinAggregateInputType = {
@@ -250,7 +262,7 @@ export type TaskGroupByArgs<ExtArgs extends runtime.Types.Extensions.InternalArg
 }
 
 export type TaskGroupByOutputType = {
-  id: string
+  id: number
   title: string
   description: string | null
   priority: $Enums.TaskPriority
@@ -260,9 +272,9 @@ export type TaskGroupByOutputType = {
   completedDate: Date | null
   estimatedHours: runtime.Decimal | null
   actualHours: runtime.Decimal
-  projectId: string
+  projectId: number
   assignedTo: string | null
-  parentTaskId: string | null
+  parentTaskId: number | null
   createdBy: string
   createdAt: Date
   updatedAt: Date
@@ -292,7 +304,7 @@ export type TaskWhereInput = {
   AND?: Prisma.TaskWhereInput | Prisma.TaskWhereInput[]
   OR?: Prisma.TaskWhereInput[]
   NOT?: Prisma.TaskWhereInput | Prisma.TaskWhereInput[]
-  id?: Prisma.StringFilter<"Task"> | string
+  id?: Prisma.IntFilter<"Task"> | number
   title?: Prisma.StringFilter<"Task"> | string
   description?: Prisma.StringNullableFilter<"Task"> | string | null
   priority?: Prisma.EnumTaskPriorityFilter<"Task"> | $Enums.TaskPriority
@@ -302,9 +314,9 @@ export type TaskWhereInput = {
   completedDate?: Prisma.DateTimeNullableFilter<"Task"> | Date | string | null
   estimatedHours?: Prisma.DecimalNullableFilter<"Task"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   actualHours?: Prisma.DecimalFilter<"Task"> | runtime.Decimal | runtime.DecimalJsLike | number | string
-  projectId?: Prisma.StringFilter<"Task"> | string
+  projectId?: Prisma.IntFilter<"Task"> | number
   assignedTo?: Prisma.StringNullableFilter<"Task"> | string | null
-  parentTaskId?: Prisma.StringNullableFilter<"Task"> | string | null
+  parentTaskId?: Prisma.IntNullableFilter<"Task"> | number | null
   createdBy?: Prisma.StringFilter<"Task"> | string
   createdAt?: Prisma.DateTimeFilter<"Task"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Task"> | Date | string
@@ -338,7 +350,7 @@ export type TaskOrderByWithRelationInput = {
 }
 
 export type TaskWhereUniqueInput = Prisma.AtLeast<{
-  id?: string
+  id?: number
   AND?: Prisma.TaskWhereInput | Prisma.TaskWhereInput[]
   OR?: Prisma.TaskWhereInput[]
   NOT?: Prisma.TaskWhereInput | Prisma.TaskWhereInput[]
@@ -351,9 +363,9 @@ export type TaskWhereUniqueInput = Prisma.AtLeast<{
   completedDate?: Prisma.DateTimeNullableFilter<"Task"> | Date | string | null
   estimatedHours?: Prisma.DecimalNullableFilter<"Task"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   actualHours?: Prisma.DecimalFilter<"Task"> | runtime.Decimal | runtime.DecimalJsLike | number | string
-  projectId?: Prisma.StringFilter<"Task"> | string
+  projectId?: Prisma.IntFilter<"Task"> | number
   assignedTo?: Prisma.StringNullableFilter<"Task"> | string | null
-  parentTaskId?: Prisma.StringNullableFilter<"Task"> | string | null
+  parentTaskId?: Prisma.IntNullableFilter<"Task"> | number | null
   createdBy?: Prisma.StringFilter<"Task"> | string
   createdAt?: Prisma.DateTimeFilter<"Task"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Task"> | Date | string
@@ -391,7 +403,7 @@ export type TaskScalarWhereWithAggregatesInput = {
   AND?: Prisma.TaskScalarWhereWithAggregatesInput | Prisma.TaskScalarWhereWithAggregatesInput[]
   OR?: Prisma.TaskScalarWhereWithAggregatesInput[]
   NOT?: Prisma.TaskScalarWhereWithAggregatesInput | Prisma.TaskScalarWhereWithAggregatesInput[]
-  id?: Prisma.StringWithAggregatesFilter<"Task"> | string
+  id?: Prisma.IntWithAggregatesFilter<"Task"> | number
   title?: Prisma.StringWithAggregatesFilter<"Task"> | string
   description?: Prisma.StringNullableWithAggregatesFilter<"Task"> | string | null
   priority?: Prisma.EnumTaskPriorityWithAggregatesFilter<"Task"> | $Enums.TaskPriority
@@ -401,16 +413,15 @@ export type TaskScalarWhereWithAggregatesInput = {
   completedDate?: Prisma.DateTimeNullableWithAggregatesFilter<"Task"> | Date | string | null
   estimatedHours?: Prisma.DecimalNullableWithAggregatesFilter<"Task"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   actualHours?: Prisma.DecimalWithAggregatesFilter<"Task"> | runtime.Decimal | runtime.DecimalJsLike | number | string
-  projectId?: Prisma.StringWithAggregatesFilter<"Task"> | string
+  projectId?: Prisma.IntWithAggregatesFilter<"Task"> | number
   assignedTo?: Prisma.StringNullableWithAggregatesFilter<"Task"> | string | null
-  parentTaskId?: Prisma.StringNullableWithAggregatesFilter<"Task"> | string | null
+  parentTaskId?: Prisma.IntNullableWithAggregatesFilter<"Task"> | number | null
   createdBy?: Prisma.StringWithAggregatesFilter<"Task"> | string
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Task"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Task"> | Date | string
 }
 
 export type TaskCreateInput = {
-  id?: string
   title: string
   description?: string | null
   priority?: $Enums.TaskPriority
@@ -431,7 +442,7 @@ export type TaskCreateInput = {
 }
 
 export type TaskUncheckedCreateInput = {
-  id?: string
+  id?: number
   title: string
   description?: string | null
   priority?: $Enums.TaskPriority
@@ -441,9 +452,9 @@ export type TaskUncheckedCreateInput = {
   completedDate?: Date | string | null
   estimatedHours?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   actualHours?: runtime.Decimal | runtime.DecimalJsLike | number | string
-  projectId: string
+  projectId: number
   assignedTo?: string | null
-  parentTaskId?: string | null
+  parentTaskId?: number | null
   createdBy: string
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -452,7 +463,6 @@ export type TaskUncheckedCreateInput = {
 }
 
 export type TaskUpdateInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   title?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   priority?: Prisma.EnumTaskPriorityFieldUpdateOperationsInput | $Enums.TaskPriority
@@ -473,7 +483,7 @@ export type TaskUpdateInput = {
 }
 
 export type TaskUncheckedUpdateInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   title?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   priority?: Prisma.EnumTaskPriorityFieldUpdateOperationsInput | $Enums.TaskPriority
@@ -483,9 +493,9 @@ export type TaskUncheckedUpdateInput = {
   completedDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   estimatedHours?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   actualHours?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  projectId?: Prisma.StringFieldUpdateOperationsInput | string
+  projectId?: Prisma.IntFieldUpdateOperationsInput | number
   assignedTo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  parentTaskId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  parentTaskId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdBy?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -494,7 +504,7 @@ export type TaskUncheckedUpdateInput = {
 }
 
 export type TaskCreateManyInput = {
-  id?: string
+  id?: number
   title: string
   description?: string | null
   priority?: $Enums.TaskPriority
@@ -504,16 +514,15 @@ export type TaskCreateManyInput = {
   completedDate?: Date | string | null
   estimatedHours?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   actualHours?: runtime.Decimal | runtime.DecimalJsLike | number | string
-  projectId: string
+  projectId: number
   assignedTo?: string | null
-  parentTaskId?: string | null
+  parentTaskId?: number | null
   createdBy: string
   createdAt?: Date | string
   updatedAt?: Date | string
 }
 
 export type TaskUpdateManyMutationInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   title?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   priority?: Prisma.EnumTaskPriorityFieldUpdateOperationsInput | $Enums.TaskPriority
@@ -530,7 +539,7 @@ export type TaskUpdateManyMutationInput = {
 }
 
 export type TaskUncheckedUpdateManyInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   title?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   priority?: Prisma.EnumTaskPriorityFieldUpdateOperationsInput | $Enums.TaskPriority
@@ -540,9 +549,9 @@ export type TaskUncheckedUpdateManyInput = {
   completedDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   estimatedHours?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   actualHours?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  projectId?: Prisma.StringFieldUpdateOperationsInput | string
+  projectId?: Prisma.IntFieldUpdateOperationsInput | number
   assignedTo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  parentTaskId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  parentTaskId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdBy?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -583,8 +592,11 @@ export type TaskCountOrderByAggregateInput = {
 }
 
 export type TaskAvgOrderByAggregateInput = {
+  id?: Prisma.SortOrder
   estimatedHours?: Prisma.SortOrder
   actualHours?: Prisma.SortOrder
+  projectId?: Prisma.SortOrder
+  parentTaskId?: Prisma.SortOrder
 }
 
 export type TaskMaxOrderByAggregateInput = {
@@ -626,8 +638,11 @@ export type TaskMinOrderByAggregateInput = {
 }
 
 export type TaskSumOrderByAggregateInput = {
+  id?: Prisma.SortOrder
   estimatedHours?: Prisma.SortOrder
   actualHours?: Prisma.SortOrder
+  projectId?: Prisma.SortOrder
+  parentTaskId?: Prisma.SortOrder
 }
 
 export type TaskCreateNestedManyWithoutProjectInput = {
@@ -755,7 +770,6 @@ export type TaskUpdateOneWithoutTimesheetsNestedInput = {
 }
 
 export type TaskCreateWithoutProjectInput = {
-  id?: string
   title: string
   description?: string | null
   priority?: $Enums.TaskPriority
@@ -775,7 +789,7 @@ export type TaskCreateWithoutProjectInput = {
 }
 
 export type TaskUncheckedCreateWithoutProjectInput = {
-  id?: string
+  id?: number
   title: string
   description?: string | null
   priority?: $Enums.TaskPriority
@@ -786,7 +800,7 @@ export type TaskUncheckedCreateWithoutProjectInput = {
   estimatedHours?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   actualHours?: runtime.Decimal | runtime.DecimalJsLike | number | string
   assignedTo?: string | null
-  parentTaskId?: string | null
+  parentTaskId?: number | null
   createdBy: string
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -824,7 +838,7 @@ export type TaskScalarWhereInput = {
   AND?: Prisma.TaskScalarWhereInput | Prisma.TaskScalarWhereInput[]
   OR?: Prisma.TaskScalarWhereInput[]
   NOT?: Prisma.TaskScalarWhereInput | Prisma.TaskScalarWhereInput[]
-  id?: Prisma.StringFilter<"Task"> | string
+  id?: Prisma.IntFilter<"Task"> | number
   title?: Prisma.StringFilter<"Task"> | string
   description?: Prisma.StringNullableFilter<"Task"> | string | null
   priority?: Prisma.EnumTaskPriorityFilter<"Task"> | $Enums.TaskPriority
@@ -834,16 +848,15 @@ export type TaskScalarWhereInput = {
   completedDate?: Prisma.DateTimeNullableFilter<"Task"> | Date | string | null
   estimatedHours?: Prisma.DecimalNullableFilter<"Task"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   actualHours?: Prisma.DecimalFilter<"Task"> | runtime.Decimal | runtime.DecimalJsLike | number | string
-  projectId?: Prisma.StringFilter<"Task"> | string
+  projectId?: Prisma.IntFilter<"Task"> | number
   assignedTo?: Prisma.StringNullableFilter<"Task"> | string | null
-  parentTaskId?: Prisma.StringNullableFilter<"Task"> | string | null
+  parentTaskId?: Prisma.IntNullableFilter<"Task"> | number | null
   createdBy?: Prisma.StringFilter<"Task"> | string
   createdAt?: Prisma.DateTimeFilter<"Task"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Task"> | Date | string
 }
 
 export type TaskCreateWithoutSubTasksInput = {
-  id?: string
   title: string
   description?: string | null
   priority?: $Enums.TaskPriority
@@ -863,7 +876,7 @@ export type TaskCreateWithoutSubTasksInput = {
 }
 
 export type TaskUncheckedCreateWithoutSubTasksInput = {
-  id?: string
+  id?: number
   title: string
   description?: string | null
   priority?: $Enums.TaskPriority
@@ -873,9 +886,9 @@ export type TaskUncheckedCreateWithoutSubTasksInput = {
   completedDate?: Date | string | null
   estimatedHours?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   actualHours?: runtime.Decimal | runtime.DecimalJsLike | number | string
-  projectId: string
+  projectId: number
   assignedTo?: string | null
-  parentTaskId?: string | null
+  parentTaskId?: number | null
   createdBy: string
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -888,7 +901,6 @@ export type TaskCreateOrConnectWithoutSubTasksInput = {
 }
 
 export type TaskCreateWithoutParentTaskInput = {
-  id?: string
   title: string
   description?: string | null
   priority?: $Enums.TaskPriority
@@ -908,7 +920,7 @@ export type TaskCreateWithoutParentTaskInput = {
 }
 
 export type TaskUncheckedCreateWithoutParentTaskInput = {
-  id?: string
+  id?: number
   title: string
   description?: string | null
   priority?: $Enums.TaskPriority
@@ -918,7 +930,7 @@ export type TaskUncheckedCreateWithoutParentTaskInput = {
   completedDate?: Date | string | null
   estimatedHours?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   actualHours?: runtime.Decimal | runtime.DecimalJsLike | number | string
-  projectId: string
+  projectId: number
   assignedTo?: string | null
   createdBy: string
   createdAt?: Date | string
@@ -949,7 +961,6 @@ export type TaskUpdateToOneWithWhereWithoutSubTasksInput = {
 }
 
 export type TaskUpdateWithoutSubTasksInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   title?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   priority?: Prisma.EnumTaskPriorityFieldUpdateOperationsInput | $Enums.TaskPriority
@@ -969,7 +980,7 @@ export type TaskUpdateWithoutSubTasksInput = {
 }
 
 export type TaskUncheckedUpdateWithoutSubTasksInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   title?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   priority?: Prisma.EnumTaskPriorityFieldUpdateOperationsInput | $Enums.TaskPriority
@@ -979,9 +990,9 @@ export type TaskUncheckedUpdateWithoutSubTasksInput = {
   completedDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   estimatedHours?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   actualHours?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  projectId?: Prisma.StringFieldUpdateOperationsInput | string
+  projectId?: Prisma.IntFieldUpdateOperationsInput | number
   assignedTo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  parentTaskId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  parentTaskId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdBy?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1005,7 +1016,6 @@ export type TaskUpdateManyWithWhereWithoutParentTaskInput = {
 }
 
 export type TaskCreateWithoutTimesheetsInput = {
-  id?: string
   title: string
   description?: string | null
   priority?: $Enums.TaskPriority
@@ -1025,7 +1035,7 @@ export type TaskCreateWithoutTimesheetsInput = {
 }
 
 export type TaskUncheckedCreateWithoutTimesheetsInput = {
-  id?: string
+  id?: number
   title: string
   description?: string | null
   priority?: $Enums.TaskPriority
@@ -1035,9 +1045,9 @@ export type TaskUncheckedCreateWithoutTimesheetsInput = {
   completedDate?: Date | string | null
   estimatedHours?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   actualHours?: runtime.Decimal | runtime.DecimalJsLike | number | string
-  projectId: string
+  projectId: number
   assignedTo?: string | null
-  parentTaskId?: string | null
+  parentTaskId?: number | null
   createdBy: string
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1061,7 +1071,6 @@ export type TaskUpdateToOneWithWhereWithoutTimesheetsInput = {
 }
 
 export type TaskUpdateWithoutTimesheetsInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   title?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   priority?: Prisma.EnumTaskPriorityFieldUpdateOperationsInput | $Enums.TaskPriority
@@ -1081,7 +1090,7 @@ export type TaskUpdateWithoutTimesheetsInput = {
 }
 
 export type TaskUncheckedUpdateWithoutTimesheetsInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   title?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   priority?: Prisma.EnumTaskPriorityFieldUpdateOperationsInput | $Enums.TaskPriority
@@ -1091,9 +1100,9 @@ export type TaskUncheckedUpdateWithoutTimesheetsInput = {
   completedDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   estimatedHours?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   actualHours?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  projectId?: Prisma.StringFieldUpdateOperationsInput | string
+  projectId?: Prisma.IntFieldUpdateOperationsInput | number
   assignedTo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  parentTaskId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  parentTaskId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdBy?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1101,7 +1110,7 @@ export type TaskUncheckedUpdateWithoutTimesheetsInput = {
 }
 
 export type TaskCreateManyProjectInput = {
-  id?: string
+  id?: number
   title: string
   description?: string | null
   priority?: $Enums.TaskPriority
@@ -1112,14 +1121,13 @@ export type TaskCreateManyProjectInput = {
   estimatedHours?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   actualHours?: runtime.Decimal | runtime.DecimalJsLike | number | string
   assignedTo?: string | null
-  parentTaskId?: string | null
+  parentTaskId?: number | null
   createdBy: string
   createdAt?: Date | string
   updatedAt?: Date | string
 }
 
 export type TaskUpdateWithoutProjectInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   title?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   priority?: Prisma.EnumTaskPriorityFieldUpdateOperationsInput | $Enums.TaskPriority
@@ -1139,7 +1147,7 @@ export type TaskUpdateWithoutProjectInput = {
 }
 
 export type TaskUncheckedUpdateWithoutProjectInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   title?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   priority?: Prisma.EnumTaskPriorityFieldUpdateOperationsInput | $Enums.TaskPriority
@@ -1150,7 +1158,7 @@ export type TaskUncheckedUpdateWithoutProjectInput = {
   estimatedHours?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   actualHours?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   assignedTo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  parentTaskId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  parentTaskId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdBy?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1159,7 +1167,7 @@ export type TaskUncheckedUpdateWithoutProjectInput = {
 }
 
 export type TaskUncheckedUpdateManyWithoutProjectInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   title?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   priority?: Prisma.EnumTaskPriorityFieldUpdateOperationsInput | $Enums.TaskPriority
@@ -1170,14 +1178,14 @@ export type TaskUncheckedUpdateManyWithoutProjectInput = {
   estimatedHours?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   actualHours?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   assignedTo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  parentTaskId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  parentTaskId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdBy?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type TaskCreateManyParentTaskInput = {
-  id?: string
+  id?: number
   title: string
   description?: string | null
   priority?: $Enums.TaskPriority
@@ -1187,7 +1195,7 @@ export type TaskCreateManyParentTaskInput = {
   completedDate?: Date | string | null
   estimatedHours?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   actualHours?: runtime.Decimal | runtime.DecimalJsLike | number | string
-  projectId: string
+  projectId: number
   assignedTo?: string | null
   createdBy: string
   createdAt?: Date | string
@@ -1195,7 +1203,6 @@ export type TaskCreateManyParentTaskInput = {
 }
 
 export type TaskUpdateWithoutParentTaskInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   title?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   priority?: Prisma.EnumTaskPriorityFieldUpdateOperationsInput | $Enums.TaskPriority
@@ -1215,7 +1222,7 @@ export type TaskUpdateWithoutParentTaskInput = {
 }
 
 export type TaskUncheckedUpdateWithoutParentTaskInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   title?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   priority?: Prisma.EnumTaskPriorityFieldUpdateOperationsInput | $Enums.TaskPriority
@@ -1225,7 +1232,7 @@ export type TaskUncheckedUpdateWithoutParentTaskInput = {
   completedDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   estimatedHours?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   actualHours?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  projectId?: Prisma.StringFieldUpdateOperationsInput | string
+  projectId?: Prisma.IntFieldUpdateOperationsInput | number
   assignedTo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdBy?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1235,7 +1242,7 @@ export type TaskUncheckedUpdateWithoutParentTaskInput = {
 }
 
 export type TaskUncheckedUpdateManyWithoutParentTaskInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   title?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   priority?: Prisma.EnumTaskPriorityFieldUpdateOperationsInput | $Enums.TaskPriority
@@ -1245,7 +1252,7 @@ export type TaskUncheckedUpdateManyWithoutParentTaskInput = {
   completedDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   estimatedHours?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   actualHours?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  projectId?: Prisma.StringFieldUpdateOperationsInput | string
+  projectId?: Prisma.IntFieldUpdateOperationsInput | number
   assignedTo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdBy?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1403,7 +1410,7 @@ export type $TaskPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     timesheets: Prisma.$TimesheetPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
-    id: string
+    id: number
     title: string
     description: string | null
     priority: $Enums.TaskPriority
@@ -1413,9 +1420,9 @@ export type $TaskPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     completedDate: Date | null
     estimatedHours: runtime.Decimal | null
     actualHours: runtime.Decimal
-    projectId: string
+    projectId: number
     assignedTo: string | null
-    parentTaskId: string | null
+    parentTaskId: number | null
     createdBy: string
     createdAt: Date
     updatedAt: Date
@@ -1846,7 +1853,7 @@ export interface Prisma__TaskClient<T, Null = never, ExtArgs extends runtime.Typ
  * Fields of the Task model
  */
 export interface TaskFieldRefs {
-  readonly id: Prisma.FieldRef<"Task", 'String'>
+  readonly id: Prisma.FieldRef<"Task", 'Int'>
   readonly title: Prisma.FieldRef<"Task", 'String'>
   readonly description: Prisma.FieldRef<"Task", 'String'>
   readonly priority: Prisma.FieldRef<"Task", 'TaskPriority'>
@@ -1856,9 +1863,9 @@ export interface TaskFieldRefs {
   readonly completedDate: Prisma.FieldRef<"Task", 'DateTime'>
   readonly estimatedHours: Prisma.FieldRef<"Task", 'Decimal'>
   readonly actualHours: Prisma.FieldRef<"Task", 'Decimal'>
-  readonly projectId: Prisma.FieldRef<"Task", 'String'>
+  readonly projectId: Prisma.FieldRef<"Task", 'Int'>
   readonly assignedTo: Prisma.FieldRef<"Task", 'String'>
-  readonly parentTaskId: Prisma.FieldRef<"Task", 'String'>
+  readonly parentTaskId: Prisma.FieldRef<"Task", 'Int'>
   readonly createdBy: Prisma.FieldRef<"Task", 'String'>
   readonly createdAt: Prisma.FieldRef<"Task", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"Task", 'DateTime'>

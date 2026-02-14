@@ -27,33 +27,37 @@ export type AggregateCreditNote = {
 }
 
 export type CreditNoteAvgAggregateOutputType = {
+  id: number | null
   amount: runtime.Decimal | null
+  invoiceId: number | null
 }
 
 export type CreditNoteSumAggregateOutputType = {
+  id: number | null
   amount: runtime.Decimal | null
+  invoiceId: number | null
 }
 
 export type CreditNoteMinAggregateOutputType = {
-  id: string | null
+  id: number | null
   creditNoteNumber: string | null
   date: Date | null
   reason: string | null
   amount: runtime.Decimal | null
   status: string | null
-  invoiceId: string | null
+  invoiceId: number | null
   createdAt: Date | null
   updatedAt: Date | null
 }
 
 export type CreditNoteMaxAggregateOutputType = {
-  id: string | null
+  id: number | null
   creditNoteNumber: string | null
   date: Date | null
   reason: string | null
   amount: runtime.Decimal | null
   status: string | null
-  invoiceId: string | null
+  invoiceId: number | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -73,11 +77,15 @@ export type CreditNoteCountAggregateOutputType = {
 
 
 export type CreditNoteAvgAggregateInputType = {
+  id?: true
   amount?: true
+  invoiceId?: true
 }
 
 export type CreditNoteSumAggregateInputType = {
+  id?: true
   amount?: true
+  invoiceId?: true
 }
 
 export type CreditNoteMinAggregateInputType = {
@@ -204,13 +212,13 @@ export type CreditNoteGroupByArgs<ExtArgs extends runtime.Types.Extensions.Inter
 }
 
 export type CreditNoteGroupByOutputType = {
-  id: string
+  id: number
   creditNoteNumber: string
   date: Date
   reason: string
   amount: runtime.Decimal
   status: string
-  invoiceId: string
+  invoiceId: number
   createdAt: Date
   updatedAt: Date
   _count: CreditNoteCountAggregateOutputType | null
@@ -239,13 +247,13 @@ export type CreditNoteWhereInput = {
   AND?: Prisma.CreditNoteWhereInput | Prisma.CreditNoteWhereInput[]
   OR?: Prisma.CreditNoteWhereInput[]
   NOT?: Prisma.CreditNoteWhereInput | Prisma.CreditNoteWhereInput[]
-  id?: Prisma.StringFilter<"CreditNote"> | string
+  id?: Prisma.IntFilter<"CreditNote"> | number
   creditNoteNumber?: Prisma.StringFilter<"CreditNote"> | string
   date?: Prisma.DateTimeFilter<"CreditNote"> | Date | string
   reason?: Prisma.StringFilter<"CreditNote"> | string
   amount?: Prisma.DecimalFilter<"CreditNote"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   status?: Prisma.StringFilter<"CreditNote"> | string
-  invoiceId?: Prisma.StringFilter<"CreditNote"> | string
+  invoiceId?: Prisma.IntFilter<"CreditNote"> | number
   createdAt?: Prisma.DateTimeFilter<"CreditNote"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"CreditNote"> | Date | string
   invoice?: Prisma.XOR<Prisma.InvoiceScalarRelationFilter, Prisma.InvoiceWhereInput>
@@ -265,7 +273,7 @@ export type CreditNoteOrderByWithRelationInput = {
 }
 
 export type CreditNoteWhereUniqueInput = Prisma.AtLeast<{
-  id?: string
+  id?: number
   AND?: Prisma.CreditNoteWhereInput | Prisma.CreditNoteWhereInput[]
   OR?: Prisma.CreditNoteWhereInput[]
   NOT?: Prisma.CreditNoteWhereInput | Prisma.CreditNoteWhereInput[]
@@ -274,7 +282,7 @@ export type CreditNoteWhereUniqueInput = Prisma.AtLeast<{
   reason?: Prisma.StringFilter<"CreditNote"> | string
   amount?: Prisma.DecimalFilter<"CreditNote"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   status?: Prisma.StringFilter<"CreditNote"> | string
-  invoiceId?: Prisma.StringFilter<"CreditNote"> | string
+  invoiceId?: Prisma.IntFilter<"CreditNote"> | number
   createdAt?: Prisma.DateTimeFilter<"CreditNote"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"CreditNote"> | Date | string
   invoice?: Prisma.XOR<Prisma.InvoiceScalarRelationFilter, Prisma.InvoiceWhereInput>
@@ -301,19 +309,18 @@ export type CreditNoteScalarWhereWithAggregatesInput = {
   AND?: Prisma.CreditNoteScalarWhereWithAggregatesInput | Prisma.CreditNoteScalarWhereWithAggregatesInput[]
   OR?: Prisma.CreditNoteScalarWhereWithAggregatesInput[]
   NOT?: Prisma.CreditNoteScalarWhereWithAggregatesInput | Prisma.CreditNoteScalarWhereWithAggregatesInput[]
-  id?: Prisma.StringWithAggregatesFilter<"CreditNote"> | string
+  id?: Prisma.IntWithAggregatesFilter<"CreditNote"> | number
   creditNoteNumber?: Prisma.StringWithAggregatesFilter<"CreditNote"> | string
   date?: Prisma.DateTimeWithAggregatesFilter<"CreditNote"> | Date | string
   reason?: Prisma.StringWithAggregatesFilter<"CreditNote"> | string
   amount?: Prisma.DecimalWithAggregatesFilter<"CreditNote"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   status?: Prisma.StringWithAggregatesFilter<"CreditNote"> | string
-  invoiceId?: Prisma.StringWithAggregatesFilter<"CreditNote"> | string
+  invoiceId?: Prisma.IntWithAggregatesFilter<"CreditNote"> | number
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"CreditNote"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"CreditNote"> | Date | string
 }
 
 export type CreditNoteCreateInput = {
-  id?: string
   creditNoteNumber: string
   date: Date | string
   reason: string
@@ -325,19 +332,18 @@ export type CreditNoteCreateInput = {
 }
 
 export type CreditNoteUncheckedCreateInput = {
-  id?: string
+  id?: number
   creditNoteNumber: string
   date: Date | string
   reason: string
   amount: runtime.Decimal | runtime.DecimalJsLike | number | string
   status?: string
-  invoiceId: string
+  invoiceId: number
   createdAt?: Date | string
   updatedAt?: Date | string
 }
 
 export type CreditNoteUpdateInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   creditNoteNumber?: Prisma.StringFieldUpdateOperationsInput | string
   date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   reason?: Prisma.StringFieldUpdateOperationsInput | string
@@ -349,31 +355,30 @@ export type CreditNoteUpdateInput = {
 }
 
 export type CreditNoteUncheckedUpdateInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   creditNoteNumber?: Prisma.StringFieldUpdateOperationsInput | string
   date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   reason?: Prisma.StringFieldUpdateOperationsInput | string
   amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   status?: Prisma.StringFieldUpdateOperationsInput | string
-  invoiceId?: Prisma.StringFieldUpdateOperationsInput | string
+  invoiceId?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type CreditNoteCreateManyInput = {
-  id?: string
+  id?: number
   creditNoteNumber: string
   date: Date | string
   reason: string
   amount: runtime.Decimal | runtime.DecimalJsLike | number | string
   status?: string
-  invoiceId: string
+  invoiceId: number
   createdAt?: Date | string
   updatedAt?: Date | string
 }
 
 export type CreditNoteUpdateManyMutationInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   creditNoteNumber?: Prisma.StringFieldUpdateOperationsInput | string
   date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   reason?: Prisma.StringFieldUpdateOperationsInput | string
@@ -384,13 +389,13 @@ export type CreditNoteUpdateManyMutationInput = {
 }
 
 export type CreditNoteUncheckedUpdateManyInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   creditNoteNumber?: Prisma.StringFieldUpdateOperationsInput | string
   date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   reason?: Prisma.StringFieldUpdateOperationsInput | string
   amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   status?: Prisma.StringFieldUpdateOperationsInput | string
-  invoiceId?: Prisma.StringFieldUpdateOperationsInput | string
+  invoiceId?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -418,7 +423,9 @@ export type CreditNoteCountOrderByAggregateInput = {
 }
 
 export type CreditNoteAvgOrderByAggregateInput = {
+  id?: Prisma.SortOrder
   amount?: Prisma.SortOrder
+  invoiceId?: Prisma.SortOrder
 }
 
 export type CreditNoteMaxOrderByAggregateInput = {
@@ -446,7 +453,9 @@ export type CreditNoteMinOrderByAggregateInput = {
 }
 
 export type CreditNoteSumOrderByAggregateInput = {
+  id?: Prisma.SortOrder
   amount?: Prisma.SortOrder
+  invoiceId?: Prisma.SortOrder
 }
 
 export type CreditNoteCreateNestedManyWithoutInvoiceInput = {
@@ -492,7 +501,6 @@ export type CreditNoteUncheckedUpdateManyWithoutInvoiceNestedInput = {
 }
 
 export type CreditNoteCreateWithoutInvoiceInput = {
-  id?: string
   creditNoteNumber: string
   date: Date | string
   reason: string
@@ -503,7 +511,7 @@ export type CreditNoteCreateWithoutInvoiceInput = {
 }
 
 export type CreditNoteUncheckedCreateWithoutInvoiceInput = {
-  id?: string
+  id?: number
   creditNoteNumber: string
   date: Date | string
   reason: string
@@ -543,19 +551,19 @@ export type CreditNoteScalarWhereInput = {
   AND?: Prisma.CreditNoteScalarWhereInput | Prisma.CreditNoteScalarWhereInput[]
   OR?: Prisma.CreditNoteScalarWhereInput[]
   NOT?: Prisma.CreditNoteScalarWhereInput | Prisma.CreditNoteScalarWhereInput[]
-  id?: Prisma.StringFilter<"CreditNote"> | string
+  id?: Prisma.IntFilter<"CreditNote"> | number
   creditNoteNumber?: Prisma.StringFilter<"CreditNote"> | string
   date?: Prisma.DateTimeFilter<"CreditNote"> | Date | string
   reason?: Prisma.StringFilter<"CreditNote"> | string
   amount?: Prisma.DecimalFilter<"CreditNote"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   status?: Prisma.StringFilter<"CreditNote"> | string
-  invoiceId?: Prisma.StringFilter<"CreditNote"> | string
+  invoiceId?: Prisma.IntFilter<"CreditNote"> | number
   createdAt?: Prisma.DateTimeFilter<"CreditNote"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"CreditNote"> | Date | string
 }
 
 export type CreditNoteCreateManyInvoiceInput = {
-  id?: string
+  id?: number
   creditNoteNumber: string
   date: Date | string
   reason: string
@@ -566,7 +574,6 @@ export type CreditNoteCreateManyInvoiceInput = {
 }
 
 export type CreditNoteUpdateWithoutInvoiceInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   creditNoteNumber?: Prisma.StringFieldUpdateOperationsInput | string
   date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   reason?: Prisma.StringFieldUpdateOperationsInput | string
@@ -577,7 +584,7 @@ export type CreditNoteUpdateWithoutInvoiceInput = {
 }
 
 export type CreditNoteUncheckedUpdateWithoutInvoiceInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   creditNoteNumber?: Prisma.StringFieldUpdateOperationsInput | string
   date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   reason?: Prisma.StringFieldUpdateOperationsInput | string
@@ -588,7 +595,7 @@ export type CreditNoteUncheckedUpdateWithoutInvoiceInput = {
 }
 
 export type CreditNoteUncheckedUpdateManyWithoutInvoiceInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   creditNoteNumber?: Prisma.StringFieldUpdateOperationsInput | string
   date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   reason?: Prisma.StringFieldUpdateOperationsInput | string
@@ -668,13 +675,13 @@ export type $CreditNotePayload<ExtArgs extends runtime.Types.Extensions.Internal
     invoice: Prisma.$InvoicePayload<ExtArgs>
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
-    id: string
+    id: number
     creditNoteNumber: string
     date: Date
     reason: string
     amount: runtime.Decimal
     status: string
-    invoiceId: string
+    invoiceId: number
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["creditNote"]>
@@ -1101,13 +1108,13 @@ export interface Prisma__CreditNoteClient<T, Null = never, ExtArgs extends runti
  * Fields of the CreditNote model
  */
 export interface CreditNoteFieldRefs {
-  readonly id: Prisma.FieldRef<"CreditNote", 'String'>
+  readonly id: Prisma.FieldRef<"CreditNote", 'Int'>
   readonly creditNoteNumber: Prisma.FieldRef<"CreditNote", 'String'>
   readonly date: Prisma.FieldRef<"CreditNote", 'DateTime'>
   readonly reason: Prisma.FieldRef<"CreditNote", 'String'>
   readonly amount: Prisma.FieldRef<"CreditNote", 'Decimal'>
   readonly status: Prisma.FieldRef<"CreditNote", 'String'>
-  readonly invoiceId: Prisma.FieldRef<"CreditNote", 'String'>
+  readonly invoiceId: Prisma.FieldRef<"CreditNote", 'Int'>
   readonly createdAt: Prisma.FieldRef<"CreditNote", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"CreditNote", 'DateTime'>
 }

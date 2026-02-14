@@ -20,12 +20,26 @@ export type WarehouseModel = runtime.Types.Result.DefaultSelection<Prisma.$Wareh
 
 export type AggregateWarehouse = {
   _count: WarehouseCountAggregateOutputType | null
+  _avg: WarehouseAvgAggregateOutputType | null
+  _sum: WarehouseSumAggregateOutputType | null
   _min: WarehouseMinAggregateOutputType | null
   _max: WarehouseMaxAggregateOutputType | null
 }
 
+export type WarehouseAvgAggregateOutputType = {
+  id: number | null
+  managerId: number | null
+  tenantId: number | null
+}
+
+export type WarehouseSumAggregateOutputType = {
+  id: number | null
+  managerId: number | null
+  tenantId: number | null
+}
+
 export type WarehouseMinAggregateOutputType = {
-  id: string | null
+  id: number | null
   code: string | null
   name: string | null
   type: $Enums.WarehouseType | null
@@ -36,16 +50,16 @@ export type WarehouseMinAggregateOutputType = {
   postalCode: string | null
   phone: string | null
   email: string | null
-  managerId: string | null
+  managerId: number | null
   isActive: boolean | null
   isDefault: boolean | null
-  tenantId: string | null
+  tenantId: number | null
   createdAt: Date | null
   updatedAt: Date | null
 }
 
 export type WarehouseMaxAggregateOutputType = {
-  id: string | null
+  id: number | null
   code: string | null
   name: string | null
   type: $Enums.WarehouseType | null
@@ -56,10 +70,10 @@ export type WarehouseMaxAggregateOutputType = {
   postalCode: string | null
   phone: string | null
   email: string | null
-  managerId: string | null
+  managerId: number | null
   isActive: boolean | null
   isDefault: boolean | null
-  tenantId: string | null
+  tenantId: number | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -85,6 +99,18 @@ export type WarehouseCountAggregateOutputType = {
   _all: number
 }
 
+
+export type WarehouseAvgAggregateInputType = {
+  id?: true
+  managerId?: true
+  tenantId?: true
+}
+
+export type WarehouseSumAggregateInputType = {
+  id?: true
+  managerId?: true
+  tenantId?: true
+}
 
 export type WarehouseMinAggregateInputType = {
   id?: true
@@ -185,6 +211,18 @@ export type WarehouseAggregateArgs<ExtArgs extends runtime.Types.Extensions.Inte
   /**
    * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
    * 
+   * Select which fields to average
+  **/
+  _avg?: WarehouseAvgAggregateInputType
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+   * 
+   * Select which fields to sum
+  **/
+  _sum?: WarehouseSumAggregateInputType
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+   * 
    * Select which fields to find the minimum value
   **/
   _min?: WarehouseMinAggregateInputType
@@ -215,12 +253,14 @@ export type WarehouseGroupByArgs<ExtArgs extends runtime.Types.Extensions.Intern
   take?: number
   skip?: number
   _count?: WarehouseCountAggregateInputType | true
+  _avg?: WarehouseAvgAggregateInputType
+  _sum?: WarehouseSumAggregateInputType
   _min?: WarehouseMinAggregateInputType
   _max?: WarehouseMaxAggregateInputType
 }
 
 export type WarehouseGroupByOutputType = {
-  id: string
+  id: number
   code: string
   name: string
   type: $Enums.WarehouseType
@@ -231,13 +271,15 @@ export type WarehouseGroupByOutputType = {
   postalCode: string | null
   phone: string | null
   email: string | null
-  managerId: string | null
+  managerId: number | null
   isActive: boolean
   isDefault: boolean
-  tenantId: string
+  tenantId: number
   createdAt: Date
   updatedAt: Date
   _count: WarehouseCountAggregateOutputType | null
+  _avg: WarehouseAvgAggregateOutputType | null
+  _sum: WarehouseSumAggregateOutputType | null
   _min: WarehouseMinAggregateOutputType | null
   _max: WarehouseMaxAggregateOutputType | null
 }
@@ -261,7 +303,7 @@ export type WarehouseWhereInput = {
   AND?: Prisma.WarehouseWhereInput | Prisma.WarehouseWhereInput[]
   OR?: Prisma.WarehouseWhereInput[]
   NOT?: Prisma.WarehouseWhereInput | Prisma.WarehouseWhereInput[]
-  id?: Prisma.StringFilter<"Warehouse"> | string
+  id?: Prisma.IntFilter<"Warehouse"> | number
   code?: Prisma.StringFilter<"Warehouse"> | string
   name?: Prisma.StringFilter<"Warehouse"> | string
   type?: Prisma.EnumWarehouseTypeFilter<"Warehouse"> | $Enums.WarehouseType
@@ -272,10 +314,10 @@ export type WarehouseWhereInput = {
   postalCode?: Prisma.StringNullableFilter<"Warehouse"> | string | null
   phone?: Prisma.StringNullableFilter<"Warehouse"> | string | null
   email?: Prisma.StringNullableFilter<"Warehouse"> | string | null
-  managerId?: Prisma.StringNullableFilter<"Warehouse"> | string | null
+  managerId?: Prisma.IntNullableFilter<"Warehouse"> | number | null
   isActive?: Prisma.BoolFilter<"Warehouse"> | boolean
   isDefault?: Prisma.BoolFilter<"Warehouse"> | boolean
-  tenantId?: Prisma.StringFilter<"Warehouse"> | string
+  tenantId?: Prisma.IntFilter<"Warehouse"> | number
   createdAt?: Prisma.DateTimeFilter<"Warehouse"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Warehouse"> | Date | string
   tenant?: Prisma.XOR<Prisma.TenantScalarRelationFilter, Prisma.TenantWhereInput>
@@ -309,7 +351,7 @@ export type WarehouseOrderByWithRelationInput = {
 }
 
 export type WarehouseWhereUniqueInput = Prisma.AtLeast<{
-  id?: string
+  id?: number
   tenantId_code?: Prisma.WarehouseTenantIdCodeCompoundUniqueInput
   AND?: Prisma.WarehouseWhereInput | Prisma.WarehouseWhereInput[]
   OR?: Prisma.WarehouseWhereInput[]
@@ -324,10 +366,10 @@ export type WarehouseWhereUniqueInput = Prisma.AtLeast<{
   postalCode?: Prisma.StringNullableFilter<"Warehouse"> | string | null
   phone?: Prisma.StringNullableFilter<"Warehouse"> | string | null
   email?: Prisma.StringNullableFilter<"Warehouse"> | string | null
-  managerId?: Prisma.StringNullableFilter<"Warehouse"> | string | null
+  managerId?: Prisma.IntNullableFilter<"Warehouse"> | number | null
   isActive?: Prisma.BoolFilter<"Warehouse"> | boolean
   isDefault?: Prisma.BoolFilter<"Warehouse"> | boolean
-  tenantId?: Prisma.StringFilter<"Warehouse"> | string
+  tenantId?: Prisma.IntFilter<"Warehouse"> | number
   createdAt?: Prisma.DateTimeFilter<"Warehouse"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Warehouse"> | Date | string
   tenant?: Prisma.XOR<Prisma.TenantScalarRelationFilter, Prisma.TenantWhereInput>
@@ -355,15 +397,17 @@ export type WarehouseOrderByWithAggregationInput = {
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.WarehouseCountOrderByAggregateInput
+  _avg?: Prisma.WarehouseAvgOrderByAggregateInput
   _max?: Prisma.WarehouseMaxOrderByAggregateInput
   _min?: Prisma.WarehouseMinOrderByAggregateInput
+  _sum?: Prisma.WarehouseSumOrderByAggregateInput
 }
 
 export type WarehouseScalarWhereWithAggregatesInput = {
   AND?: Prisma.WarehouseScalarWhereWithAggregatesInput | Prisma.WarehouseScalarWhereWithAggregatesInput[]
   OR?: Prisma.WarehouseScalarWhereWithAggregatesInput[]
   NOT?: Prisma.WarehouseScalarWhereWithAggregatesInput | Prisma.WarehouseScalarWhereWithAggregatesInput[]
-  id?: Prisma.StringWithAggregatesFilter<"Warehouse"> | string
+  id?: Prisma.IntWithAggregatesFilter<"Warehouse"> | number
   code?: Prisma.StringWithAggregatesFilter<"Warehouse"> | string
   name?: Prisma.StringWithAggregatesFilter<"Warehouse"> | string
   type?: Prisma.EnumWarehouseTypeWithAggregatesFilter<"Warehouse"> | $Enums.WarehouseType
@@ -374,16 +418,15 @@ export type WarehouseScalarWhereWithAggregatesInput = {
   postalCode?: Prisma.StringNullableWithAggregatesFilter<"Warehouse"> | string | null
   phone?: Prisma.StringNullableWithAggregatesFilter<"Warehouse"> | string | null
   email?: Prisma.StringNullableWithAggregatesFilter<"Warehouse"> | string | null
-  managerId?: Prisma.StringNullableWithAggregatesFilter<"Warehouse"> | string | null
+  managerId?: Prisma.IntNullableWithAggregatesFilter<"Warehouse"> | number | null
   isActive?: Prisma.BoolWithAggregatesFilter<"Warehouse"> | boolean
   isDefault?: Prisma.BoolWithAggregatesFilter<"Warehouse"> | boolean
-  tenantId?: Prisma.StringWithAggregatesFilter<"Warehouse"> | string
+  tenantId?: Prisma.IntWithAggregatesFilter<"Warehouse"> | number
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Warehouse"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Warehouse"> | Date | string
 }
 
 export type WarehouseCreateInput = {
-  id?: string
   code: string
   name: string
   type?: $Enums.WarehouseType
@@ -394,7 +437,7 @@ export type WarehouseCreateInput = {
   postalCode?: string | null
   phone?: string | null
   email?: string | null
-  managerId?: string | null
+  managerId?: number | null
   isActive?: boolean
   isDefault?: boolean
   createdAt?: Date | string
@@ -406,7 +449,7 @@ export type WarehouseCreateInput = {
 }
 
 export type WarehouseUncheckedCreateInput = {
-  id?: string
+  id?: number
   code: string
   name: string
   type?: $Enums.WarehouseType
@@ -417,10 +460,10 @@ export type WarehouseUncheckedCreateInput = {
   postalCode?: string | null
   phone?: string | null
   email?: string | null
-  managerId?: string | null
+  managerId?: number | null
   isActive?: boolean
   isDefault?: boolean
-  tenantId: string
+  tenantId: number
   createdAt?: Date | string
   updatedAt?: Date | string
   inventory?: Prisma.InventoryUncheckedCreateNestedManyWithoutWarehouseInput
@@ -429,7 +472,6 @@ export type WarehouseUncheckedCreateInput = {
 }
 
 export type WarehouseUpdateInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   code?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumWarehouseTypeFieldUpdateOperationsInput | $Enums.WarehouseType
@@ -440,7 +482,7 @@ export type WarehouseUpdateInput = {
   postalCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  managerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  managerId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isDefault?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -452,7 +494,7 @@ export type WarehouseUpdateInput = {
 }
 
 export type WarehouseUncheckedUpdateInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   code?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumWarehouseTypeFieldUpdateOperationsInput | $Enums.WarehouseType
@@ -463,10 +505,10 @@ export type WarehouseUncheckedUpdateInput = {
   postalCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  managerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  managerId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isDefault?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  tenantId?: Prisma.StringFieldUpdateOperationsInput | string
+  tenantId?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   inventory?: Prisma.InventoryUncheckedUpdateManyWithoutWarehouseNestedInput
@@ -475,7 +517,7 @@ export type WarehouseUncheckedUpdateInput = {
 }
 
 export type WarehouseCreateManyInput = {
-  id?: string
+  id?: number
   code: string
   name: string
   type?: $Enums.WarehouseType
@@ -486,16 +528,15 @@ export type WarehouseCreateManyInput = {
   postalCode?: string | null
   phone?: string | null
   email?: string | null
-  managerId?: string | null
+  managerId?: number | null
   isActive?: boolean
   isDefault?: boolean
-  tenantId: string
+  tenantId: number
   createdAt?: Date | string
   updatedAt?: Date | string
 }
 
 export type WarehouseUpdateManyMutationInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   code?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumWarehouseTypeFieldUpdateOperationsInput | $Enums.WarehouseType
@@ -506,7 +547,7 @@ export type WarehouseUpdateManyMutationInput = {
   postalCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  managerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  managerId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isDefault?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -514,7 +555,7 @@ export type WarehouseUpdateManyMutationInput = {
 }
 
 export type WarehouseUncheckedUpdateManyInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   code?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumWarehouseTypeFieldUpdateOperationsInput | $Enums.WarehouseType
@@ -525,10 +566,10 @@ export type WarehouseUncheckedUpdateManyInput = {
   postalCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  managerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  managerId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isDefault?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  tenantId?: Prisma.StringFieldUpdateOperationsInput | string
+  tenantId?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -549,7 +590,7 @@ export type WarehouseNullableScalarRelationFilter = {
 }
 
 export type WarehouseTenantIdCodeCompoundUniqueInput = {
-  tenantId: string
+  tenantId: number
   code: string
 }
 
@@ -571,6 +612,12 @@ export type WarehouseCountOrderByAggregateInput = {
   tenantId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+}
+
+export type WarehouseAvgOrderByAggregateInput = {
+  id?: Prisma.SortOrder
+  managerId?: Prisma.SortOrder
+  tenantId?: Prisma.SortOrder
 }
 
 export type WarehouseMaxOrderByAggregateInput = {
@@ -611,6 +658,12 @@ export type WarehouseMinOrderByAggregateInput = {
   tenantId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+}
+
+export type WarehouseSumOrderByAggregateInput = {
+  id?: Prisma.SortOrder
+  managerId?: Prisma.SortOrder
+  tenantId?: Prisma.SortOrder
 }
 
 export type WarehouseScalarRelationFilter = {
@@ -709,7 +762,6 @@ export type WarehouseUpdateOneRequiredWithoutStockMovementsNestedInput = {
 }
 
 export type WarehouseCreateWithoutTenantInput = {
-  id?: string
   code: string
   name: string
   type?: $Enums.WarehouseType
@@ -720,7 +772,7 @@ export type WarehouseCreateWithoutTenantInput = {
   postalCode?: string | null
   phone?: string | null
   email?: string | null
-  managerId?: string | null
+  managerId?: number | null
   isActive?: boolean
   isDefault?: boolean
   createdAt?: Date | string
@@ -731,7 +783,7 @@ export type WarehouseCreateWithoutTenantInput = {
 }
 
 export type WarehouseUncheckedCreateWithoutTenantInput = {
-  id?: string
+  id?: number
   code: string
   name: string
   type?: $Enums.WarehouseType
@@ -742,7 +794,7 @@ export type WarehouseUncheckedCreateWithoutTenantInput = {
   postalCode?: string | null
   phone?: string | null
   email?: string | null
-  managerId?: string | null
+  managerId?: number | null
   isActive?: boolean
   isDefault?: boolean
   createdAt?: Date | string
@@ -782,7 +834,7 @@ export type WarehouseScalarWhereInput = {
   AND?: Prisma.WarehouseScalarWhereInput | Prisma.WarehouseScalarWhereInput[]
   OR?: Prisma.WarehouseScalarWhereInput[]
   NOT?: Prisma.WarehouseScalarWhereInput | Prisma.WarehouseScalarWhereInput[]
-  id?: Prisma.StringFilter<"Warehouse"> | string
+  id?: Prisma.IntFilter<"Warehouse"> | number
   code?: Prisma.StringFilter<"Warehouse"> | string
   name?: Prisma.StringFilter<"Warehouse"> | string
   type?: Prisma.EnumWarehouseTypeFilter<"Warehouse"> | $Enums.WarehouseType
@@ -793,16 +845,15 @@ export type WarehouseScalarWhereInput = {
   postalCode?: Prisma.StringNullableFilter<"Warehouse"> | string | null
   phone?: Prisma.StringNullableFilter<"Warehouse"> | string | null
   email?: Prisma.StringNullableFilter<"Warehouse"> | string | null
-  managerId?: Prisma.StringNullableFilter<"Warehouse"> | string | null
+  managerId?: Prisma.IntNullableFilter<"Warehouse"> | number | null
   isActive?: Prisma.BoolFilter<"Warehouse"> | boolean
   isDefault?: Prisma.BoolFilter<"Warehouse"> | boolean
-  tenantId?: Prisma.StringFilter<"Warehouse"> | string
+  tenantId?: Prisma.IntFilter<"Warehouse"> | number
   createdAt?: Prisma.DateTimeFilter<"Warehouse"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Warehouse"> | Date | string
 }
 
 export type WarehouseCreateWithoutOrderItemsInput = {
-  id?: string
   code: string
   name: string
   type?: $Enums.WarehouseType
@@ -813,7 +864,7 @@ export type WarehouseCreateWithoutOrderItemsInput = {
   postalCode?: string | null
   phone?: string | null
   email?: string | null
-  managerId?: string | null
+  managerId?: number | null
   isActive?: boolean
   isDefault?: boolean
   createdAt?: Date | string
@@ -824,7 +875,7 @@ export type WarehouseCreateWithoutOrderItemsInput = {
 }
 
 export type WarehouseUncheckedCreateWithoutOrderItemsInput = {
-  id?: string
+  id?: number
   code: string
   name: string
   type?: $Enums.WarehouseType
@@ -835,10 +886,10 @@ export type WarehouseUncheckedCreateWithoutOrderItemsInput = {
   postalCode?: string | null
   phone?: string | null
   email?: string | null
-  managerId?: string | null
+  managerId?: number | null
   isActive?: boolean
   isDefault?: boolean
-  tenantId: string
+  tenantId: number
   createdAt?: Date | string
   updatedAt?: Date | string
   inventory?: Prisma.InventoryUncheckedCreateNestedManyWithoutWarehouseInput
@@ -862,7 +913,6 @@ export type WarehouseUpdateToOneWithWhereWithoutOrderItemsInput = {
 }
 
 export type WarehouseUpdateWithoutOrderItemsInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   code?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumWarehouseTypeFieldUpdateOperationsInput | $Enums.WarehouseType
@@ -873,7 +923,7 @@ export type WarehouseUpdateWithoutOrderItemsInput = {
   postalCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  managerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  managerId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isDefault?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -884,7 +934,7 @@ export type WarehouseUpdateWithoutOrderItemsInput = {
 }
 
 export type WarehouseUncheckedUpdateWithoutOrderItemsInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   code?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumWarehouseTypeFieldUpdateOperationsInput | $Enums.WarehouseType
@@ -895,10 +945,10 @@ export type WarehouseUncheckedUpdateWithoutOrderItemsInput = {
   postalCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  managerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  managerId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isDefault?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  tenantId?: Prisma.StringFieldUpdateOperationsInput | string
+  tenantId?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   inventory?: Prisma.InventoryUncheckedUpdateManyWithoutWarehouseNestedInput
@@ -906,7 +956,6 @@ export type WarehouseUncheckedUpdateWithoutOrderItemsInput = {
 }
 
 export type WarehouseCreateWithoutInventoryInput = {
-  id?: string
   code: string
   name: string
   type?: $Enums.WarehouseType
@@ -917,7 +966,7 @@ export type WarehouseCreateWithoutInventoryInput = {
   postalCode?: string | null
   phone?: string | null
   email?: string | null
-  managerId?: string | null
+  managerId?: number | null
   isActive?: boolean
   isDefault?: boolean
   createdAt?: Date | string
@@ -928,7 +977,7 @@ export type WarehouseCreateWithoutInventoryInput = {
 }
 
 export type WarehouseUncheckedCreateWithoutInventoryInput = {
-  id?: string
+  id?: number
   code: string
   name: string
   type?: $Enums.WarehouseType
@@ -939,10 +988,10 @@ export type WarehouseUncheckedCreateWithoutInventoryInput = {
   postalCode?: string | null
   phone?: string | null
   email?: string | null
-  managerId?: string | null
+  managerId?: number | null
   isActive?: boolean
   isDefault?: boolean
-  tenantId: string
+  tenantId: number
   createdAt?: Date | string
   updatedAt?: Date | string
   stockMovements?: Prisma.StockMovementUncheckedCreateNestedManyWithoutWarehouseInput
@@ -966,7 +1015,6 @@ export type WarehouseUpdateToOneWithWhereWithoutInventoryInput = {
 }
 
 export type WarehouseUpdateWithoutInventoryInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   code?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumWarehouseTypeFieldUpdateOperationsInput | $Enums.WarehouseType
@@ -977,7 +1025,7 @@ export type WarehouseUpdateWithoutInventoryInput = {
   postalCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  managerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  managerId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isDefault?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -988,7 +1036,7 @@ export type WarehouseUpdateWithoutInventoryInput = {
 }
 
 export type WarehouseUncheckedUpdateWithoutInventoryInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   code?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumWarehouseTypeFieldUpdateOperationsInput | $Enums.WarehouseType
@@ -999,10 +1047,10 @@ export type WarehouseUncheckedUpdateWithoutInventoryInput = {
   postalCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  managerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  managerId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isDefault?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  tenantId?: Prisma.StringFieldUpdateOperationsInput | string
+  tenantId?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   stockMovements?: Prisma.StockMovementUncheckedUpdateManyWithoutWarehouseNestedInput
@@ -1010,7 +1058,6 @@ export type WarehouseUncheckedUpdateWithoutInventoryInput = {
 }
 
 export type WarehouseCreateWithoutStockMovementsInput = {
-  id?: string
   code: string
   name: string
   type?: $Enums.WarehouseType
@@ -1021,7 +1068,7 @@ export type WarehouseCreateWithoutStockMovementsInput = {
   postalCode?: string | null
   phone?: string | null
   email?: string | null
-  managerId?: string | null
+  managerId?: number | null
   isActive?: boolean
   isDefault?: boolean
   createdAt?: Date | string
@@ -1032,7 +1079,7 @@ export type WarehouseCreateWithoutStockMovementsInput = {
 }
 
 export type WarehouseUncheckedCreateWithoutStockMovementsInput = {
-  id?: string
+  id?: number
   code: string
   name: string
   type?: $Enums.WarehouseType
@@ -1043,10 +1090,10 @@ export type WarehouseUncheckedCreateWithoutStockMovementsInput = {
   postalCode?: string | null
   phone?: string | null
   email?: string | null
-  managerId?: string | null
+  managerId?: number | null
   isActive?: boolean
   isDefault?: boolean
-  tenantId: string
+  tenantId: number
   createdAt?: Date | string
   updatedAt?: Date | string
   inventory?: Prisma.InventoryUncheckedCreateNestedManyWithoutWarehouseInput
@@ -1070,7 +1117,6 @@ export type WarehouseUpdateToOneWithWhereWithoutStockMovementsInput = {
 }
 
 export type WarehouseUpdateWithoutStockMovementsInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   code?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumWarehouseTypeFieldUpdateOperationsInput | $Enums.WarehouseType
@@ -1081,7 +1127,7 @@ export type WarehouseUpdateWithoutStockMovementsInput = {
   postalCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  managerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  managerId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isDefault?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1092,7 +1138,7 @@ export type WarehouseUpdateWithoutStockMovementsInput = {
 }
 
 export type WarehouseUncheckedUpdateWithoutStockMovementsInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   code?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumWarehouseTypeFieldUpdateOperationsInput | $Enums.WarehouseType
@@ -1103,10 +1149,10 @@ export type WarehouseUncheckedUpdateWithoutStockMovementsInput = {
   postalCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  managerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  managerId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isDefault?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  tenantId?: Prisma.StringFieldUpdateOperationsInput | string
+  tenantId?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   inventory?: Prisma.InventoryUncheckedUpdateManyWithoutWarehouseNestedInput
@@ -1114,7 +1160,7 @@ export type WarehouseUncheckedUpdateWithoutStockMovementsInput = {
 }
 
 export type WarehouseCreateManyTenantInput = {
-  id?: string
+  id?: number
   code: string
   name: string
   type?: $Enums.WarehouseType
@@ -1125,7 +1171,7 @@ export type WarehouseCreateManyTenantInput = {
   postalCode?: string | null
   phone?: string | null
   email?: string | null
-  managerId?: string | null
+  managerId?: number | null
   isActive?: boolean
   isDefault?: boolean
   createdAt?: Date | string
@@ -1133,7 +1179,6 @@ export type WarehouseCreateManyTenantInput = {
 }
 
 export type WarehouseUpdateWithoutTenantInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   code?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumWarehouseTypeFieldUpdateOperationsInput | $Enums.WarehouseType
@@ -1144,7 +1189,7 @@ export type WarehouseUpdateWithoutTenantInput = {
   postalCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  managerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  managerId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isDefault?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1155,7 +1200,7 @@ export type WarehouseUpdateWithoutTenantInput = {
 }
 
 export type WarehouseUncheckedUpdateWithoutTenantInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   code?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumWarehouseTypeFieldUpdateOperationsInput | $Enums.WarehouseType
@@ -1166,7 +1211,7 @@ export type WarehouseUncheckedUpdateWithoutTenantInput = {
   postalCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  managerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  managerId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isDefault?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1177,7 +1222,7 @@ export type WarehouseUncheckedUpdateWithoutTenantInput = {
 }
 
 export type WarehouseUncheckedUpdateManyWithoutTenantInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   code?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumWarehouseTypeFieldUpdateOperationsInput | $Enums.WarehouseType
@@ -1188,7 +1233,7 @@ export type WarehouseUncheckedUpdateManyWithoutTenantInput = {
   postalCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  managerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  managerId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isDefault?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1355,7 +1400,7 @@ export type $WarehousePayload<ExtArgs extends runtime.Types.Extensions.InternalA
     orderItems: Prisma.$OrderItemPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
-    id: string
+    id: number
     code: string
     name: string
     type: $Enums.WarehouseType
@@ -1366,10 +1411,10 @@ export type $WarehousePayload<ExtArgs extends runtime.Types.Extensions.InternalA
     postalCode: string | null
     phone: string | null
     email: string | null
-    managerId: string | null
+    managerId: number | null
     isActive: boolean
     isDefault: boolean
-    tenantId: string
+    tenantId: number
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["warehouse"]>
@@ -1799,7 +1844,7 @@ export interface Prisma__WarehouseClient<T, Null = never, ExtArgs extends runtim
  * Fields of the Warehouse model
  */
 export interface WarehouseFieldRefs {
-  readonly id: Prisma.FieldRef<"Warehouse", 'String'>
+  readonly id: Prisma.FieldRef<"Warehouse", 'Int'>
   readonly code: Prisma.FieldRef<"Warehouse", 'String'>
   readonly name: Prisma.FieldRef<"Warehouse", 'String'>
   readonly type: Prisma.FieldRef<"Warehouse", 'WarehouseType'>
@@ -1810,10 +1855,10 @@ export interface WarehouseFieldRefs {
   readonly postalCode: Prisma.FieldRef<"Warehouse", 'String'>
   readonly phone: Prisma.FieldRef<"Warehouse", 'String'>
   readonly email: Prisma.FieldRef<"Warehouse", 'String'>
-  readonly managerId: Prisma.FieldRef<"Warehouse", 'String'>
+  readonly managerId: Prisma.FieldRef<"Warehouse", 'Int'>
   readonly isActive: Prisma.FieldRef<"Warehouse", 'Boolean'>
   readonly isDefault: Prisma.FieldRef<"Warehouse", 'Boolean'>
-  readonly tenantId: Prisma.FieldRef<"Warehouse", 'String'>
+  readonly tenantId: Prisma.FieldRef<"Warehouse", 'Int'>
   readonly createdAt: Prisma.FieldRef<"Warehouse", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"Warehouse", 'DateTime'>
 }

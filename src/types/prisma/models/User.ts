@@ -29,11 +29,15 @@ export type AggregateUser = {
 export type UserAvgAggregateOutputType = {
   id: number | null
   loginAttempts: number | null
+  tenantId: number | null
+  employeeId: number | null
 }
 
 export type UserSumAggregateOutputType = {
   id: number | null
   loginAttempts: number | null
+  tenantId: number | null
+  employeeId: number | null
 }
 
 export type UserMinAggregateOutputType = {
@@ -55,8 +59,8 @@ export type UserMinAggregateOutputType = {
   passwordResetExpiry: Date | null
   twoFactorEnabled: boolean | null
   twoFactorSecret: string | null
-  tenantId: string | null
-  employeeId: string | null
+  tenantId: number | null
+  employeeId: number | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -80,8 +84,8 @@ export type UserMaxAggregateOutputType = {
   passwordResetExpiry: Date | null
   twoFactorEnabled: boolean | null
   twoFactorSecret: string | null
-  tenantId: string | null
-  employeeId: string | null
+  tenantId: number | null
+  employeeId: number | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -117,11 +121,15 @@ export type UserCountAggregateOutputType = {
 export type UserAvgAggregateInputType = {
   id?: true
   loginAttempts?: true
+  tenantId?: true
+  employeeId?: true
 }
 
 export type UserSumAggregateInputType = {
   id?: true
   loginAttempts?: true
+  tenantId?: true
+  employeeId?: true
 }
 
 export type UserMinAggregateInputType = {
@@ -307,8 +315,8 @@ export type UserGroupByOutputType = {
   passwordResetExpiry: Date | null
   twoFactorEnabled: boolean
   twoFactorSecret: string | null
-  tenantId: string | null
-  employeeId: string | null
+  tenantId: number | null
+  employeeId: number | null
   createdAt: Date
   updatedAt: Date
   _count: UserCountAggregateOutputType | null
@@ -356,8 +364,8 @@ export type UserWhereInput = {
   passwordResetExpiry?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
   twoFactorEnabled?: Prisma.BoolFilter<"User"> | boolean
   twoFactorSecret?: Prisma.StringNullableFilter<"User"> | string | null
-  tenantId?: Prisma.StringNullableFilter<"User"> | string | null
-  employeeId?: Prisma.StringNullableFilter<"User"> | string | null
+  tenantId?: Prisma.IntNullableFilter<"User"> | number | null
+  employeeId?: Prisma.IntNullableFilter<"User"> | number | null
   createdAt?: Prisma.DateTimeFilter<"User"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"User"> | Date | string
   tenant?: Prisma.XOR<Prisma.TenantNullableScalarRelationFilter, Prisma.TenantWhereInput> | null
@@ -405,7 +413,7 @@ export type UserOrderByWithRelationInput = {
 export type UserWhereUniqueInput = Prisma.AtLeast<{
   id?: number
   email?: string
-  employeeId?: string
+  employeeId?: number
   AND?: Prisma.UserWhereInput | Prisma.UserWhereInput[]
   OR?: Prisma.UserWhereInput[]
   NOT?: Prisma.UserWhereInput | Prisma.UserWhereInput[]
@@ -426,7 +434,7 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   passwordResetExpiry?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
   twoFactorEnabled?: Prisma.BoolFilter<"User"> | boolean
   twoFactorSecret?: Prisma.StringNullableFilter<"User"> | string | null
-  tenantId?: Prisma.StringNullableFilter<"User"> | string | null
+  tenantId?: Prisma.IntNullableFilter<"User"> | number | null
   createdAt?: Prisma.DateTimeFilter<"User"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"User"> | Date | string
   tenant?: Prisma.XOR<Prisma.TenantNullableScalarRelationFilter, Prisma.TenantWhereInput> | null
@@ -492,8 +500,8 @@ export type UserScalarWhereWithAggregatesInput = {
   passwordResetExpiry?: Prisma.DateTimeNullableWithAggregatesFilter<"User"> | Date | string | null
   twoFactorEnabled?: Prisma.BoolWithAggregatesFilter<"User"> | boolean
   twoFactorSecret?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null
-  tenantId?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null
-  employeeId?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null
+  tenantId?: Prisma.IntNullableWithAggregatesFilter<"User"> | number | null
+  employeeId?: Prisma.IntNullableWithAggregatesFilter<"User"> | number | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"User"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"User"> | Date | string
 }
@@ -548,8 +556,8 @@ export type UserUncheckedCreateInput = {
   passwordResetExpiry?: Date | string | null
   twoFactorEnabled?: boolean
   twoFactorSecret?: string | null
-  tenantId?: string | null
-  employeeId?: string | null
+  tenantId?: number | null
+  employeeId?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   logs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutUserInput
@@ -609,8 +617,8 @@ export type UserUncheckedUpdateInput = {
   passwordResetExpiry?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   twoFactorEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   twoFactorSecret?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  tenantId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  employeeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tenantId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  employeeId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   logs?: Prisma.AuditLogUncheckedUpdateManyWithoutUserNestedInput
@@ -640,8 +648,8 @@ export type UserCreateManyInput = {
   passwordResetExpiry?: Date | string | null
   twoFactorEnabled?: boolean
   twoFactorSecret?: string | null
-  tenantId?: string | null
-  employeeId?: string | null
+  tenantId?: number | null
+  employeeId?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -689,8 +697,8 @@ export type UserUncheckedUpdateManyInput = {
   passwordResetExpiry?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   twoFactorEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   twoFactorSecret?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  tenantId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  employeeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tenantId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  employeeId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -734,6 +742,8 @@ export type UserCountOrderByAggregateInput = {
 export type UserAvgOrderByAggregateInput = {
   id?: Prisma.SortOrder
   loginAttempts?: Prisma.SortOrder
+  tenantId?: Prisma.SortOrder
+  employeeId?: Prisma.SortOrder
 }
 
 export type UserMaxOrderByAggregateInput = {
@@ -789,6 +799,8 @@ export type UserMinOrderByAggregateInput = {
 export type UserSumOrderByAggregateInput = {
   id?: Prisma.SortOrder
   loginAttempts?: Prisma.SortOrder
+  tenantId?: Prisma.SortOrder
+  employeeId?: Prisma.SortOrder
 }
 
 export type UserNullableScalarRelationFilter = {
@@ -849,6 +861,14 @@ export type EnumRoleFieldUpdateOperationsInput = {
 
 export type NullableDateTimeFieldUpdateOperationsInput = {
   set?: Date | string | null
+}
+
+export type NullableIntFieldUpdateOperationsInput = {
+  set?: number | null
+  increment?: number
+  decrement?: number
+  multiply?: number
+  divide?: number
 }
 
 export type UserCreateNestedOneWithoutTokensInput = {
@@ -1008,7 +1028,7 @@ export type UserUncheckedCreateWithoutTenantInput = {
   passwordResetExpiry?: Date | string | null
   twoFactorEnabled?: boolean
   twoFactorSecret?: string | null
-  employeeId?: string | null
+  employeeId?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   logs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutUserInput
@@ -1067,8 +1087,8 @@ export type UserScalarWhereInput = {
   passwordResetExpiry?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
   twoFactorEnabled?: Prisma.BoolFilter<"User"> | boolean
   twoFactorSecret?: Prisma.StringNullableFilter<"User"> | string | null
-  tenantId?: Prisma.StringNullableFilter<"User"> | string | null
-  employeeId?: Prisma.StringNullableFilter<"User"> | string | null
+  tenantId?: Prisma.IntNullableFilter<"User"> | number | null
+  employeeId?: Prisma.IntNullableFilter<"User"> | number | null
   createdAt?: Prisma.DateTimeFilter<"User"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"User"> | Date | string
 }
@@ -1122,8 +1142,8 @@ export type UserUncheckedCreateWithoutTokensInput = {
   passwordResetExpiry?: Date | string | null
   twoFactorEnabled?: boolean
   twoFactorSecret?: string | null
-  tenantId?: string | null
-  employeeId?: string | null
+  tenantId?: number | null
+  employeeId?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   logs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutUserInput
@@ -1197,8 +1217,8 @@ export type UserUncheckedUpdateWithoutTokensInput = {
   passwordResetExpiry?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   twoFactorEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   twoFactorSecret?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  tenantId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  employeeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tenantId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  employeeId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   logs?: Prisma.AuditLogUncheckedUpdateManyWithoutUserNestedInput
@@ -1256,7 +1276,7 @@ export type UserUncheckedCreateWithoutEmployeeInput = {
   passwordResetExpiry?: Date | string | null
   twoFactorEnabled?: boolean
   twoFactorSecret?: string | null
-  tenantId?: string | null
+  tenantId?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   logs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutUserInput
@@ -1331,7 +1351,7 @@ export type UserUncheckedUpdateWithoutEmployeeInput = {
   passwordResetExpiry?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   twoFactorEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   twoFactorSecret?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  tenantId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tenantId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   logs?: Prisma.AuditLogUncheckedUpdateManyWithoutUserNestedInput
@@ -1390,8 +1410,8 @@ export type UserUncheckedCreateWithoutCreatedOrdersInput = {
   passwordResetExpiry?: Date | string | null
   twoFactorEnabled?: boolean
   twoFactorSecret?: string | null
-  tenantId?: string | null
-  employeeId?: string | null
+  tenantId?: number | null
+  employeeId?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   logs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutUserInput
@@ -1465,8 +1485,8 @@ export type UserUncheckedUpdateWithoutCreatedOrdersInput = {
   passwordResetExpiry?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   twoFactorEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   twoFactorSecret?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  tenantId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  employeeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tenantId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  employeeId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   logs?: Prisma.AuditLogUncheckedUpdateManyWithoutUserNestedInput
@@ -1524,8 +1544,8 @@ export type UserUncheckedCreateWithoutApprovedPOsInput = {
   passwordResetExpiry?: Date | string | null
   twoFactorEnabled?: boolean
   twoFactorSecret?: string | null
-  tenantId?: string | null
-  employeeId?: string | null
+  tenantId?: number | null
+  employeeId?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   logs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutUserInput
@@ -1599,8 +1619,8 @@ export type UserUncheckedUpdateWithoutApprovedPOsInput = {
   passwordResetExpiry?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   twoFactorEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   twoFactorSecret?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  tenantId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  employeeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tenantId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  employeeId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   logs?: Prisma.AuditLogUncheckedUpdateManyWithoutUserNestedInput
@@ -1658,8 +1678,8 @@ export type UserUncheckedCreateWithoutNotificationsInput = {
   passwordResetExpiry?: Date | string | null
   twoFactorEnabled?: boolean
   twoFactorSecret?: string | null
-  tenantId?: string | null
-  employeeId?: string | null
+  tenantId?: number | null
+  employeeId?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   logs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutUserInput
@@ -1733,8 +1753,8 @@ export type UserUncheckedUpdateWithoutNotificationsInput = {
   passwordResetExpiry?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   twoFactorEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   twoFactorSecret?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  tenantId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  employeeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tenantId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  employeeId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   logs?: Prisma.AuditLogUncheckedUpdateManyWithoutUserNestedInput
@@ -1792,8 +1812,8 @@ export type UserUncheckedCreateWithoutLogsInput = {
   passwordResetExpiry?: Date | string | null
   twoFactorEnabled?: boolean
   twoFactorSecret?: string | null
-  tenantId?: string | null
-  employeeId?: string | null
+  tenantId?: number | null
+  employeeId?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
@@ -1867,8 +1887,8 @@ export type UserUncheckedUpdateWithoutLogsInput = {
   passwordResetExpiry?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   twoFactorEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   twoFactorSecret?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  tenantId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  employeeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tenantId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  employeeId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   notifications?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
@@ -1897,7 +1917,7 @@ export type UserCreateManyTenantInput = {
   passwordResetExpiry?: Date | string | null
   twoFactorEnabled?: boolean
   twoFactorSecret?: string | null
-  employeeId?: string | null
+  employeeId?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -1951,7 +1971,7 @@ export type UserUncheckedUpdateWithoutTenantInput = {
   passwordResetExpiry?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   twoFactorEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   twoFactorSecret?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  employeeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  employeeId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   logs?: Prisma.AuditLogUncheckedUpdateManyWithoutUserNestedInput
@@ -1981,7 +2001,7 @@ export type UserUncheckedUpdateManyWithoutTenantInput = {
   passwordResetExpiry?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   twoFactorEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   twoFactorSecret?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  employeeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  employeeId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -2220,8 +2240,8 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     passwordResetExpiry: Date | null
     twoFactorEnabled: boolean
     twoFactorSecret: string | null
-    tenantId: string | null
-    employeeId: string | null
+    tenantId: number | null
+    employeeId: number | null
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["user"]>
@@ -2673,8 +2693,8 @@ export interface UserFieldRefs {
   readonly passwordResetExpiry: Prisma.FieldRef<"User", 'DateTime'>
   readonly twoFactorEnabled: Prisma.FieldRef<"User", 'Boolean'>
   readonly twoFactorSecret: Prisma.FieldRef<"User", 'String'>
-  readonly tenantId: Prisma.FieldRef<"User", 'String'>
-  readonly employeeId: Prisma.FieldRef<"User", 'String'>
+  readonly tenantId: Prisma.FieldRef<"User", 'Int'>
+  readonly employeeId: Prisma.FieldRef<"User", 'Int'>
   readonly createdAt: Prisma.FieldRef<"User", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"User", 'DateTime'>
 }

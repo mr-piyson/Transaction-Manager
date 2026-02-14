@@ -27,25 +27,31 @@ export type AggregateShipmentItem = {
 }
 
 export type ShipmentItemAvgAggregateOutputType = {
+  id: number | null
   quantity: runtime.Decimal | null
+  shipmentId: number | null
+  orderItemId: number | null
 }
 
 export type ShipmentItemSumAggregateOutputType = {
+  id: number | null
   quantity: runtime.Decimal | null
+  shipmentId: number | null
+  orderItemId: number | null
 }
 
 export type ShipmentItemMinAggregateOutputType = {
-  id: string | null
+  id: number | null
   quantity: runtime.Decimal | null
-  shipmentId: string | null
-  orderItemId: string | null
+  shipmentId: number | null
+  orderItemId: number | null
 }
 
 export type ShipmentItemMaxAggregateOutputType = {
-  id: string | null
+  id: number | null
   quantity: runtime.Decimal | null
-  shipmentId: string | null
-  orderItemId: string | null
+  shipmentId: number | null
+  orderItemId: number | null
 }
 
 export type ShipmentItemCountAggregateOutputType = {
@@ -58,11 +64,17 @@ export type ShipmentItemCountAggregateOutputType = {
 
 
 export type ShipmentItemAvgAggregateInputType = {
+  id?: true
   quantity?: true
+  shipmentId?: true
+  orderItemId?: true
 }
 
 export type ShipmentItemSumAggregateInputType = {
+  id?: true
   quantity?: true
+  shipmentId?: true
+  orderItemId?: true
 }
 
 export type ShipmentItemMinAggregateInputType = {
@@ -174,10 +186,10 @@ export type ShipmentItemGroupByArgs<ExtArgs extends runtime.Types.Extensions.Int
 }
 
 export type ShipmentItemGroupByOutputType = {
-  id: string
+  id: number
   quantity: runtime.Decimal
-  shipmentId: string
-  orderItemId: string
+  shipmentId: number
+  orderItemId: number
   _count: ShipmentItemCountAggregateOutputType | null
   _avg: ShipmentItemAvgAggregateOutputType | null
   _sum: ShipmentItemSumAggregateOutputType | null
@@ -204,10 +216,10 @@ export type ShipmentItemWhereInput = {
   AND?: Prisma.ShipmentItemWhereInput | Prisma.ShipmentItemWhereInput[]
   OR?: Prisma.ShipmentItemWhereInput[]
   NOT?: Prisma.ShipmentItemWhereInput | Prisma.ShipmentItemWhereInput[]
-  id?: Prisma.StringFilter<"ShipmentItem"> | string
+  id?: Prisma.IntFilter<"ShipmentItem"> | number
   quantity?: Prisma.DecimalFilter<"ShipmentItem"> | runtime.Decimal | runtime.DecimalJsLike | number | string
-  shipmentId?: Prisma.StringFilter<"ShipmentItem"> | string
-  orderItemId?: Prisma.StringFilter<"ShipmentItem"> | string
+  shipmentId?: Prisma.IntFilter<"ShipmentItem"> | number
+  orderItemId?: Prisma.IntFilter<"ShipmentItem"> | number
   shipment?: Prisma.XOR<Prisma.ShipmentScalarRelationFilter, Prisma.ShipmentWhereInput>
   orderItem?: Prisma.XOR<Prisma.OrderItemScalarRelationFilter, Prisma.OrderItemWhereInput>
 }
@@ -222,13 +234,13 @@ export type ShipmentItemOrderByWithRelationInput = {
 }
 
 export type ShipmentItemWhereUniqueInput = Prisma.AtLeast<{
-  id?: string
+  id?: number
   AND?: Prisma.ShipmentItemWhereInput | Prisma.ShipmentItemWhereInput[]
   OR?: Prisma.ShipmentItemWhereInput[]
   NOT?: Prisma.ShipmentItemWhereInput | Prisma.ShipmentItemWhereInput[]
   quantity?: Prisma.DecimalFilter<"ShipmentItem"> | runtime.Decimal | runtime.DecimalJsLike | number | string
-  shipmentId?: Prisma.StringFilter<"ShipmentItem"> | string
-  orderItemId?: Prisma.StringFilter<"ShipmentItem"> | string
+  shipmentId?: Prisma.IntFilter<"ShipmentItem"> | number
+  orderItemId?: Prisma.IntFilter<"ShipmentItem"> | number
   shipment?: Prisma.XOR<Prisma.ShipmentScalarRelationFilter, Prisma.ShipmentWhereInput>
   orderItem?: Prisma.XOR<Prisma.OrderItemScalarRelationFilter, Prisma.OrderItemWhereInput>
 }, "id">
@@ -249,57 +261,54 @@ export type ShipmentItemScalarWhereWithAggregatesInput = {
   AND?: Prisma.ShipmentItemScalarWhereWithAggregatesInput | Prisma.ShipmentItemScalarWhereWithAggregatesInput[]
   OR?: Prisma.ShipmentItemScalarWhereWithAggregatesInput[]
   NOT?: Prisma.ShipmentItemScalarWhereWithAggregatesInput | Prisma.ShipmentItemScalarWhereWithAggregatesInput[]
-  id?: Prisma.StringWithAggregatesFilter<"ShipmentItem"> | string
+  id?: Prisma.IntWithAggregatesFilter<"ShipmentItem"> | number
   quantity?: Prisma.DecimalWithAggregatesFilter<"ShipmentItem"> | runtime.Decimal | runtime.DecimalJsLike | number | string
-  shipmentId?: Prisma.StringWithAggregatesFilter<"ShipmentItem"> | string
-  orderItemId?: Prisma.StringWithAggregatesFilter<"ShipmentItem"> | string
+  shipmentId?: Prisma.IntWithAggregatesFilter<"ShipmentItem"> | number
+  orderItemId?: Prisma.IntWithAggregatesFilter<"ShipmentItem"> | number
 }
 
 export type ShipmentItemCreateInput = {
-  id?: string
   quantity: runtime.Decimal | runtime.DecimalJsLike | number | string
   shipment: Prisma.ShipmentCreateNestedOneWithoutItemsInput
   orderItem: Prisma.OrderItemCreateNestedOneWithoutShipmentItemsInput
 }
 
 export type ShipmentItemUncheckedCreateInput = {
-  id?: string
+  id?: number
   quantity: runtime.Decimal | runtime.DecimalJsLike | number | string
-  shipmentId: string
-  orderItemId: string
+  shipmentId: number
+  orderItemId: number
 }
 
 export type ShipmentItemUpdateInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   quantity?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   shipment?: Prisma.ShipmentUpdateOneRequiredWithoutItemsNestedInput
   orderItem?: Prisma.OrderItemUpdateOneRequiredWithoutShipmentItemsNestedInput
 }
 
 export type ShipmentItemUncheckedUpdateInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   quantity?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  shipmentId?: Prisma.StringFieldUpdateOperationsInput | string
-  orderItemId?: Prisma.StringFieldUpdateOperationsInput | string
+  shipmentId?: Prisma.IntFieldUpdateOperationsInput | number
+  orderItemId?: Prisma.IntFieldUpdateOperationsInput | number
 }
 
 export type ShipmentItemCreateManyInput = {
-  id?: string
+  id?: number
   quantity: runtime.Decimal | runtime.DecimalJsLike | number | string
-  shipmentId: string
-  orderItemId: string
+  shipmentId: number
+  orderItemId: number
 }
 
 export type ShipmentItemUpdateManyMutationInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   quantity?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
 }
 
 export type ShipmentItemUncheckedUpdateManyInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   quantity?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  shipmentId?: Prisma.StringFieldUpdateOperationsInput | string
-  orderItemId?: Prisma.StringFieldUpdateOperationsInput | string
+  shipmentId?: Prisma.IntFieldUpdateOperationsInput | number
+  orderItemId?: Prisma.IntFieldUpdateOperationsInput | number
 }
 
 export type ShipmentItemListRelationFilter = {
@@ -320,7 +329,10 @@ export type ShipmentItemCountOrderByAggregateInput = {
 }
 
 export type ShipmentItemAvgOrderByAggregateInput = {
+  id?: Prisma.SortOrder
   quantity?: Prisma.SortOrder
+  shipmentId?: Prisma.SortOrder
+  orderItemId?: Prisma.SortOrder
 }
 
 export type ShipmentItemMaxOrderByAggregateInput = {
@@ -338,7 +350,10 @@ export type ShipmentItemMinOrderByAggregateInput = {
 }
 
 export type ShipmentItemSumOrderByAggregateInput = {
+  id?: Prisma.SortOrder
   quantity?: Prisma.SortOrder
+  shipmentId?: Prisma.SortOrder
+  orderItemId?: Prisma.SortOrder
 }
 
 export type ShipmentItemCreateNestedManyWithoutOrderItemInput = {
@@ -426,15 +441,14 @@ export type ShipmentItemUncheckedUpdateManyWithoutShipmentNestedInput = {
 }
 
 export type ShipmentItemCreateWithoutOrderItemInput = {
-  id?: string
   quantity: runtime.Decimal | runtime.DecimalJsLike | number | string
   shipment: Prisma.ShipmentCreateNestedOneWithoutItemsInput
 }
 
 export type ShipmentItemUncheckedCreateWithoutOrderItemInput = {
-  id?: string
+  id?: number
   quantity: runtime.Decimal | runtime.DecimalJsLike | number | string
-  shipmentId: string
+  shipmentId: number
 }
 
 export type ShipmentItemCreateOrConnectWithoutOrderItemInput = {
@@ -467,22 +481,21 @@ export type ShipmentItemScalarWhereInput = {
   AND?: Prisma.ShipmentItemScalarWhereInput | Prisma.ShipmentItemScalarWhereInput[]
   OR?: Prisma.ShipmentItemScalarWhereInput[]
   NOT?: Prisma.ShipmentItemScalarWhereInput | Prisma.ShipmentItemScalarWhereInput[]
-  id?: Prisma.StringFilter<"ShipmentItem"> | string
+  id?: Prisma.IntFilter<"ShipmentItem"> | number
   quantity?: Prisma.DecimalFilter<"ShipmentItem"> | runtime.Decimal | runtime.DecimalJsLike | number | string
-  shipmentId?: Prisma.StringFilter<"ShipmentItem"> | string
-  orderItemId?: Prisma.StringFilter<"ShipmentItem"> | string
+  shipmentId?: Prisma.IntFilter<"ShipmentItem"> | number
+  orderItemId?: Prisma.IntFilter<"ShipmentItem"> | number
 }
 
 export type ShipmentItemCreateWithoutShipmentInput = {
-  id?: string
   quantity: runtime.Decimal | runtime.DecimalJsLike | number | string
   orderItem: Prisma.OrderItemCreateNestedOneWithoutShipmentItemsInput
 }
 
 export type ShipmentItemUncheckedCreateWithoutShipmentInput = {
-  id?: string
+  id?: number
   quantity: runtime.Decimal | runtime.DecimalJsLike | number | string
-  orderItemId: string
+  orderItemId: number
 }
 
 export type ShipmentItemCreateOrConnectWithoutShipmentInput = {
@@ -512,51 +525,49 @@ export type ShipmentItemUpdateManyWithWhereWithoutShipmentInput = {
 }
 
 export type ShipmentItemCreateManyOrderItemInput = {
-  id?: string
+  id?: number
   quantity: runtime.Decimal | runtime.DecimalJsLike | number | string
-  shipmentId: string
+  shipmentId: number
 }
 
 export type ShipmentItemUpdateWithoutOrderItemInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   quantity?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   shipment?: Prisma.ShipmentUpdateOneRequiredWithoutItemsNestedInput
 }
 
 export type ShipmentItemUncheckedUpdateWithoutOrderItemInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   quantity?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  shipmentId?: Prisma.StringFieldUpdateOperationsInput | string
+  shipmentId?: Prisma.IntFieldUpdateOperationsInput | number
 }
 
 export type ShipmentItemUncheckedUpdateManyWithoutOrderItemInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   quantity?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  shipmentId?: Prisma.StringFieldUpdateOperationsInput | string
+  shipmentId?: Prisma.IntFieldUpdateOperationsInput | number
 }
 
 export type ShipmentItemCreateManyShipmentInput = {
-  id?: string
+  id?: number
   quantity: runtime.Decimal | runtime.DecimalJsLike | number | string
-  orderItemId: string
+  orderItemId: number
 }
 
 export type ShipmentItemUpdateWithoutShipmentInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   quantity?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   orderItem?: Prisma.OrderItemUpdateOneRequiredWithoutShipmentItemsNestedInput
 }
 
 export type ShipmentItemUncheckedUpdateWithoutShipmentInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   quantity?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  orderItemId?: Prisma.StringFieldUpdateOperationsInput | string
+  orderItemId?: Prisma.IntFieldUpdateOperationsInput | number
 }
 
 export type ShipmentItemUncheckedUpdateManyWithoutShipmentInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   quantity?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
-  orderItemId?: Prisma.StringFieldUpdateOperationsInput | string
+  orderItemId?: Prisma.IntFieldUpdateOperationsInput | number
 }
 
 
@@ -616,10 +627,10 @@ export type $ShipmentItemPayload<ExtArgs extends runtime.Types.Extensions.Intern
     orderItem: Prisma.$OrderItemPayload<ExtArgs>
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
-    id: string
+    id: number
     quantity: runtime.Decimal
-    shipmentId: string
-    orderItemId: string
+    shipmentId: number
+    orderItemId: number
   }, ExtArgs["result"]["shipmentItem"]>
   composites: {}
 }
@@ -1045,10 +1056,10 @@ export interface Prisma__ShipmentItemClient<T, Null = never, ExtArgs extends run
  * Fields of the ShipmentItem model
  */
 export interface ShipmentItemFieldRefs {
-  readonly id: Prisma.FieldRef<"ShipmentItem", 'String'>
+  readonly id: Prisma.FieldRef<"ShipmentItem", 'Int'>
   readonly quantity: Prisma.FieldRef<"ShipmentItem", 'Decimal'>
-  readonly shipmentId: Prisma.FieldRef<"ShipmentItem", 'String'>
-  readonly orderItemId: Prisma.FieldRef<"ShipmentItem", 'String'>
+  readonly shipmentId: Prisma.FieldRef<"ShipmentItem", 'Int'>
+  readonly orderItemId: Prisma.FieldRef<"ShipmentItem", 'Int'>
 }
     
 

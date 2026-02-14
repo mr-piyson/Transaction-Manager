@@ -27,34 +27,38 @@ export type AggregateAssetMaintenance = {
 }
 
 export type AssetMaintenanceAvgAggregateOutputType = {
+  id: number | null
   cost: runtime.Decimal | null
+  assetId: number | null
 }
 
 export type AssetMaintenanceSumAggregateOutputType = {
+  id: number | null
   cost: runtime.Decimal | null
+  assetId: number | null
 }
 
 export type AssetMaintenanceMinAggregateOutputType = {
-  id: string | null
+  id: number | null
   date: Date | null
   type: string | null
   description: string | null
   cost: runtime.Decimal | null
   performedBy: string | null
   notes: string | null
-  assetId: string | null
+  assetId: number | null
   createdAt: Date | null
 }
 
 export type AssetMaintenanceMaxAggregateOutputType = {
-  id: string | null
+  id: number | null
   date: Date | null
   type: string | null
   description: string | null
   cost: runtime.Decimal | null
   performedBy: string | null
   notes: string | null
-  assetId: string | null
+  assetId: number | null
   createdAt: Date | null
 }
 
@@ -73,11 +77,15 @@ export type AssetMaintenanceCountAggregateOutputType = {
 
 
 export type AssetMaintenanceAvgAggregateInputType = {
+  id?: true
   cost?: true
+  assetId?: true
 }
 
 export type AssetMaintenanceSumAggregateInputType = {
+  id?: true
   cost?: true
+  assetId?: true
 }
 
 export type AssetMaintenanceMinAggregateInputType = {
@@ -204,14 +212,14 @@ export type AssetMaintenanceGroupByArgs<ExtArgs extends runtime.Types.Extensions
 }
 
 export type AssetMaintenanceGroupByOutputType = {
-  id: string
+  id: number
   date: Date
   type: string
   description: string
   cost: runtime.Decimal | null
   performedBy: string | null
   notes: string | null
-  assetId: string
+  assetId: number
   createdAt: Date
   _count: AssetMaintenanceCountAggregateOutputType | null
   _avg: AssetMaintenanceAvgAggregateOutputType | null
@@ -239,14 +247,14 @@ export type AssetMaintenanceWhereInput = {
   AND?: Prisma.AssetMaintenanceWhereInput | Prisma.AssetMaintenanceWhereInput[]
   OR?: Prisma.AssetMaintenanceWhereInput[]
   NOT?: Prisma.AssetMaintenanceWhereInput | Prisma.AssetMaintenanceWhereInput[]
-  id?: Prisma.StringFilter<"AssetMaintenance"> | string
+  id?: Prisma.IntFilter<"AssetMaintenance"> | number
   date?: Prisma.DateTimeFilter<"AssetMaintenance"> | Date | string
   type?: Prisma.StringFilter<"AssetMaintenance"> | string
   description?: Prisma.StringFilter<"AssetMaintenance"> | string
   cost?: Prisma.DecimalNullableFilter<"AssetMaintenance"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   performedBy?: Prisma.StringNullableFilter<"AssetMaintenance"> | string | null
   notes?: Prisma.StringNullableFilter<"AssetMaintenance"> | string | null
-  assetId?: Prisma.StringFilter<"AssetMaintenance"> | string
+  assetId?: Prisma.IntFilter<"AssetMaintenance"> | number
   createdAt?: Prisma.DateTimeFilter<"AssetMaintenance"> | Date | string
   asset?: Prisma.XOR<Prisma.AssetScalarRelationFilter, Prisma.AssetWhereInput>
 }
@@ -265,7 +273,7 @@ export type AssetMaintenanceOrderByWithRelationInput = {
 }
 
 export type AssetMaintenanceWhereUniqueInput = Prisma.AtLeast<{
-  id?: string
+  id?: number
   AND?: Prisma.AssetMaintenanceWhereInput | Prisma.AssetMaintenanceWhereInput[]
   OR?: Prisma.AssetMaintenanceWhereInput[]
   NOT?: Prisma.AssetMaintenanceWhereInput | Prisma.AssetMaintenanceWhereInput[]
@@ -275,7 +283,7 @@ export type AssetMaintenanceWhereUniqueInput = Prisma.AtLeast<{
   cost?: Prisma.DecimalNullableFilter<"AssetMaintenance"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   performedBy?: Prisma.StringNullableFilter<"AssetMaintenance"> | string | null
   notes?: Prisma.StringNullableFilter<"AssetMaintenance"> | string | null
-  assetId?: Prisma.StringFilter<"AssetMaintenance"> | string
+  assetId?: Prisma.IntFilter<"AssetMaintenance"> | number
   createdAt?: Prisma.DateTimeFilter<"AssetMaintenance"> | Date | string
   asset?: Prisma.XOR<Prisma.AssetScalarRelationFilter, Prisma.AssetWhereInput>
 }, "id">
@@ -301,19 +309,18 @@ export type AssetMaintenanceScalarWhereWithAggregatesInput = {
   AND?: Prisma.AssetMaintenanceScalarWhereWithAggregatesInput | Prisma.AssetMaintenanceScalarWhereWithAggregatesInput[]
   OR?: Prisma.AssetMaintenanceScalarWhereWithAggregatesInput[]
   NOT?: Prisma.AssetMaintenanceScalarWhereWithAggregatesInput | Prisma.AssetMaintenanceScalarWhereWithAggregatesInput[]
-  id?: Prisma.StringWithAggregatesFilter<"AssetMaintenance"> | string
+  id?: Prisma.IntWithAggregatesFilter<"AssetMaintenance"> | number
   date?: Prisma.DateTimeWithAggregatesFilter<"AssetMaintenance"> | Date | string
   type?: Prisma.StringWithAggregatesFilter<"AssetMaintenance"> | string
   description?: Prisma.StringWithAggregatesFilter<"AssetMaintenance"> | string
   cost?: Prisma.DecimalNullableWithAggregatesFilter<"AssetMaintenance"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   performedBy?: Prisma.StringNullableWithAggregatesFilter<"AssetMaintenance"> | string | null
   notes?: Prisma.StringNullableWithAggregatesFilter<"AssetMaintenance"> | string | null
-  assetId?: Prisma.StringWithAggregatesFilter<"AssetMaintenance"> | string
+  assetId?: Prisma.IntWithAggregatesFilter<"AssetMaintenance"> | number
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"AssetMaintenance"> | Date | string
 }
 
 export type AssetMaintenanceCreateInput = {
-  id?: string
   date: Date | string
   type: string
   description: string
@@ -325,19 +332,18 @@ export type AssetMaintenanceCreateInput = {
 }
 
 export type AssetMaintenanceUncheckedCreateInput = {
-  id?: string
+  id?: number
   date: Date | string
   type: string
   description: string
   cost?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   performedBy?: string | null
   notes?: string | null
-  assetId: string
+  assetId: number
   createdAt?: Date | string
 }
 
 export type AssetMaintenanceUpdateInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   type?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.StringFieldUpdateOperationsInput | string
@@ -349,31 +355,30 @@ export type AssetMaintenanceUpdateInput = {
 }
 
 export type AssetMaintenanceUncheckedUpdateInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   type?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.StringFieldUpdateOperationsInput | string
   cost?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   performedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  assetId?: Prisma.StringFieldUpdateOperationsInput | string
+  assetId?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type AssetMaintenanceCreateManyInput = {
-  id?: string
+  id?: number
   date: Date | string
   type: string
   description: string
   cost?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   performedBy?: string | null
   notes?: string | null
-  assetId: string
+  assetId: number
   createdAt?: Date | string
 }
 
 export type AssetMaintenanceUpdateManyMutationInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   type?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.StringFieldUpdateOperationsInput | string
@@ -384,14 +389,14 @@ export type AssetMaintenanceUpdateManyMutationInput = {
 }
 
 export type AssetMaintenanceUncheckedUpdateManyInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   type?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.StringFieldUpdateOperationsInput | string
   cost?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   performedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  assetId?: Prisma.StringFieldUpdateOperationsInput | string
+  assetId?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -418,7 +423,9 @@ export type AssetMaintenanceCountOrderByAggregateInput = {
 }
 
 export type AssetMaintenanceAvgOrderByAggregateInput = {
+  id?: Prisma.SortOrder
   cost?: Prisma.SortOrder
+  assetId?: Prisma.SortOrder
 }
 
 export type AssetMaintenanceMaxOrderByAggregateInput = {
@@ -446,7 +453,9 @@ export type AssetMaintenanceMinOrderByAggregateInput = {
 }
 
 export type AssetMaintenanceSumOrderByAggregateInput = {
+  id?: Prisma.SortOrder
   cost?: Prisma.SortOrder
+  assetId?: Prisma.SortOrder
 }
 
 export type AssetMaintenanceCreateNestedManyWithoutAssetInput = {
@@ -492,7 +501,6 @@ export type AssetMaintenanceUncheckedUpdateManyWithoutAssetNestedInput = {
 }
 
 export type AssetMaintenanceCreateWithoutAssetInput = {
-  id?: string
   date: Date | string
   type: string
   description: string
@@ -503,7 +511,7 @@ export type AssetMaintenanceCreateWithoutAssetInput = {
 }
 
 export type AssetMaintenanceUncheckedCreateWithoutAssetInput = {
-  id?: string
+  id?: number
   date: Date | string
   type: string
   description: string
@@ -543,19 +551,19 @@ export type AssetMaintenanceScalarWhereInput = {
   AND?: Prisma.AssetMaintenanceScalarWhereInput | Prisma.AssetMaintenanceScalarWhereInput[]
   OR?: Prisma.AssetMaintenanceScalarWhereInput[]
   NOT?: Prisma.AssetMaintenanceScalarWhereInput | Prisma.AssetMaintenanceScalarWhereInput[]
-  id?: Prisma.StringFilter<"AssetMaintenance"> | string
+  id?: Prisma.IntFilter<"AssetMaintenance"> | number
   date?: Prisma.DateTimeFilter<"AssetMaintenance"> | Date | string
   type?: Prisma.StringFilter<"AssetMaintenance"> | string
   description?: Prisma.StringFilter<"AssetMaintenance"> | string
   cost?: Prisma.DecimalNullableFilter<"AssetMaintenance"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   performedBy?: Prisma.StringNullableFilter<"AssetMaintenance"> | string | null
   notes?: Prisma.StringNullableFilter<"AssetMaintenance"> | string | null
-  assetId?: Prisma.StringFilter<"AssetMaintenance"> | string
+  assetId?: Prisma.IntFilter<"AssetMaintenance"> | number
   createdAt?: Prisma.DateTimeFilter<"AssetMaintenance"> | Date | string
 }
 
 export type AssetMaintenanceCreateManyAssetInput = {
-  id?: string
+  id?: number
   date: Date | string
   type: string
   description: string
@@ -566,7 +574,6 @@ export type AssetMaintenanceCreateManyAssetInput = {
 }
 
 export type AssetMaintenanceUpdateWithoutAssetInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   type?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.StringFieldUpdateOperationsInput | string
@@ -577,7 +584,7 @@ export type AssetMaintenanceUpdateWithoutAssetInput = {
 }
 
 export type AssetMaintenanceUncheckedUpdateWithoutAssetInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   type?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.StringFieldUpdateOperationsInput | string
@@ -588,7 +595,7 @@ export type AssetMaintenanceUncheckedUpdateWithoutAssetInput = {
 }
 
 export type AssetMaintenanceUncheckedUpdateManyWithoutAssetInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   type?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.StringFieldUpdateOperationsInput | string
@@ -668,14 +675,14 @@ export type $AssetMaintenancePayload<ExtArgs extends runtime.Types.Extensions.In
     asset: Prisma.$AssetPayload<ExtArgs>
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
-    id: string
+    id: number
     date: Date
     type: string
     description: string
     cost: runtime.Decimal | null
     performedBy: string | null
     notes: string | null
-    assetId: string
+    assetId: number
     createdAt: Date
   }, ExtArgs["result"]["assetMaintenance"]>
   composites: {}
@@ -1101,14 +1108,14 @@ export interface Prisma__AssetMaintenanceClient<T, Null = never, ExtArgs extends
  * Fields of the AssetMaintenance model
  */
 export interface AssetMaintenanceFieldRefs {
-  readonly id: Prisma.FieldRef<"AssetMaintenance", 'String'>
+  readonly id: Prisma.FieldRef<"AssetMaintenance", 'Int'>
   readonly date: Prisma.FieldRef<"AssetMaintenance", 'DateTime'>
   readonly type: Prisma.FieldRef<"AssetMaintenance", 'String'>
   readonly description: Prisma.FieldRef<"AssetMaintenance", 'String'>
   readonly cost: Prisma.FieldRef<"AssetMaintenance", 'Decimal'>
   readonly performedBy: Prisma.FieldRef<"AssetMaintenance", 'String'>
   readonly notes: Prisma.FieldRef<"AssetMaintenance", 'String'>
-  readonly assetId: Prisma.FieldRef<"AssetMaintenance", 'String'>
+  readonly assetId: Prisma.FieldRef<"AssetMaintenance", 'Int'>
   readonly createdAt: Prisma.FieldRef<"AssetMaintenance", 'DateTime'>
 }
     

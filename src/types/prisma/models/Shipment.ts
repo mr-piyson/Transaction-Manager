@@ -27,15 +27,21 @@ export type AggregateShipment = {
 }
 
 export type ShipmentAvgAggregateOutputType = {
+  id: number | null
   shippingCost: runtime.Decimal | null
+  orderId: number | null
+  customerId: number | null
 }
 
 export type ShipmentSumAggregateOutputType = {
+  id: number | null
   shippingCost: runtime.Decimal | null
+  orderId: number | null
+  customerId: number | null
 }
 
 export type ShipmentMinAggregateOutputType = {
-  id: string | null
+  id: number | null
   shipmentNumber: string | null
   shipmentDate: Date | null
   carrier: string | null
@@ -45,14 +51,14 @@ export type ShipmentMinAggregateOutputType = {
   status: $Enums.ShipmentStatus | null
   shippingAddress: string | null
   notes: string | null
-  orderId: string | null
-  customerId: string | null
+  orderId: number | null
+  customerId: number | null
   createdAt: Date | null
   updatedAt: Date | null
 }
 
 export type ShipmentMaxAggregateOutputType = {
-  id: string | null
+  id: number | null
   shipmentNumber: string | null
   shipmentDate: Date | null
   carrier: string | null
@@ -62,8 +68,8 @@ export type ShipmentMaxAggregateOutputType = {
   status: $Enums.ShipmentStatus | null
   shippingAddress: string | null
   notes: string | null
-  orderId: string | null
-  customerId: string | null
+  orderId: number | null
+  customerId: number | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -88,11 +94,17 @@ export type ShipmentCountAggregateOutputType = {
 
 
 export type ShipmentAvgAggregateInputType = {
+  id?: true
   shippingCost?: true
+  orderId?: true
+  customerId?: true
 }
 
 export type ShipmentSumAggregateInputType = {
+  id?: true
   shippingCost?: true
+  orderId?: true
+  customerId?: true
 }
 
 export type ShipmentMinAggregateInputType = {
@@ -234,7 +246,7 @@ export type ShipmentGroupByArgs<ExtArgs extends runtime.Types.Extensions.Interna
 }
 
 export type ShipmentGroupByOutputType = {
-  id: string
+  id: number
   shipmentNumber: string
   shipmentDate: Date
   carrier: string | null
@@ -244,8 +256,8 @@ export type ShipmentGroupByOutputType = {
   status: $Enums.ShipmentStatus
   shippingAddress: string | null
   notes: string | null
-  orderId: string
-  customerId: string
+  orderId: number
+  customerId: number
   createdAt: Date
   updatedAt: Date
   _count: ShipmentCountAggregateOutputType | null
@@ -274,7 +286,7 @@ export type ShipmentWhereInput = {
   AND?: Prisma.ShipmentWhereInput | Prisma.ShipmentWhereInput[]
   OR?: Prisma.ShipmentWhereInput[]
   NOT?: Prisma.ShipmentWhereInput | Prisma.ShipmentWhereInput[]
-  id?: Prisma.StringFilter<"Shipment"> | string
+  id?: Prisma.IntFilter<"Shipment"> | number
   shipmentNumber?: Prisma.StringFilter<"Shipment"> | string
   shipmentDate?: Prisma.DateTimeFilter<"Shipment"> | Date | string
   carrier?: Prisma.StringNullableFilter<"Shipment"> | string | null
@@ -284,8 +296,8 @@ export type ShipmentWhereInput = {
   status?: Prisma.EnumShipmentStatusFilter<"Shipment"> | $Enums.ShipmentStatus
   shippingAddress?: Prisma.StringNullableFilter<"Shipment"> | string | null
   notes?: Prisma.StringNullableFilter<"Shipment"> | string | null
-  orderId?: Prisma.StringFilter<"Shipment"> | string
-  customerId?: Prisma.StringFilter<"Shipment"> | string
+  orderId?: Prisma.IntFilter<"Shipment"> | number
+  customerId?: Prisma.IntFilter<"Shipment"> | number
   createdAt?: Prisma.DateTimeFilter<"Shipment"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Shipment"> | Date | string
   order?: Prisma.XOR<Prisma.SalesOrderScalarRelationFilter, Prisma.SalesOrderWhereInput>
@@ -314,7 +326,7 @@ export type ShipmentOrderByWithRelationInput = {
 }
 
 export type ShipmentWhereUniqueInput = Prisma.AtLeast<{
-  id?: string
+  id?: number
   AND?: Prisma.ShipmentWhereInput | Prisma.ShipmentWhereInput[]
   OR?: Prisma.ShipmentWhereInput[]
   NOT?: Prisma.ShipmentWhereInput | Prisma.ShipmentWhereInput[]
@@ -327,8 +339,8 @@ export type ShipmentWhereUniqueInput = Prisma.AtLeast<{
   status?: Prisma.EnumShipmentStatusFilter<"Shipment"> | $Enums.ShipmentStatus
   shippingAddress?: Prisma.StringNullableFilter<"Shipment"> | string | null
   notes?: Prisma.StringNullableFilter<"Shipment"> | string | null
-  orderId?: Prisma.StringFilter<"Shipment"> | string
-  customerId?: Prisma.StringFilter<"Shipment"> | string
+  orderId?: Prisma.IntFilter<"Shipment"> | number
+  customerId?: Prisma.IntFilter<"Shipment"> | number
   createdAt?: Prisma.DateTimeFilter<"Shipment"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Shipment"> | Date | string
   order?: Prisma.XOR<Prisma.SalesOrderScalarRelationFilter, Prisma.SalesOrderWhereInput>
@@ -362,7 +374,7 @@ export type ShipmentScalarWhereWithAggregatesInput = {
   AND?: Prisma.ShipmentScalarWhereWithAggregatesInput | Prisma.ShipmentScalarWhereWithAggregatesInput[]
   OR?: Prisma.ShipmentScalarWhereWithAggregatesInput[]
   NOT?: Prisma.ShipmentScalarWhereWithAggregatesInput | Prisma.ShipmentScalarWhereWithAggregatesInput[]
-  id?: Prisma.StringWithAggregatesFilter<"Shipment"> | string
+  id?: Prisma.IntWithAggregatesFilter<"Shipment"> | number
   shipmentNumber?: Prisma.StringWithAggregatesFilter<"Shipment"> | string
   shipmentDate?: Prisma.DateTimeWithAggregatesFilter<"Shipment"> | Date | string
   carrier?: Prisma.StringNullableWithAggregatesFilter<"Shipment"> | string | null
@@ -372,14 +384,13 @@ export type ShipmentScalarWhereWithAggregatesInput = {
   status?: Prisma.EnumShipmentStatusWithAggregatesFilter<"Shipment"> | $Enums.ShipmentStatus
   shippingAddress?: Prisma.StringNullableWithAggregatesFilter<"Shipment"> | string | null
   notes?: Prisma.StringNullableWithAggregatesFilter<"Shipment"> | string | null
-  orderId?: Prisma.StringWithAggregatesFilter<"Shipment"> | string
-  customerId?: Prisma.StringWithAggregatesFilter<"Shipment"> | string
+  orderId?: Prisma.IntWithAggregatesFilter<"Shipment"> | number
+  customerId?: Prisma.IntWithAggregatesFilter<"Shipment"> | number
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Shipment"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Shipment"> | Date | string
 }
 
 export type ShipmentCreateInput = {
-  id?: string
   shipmentNumber: string
   shipmentDate?: Date | string
   carrier?: string | null
@@ -397,7 +408,7 @@ export type ShipmentCreateInput = {
 }
 
 export type ShipmentUncheckedCreateInput = {
-  id?: string
+  id?: number
   shipmentNumber: string
   shipmentDate?: Date | string
   carrier?: string | null
@@ -407,15 +418,14 @@ export type ShipmentUncheckedCreateInput = {
   status?: $Enums.ShipmentStatus
   shippingAddress?: string | null
   notes?: string | null
-  orderId: string
-  customerId: string
+  orderId: number
+  customerId: number
   createdAt?: Date | string
   updatedAt?: Date | string
   items?: Prisma.ShipmentItemUncheckedCreateNestedManyWithoutShipmentInput
 }
 
 export type ShipmentUpdateInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   shipmentNumber?: Prisma.StringFieldUpdateOperationsInput | string
   shipmentDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   carrier?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -433,7 +443,7 @@ export type ShipmentUpdateInput = {
 }
 
 export type ShipmentUncheckedUpdateInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   shipmentNumber?: Prisma.StringFieldUpdateOperationsInput | string
   shipmentDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   carrier?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -443,15 +453,15 @@ export type ShipmentUncheckedUpdateInput = {
   status?: Prisma.EnumShipmentStatusFieldUpdateOperationsInput | $Enums.ShipmentStatus
   shippingAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  orderId?: Prisma.StringFieldUpdateOperationsInput | string
-  customerId?: Prisma.StringFieldUpdateOperationsInput | string
+  orderId?: Prisma.IntFieldUpdateOperationsInput | number
+  customerId?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   items?: Prisma.ShipmentItemUncheckedUpdateManyWithoutShipmentNestedInput
 }
 
 export type ShipmentCreateManyInput = {
-  id?: string
+  id?: number
   shipmentNumber: string
   shipmentDate?: Date | string
   carrier?: string | null
@@ -461,14 +471,13 @@ export type ShipmentCreateManyInput = {
   status?: $Enums.ShipmentStatus
   shippingAddress?: string | null
   notes?: string | null
-  orderId: string
-  customerId: string
+  orderId: number
+  customerId: number
   createdAt?: Date | string
   updatedAt?: Date | string
 }
 
 export type ShipmentUpdateManyMutationInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   shipmentNumber?: Prisma.StringFieldUpdateOperationsInput | string
   shipmentDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   carrier?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -483,7 +492,7 @@ export type ShipmentUpdateManyMutationInput = {
 }
 
 export type ShipmentUncheckedUpdateManyInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   shipmentNumber?: Prisma.StringFieldUpdateOperationsInput | string
   shipmentDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   carrier?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -493,8 +502,8 @@ export type ShipmentUncheckedUpdateManyInput = {
   status?: Prisma.EnumShipmentStatusFieldUpdateOperationsInput | $Enums.ShipmentStatus
   shippingAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  orderId?: Prisma.StringFieldUpdateOperationsInput | string
-  customerId?: Prisma.StringFieldUpdateOperationsInput | string
+  orderId?: Prisma.IntFieldUpdateOperationsInput | number
+  customerId?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -527,7 +536,10 @@ export type ShipmentCountOrderByAggregateInput = {
 }
 
 export type ShipmentAvgOrderByAggregateInput = {
+  id?: Prisma.SortOrder
   shippingCost?: Prisma.SortOrder
+  orderId?: Prisma.SortOrder
+  customerId?: Prisma.SortOrder
 }
 
 export type ShipmentMaxOrderByAggregateInput = {
@@ -565,7 +577,10 @@ export type ShipmentMinOrderByAggregateInput = {
 }
 
 export type ShipmentSumOrderByAggregateInput = {
+  id?: Prisma.SortOrder
   shippingCost?: Prisma.SortOrder
+  orderId?: Prisma.SortOrder
+  customerId?: Prisma.SortOrder
 }
 
 export type ShipmentScalarRelationFilter = {
@@ -676,7 +691,6 @@ export type ShipmentUpdateOneRequiredWithoutItemsNestedInput = {
 }
 
 export type ShipmentCreateWithoutCustomerInput = {
-  id?: string
   shipmentNumber: string
   shipmentDate?: Date | string
   carrier?: string | null
@@ -693,7 +707,7 @@ export type ShipmentCreateWithoutCustomerInput = {
 }
 
 export type ShipmentUncheckedCreateWithoutCustomerInput = {
-  id?: string
+  id?: number
   shipmentNumber: string
   shipmentDate?: Date | string
   carrier?: string | null
@@ -703,7 +717,7 @@ export type ShipmentUncheckedCreateWithoutCustomerInput = {
   status?: $Enums.ShipmentStatus
   shippingAddress?: string | null
   notes?: string | null
-  orderId: string
+  orderId: number
   createdAt?: Date | string
   updatedAt?: Date | string
   items?: Prisma.ShipmentItemUncheckedCreateNestedManyWithoutShipmentInput
@@ -739,7 +753,7 @@ export type ShipmentScalarWhereInput = {
   AND?: Prisma.ShipmentScalarWhereInput | Prisma.ShipmentScalarWhereInput[]
   OR?: Prisma.ShipmentScalarWhereInput[]
   NOT?: Prisma.ShipmentScalarWhereInput | Prisma.ShipmentScalarWhereInput[]
-  id?: Prisma.StringFilter<"Shipment"> | string
+  id?: Prisma.IntFilter<"Shipment"> | number
   shipmentNumber?: Prisma.StringFilter<"Shipment"> | string
   shipmentDate?: Prisma.DateTimeFilter<"Shipment"> | Date | string
   carrier?: Prisma.StringNullableFilter<"Shipment"> | string | null
@@ -749,14 +763,13 @@ export type ShipmentScalarWhereInput = {
   status?: Prisma.EnumShipmentStatusFilter<"Shipment"> | $Enums.ShipmentStatus
   shippingAddress?: Prisma.StringNullableFilter<"Shipment"> | string | null
   notes?: Prisma.StringNullableFilter<"Shipment"> | string | null
-  orderId?: Prisma.StringFilter<"Shipment"> | string
-  customerId?: Prisma.StringFilter<"Shipment"> | string
+  orderId?: Prisma.IntFilter<"Shipment"> | number
+  customerId?: Prisma.IntFilter<"Shipment"> | number
   createdAt?: Prisma.DateTimeFilter<"Shipment"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Shipment"> | Date | string
 }
 
 export type ShipmentCreateWithoutOrderInput = {
-  id?: string
   shipmentNumber: string
   shipmentDate?: Date | string
   carrier?: string | null
@@ -773,7 +786,7 @@ export type ShipmentCreateWithoutOrderInput = {
 }
 
 export type ShipmentUncheckedCreateWithoutOrderInput = {
-  id?: string
+  id?: number
   shipmentNumber: string
   shipmentDate?: Date | string
   carrier?: string | null
@@ -783,7 +796,7 @@ export type ShipmentUncheckedCreateWithoutOrderInput = {
   status?: $Enums.ShipmentStatus
   shippingAddress?: string | null
   notes?: string | null
-  customerId: string
+  customerId: number
   createdAt?: Date | string
   updatedAt?: Date | string
   items?: Prisma.ShipmentItemUncheckedCreateNestedManyWithoutShipmentInput
@@ -816,7 +829,6 @@ export type ShipmentUpdateManyWithWhereWithoutOrderInput = {
 }
 
 export type ShipmentCreateWithoutItemsInput = {
-  id?: string
   shipmentNumber: string
   shipmentDate?: Date | string
   carrier?: string | null
@@ -833,7 +845,7 @@ export type ShipmentCreateWithoutItemsInput = {
 }
 
 export type ShipmentUncheckedCreateWithoutItemsInput = {
-  id?: string
+  id?: number
   shipmentNumber: string
   shipmentDate?: Date | string
   carrier?: string | null
@@ -843,8 +855,8 @@ export type ShipmentUncheckedCreateWithoutItemsInput = {
   status?: $Enums.ShipmentStatus
   shippingAddress?: string | null
   notes?: string | null
-  orderId: string
-  customerId: string
+  orderId: number
+  customerId: number
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -866,7 +878,6 @@ export type ShipmentUpdateToOneWithWhereWithoutItemsInput = {
 }
 
 export type ShipmentUpdateWithoutItemsInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   shipmentNumber?: Prisma.StringFieldUpdateOperationsInput | string
   shipmentDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   carrier?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -883,7 +894,7 @@ export type ShipmentUpdateWithoutItemsInput = {
 }
 
 export type ShipmentUncheckedUpdateWithoutItemsInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   shipmentNumber?: Prisma.StringFieldUpdateOperationsInput | string
   shipmentDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   carrier?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -893,14 +904,14 @@ export type ShipmentUncheckedUpdateWithoutItemsInput = {
   status?: Prisma.EnumShipmentStatusFieldUpdateOperationsInput | $Enums.ShipmentStatus
   shippingAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  orderId?: Prisma.StringFieldUpdateOperationsInput | string
-  customerId?: Prisma.StringFieldUpdateOperationsInput | string
+  orderId?: Prisma.IntFieldUpdateOperationsInput | number
+  customerId?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type ShipmentCreateManyCustomerInput = {
-  id?: string
+  id?: number
   shipmentNumber: string
   shipmentDate?: Date | string
   carrier?: string | null
@@ -910,13 +921,12 @@ export type ShipmentCreateManyCustomerInput = {
   status?: $Enums.ShipmentStatus
   shippingAddress?: string | null
   notes?: string | null
-  orderId: string
+  orderId: number
   createdAt?: Date | string
   updatedAt?: Date | string
 }
 
 export type ShipmentUpdateWithoutCustomerInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   shipmentNumber?: Prisma.StringFieldUpdateOperationsInput | string
   shipmentDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   carrier?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -933,7 +943,7 @@ export type ShipmentUpdateWithoutCustomerInput = {
 }
 
 export type ShipmentUncheckedUpdateWithoutCustomerInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   shipmentNumber?: Prisma.StringFieldUpdateOperationsInput | string
   shipmentDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   carrier?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -943,14 +953,14 @@ export type ShipmentUncheckedUpdateWithoutCustomerInput = {
   status?: Prisma.EnumShipmentStatusFieldUpdateOperationsInput | $Enums.ShipmentStatus
   shippingAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  orderId?: Prisma.StringFieldUpdateOperationsInput | string
+  orderId?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   items?: Prisma.ShipmentItemUncheckedUpdateManyWithoutShipmentNestedInput
 }
 
 export type ShipmentUncheckedUpdateManyWithoutCustomerInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   shipmentNumber?: Prisma.StringFieldUpdateOperationsInput | string
   shipmentDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   carrier?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -960,13 +970,13 @@ export type ShipmentUncheckedUpdateManyWithoutCustomerInput = {
   status?: Prisma.EnumShipmentStatusFieldUpdateOperationsInput | $Enums.ShipmentStatus
   shippingAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  orderId?: Prisma.StringFieldUpdateOperationsInput | string
+  orderId?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type ShipmentCreateManyOrderInput = {
-  id?: string
+  id?: number
   shipmentNumber: string
   shipmentDate?: Date | string
   carrier?: string | null
@@ -976,13 +986,12 @@ export type ShipmentCreateManyOrderInput = {
   status?: $Enums.ShipmentStatus
   shippingAddress?: string | null
   notes?: string | null
-  customerId: string
+  customerId: number
   createdAt?: Date | string
   updatedAt?: Date | string
 }
 
 export type ShipmentUpdateWithoutOrderInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   shipmentNumber?: Prisma.StringFieldUpdateOperationsInput | string
   shipmentDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   carrier?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -999,7 +1008,7 @@ export type ShipmentUpdateWithoutOrderInput = {
 }
 
 export type ShipmentUncheckedUpdateWithoutOrderInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   shipmentNumber?: Prisma.StringFieldUpdateOperationsInput | string
   shipmentDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   carrier?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1009,14 +1018,14 @@ export type ShipmentUncheckedUpdateWithoutOrderInput = {
   status?: Prisma.EnumShipmentStatusFieldUpdateOperationsInput | $Enums.ShipmentStatus
   shippingAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  customerId?: Prisma.StringFieldUpdateOperationsInput | string
+  customerId?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   items?: Prisma.ShipmentItemUncheckedUpdateManyWithoutShipmentNestedInput
 }
 
 export type ShipmentUncheckedUpdateManyWithoutOrderInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   shipmentNumber?: Prisma.StringFieldUpdateOperationsInput | string
   shipmentDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   carrier?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1026,7 +1035,7 @@ export type ShipmentUncheckedUpdateManyWithoutOrderInput = {
   status?: Prisma.EnumShipmentStatusFieldUpdateOperationsInput | $Enums.ShipmentStatus
   shippingAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  customerId?: Prisma.StringFieldUpdateOperationsInput | string
+  customerId?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -1162,7 +1171,7 @@ export type $ShipmentPayload<ExtArgs extends runtime.Types.Extensions.InternalAr
     items: Prisma.$ShipmentItemPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
-    id: string
+    id: number
     shipmentNumber: string
     shipmentDate: Date
     carrier: string | null
@@ -1172,8 +1181,8 @@ export type $ShipmentPayload<ExtArgs extends runtime.Types.Extensions.InternalAr
     status: $Enums.ShipmentStatus
     shippingAddress: string | null
     notes: string | null
-    orderId: string
-    customerId: string
+    orderId: number
+    customerId: number
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["shipment"]>
@@ -1602,7 +1611,7 @@ export interface Prisma__ShipmentClient<T, Null = never, ExtArgs extends runtime
  * Fields of the Shipment model
  */
 export interface ShipmentFieldRefs {
-  readonly id: Prisma.FieldRef<"Shipment", 'String'>
+  readonly id: Prisma.FieldRef<"Shipment", 'Int'>
   readonly shipmentNumber: Prisma.FieldRef<"Shipment", 'String'>
   readonly shipmentDate: Prisma.FieldRef<"Shipment", 'DateTime'>
   readonly carrier: Prisma.FieldRef<"Shipment", 'String'>
@@ -1612,8 +1621,8 @@ export interface ShipmentFieldRefs {
   readonly status: Prisma.FieldRef<"Shipment", 'ShipmentStatus'>
   readonly shippingAddress: Prisma.FieldRef<"Shipment", 'String'>
   readonly notes: Prisma.FieldRef<"Shipment", 'String'>
-  readonly orderId: Prisma.FieldRef<"Shipment", 'String'>
-  readonly customerId: Prisma.FieldRef<"Shipment", 'String'>
+  readonly orderId: Prisma.FieldRef<"Shipment", 'Int'>
+  readonly customerId: Prisma.FieldRef<"Shipment", 'Int'>
   readonly createdAt: Prisma.FieldRef<"Shipment", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"Shipment", 'DateTime'>
 }

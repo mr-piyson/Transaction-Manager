@@ -27,25 +27,29 @@ export type AggregateQuotation = {
 }
 
 export type QuotationAvgAggregateOutputType = {
+  id: number | null
   subtotal: runtime.Decimal | null
   discountPercent: runtime.Decimal | null
   discountAmount: runtime.Decimal | null
   taxAmount: runtime.Decimal | null
   shippingCost: runtime.Decimal | null
   totalAmount: runtime.Decimal | null
+  customerId: number | null
 }
 
 export type QuotationSumAggregateOutputType = {
+  id: number | null
   subtotal: runtime.Decimal | null
   discountPercent: runtime.Decimal | null
   discountAmount: runtime.Decimal | null
   taxAmount: runtime.Decimal | null
   shippingCost: runtime.Decimal | null
   totalAmount: runtime.Decimal | null
+  customerId: number | null
 }
 
 export type QuotationMinAggregateOutputType = {
-  id: string | null
+  id: number | null
   quotationNumber: string | null
   quotationDate: Date | null
   expiryDate: Date | null
@@ -60,13 +64,13 @@ export type QuotationMinAggregateOutputType = {
   currency: string | null
   notes: string | null
   terms: string | null
-  customerId: string | null
+  customerId: number | null
   createdAt: Date | null
   updatedAt: Date | null
 }
 
 export type QuotationMaxAggregateOutputType = {
-  id: string | null
+  id: number | null
   quotationNumber: string | null
   quotationDate: Date | null
   expiryDate: Date | null
@@ -81,7 +85,7 @@ export type QuotationMaxAggregateOutputType = {
   currency: string | null
   notes: string | null
   terms: string | null
-  customerId: string | null
+  customerId: number | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -110,21 +114,25 @@ export type QuotationCountAggregateOutputType = {
 
 
 export type QuotationAvgAggregateInputType = {
+  id?: true
   subtotal?: true
   discountPercent?: true
   discountAmount?: true
   taxAmount?: true
   shippingCost?: true
   totalAmount?: true
+  customerId?: true
 }
 
 export type QuotationSumAggregateInputType = {
+  id?: true
   subtotal?: true
   discountPercent?: true
   discountAmount?: true
   taxAmount?: true
   shippingCost?: true
   totalAmount?: true
+  customerId?: true
 }
 
 export type QuotationMinAggregateInputType = {
@@ -278,7 +286,7 @@ export type QuotationGroupByArgs<ExtArgs extends runtime.Types.Extensions.Intern
 }
 
 export type QuotationGroupByOutputType = {
-  id: string
+  id: number
   quotationNumber: string
   quotationDate: Date
   expiryDate: Date
@@ -293,7 +301,7 @@ export type QuotationGroupByOutputType = {
   currency: string
   notes: string | null
   terms: string | null
-  customerId: string
+  customerId: number
   createdAt: Date
   updatedAt: Date
   _count: QuotationCountAggregateOutputType | null
@@ -322,7 +330,7 @@ export type QuotationWhereInput = {
   AND?: Prisma.QuotationWhereInput | Prisma.QuotationWhereInput[]
   OR?: Prisma.QuotationWhereInput[]
   NOT?: Prisma.QuotationWhereInput | Prisma.QuotationWhereInput[]
-  id?: Prisma.StringFilter<"Quotation"> | string
+  id?: Prisma.IntFilter<"Quotation"> | number
   quotationNumber?: Prisma.StringFilter<"Quotation"> | string
   quotationDate?: Prisma.DateTimeFilter<"Quotation"> | Date | string
   expiryDate?: Prisma.DateTimeFilter<"Quotation"> | Date | string
@@ -337,7 +345,7 @@ export type QuotationWhereInput = {
   currency?: Prisma.StringFilter<"Quotation"> | string
   notes?: Prisma.StringNullableFilter<"Quotation"> | string | null
   terms?: Prisma.StringNullableFilter<"Quotation"> | string | null
-  customerId?: Prisma.StringFilter<"Quotation"> | string
+  customerId?: Prisma.IntFilter<"Quotation"> | number
   createdAt?: Prisma.DateTimeFilter<"Quotation"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Quotation"> | Date | string
   customer?: Prisma.XOR<Prisma.CustomerScalarRelationFilter, Prisma.CustomerWhereInput>
@@ -370,7 +378,7 @@ export type QuotationOrderByWithRelationInput = {
 }
 
 export type QuotationWhereUniqueInput = Prisma.AtLeast<{
-  id?: string
+  id?: number
   AND?: Prisma.QuotationWhereInput | Prisma.QuotationWhereInput[]
   OR?: Prisma.QuotationWhereInput[]
   NOT?: Prisma.QuotationWhereInput | Prisma.QuotationWhereInput[]
@@ -388,7 +396,7 @@ export type QuotationWhereUniqueInput = Prisma.AtLeast<{
   currency?: Prisma.StringFilter<"Quotation"> | string
   notes?: Prisma.StringNullableFilter<"Quotation"> | string | null
   terms?: Prisma.StringNullableFilter<"Quotation"> | string | null
-  customerId?: Prisma.StringFilter<"Quotation"> | string
+  customerId?: Prisma.IntFilter<"Quotation"> | number
   createdAt?: Prisma.DateTimeFilter<"Quotation"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Quotation"> | Date | string
   customer?: Prisma.XOR<Prisma.CustomerScalarRelationFilter, Prisma.CustomerWhereInput>
@@ -426,7 +434,7 @@ export type QuotationScalarWhereWithAggregatesInput = {
   AND?: Prisma.QuotationScalarWhereWithAggregatesInput | Prisma.QuotationScalarWhereWithAggregatesInput[]
   OR?: Prisma.QuotationScalarWhereWithAggregatesInput[]
   NOT?: Prisma.QuotationScalarWhereWithAggregatesInput | Prisma.QuotationScalarWhereWithAggregatesInput[]
-  id?: Prisma.StringWithAggregatesFilter<"Quotation"> | string
+  id?: Prisma.IntWithAggregatesFilter<"Quotation"> | number
   quotationNumber?: Prisma.StringWithAggregatesFilter<"Quotation"> | string
   quotationDate?: Prisma.DateTimeWithAggregatesFilter<"Quotation"> | Date | string
   expiryDate?: Prisma.DateTimeWithAggregatesFilter<"Quotation"> | Date | string
@@ -441,13 +449,12 @@ export type QuotationScalarWhereWithAggregatesInput = {
   currency?: Prisma.StringWithAggregatesFilter<"Quotation"> | string
   notes?: Prisma.StringNullableWithAggregatesFilter<"Quotation"> | string | null
   terms?: Prisma.StringNullableWithAggregatesFilter<"Quotation"> | string | null
-  customerId?: Prisma.StringWithAggregatesFilter<"Quotation"> | string
+  customerId?: Prisma.IntWithAggregatesFilter<"Quotation"> | number
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Quotation"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Quotation"> | Date | string
 }
 
 export type QuotationCreateInput = {
-  id?: string
   quotationNumber: string
   quotationDate?: Date | string
   expiryDate: Date | string
@@ -470,7 +477,7 @@ export type QuotationCreateInput = {
 }
 
 export type QuotationUncheckedCreateInput = {
-  id?: string
+  id?: number
   quotationNumber: string
   quotationDate?: Date | string
   expiryDate: Date | string
@@ -485,7 +492,7 @@ export type QuotationUncheckedCreateInput = {
   currency?: string
   notes?: string | null
   terms?: string | null
-  customerId: string
+  customerId: number
   createdAt?: Date | string
   updatedAt?: Date | string
   items?: Prisma.QuotationItemUncheckedCreateNestedManyWithoutQuotationInput
@@ -493,7 +500,6 @@ export type QuotationUncheckedCreateInput = {
 }
 
 export type QuotationUpdateInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   quotationNumber?: Prisma.StringFieldUpdateOperationsInput | string
   quotationDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   expiryDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -516,7 +522,7 @@ export type QuotationUpdateInput = {
 }
 
 export type QuotationUncheckedUpdateInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   quotationNumber?: Prisma.StringFieldUpdateOperationsInput | string
   quotationDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   expiryDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -531,7 +537,7 @@ export type QuotationUncheckedUpdateInput = {
   currency?: Prisma.StringFieldUpdateOperationsInput | string
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   terms?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  customerId?: Prisma.StringFieldUpdateOperationsInput | string
+  customerId?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   items?: Prisma.QuotationItemUncheckedUpdateManyWithoutQuotationNestedInput
@@ -539,7 +545,7 @@ export type QuotationUncheckedUpdateInput = {
 }
 
 export type QuotationCreateManyInput = {
-  id?: string
+  id?: number
   quotationNumber: string
   quotationDate?: Date | string
   expiryDate: Date | string
@@ -554,13 +560,12 @@ export type QuotationCreateManyInput = {
   currency?: string
   notes?: string | null
   terms?: string | null
-  customerId: string
+  customerId: number
   createdAt?: Date | string
   updatedAt?: Date | string
 }
 
 export type QuotationUpdateManyMutationInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   quotationNumber?: Prisma.StringFieldUpdateOperationsInput | string
   quotationDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   expiryDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -580,7 +585,7 @@ export type QuotationUpdateManyMutationInput = {
 }
 
 export type QuotationUncheckedUpdateManyInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   quotationNumber?: Prisma.StringFieldUpdateOperationsInput | string
   quotationDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   expiryDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -595,7 +600,7 @@ export type QuotationUncheckedUpdateManyInput = {
   currency?: Prisma.StringFieldUpdateOperationsInput | string
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   terms?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  customerId?: Prisma.StringFieldUpdateOperationsInput | string
+  customerId?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -632,12 +637,14 @@ export type QuotationCountOrderByAggregateInput = {
 }
 
 export type QuotationAvgOrderByAggregateInput = {
+  id?: Prisma.SortOrder
   subtotal?: Prisma.SortOrder
   discountPercent?: Prisma.SortOrder
   discountAmount?: Prisma.SortOrder
   taxAmount?: Prisma.SortOrder
   shippingCost?: Prisma.SortOrder
   totalAmount?: Prisma.SortOrder
+  customerId?: Prisma.SortOrder
 }
 
 export type QuotationMaxOrderByAggregateInput = {
@@ -683,12 +690,14 @@ export type QuotationMinOrderByAggregateInput = {
 }
 
 export type QuotationSumOrderByAggregateInput = {
+  id?: Prisma.SortOrder
   subtotal?: Prisma.SortOrder
   discountPercent?: Prisma.SortOrder
   discountAmount?: Prisma.SortOrder
   taxAmount?: Prisma.SortOrder
   shippingCost?: Prisma.SortOrder
   totalAmount?: Prisma.SortOrder
+  customerId?: Prisma.SortOrder
 }
 
 export type QuotationScalarRelationFilter = {
@@ -778,7 +787,6 @@ export type QuotationUpdateOneWithoutOrderNestedInput = {
 }
 
 export type QuotationCreateWithoutCustomerInput = {
-  id?: string
   quotationNumber: string
   quotationDate?: Date | string
   expiryDate: Date | string
@@ -800,7 +808,7 @@ export type QuotationCreateWithoutCustomerInput = {
 }
 
 export type QuotationUncheckedCreateWithoutCustomerInput = {
-  id?: string
+  id?: number
   quotationNumber: string
   quotationDate?: Date | string
   expiryDate: Date | string
@@ -851,7 +859,7 @@ export type QuotationScalarWhereInput = {
   AND?: Prisma.QuotationScalarWhereInput | Prisma.QuotationScalarWhereInput[]
   OR?: Prisma.QuotationScalarWhereInput[]
   NOT?: Prisma.QuotationScalarWhereInput | Prisma.QuotationScalarWhereInput[]
-  id?: Prisma.StringFilter<"Quotation"> | string
+  id?: Prisma.IntFilter<"Quotation"> | number
   quotationNumber?: Prisma.StringFilter<"Quotation"> | string
   quotationDate?: Prisma.DateTimeFilter<"Quotation"> | Date | string
   expiryDate?: Prisma.DateTimeFilter<"Quotation"> | Date | string
@@ -866,13 +874,12 @@ export type QuotationScalarWhereInput = {
   currency?: Prisma.StringFilter<"Quotation"> | string
   notes?: Prisma.StringNullableFilter<"Quotation"> | string | null
   terms?: Prisma.StringNullableFilter<"Quotation"> | string | null
-  customerId?: Prisma.StringFilter<"Quotation"> | string
+  customerId?: Prisma.IntFilter<"Quotation"> | number
   createdAt?: Prisma.DateTimeFilter<"Quotation"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Quotation"> | Date | string
 }
 
 export type QuotationCreateWithoutItemsInput = {
-  id?: string
   quotationNumber: string
   quotationDate?: Date | string
   expiryDate: Date | string
@@ -894,7 +901,7 @@ export type QuotationCreateWithoutItemsInput = {
 }
 
 export type QuotationUncheckedCreateWithoutItemsInput = {
-  id?: string
+  id?: number
   quotationNumber: string
   quotationDate?: Date | string
   expiryDate: Date | string
@@ -909,7 +916,7 @@ export type QuotationUncheckedCreateWithoutItemsInput = {
   currency?: string
   notes?: string | null
   terms?: string | null
-  customerId: string
+  customerId: number
   createdAt?: Date | string
   updatedAt?: Date | string
   order?: Prisma.SalesOrderUncheckedCreateNestedOneWithoutQuotationInput
@@ -932,7 +939,6 @@ export type QuotationUpdateToOneWithWhereWithoutItemsInput = {
 }
 
 export type QuotationUpdateWithoutItemsInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   quotationNumber?: Prisma.StringFieldUpdateOperationsInput | string
   quotationDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   expiryDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -954,7 +960,7 @@ export type QuotationUpdateWithoutItemsInput = {
 }
 
 export type QuotationUncheckedUpdateWithoutItemsInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   quotationNumber?: Prisma.StringFieldUpdateOperationsInput | string
   quotationDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   expiryDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -969,14 +975,13 @@ export type QuotationUncheckedUpdateWithoutItemsInput = {
   currency?: Prisma.StringFieldUpdateOperationsInput | string
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   terms?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  customerId?: Prisma.StringFieldUpdateOperationsInput | string
+  customerId?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   order?: Prisma.SalesOrderUncheckedUpdateOneWithoutQuotationNestedInput
 }
 
 export type QuotationCreateWithoutOrderInput = {
-  id?: string
   quotationNumber: string
   quotationDate?: Date | string
   expiryDate: Date | string
@@ -998,7 +1003,7 @@ export type QuotationCreateWithoutOrderInput = {
 }
 
 export type QuotationUncheckedCreateWithoutOrderInput = {
-  id?: string
+  id?: number
   quotationNumber: string
   quotationDate?: Date | string
   expiryDate: Date | string
@@ -1013,7 +1018,7 @@ export type QuotationUncheckedCreateWithoutOrderInput = {
   currency?: string
   notes?: string | null
   terms?: string | null
-  customerId: string
+  customerId: number
   createdAt?: Date | string
   updatedAt?: Date | string
   items?: Prisma.QuotationItemUncheckedCreateNestedManyWithoutQuotationInput
@@ -1036,7 +1041,6 @@ export type QuotationUpdateToOneWithWhereWithoutOrderInput = {
 }
 
 export type QuotationUpdateWithoutOrderInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   quotationNumber?: Prisma.StringFieldUpdateOperationsInput | string
   quotationDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   expiryDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1058,7 +1062,7 @@ export type QuotationUpdateWithoutOrderInput = {
 }
 
 export type QuotationUncheckedUpdateWithoutOrderInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   quotationNumber?: Prisma.StringFieldUpdateOperationsInput | string
   quotationDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   expiryDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1073,14 +1077,14 @@ export type QuotationUncheckedUpdateWithoutOrderInput = {
   currency?: Prisma.StringFieldUpdateOperationsInput | string
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   terms?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  customerId?: Prisma.StringFieldUpdateOperationsInput | string
+  customerId?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   items?: Prisma.QuotationItemUncheckedUpdateManyWithoutQuotationNestedInput
 }
 
 export type QuotationCreateManyCustomerInput = {
-  id?: string
+  id?: number
   quotationNumber: string
   quotationDate?: Date | string
   expiryDate: Date | string
@@ -1100,7 +1104,6 @@ export type QuotationCreateManyCustomerInput = {
 }
 
 export type QuotationUpdateWithoutCustomerInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   quotationNumber?: Prisma.StringFieldUpdateOperationsInput | string
   quotationDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   expiryDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1122,7 +1125,7 @@ export type QuotationUpdateWithoutCustomerInput = {
 }
 
 export type QuotationUncheckedUpdateWithoutCustomerInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   quotationNumber?: Prisma.StringFieldUpdateOperationsInput | string
   quotationDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   expiryDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1144,7 +1147,7 @@ export type QuotationUncheckedUpdateWithoutCustomerInput = {
 }
 
 export type QuotationUncheckedUpdateManyWithoutCustomerInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   quotationNumber?: Prisma.StringFieldUpdateOperationsInput | string
   quotationDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   expiryDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1306,7 +1309,7 @@ export type $QuotationPayload<ExtArgs extends runtime.Types.Extensions.InternalA
     order: Prisma.$SalesOrderPayload<ExtArgs> | null
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
-    id: string
+    id: number
     quotationNumber: string
     quotationDate: Date
     expiryDate: Date
@@ -1321,7 +1324,7 @@ export type $QuotationPayload<ExtArgs extends runtime.Types.Extensions.InternalA
     currency: string
     notes: string | null
     terms: string | null
-    customerId: string
+    customerId: number
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["quotation"]>
@@ -1750,7 +1753,7 @@ export interface Prisma__QuotationClient<T, Null = never, ExtArgs extends runtim
  * Fields of the Quotation model
  */
 export interface QuotationFieldRefs {
-  readonly id: Prisma.FieldRef<"Quotation", 'String'>
+  readonly id: Prisma.FieldRef<"Quotation", 'Int'>
   readonly quotationNumber: Prisma.FieldRef<"Quotation", 'String'>
   readonly quotationDate: Prisma.FieldRef<"Quotation", 'DateTime'>
   readonly expiryDate: Prisma.FieldRef<"Quotation", 'DateTime'>
@@ -1765,7 +1768,7 @@ export interface QuotationFieldRefs {
   readonly currency: Prisma.FieldRef<"Quotation", 'String'>
   readonly notes: Prisma.FieldRef<"Quotation", 'String'>
   readonly terms: Prisma.FieldRef<"Quotation", 'String'>
-  readonly customerId: Prisma.FieldRef<"Quotation", 'String'>
+  readonly customerId: Prisma.FieldRef<"Quotation", 'Int'>
   readonly createdAt: Prisma.FieldRef<"Quotation", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"Quotation", 'DateTime'>
 }

@@ -27,19 +27,27 @@ export type AggregateProject = {
 }
 
 export type ProjectAvgAggregateOutputType = {
+  id: number | null
   budgetAmount: runtime.Decimal | null
   actualCost: runtime.Decimal | null
   progressPercent: number | null
+  tenantId: number | null
+  customerId: number | null
+  managerId: number | null
 }
 
 export type ProjectSumAggregateOutputType = {
+  id: number | null
   budgetAmount: runtime.Decimal | null
   actualCost: runtime.Decimal | null
   progressPercent: number | null
+  tenantId: number | null
+  customerId: number | null
+  managerId: number | null
 }
 
 export type ProjectMinAggregateOutputType = {
-  id: string | null
+  id: number | null
   projectNumber: string | null
   name: string | null
   description: string | null
@@ -52,15 +60,15 @@ export type ProjectMinAggregateOutputType = {
   budgetAmount: runtime.Decimal | null
   actualCost: runtime.Decimal | null
   progressPercent: number | null
-  tenantId: string | null
-  customerId: string | null
-  managerId: string | null
+  tenantId: number | null
+  customerId: number | null
+  managerId: number | null
   createdAt: Date | null
   updatedAt: Date | null
 }
 
 export type ProjectMaxAggregateOutputType = {
-  id: string | null
+  id: number | null
   projectNumber: string | null
   name: string | null
   description: string | null
@@ -73,9 +81,9 @@ export type ProjectMaxAggregateOutputType = {
   budgetAmount: runtime.Decimal | null
   actualCost: runtime.Decimal | null
   progressPercent: number | null
-  tenantId: string | null
-  customerId: string | null
-  managerId: string | null
+  tenantId: number | null
+  customerId: number | null
+  managerId: number | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -104,15 +112,23 @@ export type ProjectCountAggregateOutputType = {
 
 
 export type ProjectAvgAggregateInputType = {
+  id?: true
   budgetAmount?: true
   actualCost?: true
   progressPercent?: true
+  tenantId?: true
+  customerId?: true
+  managerId?: true
 }
 
 export type ProjectSumAggregateInputType = {
+  id?: true
   budgetAmount?: true
   actualCost?: true
   progressPercent?: true
+  tenantId?: true
+  customerId?: true
+  managerId?: true
 }
 
 export type ProjectMinAggregateInputType = {
@@ -266,7 +282,7 @@ export type ProjectGroupByArgs<ExtArgs extends runtime.Types.Extensions.Internal
 }
 
 export type ProjectGroupByOutputType = {
-  id: string
+  id: number
   projectNumber: string
   name: string
   description: string | null
@@ -279,9 +295,9 @@ export type ProjectGroupByOutputType = {
   budgetAmount: runtime.Decimal | null
   actualCost: runtime.Decimal
   progressPercent: number
-  tenantId: string
-  customerId: string | null
-  managerId: string | null
+  tenantId: number
+  customerId: number | null
+  managerId: number | null
   createdAt: Date
   updatedAt: Date
   _count: ProjectCountAggregateOutputType | null
@@ -310,7 +326,7 @@ export type ProjectWhereInput = {
   AND?: Prisma.ProjectWhereInput | Prisma.ProjectWhereInput[]
   OR?: Prisma.ProjectWhereInput[]
   NOT?: Prisma.ProjectWhereInput | Prisma.ProjectWhereInput[]
-  id?: Prisma.StringFilter<"Project"> | string
+  id?: Prisma.IntFilter<"Project"> | number
   projectNumber?: Prisma.StringFilter<"Project"> | string
   name?: Prisma.StringFilter<"Project"> | string
   description?: Prisma.StringNullableFilter<"Project"> | string | null
@@ -323,9 +339,9 @@ export type ProjectWhereInput = {
   budgetAmount?: Prisma.DecimalNullableFilter<"Project"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   actualCost?: Prisma.DecimalFilter<"Project"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   progressPercent?: Prisma.IntFilter<"Project"> | number
-  tenantId?: Prisma.StringFilter<"Project"> | string
-  customerId?: Prisma.StringNullableFilter<"Project"> | string | null
-  managerId?: Prisma.StringNullableFilter<"Project"> | string | null
+  tenantId?: Prisma.IntFilter<"Project"> | number
+  customerId?: Prisma.IntNullableFilter<"Project"> | number | null
+  managerId?: Prisma.IntNullableFilter<"Project"> | number | null
   createdAt?: Prisma.DateTimeFilter<"Project"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Project"> | Date | string
   tenant?: Prisma.XOR<Prisma.TenantScalarRelationFilter, Prisma.TenantWhereInput>
@@ -360,7 +376,7 @@ export type ProjectOrderByWithRelationInput = {
 }
 
 export type ProjectWhereUniqueInput = Prisma.AtLeast<{
-  id?: string
+  id?: number
   tenantId_projectNumber?: Prisma.ProjectTenantIdProjectNumberCompoundUniqueInput
   AND?: Prisma.ProjectWhereInput | Prisma.ProjectWhereInput[]
   OR?: Prisma.ProjectWhereInput[]
@@ -377,9 +393,9 @@ export type ProjectWhereUniqueInput = Prisma.AtLeast<{
   budgetAmount?: Prisma.DecimalNullableFilter<"Project"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   actualCost?: Prisma.DecimalFilter<"Project"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   progressPercent?: Prisma.IntFilter<"Project"> | number
-  tenantId?: Prisma.StringFilter<"Project"> | string
-  customerId?: Prisma.StringNullableFilter<"Project"> | string | null
-  managerId?: Prisma.StringNullableFilter<"Project"> | string | null
+  tenantId?: Prisma.IntFilter<"Project"> | number
+  customerId?: Prisma.IntNullableFilter<"Project"> | number | null
+  managerId?: Prisma.IntNullableFilter<"Project"> | number | null
   createdAt?: Prisma.DateTimeFilter<"Project"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Project"> | Date | string
   tenant?: Prisma.XOR<Prisma.TenantScalarRelationFilter, Prisma.TenantWhereInput>
@@ -418,7 +434,7 @@ export type ProjectScalarWhereWithAggregatesInput = {
   AND?: Prisma.ProjectScalarWhereWithAggregatesInput | Prisma.ProjectScalarWhereWithAggregatesInput[]
   OR?: Prisma.ProjectScalarWhereWithAggregatesInput[]
   NOT?: Prisma.ProjectScalarWhereWithAggregatesInput | Prisma.ProjectScalarWhereWithAggregatesInput[]
-  id?: Prisma.StringWithAggregatesFilter<"Project"> | string
+  id?: Prisma.IntWithAggregatesFilter<"Project"> | number
   projectNumber?: Prisma.StringWithAggregatesFilter<"Project"> | string
   name?: Prisma.StringWithAggregatesFilter<"Project"> | string
   description?: Prisma.StringNullableWithAggregatesFilter<"Project"> | string | null
@@ -431,15 +447,14 @@ export type ProjectScalarWhereWithAggregatesInput = {
   budgetAmount?: Prisma.DecimalNullableWithAggregatesFilter<"Project"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   actualCost?: Prisma.DecimalWithAggregatesFilter<"Project"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   progressPercent?: Prisma.IntWithAggregatesFilter<"Project"> | number
-  tenantId?: Prisma.StringWithAggregatesFilter<"Project"> | string
-  customerId?: Prisma.StringNullableWithAggregatesFilter<"Project"> | string | null
-  managerId?: Prisma.StringNullableWithAggregatesFilter<"Project"> | string | null
+  tenantId?: Prisma.IntWithAggregatesFilter<"Project"> | number
+  customerId?: Prisma.IntNullableWithAggregatesFilter<"Project"> | number | null
+  managerId?: Prisma.IntNullableWithAggregatesFilter<"Project"> | number | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Project"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Project"> | Date | string
 }
 
 export type ProjectCreateInput = {
-  id?: string
   projectNumber: string
   name: string
   description?: string | null
@@ -452,8 +467,8 @@ export type ProjectCreateInput = {
   budgetAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   actualCost?: runtime.Decimal | runtime.DecimalJsLike | number | string
   progressPercent?: number
-  customerId?: string | null
-  managerId?: string | null
+  customerId?: number | null
+  managerId?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   tenant: Prisma.TenantCreateNestedOneWithoutProjectsInput
@@ -463,7 +478,7 @@ export type ProjectCreateInput = {
 }
 
 export type ProjectUncheckedCreateInput = {
-  id?: string
+  id?: number
   projectNumber: string
   name: string
   description?: string | null
@@ -476,9 +491,9 @@ export type ProjectUncheckedCreateInput = {
   budgetAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   actualCost?: runtime.Decimal | runtime.DecimalJsLike | number | string
   progressPercent?: number
-  tenantId: string
-  customerId?: string | null
-  managerId?: string | null
+  tenantId: number
+  customerId?: number | null
+  managerId?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   tasks?: Prisma.TaskUncheckedCreateNestedManyWithoutProjectInput
@@ -487,7 +502,6 @@ export type ProjectUncheckedCreateInput = {
 }
 
 export type ProjectUpdateInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   projectNumber?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -500,8 +514,8 @@ export type ProjectUpdateInput = {
   budgetAmount?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   actualCost?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   progressPercent?: Prisma.IntFieldUpdateOperationsInput | number
-  customerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  managerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customerId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  managerId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   tenant?: Prisma.TenantUpdateOneRequiredWithoutProjectsNestedInput
@@ -511,7 +525,7 @@ export type ProjectUpdateInput = {
 }
 
 export type ProjectUncheckedUpdateInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   projectNumber?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -524,9 +538,9 @@ export type ProjectUncheckedUpdateInput = {
   budgetAmount?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   actualCost?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   progressPercent?: Prisma.IntFieldUpdateOperationsInput | number
-  tenantId?: Prisma.StringFieldUpdateOperationsInput | string
-  customerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  managerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tenantId?: Prisma.IntFieldUpdateOperationsInput | number
+  customerId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  managerId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   tasks?: Prisma.TaskUncheckedUpdateManyWithoutProjectNestedInput
@@ -535,7 +549,7 @@ export type ProjectUncheckedUpdateInput = {
 }
 
 export type ProjectCreateManyInput = {
-  id?: string
+  id?: number
   projectNumber: string
   name: string
   description?: string | null
@@ -548,15 +562,14 @@ export type ProjectCreateManyInput = {
   budgetAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   actualCost?: runtime.Decimal | runtime.DecimalJsLike | number | string
   progressPercent?: number
-  tenantId: string
-  customerId?: string | null
-  managerId?: string | null
+  tenantId: number
+  customerId?: number | null
+  managerId?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
 
 export type ProjectUpdateManyMutationInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   projectNumber?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -569,14 +582,14 @@ export type ProjectUpdateManyMutationInput = {
   budgetAmount?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   actualCost?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   progressPercent?: Prisma.IntFieldUpdateOperationsInput | number
-  customerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  managerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customerId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  managerId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type ProjectUncheckedUpdateManyInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   projectNumber?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -589,9 +602,9 @@ export type ProjectUncheckedUpdateManyInput = {
   budgetAmount?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   actualCost?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   progressPercent?: Prisma.IntFieldUpdateOperationsInput | number
-  tenantId?: Prisma.StringFieldUpdateOperationsInput | string
-  customerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  managerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tenantId?: Prisma.IntFieldUpdateOperationsInput | number
+  customerId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  managerId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -612,7 +625,7 @@ export type ProjectNullableScalarRelationFilter = {
 }
 
 export type ProjectTenantIdProjectNumberCompoundUniqueInput = {
-  tenantId: string
+  tenantId: number
   projectNumber: string
 }
 
@@ -638,9 +651,13 @@ export type ProjectCountOrderByAggregateInput = {
 }
 
 export type ProjectAvgOrderByAggregateInput = {
+  id?: Prisma.SortOrder
   budgetAmount?: Prisma.SortOrder
   actualCost?: Prisma.SortOrder
   progressPercent?: Prisma.SortOrder
+  tenantId?: Prisma.SortOrder
+  customerId?: Prisma.SortOrder
+  managerId?: Prisma.SortOrder
 }
 
 export type ProjectMaxOrderByAggregateInput = {
@@ -686,9 +703,13 @@ export type ProjectMinOrderByAggregateInput = {
 }
 
 export type ProjectSumOrderByAggregateInput = {
+  id?: Prisma.SortOrder
   budgetAmount?: Prisma.SortOrder
   actualCost?: Prisma.SortOrder
   progressPercent?: Prisma.SortOrder
+  tenantId?: Prisma.SortOrder
+  customerId?: Prisma.SortOrder
+  managerId?: Prisma.SortOrder
 }
 
 export type ProjectScalarRelationFilter = {
@@ -793,7 +814,6 @@ export type ProjectUpdateOneWithoutTimesheetsNestedInput = {
 }
 
 export type ProjectCreateWithoutTenantInput = {
-  id?: string
   projectNumber: string
   name: string
   description?: string | null
@@ -806,8 +826,8 @@ export type ProjectCreateWithoutTenantInput = {
   budgetAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   actualCost?: runtime.Decimal | runtime.DecimalJsLike | number | string
   progressPercent?: number
-  customerId?: string | null
-  managerId?: string | null
+  customerId?: number | null
+  managerId?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   tasks?: Prisma.TaskCreateNestedManyWithoutProjectInput
@@ -816,7 +836,7 @@ export type ProjectCreateWithoutTenantInput = {
 }
 
 export type ProjectUncheckedCreateWithoutTenantInput = {
-  id?: string
+  id?: number
   projectNumber: string
   name: string
   description?: string | null
@@ -829,8 +849,8 @@ export type ProjectUncheckedCreateWithoutTenantInput = {
   budgetAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   actualCost?: runtime.Decimal | runtime.DecimalJsLike | number | string
   progressPercent?: number
-  customerId?: string | null
-  managerId?: string | null
+  customerId?: number | null
+  managerId?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   tasks?: Prisma.TaskUncheckedCreateNestedManyWithoutProjectInput
@@ -868,7 +888,7 @@ export type ProjectScalarWhereInput = {
   AND?: Prisma.ProjectScalarWhereInput | Prisma.ProjectScalarWhereInput[]
   OR?: Prisma.ProjectScalarWhereInput[]
   NOT?: Prisma.ProjectScalarWhereInput | Prisma.ProjectScalarWhereInput[]
-  id?: Prisma.StringFilter<"Project"> | string
+  id?: Prisma.IntFilter<"Project"> | number
   projectNumber?: Prisma.StringFilter<"Project"> | string
   name?: Prisma.StringFilter<"Project"> | string
   description?: Prisma.StringNullableFilter<"Project"> | string | null
@@ -881,15 +901,14 @@ export type ProjectScalarWhereInput = {
   budgetAmount?: Prisma.DecimalNullableFilter<"Project"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   actualCost?: Prisma.DecimalFilter<"Project"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   progressPercent?: Prisma.IntFilter<"Project"> | number
-  tenantId?: Prisma.StringFilter<"Project"> | string
-  customerId?: Prisma.StringNullableFilter<"Project"> | string | null
-  managerId?: Prisma.StringNullableFilter<"Project"> | string | null
+  tenantId?: Prisma.IntFilter<"Project"> | number
+  customerId?: Prisma.IntNullableFilter<"Project"> | number | null
+  managerId?: Prisma.IntNullableFilter<"Project"> | number | null
   createdAt?: Prisma.DateTimeFilter<"Project"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Project"> | Date | string
 }
 
 export type ProjectCreateWithoutExpensesInput = {
-  id?: string
   projectNumber: string
   name: string
   description?: string | null
@@ -902,8 +921,8 @@ export type ProjectCreateWithoutExpensesInput = {
   budgetAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   actualCost?: runtime.Decimal | runtime.DecimalJsLike | number | string
   progressPercent?: number
-  customerId?: string | null
-  managerId?: string | null
+  customerId?: number | null
+  managerId?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   tenant: Prisma.TenantCreateNestedOneWithoutProjectsInput
@@ -912,7 +931,7 @@ export type ProjectCreateWithoutExpensesInput = {
 }
 
 export type ProjectUncheckedCreateWithoutExpensesInput = {
-  id?: string
+  id?: number
   projectNumber: string
   name: string
   description?: string | null
@@ -925,9 +944,9 @@ export type ProjectUncheckedCreateWithoutExpensesInput = {
   budgetAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   actualCost?: runtime.Decimal | runtime.DecimalJsLike | number | string
   progressPercent?: number
-  tenantId: string
-  customerId?: string | null
-  managerId?: string | null
+  tenantId: number
+  customerId?: number | null
+  managerId?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   tasks?: Prisma.TaskUncheckedCreateNestedManyWithoutProjectInput
@@ -951,7 +970,6 @@ export type ProjectUpdateToOneWithWhereWithoutExpensesInput = {
 }
 
 export type ProjectUpdateWithoutExpensesInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   projectNumber?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -964,8 +982,8 @@ export type ProjectUpdateWithoutExpensesInput = {
   budgetAmount?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   actualCost?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   progressPercent?: Prisma.IntFieldUpdateOperationsInput | number
-  customerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  managerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customerId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  managerId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   tenant?: Prisma.TenantUpdateOneRequiredWithoutProjectsNestedInput
@@ -974,7 +992,7 @@ export type ProjectUpdateWithoutExpensesInput = {
 }
 
 export type ProjectUncheckedUpdateWithoutExpensesInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   projectNumber?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -987,9 +1005,9 @@ export type ProjectUncheckedUpdateWithoutExpensesInput = {
   budgetAmount?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   actualCost?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   progressPercent?: Prisma.IntFieldUpdateOperationsInput | number
-  tenantId?: Prisma.StringFieldUpdateOperationsInput | string
-  customerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  managerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tenantId?: Prisma.IntFieldUpdateOperationsInput | number
+  customerId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  managerId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   tasks?: Prisma.TaskUncheckedUpdateManyWithoutProjectNestedInput
@@ -997,7 +1015,6 @@ export type ProjectUncheckedUpdateWithoutExpensesInput = {
 }
 
 export type ProjectCreateWithoutTasksInput = {
-  id?: string
   projectNumber: string
   name: string
   description?: string | null
@@ -1010,8 +1027,8 @@ export type ProjectCreateWithoutTasksInput = {
   budgetAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   actualCost?: runtime.Decimal | runtime.DecimalJsLike | number | string
   progressPercent?: number
-  customerId?: string | null
-  managerId?: string | null
+  customerId?: number | null
+  managerId?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   tenant: Prisma.TenantCreateNestedOneWithoutProjectsInput
@@ -1020,7 +1037,7 @@ export type ProjectCreateWithoutTasksInput = {
 }
 
 export type ProjectUncheckedCreateWithoutTasksInput = {
-  id?: string
+  id?: number
   projectNumber: string
   name: string
   description?: string | null
@@ -1033,9 +1050,9 @@ export type ProjectUncheckedCreateWithoutTasksInput = {
   budgetAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   actualCost?: runtime.Decimal | runtime.DecimalJsLike | number | string
   progressPercent?: number
-  tenantId: string
-  customerId?: string | null
-  managerId?: string | null
+  tenantId: number
+  customerId?: number | null
+  managerId?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   expenses?: Prisma.ExpenseUncheckedCreateNestedManyWithoutProjectInput
@@ -1059,7 +1076,6 @@ export type ProjectUpdateToOneWithWhereWithoutTasksInput = {
 }
 
 export type ProjectUpdateWithoutTasksInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   projectNumber?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1072,8 +1088,8 @@ export type ProjectUpdateWithoutTasksInput = {
   budgetAmount?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   actualCost?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   progressPercent?: Prisma.IntFieldUpdateOperationsInput | number
-  customerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  managerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customerId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  managerId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   tenant?: Prisma.TenantUpdateOneRequiredWithoutProjectsNestedInput
@@ -1082,7 +1098,7 @@ export type ProjectUpdateWithoutTasksInput = {
 }
 
 export type ProjectUncheckedUpdateWithoutTasksInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   projectNumber?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1095,9 +1111,9 @@ export type ProjectUncheckedUpdateWithoutTasksInput = {
   budgetAmount?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   actualCost?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   progressPercent?: Prisma.IntFieldUpdateOperationsInput | number
-  tenantId?: Prisma.StringFieldUpdateOperationsInput | string
-  customerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  managerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tenantId?: Prisma.IntFieldUpdateOperationsInput | number
+  customerId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  managerId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   expenses?: Prisma.ExpenseUncheckedUpdateManyWithoutProjectNestedInput
@@ -1105,7 +1121,6 @@ export type ProjectUncheckedUpdateWithoutTasksInput = {
 }
 
 export type ProjectCreateWithoutTimesheetsInput = {
-  id?: string
   projectNumber: string
   name: string
   description?: string | null
@@ -1118,8 +1133,8 @@ export type ProjectCreateWithoutTimesheetsInput = {
   budgetAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   actualCost?: runtime.Decimal | runtime.DecimalJsLike | number | string
   progressPercent?: number
-  customerId?: string | null
-  managerId?: string | null
+  customerId?: number | null
+  managerId?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   tenant: Prisma.TenantCreateNestedOneWithoutProjectsInput
@@ -1128,7 +1143,7 @@ export type ProjectCreateWithoutTimesheetsInput = {
 }
 
 export type ProjectUncheckedCreateWithoutTimesheetsInput = {
-  id?: string
+  id?: number
   projectNumber: string
   name: string
   description?: string | null
@@ -1141,9 +1156,9 @@ export type ProjectUncheckedCreateWithoutTimesheetsInput = {
   budgetAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   actualCost?: runtime.Decimal | runtime.DecimalJsLike | number | string
   progressPercent?: number
-  tenantId: string
-  customerId?: string | null
-  managerId?: string | null
+  tenantId: number
+  customerId?: number | null
+  managerId?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   tasks?: Prisma.TaskUncheckedCreateNestedManyWithoutProjectInput
@@ -1167,7 +1182,6 @@ export type ProjectUpdateToOneWithWhereWithoutTimesheetsInput = {
 }
 
 export type ProjectUpdateWithoutTimesheetsInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   projectNumber?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1180,8 +1194,8 @@ export type ProjectUpdateWithoutTimesheetsInput = {
   budgetAmount?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   actualCost?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   progressPercent?: Prisma.IntFieldUpdateOperationsInput | number
-  customerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  managerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customerId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  managerId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   tenant?: Prisma.TenantUpdateOneRequiredWithoutProjectsNestedInput
@@ -1190,7 +1204,7 @@ export type ProjectUpdateWithoutTimesheetsInput = {
 }
 
 export type ProjectUncheckedUpdateWithoutTimesheetsInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   projectNumber?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1203,9 +1217,9 @@ export type ProjectUncheckedUpdateWithoutTimesheetsInput = {
   budgetAmount?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   actualCost?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   progressPercent?: Prisma.IntFieldUpdateOperationsInput | number
-  tenantId?: Prisma.StringFieldUpdateOperationsInput | string
-  customerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  managerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tenantId?: Prisma.IntFieldUpdateOperationsInput | number
+  customerId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  managerId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   tasks?: Prisma.TaskUncheckedUpdateManyWithoutProjectNestedInput
@@ -1213,7 +1227,7 @@ export type ProjectUncheckedUpdateWithoutTimesheetsInput = {
 }
 
 export type ProjectCreateManyTenantInput = {
-  id?: string
+  id?: number
   projectNumber: string
   name: string
   description?: string | null
@@ -1226,14 +1240,13 @@ export type ProjectCreateManyTenantInput = {
   budgetAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   actualCost?: runtime.Decimal | runtime.DecimalJsLike | number | string
   progressPercent?: number
-  customerId?: string | null
-  managerId?: string | null
+  customerId?: number | null
+  managerId?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
 
 export type ProjectUpdateWithoutTenantInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   projectNumber?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1246,8 +1259,8 @@ export type ProjectUpdateWithoutTenantInput = {
   budgetAmount?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   actualCost?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   progressPercent?: Prisma.IntFieldUpdateOperationsInput | number
-  customerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  managerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customerId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  managerId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   tasks?: Prisma.TaskUpdateManyWithoutProjectNestedInput
@@ -1256,7 +1269,7 @@ export type ProjectUpdateWithoutTenantInput = {
 }
 
 export type ProjectUncheckedUpdateWithoutTenantInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   projectNumber?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1269,8 +1282,8 @@ export type ProjectUncheckedUpdateWithoutTenantInput = {
   budgetAmount?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   actualCost?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   progressPercent?: Prisma.IntFieldUpdateOperationsInput | number
-  customerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  managerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customerId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  managerId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   tasks?: Prisma.TaskUncheckedUpdateManyWithoutProjectNestedInput
@@ -1279,7 +1292,7 @@ export type ProjectUncheckedUpdateWithoutTenantInput = {
 }
 
 export type ProjectUncheckedUpdateManyWithoutTenantInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   projectNumber?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1292,8 +1305,8 @@ export type ProjectUncheckedUpdateManyWithoutTenantInput = {
   budgetAmount?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   actualCost?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   progressPercent?: Prisma.IntFieldUpdateOperationsInput | number
-  customerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  managerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customerId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  managerId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -1462,7 +1475,7 @@ export type $ProjectPayload<ExtArgs extends runtime.Types.Extensions.InternalArg
     timesheets: Prisma.$TimesheetPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
-    id: string
+    id: number
     projectNumber: string
     name: string
     description: string | null
@@ -1475,9 +1488,9 @@ export type $ProjectPayload<ExtArgs extends runtime.Types.Extensions.InternalArg
     budgetAmount: runtime.Decimal | null
     actualCost: runtime.Decimal
     progressPercent: number
-    tenantId: string
-    customerId: string | null
-    managerId: string | null
+    tenantId: number
+    customerId: number | null
+    managerId: number | null
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["project"]>
@@ -1907,7 +1920,7 @@ export interface Prisma__ProjectClient<T, Null = never, ExtArgs extends runtime.
  * Fields of the Project model
  */
 export interface ProjectFieldRefs {
-  readonly id: Prisma.FieldRef<"Project", 'String'>
+  readonly id: Prisma.FieldRef<"Project", 'Int'>
   readonly projectNumber: Prisma.FieldRef<"Project", 'String'>
   readonly name: Prisma.FieldRef<"Project", 'String'>
   readonly description: Prisma.FieldRef<"Project", 'String'>
@@ -1920,9 +1933,9 @@ export interface ProjectFieldRefs {
   readonly budgetAmount: Prisma.FieldRef<"Project", 'Decimal'>
   readonly actualCost: Prisma.FieldRef<"Project", 'Decimal'>
   readonly progressPercent: Prisma.FieldRef<"Project", 'Int'>
-  readonly tenantId: Prisma.FieldRef<"Project", 'String'>
-  readonly customerId: Prisma.FieldRef<"Project", 'String'>
-  readonly managerId: Prisma.FieldRef<"Project", 'String'>
+  readonly tenantId: Prisma.FieldRef<"Project", 'Int'>
+  readonly customerId: Prisma.FieldRef<"Project", 'Int'>
+  readonly managerId: Prisma.FieldRef<"Project", 'Int'>
   readonly createdAt: Prisma.FieldRef<"Project", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"Project", 'DateTime'>
 }

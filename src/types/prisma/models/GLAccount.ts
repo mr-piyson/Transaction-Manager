@@ -27,15 +27,21 @@ export type AggregateGLAccount = {
 }
 
 export type GLAccountAvgAggregateOutputType = {
+  id: number | null
   currentBalance: runtime.Decimal | null
+  parentId: number | null
+  tenantId: number | null
 }
 
 export type GLAccountSumAggregateOutputType = {
+  id: number | null
   currentBalance: runtime.Decimal | null
+  parentId: number | null
+  tenantId: number | null
 }
 
 export type GLAccountMinAggregateOutputType = {
-  id: string | null
+  id: number | null
   code: string | null
   name: string | null
   type: $Enums.AccountType | null
@@ -46,15 +52,15 @@ export type GLAccountMinAggregateOutputType = {
   isActive: boolean | null
   isSystem: boolean | null
   allowPosting: boolean | null
-  parentId: string | null
+  parentId: number | null
   description: string | null
-  tenantId: string | null
+  tenantId: number | null
   createdAt: Date | null
   updatedAt: Date | null
 }
 
 export type GLAccountMaxAggregateOutputType = {
-  id: string | null
+  id: number | null
   code: string | null
   name: string | null
   type: $Enums.AccountType | null
@@ -65,9 +71,9 @@ export type GLAccountMaxAggregateOutputType = {
   isActive: boolean | null
   isSystem: boolean | null
   allowPosting: boolean | null
-  parentId: string | null
+  parentId: number | null
   description: string | null
-  tenantId: string | null
+  tenantId: number | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -94,11 +100,17 @@ export type GLAccountCountAggregateOutputType = {
 
 
 export type GLAccountAvgAggregateInputType = {
+  id?: true
   currentBalance?: true
+  parentId?: true
+  tenantId?: true
 }
 
 export type GLAccountSumAggregateInputType = {
+  id?: true
   currentBalance?: true
+  parentId?: true
+  tenantId?: true
 }
 
 export type GLAccountMinAggregateInputType = {
@@ -246,7 +258,7 @@ export type GLAccountGroupByArgs<ExtArgs extends runtime.Types.Extensions.Intern
 }
 
 export type GLAccountGroupByOutputType = {
-  id: string
+  id: number
   code: string
   name: string
   type: $Enums.AccountType
@@ -257,9 +269,9 @@ export type GLAccountGroupByOutputType = {
   isActive: boolean
   isSystem: boolean
   allowPosting: boolean
-  parentId: string | null
+  parentId: number | null
   description: string | null
-  tenantId: string
+  tenantId: number
   createdAt: Date
   updatedAt: Date
   _count: GLAccountCountAggregateOutputType | null
@@ -288,7 +300,7 @@ export type GLAccountWhereInput = {
   AND?: Prisma.GLAccountWhereInput | Prisma.GLAccountWhereInput[]
   OR?: Prisma.GLAccountWhereInput[]
   NOT?: Prisma.GLAccountWhereInput | Prisma.GLAccountWhereInput[]
-  id?: Prisma.StringFilter<"GLAccount"> | string
+  id?: Prisma.IntFilter<"GLAccount"> | number
   code?: Prisma.StringFilter<"GLAccount"> | string
   name?: Prisma.StringFilter<"GLAccount"> | string
   type?: Prisma.EnumAccountTypeFilter<"GLAccount"> | $Enums.AccountType
@@ -299,9 +311,9 @@ export type GLAccountWhereInput = {
   isActive?: Prisma.BoolFilter<"GLAccount"> | boolean
   isSystem?: Prisma.BoolFilter<"GLAccount"> | boolean
   allowPosting?: Prisma.BoolFilter<"GLAccount"> | boolean
-  parentId?: Prisma.StringNullableFilter<"GLAccount"> | string | null
+  parentId?: Prisma.IntNullableFilter<"GLAccount"> | number | null
   description?: Prisma.StringNullableFilter<"GLAccount"> | string | null
-  tenantId?: Prisma.StringFilter<"GLAccount"> | string
+  tenantId?: Prisma.IntFilter<"GLAccount"> | number
   createdAt?: Prisma.DateTimeFilter<"GLAccount"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"GLAccount"> | Date | string
   parent?: Prisma.XOR<Prisma.GLAccountNullableScalarRelationFilter, Prisma.GLAccountWhereInput> | null
@@ -336,7 +348,7 @@ export type GLAccountOrderByWithRelationInput = {
 }
 
 export type GLAccountWhereUniqueInput = Prisma.AtLeast<{
-  id?: string
+  id?: number
   tenantId_code?: Prisma.GLAccountTenantIdCodeCompoundUniqueInput
   AND?: Prisma.GLAccountWhereInput | Prisma.GLAccountWhereInput[]
   OR?: Prisma.GLAccountWhereInput[]
@@ -351,9 +363,9 @@ export type GLAccountWhereUniqueInput = Prisma.AtLeast<{
   isActive?: Prisma.BoolFilter<"GLAccount"> | boolean
   isSystem?: Prisma.BoolFilter<"GLAccount"> | boolean
   allowPosting?: Prisma.BoolFilter<"GLAccount"> | boolean
-  parentId?: Prisma.StringNullableFilter<"GLAccount"> | string | null
+  parentId?: Prisma.IntNullableFilter<"GLAccount"> | number | null
   description?: Prisma.StringNullableFilter<"GLAccount"> | string | null
-  tenantId?: Prisma.StringFilter<"GLAccount"> | string
+  tenantId?: Prisma.IntFilter<"GLAccount"> | number
   createdAt?: Prisma.DateTimeFilter<"GLAccount"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"GLAccount"> | Date | string
   parent?: Prisma.XOR<Prisma.GLAccountNullableScalarRelationFilter, Prisma.GLAccountWhereInput> | null
@@ -391,7 +403,7 @@ export type GLAccountScalarWhereWithAggregatesInput = {
   AND?: Prisma.GLAccountScalarWhereWithAggregatesInput | Prisma.GLAccountScalarWhereWithAggregatesInput[]
   OR?: Prisma.GLAccountScalarWhereWithAggregatesInput[]
   NOT?: Prisma.GLAccountScalarWhereWithAggregatesInput | Prisma.GLAccountScalarWhereWithAggregatesInput[]
-  id?: Prisma.StringWithAggregatesFilter<"GLAccount"> | string
+  id?: Prisma.IntWithAggregatesFilter<"GLAccount"> | number
   code?: Prisma.StringWithAggregatesFilter<"GLAccount"> | string
   name?: Prisma.StringWithAggregatesFilter<"GLAccount"> | string
   type?: Prisma.EnumAccountTypeWithAggregatesFilter<"GLAccount"> | $Enums.AccountType
@@ -402,15 +414,14 @@ export type GLAccountScalarWhereWithAggregatesInput = {
   isActive?: Prisma.BoolWithAggregatesFilter<"GLAccount"> | boolean
   isSystem?: Prisma.BoolWithAggregatesFilter<"GLAccount"> | boolean
   allowPosting?: Prisma.BoolWithAggregatesFilter<"GLAccount"> | boolean
-  parentId?: Prisma.StringNullableWithAggregatesFilter<"GLAccount"> | string | null
+  parentId?: Prisma.IntNullableWithAggregatesFilter<"GLAccount"> | number | null
   description?: Prisma.StringNullableWithAggregatesFilter<"GLAccount"> | string | null
-  tenantId?: Prisma.StringWithAggregatesFilter<"GLAccount"> | string
+  tenantId?: Prisma.IntWithAggregatesFilter<"GLAccount"> | number
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"GLAccount"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"GLAccount"> | Date | string
 }
 
 export type GLAccountCreateInput = {
-  id?: string
   code: string
   name: string
   type: $Enums.AccountType
@@ -432,7 +443,7 @@ export type GLAccountCreateInput = {
 }
 
 export type GLAccountUncheckedCreateInput = {
-  id?: string
+  id?: number
   code: string
   name: string
   type: $Enums.AccountType
@@ -443,9 +454,9 @@ export type GLAccountUncheckedCreateInput = {
   isActive?: boolean
   isSystem?: boolean
   allowPosting?: boolean
-  parentId?: string | null
+  parentId?: number | null
   description?: string | null
-  tenantId: string
+  tenantId: number
   createdAt?: Date | string
   updatedAt?: Date | string
   children?: Prisma.GLAccountUncheckedCreateNestedManyWithoutParentInput
@@ -454,7 +465,6 @@ export type GLAccountUncheckedCreateInput = {
 }
 
 export type GLAccountUpdateInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   code?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumAccountTypeFieldUpdateOperationsInput | $Enums.AccountType
@@ -476,7 +486,7 @@ export type GLAccountUpdateInput = {
 }
 
 export type GLAccountUncheckedUpdateInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   code?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumAccountTypeFieldUpdateOperationsInput | $Enums.AccountType
@@ -487,9 +497,9 @@ export type GLAccountUncheckedUpdateInput = {
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isSystem?: Prisma.BoolFieldUpdateOperationsInput | boolean
   allowPosting?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  parentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  parentId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  tenantId?: Prisma.StringFieldUpdateOperationsInput | string
+  tenantId?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   children?: Prisma.GLAccountUncheckedUpdateManyWithoutParentNestedInput
@@ -498,7 +508,7 @@ export type GLAccountUncheckedUpdateInput = {
 }
 
 export type GLAccountCreateManyInput = {
-  id?: string
+  id?: number
   code: string
   name: string
   type: $Enums.AccountType
@@ -509,15 +519,14 @@ export type GLAccountCreateManyInput = {
   isActive?: boolean
   isSystem?: boolean
   allowPosting?: boolean
-  parentId?: string | null
+  parentId?: number | null
   description?: string | null
-  tenantId: string
+  tenantId: number
   createdAt?: Date | string
   updatedAt?: Date | string
 }
 
 export type GLAccountUpdateManyMutationInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   code?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumAccountTypeFieldUpdateOperationsInput | $Enums.AccountType
@@ -534,7 +543,7 @@ export type GLAccountUpdateManyMutationInput = {
 }
 
 export type GLAccountUncheckedUpdateManyInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   code?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumAccountTypeFieldUpdateOperationsInput | $Enums.AccountType
@@ -545,9 +554,9 @@ export type GLAccountUncheckedUpdateManyInput = {
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isSystem?: Prisma.BoolFieldUpdateOperationsInput | boolean
   allowPosting?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  parentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  parentId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  tenantId?: Prisma.StringFieldUpdateOperationsInput | string
+  tenantId?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -568,7 +577,7 @@ export type GLAccountNullableScalarRelationFilter = {
 }
 
 export type GLAccountTenantIdCodeCompoundUniqueInput = {
-  tenantId: string
+  tenantId: number
   code: string
 }
 
@@ -592,7 +601,10 @@ export type GLAccountCountOrderByAggregateInput = {
 }
 
 export type GLAccountAvgOrderByAggregateInput = {
+  id?: Prisma.SortOrder
   currentBalance?: Prisma.SortOrder
+  parentId?: Prisma.SortOrder
+  tenantId?: Prisma.SortOrder
 }
 
 export type GLAccountMaxOrderByAggregateInput = {
@@ -634,7 +646,10 @@ export type GLAccountMinOrderByAggregateInput = {
 }
 
 export type GLAccountSumOrderByAggregateInput = {
+  id?: Prisma.SortOrder
   currentBalance?: Prisma.SortOrder
+  parentId?: Prisma.SortOrder
+  tenantId?: Prisma.SortOrder
 }
 
 export type GLAccountScalarRelationFilter = {
@@ -779,7 +794,6 @@ export type GLAccountUpdateOneRequiredWithoutBudgetsNestedInput = {
 }
 
 export type GLAccountCreateWithoutTenantInput = {
-  id?: string
   code: string
   name: string
   type: $Enums.AccountType
@@ -800,7 +814,7 @@ export type GLAccountCreateWithoutTenantInput = {
 }
 
 export type GLAccountUncheckedCreateWithoutTenantInput = {
-  id?: string
+  id?: number
   code: string
   name: string
   type: $Enums.AccountType
@@ -811,7 +825,7 @@ export type GLAccountUncheckedCreateWithoutTenantInput = {
   isActive?: boolean
   isSystem?: boolean
   allowPosting?: boolean
-  parentId?: string | null
+  parentId?: number | null
   description?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -850,7 +864,7 @@ export type GLAccountScalarWhereInput = {
   AND?: Prisma.GLAccountScalarWhereInput | Prisma.GLAccountScalarWhereInput[]
   OR?: Prisma.GLAccountScalarWhereInput[]
   NOT?: Prisma.GLAccountScalarWhereInput | Prisma.GLAccountScalarWhereInput[]
-  id?: Prisma.StringFilter<"GLAccount"> | string
+  id?: Prisma.IntFilter<"GLAccount"> | number
   code?: Prisma.StringFilter<"GLAccount"> | string
   name?: Prisma.StringFilter<"GLAccount"> | string
   type?: Prisma.EnumAccountTypeFilter<"GLAccount"> | $Enums.AccountType
@@ -861,15 +875,14 @@ export type GLAccountScalarWhereInput = {
   isActive?: Prisma.BoolFilter<"GLAccount"> | boolean
   isSystem?: Prisma.BoolFilter<"GLAccount"> | boolean
   allowPosting?: Prisma.BoolFilter<"GLAccount"> | boolean
-  parentId?: Prisma.StringNullableFilter<"GLAccount"> | string | null
+  parentId?: Prisma.IntNullableFilter<"GLAccount"> | number | null
   description?: Prisma.StringNullableFilter<"GLAccount"> | string | null
-  tenantId?: Prisma.StringFilter<"GLAccount"> | string
+  tenantId?: Prisma.IntFilter<"GLAccount"> | number
   createdAt?: Prisma.DateTimeFilter<"GLAccount"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"GLAccount"> | Date | string
 }
 
 export type GLAccountCreateWithoutChildrenInput = {
-  id?: string
   code: string
   name: string
   type: $Enums.AccountType
@@ -890,7 +903,7 @@ export type GLAccountCreateWithoutChildrenInput = {
 }
 
 export type GLAccountUncheckedCreateWithoutChildrenInput = {
-  id?: string
+  id?: number
   code: string
   name: string
   type: $Enums.AccountType
@@ -901,9 +914,9 @@ export type GLAccountUncheckedCreateWithoutChildrenInput = {
   isActive?: boolean
   isSystem?: boolean
   allowPosting?: boolean
-  parentId?: string | null
+  parentId?: number | null
   description?: string | null
-  tenantId: string
+  tenantId: number
   createdAt?: Date | string
   updatedAt?: Date | string
   entries?: Prisma.JournalEntryUncheckedCreateNestedManyWithoutAccountInput
@@ -916,7 +929,6 @@ export type GLAccountCreateOrConnectWithoutChildrenInput = {
 }
 
 export type GLAccountCreateWithoutParentInput = {
-  id?: string
   code: string
   name: string
   type: $Enums.AccountType
@@ -937,7 +949,7 @@ export type GLAccountCreateWithoutParentInput = {
 }
 
 export type GLAccountUncheckedCreateWithoutParentInput = {
-  id?: string
+  id?: number
   code: string
   name: string
   type: $Enums.AccountType
@@ -949,7 +961,7 @@ export type GLAccountUncheckedCreateWithoutParentInput = {
   isSystem?: boolean
   allowPosting?: boolean
   description?: string | null
-  tenantId: string
+  tenantId: number
   createdAt?: Date | string
   updatedAt?: Date | string
   children?: Prisma.GLAccountUncheckedCreateNestedManyWithoutParentInput
@@ -979,7 +991,6 @@ export type GLAccountUpdateToOneWithWhereWithoutChildrenInput = {
 }
 
 export type GLAccountUpdateWithoutChildrenInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   code?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumAccountTypeFieldUpdateOperationsInput | $Enums.AccountType
@@ -1000,7 +1011,7 @@ export type GLAccountUpdateWithoutChildrenInput = {
 }
 
 export type GLAccountUncheckedUpdateWithoutChildrenInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   code?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumAccountTypeFieldUpdateOperationsInput | $Enums.AccountType
@@ -1011,9 +1022,9 @@ export type GLAccountUncheckedUpdateWithoutChildrenInput = {
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isSystem?: Prisma.BoolFieldUpdateOperationsInput | boolean
   allowPosting?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  parentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  parentId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  tenantId?: Prisma.StringFieldUpdateOperationsInput | string
+  tenantId?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   entries?: Prisma.JournalEntryUncheckedUpdateManyWithoutAccountNestedInput
@@ -1037,7 +1048,6 @@ export type GLAccountUpdateManyWithWhereWithoutParentInput = {
 }
 
 export type GLAccountCreateWithoutEntriesInput = {
-  id?: string
   code: string
   name: string
   type: $Enums.AccountType
@@ -1058,7 +1068,7 @@ export type GLAccountCreateWithoutEntriesInput = {
 }
 
 export type GLAccountUncheckedCreateWithoutEntriesInput = {
-  id?: string
+  id?: number
   code: string
   name: string
   type: $Enums.AccountType
@@ -1069,9 +1079,9 @@ export type GLAccountUncheckedCreateWithoutEntriesInput = {
   isActive?: boolean
   isSystem?: boolean
   allowPosting?: boolean
-  parentId?: string | null
+  parentId?: number | null
   description?: string | null
-  tenantId: string
+  tenantId: number
   createdAt?: Date | string
   updatedAt?: Date | string
   children?: Prisma.GLAccountUncheckedCreateNestedManyWithoutParentInput
@@ -1095,7 +1105,6 @@ export type GLAccountUpdateToOneWithWhereWithoutEntriesInput = {
 }
 
 export type GLAccountUpdateWithoutEntriesInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   code?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumAccountTypeFieldUpdateOperationsInput | $Enums.AccountType
@@ -1116,7 +1125,7 @@ export type GLAccountUpdateWithoutEntriesInput = {
 }
 
 export type GLAccountUncheckedUpdateWithoutEntriesInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   code?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumAccountTypeFieldUpdateOperationsInput | $Enums.AccountType
@@ -1127,9 +1136,9 @@ export type GLAccountUncheckedUpdateWithoutEntriesInput = {
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isSystem?: Prisma.BoolFieldUpdateOperationsInput | boolean
   allowPosting?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  parentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  parentId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  tenantId?: Prisma.StringFieldUpdateOperationsInput | string
+  tenantId?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   children?: Prisma.GLAccountUncheckedUpdateManyWithoutParentNestedInput
@@ -1137,7 +1146,6 @@ export type GLAccountUncheckedUpdateWithoutEntriesInput = {
 }
 
 export type GLAccountCreateWithoutBudgetsInput = {
-  id?: string
   code: string
   name: string
   type: $Enums.AccountType
@@ -1158,7 +1166,7 @@ export type GLAccountCreateWithoutBudgetsInput = {
 }
 
 export type GLAccountUncheckedCreateWithoutBudgetsInput = {
-  id?: string
+  id?: number
   code: string
   name: string
   type: $Enums.AccountType
@@ -1169,9 +1177,9 @@ export type GLAccountUncheckedCreateWithoutBudgetsInput = {
   isActive?: boolean
   isSystem?: boolean
   allowPosting?: boolean
-  parentId?: string | null
+  parentId?: number | null
   description?: string | null
-  tenantId: string
+  tenantId: number
   createdAt?: Date | string
   updatedAt?: Date | string
   children?: Prisma.GLAccountUncheckedCreateNestedManyWithoutParentInput
@@ -1195,7 +1203,6 @@ export type GLAccountUpdateToOneWithWhereWithoutBudgetsInput = {
 }
 
 export type GLAccountUpdateWithoutBudgetsInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   code?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumAccountTypeFieldUpdateOperationsInput | $Enums.AccountType
@@ -1216,7 +1223,7 @@ export type GLAccountUpdateWithoutBudgetsInput = {
 }
 
 export type GLAccountUncheckedUpdateWithoutBudgetsInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   code?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumAccountTypeFieldUpdateOperationsInput | $Enums.AccountType
@@ -1227,9 +1234,9 @@ export type GLAccountUncheckedUpdateWithoutBudgetsInput = {
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isSystem?: Prisma.BoolFieldUpdateOperationsInput | boolean
   allowPosting?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  parentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  parentId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  tenantId?: Prisma.StringFieldUpdateOperationsInput | string
+  tenantId?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   children?: Prisma.GLAccountUncheckedUpdateManyWithoutParentNestedInput
@@ -1237,7 +1244,7 @@ export type GLAccountUncheckedUpdateWithoutBudgetsInput = {
 }
 
 export type GLAccountCreateManyTenantInput = {
-  id?: string
+  id?: number
   code: string
   name: string
   type: $Enums.AccountType
@@ -1248,14 +1255,13 @@ export type GLAccountCreateManyTenantInput = {
   isActive?: boolean
   isSystem?: boolean
   allowPosting?: boolean
-  parentId?: string | null
+  parentId?: number | null
   description?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
 
 export type GLAccountUpdateWithoutTenantInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   code?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumAccountTypeFieldUpdateOperationsInput | $Enums.AccountType
@@ -1276,7 +1282,7 @@ export type GLAccountUpdateWithoutTenantInput = {
 }
 
 export type GLAccountUncheckedUpdateWithoutTenantInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   code?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumAccountTypeFieldUpdateOperationsInput | $Enums.AccountType
@@ -1287,7 +1293,7 @@ export type GLAccountUncheckedUpdateWithoutTenantInput = {
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isSystem?: Prisma.BoolFieldUpdateOperationsInput | boolean
   allowPosting?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  parentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  parentId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1297,7 +1303,7 @@ export type GLAccountUncheckedUpdateWithoutTenantInput = {
 }
 
 export type GLAccountUncheckedUpdateManyWithoutTenantInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   code?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumAccountTypeFieldUpdateOperationsInput | $Enums.AccountType
@@ -1308,14 +1314,14 @@ export type GLAccountUncheckedUpdateManyWithoutTenantInput = {
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isSystem?: Prisma.BoolFieldUpdateOperationsInput | boolean
   allowPosting?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  parentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  parentId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type GLAccountCreateManyParentInput = {
-  id?: string
+  id?: number
   code: string
   name: string
   type: $Enums.AccountType
@@ -1327,13 +1333,12 @@ export type GLAccountCreateManyParentInput = {
   isSystem?: boolean
   allowPosting?: boolean
   description?: string | null
-  tenantId: string
+  tenantId: number
   createdAt?: Date | string
   updatedAt?: Date | string
 }
 
 export type GLAccountUpdateWithoutParentInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   code?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumAccountTypeFieldUpdateOperationsInput | $Enums.AccountType
@@ -1354,7 +1359,7 @@ export type GLAccountUpdateWithoutParentInput = {
 }
 
 export type GLAccountUncheckedUpdateWithoutParentInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   code?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumAccountTypeFieldUpdateOperationsInput | $Enums.AccountType
@@ -1366,7 +1371,7 @@ export type GLAccountUncheckedUpdateWithoutParentInput = {
   isSystem?: Prisma.BoolFieldUpdateOperationsInput | boolean
   allowPosting?: Prisma.BoolFieldUpdateOperationsInput | boolean
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  tenantId?: Prisma.StringFieldUpdateOperationsInput | string
+  tenantId?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   children?: Prisma.GLAccountUncheckedUpdateManyWithoutParentNestedInput
@@ -1375,7 +1380,7 @@ export type GLAccountUncheckedUpdateWithoutParentInput = {
 }
 
 export type GLAccountUncheckedUpdateManyWithoutParentInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   code?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumAccountTypeFieldUpdateOperationsInput | $Enums.AccountType
@@ -1387,7 +1392,7 @@ export type GLAccountUncheckedUpdateManyWithoutParentInput = {
   isSystem?: Prisma.BoolFieldUpdateOperationsInput | boolean
   allowPosting?: Prisma.BoolFieldUpdateOperationsInput | boolean
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  tenantId?: Prisma.StringFieldUpdateOperationsInput | string
+  tenantId?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -1555,7 +1560,7 @@ export type $GLAccountPayload<ExtArgs extends runtime.Types.Extensions.InternalA
     budgets: Prisma.$BudgetItemPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
-    id: string
+    id: number
     code: string
     name: string
     type: $Enums.AccountType
@@ -1566,9 +1571,9 @@ export type $GLAccountPayload<ExtArgs extends runtime.Types.Extensions.InternalA
     isActive: boolean
     isSystem: boolean
     allowPosting: boolean
-    parentId: string | null
+    parentId: number | null
     description: string | null
-    tenantId: string
+    tenantId: number
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["gLAccount"]>
@@ -1999,7 +2004,7 @@ export interface Prisma__GLAccountClient<T, Null = never, ExtArgs extends runtim
  * Fields of the GLAccount model
  */
 export interface GLAccountFieldRefs {
-  readonly id: Prisma.FieldRef<"GLAccount", 'String'>
+  readonly id: Prisma.FieldRef<"GLAccount", 'Int'>
   readonly code: Prisma.FieldRef<"GLAccount", 'String'>
   readonly name: Prisma.FieldRef<"GLAccount", 'String'>
   readonly type: Prisma.FieldRef<"GLAccount", 'AccountType'>
@@ -2010,9 +2015,9 @@ export interface GLAccountFieldRefs {
   readonly isActive: Prisma.FieldRef<"GLAccount", 'Boolean'>
   readonly isSystem: Prisma.FieldRef<"GLAccount", 'Boolean'>
   readonly allowPosting: Prisma.FieldRef<"GLAccount", 'Boolean'>
-  readonly parentId: Prisma.FieldRef<"GLAccount", 'String'>
+  readonly parentId: Prisma.FieldRef<"GLAccount", 'Int'>
   readonly description: Prisma.FieldRef<"GLAccount", 'String'>
-  readonly tenantId: Prisma.FieldRef<"GLAccount", 'String'>
+  readonly tenantId: Prisma.FieldRef<"GLAccount", 'Int'>
   readonly createdAt: Prisma.FieldRef<"GLAccount", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"GLAccount", 'DateTime'>
 }

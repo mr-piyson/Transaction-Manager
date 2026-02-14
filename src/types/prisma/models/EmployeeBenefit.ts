@@ -27,15 +27,19 @@ export type AggregateEmployeeBenefit = {
 }
 
 export type EmployeeBenefitAvgAggregateOutputType = {
+  id: number | null
   premium: runtime.Decimal | null
+  employeeId: number | null
 }
 
 export type EmployeeBenefitSumAggregateOutputType = {
+  id: number | null
   premium: runtime.Decimal | null
+  employeeId: number | null
 }
 
 export type EmployeeBenefitMinAggregateOutputType = {
-  id: string | null
+  id: number | null
   benefitType: string | null
   provider: string | null
   policyNumber: string | null
@@ -43,13 +47,13 @@ export type EmployeeBenefitMinAggregateOutputType = {
   endDate: Date | null
   premium: runtime.Decimal | null
   coverage: string | null
-  employeeId: string | null
+  employeeId: number | null
   createdAt: Date | null
   updatedAt: Date | null
 }
 
 export type EmployeeBenefitMaxAggregateOutputType = {
-  id: string | null
+  id: number | null
   benefitType: string | null
   provider: string | null
   policyNumber: string | null
@@ -57,7 +61,7 @@ export type EmployeeBenefitMaxAggregateOutputType = {
   endDate: Date | null
   premium: runtime.Decimal | null
   coverage: string | null
-  employeeId: string | null
+  employeeId: number | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -79,11 +83,15 @@ export type EmployeeBenefitCountAggregateOutputType = {
 
 
 export type EmployeeBenefitAvgAggregateInputType = {
+  id?: true
   premium?: true
+  employeeId?: true
 }
 
 export type EmployeeBenefitSumAggregateInputType = {
+  id?: true
   premium?: true
+  employeeId?: true
 }
 
 export type EmployeeBenefitMinAggregateInputType = {
@@ -216,7 +224,7 @@ export type EmployeeBenefitGroupByArgs<ExtArgs extends runtime.Types.Extensions.
 }
 
 export type EmployeeBenefitGroupByOutputType = {
-  id: string
+  id: number
   benefitType: string
   provider: string | null
   policyNumber: string | null
@@ -224,7 +232,7 @@ export type EmployeeBenefitGroupByOutputType = {
   endDate: Date | null
   premium: runtime.Decimal | null
   coverage: string | null
-  employeeId: string
+  employeeId: number
   createdAt: Date
   updatedAt: Date
   _count: EmployeeBenefitCountAggregateOutputType | null
@@ -253,7 +261,7 @@ export type EmployeeBenefitWhereInput = {
   AND?: Prisma.EmployeeBenefitWhereInput | Prisma.EmployeeBenefitWhereInput[]
   OR?: Prisma.EmployeeBenefitWhereInput[]
   NOT?: Prisma.EmployeeBenefitWhereInput | Prisma.EmployeeBenefitWhereInput[]
-  id?: Prisma.StringFilter<"EmployeeBenefit"> | string
+  id?: Prisma.IntFilter<"EmployeeBenefit"> | number
   benefitType?: Prisma.StringFilter<"EmployeeBenefit"> | string
   provider?: Prisma.StringNullableFilter<"EmployeeBenefit"> | string | null
   policyNumber?: Prisma.StringNullableFilter<"EmployeeBenefit"> | string | null
@@ -261,7 +269,7 @@ export type EmployeeBenefitWhereInput = {
   endDate?: Prisma.DateTimeNullableFilter<"EmployeeBenefit"> | Date | string | null
   premium?: Prisma.DecimalNullableFilter<"EmployeeBenefit"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   coverage?: Prisma.StringNullableFilter<"EmployeeBenefit"> | string | null
-  employeeId?: Prisma.StringFilter<"EmployeeBenefit"> | string
+  employeeId?: Prisma.IntFilter<"EmployeeBenefit"> | number
   createdAt?: Prisma.DateTimeFilter<"EmployeeBenefit"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"EmployeeBenefit"> | Date | string
   employee?: Prisma.XOR<Prisma.EmployeeScalarRelationFilter, Prisma.EmployeeWhereInput>
@@ -283,7 +291,7 @@ export type EmployeeBenefitOrderByWithRelationInput = {
 }
 
 export type EmployeeBenefitWhereUniqueInput = Prisma.AtLeast<{
-  id?: string
+  id?: number
   AND?: Prisma.EmployeeBenefitWhereInput | Prisma.EmployeeBenefitWhereInput[]
   OR?: Prisma.EmployeeBenefitWhereInput[]
   NOT?: Prisma.EmployeeBenefitWhereInput | Prisma.EmployeeBenefitWhereInput[]
@@ -294,7 +302,7 @@ export type EmployeeBenefitWhereUniqueInput = Prisma.AtLeast<{
   endDate?: Prisma.DateTimeNullableFilter<"EmployeeBenefit"> | Date | string | null
   premium?: Prisma.DecimalNullableFilter<"EmployeeBenefit"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   coverage?: Prisma.StringNullableFilter<"EmployeeBenefit"> | string | null
-  employeeId?: Prisma.StringFilter<"EmployeeBenefit"> | string
+  employeeId?: Prisma.IntFilter<"EmployeeBenefit"> | number
   createdAt?: Prisma.DateTimeFilter<"EmployeeBenefit"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"EmployeeBenefit"> | Date | string
   employee?: Prisma.XOR<Prisma.EmployeeScalarRelationFilter, Prisma.EmployeeWhereInput>
@@ -323,7 +331,7 @@ export type EmployeeBenefitScalarWhereWithAggregatesInput = {
   AND?: Prisma.EmployeeBenefitScalarWhereWithAggregatesInput | Prisma.EmployeeBenefitScalarWhereWithAggregatesInput[]
   OR?: Prisma.EmployeeBenefitScalarWhereWithAggregatesInput[]
   NOT?: Prisma.EmployeeBenefitScalarWhereWithAggregatesInput | Prisma.EmployeeBenefitScalarWhereWithAggregatesInput[]
-  id?: Prisma.StringWithAggregatesFilter<"EmployeeBenefit"> | string
+  id?: Prisma.IntWithAggregatesFilter<"EmployeeBenefit"> | number
   benefitType?: Prisma.StringWithAggregatesFilter<"EmployeeBenefit"> | string
   provider?: Prisma.StringNullableWithAggregatesFilter<"EmployeeBenefit"> | string | null
   policyNumber?: Prisma.StringNullableWithAggregatesFilter<"EmployeeBenefit"> | string | null
@@ -331,13 +339,12 @@ export type EmployeeBenefitScalarWhereWithAggregatesInput = {
   endDate?: Prisma.DateTimeNullableWithAggregatesFilter<"EmployeeBenefit"> | Date | string | null
   premium?: Prisma.DecimalNullableWithAggregatesFilter<"EmployeeBenefit"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   coverage?: Prisma.StringNullableWithAggregatesFilter<"EmployeeBenefit"> | string | null
-  employeeId?: Prisma.StringWithAggregatesFilter<"EmployeeBenefit"> | string
+  employeeId?: Prisma.IntWithAggregatesFilter<"EmployeeBenefit"> | number
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"EmployeeBenefit"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"EmployeeBenefit"> | Date | string
 }
 
 export type EmployeeBenefitCreateInput = {
-  id?: string
   benefitType: string
   provider?: string | null
   policyNumber?: string | null
@@ -351,7 +358,7 @@ export type EmployeeBenefitCreateInput = {
 }
 
 export type EmployeeBenefitUncheckedCreateInput = {
-  id?: string
+  id?: number
   benefitType: string
   provider?: string | null
   policyNumber?: string | null
@@ -359,13 +366,12 @@ export type EmployeeBenefitUncheckedCreateInput = {
   endDate?: Date | string | null
   premium?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   coverage?: string | null
-  employeeId: string
+  employeeId: number
   createdAt?: Date | string
   updatedAt?: Date | string
 }
 
 export type EmployeeBenefitUpdateInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   benefitType?: Prisma.StringFieldUpdateOperationsInput | string
   provider?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   policyNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -379,7 +385,7 @@ export type EmployeeBenefitUpdateInput = {
 }
 
 export type EmployeeBenefitUncheckedUpdateInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   benefitType?: Prisma.StringFieldUpdateOperationsInput | string
   provider?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   policyNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -387,13 +393,13 @@ export type EmployeeBenefitUncheckedUpdateInput = {
   endDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   premium?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   coverage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  employeeId?: Prisma.StringFieldUpdateOperationsInput | string
+  employeeId?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type EmployeeBenefitCreateManyInput = {
-  id?: string
+  id?: number
   benefitType: string
   provider?: string | null
   policyNumber?: string | null
@@ -401,13 +407,12 @@ export type EmployeeBenefitCreateManyInput = {
   endDate?: Date | string | null
   premium?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   coverage?: string | null
-  employeeId: string
+  employeeId: number
   createdAt?: Date | string
   updatedAt?: Date | string
 }
 
 export type EmployeeBenefitUpdateManyMutationInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   benefitType?: Prisma.StringFieldUpdateOperationsInput | string
   provider?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   policyNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -420,7 +425,7 @@ export type EmployeeBenefitUpdateManyMutationInput = {
 }
 
 export type EmployeeBenefitUncheckedUpdateManyInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   benefitType?: Prisma.StringFieldUpdateOperationsInput | string
   provider?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   policyNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -428,7 +433,7 @@ export type EmployeeBenefitUncheckedUpdateManyInput = {
   endDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   premium?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   coverage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  employeeId?: Prisma.StringFieldUpdateOperationsInput | string
+  employeeId?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -458,7 +463,9 @@ export type EmployeeBenefitCountOrderByAggregateInput = {
 }
 
 export type EmployeeBenefitAvgOrderByAggregateInput = {
+  id?: Prisma.SortOrder
   premium?: Prisma.SortOrder
+  employeeId?: Prisma.SortOrder
 }
 
 export type EmployeeBenefitMaxOrderByAggregateInput = {
@@ -490,7 +497,9 @@ export type EmployeeBenefitMinOrderByAggregateInput = {
 }
 
 export type EmployeeBenefitSumOrderByAggregateInput = {
+  id?: Prisma.SortOrder
   premium?: Prisma.SortOrder
+  employeeId?: Prisma.SortOrder
 }
 
 export type EmployeeBenefitCreateNestedManyWithoutEmployeeInput = {
@@ -536,7 +545,6 @@ export type EmployeeBenefitUncheckedUpdateManyWithoutEmployeeNestedInput = {
 }
 
 export type EmployeeBenefitCreateWithoutEmployeeInput = {
-  id?: string
   benefitType: string
   provider?: string | null
   policyNumber?: string | null
@@ -549,7 +557,7 @@ export type EmployeeBenefitCreateWithoutEmployeeInput = {
 }
 
 export type EmployeeBenefitUncheckedCreateWithoutEmployeeInput = {
-  id?: string
+  id?: number
   benefitType: string
   provider?: string | null
   policyNumber?: string | null
@@ -591,7 +599,7 @@ export type EmployeeBenefitScalarWhereInput = {
   AND?: Prisma.EmployeeBenefitScalarWhereInput | Prisma.EmployeeBenefitScalarWhereInput[]
   OR?: Prisma.EmployeeBenefitScalarWhereInput[]
   NOT?: Prisma.EmployeeBenefitScalarWhereInput | Prisma.EmployeeBenefitScalarWhereInput[]
-  id?: Prisma.StringFilter<"EmployeeBenefit"> | string
+  id?: Prisma.IntFilter<"EmployeeBenefit"> | number
   benefitType?: Prisma.StringFilter<"EmployeeBenefit"> | string
   provider?: Prisma.StringNullableFilter<"EmployeeBenefit"> | string | null
   policyNumber?: Prisma.StringNullableFilter<"EmployeeBenefit"> | string | null
@@ -599,13 +607,13 @@ export type EmployeeBenefitScalarWhereInput = {
   endDate?: Prisma.DateTimeNullableFilter<"EmployeeBenefit"> | Date | string | null
   premium?: Prisma.DecimalNullableFilter<"EmployeeBenefit"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   coverage?: Prisma.StringNullableFilter<"EmployeeBenefit"> | string | null
-  employeeId?: Prisma.StringFilter<"EmployeeBenefit"> | string
+  employeeId?: Prisma.IntFilter<"EmployeeBenefit"> | number
   createdAt?: Prisma.DateTimeFilter<"EmployeeBenefit"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"EmployeeBenefit"> | Date | string
 }
 
 export type EmployeeBenefitCreateManyEmployeeInput = {
-  id?: string
+  id?: number
   benefitType: string
   provider?: string | null
   policyNumber?: string | null
@@ -618,7 +626,6 @@ export type EmployeeBenefitCreateManyEmployeeInput = {
 }
 
 export type EmployeeBenefitUpdateWithoutEmployeeInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   benefitType?: Prisma.StringFieldUpdateOperationsInput | string
   provider?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   policyNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -631,7 +638,7 @@ export type EmployeeBenefitUpdateWithoutEmployeeInput = {
 }
 
 export type EmployeeBenefitUncheckedUpdateWithoutEmployeeInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   benefitType?: Prisma.StringFieldUpdateOperationsInput | string
   provider?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   policyNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -644,7 +651,7 @@ export type EmployeeBenefitUncheckedUpdateWithoutEmployeeInput = {
 }
 
 export type EmployeeBenefitUncheckedUpdateManyWithoutEmployeeInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   benefitType?: Prisma.StringFieldUpdateOperationsInput | string
   provider?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   policyNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -734,7 +741,7 @@ export type $EmployeeBenefitPayload<ExtArgs extends runtime.Types.Extensions.Int
     employee: Prisma.$EmployeePayload<ExtArgs>
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
-    id: string
+    id: number
     benefitType: string
     provider: string | null
     policyNumber: string | null
@@ -742,7 +749,7 @@ export type $EmployeeBenefitPayload<ExtArgs extends runtime.Types.Extensions.Int
     endDate: Date | null
     premium: runtime.Decimal | null
     coverage: string | null
-    employeeId: string
+    employeeId: number
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["employeeBenefit"]>
@@ -1169,7 +1176,7 @@ export interface Prisma__EmployeeBenefitClient<T, Null = never, ExtArgs extends 
  * Fields of the EmployeeBenefit model
  */
 export interface EmployeeBenefitFieldRefs {
-  readonly id: Prisma.FieldRef<"EmployeeBenefit", 'String'>
+  readonly id: Prisma.FieldRef<"EmployeeBenefit", 'Int'>
   readonly benefitType: Prisma.FieldRef<"EmployeeBenefit", 'String'>
   readonly provider: Prisma.FieldRef<"EmployeeBenefit", 'String'>
   readonly policyNumber: Prisma.FieldRef<"EmployeeBenefit", 'String'>
@@ -1177,7 +1184,7 @@ export interface EmployeeBenefitFieldRefs {
   readonly endDate: Prisma.FieldRef<"EmployeeBenefit", 'DateTime'>
   readonly premium: Prisma.FieldRef<"EmployeeBenefit", 'Decimal'>
   readonly coverage: Prisma.FieldRef<"EmployeeBenefit", 'String'>
-  readonly employeeId: Prisma.FieldRef<"EmployeeBenefit", 'String'>
+  readonly employeeId: Prisma.FieldRef<"EmployeeBenefit", 'Int'>
   readonly createdAt: Prisma.FieldRef<"EmployeeBenefit", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"EmployeeBenefit", 'DateTime'>
 }

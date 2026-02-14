@@ -27,6 +27,7 @@ export type AggregateProduct = {
 }
 
 export type ProductAvgAggregateOutputType = {
+  id: number | null
   costPrice: runtime.Decimal | null
   salesPrice: runtime.Decimal | null
   msrp: runtime.Decimal | null
@@ -37,9 +38,16 @@ export type ProductAvgAggregateOutputType = {
   leadTimeDays: number | null
   weight: runtime.Decimal | null
   volume: runtime.Decimal | null
+  taxRateId: number | null
+  tenantId: number | null
+  categoryId: number | null
+  brandId: number | null
+  unitId: number | null
+  supplierId: number | null
 }
 
 export type ProductSumAggregateOutputType = {
+  id: number | null
   costPrice: runtime.Decimal | null
   salesPrice: runtime.Decimal | null
   msrp: runtime.Decimal | null
@@ -50,10 +58,16 @@ export type ProductSumAggregateOutputType = {
   leadTimeDays: number | null
   weight: runtime.Decimal | null
   volume: runtime.Decimal | null
+  taxRateId: number | null
+  tenantId: number | null
+  categoryId: number | null
+  brandId: number | null
+  unitId: number | null
+  supplierId: number | null
 }
 
 export type ProductMinAggregateOutputType = {
-  id: string | null
+  id: number | null
   sku: string | null
   barcode: string | null
   name: string | null
@@ -74,7 +88,7 @@ export type ProductMinAggregateOutputType = {
   volume: runtime.Decimal | null
   volumeUnit: string | null
   taxable: boolean | null
-  taxRateId: string | null
+  taxRateId: number | null
   isActive: boolean | null
   isSellable: boolean | null
   isPurchasable: boolean | null
@@ -82,17 +96,17 @@ export type ProductMinAggregateOutputType = {
   metaTitle: string | null
   metaDescription: string | null
   tags: string | null
-  tenantId: string | null
-  categoryId: string | null
-  brandId: string | null
-  unitId: string | null
-  supplierId: string | null
+  tenantId: number | null
+  categoryId: number | null
+  brandId: number | null
+  unitId: number | null
+  supplierId: number | null
   createdAt: Date | null
   updatedAt: Date | null
 }
 
 export type ProductMaxAggregateOutputType = {
-  id: string | null
+  id: number | null
   sku: string | null
   barcode: string | null
   name: string | null
@@ -113,7 +127,7 @@ export type ProductMaxAggregateOutputType = {
   volume: runtime.Decimal | null
   volumeUnit: string | null
   taxable: boolean | null
-  taxRateId: string | null
+  taxRateId: number | null
   isActive: boolean | null
   isSellable: boolean | null
   isPurchasable: boolean | null
@@ -121,11 +135,11 @@ export type ProductMaxAggregateOutputType = {
   metaTitle: string | null
   metaDescription: string | null
   tags: string | null
-  tenantId: string | null
-  categoryId: string | null
-  brandId: string | null
-  unitId: string | null
-  supplierId: string | null
+  tenantId: number | null
+  categoryId: number | null
+  brandId: number | null
+  unitId: number | null
+  supplierId: number | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -173,6 +187,7 @@ export type ProductCountAggregateOutputType = {
 
 
 export type ProductAvgAggregateInputType = {
+  id?: true
   costPrice?: true
   salesPrice?: true
   msrp?: true
@@ -183,9 +198,16 @@ export type ProductAvgAggregateInputType = {
   leadTimeDays?: true
   weight?: true
   volume?: true
+  taxRateId?: true
+  tenantId?: true
+  categoryId?: true
+  brandId?: true
+  unitId?: true
+  supplierId?: true
 }
 
 export type ProductSumAggregateInputType = {
+  id?: true
   costPrice?: true
   salesPrice?: true
   msrp?: true
@@ -196,6 +218,12 @@ export type ProductSumAggregateInputType = {
   leadTimeDays?: true
   weight?: true
   volume?: true
+  taxRateId?: true
+  tenantId?: true
+  categoryId?: true
+  brandId?: true
+  unitId?: true
+  supplierId?: true
 }
 
 export type ProductMinAggregateInputType = {
@@ -404,7 +432,7 @@ export type ProductGroupByArgs<ExtArgs extends runtime.Types.Extensions.Internal
 }
 
 export type ProductGroupByOutputType = {
-  id: string
+  id: number
   sku: string
   barcode: string | null
   name: string
@@ -425,7 +453,7 @@ export type ProductGroupByOutputType = {
   volume: runtime.Decimal | null
   volumeUnit: string | null
   taxable: boolean
-  taxRateId: string | null
+  taxRateId: number | null
   isActive: boolean
   isSellable: boolean
   isPurchasable: boolean
@@ -434,11 +462,11 @@ export type ProductGroupByOutputType = {
   metaTitle: string | null
   metaDescription: string | null
   tags: string | null
-  tenantId: string
-  categoryId: string | null
-  brandId: string | null
-  unitId: string | null
-  supplierId: string | null
+  tenantId: number
+  categoryId: number | null
+  brandId: number | null
+  unitId: number | null
+  supplierId: number | null
   createdAt: Date
   updatedAt: Date
   _count: ProductCountAggregateOutputType | null
@@ -467,7 +495,7 @@ export type ProductWhereInput = {
   AND?: Prisma.ProductWhereInput | Prisma.ProductWhereInput[]
   OR?: Prisma.ProductWhereInput[]
   NOT?: Prisma.ProductWhereInput | Prisma.ProductWhereInput[]
-  id?: Prisma.StringFilter<"Product"> | string
+  id?: Prisma.IntFilter<"Product"> | number
   sku?: Prisma.StringFilter<"Product"> | string
   barcode?: Prisma.StringNullableFilter<"Product"> | string | null
   name?: Prisma.StringFilter<"Product"> | string
@@ -488,7 +516,7 @@ export type ProductWhereInput = {
   volume?: Prisma.DecimalNullableFilter<"Product"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   volumeUnit?: Prisma.StringNullableFilter<"Product"> | string | null
   taxable?: Prisma.BoolFilter<"Product"> | boolean
-  taxRateId?: Prisma.StringNullableFilter<"Product"> | string | null
+  taxRateId?: Prisma.IntNullableFilter<"Product"> | number | null
   isActive?: Prisma.BoolFilter<"Product"> | boolean
   isSellable?: Prisma.BoolFilter<"Product"> | boolean
   isPurchasable?: Prisma.BoolFilter<"Product"> | boolean
@@ -497,11 +525,11 @@ export type ProductWhereInput = {
   metaTitle?: Prisma.StringNullableFilter<"Product"> | string | null
   metaDescription?: Prisma.StringNullableFilter<"Product"> | string | null
   tags?: Prisma.StringNullableFilter<"Product"> | string | null
-  tenantId?: Prisma.StringFilter<"Product"> | string
-  categoryId?: Prisma.StringNullableFilter<"Product"> | string | null
-  brandId?: Prisma.StringNullableFilter<"Product"> | string | null
-  unitId?: Prisma.StringNullableFilter<"Product"> | string | null
-  supplierId?: Prisma.StringNullableFilter<"Product"> | string | null
+  tenantId?: Prisma.IntFilter<"Product"> | number
+  categoryId?: Prisma.IntNullableFilter<"Product"> | number | null
+  brandId?: Prisma.IntNullableFilter<"Product"> | number | null
+  unitId?: Prisma.IntNullableFilter<"Product"> | number | null
+  supplierId?: Prisma.IntNullableFilter<"Product"> | number | null
   createdAt?: Prisma.DateTimeFilter<"Product"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Product"> | Date | string
   taxRate?: Prisma.XOR<Prisma.TaxRateNullableScalarRelationFilter, Prisma.TaxRateWhereInput> | null
@@ -575,7 +603,7 @@ export type ProductOrderByWithRelationInput = {
 }
 
 export type ProductWhereUniqueInput = Prisma.AtLeast<{
-  id?: string
+  id?: number
   tenantId_sku?: Prisma.ProductTenantIdSkuCompoundUniqueInput
   AND?: Prisma.ProductWhereInput | Prisma.ProductWhereInput[]
   OR?: Prisma.ProductWhereInput[]
@@ -600,7 +628,7 @@ export type ProductWhereUniqueInput = Prisma.AtLeast<{
   volume?: Prisma.DecimalNullableFilter<"Product"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   volumeUnit?: Prisma.StringNullableFilter<"Product"> | string | null
   taxable?: Prisma.BoolFilter<"Product"> | boolean
-  taxRateId?: Prisma.StringNullableFilter<"Product"> | string | null
+  taxRateId?: Prisma.IntNullableFilter<"Product"> | number | null
   isActive?: Prisma.BoolFilter<"Product"> | boolean
   isSellable?: Prisma.BoolFilter<"Product"> | boolean
   isPurchasable?: Prisma.BoolFilter<"Product"> | boolean
@@ -609,11 +637,11 @@ export type ProductWhereUniqueInput = Prisma.AtLeast<{
   metaTitle?: Prisma.StringNullableFilter<"Product"> | string | null
   metaDescription?: Prisma.StringNullableFilter<"Product"> | string | null
   tags?: Prisma.StringNullableFilter<"Product"> | string | null
-  tenantId?: Prisma.StringFilter<"Product"> | string
-  categoryId?: Prisma.StringNullableFilter<"Product"> | string | null
-  brandId?: Prisma.StringNullableFilter<"Product"> | string | null
-  unitId?: Prisma.StringNullableFilter<"Product"> | string | null
-  supplierId?: Prisma.StringNullableFilter<"Product"> | string | null
+  tenantId?: Prisma.IntFilter<"Product"> | number
+  categoryId?: Prisma.IntNullableFilter<"Product"> | number | null
+  brandId?: Prisma.IntNullableFilter<"Product"> | number | null
+  unitId?: Prisma.IntNullableFilter<"Product"> | number | null
+  supplierId?: Prisma.IntNullableFilter<"Product"> | number | null
   createdAt?: Prisma.DateTimeFilter<"Product"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Product"> | Date | string
   taxRate?: Prisma.XOR<Prisma.TaxRateNullableScalarRelationFilter, Prisma.TaxRateWhereInput> | null
@@ -681,7 +709,7 @@ export type ProductScalarWhereWithAggregatesInput = {
   AND?: Prisma.ProductScalarWhereWithAggregatesInput | Prisma.ProductScalarWhereWithAggregatesInput[]
   OR?: Prisma.ProductScalarWhereWithAggregatesInput[]
   NOT?: Prisma.ProductScalarWhereWithAggregatesInput | Prisma.ProductScalarWhereWithAggregatesInput[]
-  id?: Prisma.StringWithAggregatesFilter<"Product"> | string
+  id?: Prisma.IntWithAggregatesFilter<"Product"> | number
   sku?: Prisma.StringWithAggregatesFilter<"Product"> | string
   barcode?: Prisma.StringNullableWithAggregatesFilter<"Product"> | string | null
   name?: Prisma.StringWithAggregatesFilter<"Product"> | string
@@ -702,7 +730,7 @@ export type ProductScalarWhereWithAggregatesInput = {
   volume?: Prisma.DecimalNullableWithAggregatesFilter<"Product"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   volumeUnit?: Prisma.StringNullableWithAggregatesFilter<"Product"> | string | null
   taxable?: Prisma.BoolWithAggregatesFilter<"Product"> | boolean
-  taxRateId?: Prisma.StringNullableWithAggregatesFilter<"Product"> | string | null
+  taxRateId?: Prisma.IntNullableWithAggregatesFilter<"Product"> | number | null
   isActive?: Prisma.BoolWithAggregatesFilter<"Product"> | boolean
   isSellable?: Prisma.BoolWithAggregatesFilter<"Product"> | boolean
   isPurchasable?: Prisma.BoolWithAggregatesFilter<"Product"> | boolean
@@ -711,17 +739,16 @@ export type ProductScalarWhereWithAggregatesInput = {
   metaTitle?: Prisma.StringNullableWithAggregatesFilter<"Product"> | string | null
   metaDescription?: Prisma.StringNullableWithAggregatesFilter<"Product"> | string | null
   tags?: Prisma.StringNullableWithAggregatesFilter<"Product"> | string | null
-  tenantId?: Prisma.StringWithAggregatesFilter<"Product"> | string
-  categoryId?: Prisma.StringNullableWithAggregatesFilter<"Product"> | string | null
-  brandId?: Prisma.StringNullableWithAggregatesFilter<"Product"> | string | null
-  unitId?: Prisma.StringNullableWithAggregatesFilter<"Product"> | string | null
-  supplierId?: Prisma.StringNullableWithAggregatesFilter<"Product"> | string | null
+  tenantId?: Prisma.IntWithAggregatesFilter<"Product"> | number
+  categoryId?: Prisma.IntNullableWithAggregatesFilter<"Product"> | number | null
+  brandId?: Prisma.IntNullableWithAggregatesFilter<"Product"> | number | null
+  unitId?: Prisma.IntNullableWithAggregatesFilter<"Product"> | number | null
+  supplierId?: Prisma.IntNullableWithAggregatesFilter<"Product"> | number | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Product"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Product"> | Date | string
 }
 
 export type ProductCreateInput = {
-  id?: string
   sku: string
   barcode?: string | null
   name: string
@@ -769,7 +796,7 @@ export type ProductCreateInput = {
 }
 
 export type ProductUncheckedCreateInput = {
-  id?: string
+  id?: number
   sku: string
   barcode?: string | null
   name: string
@@ -790,7 +817,7 @@ export type ProductUncheckedCreateInput = {
   volume?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   volumeUnit?: string | null
   taxable?: boolean
-  taxRateId?: string | null
+  taxRateId?: number | null
   isActive?: boolean
   isSellable?: boolean
   isPurchasable?: boolean
@@ -799,11 +826,11 @@ export type ProductUncheckedCreateInput = {
   metaTitle?: string | null
   metaDescription?: string | null
   tags?: string | null
-  tenantId: string
-  categoryId?: string | null
-  brandId?: string | null
-  unitId?: string | null
-  supplierId?: string | null
+  tenantId: number
+  categoryId?: number | null
+  brandId?: number | null
+  unitId?: number | null
+  supplierId?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   inventory?: Prisma.InventoryUncheckedCreateNestedManyWithoutProductInput
@@ -817,7 +844,6 @@ export type ProductUncheckedCreateInput = {
 }
 
 export type ProductUpdateInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   sku?: Prisma.StringFieldUpdateOperationsInput | string
   barcode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
@@ -865,7 +891,7 @@ export type ProductUpdateInput = {
 }
 
 export type ProductUncheckedUpdateInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   sku?: Prisma.StringFieldUpdateOperationsInput | string
   barcode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
@@ -886,7 +912,7 @@ export type ProductUncheckedUpdateInput = {
   volume?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   volumeUnit?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   taxable?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  taxRateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  taxRateId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isSellable?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isPurchasable?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -895,11 +921,11 @@ export type ProductUncheckedUpdateInput = {
   metaTitle?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   metaDescription?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   tags?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  tenantId?: Prisma.StringFieldUpdateOperationsInput | string
-  categoryId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  brandId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  unitId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  supplierId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tenantId?: Prisma.IntFieldUpdateOperationsInput | number
+  categoryId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  brandId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  unitId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  supplierId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   inventory?: Prisma.InventoryUncheckedUpdateManyWithoutProductNestedInput
@@ -913,7 +939,7 @@ export type ProductUncheckedUpdateInput = {
 }
 
 export type ProductCreateManyInput = {
-  id?: string
+  id?: number
   sku: string
   barcode?: string | null
   name: string
@@ -934,7 +960,7 @@ export type ProductCreateManyInput = {
   volume?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   volumeUnit?: string | null
   taxable?: boolean
-  taxRateId?: string | null
+  taxRateId?: number | null
   isActive?: boolean
   isSellable?: boolean
   isPurchasable?: boolean
@@ -943,17 +969,16 @@ export type ProductCreateManyInput = {
   metaTitle?: string | null
   metaDescription?: string | null
   tags?: string | null
-  tenantId: string
-  categoryId?: string | null
-  brandId?: string | null
-  unitId?: string | null
-  supplierId?: string | null
+  tenantId: number
+  categoryId?: number | null
+  brandId?: number | null
+  unitId?: number | null
+  supplierId?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
 
 export type ProductUpdateManyMutationInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   sku?: Prisma.StringFieldUpdateOperationsInput | string
   barcode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
@@ -987,7 +1012,7 @@ export type ProductUpdateManyMutationInput = {
 }
 
 export type ProductUncheckedUpdateManyInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   sku?: Prisma.StringFieldUpdateOperationsInput | string
   barcode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
@@ -1008,7 +1033,7 @@ export type ProductUncheckedUpdateManyInput = {
   volume?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   volumeUnit?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   taxable?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  taxRateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  taxRateId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isSellable?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isPurchasable?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -1017,11 +1042,11 @@ export type ProductUncheckedUpdateManyInput = {
   metaTitle?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   metaDescription?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   tags?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  tenantId?: Prisma.StringFieldUpdateOperationsInput | string
-  categoryId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  brandId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  unitId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  supplierId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tenantId?: Prisma.IntFieldUpdateOperationsInput | number
+  categoryId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  brandId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  unitId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  supplierId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -1042,7 +1067,7 @@ export type ProductNullableScalarRelationFilter = {
 }
 
 export type ProductTenantIdSkuCompoundUniqueInput = {
-  tenantId: string
+  tenantId: number
   sku: string
 }
 
@@ -1087,6 +1112,7 @@ export type ProductCountOrderByAggregateInput = {
 }
 
 export type ProductAvgOrderByAggregateInput = {
+  id?: Prisma.SortOrder
   costPrice?: Prisma.SortOrder
   salesPrice?: Prisma.SortOrder
   msrp?: Prisma.SortOrder
@@ -1097,6 +1123,12 @@ export type ProductAvgOrderByAggregateInput = {
   leadTimeDays?: Prisma.SortOrder
   weight?: Prisma.SortOrder
   volume?: Prisma.SortOrder
+  taxRateId?: Prisma.SortOrder
+  tenantId?: Prisma.SortOrder
+  categoryId?: Prisma.SortOrder
+  brandId?: Prisma.SortOrder
+  unitId?: Prisma.SortOrder
+  supplierId?: Prisma.SortOrder
 }
 
 export type ProductMaxOrderByAggregateInput = {
@@ -1178,6 +1210,7 @@ export type ProductMinOrderByAggregateInput = {
 }
 
 export type ProductSumOrderByAggregateInput = {
+  id?: Prisma.SortOrder
   costPrice?: Prisma.SortOrder
   salesPrice?: Prisma.SortOrder
   msrp?: Prisma.SortOrder
@@ -1188,6 +1221,12 @@ export type ProductSumOrderByAggregateInput = {
   leadTimeDays?: Prisma.SortOrder
   weight?: Prisma.SortOrder
   volume?: Prisma.SortOrder
+  taxRateId?: Prisma.SortOrder
+  tenantId?: Prisma.SortOrder
+  categoryId?: Prisma.SortOrder
+  brandId?: Prisma.SortOrder
+  unitId?: Prisma.SortOrder
+  supplierId?: Prisma.SortOrder
 }
 
 export type ProductScalarRelationFilter = {
@@ -1572,7 +1611,6 @@ export type ProductUncheckedUpdateManyWithoutTaxRateNestedInput = {
 }
 
 export type ProductCreateWithoutTenantInput = {
-  id?: string
   sku: string
   barcode?: string | null
   name: string
@@ -1619,7 +1657,7 @@ export type ProductCreateWithoutTenantInput = {
 }
 
 export type ProductUncheckedCreateWithoutTenantInput = {
-  id?: string
+  id?: number
   sku: string
   barcode?: string | null
   name: string
@@ -1640,7 +1678,7 @@ export type ProductUncheckedCreateWithoutTenantInput = {
   volume?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   volumeUnit?: string | null
   taxable?: boolean
-  taxRateId?: string | null
+  taxRateId?: number | null
   isActive?: boolean
   isSellable?: boolean
   isPurchasable?: boolean
@@ -1649,10 +1687,10 @@ export type ProductUncheckedCreateWithoutTenantInput = {
   metaTitle?: string | null
   metaDescription?: string | null
   tags?: string | null
-  categoryId?: string | null
-  brandId?: string | null
-  unitId?: string | null
-  supplierId?: string | null
+  categoryId?: number | null
+  brandId?: number | null
+  unitId?: number | null
+  supplierId?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   inventory?: Prisma.InventoryUncheckedCreateNestedManyWithoutProductInput
@@ -1695,7 +1733,7 @@ export type ProductScalarWhereInput = {
   AND?: Prisma.ProductScalarWhereInput | Prisma.ProductScalarWhereInput[]
   OR?: Prisma.ProductScalarWhereInput[]
   NOT?: Prisma.ProductScalarWhereInput | Prisma.ProductScalarWhereInput[]
-  id?: Prisma.StringFilter<"Product"> | string
+  id?: Prisma.IntFilter<"Product"> | number
   sku?: Prisma.StringFilter<"Product"> | string
   barcode?: Prisma.StringNullableFilter<"Product"> | string | null
   name?: Prisma.StringFilter<"Product"> | string
@@ -1716,7 +1754,7 @@ export type ProductScalarWhereInput = {
   volume?: Prisma.DecimalNullableFilter<"Product"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   volumeUnit?: Prisma.StringNullableFilter<"Product"> | string | null
   taxable?: Prisma.BoolFilter<"Product"> | boolean
-  taxRateId?: Prisma.StringNullableFilter<"Product"> | string | null
+  taxRateId?: Prisma.IntNullableFilter<"Product"> | number | null
   isActive?: Prisma.BoolFilter<"Product"> | boolean
   isSellable?: Prisma.BoolFilter<"Product"> | boolean
   isPurchasable?: Prisma.BoolFilter<"Product"> | boolean
@@ -1725,17 +1763,16 @@ export type ProductScalarWhereInput = {
   metaTitle?: Prisma.StringNullableFilter<"Product"> | string | null
   metaDescription?: Prisma.StringNullableFilter<"Product"> | string | null
   tags?: Prisma.StringNullableFilter<"Product"> | string | null
-  tenantId?: Prisma.StringFilter<"Product"> | string
-  categoryId?: Prisma.StringNullableFilter<"Product"> | string | null
-  brandId?: Prisma.StringNullableFilter<"Product"> | string | null
-  unitId?: Prisma.StringNullableFilter<"Product"> | string | null
-  supplierId?: Prisma.StringNullableFilter<"Product"> | string | null
+  tenantId?: Prisma.IntFilter<"Product"> | number
+  categoryId?: Prisma.IntNullableFilter<"Product"> | number | null
+  brandId?: Prisma.IntNullableFilter<"Product"> | number | null
+  unitId?: Prisma.IntNullableFilter<"Product"> | number | null
+  supplierId?: Prisma.IntNullableFilter<"Product"> | number | null
   createdAt?: Prisma.DateTimeFilter<"Product"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Product"> | Date | string
 }
 
 export type ProductCreateWithoutQuotationItemsInput = {
-  id?: string
   sku: string
   barcode?: string | null
   name: string
@@ -1782,7 +1819,7 @@ export type ProductCreateWithoutQuotationItemsInput = {
 }
 
 export type ProductUncheckedCreateWithoutQuotationItemsInput = {
-  id?: string
+  id?: number
   sku: string
   barcode?: string | null
   name: string
@@ -1803,7 +1840,7 @@ export type ProductUncheckedCreateWithoutQuotationItemsInput = {
   volume?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   volumeUnit?: string | null
   taxable?: boolean
-  taxRateId?: string | null
+  taxRateId?: number | null
   isActive?: boolean
   isSellable?: boolean
   isPurchasable?: boolean
@@ -1812,11 +1849,11 @@ export type ProductUncheckedCreateWithoutQuotationItemsInput = {
   metaTitle?: string | null
   metaDescription?: string | null
   tags?: string | null
-  tenantId: string
-  categoryId?: string | null
-  brandId?: string | null
-  unitId?: string | null
-  supplierId?: string | null
+  tenantId: number
+  categoryId?: number | null
+  brandId?: number | null
+  unitId?: number | null
+  supplierId?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   inventory?: Prisma.InventoryUncheckedCreateNestedManyWithoutProductInput
@@ -1845,7 +1882,6 @@ export type ProductUpdateToOneWithWhereWithoutQuotationItemsInput = {
 }
 
 export type ProductUpdateWithoutQuotationItemsInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   sku?: Prisma.StringFieldUpdateOperationsInput | string
   barcode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
@@ -1892,7 +1928,7 @@ export type ProductUpdateWithoutQuotationItemsInput = {
 }
 
 export type ProductUncheckedUpdateWithoutQuotationItemsInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   sku?: Prisma.StringFieldUpdateOperationsInput | string
   barcode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
@@ -1913,7 +1949,7 @@ export type ProductUncheckedUpdateWithoutQuotationItemsInput = {
   volume?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   volumeUnit?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   taxable?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  taxRateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  taxRateId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isSellable?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isPurchasable?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -1922,11 +1958,11 @@ export type ProductUncheckedUpdateWithoutQuotationItemsInput = {
   metaTitle?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   metaDescription?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   tags?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  tenantId?: Prisma.StringFieldUpdateOperationsInput | string
-  categoryId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  brandId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  unitId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  supplierId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tenantId?: Prisma.IntFieldUpdateOperationsInput | number
+  categoryId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  brandId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  unitId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  supplierId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   inventory?: Prisma.InventoryUncheckedUpdateManyWithoutProductNestedInput
@@ -1939,7 +1975,6 @@ export type ProductUncheckedUpdateWithoutQuotationItemsInput = {
 }
 
 export type ProductCreateWithoutOrderItemsInput = {
-  id?: string
   sku: string
   barcode?: string | null
   name: string
@@ -1986,7 +2021,7 @@ export type ProductCreateWithoutOrderItemsInput = {
 }
 
 export type ProductUncheckedCreateWithoutOrderItemsInput = {
-  id?: string
+  id?: number
   sku: string
   barcode?: string | null
   name: string
@@ -2007,7 +2042,7 @@ export type ProductUncheckedCreateWithoutOrderItemsInput = {
   volume?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   volumeUnit?: string | null
   taxable?: boolean
-  taxRateId?: string | null
+  taxRateId?: number | null
   isActive?: boolean
   isSellable?: boolean
   isPurchasable?: boolean
@@ -2016,11 +2051,11 @@ export type ProductUncheckedCreateWithoutOrderItemsInput = {
   metaTitle?: string | null
   metaDescription?: string | null
   tags?: string | null
-  tenantId: string
-  categoryId?: string | null
-  brandId?: string | null
-  unitId?: string | null
-  supplierId?: string | null
+  tenantId: number
+  categoryId?: number | null
+  brandId?: number | null
+  unitId?: number | null
+  supplierId?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   inventory?: Prisma.InventoryUncheckedCreateNestedManyWithoutProductInput
@@ -2049,7 +2084,6 @@ export type ProductUpdateToOneWithWhereWithoutOrderItemsInput = {
 }
 
 export type ProductUpdateWithoutOrderItemsInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   sku?: Prisma.StringFieldUpdateOperationsInput | string
   barcode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
@@ -2096,7 +2130,7 @@ export type ProductUpdateWithoutOrderItemsInput = {
 }
 
 export type ProductUncheckedUpdateWithoutOrderItemsInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   sku?: Prisma.StringFieldUpdateOperationsInput | string
   barcode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
@@ -2117,7 +2151,7 @@ export type ProductUncheckedUpdateWithoutOrderItemsInput = {
   volume?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   volumeUnit?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   taxable?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  taxRateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  taxRateId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isSellable?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isPurchasable?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -2126,11 +2160,11 @@ export type ProductUncheckedUpdateWithoutOrderItemsInput = {
   metaTitle?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   metaDescription?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   tags?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  tenantId?: Prisma.StringFieldUpdateOperationsInput | string
-  categoryId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  brandId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  unitId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  supplierId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tenantId?: Prisma.IntFieldUpdateOperationsInput | number
+  categoryId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  brandId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  unitId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  supplierId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   inventory?: Prisma.InventoryUncheckedUpdateManyWithoutProductNestedInput
@@ -2143,7 +2177,6 @@ export type ProductUncheckedUpdateWithoutOrderItemsInput = {
 }
 
 export type ProductCreateWithoutVariantsInput = {
-  id?: string
   sku: string
   barcode?: string | null
   name: string
@@ -2190,7 +2223,7 @@ export type ProductCreateWithoutVariantsInput = {
 }
 
 export type ProductUncheckedCreateWithoutVariantsInput = {
-  id?: string
+  id?: number
   sku: string
   barcode?: string | null
   name: string
@@ -2211,7 +2244,7 @@ export type ProductUncheckedCreateWithoutVariantsInput = {
   volume?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   volumeUnit?: string | null
   taxable?: boolean
-  taxRateId?: string | null
+  taxRateId?: number | null
   isActive?: boolean
   isSellable?: boolean
   isPurchasable?: boolean
@@ -2220,11 +2253,11 @@ export type ProductUncheckedCreateWithoutVariantsInput = {
   metaTitle?: string | null
   metaDescription?: string | null
   tags?: string | null
-  tenantId: string
-  categoryId?: string | null
-  brandId?: string | null
-  unitId?: string | null
-  supplierId?: string | null
+  tenantId: number
+  categoryId?: number | null
+  brandId?: number | null
+  unitId?: number | null
+  supplierId?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   inventory?: Prisma.InventoryUncheckedCreateNestedManyWithoutProductInput
@@ -2253,7 +2286,6 @@ export type ProductUpdateToOneWithWhereWithoutVariantsInput = {
 }
 
 export type ProductUpdateWithoutVariantsInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   sku?: Prisma.StringFieldUpdateOperationsInput | string
   barcode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
@@ -2300,7 +2332,7 @@ export type ProductUpdateWithoutVariantsInput = {
 }
 
 export type ProductUncheckedUpdateWithoutVariantsInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   sku?: Prisma.StringFieldUpdateOperationsInput | string
   barcode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
@@ -2321,7 +2353,7 @@ export type ProductUncheckedUpdateWithoutVariantsInput = {
   volume?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   volumeUnit?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   taxable?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  taxRateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  taxRateId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isSellable?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isPurchasable?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -2330,11 +2362,11 @@ export type ProductUncheckedUpdateWithoutVariantsInput = {
   metaTitle?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   metaDescription?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   tags?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  tenantId?: Prisma.StringFieldUpdateOperationsInput | string
-  categoryId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  brandId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  unitId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  supplierId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tenantId?: Prisma.IntFieldUpdateOperationsInput | number
+  categoryId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  brandId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  unitId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  supplierId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   inventory?: Prisma.InventoryUncheckedUpdateManyWithoutProductNestedInput
@@ -2347,7 +2379,6 @@ export type ProductUncheckedUpdateWithoutVariantsInput = {
 }
 
 export type ProductCreateWithoutCategoryInput = {
-  id?: string
   sku: string
   barcode?: string | null
   name: string
@@ -2394,7 +2425,7 @@ export type ProductCreateWithoutCategoryInput = {
 }
 
 export type ProductUncheckedCreateWithoutCategoryInput = {
-  id?: string
+  id?: number
   sku: string
   barcode?: string | null
   name: string
@@ -2415,7 +2446,7 @@ export type ProductUncheckedCreateWithoutCategoryInput = {
   volume?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   volumeUnit?: string | null
   taxable?: boolean
-  taxRateId?: string | null
+  taxRateId?: number | null
   isActive?: boolean
   isSellable?: boolean
   isPurchasable?: boolean
@@ -2424,10 +2455,10 @@ export type ProductUncheckedCreateWithoutCategoryInput = {
   metaTitle?: string | null
   metaDescription?: string | null
   tags?: string | null
-  tenantId: string
-  brandId?: string | null
-  unitId?: string | null
-  supplierId?: string | null
+  tenantId: number
+  brandId?: number | null
+  unitId?: number | null
+  supplierId?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   inventory?: Prisma.InventoryUncheckedCreateNestedManyWithoutProductInput
@@ -2467,7 +2498,6 @@ export type ProductUpdateManyWithWhereWithoutCategoryInput = {
 }
 
 export type ProductCreateWithoutBrandInput = {
-  id?: string
   sku: string
   barcode?: string | null
   name: string
@@ -2514,7 +2544,7 @@ export type ProductCreateWithoutBrandInput = {
 }
 
 export type ProductUncheckedCreateWithoutBrandInput = {
-  id?: string
+  id?: number
   sku: string
   barcode?: string | null
   name: string
@@ -2535,7 +2565,7 @@ export type ProductUncheckedCreateWithoutBrandInput = {
   volume?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   volumeUnit?: string | null
   taxable?: boolean
-  taxRateId?: string | null
+  taxRateId?: number | null
   isActive?: boolean
   isSellable?: boolean
   isPurchasable?: boolean
@@ -2544,10 +2574,10 @@ export type ProductUncheckedCreateWithoutBrandInput = {
   metaTitle?: string | null
   metaDescription?: string | null
   tags?: string | null
-  tenantId: string
-  categoryId?: string | null
-  unitId?: string | null
-  supplierId?: string | null
+  tenantId: number
+  categoryId?: number | null
+  unitId?: number | null
+  supplierId?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   inventory?: Prisma.InventoryUncheckedCreateNestedManyWithoutProductInput
@@ -2587,7 +2617,6 @@ export type ProductUpdateManyWithWhereWithoutBrandInput = {
 }
 
 export type ProductCreateWithoutUnitInput = {
-  id?: string
   sku: string
   barcode?: string | null
   name: string
@@ -2634,7 +2663,7 @@ export type ProductCreateWithoutUnitInput = {
 }
 
 export type ProductUncheckedCreateWithoutUnitInput = {
-  id?: string
+  id?: number
   sku: string
   barcode?: string | null
   name: string
@@ -2655,7 +2684,7 @@ export type ProductUncheckedCreateWithoutUnitInput = {
   volume?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   volumeUnit?: string | null
   taxable?: boolean
-  taxRateId?: string | null
+  taxRateId?: number | null
   isActive?: boolean
   isSellable?: boolean
   isPurchasable?: boolean
@@ -2664,10 +2693,10 @@ export type ProductUncheckedCreateWithoutUnitInput = {
   metaTitle?: string | null
   metaDescription?: string | null
   tags?: string | null
-  tenantId: string
-  categoryId?: string | null
-  brandId?: string | null
-  supplierId?: string | null
+  tenantId: number
+  categoryId?: number | null
+  brandId?: number | null
+  supplierId?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   inventory?: Prisma.InventoryUncheckedCreateNestedManyWithoutProductInput
@@ -2707,7 +2736,6 @@ export type ProductUpdateManyWithWhereWithoutUnitInput = {
 }
 
 export type ProductCreateWithoutInventoryInput = {
-  id?: string
   sku: string
   barcode?: string | null
   name: string
@@ -2754,7 +2782,7 @@ export type ProductCreateWithoutInventoryInput = {
 }
 
 export type ProductUncheckedCreateWithoutInventoryInput = {
-  id?: string
+  id?: number
   sku: string
   barcode?: string | null
   name: string
@@ -2775,7 +2803,7 @@ export type ProductUncheckedCreateWithoutInventoryInput = {
   volume?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   volumeUnit?: string | null
   taxable?: boolean
-  taxRateId?: string | null
+  taxRateId?: number | null
   isActive?: boolean
   isSellable?: boolean
   isPurchasable?: boolean
@@ -2784,11 +2812,11 @@ export type ProductUncheckedCreateWithoutInventoryInput = {
   metaTitle?: string | null
   metaDescription?: string | null
   tags?: string | null
-  tenantId: string
-  categoryId?: string | null
-  brandId?: string | null
-  unitId?: string | null
-  supplierId?: string | null
+  tenantId: number
+  categoryId?: number | null
+  brandId?: number | null
+  unitId?: number | null
+  supplierId?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   orderItems?: Prisma.OrderItemUncheckedCreateNestedManyWithoutProductInput
@@ -2817,7 +2845,6 @@ export type ProductUpdateToOneWithWhereWithoutInventoryInput = {
 }
 
 export type ProductUpdateWithoutInventoryInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   sku?: Prisma.StringFieldUpdateOperationsInput | string
   barcode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
@@ -2864,7 +2891,7 @@ export type ProductUpdateWithoutInventoryInput = {
 }
 
 export type ProductUncheckedUpdateWithoutInventoryInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   sku?: Prisma.StringFieldUpdateOperationsInput | string
   barcode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
@@ -2885,7 +2912,7 @@ export type ProductUncheckedUpdateWithoutInventoryInput = {
   volume?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   volumeUnit?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   taxable?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  taxRateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  taxRateId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isSellable?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isPurchasable?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -2894,11 +2921,11 @@ export type ProductUncheckedUpdateWithoutInventoryInput = {
   metaTitle?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   metaDescription?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   tags?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  tenantId?: Prisma.StringFieldUpdateOperationsInput | string
-  categoryId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  brandId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  unitId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  supplierId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tenantId?: Prisma.IntFieldUpdateOperationsInput | number
+  categoryId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  brandId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  unitId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  supplierId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   orderItems?: Prisma.OrderItemUncheckedUpdateManyWithoutProductNestedInput
@@ -2911,7 +2938,6 @@ export type ProductUncheckedUpdateWithoutInventoryInput = {
 }
 
 export type ProductCreateWithoutStockMovementsInput = {
-  id?: string
   sku: string
   barcode?: string | null
   name: string
@@ -2958,7 +2984,7 @@ export type ProductCreateWithoutStockMovementsInput = {
 }
 
 export type ProductUncheckedCreateWithoutStockMovementsInput = {
-  id?: string
+  id?: number
   sku: string
   barcode?: string | null
   name: string
@@ -2979,7 +3005,7 @@ export type ProductUncheckedCreateWithoutStockMovementsInput = {
   volume?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   volumeUnit?: string | null
   taxable?: boolean
-  taxRateId?: string | null
+  taxRateId?: number | null
   isActive?: boolean
   isSellable?: boolean
   isPurchasable?: boolean
@@ -2988,11 +3014,11 @@ export type ProductUncheckedCreateWithoutStockMovementsInput = {
   metaTitle?: string | null
   metaDescription?: string | null
   tags?: string | null
-  tenantId: string
-  categoryId?: string | null
-  brandId?: string | null
-  unitId?: string | null
-  supplierId?: string | null
+  tenantId: number
+  categoryId?: number | null
+  brandId?: number | null
+  unitId?: number | null
+  supplierId?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   inventory?: Prisma.InventoryUncheckedCreateNestedManyWithoutProductInput
@@ -3021,7 +3047,6 @@ export type ProductUpdateToOneWithWhereWithoutStockMovementsInput = {
 }
 
 export type ProductUpdateWithoutStockMovementsInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   sku?: Prisma.StringFieldUpdateOperationsInput | string
   barcode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
@@ -3068,7 +3093,7 @@ export type ProductUpdateWithoutStockMovementsInput = {
 }
 
 export type ProductUncheckedUpdateWithoutStockMovementsInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   sku?: Prisma.StringFieldUpdateOperationsInput | string
   barcode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
@@ -3089,7 +3114,7 @@ export type ProductUncheckedUpdateWithoutStockMovementsInput = {
   volume?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   volumeUnit?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   taxable?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  taxRateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  taxRateId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isSellable?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isPurchasable?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -3098,11 +3123,11 @@ export type ProductUncheckedUpdateWithoutStockMovementsInput = {
   metaTitle?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   metaDescription?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   tags?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  tenantId?: Prisma.StringFieldUpdateOperationsInput | string
-  categoryId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  brandId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  unitId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  supplierId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tenantId?: Prisma.IntFieldUpdateOperationsInput | number
+  categoryId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  brandId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  unitId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  supplierId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   inventory?: Prisma.InventoryUncheckedUpdateManyWithoutProductNestedInput
@@ -3115,7 +3140,6 @@ export type ProductUncheckedUpdateWithoutStockMovementsInput = {
 }
 
 export type ProductCreateWithoutBomItemsInput = {
-  id?: string
   sku: string
   barcode?: string | null
   name: string
@@ -3162,7 +3186,7 @@ export type ProductCreateWithoutBomItemsInput = {
 }
 
 export type ProductUncheckedCreateWithoutBomItemsInput = {
-  id?: string
+  id?: number
   sku: string
   barcode?: string | null
   name: string
@@ -3183,7 +3207,7 @@ export type ProductUncheckedCreateWithoutBomItemsInput = {
   volume?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   volumeUnit?: string | null
   taxable?: boolean
-  taxRateId?: string | null
+  taxRateId?: number | null
   isActive?: boolean
   isSellable?: boolean
   isPurchasable?: boolean
@@ -3192,11 +3216,11 @@ export type ProductUncheckedCreateWithoutBomItemsInput = {
   metaTitle?: string | null
   metaDescription?: string | null
   tags?: string | null
-  tenantId: string
-  categoryId?: string | null
-  brandId?: string | null
-  unitId?: string | null
-  supplierId?: string | null
+  tenantId: number
+  categoryId?: number | null
+  brandId?: number | null
+  unitId?: number | null
+  supplierId?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   inventory?: Prisma.InventoryUncheckedCreateNestedManyWithoutProductInput
@@ -3214,7 +3238,6 @@ export type ProductCreateOrConnectWithoutBomItemsInput = {
 }
 
 export type ProductCreateWithoutBomComponentsInput = {
-  id?: string
   sku: string
   barcode?: string | null
   name: string
@@ -3261,7 +3284,7 @@ export type ProductCreateWithoutBomComponentsInput = {
 }
 
 export type ProductUncheckedCreateWithoutBomComponentsInput = {
-  id?: string
+  id?: number
   sku: string
   barcode?: string | null
   name: string
@@ -3282,7 +3305,7 @@ export type ProductUncheckedCreateWithoutBomComponentsInput = {
   volume?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   volumeUnit?: string | null
   taxable?: boolean
-  taxRateId?: string | null
+  taxRateId?: number | null
   isActive?: boolean
   isSellable?: boolean
   isPurchasable?: boolean
@@ -3291,11 +3314,11 @@ export type ProductUncheckedCreateWithoutBomComponentsInput = {
   metaTitle?: string | null
   metaDescription?: string | null
   tags?: string | null
-  tenantId: string
-  categoryId?: string | null
-  brandId?: string | null
-  unitId?: string | null
-  supplierId?: string | null
+  tenantId: number
+  categoryId?: number | null
+  brandId?: number | null
+  unitId?: number | null
+  supplierId?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   inventory?: Prisma.InventoryUncheckedCreateNestedManyWithoutProductInput
@@ -3324,7 +3347,6 @@ export type ProductUpdateToOneWithWhereWithoutBomItemsInput = {
 }
 
 export type ProductUpdateWithoutBomItemsInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   sku?: Prisma.StringFieldUpdateOperationsInput | string
   barcode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
@@ -3371,7 +3393,7 @@ export type ProductUpdateWithoutBomItemsInput = {
 }
 
 export type ProductUncheckedUpdateWithoutBomItemsInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   sku?: Prisma.StringFieldUpdateOperationsInput | string
   barcode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
@@ -3392,7 +3414,7 @@ export type ProductUncheckedUpdateWithoutBomItemsInput = {
   volume?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   volumeUnit?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   taxable?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  taxRateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  taxRateId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isSellable?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isPurchasable?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -3401,11 +3423,11 @@ export type ProductUncheckedUpdateWithoutBomItemsInput = {
   metaTitle?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   metaDescription?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   tags?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  tenantId?: Prisma.StringFieldUpdateOperationsInput | string
-  categoryId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  brandId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  unitId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  supplierId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tenantId?: Prisma.IntFieldUpdateOperationsInput | number
+  categoryId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  brandId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  unitId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  supplierId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   inventory?: Prisma.InventoryUncheckedUpdateManyWithoutProductNestedInput
@@ -3429,7 +3451,6 @@ export type ProductUpdateToOneWithWhereWithoutBomComponentsInput = {
 }
 
 export type ProductUpdateWithoutBomComponentsInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   sku?: Prisma.StringFieldUpdateOperationsInput | string
   barcode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
@@ -3476,7 +3497,7 @@ export type ProductUpdateWithoutBomComponentsInput = {
 }
 
 export type ProductUncheckedUpdateWithoutBomComponentsInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   sku?: Prisma.StringFieldUpdateOperationsInput | string
   barcode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
@@ -3497,7 +3518,7 @@ export type ProductUncheckedUpdateWithoutBomComponentsInput = {
   volume?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   volumeUnit?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   taxable?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  taxRateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  taxRateId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isSellable?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isPurchasable?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -3506,11 +3527,11 @@ export type ProductUncheckedUpdateWithoutBomComponentsInput = {
   metaTitle?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   metaDescription?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   tags?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  tenantId?: Prisma.StringFieldUpdateOperationsInput | string
-  categoryId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  brandId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  unitId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  supplierId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tenantId?: Prisma.IntFieldUpdateOperationsInput | number
+  categoryId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  brandId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  unitId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  supplierId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   inventory?: Prisma.InventoryUncheckedUpdateManyWithoutProductNestedInput
@@ -3523,7 +3544,6 @@ export type ProductUncheckedUpdateWithoutBomComponentsInput = {
 }
 
 export type ProductCreateWithoutSupplierInput = {
-  id?: string
   sku: string
   barcode?: string | null
   name: string
@@ -3570,7 +3590,7 @@ export type ProductCreateWithoutSupplierInput = {
 }
 
 export type ProductUncheckedCreateWithoutSupplierInput = {
-  id?: string
+  id?: number
   sku: string
   barcode?: string | null
   name: string
@@ -3591,7 +3611,7 @@ export type ProductUncheckedCreateWithoutSupplierInput = {
   volume?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   volumeUnit?: string | null
   taxable?: boolean
-  taxRateId?: string | null
+  taxRateId?: number | null
   isActive?: boolean
   isSellable?: boolean
   isPurchasable?: boolean
@@ -3600,10 +3620,10 @@ export type ProductUncheckedCreateWithoutSupplierInput = {
   metaTitle?: string | null
   metaDescription?: string | null
   tags?: string | null
-  tenantId: string
-  categoryId?: string | null
-  brandId?: string | null
-  unitId?: string | null
+  tenantId: number
+  categoryId?: number | null
+  brandId?: number | null
+  unitId?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   inventory?: Prisma.InventoryUncheckedCreateNestedManyWithoutProductInput
@@ -3643,7 +3663,6 @@ export type ProductUpdateManyWithWhereWithoutSupplierInput = {
 }
 
 export type ProductCreateWithoutPurchaseItemsInput = {
-  id?: string
   sku: string
   barcode?: string | null
   name: string
@@ -3690,7 +3709,7 @@ export type ProductCreateWithoutPurchaseItemsInput = {
 }
 
 export type ProductUncheckedCreateWithoutPurchaseItemsInput = {
-  id?: string
+  id?: number
   sku: string
   barcode?: string | null
   name: string
@@ -3711,7 +3730,7 @@ export type ProductUncheckedCreateWithoutPurchaseItemsInput = {
   volume?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   volumeUnit?: string | null
   taxable?: boolean
-  taxRateId?: string | null
+  taxRateId?: number | null
   isActive?: boolean
   isSellable?: boolean
   isPurchasable?: boolean
@@ -3720,11 +3739,11 @@ export type ProductUncheckedCreateWithoutPurchaseItemsInput = {
   metaTitle?: string | null
   metaDescription?: string | null
   tags?: string | null
-  tenantId: string
-  categoryId?: string | null
-  brandId?: string | null
-  unitId?: string | null
-  supplierId?: string | null
+  tenantId: number
+  categoryId?: number | null
+  brandId?: number | null
+  unitId?: number | null
+  supplierId?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   inventory?: Prisma.InventoryUncheckedCreateNestedManyWithoutProductInput
@@ -3753,7 +3772,6 @@ export type ProductUpdateToOneWithWhereWithoutPurchaseItemsInput = {
 }
 
 export type ProductUpdateWithoutPurchaseItemsInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   sku?: Prisma.StringFieldUpdateOperationsInput | string
   barcode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
@@ -3800,7 +3818,7 @@ export type ProductUpdateWithoutPurchaseItemsInput = {
 }
 
 export type ProductUncheckedUpdateWithoutPurchaseItemsInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   sku?: Prisma.StringFieldUpdateOperationsInput | string
   barcode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
@@ -3821,7 +3839,7 @@ export type ProductUncheckedUpdateWithoutPurchaseItemsInput = {
   volume?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   volumeUnit?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   taxable?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  taxRateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  taxRateId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isSellable?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isPurchasable?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -3830,11 +3848,11 @@ export type ProductUncheckedUpdateWithoutPurchaseItemsInput = {
   metaTitle?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   metaDescription?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   tags?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  tenantId?: Prisma.StringFieldUpdateOperationsInput | string
-  categoryId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  brandId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  unitId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  supplierId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tenantId?: Prisma.IntFieldUpdateOperationsInput | number
+  categoryId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  brandId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  unitId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  supplierId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   inventory?: Prisma.InventoryUncheckedUpdateManyWithoutProductNestedInput
@@ -3847,7 +3865,6 @@ export type ProductUncheckedUpdateWithoutPurchaseItemsInput = {
 }
 
 export type ProductCreateWithoutTaxRateInput = {
-  id?: string
   sku: string
   barcode?: string | null
   name: string
@@ -3894,7 +3911,7 @@ export type ProductCreateWithoutTaxRateInput = {
 }
 
 export type ProductUncheckedCreateWithoutTaxRateInput = {
-  id?: string
+  id?: number
   sku: string
   barcode?: string | null
   name: string
@@ -3923,11 +3940,11 @@ export type ProductUncheckedCreateWithoutTaxRateInput = {
   metaTitle?: string | null
   metaDescription?: string | null
   tags?: string | null
-  tenantId: string
-  categoryId?: string | null
-  brandId?: string | null
-  unitId?: string | null
-  supplierId?: string | null
+  tenantId: number
+  categoryId?: number | null
+  brandId?: number | null
+  unitId?: number | null
+  supplierId?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   inventory?: Prisma.InventoryUncheckedCreateNestedManyWithoutProductInput
@@ -3967,7 +3984,7 @@ export type ProductUpdateManyWithWhereWithoutTaxRateInput = {
 }
 
 export type ProductCreateManyTenantInput = {
-  id?: string
+  id?: number
   sku: string
   barcode?: string | null
   name: string
@@ -3988,7 +4005,7 @@ export type ProductCreateManyTenantInput = {
   volume?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   volumeUnit?: string | null
   taxable?: boolean
-  taxRateId?: string | null
+  taxRateId?: number | null
   isActive?: boolean
   isSellable?: boolean
   isPurchasable?: boolean
@@ -3997,16 +4014,15 @@ export type ProductCreateManyTenantInput = {
   metaTitle?: string | null
   metaDescription?: string | null
   tags?: string | null
-  categoryId?: string | null
-  brandId?: string | null
-  unitId?: string | null
-  supplierId?: string | null
+  categoryId?: number | null
+  brandId?: number | null
+  unitId?: number | null
+  supplierId?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
 
 export type ProductUpdateWithoutTenantInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   sku?: Prisma.StringFieldUpdateOperationsInput | string
   barcode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
@@ -4053,7 +4069,7 @@ export type ProductUpdateWithoutTenantInput = {
 }
 
 export type ProductUncheckedUpdateWithoutTenantInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   sku?: Prisma.StringFieldUpdateOperationsInput | string
   barcode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
@@ -4074,7 +4090,7 @@ export type ProductUncheckedUpdateWithoutTenantInput = {
   volume?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   volumeUnit?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   taxable?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  taxRateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  taxRateId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isSellable?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isPurchasable?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -4083,10 +4099,10 @@ export type ProductUncheckedUpdateWithoutTenantInput = {
   metaTitle?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   metaDescription?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   tags?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  categoryId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  brandId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  unitId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  supplierId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  categoryId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  brandId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  unitId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  supplierId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   inventory?: Prisma.InventoryUncheckedUpdateManyWithoutProductNestedInput
@@ -4100,7 +4116,7 @@ export type ProductUncheckedUpdateWithoutTenantInput = {
 }
 
 export type ProductUncheckedUpdateManyWithoutTenantInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   sku?: Prisma.StringFieldUpdateOperationsInput | string
   barcode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
@@ -4121,7 +4137,7 @@ export type ProductUncheckedUpdateManyWithoutTenantInput = {
   volume?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   volumeUnit?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   taxable?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  taxRateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  taxRateId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isSellable?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isPurchasable?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -4130,16 +4146,16 @@ export type ProductUncheckedUpdateManyWithoutTenantInput = {
   metaTitle?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   metaDescription?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   tags?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  categoryId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  brandId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  unitId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  supplierId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  categoryId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  brandId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  unitId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  supplierId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type ProductCreateManyCategoryInput = {
-  id?: string
+  id?: number
   sku: string
   barcode?: string | null
   name: string
@@ -4160,7 +4176,7 @@ export type ProductCreateManyCategoryInput = {
   volume?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   volumeUnit?: string | null
   taxable?: boolean
-  taxRateId?: string | null
+  taxRateId?: number | null
   isActive?: boolean
   isSellable?: boolean
   isPurchasable?: boolean
@@ -4169,16 +4185,15 @@ export type ProductCreateManyCategoryInput = {
   metaTitle?: string | null
   metaDescription?: string | null
   tags?: string | null
-  tenantId: string
-  brandId?: string | null
-  unitId?: string | null
-  supplierId?: string | null
+  tenantId: number
+  brandId?: number | null
+  unitId?: number | null
+  supplierId?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
 
 export type ProductUpdateWithoutCategoryInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   sku?: Prisma.StringFieldUpdateOperationsInput | string
   barcode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
@@ -4225,7 +4240,7 @@ export type ProductUpdateWithoutCategoryInput = {
 }
 
 export type ProductUncheckedUpdateWithoutCategoryInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   sku?: Prisma.StringFieldUpdateOperationsInput | string
   barcode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
@@ -4246,7 +4261,7 @@ export type ProductUncheckedUpdateWithoutCategoryInput = {
   volume?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   volumeUnit?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   taxable?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  taxRateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  taxRateId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isSellable?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isPurchasable?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -4255,10 +4270,10 @@ export type ProductUncheckedUpdateWithoutCategoryInput = {
   metaTitle?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   metaDescription?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   tags?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  tenantId?: Prisma.StringFieldUpdateOperationsInput | string
-  brandId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  unitId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  supplierId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tenantId?: Prisma.IntFieldUpdateOperationsInput | number
+  brandId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  unitId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  supplierId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   inventory?: Prisma.InventoryUncheckedUpdateManyWithoutProductNestedInput
@@ -4272,7 +4287,7 @@ export type ProductUncheckedUpdateWithoutCategoryInput = {
 }
 
 export type ProductUncheckedUpdateManyWithoutCategoryInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   sku?: Prisma.StringFieldUpdateOperationsInput | string
   barcode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
@@ -4293,7 +4308,7 @@ export type ProductUncheckedUpdateManyWithoutCategoryInput = {
   volume?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   volumeUnit?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   taxable?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  taxRateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  taxRateId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isSellable?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isPurchasable?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -4302,16 +4317,16 @@ export type ProductUncheckedUpdateManyWithoutCategoryInput = {
   metaTitle?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   metaDescription?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   tags?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  tenantId?: Prisma.StringFieldUpdateOperationsInput | string
-  brandId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  unitId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  supplierId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tenantId?: Prisma.IntFieldUpdateOperationsInput | number
+  brandId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  unitId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  supplierId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type ProductCreateManyBrandInput = {
-  id?: string
+  id?: number
   sku: string
   barcode?: string | null
   name: string
@@ -4332,7 +4347,7 @@ export type ProductCreateManyBrandInput = {
   volume?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   volumeUnit?: string | null
   taxable?: boolean
-  taxRateId?: string | null
+  taxRateId?: number | null
   isActive?: boolean
   isSellable?: boolean
   isPurchasable?: boolean
@@ -4341,16 +4356,15 @@ export type ProductCreateManyBrandInput = {
   metaTitle?: string | null
   metaDescription?: string | null
   tags?: string | null
-  tenantId: string
-  categoryId?: string | null
-  unitId?: string | null
-  supplierId?: string | null
+  tenantId: number
+  categoryId?: number | null
+  unitId?: number | null
+  supplierId?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
 
 export type ProductUpdateWithoutBrandInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   sku?: Prisma.StringFieldUpdateOperationsInput | string
   barcode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
@@ -4397,7 +4411,7 @@ export type ProductUpdateWithoutBrandInput = {
 }
 
 export type ProductUncheckedUpdateWithoutBrandInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   sku?: Prisma.StringFieldUpdateOperationsInput | string
   barcode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
@@ -4418,7 +4432,7 @@ export type ProductUncheckedUpdateWithoutBrandInput = {
   volume?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   volumeUnit?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   taxable?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  taxRateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  taxRateId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isSellable?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isPurchasable?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -4427,10 +4441,10 @@ export type ProductUncheckedUpdateWithoutBrandInput = {
   metaTitle?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   metaDescription?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   tags?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  tenantId?: Prisma.StringFieldUpdateOperationsInput | string
-  categoryId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  unitId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  supplierId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tenantId?: Prisma.IntFieldUpdateOperationsInput | number
+  categoryId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  unitId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  supplierId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   inventory?: Prisma.InventoryUncheckedUpdateManyWithoutProductNestedInput
@@ -4444,7 +4458,7 @@ export type ProductUncheckedUpdateWithoutBrandInput = {
 }
 
 export type ProductUncheckedUpdateManyWithoutBrandInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   sku?: Prisma.StringFieldUpdateOperationsInput | string
   barcode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
@@ -4465,7 +4479,7 @@ export type ProductUncheckedUpdateManyWithoutBrandInput = {
   volume?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   volumeUnit?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   taxable?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  taxRateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  taxRateId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isSellable?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isPurchasable?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -4474,16 +4488,16 @@ export type ProductUncheckedUpdateManyWithoutBrandInput = {
   metaTitle?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   metaDescription?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   tags?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  tenantId?: Prisma.StringFieldUpdateOperationsInput | string
-  categoryId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  unitId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  supplierId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tenantId?: Prisma.IntFieldUpdateOperationsInput | number
+  categoryId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  unitId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  supplierId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type ProductCreateManyUnitInput = {
-  id?: string
+  id?: number
   sku: string
   barcode?: string | null
   name: string
@@ -4504,7 +4518,7 @@ export type ProductCreateManyUnitInput = {
   volume?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   volumeUnit?: string | null
   taxable?: boolean
-  taxRateId?: string | null
+  taxRateId?: number | null
   isActive?: boolean
   isSellable?: boolean
   isPurchasable?: boolean
@@ -4513,16 +4527,15 @@ export type ProductCreateManyUnitInput = {
   metaTitle?: string | null
   metaDescription?: string | null
   tags?: string | null
-  tenantId: string
-  categoryId?: string | null
-  brandId?: string | null
-  supplierId?: string | null
+  tenantId: number
+  categoryId?: number | null
+  brandId?: number | null
+  supplierId?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
 
 export type ProductUpdateWithoutUnitInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   sku?: Prisma.StringFieldUpdateOperationsInput | string
   barcode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
@@ -4569,7 +4582,7 @@ export type ProductUpdateWithoutUnitInput = {
 }
 
 export type ProductUncheckedUpdateWithoutUnitInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   sku?: Prisma.StringFieldUpdateOperationsInput | string
   barcode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
@@ -4590,7 +4603,7 @@ export type ProductUncheckedUpdateWithoutUnitInput = {
   volume?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   volumeUnit?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   taxable?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  taxRateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  taxRateId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isSellable?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isPurchasable?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -4599,10 +4612,10 @@ export type ProductUncheckedUpdateWithoutUnitInput = {
   metaTitle?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   metaDescription?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   tags?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  tenantId?: Prisma.StringFieldUpdateOperationsInput | string
-  categoryId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  brandId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  supplierId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tenantId?: Prisma.IntFieldUpdateOperationsInput | number
+  categoryId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  brandId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  supplierId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   inventory?: Prisma.InventoryUncheckedUpdateManyWithoutProductNestedInput
@@ -4616,7 +4629,7 @@ export type ProductUncheckedUpdateWithoutUnitInput = {
 }
 
 export type ProductUncheckedUpdateManyWithoutUnitInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   sku?: Prisma.StringFieldUpdateOperationsInput | string
   barcode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
@@ -4637,7 +4650,7 @@ export type ProductUncheckedUpdateManyWithoutUnitInput = {
   volume?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   volumeUnit?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   taxable?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  taxRateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  taxRateId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isSellable?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isPurchasable?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -4646,16 +4659,16 @@ export type ProductUncheckedUpdateManyWithoutUnitInput = {
   metaTitle?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   metaDescription?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   tags?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  tenantId?: Prisma.StringFieldUpdateOperationsInput | string
-  categoryId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  brandId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  supplierId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tenantId?: Prisma.IntFieldUpdateOperationsInput | number
+  categoryId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  brandId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  supplierId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type ProductCreateManySupplierInput = {
-  id?: string
+  id?: number
   sku: string
   barcode?: string | null
   name: string
@@ -4676,7 +4689,7 @@ export type ProductCreateManySupplierInput = {
   volume?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   volumeUnit?: string | null
   taxable?: boolean
-  taxRateId?: string | null
+  taxRateId?: number | null
   isActive?: boolean
   isSellable?: boolean
   isPurchasable?: boolean
@@ -4685,16 +4698,15 @@ export type ProductCreateManySupplierInput = {
   metaTitle?: string | null
   metaDescription?: string | null
   tags?: string | null
-  tenantId: string
-  categoryId?: string | null
-  brandId?: string | null
-  unitId?: string | null
+  tenantId: number
+  categoryId?: number | null
+  brandId?: number | null
+  unitId?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
 
 export type ProductUpdateWithoutSupplierInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   sku?: Prisma.StringFieldUpdateOperationsInput | string
   barcode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
@@ -4741,7 +4753,7 @@ export type ProductUpdateWithoutSupplierInput = {
 }
 
 export type ProductUncheckedUpdateWithoutSupplierInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   sku?: Prisma.StringFieldUpdateOperationsInput | string
   barcode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
@@ -4762,7 +4774,7 @@ export type ProductUncheckedUpdateWithoutSupplierInput = {
   volume?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   volumeUnit?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   taxable?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  taxRateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  taxRateId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isSellable?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isPurchasable?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -4771,10 +4783,10 @@ export type ProductUncheckedUpdateWithoutSupplierInput = {
   metaTitle?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   metaDescription?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   tags?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  tenantId?: Prisma.StringFieldUpdateOperationsInput | string
-  categoryId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  brandId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  unitId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tenantId?: Prisma.IntFieldUpdateOperationsInput | number
+  categoryId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  brandId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  unitId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   inventory?: Prisma.InventoryUncheckedUpdateManyWithoutProductNestedInput
@@ -4788,7 +4800,7 @@ export type ProductUncheckedUpdateWithoutSupplierInput = {
 }
 
 export type ProductUncheckedUpdateManyWithoutSupplierInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   sku?: Prisma.StringFieldUpdateOperationsInput | string
   barcode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
@@ -4809,7 +4821,7 @@ export type ProductUncheckedUpdateManyWithoutSupplierInput = {
   volume?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   volumeUnit?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   taxable?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  taxRateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  taxRateId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isSellable?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isPurchasable?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -4818,16 +4830,16 @@ export type ProductUncheckedUpdateManyWithoutSupplierInput = {
   metaTitle?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   metaDescription?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   tags?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  tenantId?: Prisma.StringFieldUpdateOperationsInput | string
-  categoryId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  brandId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  unitId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tenantId?: Prisma.IntFieldUpdateOperationsInput | number
+  categoryId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  brandId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  unitId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type ProductCreateManyTaxRateInput = {
-  id?: string
+  id?: number
   sku: string
   barcode?: string | null
   name: string
@@ -4856,17 +4868,16 @@ export type ProductCreateManyTaxRateInput = {
   metaTitle?: string | null
   metaDescription?: string | null
   tags?: string | null
-  tenantId: string
-  categoryId?: string | null
-  brandId?: string | null
-  unitId?: string | null
-  supplierId?: string | null
+  tenantId: number
+  categoryId?: number | null
+  brandId?: number | null
+  unitId?: number | null
+  supplierId?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
 
 export type ProductUpdateWithoutTaxRateInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   sku?: Prisma.StringFieldUpdateOperationsInput | string
   barcode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
@@ -4913,7 +4924,7 @@ export type ProductUpdateWithoutTaxRateInput = {
 }
 
 export type ProductUncheckedUpdateWithoutTaxRateInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   sku?: Prisma.StringFieldUpdateOperationsInput | string
   barcode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
@@ -4942,11 +4953,11 @@ export type ProductUncheckedUpdateWithoutTaxRateInput = {
   metaTitle?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   metaDescription?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   tags?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  tenantId?: Prisma.StringFieldUpdateOperationsInput | string
-  categoryId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  brandId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  unitId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  supplierId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tenantId?: Prisma.IntFieldUpdateOperationsInput | number
+  categoryId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  brandId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  unitId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  supplierId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   inventory?: Prisma.InventoryUncheckedUpdateManyWithoutProductNestedInput
@@ -4960,7 +4971,7 @@ export type ProductUncheckedUpdateWithoutTaxRateInput = {
 }
 
 export type ProductUncheckedUpdateManyWithoutTaxRateInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   sku?: Prisma.StringFieldUpdateOperationsInput | string
   barcode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
@@ -4989,11 +5000,11 @@ export type ProductUncheckedUpdateManyWithoutTaxRateInput = {
   metaTitle?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   metaDescription?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   tags?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  tenantId?: Prisma.StringFieldUpdateOperationsInput | string
-  categoryId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  brandId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  unitId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  supplierId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tenantId?: Prisma.IntFieldUpdateOperationsInput | number
+  categoryId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  brandId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  unitId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  supplierId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -5333,7 +5344,7 @@ export type $ProductPayload<ExtArgs extends runtime.Types.Extensions.InternalArg
     bomComponents: Prisma.$BOMItemPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
-    id: string
+    id: number
     sku: string
     barcode: string | null
     name: string
@@ -5354,7 +5365,7 @@ export type $ProductPayload<ExtArgs extends runtime.Types.Extensions.InternalArg
     volume: runtime.Decimal | null
     volumeUnit: string | null
     taxable: boolean
-    taxRateId: string | null
+    taxRateId: number | null
     isActive: boolean
     isSellable: boolean
     isPurchasable: boolean
@@ -5363,11 +5374,11 @@ export type $ProductPayload<ExtArgs extends runtime.Types.Extensions.InternalArg
     metaTitle: string | null
     metaDescription: string | null
     tags: string | null
-    tenantId: string
-    categoryId: string | null
-    brandId: string | null
-    unitId: string | null
-    supplierId: string | null
+    tenantId: number
+    categoryId: number | null
+    brandId: number | null
+    unitId: number | null
+    supplierId: number | null
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["product"]>
@@ -5807,7 +5818,7 @@ export interface Prisma__ProductClient<T, Null = never, ExtArgs extends runtime.
  * Fields of the Product model
  */
 export interface ProductFieldRefs {
-  readonly id: Prisma.FieldRef<"Product", 'String'>
+  readonly id: Prisma.FieldRef<"Product", 'Int'>
   readonly sku: Prisma.FieldRef<"Product", 'String'>
   readonly barcode: Prisma.FieldRef<"Product", 'String'>
   readonly name: Prisma.FieldRef<"Product", 'String'>
@@ -5828,7 +5839,7 @@ export interface ProductFieldRefs {
   readonly volume: Prisma.FieldRef<"Product", 'Decimal'>
   readonly volumeUnit: Prisma.FieldRef<"Product", 'String'>
   readonly taxable: Prisma.FieldRef<"Product", 'Boolean'>
-  readonly taxRateId: Prisma.FieldRef<"Product", 'String'>
+  readonly taxRateId: Prisma.FieldRef<"Product", 'Int'>
   readonly isActive: Prisma.FieldRef<"Product", 'Boolean'>
   readonly isSellable: Prisma.FieldRef<"Product", 'Boolean'>
   readonly isPurchasable: Prisma.FieldRef<"Product", 'Boolean'>
@@ -5837,11 +5848,11 @@ export interface ProductFieldRefs {
   readonly metaTitle: Prisma.FieldRef<"Product", 'String'>
   readonly metaDescription: Prisma.FieldRef<"Product", 'String'>
   readonly tags: Prisma.FieldRef<"Product", 'String'>
-  readonly tenantId: Prisma.FieldRef<"Product", 'String'>
-  readonly categoryId: Prisma.FieldRef<"Product", 'String'>
-  readonly brandId: Prisma.FieldRef<"Product", 'String'>
-  readonly unitId: Prisma.FieldRef<"Product", 'String'>
-  readonly supplierId: Prisma.FieldRef<"Product", 'String'>
+  readonly tenantId: Prisma.FieldRef<"Product", 'Int'>
+  readonly categoryId: Prisma.FieldRef<"Product", 'Int'>
+  readonly brandId: Prisma.FieldRef<"Product", 'Int'>
+  readonly unitId: Prisma.FieldRef<"Product", 'Int'>
+  readonly supplierId: Prisma.FieldRef<"Product", 'Int'>
   readonly createdAt: Prisma.FieldRef<"Product", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"Product", 'DateTime'>
 }

@@ -27,30 +27,36 @@ export type AggregateJournalEntry = {
 }
 
 export type JournalEntryAvgAggregateOutputType = {
+  id: number | null
   amount: runtime.Decimal | null
+  accountId: number | null
+  transactionId: number | null
 }
 
 export type JournalEntrySumAggregateOutputType = {
+  id: number | null
   amount: runtime.Decimal | null
+  accountId: number | null
+  transactionId: number | null
 }
 
 export type JournalEntryMinAggregateOutputType = {
-  id: string | null
+  id: number | null
   amount: runtime.Decimal | null
   direction: $Enums.EntryDirection | null
   description: string | null
-  accountId: string | null
-  transactionId: string | null
+  accountId: number | null
+  transactionId: number | null
   createdAt: Date | null
 }
 
 export type JournalEntryMaxAggregateOutputType = {
-  id: string | null
+  id: number | null
   amount: runtime.Decimal | null
   direction: $Enums.EntryDirection | null
   description: string | null
-  accountId: string | null
-  transactionId: string | null
+  accountId: number | null
+  transactionId: number | null
   createdAt: Date | null
 }
 
@@ -67,11 +73,17 @@ export type JournalEntryCountAggregateOutputType = {
 
 
 export type JournalEntryAvgAggregateInputType = {
+  id?: true
   amount?: true
+  accountId?: true
+  transactionId?: true
 }
 
 export type JournalEntrySumAggregateInputType = {
+  id?: true
   amount?: true
+  accountId?: true
+  transactionId?: true
 }
 
 export type JournalEntryMinAggregateInputType = {
@@ -192,12 +204,12 @@ export type JournalEntryGroupByArgs<ExtArgs extends runtime.Types.Extensions.Int
 }
 
 export type JournalEntryGroupByOutputType = {
-  id: string
+  id: number
   amount: runtime.Decimal
   direction: $Enums.EntryDirection
   description: string | null
-  accountId: string
-  transactionId: string
+  accountId: number
+  transactionId: number
   createdAt: Date
   _count: JournalEntryCountAggregateOutputType | null
   _avg: JournalEntryAvgAggregateOutputType | null
@@ -225,12 +237,12 @@ export type JournalEntryWhereInput = {
   AND?: Prisma.JournalEntryWhereInput | Prisma.JournalEntryWhereInput[]
   OR?: Prisma.JournalEntryWhereInput[]
   NOT?: Prisma.JournalEntryWhereInput | Prisma.JournalEntryWhereInput[]
-  id?: Prisma.StringFilter<"JournalEntry"> | string
+  id?: Prisma.IntFilter<"JournalEntry"> | number
   amount?: Prisma.DecimalFilter<"JournalEntry"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   direction?: Prisma.EnumEntryDirectionFilter<"JournalEntry"> | $Enums.EntryDirection
   description?: Prisma.StringNullableFilter<"JournalEntry"> | string | null
-  accountId?: Prisma.StringFilter<"JournalEntry"> | string
-  transactionId?: Prisma.StringFilter<"JournalEntry"> | string
+  accountId?: Prisma.IntFilter<"JournalEntry"> | number
+  transactionId?: Prisma.IntFilter<"JournalEntry"> | number
   createdAt?: Prisma.DateTimeFilter<"JournalEntry"> | Date | string
   account?: Prisma.XOR<Prisma.GLAccountScalarRelationFilter, Prisma.GLAccountWhereInput>
   transaction?: Prisma.XOR<Prisma.TransactionScalarRelationFilter, Prisma.TransactionWhereInput>
@@ -249,15 +261,15 @@ export type JournalEntryOrderByWithRelationInput = {
 }
 
 export type JournalEntryWhereUniqueInput = Prisma.AtLeast<{
-  id?: string
+  id?: number
   AND?: Prisma.JournalEntryWhereInput | Prisma.JournalEntryWhereInput[]
   OR?: Prisma.JournalEntryWhereInput[]
   NOT?: Prisma.JournalEntryWhereInput | Prisma.JournalEntryWhereInput[]
   amount?: Prisma.DecimalFilter<"JournalEntry"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   direction?: Prisma.EnumEntryDirectionFilter<"JournalEntry"> | $Enums.EntryDirection
   description?: Prisma.StringNullableFilter<"JournalEntry"> | string | null
-  accountId?: Prisma.StringFilter<"JournalEntry"> | string
-  transactionId?: Prisma.StringFilter<"JournalEntry"> | string
+  accountId?: Prisma.IntFilter<"JournalEntry"> | number
+  transactionId?: Prisma.IntFilter<"JournalEntry"> | number
   createdAt?: Prisma.DateTimeFilter<"JournalEntry"> | Date | string
   account?: Prisma.XOR<Prisma.GLAccountScalarRelationFilter, Prisma.GLAccountWhereInput>
   transaction?: Prisma.XOR<Prisma.TransactionScalarRelationFilter, Prisma.TransactionWhereInput>
@@ -282,17 +294,16 @@ export type JournalEntryScalarWhereWithAggregatesInput = {
   AND?: Prisma.JournalEntryScalarWhereWithAggregatesInput | Prisma.JournalEntryScalarWhereWithAggregatesInput[]
   OR?: Prisma.JournalEntryScalarWhereWithAggregatesInput[]
   NOT?: Prisma.JournalEntryScalarWhereWithAggregatesInput | Prisma.JournalEntryScalarWhereWithAggregatesInput[]
-  id?: Prisma.StringWithAggregatesFilter<"JournalEntry"> | string
+  id?: Prisma.IntWithAggregatesFilter<"JournalEntry"> | number
   amount?: Prisma.DecimalWithAggregatesFilter<"JournalEntry"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   direction?: Prisma.EnumEntryDirectionWithAggregatesFilter<"JournalEntry"> | $Enums.EntryDirection
   description?: Prisma.StringNullableWithAggregatesFilter<"JournalEntry"> | string | null
-  accountId?: Prisma.StringWithAggregatesFilter<"JournalEntry"> | string
-  transactionId?: Prisma.StringWithAggregatesFilter<"JournalEntry"> | string
+  accountId?: Prisma.IntWithAggregatesFilter<"JournalEntry"> | number
+  transactionId?: Prisma.IntWithAggregatesFilter<"JournalEntry"> | number
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"JournalEntry"> | Date | string
 }
 
 export type JournalEntryCreateInput = {
-  id?: string
   amount: runtime.Decimal | runtime.DecimalJsLike | number | string
   direction: $Enums.EntryDirection
   description?: string | null
@@ -302,17 +313,16 @@ export type JournalEntryCreateInput = {
 }
 
 export type JournalEntryUncheckedCreateInput = {
-  id?: string
+  id?: number
   amount: runtime.Decimal | runtime.DecimalJsLike | number | string
   direction: $Enums.EntryDirection
   description?: string | null
-  accountId: string
-  transactionId: string
+  accountId: number
+  transactionId: number
   createdAt?: Date | string
 }
 
 export type JournalEntryUpdateInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   direction?: Prisma.EnumEntryDirectionFieldUpdateOperationsInput | $Enums.EntryDirection
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -322,27 +332,26 @@ export type JournalEntryUpdateInput = {
 }
 
 export type JournalEntryUncheckedUpdateInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   direction?: Prisma.EnumEntryDirectionFieldUpdateOperationsInput | $Enums.EntryDirection
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  accountId?: Prisma.StringFieldUpdateOperationsInput | string
-  transactionId?: Prisma.StringFieldUpdateOperationsInput | string
+  accountId?: Prisma.IntFieldUpdateOperationsInput | number
+  transactionId?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type JournalEntryCreateManyInput = {
-  id?: string
+  id?: number
   amount: runtime.Decimal | runtime.DecimalJsLike | number | string
   direction: $Enums.EntryDirection
   description?: string | null
-  accountId: string
-  transactionId: string
+  accountId: number
+  transactionId: number
   createdAt?: Date | string
 }
 
 export type JournalEntryUpdateManyMutationInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   direction?: Prisma.EnumEntryDirectionFieldUpdateOperationsInput | $Enums.EntryDirection
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -350,12 +359,12 @@ export type JournalEntryUpdateManyMutationInput = {
 }
 
 export type JournalEntryUncheckedUpdateManyInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   direction?: Prisma.EnumEntryDirectionFieldUpdateOperationsInput | $Enums.EntryDirection
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  accountId?: Prisma.StringFieldUpdateOperationsInput | string
-  transactionId?: Prisma.StringFieldUpdateOperationsInput | string
+  accountId?: Prisma.IntFieldUpdateOperationsInput | number
+  transactionId?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -380,7 +389,10 @@ export type JournalEntryCountOrderByAggregateInput = {
 }
 
 export type JournalEntryAvgOrderByAggregateInput = {
+  id?: Prisma.SortOrder
   amount?: Prisma.SortOrder
+  accountId?: Prisma.SortOrder
+  transactionId?: Prisma.SortOrder
 }
 
 export type JournalEntryMaxOrderByAggregateInput = {
@@ -404,7 +416,10 @@ export type JournalEntryMinOrderByAggregateInput = {
 }
 
 export type JournalEntrySumOrderByAggregateInput = {
+  id?: Prisma.SortOrder
   amount?: Prisma.SortOrder
+  accountId?: Prisma.SortOrder
+  transactionId?: Prisma.SortOrder
 }
 
 export type JournalEntryCreateNestedManyWithoutAccountInput = {
@@ -492,7 +507,6 @@ export type JournalEntryUncheckedUpdateManyWithoutTransactionNestedInput = {
 }
 
 export type JournalEntryCreateWithoutAccountInput = {
-  id?: string
   amount: runtime.Decimal | runtime.DecimalJsLike | number | string
   direction: $Enums.EntryDirection
   description?: string | null
@@ -501,11 +515,11 @@ export type JournalEntryCreateWithoutAccountInput = {
 }
 
 export type JournalEntryUncheckedCreateWithoutAccountInput = {
-  id?: string
+  id?: number
   amount: runtime.Decimal | runtime.DecimalJsLike | number | string
   direction: $Enums.EntryDirection
   description?: string | null
-  transactionId: string
+  transactionId: number
   createdAt?: Date | string
 }
 
@@ -539,17 +553,16 @@ export type JournalEntryScalarWhereInput = {
   AND?: Prisma.JournalEntryScalarWhereInput | Prisma.JournalEntryScalarWhereInput[]
   OR?: Prisma.JournalEntryScalarWhereInput[]
   NOT?: Prisma.JournalEntryScalarWhereInput | Prisma.JournalEntryScalarWhereInput[]
-  id?: Prisma.StringFilter<"JournalEntry"> | string
+  id?: Prisma.IntFilter<"JournalEntry"> | number
   amount?: Prisma.DecimalFilter<"JournalEntry"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   direction?: Prisma.EnumEntryDirectionFilter<"JournalEntry"> | $Enums.EntryDirection
   description?: Prisma.StringNullableFilter<"JournalEntry"> | string | null
-  accountId?: Prisma.StringFilter<"JournalEntry"> | string
-  transactionId?: Prisma.StringFilter<"JournalEntry"> | string
+  accountId?: Prisma.IntFilter<"JournalEntry"> | number
+  transactionId?: Prisma.IntFilter<"JournalEntry"> | number
   createdAt?: Prisma.DateTimeFilter<"JournalEntry"> | Date | string
 }
 
 export type JournalEntryCreateWithoutTransactionInput = {
-  id?: string
   amount: runtime.Decimal | runtime.DecimalJsLike | number | string
   direction: $Enums.EntryDirection
   description?: string | null
@@ -558,11 +571,11 @@ export type JournalEntryCreateWithoutTransactionInput = {
 }
 
 export type JournalEntryUncheckedCreateWithoutTransactionInput = {
-  id?: string
+  id?: number
   amount: runtime.Decimal | runtime.DecimalJsLike | number | string
   direction: $Enums.EntryDirection
   description?: string | null
-  accountId: string
+  accountId: number
   createdAt?: Date | string
 }
 
@@ -593,16 +606,15 @@ export type JournalEntryUpdateManyWithWhereWithoutTransactionInput = {
 }
 
 export type JournalEntryCreateManyAccountInput = {
-  id?: string
+  id?: number
   amount: runtime.Decimal | runtime.DecimalJsLike | number | string
   direction: $Enums.EntryDirection
   description?: string | null
-  transactionId: string
+  transactionId: number
   createdAt?: Date | string
 }
 
 export type JournalEntryUpdateWithoutAccountInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   direction?: Prisma.EnumEntryDirectionFieldUpdateOperationsInput | $Enums.EntryDirection
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -611,34 +623,33 @@ export type JournalEntryUpdateWithoutAccountInput = {
 }
 
 export type JournalEntryUncheckedUpdateWithoutAccountInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   direction?: Prisma.EnumEntryDirectionFieldUpdateOperationsInput | $Enums.EntryDirection
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  transactionId?: Prisma.StringFieldUpdateOperationsInput | string
+  transactionId?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type JournalEntryUncheckedUpdateManyWithoutAccountInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   direction?: Prisma.EnumEntryDirectionFieldUpdateOperationsInput | $Enums.EntryDirection
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  transactionId?: Prisma.StringFieldUpdateOperationsInput | string
+  transactionId?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type JournalEntryCreateManyTransactionInput = {
-  id?: string
+  id?: number
   amount: runtime.Decimal | runtime.DecimalJsLike | number | string
   direction: $Enums.EntryDirection
   description?: string | null
-  accountId: string
+  accountId: number
   createdAt?: Date | string
 }
 
 export type JournalEntryUpdateWithoutTransactionInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   direction?: Prisma.EnumEntryDirectionFieldUpdateOperationsInput | $Enums.EntryDirection
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -647,20 +658,20 @@ export type JournalEntryUpdateWithoutTransactionInput = {
 }
 
 export type JournalEntryUncheckedUpdateWithoutTransactionInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   direction?: Prisma.EnumEntryDirectionFieldUpdateOperationsInput | $Enums.EntryDirection
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  accountId?: Prisma.StringFieldUpdateOperationsInput | string
+  accountId?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type JournalEntryUncheckedUpdateManyWithoutTransactionInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   direction?: Prisma.EnumEntryDirectionFieldUpdateOperationsInput | $Enums.EntryDirection
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  accountId?: Prisma.StringFieldUpdateOperationsInput | string
+  accountId?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -733,12 +744,12 @@ export type $JournalEntryPayload<ExtArgs extends runtime.Types.Extensions.Intern
     transaction: Prisma.$TransactionPayload<ExtArgs>
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
-    id: string
+    id: number
     amount: runtime.Decimal
     direction: $Enums.EntryDirection
     description: string | null
-    accountId: string
-    transactionId: string
+    accountId: number
+    transactionId: number
     createdAt: Date
   }, ExtArgs["result"]["journalEntry"]>
   composites: {}
@@ -1165,12 +1176,12 @@ export interface Prisma__JournalEntryClient<T, Null = never, ExtArgs extends run
  * Fields of the JournalEntry model
  */
 export interface JournalEntryFieldRefs {
-  readonly id: Prisma.FieldRef<"JournalEntry", 'String'>
+  readonly id: Prisma.FieldRef<"JournalEntry", 'Int'>
   readonly amount: Prisma.FieldRef<"JournalEntry", 'Decimal'>
   readonly direction: Prisma.FieldRef<"JournalEntry", 'EntryDirection'>
   readonly description: Prisma.FieldRef<"JournalEntry", 'String'>
-  readonly accountId: Prisma.FieldRef<"JournalEntry", 'String'>
-  readonly transactionId: Prisma.FieldRef<"JournalEntry", 'String'>
+  readonly accountId: Prisma.FieldRef<"JournalEntry", 'Int'>
+  readonly transactionId: Prisma.FieldRef<"JournalEntry", 'Int'>
   readonly createdAt: Prisma.FieldRef<"JournalEntry", 'DateTime'>
 }
     

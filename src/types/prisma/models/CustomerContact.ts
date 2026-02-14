@@ -20,12 +20,24 @@ export type CustomerContactModel = runtime.Types.Result.DefaultSelection<Prisma.
 
 export type AggregateCustomerContact = {
   _count: CustomerContactCountAggregateOutputType | null
+  _avg: CustomerContactAvgAggregateOutputType | null
+  _sum: CustomerContactSumAggregateOutputType | null
   _min: CustomerContactMinAggregateOutputType | null
   _max: CustomerContactMaxAggregateOutputType | null
 }
 
+export type CustomerContactAvgAggregateOutputType = {
+  id: number | null
+  customerId: number | null
+}
+
+export type CustomerContactSumAggregateOutputType = {
+  id: number | null
+  customerId: number | null
+}
+
 export type CustomerContactMinAggregateOutputType = {
-  id: string | null
+  id: number | null
   firstName: string | null
   lastName: string | null
   title: string | null
@@ -33,13 +45,13 @@ export type CustomerContactMinAggregateOutputType = {
   phone: string | null
   mobile: string | null
   isPrimary: boolean | null
-  customerId: string | null
+  customerId: number | null
   createdAt: Date | null
   updatedAt: Date | null
 }
 
 export type CustomerContactMaxAggregateOutputType = {
-  id: string | null
+  id: number | null
   firstName: string | null
   lastName: string | null
   title: string | null
@@ -47,7 +59,7 @@ export type CustomerContactMaxAggregateOutputType = {
   phone: string | null
   mobile: string | null
   isPrimary: boolean | null
-  customerId: string | null
+  customerId: number | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -67,6 +79,16 @@ export type CustomerContactCountAggregateOutputType = {
   _all: number
 }
 
+
+export type CustomerContactAvgAggregateInputType = {
+  id?: true
+  customerId?: true
+}
+
+export type CustomerContactSumAggregateInputType = {
+  id?: true
+  customerId?: true
+}
 
 export type CustomerContactMinAggregateInputType = {
   id?: true
@@ -149,6 +171,18 @@ export type CustomerContactAggregateArgs<ExtArgs extends runtime.Types.Extension
   /**
    * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
    * 
+   * Select which fields to average
+  **/
+  _avg?: CustomerContactAvgAggregateInputType
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+   * 
+   * Select which fields to sum
+  **/
+  _sum?: CustomerContactSumAggregateInputType
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+   * 
    * Select which fields to find the minimum value
   **/
   _min?: CustomerContactMinAggregateInputType
@@ -179,12 +213,14 @@ export type CustomerContactGroupByArgs<ExtArgs extends runtime.Types.Extensions.
   take?: number
   skip?: number
   _count?: CustomerContactCountAggregateInputType | true
+  _avg?: CustomerContactAvgAggregateInputType
+  _sum?: CustomerContactSumAggregateInputType
   _min?: CustomerContactMinAggregateInputType
   _max?: CustomerContactMaxAggregateInputType
 }
 
 export type CustomerContactGroupByOutputType = {
-  id: string
+  id: number
   firstName: string
   lastName: string
   title: string | null
@@ -192,10 +228,12 @@ export type CustomerContactGroupByOutputType = {
   phone: string | null
   mobile: string | null
   isPrimary: boolean
-  customerId: string
+  customerId: number
   createdAt: Date
   updatedAt: Date
   _count: CustomerContactCountAggregateOutputType | null
+  _avg: CustomerContactAvgAggregateOutputType | null
+  _sum: CustomerContactSumAggregateOutputType | null
   _min: CustomerContactMinAggregateOutputType | null
   _max: CustomerContactMaxAggregateOutputType | null
 }
@@ -219,7 +257,7 @@ export type CustomerContactWhereInput = {
   AND?: Prisma.CustomerContactWhereInput | Prisma.CustomerContactWhereInput[]
   OR?: Prisma.CustomerContactWhereInput[]
   NOT?: Prisma.CustomerContactWhereInput | Prisma.CustomerContactWhereInput[]
-  id?: Prisma.StringFilter<"CustomerContact"> | string
+  id?: Prisma.IntFilter<"CustomerContact"> | number
   firstName?: Prisma.StringFilter<"CustomerContact"> | string
   lastName?: Prisma.StringFilter<"CustomerContact"> | string
   title?: Prisma.StringNullableFilter<"CustomerContact"> | string | null
@@ -227,7 +265,7 @@ export type CustomerContactWhereInput = {
   phone?: Prisma.StringNullableFilter<"CustomerContact"> | string | null
   mobile?: Prisma.StringNullableFilter<"CustomerContact"> | string | null
   isPrimary?: Prisma.BoolFilter<"CustomerContact"> | boolean
-  customerId?: Prisma.StringFilter<"CustomerContact"> | string
+  customerId?: Prisma.IntFilter<"CustomerContact"> | number
   createdAt?: Prisma.DateTimeFilter<"CustomerContact"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"CustomerContact"> | Date | string
   customer?: Prisma.XOR<Prisma.CustomerScalarRelationFilter, Prisma.CustomerWhereInput>
@@ -249,7 +287,7 @@ export type CustomerContactOrderByWithRelationInput = {
 }
 
 export type CustomerContactWhereUniqueInput = Prisma.AtLeast<{
-  id?: string
+  id?: number
   AND?: Prisma.CustomerContactWhereInput | Prisma.CustomerContactWhereInput[]
   OR?: Prisma.CustomerContactWhereInput[]
   NOT?: Prisma.CustomerContactWhereInput | Prisma.CustomerContactWhereInput[]
@@ -260,7 +298,7 @@ export type CustomerContactWhereUniqueInput = Prisma.AtLeast<{
   phone?: Prisma.StringNullableFilter<"CustomerContact"> | string | null
   mobile?: Prisma.StringNullableFilter<"CustomerContact"> | string | null
   isPrimary?: Prisma.BoolFilter<"CustomerContact"> | boolean
-  customerId?: Prisma.StringFilter<"CustomerContact"> | string
+  customerId?: Prisma.IntFilter<"CustomerContact"> | number
   createdAt?: Prisma.DateTimeFilter<"CustomerContact"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"CustomerContact"> | Date | string
   customer?: Prisma.XOR<Prisma.CustomerScalarRelationFilter, Prisma.CustomerWhereInput>
@@ -279,15 +317,17 @@ export type CustomerContactOrderByWithAggregationInput = {
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.CustomerContactCountOrderByAggregateInput
+  _avg?: Prisma.CustomerContactAvgOrderByAggregateInput
   _max?: Prisma.CustomerContactMaxOrderByAggregateInput
   _min?: Prisma.CustomerContactMinOrderByAggregateInput
+  _sum?: Prisma.CustomerContactSumOrderByAggregateInput
 }
 
 export type CustomerContactScalarWhereWithAggregatesInput = {
   AND?: Prisma.CustomerContactScalarWhereWithAggregatesInput | Prisma.CustomerContactScalarWhereWithAggregatesInput[]
   OR?: Prisma.CustomerContactScalarWhereWithAggregatesInput[]
   NOT?: Prisma.CustomerContactScalarWhereWithAggregatesInput | Prisma.CustomerContactScalarWhereWithAggregatesInput[]
-  id?: Prisma.StringWithAggregatesFilter<"CustomerContact"> | string
+  id?: Prisma.IntWithAggregatesFilter<"CustomerContact"> | number
   firstName?: Prisma.StringWithAggregatesFilter<"CustomerContact"> | string
   lastName?: Prisma.StringWithAggregatesFilter<"CustomerContact"> | string
   title?: Prisma.StringNullableWithAggregatesFilter<"CustomerContact"> | string | null
@@ -295,13 +335,12 @@ export type CustomerContactScalarWhereWithAggregatesInput = {
   phone?: Prisma.StringNullableWithAggregatesFilter<"CustomerContact"> | string | null
   mobile?: Prisma.StringNullableWithAggregatesFilter<"CustomerContact"> | string | null
   isPrimary?: Prisma.BoolWithAggregatesFilter<"CustomerContact"> | boolean
-  customerId?: Prisma.StringWithAggregatesFilter<"CustomerContact"> | string
+  customerId?: Prisma.IntWithAggregatesFilter<"CustomerContact"> | number
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"CustomerContact"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"CustomerContact"> | Date | string
 }
 
 export type CustomerContactCreateInput = {
-  id?: string
   firstName: string
   lastName: string
   title?: string | null
@@ -315,7 +354,7 @@ export type CustomerContactCreateInput = {
 }
 
 export type CustomerContactUncheckedCreateInput = {
-  id?: string
+  id?: number
   firstName: string
   lastName: string
   title?: string | null
@@ -323,13 +362,12 @@ export type CustomerContactUncheckedCreateInput = {
   phone?: string | null
   mobile?: string | null
   isPrimary?: boolean
-  customerId: string
+  customerId: number
   createdAt?: Date | string
   updatedAt?: Date | string
 }
 
 export type CustomerContactUpdateInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   firstName?: Prisma.StringFieldUpdateOperationsInput | string
   lastName?: Prisma.StringFieldUpdateOperationsInput | string
   title?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -343,7 +381,7 @@ export type CustomerContactUpdateInput = {
 }
 
 export type CustomerContactUncheckedUpdateInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   firstName?: Prisma.StringFieldUpdateOperationsInput | string
   lastName?: Prisma.StringFieldUpdateOperationsInput | string
   title?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -351,13 +389,13 @@ export type CustomerContactUncheckedUpdateInput = {
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   mobile?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isPrimary?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  customerId?: Prisma.StringFieldUpdateOperationsInput | string
+  customerId?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type CustomerContactCreateManyInput = {
-  id?: string
+  id?: number
   firstName: string
   lastName: string
   title?: string | null
@@ -365,13 +403,12 @@ export type CustomerContactCreateManyInput = {
   phone?: string | null
   mobile?: string | null
   isPrimary?: boolean
-  customerId: string
+  customerId: number
   createdAt?: Date | string
   updatedAt?: Date | string
 }
 
 export type CustomerContactUpdateManyMutationInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   firstName?: Prisma.StringFieldUpdateOperationsInput | string
   lastName?: Prisma.StringFieldUpdateOperationsInput | string
   title?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -384,7 +421,7 @@ export type CustomerContactUpdateManyMutationInput = {
 }
 
 export type CustomerContactUncheckedUpdateManyInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   firstName?: Prisma.StringFieldUpdateOperationsInput | string
   lastName?: Prisma.StringFieldUpdateOperationsInput | string
   title?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -392,7 +429,7 @@ export type CustomerContactUncheckedUpdateManyInput = {
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   mobile?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isPrimary?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  customerId?: Prisma.StringFieldUpdateOperationsInput | string
+  customerId?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -421,6 +458,11 @@ export type CustomerContactCountOrderByAggregateInput = {
   updatedAt?: Prisma.SortOrder
 }
 
+export type CustomerContactAvgOrderByAggregateInput = {
+  id?: Prisma.SortOrder
+  customerId?: Prisma.SortOrder
+}
+
 export type CustomerContactMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
   firstName?: Prisma.SortOrder
@@ -447,6 +489,11 @@ export type CustomerContactMinOrderByAggregateInput = {
   customerId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+}
+
+export type CustomerContactSumOrderByAggregateInput = {
+  id?: Prisma.SortOrder
+  customerId?: Prisma.SortOrder
 }
 
 export type CustomerContactCreateNestedManyWithoutCustomerInput = {
@@ -492,7 +539,6 @@ export type CustomerContactUncheckedUpdateManyWithoutCustomerNestedInput = {
 }
 
 export type CustomerContactCreateWithoutCustomerInput = {
-  id?: string
   firstName: string
   lastName: string
   title?: string | null
@@ -505,7 +551,7 @@ export type CustomerContactCreateWithoutCustomerInput = {
 }
 
 export type CustomerContactUncheckedCreateWithoutCustomerInput = {
-  id?: string
+  id?: number
   firstName: string
   lastName: string
   title?: string | null
@@ -547,7 +593,7 @@ export type CustomerContactScalarWhereInput = {
   AND?: Prisma.CustomerContactScalarWhereInput | Prisma.CustomerContactScalarWhereInput[]
   OR?: Prisma.CustomerContactScalarWhereInput[]
   NOT?: Prisma.CustomerContactScalarWhereInput | Prisma.CustomerContactScalarWhereInput[]
-  id?: Prisma.StringFilter<"CustomerContact"> | string
+  id?: Prisma.IntFilter<"CustomerContact"> | number
   firstName?: Prisma.StringFilter<"CustomerContact"> | string
   lastName?: Prisma.StringFilter<"CustomerContact"> | string
   title?: Prisma.StringNullableFilter<"CustomerContact"> | string | null
@@ -555,13 +601,13 @@ export type CustomerContactScalarWhereInput = {
   phone?: Prisma.StringNullableFilter<"CustomerContact"> | string | null
   mobile?: Prisma.StringNullableFilter<"CustomerContact"> | string | null
   isPrimary?: Prisma.BoolFilter<"CustomerContact"> | boolean
-  customerId?: Prisma.StringFilter<"CustomerContact"> | string
+  customerId?: Prisma.IntFilter<"CustomerContact"> | number
   createdAt?: Prisma.DateTimeFilter<"CustomerContact"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"CustomerContact"> | Date | string
 }
 
 export type CustomerContactCreateManyCustomerInput = {
-  id?: string
+  id?: number
   firstName: string
   lastName: string
   title?: string | null
@@ -574,7 +620,6 @@ export type CustomerContactCreateManyCustomerInput = {
 }
 
 export type CustomerContactUpdateWithoutCustomerInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   firstName?: Prisma.StringFieldUpdateOperationsInput | string
   lastName?: Prisma.StringFieldUpdateOperationsInput | string
   title?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -587,7 +632,7 @@ export type CustomerContactUpdateWithoutCustomerInput = {
 }
 
 export type CustomerContactUncheckedUpdateWithoutCustomerInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   firstName?: Prisma.StringFieldUpdateOperationsInput | string
   lastName?: Prisma.StringFieldUpdateOperationsInput | string
   title?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -600,7 +645,7 @@ export type CustomerContactUncheckedUpdateWithoutCustomerInput = {
 }
 
 export type CustomerContactUncheckedUpdateManyWithoutCustomerInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   firstName?: Prisma.StringFieldUpdateOperationsInput | string
   lastName?: Prisma.StringFieldUpdateOperationsInput | string
   title?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -690,7 +735,7 @@ export type $CustomerContactPayload<ExtArgs extends runtime.Types.Extensions.Int
     customer: Prisma.$CustomerPayload<ExtArgs>
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
-    id: string
+    id: number
     firstName: string
     lastName: string
     title: string | null
@@ -698,7 +743,7 @@ export type $CustomerContactPayload<ExtArgs extends runtime.Types.Extensions.Int
     phone: string | null
     mobile: string | null
     isPrimary: boolean
-    customerId: string
+    customerId: number
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["customerContact"]>
@@ -1125,7 +1170,7 @@ export interface Prisma__CustomerContactClient<T, Null = never, ExtArgs extends 
  * Fields of the CustomerContact model
  */
 export interface CustomerContactFieldRefs {
-  readonly id: Prisma.FieldRef<"CustomerContact", 'String'>
+  readonly id: Prisma.FieldRef<"CustomerContact", 'Int'>
   readonly firstName: Prisma.FieldRef<"CustomerContact", 'String'>
   readonly lastName: Prisma.FieldRef<"CustomerContact", 'String'>
   readonly title: Prisma.FieldRef<"CustomerContact", 'String'>
@@ -1133,7 +1178,7 @@ export interface CustomerContactFieldRefs {
   readonly phone: Prisma.FieldRef<"CustomerContact", 'String'>
   readonly mobile: Prisma.FieldRef<"CustomerContact", 'String'>
   readonly isPrimary: Prisma.FieldRef<"CustomerContact", 'Boolean'>
-  readonly customerId: Prisma.FieldRef<"CustomerContact", 'String'>
+  readonly customerId: Prisma.FieldRef<"CustomerContact", 'Int'>
   readonly createdAt: Prisma.FieldRef<"CustomerContact", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"CustomerContact", 'DateTime'>
 }

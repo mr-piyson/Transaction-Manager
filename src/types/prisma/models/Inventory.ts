@@ -27,23 +27,31 @@ export type AggregateInventory = {
 }
 
 export type InventoryAvgAggregateOutputType = {
+  id: number | null
   quantity: runtime.Decimal | null
   reservedQuantity: runtime.Decimal | null
   availableQuantity: runtime.Decimal | null
   averageCost: runtime.Decimal | null
   totalValue: runtime.Decimal | null
+  productId: number | null
+  variantId: number | null
+  warehouseId: number | null
 }
 
 export type InventorySumAggregateOutputType = {
+  id: number | null
   quantity: runtime.Decimal | null
   reservedQuantity: runtime.Decimal | null
   availableQuantity: runtime.Decimal | null
   averageCost: runtime.Decimal | null
   totalValue: runtime.Decimal | null
+  productId: number | null
+  variantId: number | null
+  warehouseId: number | null
 }
 
 export type InventoryMinAggregateOutputType = {
-  id: string | null
+  id: number | null
   quantity: runtime.Decimal | null
   reservedQuantity: runtime.Decimal | null
   availableQuantity: runtime.Decimal | null
@@ -51,14 +59,14 @@ export type InventoryMinAggregateOutputType = {
   totalValue: runtime.Decimal | null
   lastRestockDate: Date | null
   lastCountDate: Date | null
-  productId: string | null
-  variantId: string | null
-  warehouseId: string | null
+  productId: number | null
+  variantId: number | null
+  warehouseId: number | null
   updatedAt: Date | null
 }
 
 export type InventoryMaxAggregateOutputType = {
-  id: string | null
+  id: number | null
   quantity: runtime.Decimal | null
   reservedQuantity: runtime.Decimal | null
   availableQuantity: runtime.Decimal | null
@@ -66,9 +74,9 @@ export type InventoryMaxAggregateOutputType = {
   totalValue: runtime.Decimal | null
   lastRestockDate: Date | null
   lastCountDate: Date | null
-  productId: string | null
-  variantId: string | null
-  warehouseId: string | null
+  productId: number | null
+  variantId: number | null
+  warehouseId: number | null
   updatedAt: Date | null
 }
 
@@ -90,19 +98,27 @@ export type InventoryCountAggregateOutputType = {
 
 
 export type InventoryAvgAggregateInputType = {
+  id?: true
   quantity?: true
   reservedQuantity?: true
   availableQuantity?: true
   averageCost?: true
   totalValue?: true
+  productId?: true
+  variantId?: true
+  warehouseId?: true
 }
 
 export type InventorySumAggregateInputType = {
+  id?: true
   quantity?: true
   reservedQuantity?: true
   availableQuantity?: true
   averageCost?: true
   totalValue?: true
+  productId?: true
+  variantId?: true
+  warehouseId?: true
 }
 
 export type InventoryMinAggregateInputType = {
@@ -238,7 +254,7 @@ export type InventoryGroupByArgs<ExtArgs extends runtime.Types.Extensions.Intern
 }
 
 export type InventoryGroupByOutputType = {
-  id: string
+  id: number
   quantity: runtime.Decimal
   reservedQuantity: runtime.Decimal
   availableQuantity: runtime.Decimal
@@ -246,9 +262,9 @@ export type InventoryGroupByOutputType = {
   totalValue: runtime.Decimal
   lastRestockDate: Date | null
   lastCountDate: Date | null
-  productId: string | null
-  variantId: string | null
-  warehouseId: string
+  productId: number | null
+  variantId: number | null
+  warehouseId: number
   updatedAt: Date
   _count: InventoryCountAggregateOutputType | null
   _avg: InventoryAvgAggregateOutputType | null
@@ -276,7 +292,7 @@ export type InventoryWhereInput = {
   AND?: Prisma.InventoryWhereInput | Prisma.InventoryWhereInput[]
   OR?: Prisma.InventoryWhereInput[]
   NOT?: Prisma.InventoryWhereInput | Prisma.InventoryWhereInput[]
-  id?: Prisma.StringFilter<"Inventory"> | string
+  id?: Prisma.IntFilter<"Inventory"> | number
   quantity?: Prisma.DecimalFilter<"Inventory"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   reservedQuantity?: Prisma.DecimalFilter<"Inventory"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   availableQuantity?: Prisma.DecimalFilter<"Inventory"> | runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -284,9 +300,9 @@ export type InventoryWhereInput = {
   totalValue?: Prisma.DecimalFilter<"Inventory"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   lastRestockDate?: Prisma.DateTimeNullableFilter<"Inventory"> | Date | string | null
   lastCountDate?: Prisma.DateTimeNullableFilter<"Inventory"> | Date | string | null
-  productId?: Prisma.StringNullableFilter<"Inventory"> | string | null
-  variantId?: Prisma.StringNullableFilter<"Inventory"> | string | null
-  warehouseId?: Prisma.StringFilter<"Inventory"> | string
+  productId?: Prisma.IntNullableFilter<"Inventory"> | number | null
+  variantId?: Prisma.IntNullableFilter<"Inventory"> | number | null
+  warehouseId?: Prisma.IntFilter<"Inventory"> | number
   updatedAt?: Prisma.DateTimeFilter<"Inventory"> | Date | string
   product?: Prisma.XOR<Prisma.ProductNullableScalarRelationFilter, Prisma.ProductWhereInput> | null
   variant?: Prisma.XOR<Prisma.ProductVariantNullableScalarRelationFilter, Prisma.ProductVariantWhereInput> | null
@@ -312,7 +328,7 @@ export type InventoryOrderByWithRelationInput = {
 }
 
 export type InventoryWhereUniqueInput = Prisma.AtLeast<{
-  id?: string
+  id?: number
   productId_variantId_warehouseId?: Prisma.InventoryProductIdVariantIdWarehouseIdCompoundUniqueInput
   AND?: Prisma.InventoryWhereInput | Prisma.InventoryWhereInput[]
   OR?: Prisma.InventoryWhereInput[]
@@ -324,9 +340,9 @@ export type InventoryWhereUniqueInput = Prisma.AtLeast<{
   totalValue?: Prisma.DecimalFilter<"Inventory"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   lastRestockDate?: Prisma.DateTimeNullableFilter<"Inventory"> | Date | string | null
   lastCountDate?: Prisma.DateTimeNullableFilter<"Inventory"> | Date | string | null
-  productId?: Prisma.StringNullableFilter<"Inventory"> | string | null
-  variantId?: Prisma.StringNullableFilter<"Inventory"> | string | null
-  warehouseId?: Prisma.StringFilter<"Inventory"> | string
+  productId?: Prisma.IntNullableFilter<"Inventory"> | number | null
+  variantId?: Prisma.IntNullableFilter<"Inventory"> | number | null
+  warehouseId?: Prisma.IntFilter<"Inventory"> | number
   updatedAt?: Prisma.DateTimeFilter<"Inventory"> | Date | string
   product?: Prisma.XOR<Prisma.ProductNullableScalarRelationFilter, Prisma.ProductWhereInput> | null
   variant?: Prisma.XOR<Prisma.ProductVariantNullableScalarRelationFilter, Prisma.ProductVariantWhereInput> | null
@@ -357,7 +373,7 @@ export type InventoryScalarWhereWithAggregatesInput = {
   AND?: Prisma.InventoryScalarWhereWithAggregatesInput | Prisma.InventoryScalarWhereWithAggregatesInput[]
   OR?: Prisma.InventoryScalarWhereWithAggregatesInput[]
   NOT?: Prisma.InventoryScalarWhereWithAggregatesInput | Prisma.InventoryScalarWhereWithAggregatesInput[]
-  id?: Prisma.StringWithAggregatesFilter<"Inventory"> | string
+  id?: Prisma.IntWithAggregatesFilter<"Inventory"> | number
   quantity?: Prisma.DecimalWithAggregatesFilter<"Inventory"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   reservedQuantity?: Prisma.DecimalWithAggregatesFilter<"Inventory"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   availableQuantity?: Prisma.DecimalWithAggregatesFilter<"Inventory"> | runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -365,14 +381,13 @@ export type InventoryScalarWhereWithAggregatesInput = {
   totalValue?: Prisma.DecimalWithAggregatesFilter<"Inventory"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   lastRestockDate?: Prisma.DateTimeNullableWithAggregatesFilter<"Inventory"> | Date | string | null
   lastCountDate?: Prisma.DateTimeNullableWithAggregatesFilter<"Inventory"> | Date | string | null
-  productId?: Prisma.StringNullableWithAggregatesFilter<"Inventory"> | string | null
-  variantId?: Prisma.StringNullableWithAggregatesFilter<"Inventory"> | string | null
-  warehouseId?: Prisma.StringWithAggregatesFilter<"Inventory"> | string
+  productId?: Prisma.IntNullableWithAggregatesFilter<"Inventory"> | number | null
+  variantId?: Prisma.IntNullableWithAggregatesFilter<"Inventory"> | number | null
+  warehouseId?: Prisma.IntWithAggregatesFilter<"Inventory"> | number
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Inventory"> | Date | string
 }
 
 export type InventoryCreateInput = {
-  id?: string
   quantity?: runtime.Decimal | runtime.DecimalJsLike | number | string
   reservedQuantity?: runtime.Decimal | runtime.DecimalJsLike | number | string
   availableQuantity?: runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -387,7 +402,7 @@ export type InventoryCreateInput = {
 }
 
 export type InventoryUncheckedCreateInput = {
-  id?: string
+  id?: number
   quantity?: runtime.Decimal | runtime.DecimalJsLike | number | string
   reservedQuantity?: runtime.Decimal | runtime.DecimalJsLike | number | string
   availableQuantity?: runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -395,14 +410,13 @@ export type InventoryUncheckedCreateInput = {
   totalValue?: runtime.Decimal | runtime.DecimalJsLike | number | string
   lastRestockDate?: Date | string | null
   lastCountDate?: Date | string | null
-  productId?: string | null
-  variantId?: string | null
-  warehouseId: string
+  productId?: number | null
+  variantId?: number | null
+  warehouseId: number
   updatedAt?: Date | string
 }
 
 export type InventoryUpdateInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   quantity?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   reservedQuantity?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   availableQuantity?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -417,7 +431,7 @@ export type InventoryUpdateInput = {
 }
 
 export type InventoryUncheckedUpdateInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   quantity?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   reservedQuantity?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   availableQuantity?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -425,14 +439,14 @@ export type InventoryUncheckedUpdateInput = {
   totalValue?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   lastRestockDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastCountDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  productId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  variantId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  warehouseId?: Prisma.StringFieldUpdateOperationsInput | string
+  productId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  variantId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  warehouseId?: Prisma.IntFieldUpdateOperationsInput | number
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type InventoryCreateManyInput = {
-  id?: string
+  id?: number
   quantity?: runtime.Decimal | runtime.DecimalJsLike | number | string
   reservedQuantity?: runtime.Decimal | runtime.DecimalJsLike | number | string
   availableQuantity?: runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -440,14 +454,13 @@ export type InventoryCreateManyInput = {
   totalValue?: runtime.Decimal | runtime.DecimalJsLike | number | string
   lastRestockDate?: Date | string | null
   lastCountDate?: Date | string | null
-  productId?: string | null
-  variantId?: string | null
-  warehouseId: string
+  productId?: number | null
+  variantId?: number | null
+  warehouseId: number
   updatedAt?: Date | string
 }
 
 export type InventoryUpdateManyMutationInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   quantity?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   reservedQuantity?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   availableQuantity?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -459,7 +472,7 @@ export type InventoryUpdateManyMutationInput = {
 }
 
 export type InventoryUncheckedUpdateManyInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   quantity?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   reservedQuantity?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   availableQuantity?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -467,9 +480,9 @@ export type InventoryUncheckedUpdateManyInput = {
   totalValue?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   lastRestockDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastCountDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  productId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  variantId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  warehouseId?: Prisma.StringFieldUpdateOperationsInput | string
+  productId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  variantId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  warehouseId?: Prisma.IntFieldUpdateOperationsInput | number
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -484,9 +497,9 @@ export type InventoryOrderByRelationAggregateInput = {
 }
 
 export type InventoryProductIdVariantIdWarehouseIdCompoundUniqueInput = {
-  productId: string
-  variantId: string
-  warehouseId: string
+  productId: number
+  variantId: number
+  warehouseId: number
 }
 
 export type InventoryCountOrderByAggregateInput = {
@@ -505,11 +518,15 @@ export type InventoryCountOrderByAggregateInput = {
 }
 
 export type InventoryAvgOrderByAggregateInput = {
+  id?: Prisma.SortOrder
   quantity?: Prisma.SortOrder
   reservedQuantity?: Prisma.SortOrder
   availableQuantity?: Prisma.SortOrder
   averageCost?: Prisma.SortOrder
   totalValue?: Prisma.SortOrder
+  productId?: Prisma.SortOrder
+  variantId?: Prisma.SortOrder
+  warehouseId?: Prisma.SortOrder
 }
 
 export type InventoryMaxOrderByAggregateInput = {
@@ -543,11 +560,15 @@ export type InventoryMinOrderByAggregateInput = {
 }
 
 export type InventorySumOrderByAggregateInput = {
+  id?: Prisma.SortOrder
   quantity?: Prisma.SortOrder
   reservedQuantity?: Prisma.SortOrder
   availableQuantity?: Prisma.SortOrder
   averageCost?: Prisma.SortOrder
   totalValue?: Prisma.SortOrder
+  productId?: Prisma.SortOrder
+  variantId?: Prisma.SortOrder
+  warehouseId?: Prisma.SortOrder
 }
 
 export type InventoryCreateNestedManyWithoutProductInput = {
@@ -677,7 +698,6 @@ export type InventoryUncheckedUpdateManyWithoutWarehouseNestedInput = {
 }
 
 export type InventoryCreateWithoutProductInput = {
-  id?: string
   quantity?: runtime.Decimal | runtime.DecimalJsLike | number | string
   reservedQuantity?: runtime.Decimal | runtime.DecimalJsLike | number | string
   availableQuantity?: runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -691,7 +711,7 @@ export type InventoryCreateWithoutProductInput = {
 }
 
 export type InventoryUncheckedCreateWithoutProductInput = {
-  id?: string
+  id?: number
   quantity?: runtime.Decimal | runtime.DecimalJsLike | number | string
   reservedQuantity?: runtime.Decimal | runtime.DecimalJsLike | number | string
   availableQuantity?: runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -699,8 +719,8 @@ export type InventoryUncheckedCreateWithoutProductInput = {
   totalValue?: runtime.Decimal | runtime.DecimalJsLike | number | string
   lastRestockDate?: Date | string | null
   lastCountDate?: Date | string | null
-  variantId?: string | null
-  warehouseId: string
+  variantId?: number | null
+  warehouseId: number
   updatedAt?: Date | string
 }
 
@@ -734,7 +754,7 @@ export type InventoryScalarWhereInput = {
   AND?: Prisma.InventoryScalarWhereInput | Prisma.InventoryScalarWhereInput[]
   OR?: Prisma.InventoryScalarWhereInput[]
   NOT?: Prisma.InventoryScalarWhereInput | Prisma.InventoryScalarWhereInput[]
-  id?: Prisma.StringFilter<"Inventory"> | string
+  id?: Prisma.IntFilter<"Inventory"> | number
   quantity?: Prisma.DecimalFilter<"Inventory"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   reservedQuantity?: Prisma.DecimalFilter<"Inventory"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   availableQuantity?: Prisma.DecimalFilter<"Inventory"> | runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -742,14 +762,13 @@ export type InventoryScalarWhereInput = {
   totalValue?: Prisma.DecimalFilter<"Inventory"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   lastRestockDate?: Prisma.DateTimeNullableFilter<"Inventory"> | Date | string | null
   lastCountDate?: Prisma.DateTimeNullableFilter<"Inventory"> | Date | string | null
-  productId?: Prisma.StringNullableFilter<"Inventory"> | string | null
-  variantId?: Prisma.StringNullableFilter<"Inventory"> | string | null
-  warehouseId?: Prisma.StringFilter<"Inventory"> | string
+  productId?: Prisma.IntNullableFilter<"Inventory"> | number | null
+  variantId?: Prisma.IntNullableFilter<"Inventory"> | number | null
+  warehouseId?: Prisma.IntFilter<"Inventory"> | number
   updatedAt?: Prisma.DateTimeFilter<"Inventory"> | Date | string
 }
 
 export type InventoryCreateWithoutVariantInput = {
-  id?: string
   quantity?: runtime.Decimal | runtime.DecimalJsLike | number | string
   reservedQuantity?: runtime.Decimal | runtime.DecimalJsLike | number | string
   availableQuantity?: runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -763,7 +782,7 @@ export type InventoryCreateWithoutVariantInput = {
 }
 
 export type InventoryUncheckedCreateWithoutVariantInput = {
-  id?: string
+  id?: number
   quantity?: runtime.Decimal | runtime.DecimalJsLike | number | string
   reservedQuantity?: runtime.Decimal | runtime.DecimalJsLike | number | string
   availableQuantity?: runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -771,8 +790,8 @@ export type InventoryUncheckedCreateWithoutVariantInput = {
   totalValue?: runtime.Decimal | runtime.DecimalJsLike | number | string
   lastRestockDate?: Date | string | null
   lastCountDate?: Date | string | null
-  productId?: string | null
-  warehouseId: string
+  productId?: number | null
+  warehouseId: number
   updatedAt?: Date | string
 }
 
@@ -803,7 +822,6 @@ export type InventoryUpdateManyWithWhereWithoutVariantInput = {
 }
 
 export type InventoryCreateWithoutWarehouseInput = {
-  id?: string
   quantity?: runtime.Decimal | runtime.DecimalJsLike | number | string
   reservedQuantity?: runtime.Decimal | runtime.DecimalJsLike | number | string
   availableQuantity?: runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -817,7 +835,7 @@ export type InventoryCreateWithoutWarehouseInput = {
 }
 
 export type InventoryUncheckedCreateWithoutWarehouseInput = {
-  id?: string
+  id?: number
   quantity?: runtime.Decimal | runtime.DecimalJsLike | number | string
   reservedQuantity?: runtime.Decimal | runtime.DecimalJsLike | number | string
   availableQuantity?: runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -825,8 +843,8 @@ export type InventoryUncheckedCreateWithoutWarehouseInput = {
   totalValue?: runtime.Decimal | runtime.DecimalJsLike | number | string
   lastRestockDate?: Date | string | null
   lastCountDate?: Date | string | null
-  productId?: string | null
-  variantId?: string | null
+  productId?: number | null
+  variantId?: number | null
   updatedAt?: Date | string
 }
 
@@ -857,7 +875,7 @@ export type InventoryUpdateManyWithWhereWithoutWarehouseInput = {
 }
 
 export type InventoryCreateManyProductInput = {
-  id?: string
+  id?: number
   quantity?: runtime.Decimal | runtime.DecimalJsLike | number | string
   reservedQuantity?: runtime.Decimal | runtime.DecimalJsLike | number | string
   availableQuantity?: runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -865,13 +883,12 @@ export type InventoryCreateManyProductInput = {
   totalValue?: runtime.Decimal | runtime.DecimalJsLike | number | string
   lastRestockDate?: Date | string | null
   lastCountDate?: Date | string | null
-  variantId?: string | null
-  warehouseId: string
+  variantId?: number | null
+  warehouseId: number
   updatedAt?: Date | string
 }
 
 export type InventoryUpdateWithoutProductInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   quantity?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   reservedQuantity?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   availableQuantity?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -885,7 +902,7 @@ export type InventoryUpdateWithoutProductInput = {
 }
 
 export type InventoryUncheckedUpdateWithoutProductInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   quantity?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   reservedQuantity?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   availableQuantity?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -893,13 +910,13 @@ export type InventoryUncheckedUpdateWithoutProductInput = {
   totalValue?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   lastRestockDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastCountDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  variantId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  warehouseId?: Prisma.StringFieldUpdateOperationsInput | string
+  variantId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  warehouseId?: Prisma.IntFieldUpdateOperationsInput | number
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type InventoryUncheckedUpdateManyWithoutProductInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   quantity?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   reservedQuantity?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   availableQuantity?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -907,13 +924,13 @@ export type InventoryUncheckedUpdateManyWithoutProductInput = {
   totalValue?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   lastRestockDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastCountDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  variantId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  warehouseId?: Prisma.StringFieldUpdateOperationsInput | string
+  variantId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  warehouseId?: Prisma.IntFieldUpdateOperationsInput | number
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type InventoryCreateManyVariantInput = {
-  id?: string
+  id?: number
   quantity?: runtime.Decimal | runtime.DecimalJsLike | number | string
   reservedQuantity?: runtime.Decimal | runtime.DecimalJsLike | number | string
   availableQuantity?: runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -921,13 +938,12 @@ export type InventoryCreateManyVariantInput = {
   totalValue?: runtime.Decimal | runtime.DecimalJsLike | number | string
   lastRestockDate?: Date | string | null
   lastCountDate?: Date | string | null
-  productId?: string | null
-  warehouseId: string
+  productId?: number | null
+  warehouseId: number
   updatedAt?: Date | string
 }
 
 export type InventoryUpdateWithoutVariantInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   quantity?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   reservedQuantity?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   availableQuantity?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -941,7 +957,7 @@ export type InventoryUpdateWithoutVariantInput = {
 }
 
 export type InventoryUncheckedUpdateWithoutVariantInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   quantity?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   reservedQuantity?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   availableQuantity?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -949,13 +965,13 @@ export type InventoryUncheckedUpdateWithoutVariantInput = {
   totalValue?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   lastRestockDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastCountDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  productId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  warehouseId?: Prisma.StringFieldUpdateOperationsInput | string
+  productId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  warehouseId?: Prisma.IntFieldUpdateOperationsInput | number
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type InventoryUncheckedUpdateManyWithoutVariantInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   quantity?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   reservedQuantity?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   availableQuantity?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -963,13 +979,13 @@ export type InventoryUncheckedUpdateManyWithoutVariantInput = {
   totalValue?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   lastRestockDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastCountDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  productId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  warehouseId?: Prisma.StringFieldUpdateOperationsInput | string
+  productId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  warehouseId?: Prisma.IntFieldUpdateOperationsInput | number
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type InventoryCreateManyWarehouseInput = {
-  id?: string
+  id?: number
   quantity?: runtime.Decimal | runtime.DecimalJsLike | number | string
   reservedQuantity?: runtime.Decimal | runtime.DecimalJsLike | number | string
   availableQuantity?: runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -977,13 +993,12 @@ export type InventoryCreateManyWarehouseInput = {
   totalValue?: runtime.Decimal | runtime.DecimalJsLike | number | string
   lastRestockDate?: Date | string | null
   lastCountDate?: Date | string | null
-  productId?: string | null
-  variantId?: string | null
+  productId?: number | null
+  variantId?: number | null
   updatedAt?: Date | string
 }
 
 export type InventoryUpdateWithoutWarehouseInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   quantity?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   reservedQuantity?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   availableQuantity?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -997,7 +1012,7 @@ export type InventoryUpdateWithoutWarehouseInput = {
 }
 
 export type InventoryUncheckedUpdateWithoutWarehouseInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   quantity?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   reservedQuantity?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   availableQuantity?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -1005,13 +1020,13 @@ export type InventoryUncheckedUpdateWithoutWarehouseInput = {
   totalValue?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   lastRestockDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastCountDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  productId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  variantId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  productId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  variantId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type InventoryUncheckedUpdateManyWithoutWarehouseInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   quantity?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   reservedQuantity?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   availableQuantity?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -1019,8 +1034,8 @@ export type InventoryUncheckedUpdateManyWithoutWarehouseInput = {
   totalValue?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   lastRestockDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastCountDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  productId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  variantId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  productId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  variantId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -1120,7 +1135,7 @@ export type $InventoryPayload<ExtArgs extends runtime.Types.Extensions.InternalA
     warehouse: Prisma.$WarehousePayload<ExtArgs>
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
-    id: string
+    id: number
     quantity: runtime.Decimal
     reservedQuantity: runtime.Decimal
     availableQuantity: runtime.Decimal
@@ -1128,9 +1143,9 @@ export type $InventoryPayload<ExtArgs extends runtime.Types.Extensions.InternalA
     totalValue: runtime.Decimal
     lastRestockDate: Date | null
     lastCountDate: Date | null
-    productId: string | null
-    variantId: string | null
-    warehouseId: string
+    productId: number | null
+    variantId: number | null
+    warehouseId: number
     updatedAt: Date
   }, ExtArgs["result"]["inventory"]>
   composites: {}
@@ -1558,7 +1573,7 @@ export interface Prisma__InventoryClient<T, Null = never, ExtArgs extends runtim
  * Fields of the Inventory model
  */
 export interface InventoryFieldRefs {
-  readonly id: Prisma.FieldRef<"Inventory", 'String'>
+  readonly id: Prisma.FieldRef<"Inventory", 'Int'>
   readonly quantity: Prisma.FieldRef<"Inventory", 'Decimal'>
   readonly reservedQuantity: Prisma.FieldRef<"Inventory", 'Decimal'>
   readonly availableQuantity: Prisma.FieldRef<"Inventory", 'Decimal'>
@@ -1566,9 +1581,9 @@ export interface InventoryFieldRefs {
   readonly totalValue: Prisma.FieldRef<"Inventory", 'Decimal'>
   readonly lastRestockDate: Prisma.FieldRef<"Inventory", 'DateTime'>
   readonly lastCountDate: Prisma.FieldRef<"Inventory", 'DateTime'>
-  readonly productId: Prisma.FieldRef<"Inventory", 'String'>
-  readonly variantId: Prisma.FieldRef<"Inventory", 'String'>
-  readonly warehouseId: Prisma.FieldRef<"Inventory", 'String'>
+  readonly productId: Prisma.FieldRef<"Inventory", 'Int'>
+  readonly variantId: Prisma.FieldRef<"Inventory", 'Int'>
+  readonly warehouseId: Prisma.FieldRef<"Inventory", 'Int'>
   readonly updatedAt: Prisma.FieldRef<"Inventory", 'DateTime'>
 }
     

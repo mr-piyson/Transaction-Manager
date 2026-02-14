@@ -27,22 +27,26 @@ export type AggregateEmployeeDocument = {
 }
 
 export type EmployeeDocumentAvgAggregateOutputType = {
+  id: number | null
   fileSize: number | null
+  employeeId: number | null
 }
 
 export type EmployeeDocumentSumAggregateOutputType = {
+  id: number | null
   fileSize: number | null
+  employeeId: number | null
 }
 
 export type EmployeeDocumentMinAggregateOutputType = {
-  id: string | null
+  id: number | null
   title: string | null
   type: $Enums.DocumentType | null
   fileUrl: string | null
   fileName: string | null
   fileSize: number | null
   mimeType: string | null
-  employeeId: string | null
+  employeeId: number | null
   uploadedBy: string | null
   expiryDate: Date | null
   createdAt: Date | null
@@ -50,14 +54,14 @@ export type EmployeeDocumentMinAggregateOutputType = {
 }
 
 export type EmployeeDocumentMaxAggregateOutputType = {
-  id: string | null
+  id: number | null
   title: string | null
   type: $Enums.DocumentType | null
   fileUrl: string | null
   fileName: string | null
   fileSize: number | null
   mimeType: string | null
-  employeeId: string | null
+  employeeId: number | null
   uploadedBy: string | null
   expiryDate: Date | null
   createdAt: Date | null
@@ -82,11 +86,15 @@ export type EmployeeDocumentCountAggregateOutputType = {
 
 
 export type EmployeeDocumentAvgAggregateInputType = {
+  id?: true
   fileSize?: true
+  employeeId?: true
 }
 
 export type EmployeeDocumentSumAggregateInputType = {
+  id?: true
   fileSize?: true
+  employeeId?: true
 }
 
 export type EmployeeDocumentMinAggregateInputType = {
@@ -222,14 +230,14 @@ export type EmployeeDocumentGroupByArgs<ExtArgs extends runtime.Types.Extensions
 }
 
 export type EmployeeDocumentGroupByOutputType = {
-  id: string
+  id: number
   title: string
   type: $Enums.DocumentType
   fileUrl: string
   fileName: string
   fileSize: number
   mimeType: string
-  employeeId: string
+  employeeId: number
   uploadedBy: string
   expiryDate: Date | null
   createdAt: Date
@@ -260,14 +268,14 @@ export type EmployeeDocumentWhereInput = {
   AND?: Prisma.EmployeeDocumentWhereInput | Prisma.EmployeeDocumentWhereInput[]
   OR?: Prisma.EmployeeDocumentWhereInput[]
   NOT?: Prisma.EmployeeDocumentWhereInput | Prisma.EmployeeDocumentWhereInput[]
-  id?: Prisma.StringFilter<"EmployeeDocument"> | string
+  id?: Prisma.IntFilter<"EmployeeDocument"> | number
   title?: Prisma.StringFilter<"EmployeeDocument"> | string
   type?: Prisma.EnumDocumentTypeFilter<"EmployeeDocument"> | $Enums.DocumentType
   fileUrl?: Prisma.StringFilter<"EmployeeDocument"> | string
   fileName?: Prisma.StringFilter<"EmployeeDocument"> | string
   fileSize?: Prisma.IntFilter<"EmployeeDocument"> | number
   mimeType?: Prisma.StringFilter<"EmployeeDocument"> | string
-  employeeId?: Prisma.StringFilter<"EmployeeDocument"> | string
+  employeeId?: Prisma.IntFilter<"EmployeeDocument"> | number
   uploadedBy?: Prisma.StringFilter<"EmployeeDocument"> | string
   expiryDate?: Prisma.DateTimeNullableFilter<"EmployeeDocument"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"EmployeeDocument"> | Date | string
@@ -292,7 +300,7 @@ export type EmployeeDocumentOrderByWithRelationInput = {
 }
 
 export type EmployeeDocumentWhereUniqueInput = Prisma.AtLeast<{
-  id?: string
+  id?: number
   AND?: Prisma.EmployeeDocumentWhereInput | Prisma.EmployeeDocumentWhereInput[]
   OR?: Prisma.EmployeeDocumentWhereInput[]
   NOT?: Prisma.EmployeeDocumentWhereInput | Prisma.EmployeeDocumentWhereInput[]
@@ -302,7 +310,7 @@ export type EmployeeDocumentWhereUniqueInput = Prisma.AtLeast<{
   fileName?: Prisma.StringFilter<"EmployeeDocument"> | string
   fileSize?: Prisma.IntFilter<"EmployeeDocument"> | number
   mimeType?: Prisma.StringFilter<"EmployeeDocument"> | string
-  employeeId?: Prisma.StringFilter<"EmployeeDocument"> | string
+  employeeId?: Prisma.IntFilter<"EmployeeDocument"> | number
   uploadedBy?: Prisma.StringFilter<"EmployeeDocument"> | string
   expiryDate?: Prisma.DateTimeNullableFilter<"EmployeeDocument"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"EmployeeDocument"> | Date | string
@@ -334,14 +342,14 @@ export type EmployeeDocumentScalarWhereWithAggregatesInput = {
   AND?: Prisma.EmployeeDocumentScalarWhereWithAggregatesInput | Prisma.EmployeeDocumentScalarWhereWithAggregatesInput[]
   OR?: Prisma.EmployeeDocumentScalarWhereWithAggregatesInput[]
   NOT?: Prisma.EmployeeDocumentScalarWhereWithAggregatesInput | Prisma.EmployeeDocumentScalarWhereWithAggregatesInput[]
-  id?: Prisma.StringWithAggregatesFilter<"EmployeeDocument"> | string
+  id?: Prisma.IntWithAggregatesFilter<"EmployeeDocument"> | number
   title?: Prisma.StringWithAggregatesFilter<"EmployeeDocument"> | string
   type?: Prisma.EnumDocumentTypeWithAggregatesFilter<"EmployeeDocument"> | $Enums.DocumentType
   fileUrl?: Prisma.StringWithAggregatesFilter<"EmployeeDocument"> | string
   fileName?: Prisma.StringWithAggregatesFilter<"EmployeeDocument"> | string
   fileSize?: Prisma.IntWithAggregatesFilter<"EmployeeDocument"> | number
   mimeType?: Prisma.StringWithAggregatesFilter<"EmployeeDocument"> | string
-  employeeId?: Prisma.StringWithAggregatesFilter<"EmployeeDocument"> | string
+  employeeId?: Prisma.IntWithAggregatesFilter<"EmployeeDocument"> | number
   uploadedBy?: Prisma.StringWithAggregatesFilter<"EmployeeDocument"> | string
   expiryDate?: Prisma.DateTimeNullableWithAggregatesFilter<"EmployeeDocument"> | Date | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"EmployeeDocument"> | Date | string
@@ -349,7 +357,6 @@ export type EmployeeDocumentScalarWhereWithAggregatesInput = {
 }
 
 export type EmployeeDocumentCreateInput = {
-  id?: string
   title: string
   type: $Enums.DocumentType
   fileUrl: string
@@ -364,14 +371,14 @@ export type EmployeeDocumentCreateInput = {
 }
 
 export type EmployeeDocumentUncheckedCreateInput = {
-  id?: string
+  id?: number
   title: string
   type: $Enums.DocumentType
   fileUrl: string
   fileName: string
   fileSize: number
   mimeType: string
-  employeeId: string
+  employeeId: number
   uploadedBy: string
   expiryDate?: Date | string | null
   createdAt?: Date | string
@@ -379,7 +386,6 @@ export type EmployeeDocumentUncheckedCreateInput = {
 }
 
 export type EmployeeDocumentUpdateInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   title?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumDocumentTypeFieldUpdateOperationsInput | $Enums.DocumentType
   fileUrl?: Prisma.StringFieldUpdateOperationsInput | string
@@ -394,14 +400,14 @@ export type EmployeeDocumentUpdateInput = {
 }
 
 export type EmployeeDocumentUncheckedUpdateInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   title?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumDocumentTypeFieldUpdateOperationsInput | $Enums.DocumentType
   fileUrl?: Prisma.StringFieldUpdateOperationsInput | string
   fileName?: Prisma.StringFieldUpdateOperationsInput | string
   fileSize?: Prisma.IntFieldUpdateOperationsInput | number
   mimeType?: Prisma.StringFieldUpdateOperationsInput | string
-  employeeId?: Prisma.StringFieldUpdateOperationsInput | string
+  employeeId?: Prisma.IntFieldUpdateOperationsInput | number
   uploadedBy?: Prisma.StringFieldUpdateOperationsInput | string
   expiryDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -409,14 +415,14 @@ export type EmployeeDocumentUncheckedUpdateInput = {
 }
 
 export type EmployeeDocumentCreateManyInput = {
-  id?: string
+  id?: number
   title: string
   type: $Enums.DocumentType
   fileUrl: string
   fileName: string
   fileSize: number
   mimeType: string
-  employeeId: string
+  employeeId: number
   uploadedBy: string
   expiryDate?: Date | string | null
   createdAt?: Date | string
@@ -424,7 +430,6 @@ export type EmployeeDocumentCreateManyInput = {
 }
 
 export type EmployeeDocumentUpdateManyMutationInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   title?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumDocumentTypeFieldUpdateOperationsInput | $Enums.DocumentType
   fileUrl?: Prisma.StringFieldUpdateOperationsInput | string
@@ -438,14 +443,14 @@ export type EmployeeDocumentUpdateManyMutationInput = {
 }
 
 export type EmployeeDocumentUncheckedUpdateManyInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   title?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumDocumentTypeFieldUpdateOperationsInput | $Enums.DocumentType
   fileUrl?: Prisma.StringFieldUpdateOperationsInput | string
   fileName?: Prisma.StringFieldUpdateOperationsInput | string
   fileSize?: Prisma.IntFieldUpdateOperationsInput | number
   mimeType?: Prisma.StringFieldUpdateOperationsInput | string
-  employeeId?: Prisma.StringFieldUpdateOperationsInput | string
+  employeeId?: Prisma.IntFieldUpdateOperationsInput | number
   uploadedBy?: Prisma.StringFieldUpdateOperationsInput | string
   expiryDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -478,7 +483,9 @@ export type EmployeeDocumentCountOrderByAggregateInput = {
 }
 
 export type EmployeeDocumentAvgOrderByAggregateInput = {
+  id?: Prisma.SortOrder
   fileSize?: Prisma.SortOrder
+  employeeId?: Prisma.SortOrder
 }
 
 export type EmployeeDocumentMaxOrderByAggregateInput = {
@@ -512,7 +519,9 @@ export type EmployeeDocumentMinOrderByAggregateInput = {
 }
 
 export type EmployeeDocumentSumOrderByAggregateInput = {
+  id?: Prisma.SortOrder
   fileSize?: Prisma.SortOrder
+  employeeId?: Prisma.SortOrder
 }
 
 export type EmployeeDocumentCreateNestedManyWithoutEmployeeInput = {
@@ -562,7 +571,6 @@ export type EnumDocumentTypeFieldUpdateOperationsInput = {
 }
 
 export type EmployeeDocumentCreateWithoutEmployeeInput = {
-  id?: string
   title: string
   type: $Enums.DocumentType
   fileUrl: string
@@ -576,7 +584,7 @@ export type EmployeeDocumentCreateWithoutEmployeeInput = {
 }
 
 export type EmployeeDocumentUncheckedCreateWithoutEmployeeInput = {
-  id?: string
+  id?: number
   title: string
   type: $Enums.DocumentType
   fileUrl: string
@@ -619,14 +627,14 @@ export type EmployeeDocumentScalarWhereInput = {
   AND?: Prisma.EmployeeDocumentScalarWhereInput | Prisma.EmployeeDocumentScalarWhereInput[]
   OR?: Prisma.EmployeeDocumentScalarWhereInput[]
   NOT?: Prisma.EmployeeDocumentScalarWhereInput | Prisma.EmployeeDocumentScalarWhereInput[]
-  id?: Prisma.StringFilter<"EmployeeDocument"> | string
+  id?: Prisma.IntFilter<"EmployeeDocument"> | number
   title?: Prisma.StringFilter<"EmployeeDocument"> | string
   type?: Prisma.EnumDocumentTypeFilter<"EmployeeDocument"> | $Enums.DocumentType
   fileUrl?: Prisma.StringFilter<"EmployeeDocument"> | string
   fileName?: Prisma.StringFilter<"EmployeeDocument"> | string
   fileSize?: Prisma.IntFilter<"EmployeeDocument"> | number
   mimeType?: Prisma.StringFilter<"EmployeeDocument"> | string
-  employeeId?: Prisma.StringFilter<"EmployeeDocument"> | string
+  employeeId?: Prisma.IntFilter<"EmployeeDocument"> | number
   uploadedBy?: Prisma.StringFilter<"EmployeeDocument"> | string
   expiryDate?: Prisma.DateTimeNullableFilter<"EmployeeDocument"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"EmployeeDocument"> | Date | string
@@ -634,7 +642,7 @@ export type EmployeeDocumentScalarWhereInput = {
 }
 
 export type EmployeeDocumentCreateManyEmployeeInput = {
-  id?: string
+  id?: number
   title: string
   type: $Enums.DocumentType
   fileUrl: string
@@ -648,7 +656,6 @@ export type EmployeeDocumentCreateManyEmployeeInput = {
 }
 
 export type EmployeeDocumentUpdateWithoutEmployeeInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   title?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumDocumentTypeFieldUpdateOperationsInput | $Enums.DocumentType
   fileUrl?: Prisma.StringFieldUpdateOperationsInput | string
@@ -662,7 +669,7 @@ export type EmployeeDocumentUpdateWithoutEmployeeInput = {
 }
 
 export type EmployeeDocumentUncheckedUpdateWithoutEmployeeInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   title?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumDocumentTypeFieldUpdateOperationsInput | $Enums.DocumentType
   fileUrl?: Prisma.StringFieldUpdateOperationsInput | string
@@ -676,7 +683,7 @@ export type EmployeeDocumentUncheckedUpdateWithoutEmployeeInput = {
 }
 
 export type EmployeeDocumentUncheckedUpdateManyWithoutEmployeeInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   title?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumDocumentTypeFieldUpdateOperationsInput | $Enums.DocumentType
   fileUrl?: Prisma.StringFieldUpdateOperationsInput | string
@@ -771,14 +778,14 @@ export type $EmployeeDocumentPayload<ExtArgs extends runtime.Types.Extensions.In
     employee: Prisma.$EmployeePayload<ExtArgs>
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
-    id: string
+    id: number
     title: string
     type: $Enums.DocumentType
     fileUrl: string
     fileName: string
     fileSize: number
     mimeType: string
-    employeeId: string
+    employeeId: number
     uploadedBy: string
     expiryDate: Date | null
     createdAt: Date
@@ -1207,14 +1214,14 @@ export interface Prisma__EmployeeDocumentClient<T, Null = never, ExtArgs extends
  * Fields of the EmployeeDocument model
  */
 export interface EmployeeDocumentFieldRefs {
-  readonly id: Prisma.FieldRef<"EmployeeDocument", 'String'>
+  readonly id: Prisma.FieldRef<"EmployeeDocument", 'Int'>
   readonly title: Prisma.FieldRef<"EmployeeDocument", 'String'>
   readonly type: Prisma.FieldRef<"EmployeeDocument", 'DocumentType'>
   readonly fileUrl: Prisma.FieldRef<"EmployeeDocument", 'String'>
   readonly fileName: Prisma.FieldRef<"EmployeeDocument", 'String'>
   readonly fileSize: Prisma.FieldRef<"EmployeeDocument", 'Int'>
   readonly mimeType: Prisma.FieldRef<"EmployeeDocument", 'String'>
-  readonly employeeId: Prisma.FieldRef<"EmployeeDocument", 'String'>
+  readonly employeeId: Prisma.FieldRef<"EmployeeDocument", 'Int'>
   readonly uploadedBy: Prisma.FieldRef<"EmployeeDocument", 'String'>
   readonly expiryDate: Prisma.FieldRef<"EmployeeDocument", 'DateTime'>
   readonly createdAt: Prisma.FieldRef<"EmployeeDocument", 'DateTime'>

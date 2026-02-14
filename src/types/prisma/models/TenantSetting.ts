@@ -20,26 +20,38 @@ export type TenantSettingModel = runtime.Types.Result.DefaultSelection<Prisma.$T
 
 export type AggregateTenantSetting = {
   _count: TenantSettingCountAggregateOutputType | null
+  _avg: TenantSettingAvgAggregateOutputType | null
+  _sum: TenantSettingSumAggregateOutputType | null
   _min: TenantSettingMinAggregateOutputType | null
   _max: TenantSettingMaxAggregateOutputType | null
 }
 
+export type TenantSettingAvgAggregateOutputType = {
+  id: number | null
+  tenantId: number | null
+}
+
+export type TenantSettingSumAggregateOutputType = {
+  id: number | null
+  tenantId: number | null
+}
+
 export type TenantSettingMinAggregateOutputType = {
-  id: string | null
+  id: number | null
   key: string | null
   value: string | null
   dataType: string | null
-  tenantId: string | null
+  tenantId: number | null
   createdAt: Date | null
   updatedAt: Date | null
 }
 
 export type TenantSettingMaxAggregateOutputType = {
-  id: string | null
+  id: number | null
   key: string | null
   value: string | null
   dataType: string | null
-  tenantId: string | null
+  tenantId: number | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -55,6 +67,16 @@ export type TenantSettingCountAggregateOutputType = {
   _all: number
 }
 
+
+export type TenantSettingAvgAggregateInputType = {
+  id?: true
+  tenantId?: true
+}
+
+export type TenantSettingSumAggregateInputType = {
+  id?: true
+  tenantId?: true
+}
 
 export type TenantSettingMinAggregateInputType = {
   id?: true
@@ -125,6 +147,18 @@ export type TenantSettingAggregateArgs<ExtArgs extends runtime.Types.Extensions.
   /**
    * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
    * 
+   * Select which fields to average
+  **/
+  _avg?: TenantSettingAvgAggregateInputType
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+   * 
+   * Select which fields to sum
+  **/
+  _sum?: TenantSettingSumAggregateInputType
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+   * 
    * Select which fields to find the minimum value
   **/
   _min?: TenantSettingMinAggregateInputType
@@ -155,19 +189,23 @@ export type TenantSettingGroupByArgs<ExtArgs extends runtime.Types.Extensions.In
   take?: number
   skip?: number
   _count?: TenantSettingCountAggregateInputType | true
+  _avg?: TenantSettingAvgAggregateInputType
+  _sum?: TenantSettingSumAggregateInputType
   _min?: TenantSettingMinAggregateInputType
   _max?: TenantSettingMaxAggregateInputType
 }
 
 export type TenantSettingGroupByOutputType = {
-  id: string
+  id: number
   key: string
   value: string
   dataType: string
-  tenantId: string
+  tenantId: number
   createdAt: Date
   updatedAt: Date
   _count: TenantSettingCountAggregateOutputType | null
+  _avg: TenantSettingAvgAggregateOutputType | null
+  _sum: TenantSettingSumAggregateOutputType | null
   _min: TenantSettingMinAggregateOutputType | null
   _max: TenantSettingMaxAggregateOutputType | null
 }
@@ -191,11 +229,11 @@ export type TenantSettingWhereInput = {
   AND?: Prisma.TenantSettingWhereInput | Prisma.TenantSettingWhereInput[]
   OR?: Prisma.TenantSettingWhereInput[]
   NOT?: Prisma.TenantSettingWhereInput | Prisma.TenantSettingWhereInput[]
-  id?: Prisma.StringFilter<"TenantSetting"> | string
+  id?: Prisma.IntFilter<"TenantSetting"> | number
   key?: Prisma.StringFilter<"TenantSetting"> | string
   value?: Prisma.StringFilter<"TenantSetting"> | string
   dataType?: Prisma.StringFilter<"TenantSetting"> | string
-  tenantId?: Prisma.StringFilter<"TenantSetting"> | string
+  tenantId?: Prisma.IntFilter<"TenantSetting"> | number
   createdAt?: Prisma.DateTimeFilter<"TenantSetting"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"TenantSetting"> | Date | string
   tenant?: Prisma.XOR<Prisma.TenantScalarRelationFilter, Prisma.TenantWhereInput>
@@ -213,7 +251,7 @@ export type TenantSettingOrderByWithRelationInput = {
 }
 
 export type TenantSettingWhereUniqueInput = Prisma.AtLeast<{
-  id?: string
+  id?: number
   tenantId_key?: Prisma.TenantSettingTenantIdKeyCompoundUniqueInput
   AND?: Prisma.TenantSettingWhereInput | Prisma.TenantSettingWhereInput[]
   OR?: Prisma.TenantSettingWhereInput[]
@@ -221,7 +259,7 @@ export type TenantSettingWhereUniqueInput = Prisma.AtLeast<{
   key?: Prisma.StringFilter<"TenantSetting"> | string
   value?: Prisma.StringFilter<"TenantSetting"> | string
   dataType?: Prisma.StringFilter<"TenantSetting"> | string
-  tenantId?: Prisma.StringFilter<"TenantSetting"> | string
+  tenantId?: Prisma.IntFilter<"TenantSetting"> | number
   createdAt?: Prisma.DateTimeFilter<"TenantSetting"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"TenantSetting"> | Date | string
   tenant?: Prisma.XOR<Prisma.TenantScalarRelationFilter, Prisma.TenantWhereInput>
@@ -236,25 +274,26 @@ export type TenantSettingOrderByWithAggregationInput = {
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.TenantSettingCountOrderByAggregateInput
+  _avg?: Prisma.TenantSettingAvgOrderByAggregateInput
   _max?: Prisma.TenantSettingMaxOrderByAggregateInput
   _min?: Prisma.TenantSettingMinOrderByAggregateInput
+  _sum?: Prisma.TenantSettingSumOrderByAggregateInput
 }
 
 export type TenantSettingScalarWhereWithAggregatesInput = {
   AND?: Prisma.TenantSettingScalarWhereWithAggregatesInput | Prisma.TenantSettingScalarWhereWithAggregatesInput[]
   OR?: Prisma.TenantSettingScalarWhereWithAggregatesInput[]
   NOT?: Prisma.TenantSettingScalarWhereWithAggregatesInput | Prisma.TenantSettingScalarWhereWithAggregatesInput[]
-  id?: Prisma.StringWithAggregatesFilter<"TenantSetting"> | string
+  id?: Prisma.IntWithAggregatesFilter<"TenantSetting"> | number
   key?: Prisma.StringWithAggregatesFilter<"TenantSetting"> | string
   value?: Prisma.StringWithAggregatesFilter<"TenantSetting"> | string
   dataType?: Prisma.StringWithAggregatesFilter<"TenantSetting"> | string
-  tenantId?: Prisma.StringWithAggregatesFilter<"TenantSetting"> | string
+  tenantId?: Prisma.IntWithAggregatesFilter<"TenantSetting"> | number
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"TenantSetting"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"TenantSetting"> | Date | string
 }
 
 export type TenantSettingCreateInput = {
-  id?: string
   key: string
   value: string
   dataType?: string
@@ -264,17 +303,16 @@ export type TenantSettingCreateInput = {
 }
 
 export type TenantSettingUncheckedCreateInput = {
-  id?: string
+  id?: number
   key: string
   value: string
   dataType?: string
-  tenantId: string
+  tenantId: number
   createdAt?: Date | string
   updatedAt?: Date | string
 }
 
 export type TenantSettingUpdateInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   key?: Prisma.StringFieldUpdateOperationsInput | string
   value?: Prisma.StringFieldUpdateOperationsInput | string
   dataType?: Prisma.StringFieldUpdateOperationsInput | string
@@ -284,27 +322,26 @@ export type TenantSettingUpdateInput = {
 }
 
 export type TenantSettingUncheckedUpdateInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   key?: Prisma.StringFieldUpdateOperationsInput | string
   value?: Prisma.StringFieldUpdateOperationsInput | string
   dataType?: Prisma.StringFieldUpdateOperationsInput | string
-  tenantId?: Prisma.StringFieldUpdateOperationsInput | string
+  tenantId?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type TenantSettingCreateManyInput = {
-  id?: string
+  id?: number
   key: string
   value: string
   dataType?: string
-  tenantId: string
+  tenantId: number
   createdAt?: Date | string
   updatedAt?: Date | string
 }
 
 export type TenantSettingUpdateManyMutationInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   key?: Prisma.StringFieldUpdateOperationsInput | string
   value?: Prisma.StringFieldUpdateOperationsInput | string
   dataType?: Prisma.StringFieldUpdateOperationsInput | string
@@ -313,11 +350,11 @@ export type TenantSettingUpdateManyMutationInput = {
 }
 
 export type TenantSettingUncheckedUpdateManyInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   key?: Prisma.StringFieldUpdateOperationsInput | string
   value?: Prisma.StringFieldUpdateOperationsInput | string
   dataType?: Prisma.StringFieldUpdateOperationsInput | string
-  tenantId?: Prisma.StringFieldUpdateOperationsInput | string
+  tenantId?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -333,7 +370,7 @@ export type TenantSettingOrderByRelationAggregateInput = {
 }
 
 export type TenantSettingTenantIdKeyCompoundUniqueInput = {
-  tenantId: string
+  tenantId: number
   key: string
 }
 
@@ -345,6 +382,11 @@ export type TenantSettingCountOrderByAggregateInput = {
   tenantId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+}
+
+export type TenantSettingAvgOrderByAggregateInput = {
+  id?: Prisma.SortOrder
+  tenantId?: Prisma.SortOrder
 }
 
 export type TenantSettingMaxOrderByAggregateInput = {
@@ -365,6 +407,11 @@ export type TenantSettingMinOrderByAggregateInput = {
   tenantId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+}
+
+export type TenantSettingSumOrderByAggregateInput = {
+  id?: Prisma.SortOrder
+  tenantId?: Prisma.SortOrder
 }
 
 export type TenantSettingCreateNestedManyWithoutTenantInput = {
@@ -410,7 +457,6 @@ export type TenantSettingUncheckedUpdateManyWithoutTenantNestedInput = {
 }
 
 export type TenantSettingCreateWithoutTenantInput = {
-  id?: string
   key: string
   value: string
   dataType?: string
@@ -419,7 +465,7 @@ export type TenantSettingCreateWithoutTenantInput = {
 }
 
 export type TenantSettingUncheckedCreateWithoutTenantInput = {
-  id?: string
+  id?: number
   key: string
   value: string
   dataType?: string
@@ -457,17 +503,17 @@ export type TenantSettingScalarWhereInput = {
   AND?: Prisma.TenantSettingScalarWhereInput | Prisma.TenantSettingScalarWhereInput[]
   OR?: Prisma.TenantSettingScalarWhereInput[]
   NOT?: Prisma.TenantSettingScalarWhereInput | Prisma.TenantSettingScalarWhereInput[]
-  id?: Prisma.StringFilter<"TenantSetting"> | string
+  id?: Prisma.IntFilter<"TenantSetting"> | number
   key?: Prisma.StringFilter<"TenantSetting"> | string
   value?: Prisma.StringFilter<"TenantSetting"> | string
   dataType?: Prisma.StringFilter<"TenantSetting"> | string
-  tenantId?: Prisma.StringFilter<"TenantSetting"> | string
+  tenantId?: Prisma.IntFilter<"TenantSetting"> | number
   createdAt?: Prisma.DateTimeFilter<"TenantSetting"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"TenantSetting"> | Date | string
 }
 
 export type TenantSettingCreateManyTenantInput = {
-  id?: string
+  id?: number
   key: string
   value: string
   dataType?: string
@@ -476,7 +522,6 @@ export type TenantSettingCreateManyTenantInput = {
 }
 
 export type TenantSettingUpdateWithoutTenantInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   key?: Prisma.StringFieldUpdateOperationsInput | string
   value?: Prisma.StringFieldUpdateOperationsInput | string
   dataType?: Prisma.StringFieldUpdateOperationsInput | string
@@ -485,7 +530,7 @@ export type TenantSettingUpdateWithoutTenantInput = {
 }
 
 export type TenantSettingUncheckedUpdateWithoutTenantInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   key?: Prisma.StringFieldUpdateOperationsInput | string
   value?: Prisma.StringFieldUpdateOperationsInput | string
   dataType?: Prisma.StringFieldUpdateOperationsInput | string
@@ -494,7 +539,7 @@ export type TenantSettingUncheckedUpdateWithoutTenantInput = {
 }
 
 export type TenantSettingUncheckedUpdateManyWithoutTenantInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   key?: Prisma.StringFieldUpdateOperationsInput | string
   value?: Prisma.StringFieldUpdateOperationsInput | string
   dataType?: Prisma.StringFieldUpdateOperationsInput | string
@@ -564,11 +609,11 @@ export type $TenantSettingPayload<ExtArgs extends runtime.Types.Extensions.Inter
     tenant: Prisma.$TenantPayload<ExtArgs>
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
-    id: string
+    id: number
     key: string
     value: string
     dataType: string
-    tenantId: string
+    tenantId: number
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["tenantSetting"]>
@@ -995,11 +1040,11 @@ export interface Prisma__TenantSettingClient<T, Null = never, ExtArgs extends ru
  * Fields of the TenantSetting model
  */
 export interface TenantSettingFieldRefs {
-  readonly id: Prisma.FieldRef<"TenantSetting", 'String'>
+  readonly id: Prisma.FieldRef<"TenantSetting", 'Int'>
   readonly key: Prisma.FieldRef<"TenantSetting", 'String'>
   readonly value: Prisma.FieldRef<"TenantSetting", 'String'>
   readonly dataType: Prisma.FieldRef<"TenantSetting", 'String'>
-  readonly tenantId: Prisma.FieldRef<"TenantSetting", 'String'>
+  readonly tenantId: Prisma.FieldRef<"TenantSetting", 'Int'>
   readonly createdAt: Prisma.FieldRef<"TenantSetting", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"TenantSetting", 'DateTime'>
 }

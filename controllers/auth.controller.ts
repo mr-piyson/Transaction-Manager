@@ -145,7 +145,7 @@ export async function signIn(credentials: LoginCredentials): Promise<AuthResult>
     // Find user by email
     const user = await db.user.findUnique({
       where: { email: credentials.email.toLowerCase() },
-      select: { id: true, email: true, hashedPassword: true },
+      select: { id: true, email: true, passwordHash: true },
     });
 
     if (!user) {
@@ -153,7 +153,7 @@ export async function signIn(credentials: LoginCredentials): Promise<AuthResult>
     }
 
     // Verify password
-    const isValidPassword = await compare(credentials.password, user.hashedPassword);
+    const isValidPassword = await compare(credentials.password, user.passwordHash);
 
     if (!isValidPassword) {
       return { success: false, error: "Invalid credentials" };

@@ -27,27 +27,39 @@ export type AggregateSalesOrder = {
 }
 
 export type SalesOrderAvgAggregateOutputType = {
+  id: number | null
   subtotal: runtime.Decimal | null
   discountPercent: runtime.Decimal | null
   discountAmount: runtime.Decimal | null
   taxAmount: runtime.Decimal | null
   shippingCost: runtime.Decimal | null
   totalAmount: runtime.Decimal | null
+  tenantId: number | null
+  customerId: number | null
+  quotationId: number | null
+  paymentTermId: number | null
+  salesRepId: number | null
   createdBy: number | null
 }
 
 export type SalesOrderSumAggregateOutputType = {
+  id: number | null
   subtotal: runtime.Decimal | null
   discountPercent: runtime.Decimal | null
   discountAmount: runtime.Decimal | null
   taxAmount: runtime.Decimal | null
   shippingCost: runtime.Decimal | null
   totalAmount: runtime.Decimal | null
+  tenantId: number | null
+  customerId: number | null
+  quotationId: number | null
+  paymentTermId: number | null
+  salesRepId: number | null
   createdBy: number | null
 }
 
 export type SalesOrderMinAggregateOutputType = {
-  id: string | null
+  id: number | null
   orderNumber: string | null
   orderDate: Date | null
   expectedDelivery: Date | null
@@ -65,18 +77,18 @@ export type SalesOrderMinAggregateOutputType = {
   trackingNumber: string | null
   notes: string | null
   internalNotes: string | null
-  tenantId: string | null
-  customerId: string | null
-  quotationId: string | null
-  paymentTermId: string | null
-  salesRepId: string | null
+  tenantId: number | null
+  customerId: number | null
+  quotationId: number | null
+  paymentTermId: number | null
+  salesRepId: number | null
   createdBy: number | null
   createdAt: Date | null
   updatedAt: Date | null
 }
 
 export type SalesOrderMaxAggregateOutputType = {
-  id: string | null
+  id: number | null
   orderNumber: string | null
   orderDate: Date | null
   expectedDelivery: Date | null
@@ -94,11 +106,11 @@ export type SalesOrderMaxAggregateOutputType = {
   trackingNumber: string | null
   notes: string | null
   internalNotes: string | null
-  tenantId: string | null
-  customerId: string | null
-  quotationId: string | null
-  paymentTermId: string | null
-  salesRepId: string | null
+  tenantId: number | null
+  customerId: number | null
+  quotationId: number | null
+  paymentTermId: number | null
+  salesRepId: number | null
   createdBy: number | null
   createdAt: Date | null
   updatedAt: Date | null
@@ -136,22 +148,34 @@ export type SalesOrderCountAggregateOutputType = {
 
 
 export type SalesOrderAvgAggregateInputType = {
+  id?: true
   subtotal?: true
   discountPercent?: true
   discountAmount?: true
   taxAmount?: true
   shippingCost?: true
   totalAmount?: true
+  tenantId?: true
+  customerId?: true
+  quotationId?: true
+  paymentTermId?: true
+  salesRepId?: true
   createdBy?: true
 }
 
 export type SalesOrderSumAggregateInputType = {
+  id?: true
   subtotal?: true
   discountPercent?: true
   discountAmount?: true
   taxAmount?: true
   shippingCost?: true
   totalAmount?: true
+  tenantId?: true
+  customerId?: true
+  quotationId?: true
+  paymentTermId?: true
+  salesRepId?: true
   createdBy?: true
 }
 
@@ -330,7 +354,7 @@ export type SalesOrderGroupByArgs<ExtArgs extends runtime.Types.Extensions.Inter
 }
 
 export type SalesOrderGroupByOutputType = {
-  id: string
+  id: number
   orderNumber: string
   orderDate: Date
   expectedDelivery: Date | null
@@ -348,11 +372,11 @@ export type SalesOrderGroupByOutputType = {
   trackingNumber: string | null
   notes: string | null
   internalNotes: string | null
-  tenantId: string
-  customerId: string
-  quotationId: string | null
-  paymentTermId: string | null
-  salesRepId: string | null
+  tenantId: number
+  customerId: number
+  quotationId: number | null
+  paymentTermId: number | null
+  salesRepId: number | null
   createdBy: number
   createdAt: Date
   updatedAt: Date
@@ -382,7 +406,7 @@ export type SalesOrderWhereInput = {
   AND?: Prisma.SalesOrderWhereInput | Prisma.SalesOrderWhereInput[]
   OR?: Prisma.SalesOrderWhereInput[]
   NOT?: Prisma.SalesOrderWhereInput | Prisma.SalesOrderWhereInput[]
-  id?: Prisma.StringFilter<"SalesOrder"> | string
+  id?: Prisma.IntFilter<"SalesOrder"> | number
   orderNumber?: Prisma.StringFilter<"SalesOrder"> | string
   orderDate?: Prisma.DateTimeFilter<"SalesOrder"> | Date | string
   expectedDelivery?: Prisma.DateTimeNullableFilter<"SalesOrder"> | Date | string | null
@@ -400,11 +424,11 @@ export type SalesOrderWhereInput = {
   trackingNumber?: Prisma.StringNullableFilter<"SalesOrder"> | string | null
   notes?: Prisma.StringNullableFilter<"SalesOrder"> | string | null
   internalNotes?: Prisma.StringNullableFilter<"SalesOrder"> | string | null
-  tenantId?: Prisma.StringFilter<"SalesOrder"> | string
-  customerId?: Prisma.StringFilter<"SalesOrder"> | string
-  quotationId?: Prisma.StringNullableFilter<"SalesOrder"> | string | null
-  paymentTermId?: Prisma.StringNullableFilter<"SalesOrder"> | string | null
-  salesRepId?: Prisma.StringNullableFilter<"SalesOrder"> | string | null
+  tenantId?: Prisma.IntFilter<"SalesOrder"> | number
+  customerId?: Prisma.IntFilter<"SalesOrder"> | number
+  quotationId?: Prisma.IntNullableFilter<"SalesOrder"> | number | null
+  paymentTermId?: Prisma.IntNullableFilter<"SalesOrder"> | number | null
+  salesRepId?: Prisma.IntNullableFilter<"SalesOrder"> | number | null
   createdBy?: Prisma.IntFilter<"SalesOrder"> | number
   createdAt?: Prisma.DateTimeFilter<"SalesOrder"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"SalesOrder"> | Date | string
@@ -458,8 +482,8 @@ export type SalesOrderOrderByWithRelationInput = {
 }
 
 export type SalesOrderWhereUniqueInput = Prisma.AtLeast<{
-  id?: string
-  quotationId?: string
+  id?: number
+  quotationId?: number
   tenantId_orderNumber?: Prisma.SalesOrderTenantIdOrderNumberCompoundUniqueInput
   AND?: Prisma.SalesOrderWhereInput | Prisma.SalesOrderWhereInput[]
   OR?: Prisma.SalesOrderWhereInput[]
@@ -481,10 +505,10 @@ export type SalesOrderWhereUniqueInput = Prisma.AtLeast<{
   trackingNumber?: Prisma.StringNullableFilter<"SalesOrder"> | string | null
   notes?: Prisma.StringNullableFilter<"SalesOrder"> | string | null
   internalNotes?: Prisma.StringNullableFilter<"SalesOrder"> | string | null
-  tenantId?: Prisma.StringFilter<"SalesOrder"> | string
-  customerId?: Prisma.StringFilter<"SalesOrder"> | string
-  paymentTermId?: Prisma.StringNullableFilter<"SalesOrder"> | string | null
-  salesRepId?: Prisma.StringNullableFilter<"SalesOrder"> | string | null
+  tenantId?: Prisma.IntFilter<"SalesOrder"> | number
+  customerId?: Prisma.IntFilter<"SalesOrder"> | number
+  paymentTermId?: Prisma.IntNullableFilter<"SalesOrder"> | number | null
+  salesRepId?: Prisma.IntNullableFilter<"SalesOrder"> | number | null
   createdBy?: Prisma.IntFilter<"SalesOrder"> | number
   createdAt?: Prisma.DateTimeFilter<"SalesOrder"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"SalesOrder"> | Date | string
@@ -537,7 +561,7 @@ export type SalesOrderScalarWhereWithAggregatesInput = {
   AND?: Prisma.SalesOrderScalarWhereWithAggregatesInput | Prisma.SalesOrderScalarWhereWithAggregatesInput[]
   OR?: Prisma.SalesOrderScalarWhereWithAggregatesInput[]
   NOT?: Prisma.SalesOrderScalarWhereWithAggregatesInput | Prisma.SalesOrderScalarWhereWithAggregatesInput[]
-  id?: Prisma.StringWithAggregatesFilter<"SalesOrder"> | string
+  id?: Prisma.IntWithAggregatesFilter<"SalesOrder"> | number
   orderNumber?: Prisma.StringWithAggregatesFilter<"SalesOrder"> | string
   orderDate?: Prisma.DateTimeWithAggregatesFilter<"SalesOrder"> | Date | string
   expectedDelivery?: Prisma.DateTimeNullableWithAggregatesFilter<"SalesOrder"> | Date | string | null
@@ -555,18 +579,17 @@ export type SalesOrderScalarWhereWithAggregatesInput = {
   trackingNumber?: Prisma.StringNullableWithAggregatesFilter<"SalesOrder"> | string | null
   notes?: Prisma.StringNullableWithAggregatesFilter<"SalesOrder"> | string | null
   internalNotes?: Prisma.StringNullableWithAggregatesFilter<"SalesOrder"> | string | null
-  tenantId?: Prisma.StringWithAggregatesFilter<"SalesOrder"> | string
-  customerId?: Prisma.StringWithAggregatesFilter<"SalesOrder"> | string
-  quotationId?: Prisma.StringNullableWithAggregatesFilter<"SalesOrder"> | string | null
-  paymentTermId?: Prisma.StringNullableWithAggregatesFilter<"SalesOrder"> | string | null
-  salesRepId?: Prisma.StringNullableWithAggregatesFilter<"SalesOrder"> | string | null
+  tenantId?: Prisma.IntWithAggregatesFilter<"SalesOrder"> | number
+  customerId?: Prisma.IntWithAggregatesFilter<"SalesOrder"> | number
+  quotationId?: Prisma.IntNullableWithAggregatesFilter<"SalesOrder"> | number | null
+  paymentTermId?: Prisma.IntNullableWithAggregatesFilter<"SalesOrder"> | number | null
+  salesRepId?: Prisma.IntNullableWithAggregatesFilter<"SalesOrder"> | number | null
   createdBy?: Prisma.IntWithAggregatesFilter<"SalesOrder"> | number
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"SalesOrder"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"SalesOrder"> | Date | string
 }
 
 export type SalesOrderCreateInput = {
-  id?: string
   orderNumber: string
   orderDate?: Date | string
   expectedDelivery?: Date | string | null
@@ -584,7 +607,7 @@ export type SalesOrderCreateInput = {
   trackingNumber?: string | null
   notes?: string | null
   internalNotes?: string | null
-  salesRepId?: string | null
+  salesRepId?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   tenant: Prisma.TenantCreateNestedOneWithoutOrdersInput
@@ -599,7 +622,7 @@ export type SalesOrderCreateInput = {
 }
 
 export type SalesOrderUncheckedCreateInput = {
-  id?: string
+  id?: number
   orderNumber: string
   orderDate?: Date | string
   expectedDelivery?: Date | string | null
@@ -617,11 +640,11 @@ export type SalesOrderUncheckedCreateInput = {
   trackingNumber?: string | null
   notes?: string | null
   internalNotes?: string | null
-  tenantId: string
-  customerId: string
-  quotationId?: string | null
-  paymentTermId?: string | null
-  salesRepId?: string | null
+  tenantId: number
+  customerId: number
+  quotationId?: number | null
+  paymentTermId?: number | null
+  salesRepId?: number | null
   createdBy: number
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -632,7 +655,6 @@ export type SalesOrderUncheckedCreateInput = {
 }
 
 export type SalesOrderUpdateInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   orderNumber?: Prisma.StringFieldUpdateOperationsInput | string
   orderDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   expectedDelivery?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -650,7 +672,7 @@ export type SalesOrderUpdateInput = {
   trackingNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   internalNotes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  salesRepId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  salesRepId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   tenant?: Prisma.TenantUpdateOneRequiredWithoutOrdersNestedInput
@@ -665,7 +687,7 @@ export type SalesOrderUpdateInput = {
 }
 
 export type SalesOrderUncheckedUpdateInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   orderNumber?: Prisma.StringFieldUpdateOperationsInput | string
   orderDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   expectedDelivery?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -683,11 +705,11 @@ export type SalesOrderUncheckedUpdateInput = {
   trackingNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   internalNotes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  tenantId?: Prisma.StringFieldUpdateOperationsInput | string
-  customerId?: Prisma.StringFieldUpdateOperationsInput | string
-  quotationId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  paymentTermId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  salesRepId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tenantId?: Prisma.IntFieldUpdateOperationsInput | number
+  customerId?: Prisma.IntFieldUpdateOperationsInput | number
+  quotationId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  paymentTermId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  salesRepId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdBy?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -698,7 +720,7 @@ export type SalesOrderUncheckedUpdateInput = {
 }
 
 export type SalesOrderCreateManyInput = {
-  id?: string
+  id?: number
   orderNumber: string
   orderDate?: Date | string
   expectedDelivery?: Date | string | null
@@ -716,18 +738,17 @@ export type SalesOrderCreateManyInput = {
   trackingNumber?: string | null
   notes?: string | null
   internalNotes?: string | null
-  tenantId: string
-  customerId: string
-  quotationId?: string | null
-  paymentTermId?: string | null
-  salesRepId?: string | null
+  tenantId: number
+  customerId: number
+  quotationId?: number | null
+  paymentTermId?: number | null
+  salesRepId?: number | null
   createdBy: number
   createdAt?: Date | string
   updatedAt?: Date | string
 }
 
 export type SalesOrderUpdateManyMutationInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   orderNumber?: Prisma.StringFieldUpdateOperationsInput | string
   orderDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   expectedDelivery?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -745,13 +766,13 @@ export type SalesOrderUpdateManyMutationInput = {
   trackingNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   internalNotes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  salesRepId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  salesRepId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type SalesOrderUncheckedUpdateManyInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   orderNumber?: Prisma.StringFieldUpdateOperationsInput | string
   orderDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   expectedDelivery?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -769,11 +790,11 @@ export type SalesOrderUncheckedUpdateManyInput = {
   trackingNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   internalNotes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  tenantId?: Prisma.StringFieldUpdateOperationsInput | string
-  customerId?: Prisma.StringFieldUpdateOperationsInput | string
-  quotationId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  paymentTermId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  salesRepId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tenantId?: Prisma.IntFieldUpdateOperationsInput | number
+  customerId?: Prisma.IntFieldUpdateOperationsInput | number
+  quotationId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  paymentTermId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  salesRepId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdBy?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -795,7 +816,7 @@ export type SalesOrderNullableScalarRelationFilter = {
 }
 
 export type SalesOrderTenantIdOrderNumberCompoundUniqueInput = {
-  tenantId: string
+  tenantId: number
   orderNumber: string
 }
 
@@ -829,12 +850,18 @@ export type SalesOrderCountOrderByAggregateInput = {
 }
 
 export type SalesOrderAvgOrderByAggregateInput = {
+  id?: Prisma.SortOrder
   subtotal?: Prisma.SortOrder
   discountPercent?: Prisma.SortOrder
   discountAmount?: Prisma.SortOrder
   taxAmount?: Prisma.SortOrder
   shippingCost?: Prisma.SortOrder
   totalAmount?: Prisma.SortOrder
+  tenantId?: Prisma.SortOrder
+  customerId?: Prisma.SortOrder
+  quotationId?: Prisma.SortOrder
+  paymentTermId?: Prisma.SortOrder
+  salesRepId?: Prisma.SortOrder
   createdBy?: Prisma.SortOrder
 }
 
@@ -897,12 +924,18 @@ export type SalesOrderMinOrderByAggregateInput = {
 }
 
 export type SalesOrderSumOrderByAggregateInput = {
+  id?: Prisma.SortOrder
   subtotal?: Prisma.SortOrder
   discountPercent?: Prisma.SortOrder
   discountAmount?: Prisma.SortOrder
   taxAmount?: Prisma.SortOrder
   shippingCost?: Prisma.SortOrder
   totalAmount?: Prisma.SortOrder
+  tenantId?: Prisma.SortOrder
+  customerId?: Prisma.SortOrder
+  quotationId?: Prisma.SortOrder
+  paymentTermId?: Prisma.SortOrder
+  salesRepId?: Prisma.SortOrder
   createdBy?: Prisma.SortOrder
 }
 
@@ -1176,7 +1209,6 @@ export type SalesOrderUncheckedUpdateManyWithoutPaymentTermNestedInput = {
 }
 
 export type SalesOrderCreateWithoutTenantInput = {
-  id?: string
   orderNumber: string
   orderDate?: Date | string
   expectedDelivery?: Date | string | null
@@ -1194,7 +1226,7 @@ export type SalesOrderCreateWithoutTenantInput = {
   trackingNumber?: string | null
   notes?: string | null
   internalNotes?: string | null
-  salesRepId?: string | null
+  salesRepId?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   customer: Prisma.CustomerCreateNestedOneWithoutOrdersInput
@@ -1208,7 +1240,7 @@ export type SalesOrderCreateWithoutTenantInput = {
 }
 
 export type SalesOrderUncheckedCreateWithoutTenantInput = {
-  id?: string
+  id?: number
   orderNumber: string
   orderDate?: Date | string
   expectedDelivery?: Date | string | null
@@ -1226,10 +1258,10 @@ export type SalesOrderUncheckedCreateWithoutTenantInput = {
   trackingNumber?: string | null
   notes?: string | null
   internalNotes?: string | null
-  customerId: string
-  quotationId?: string | null
-  paymentTermId?: string | null
-  salesRepId?: string | null
+  customerId: number
+  quotationId?: number | null
+  paymentTermId?: number | null
+  salesRepId?: number | null
   createdBy: number
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1269,7 +1301,7 @@ export type SalesOrderScalarWhereInput = {
   AND?: Prisma.SalesOrderScalarWhereInput | Prisma.SalesOrderScalarWhereInput[]
   OR?: Prisma.SalesOrderScalarWhereInput[]
   NOT?: Prisma.SalesOrderScalarWhereInput | Prisma.SalesOrderScalarWhereInput[]
-  id?: Prisma.StringFilter<"SalesOrder"> | string
+  id?: Prisma.IntFilter<"SalesOrder"> | number
   orderNumber?: Prisma.StringFilter<"SalesOrder"> | string
   orderDate?: Prisma.DateTimeFilter<"SalesOrder"> | Date | string
   expectedDelivery?: Prisma.DateTimeNullableFilter<"SalesOrder"> | Date | string | null
@@ -1287,18 +1319,17 @@ export type SalesOrderScalarWhereInput = {
   trackingNumber?: Prisma.StringNullableFilter<"SalesOrder"> | string | null
   notes?: Prisma.StringNullableFilter<"SalesOrder"> | string | null
   internalNotes?: Prisma.StringNullableFilter<"SalesOrder"> | string | null
-  tenantId?: Prisma.StringFilter<"SalesOrder"> | string
-  customerId?: Prisma.StringFilter<"SalesOrder"> | string
-  quotationId?: Prisma.StringNullableFilter<"SalesOrder"> | string | null
-  paymentTermId?: Prisma.StringNullableFilter<"SalesOrder"> | string | null
-  salesRepId?: Prisma.StringNullableFilter<"SalesOrder"> | string | null
+  tenantId?: Prisma.IntFilter<"SalesOrder"> | number
+  customerId?: Prisma.IntFilter<"SalesOrder"> | number
+  quotationId?: Prisma.IntNullableFilter<"SalesOrder"> | number | null
+  paymentTermId?: Prisma.IntNullableFilter<"SalesOrder"> | number | null
+  salesRepId?: Prisma.IntNullableFilter<"SalesOrder"> | number | null
   createdBy?: Prisma.IntFilter<"SalesOrder"> | number
   createdAt?: Prisma.DateTimeFilter<"SalesOrder"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"SalesOrder"> | Date | string
 }
 
 export type SalesOrderCreateWithoutCreatorInput = {
-  id?: string
   orderNumber: string
   orderDate?: Date | string
   expectedDelivery?: Date | string | null
@@ -1316,7 +1347,7 @@ export type SalesOrderCreateWithoutCreatorInput = {
   trackingNumber?: string | null
   notes?: string | null
   internalNotes?: string | null
-  salesRepId?: string | null
+  salesRepId?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   tenant: Prisma.TenantCreateNestedOneWithoutOrdersInput
@@ -1330,7 +1361,7 @@ export type SalesOrderCreateWithoutCreatorInput = {
 }
 
 export type SalesOrderUncheckedCreateWithoutCreatorInput = {
-  id?: string
+  id?: number
   orderNumber: string
   orderDate?: Date | string
   expectedDelivery?: Date | string | null
@@ -1348,11 +1379,11 @@ export type SalesOrderUncheckedCreateWithoutCreatorInput = {
   trackingNumber?: string | null
   notes?: string | null
   internalNotes?: string | null
-  tenantId: string
-  customerId: string
-  quotationId?: string | null
-  paymentTermId?: string | null
-  salesRepId?: string | null
+  tenantId: number
+  customerId: number
+  quotationId?: number | null
+  paymentTermId?: number | null
+  salesRepId?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   items?: Prisma.OrderItemUncheckedCreateNestedManyWithoutOrderInput
@@ -1388,7 +1419,6 @@ export type SalesOrderUpdateManyWithWhereWithoutCreatorInput = {
 }
 
 export type SalesOrderCreateWithoutCustomerInput = {
-  id?: string
   orderNumber: string
   orderDate?: Date | string
   expectedDelivery?: Date | string | null
@@ -1406,7 +1436,7 @@ export type SalesOrderCreateWithoutCustomerInput = {
   trackingNumber?: string | null
   notes?: string | null
   internalNotes?: string | null
-  salesRepId?: string | null
+  salesRepId?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   tenant: Prisma.TenantCreateNestedOneWithoutOrdersInput
@@ -1420,7 +1450,7 @@ export type SalesOrderCreateWithoutCustomerInput = {
 }
 
 export type SalesOrderUncheckedCreateWithoutCustomerInput = {
-  id?: string
+  id?: number
   orderNumber: string
   orderDate?: Date | string
   expectedDelivery?: Date | string | null
@@ -1438,10 +1468,10 @@ export type SalesOrderUncheckedCreateWithoutCustomerInput = {
   trackingNumber?: string | null
   notes?: string | null
   internalNotes?: string | null
-  tenantId: string
-  quotationId?: string | null
-  paymentTermId?: string | null
-  salesRepId?: string | null
+  tenantId: number
+  quotationId?: number | null
+  paymentTermId?: number | null
+  salesRepId?: number | null
   createdBy: number
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1478,7 +1508,6 @@ export type SalesOrderUpdateManyWithWhereWithoutCustomerInput = {
 }
 
 export type SalesOrderCreateWithoutQuotationInput = {
-  id?: string
   orderNumber: string
   orderDate?: Date | string
   expectedDelivery?: Date | string | null
@@ -1496,7 +1525,7 @@ export type SalesOrderCreateWithoutQuotationInput = {
   trackingNumber?: string | null
   notes?: string | null
   internalNotes?: string | null
-  salesRepId?: string | null
+  salesRepId?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   tenant: Prisma.TenantCreateNestedOneWithoutOrdersInput
@@ -1510,7 +1539,7 @@ export type SalesOrderCreateWithoutQuotationInput = {
 }
 
 export type SalesOrderUncheckedCreateWithoutQuotationInput = {
-  id?: string
+  id?: number
   orderNumber: string
   orderDate?: Date | string
   expectedDelivery?: Date | string | null
@@ -1528,10 +1557,10 @@ export type SalesOrderUncheckedCreateWithoutQuotationInput = {
   trackingNumber?: string | null
   notes?: string | null
   internalNotes?: string | null
-  tenantId: string
-  customerId: string
-  paymentTermId?: string | null
-  salesRepId?: string | null
+  tenantId: number
+  customerId: number
+  paymentTermId?: number | null
+  salesRepId?: number | null
   createdBy: number
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1558,7 +1587,6 @@ export type SalesOrderUpdateToOneWithWhereWithoutQuotationInput = {
 }
 
 export type SalesOrderUpdateWithoutQuotationInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   orderNumber?: Prisma.StringFieldUpdateOperationsInput | string
   orderDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   expectedDelivery?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1576,7 +1604,7 @@ export type SalesOrderUpdateWithoutQuotationInput = {
   trackingNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   internalNotes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  salesRepId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  salesRepId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   tenant?: Prisma.TenantUpdateOneRequiredWithoutOrdersNestedInput
@@ -1590,7 +1618,7 @@ export type SalesOrderUpdateWithoutQuotationInput = {
 }
 
 export type SalesOrderUncheckedUpdateWithoutQuotationInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   orderNumber?: Prisma.StringFieldUpdateOperationsInput | string
   orderDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   expectedDelivery?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1608,10 +1636,10 @@ export type SalesOrderUncheckedUpdateWithoutQuotationInput = {
   trackingNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   internalNotes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  tenantId?: Prisma.StringFieldUpdateOperationsInput | string
-  customerId?: Prisma.StringFieldUpdateOperationsInput | string
-  paymentTermId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  salesRepId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tenantId?: Prisma.IntFieldUpdateOperationsInput | number
+  customerId?: Prisma.IntFieldUpdateOperationsInput | number
+  paymentTermId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  salesRepId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdBy?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1622,7 +1650,6 @@ export type SalesOrderUncheckedUpdateWithoutQuotationInput = {
 }
 
 export type SalesOrderCreateWithoutItemsInput = {
-  id?: string
   orderNumber: string
   orderDate?: Date | string
   expectedDelivery?: Date | string | null
@@ -1640,7 +1667,7 @@ export type SalesOrderCreateWithoutItemsInput = {
   trackingNumber?: string | null
   notes?: string | null
   internalNotes?: string | null
-  salesRepId?: string | null
+  salesRepId?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   tenant: Prisma.TenantCreateNestedOneWithoutOrdersInput
@@ -1654,7 +1681,7 @@ export type SalesOrderCreateWithoutItemsInput = {
 }
 
 export type SalesOrderUncheckedCreateWithoutItemsInput = {
-  id?: string
+  id?: number
   orderNumber: string
   orderDate?: Date | string
   expectedDelivery?: Date | string | null
@@ -1672,11 +1699,11 @@ export type SalesOrderUncheckedCreateWithoutItemsInput = {
   trackingNumber?: string | null
   notes?: string | null
   internalNotes?: string | null
-  tenantId: string
-  customerId: string
-  quotationId?: string | null
-  paymentTermId?: string | null
-  salesRepId?: string | null
+  tenantId: number
+  customerId: number
+  quotationId?: number | null
+  paymentTermId?: number | null
+  salesRepId?: number | null
   createdBy: number
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1702,7 +1729,6 @@ export type SalesOrderUpdateToOneWithWhereWithoutItemsInput = {
 }
 
 export type SalesOrderUpdateWithoutItemsInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   orderNumber?: Prisma.StringFieldUpdateOperationsInput | string
   orderDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   expectedDelivery?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1720,7 +1746,7 @@ export type SalesOrderUpdateWithoutItemsInput = {
   trackingNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   internalNotes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  salesRepId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  salesRepId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   tenant?: Prisma.TenantUpdateOneRequiredWithoutOrdersNestedInput
@@ -1734,7 +1760,7 @@ export type SalesOrderUpdateWithoutItemsInput = {
 }
 
 export type SalesOrderUncheckedUpdateWithoutItemsInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   orderNumber?: Prisma.StringFieldUpdateOperationsInput | string
   orderDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   expectedDelivery?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1752,11 +1778,11 @@ export type SalesOrderUncheckedUpdateWithoutItemsInput = {
   trackingNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   internalNotes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  tenantId?: Prisma.StringFieldUpdateOperationsInput | string
-  customerId?: Prisma.StringFieldUpdateOperationsInput | string
-  quotationId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  paymentTermId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  salesRepId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tenantId?: Prisma.IntFieldUpdateOperationsInput | number
+  customerId?: Prisma.IntFieldUpdateOperationsInput | number
+  quotationId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  paymentTermId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  salesRepId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdBy?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1766,7 +1792,6 @@ export type SalesOrderUncheckedUpdateWithoutItemsInput = {
 }
 
 export type SalesOrderCreateWithoutShipmentsInput = {
-  id?: string
   orderNumber: string
   orderDate?: Date | string
   expectedDelivery?: Date | string | null
@@ -1784,7 +1809,7 @@ export type SalesOrderCreateWithoutShipmentsInput = {
   trackingNumber?: string | null
   notes?: string | null
   internalNotes?: string | null
-  salesRepId?: string | null
+  salesRepId?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   tenant: Prisma.TenantCreateNestedOneWithoutOrdersInput
@@ -1798,7 +1823,7 @@ export type SalesOrderCreateWithoutShipmentsInput = {
 }
 
 export type SalesOrderUncheckedCreateWithoutShipmentsInput = {
-  id?: string
+  id?: number
   orderNumber: string
   orderDate?: Date | string
   expectedDelivery?: Date | string | null
@@ -1816,11 +1841,11 @@ export type SalesOrderUncheckedCreateWithoutShipmentsInput = {
   trackingNumber?: string | null
   notes?: string | null
   internalNotes?: string | null
-  tenantId: string
-  customerId: string
-  quotationId?: string | null
-  paymentTermId?: string | null
-  salesRepId?: string | null
+  tenantId: number
+  customerId: number
+  quotationId?: number | null
+  paymentTermId?: number | null
+  salesRepId?: number | null
   createdBy: number
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1846,7 +1871,6 @@ export type SalesOrderUpdateToOneWithWhereWithoutShipmentsInput = {
 }
 
 export type SalesOrderUpdateWithoutShipmentsInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   orderNumber?: Prisma.StringFieldUpdateOperationsInput | string
   orderDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   expectedDelivery?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1864,7 +1888,7 @@ export type SalesOrderUpdateWithoutShipmentsInput = {
   trackingNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   internalNotes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  salesRepId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  salesRepId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   tenant?: Prisma.TenantUpdateOneRequiredWithoutOrdersNestedInput
@@ -1878,7 +1902,7 @@ export type SalesOrderUpdateWithoutShipmentsInput = {
 }
 
 export type SalesOrderUncheckedUpdateWithoutShipmentsInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   orderNumber?: Prisma.StringFieldUpdateOperationsInput | string
   orderDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   expectedDelivery?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1896,11 +1920,11 @@ export type SalesOrderUncheckedUpdateWithoutShipmentsInput = {
   trackingNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   internalNotes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  tenantId?: Prisma.StringFieldUpdateOperationsInput | string
-  customerId?: Prisma.StringFieldUpdateOperationsInput | string
-  quotationId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  paymentTermId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  salesRepId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tenantId?: Prisma.IntFieldUpdateOperationsInput | number
+  customerId?: Prisma.IntFieldUpdateOperationsInput | number
+  quotationId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  paymentTermId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  salesRepId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdBy?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1910,7 +1934,6 @@ export type SalesOrderUncheckedUpdateWithoutShipmentsInput = {
 }
 
 export type SalesOrderCreateWithoutInvoicesInput = {
-  id?: string
   orderNumber: string
   orderDate?: Date | string
   expectedDelivery?: Date | string | null
@@ -1928,7 +1951,7 @@ export type SalesOrderCreateWithoutInvoicesInput = {
   trackingNumber?: string | null
   notes?: string | null
   internalNotes?: string | null
-  salesRepId?: string | null
+  salesRepId?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   tenant: Prisma.TenantCreateNestedOneWithoutOrdersInput
@@ -1942,7 +1965,7 @@ export type SalesOrderCreateWithoutInvoicesInput = {
 }
 
 export type SalesOrderUncheckedCreateWithoutInvoicesInput = {
-  id?: string
+  id?: number
   orderNumber: string
   orderDate?: Date | string
   expectedDelivery?: Date | string | null
@@ -1960,11 +1983,11 @@ export type SalesOrderUncheckedCreateWithoutInvoicesInput = {
   trackingNumber?: string | null
   notes?: string | null
   internalNotes?: string | null
-  tenantId: string
-  customerId: string
-  quotationId?: string | null
-  paymentTermId?: string | null
-  salesRepId?: string | null
+  tenantId: number
+  customerId: number
+  quotationId?: number | null
+  paymentTermId?: number | null
+  salesRepId?: number | null
   createdBy: number
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1990,7 +2013,6 @@ export type SalesOrderUpdateToOneWithWhereWithoutInvoicesInput = {
 }
 
 export type SalesOrderUpdateWithoutInvoicesInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   orderNumber?: Prisma.StringFieldUpdateOperationsInput | string
   orderDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   expectedDelivery?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -2008,7 +2030,7 @@ export type SalesOrderUpdateWithoutInvoicesInput = {
   trackingNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   internalNotes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  salesRepId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  salesRepId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   tenant?: Prisma.TenantUpdateOneRequiredWithoutOrdersNestedInput
@@ -2022,7 +2044,7 @@ export type SalesOrderUpdateWithoutInvoicesInput = {
 }
 
 export type SalesOrderUncheckedUpdateWithoutInvoicesInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   orderNumber?: Prisma.StringFieldUpdateOperationsInput | string
   orderDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   expectedDelivery?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -2040,11 +2062,11 @@ export type SalesOrderUncheckedUpdateWithoutInvoicesInput = {
   trackingNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   internalNotes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  tenantId?: Prisma.StringFieldUpdateOperationsInput | string
-  customerId?: Prisma.StringFieldUpdateOperationsInput | string
-  quotationId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  paymentTermId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  salesRepId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tenantId?: Prisma.IntFieldUpdateOperationsInput | number
+  customerId?: Prisma.IntFieldUpdateOperationsInput | number
+  quotationId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  paymentTermId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  salesRepId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdBy?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -2054,7 +2076,6 @@ export type SalesOrderUncheckedUpdateWithoutInvoicesInput = {
 }
 
 export type SalesOrderCreateWithoutPaymentsInput = {
-  id?: string
   orderNumber: string
   orderDate?: Date | string
   expectedDelivery?: Date | string | null
@@ -2072,7 +2093,7 @@ export type SalesOrderCreateWithoutPaymentsInput = {
   trackingNumber?: string | null
   notes?: string | null
   internalNotes?: string | null
-  salesRepId?: string | null
+  salesRepId?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   tenant: Prisma.TenantCreateNestedOneWithoutOrdersInput
@@ -2086,7 +2107,7 @@ export type SalesOrderCreateWithoutPaymentsInput = {
 }
 
 export type SalesOrderUncheckedCreateWithoutPaymentsInput = {
-  id?: string
+  id?: number
   orderNumber: string
   orderDate?: Date | string
   expectedDelivery?: Date | string | null
@@ -2104,11 +2125,11 @@ export type SalesOrderUncheckedCreateWithoutPaymentsInput = {
   trackingNumber?: string | null
   notes?: string | null
   internalNotes?: string | null
-  tenantId: string
-  customerId: string
-  quotationId?: string | null
-  paymentTermId?: string | null
-  salesRepId?: string | null
+  tenantId: number
+  customerId: number
+  quotationId?: number | null
+  paymentTermId?: number | null
+  salesRepId?: number | null
   createdBy: number
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -2134,7 +2155,6 @@ export type SalesOrderUpdateToOneWithWhereWithoutPaymentsInput = {
 }
 
 export type SalesOrderUpdateWithoutPaymentsInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   orderNumber?: Prisma.StringFieldUpdateOperationsInput | string
   orderDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   expectedDelivery?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -2152,7 +2172,7 @@ export type SalesOrderUpdateWithoutPaymentsInput = {
   trackingNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   internalNotes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  salesRepId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  salesRepId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   tenant?: Prisma.TenantUpdateOneRequiredWithoutOrdersNestedInput
@@ -2166,7 +2186,7 @@ export type SalesOrderUpdateWithoutPaymentsInput = {
 }
 
 export type SalesOrderUncheckedUpdateWithoutPaymentsInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   orderNumber?: Prisma.StringFieldUpdateOperationsInput | string
   orderDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   expectedDelivery?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -2184,11 +2204,11 @@ export type SalesOrderUncheckedUpdateWithoutPaymentsInput = {
   trackingNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   internalNotes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  tenantId?: Prisma.StringFieldUpdateOperationsInput | string
-  customerId?: Prisma.StringFieldUpdateOperationsInput | string
-  quotationId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  paymentTermId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  salesRepId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tenantId?: Prisma.IntFieldUpdateOperationsInput | number
+  customerId?: Prisma.IntFieldUpdateOperationsInput | number
+  quotationId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  paymentTermId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  salesRepId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdBy?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -2198,7 +2218,6 @@ export type SalesOrderUncheckedUpdateWithoutPaymentsInput = {
 }
 
 export type SalesOrderCreateWithoutPaymentTermInput = {
-  id?: string
   orderNumber: string
   orderDate?: Date | string
   expectedDelivery?: Date | string | null
@@ -2216,7 +2235,7 @@ export type SalesOrderCreateWithoutPaymentTermInput = {
   trackingNumber?: string | null
   notes?: string | null
   internalNotes?: string | null
-  salesRepId?: string | null
+  salesRepId?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   tenant: Prisma.TenantCreateNestedOneWithoutOrdersInput
@@ -2230,7 +2249,7 @@ export type SalesOrderCreateWithoutPaymentTermInput = {
 }
 
 export type SalesOrderUncheckedCreateWithoutPaymentTermInput = {
-  id?: string
+  id?: number
   orderNumber: string
   orderDate?: Date | string
   expectedDelivery?: Date | string | null
@@ -2248,10 +2267,10 @@ export type SalesOrderUncheckedCreateWithoutPaymentTermInput = {
   trackingNumber?: string | null
   notes?: string | null
   internalNotes?: string | null
-  tenantId: string
-  customerId: string
-  quotationId?: string | null
-  salesRepId?: string | null
+  tenantId: number
+  customerId: number
+  quotationId?: number | null
+  salesRepId?: number | null
   createdBy: number
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -2288,7 +2307,7 @@ export type SalesOrderUpdateManyWithWhereWithoutPaymentTermInput = {
 }
 
 export type SalesOrderCreateManyTenantInput = {
-  id?: string
+  id?: number
   orderNumber: string
   orderDate?: Date | string
   expectedDelivery?: Date | string | null
@@ -2306,17 +2325,16 @@ export type SalesOrderCreateManyTenantInput = {
   trackingNumber?: string | null
   notes?: string | null
   internalNotes?: string | null
-  customerId: string
-  quotationId?: string | null
-  paymentTermId?: string | null
-  salesRepId?: string | null
+  customerId: number
+  quotationId?: number | null
+  paymentTermId?: number | null
+  salesRepId?: number | null
   createdBy: number
   createdAt?: Date | string
   updatedAt?: Date | string
 }
 
 export type SalesOrderUpdateWithoutTenantInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   orderNumber?: Prisma.StringFieldUpdateOperationsInput | string
   orderDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   expectedDelivery?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -2334,7 +2352,7 @@ export type SalesOrderUpdateWithoutTenantInput = {
   trackingNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   internalNotes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  salesRepId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  salesRepId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   customer?: Prisma.CustomerUpdateOneRequiredWithoutOrdersNestedInput
@@ -2348,7 +2366,7 @@ export type SalesOrderUpdateWithoutTenantInput = {
 }
 
 export type SalesOrderUncheckedUpdateWithoutTenantInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   orderNumber?: Prisma.StringFieldUpdateOperationsInput | string
   orderDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   expectedDelivery?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -2366,10 +2384,10 @@ export type SalesOrderUncheckedUpdateWithoutTenantInput = {
   trackingNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   internalNotes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  customerId?: Prisma.StringFieldUpdateOperationsInput | string
-  quotationId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  paymentTermId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  salesRepId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customerId?: Prisma.IntFieldUpdateOperationsInput | number
+  quotationId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  paymentTermId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  salesRepId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdBy?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -2380,7 +2398,7 @@ export type SalesOrderUncheckedUpdateWithoutTenantInput = {
 }
 
 export type SalesOrderUncheckedUpdateManyWithoutTenantInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   orderNumber?: Prisma.StringFieldUpdateOperationsInput | string
   orderDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   expectedDelivery?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -2398,17 +2416,17 @@ export type SalesOrderUncheckedUpdateManyWithoutTenantInput = {
   trackingNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   internalNotes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  customerId?: Prisma.StringFieldUpdateOperationsInput | string
-  quotationId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  paymentTermId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  salesRepId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  customerId?: Prisma.IntFieldUpdateOperationsInput | number
+  quotationId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  paymentTermId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  salesRepId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdBy?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type SalesOrderCreateManyCreatorInput = {
-  id?: string
+  id?: number
   orderNumber: string
   orderDate?: Date | string
   expectedDelivery?: Date | string | null
@@ -2426,17 +2444,16 @@ export type SalesOrderCreateManyCreatorInput = {
   trackingNumber?: string | null
   notes?: string | null
   internalNotes?: string | null
-  tenantId: string
-  customerId: string
-  quotationId?: string | null
-  paymentTermId?: string | null
-  salesRepId?: string | null
+  tenantId: number
+  customerId: number
+  quotationId?: number | null
+  paymentTermId?: number | null
+  salesRepId?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
 
 export type SalesOrderUpdateWithoutCreatorInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   orderNumber?: Prisma.StringFieldUpdateOperationsInput | string
   orderDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   expectedDelivery?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -2454,7 +2471,7 @@ export type SalesOrderUpdateWithoutCreatorInput = {
   trackingNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   internalNotes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  salesRepId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  salesRepId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   tenant?: Prisma.TenantUpdateOneRequiredWithoutOrdersNestedInput
@@ -2468,7 +2485,7 @@ export type SalesOrderUpdateWithoutCreatorInput = {
 }
 
 export type SalesOrderUncheckedUpdateWithoutCreatorInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   orderNumber?: Prisma.StringFieldUpdateOperationsInput | string
   orderDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   expectedDelivery?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -2486,11 +2503,11 @@ export type SalesOrderUncheckedUpdateWithoutCreatorInput = {
   trackingNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   internalNotes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  tenantId?: Prisma.StringFieldUpdateOperationsInput | string
-  customerId?: Prisma.StringFieldUpdateOperationsInput | string
-  quotationId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  paymentTermId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  salesRepId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tenantId?: Prisma.IntFieldUpdateOperationsInput | number
+  customerId?: Prisma.IntFieldUpdateOperationsInput | number
+  quotationId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  paymentTermId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  salesRepId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   items?: Prisma.OrderItemUncheckedUpdateManyWithoutOrderNestedInput
@@ -2500,7 +2517,7 @@ export type SalesOrderUncheckedUpdateWithoutCreatorInput = {
 }
 
 export type SalesOrderUncheckedUpdateManyWithoutCreatorInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   orderNumber?: Prisma.StringFieldUpdateOperationsInput | string
   orderDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   expectedDelivery?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -2518,17 +2535,17 @@ export type SalesOrderUncheckedUpdateManyWithoutCreatorInput = {
   trackingNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   internalNotes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  tenantId?: Prisma.StringFieldUpdateOperationsInput | string
-  customerId?: Prisma.StringFieldUpdateOperationsInput | string
-  quotationId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  paymentTermId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  salesRepId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tenantId?: Prisma.IntFieldUpdateOperationsInput | number
+  customerId?: Prisma.IntFieldUpdateOperationsInput | number
+  quotationId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  paymentTermId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  salesRepId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type SalesOrderCreateManyCustomerInput = {
-  id?: string
+  id?: number
   orderNumber: string
   orderDate?: Date | string
   expectedDelivery?: Date | string | null
@@ -2546,17 +2563,16 @@ export type SalesOrderCreateManyCustomerInput = {
   trackingNumber?: string | null
   notes?: string | null
   internalNotes?: string | null
-  tenantId: string
-  quotationId?: string | null
-  paymentTermId?: string | null
-  salesRepId?: string | null
+  tenantId: number
+  quotationId?: number | null
+  paymentTermId?: number | null
+  salesRepId?: number | null
   createdBy: number
   createdAt?: Date | string
   updatedAt?: Date | string
 }
 
 export type SalesOrderUpdateWithoutCustomerInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   orderNumber?: Prisma.StringFieldUpdateOperationsInput | string
   orderDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   expectedDelivery?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -2574,7 +2590,7 @@ export type SalesOrderUpdateWithoutCustomerInput = {
   trackingNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   internalNotes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  salesRepId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  salesRepId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   tenant?: Prisma.TenantUpdateOneRequiredWithoutOrdersNestedInput
@@ -2588,7 +2604,7 @@ export type SalesOrderUpdateWithoutCustomerInput = {
 }
 
 export type SalesOrderUncheckedUpdateWithoutCustomerInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   orderNumber?: Prisma.StringFieldUpdateOperationsInput | string
   orderDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   expectedDelivery?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -2606,10 +2622,10 @@ export type SalesOrderUncheckedUpdateWithoutCustomerInput = {
   trackingNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   internalNotes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  tenantId?: Prisma.StringFieldUpdateOperationsInput | string
-  quotationId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  paymentTermId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  salesRepId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tenantId?: Prisma.IntFieldUpdateOperationsInput | number
+  quotationId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  paymentTermId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  salesRepId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdBy?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -2620,7 +2636,7 @@ export type SalesOrderUncheckedUpdateWithoutCustomerInput = {
 }
 
 export type SalesOrderUncheckedUpdateManyWithoutCustomerInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   orderNumber?: Prisma.StringFieldUpdateOperationsInput | string
   orderDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   expectedDelivery?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -2638,17 +2654,17 @@ export type SalesOrderUncheckedUpdateManyWithoutCustomerInput = {
   trackingNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   internalNotes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  tenantId?: Prisma.StringFieldUpdateOperationsInput | string
-  quotationId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  paymentTermId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  salesRepId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tenantId?: Prisma.IntFieldUpdateOperationsInput | number
+  quotationId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  paymentTermId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  salesRepId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdBy?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type SalesOrderCreateManyPaymentTermInput = {
-  id?: string
+  id?: number
   orderNumber: string
   orderDate?: Date | string
   expectedDelivery?: Date | string | null
@@ -2666,17 +2682,16 @@ export type SalesOrderCreateManyPaymentTermInput = {
   trackingNumber?: string | null
   notes?: string | null
   internalNotes?: string | null
-  tenantId: string
-  customerId: string
-  quotationId?: string | null
-  salesRepId?: string | null
+  tenantId: number
+  customerId: number
+  quotationId?: number | null
+  salesRepId?: number | null
   createdBy: number
   createdAt?: Date | string
   updatedAt?: Date | string
 }
 
 export type SalesOrderUpdateWithoutPaymentTermInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   orderNumber?: Prisma.StringFieldUpdateOperationsInput | string
   orderDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   expectedDelivery?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -2694,7 +2709,7 @@ export type SalesOrderUpdateWithoutPaymentTermInput = {
   trackingNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   internalNotes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  salesRepId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  salesRepId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   tenant?: Prisma.TenantUpdateOneRequiredWithoutOrdersNestedInput
@@ -2708,7 +2723,7 @@ export type SalesOrderUpdateWithoutPaymentTermInput = {
 }
 
 export type SalesOrderUncheckedUpdateWithoutPaymentTermInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   orderNumber?: Prisma.StringFieldUpdateOperationsInput | string
   orderDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   expectedDelivery?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -2726,10 +2741,10 @@ export type SalesOrderUncheckedUpdateWithoutPaymentTermInput = {
   trackingNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   internalNotes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  tenantId?: Prisma.StringFieldUpdateOperationsInput | string
-  customerId?: Prisma.StringFieldUpdateOperationsInput | string
-  quotationId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  salesRepId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tenantId?: Prisma.IntFieldUpdateOperationsInput | number
+  customerId?: Prisma.IntFieldUpdateOperationsInput | number
+  quotationId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  salesRepId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdBy?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -2740,7 +2755,7 @@ export type SalesOrderUncheckedUpdateWithoutPaymentTermInput = {
 }
 
 export type SalesOrderUncheckedUpdateManyWithoutPaymentTermInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   orderNumber?: Prisma.StringFieldUpdateOperationsInput | string
   orderDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   expectedDelivery?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -2758,10 +2773,10 @@ export type SalesOrderUncheckedUpdateManyWithoutPaymentTermInput = {
   trackingNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   internalNotes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  tenantId?: Prisma.StringFieldUpdateOperationsInput | string
-  customerId?: Prisma.StringFieldUpdateOperationsInput | string
-  quotationId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  salesRepId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tenantId?: Prisma.IntFieldUpdateOperationsInput | number
+  customerId?: Prisma.IntFieldUpdateOperationsInput | number
+  quotationId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  salesRepId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdBy?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -3003,7 +3018,7 @@ export type $SalesOrderPayload<ExtArgs extends runtime.Types.Extensions.Internal
     payments: Prisma.$PaymentPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
-    id: string
+    id: number
     orderNumber: string
     orderDate: Date
     expectedDelivery: Date | null
@@ -3021,11 +3036,11 @@ export type $SalesOrderPayload<ExtArgs extends runtime.Types.Extensions.Internal
     trackingNumber: string | null
     notes: string | null
     internalNotes: string | null
-    tenantId: string
-    customerId: string
-    quotationId: string | null
-    paymentTermId: string | null
-    salesRepId: string | null
+    tenantId: number
+    customerId: number
+    quotationId: number | null
+    paymentTermId: number | null
+    salesRepId: number | null
     createdBy: number
     createdAt: Date
     updatedAt: Date
@@ -3461,7 +3476,7 @@ export interface Prisma__SalesOrderClient<T, Null = never, ExtArgs extends runti
  * Fields of the SalesOrder model
  */
 export interface SalesOrderFieldRefs {
-  readonly id: Prisma.FieldRef<"SalesOrder", 'String'>
+  readonly id: Prisma.FieldRef<"SalesOrder", 'Int'>
   readonly orderNumber: Prisma.FieldRef<"SalesOrder", 'String'>
   readonly orderDate: Prisma.FieldRef<"SalesOrder", 'DateTime'>
   readonly expectedDelivery: Prisma.FieldRef<"SalesOrder", 'DateTime'>
@@ -3479,11 +3494,11 @@ export interface SalesOrderFieldRefs {
   readonly trackingNumber: Prisma.FieldRef<"SalesOrder", 'String'>
   readonly notes: Prisma.FieldRef<"SalesOrder", 'String'>
   readonly internalNotes: Prisma.FieldRef<"SalesOrder", 'String'>
-  readonly tenantId: Prisma.FieldRef<"SalesOrder", 'String'>
-  readonly customerId: Prisma.FieldRef<"SalesOrder", 'String'>
-  readonly quotationId: Prisma.FieldRef<"SalesOrder", 'String'>
-  readonly paymentTermId: Prisma.FieldRef<"SalesOrder", 'String'>
-  readonly salesRepId: Prisma.FieldRef<"SalesOrder", 'String'>
+  readonly tenantId: Prisma.FieldRef<"SalesOrder", 'Int'>
+  readonly customerId: Prisma.FieldRef<"SalesOrder", 'Int'>
+  readonly quotationId: Prisma.FieldRef<"SalesOrder", 'Int'>
+  readonly paymentTermId: Prisma.FieldRef<"SalesOrder", 'Int'>
+  readonly salesRepId: Prisma.FieldRef<"SalesOrder", 'Int'>
   readonly createdBy: Prisma.FieldRef<"SalesOrder", 'Int'>
   readonly createdAt: Prisma.FieldRef<"SalesOrder", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"SalesOrder", 'DateTime'>

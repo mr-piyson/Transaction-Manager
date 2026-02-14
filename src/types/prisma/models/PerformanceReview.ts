@@ -27,15 +27,21 @@ export type AggregatePerformanceReview = {
 }
 
 export type PerformanceReviewAvgAggregateOutputType = {
+  id: number | null
   rating: runtime.Decimal | null
+  employeeId: number | null
+  reviewerId: number | null
 }
 
 export type PerformanceReviewSumAggregateOutputType = {
+  id: number | null
   rating: runtime.Decimal | null
+  employeeId: number | null
+  reviewerId: number | null
 }
 
 export type PerformanceReviewMinAggregateOutputType = {
-  id: string | null
+  id: number | null
   reviewPeriod: string | null
   reviewDate: Date | null
   rating: runtime.Decimal | null
@@ -43,14 +49,14 @@ export type PerformanceReviewMinAggregateOutputType = {
   areasForImprovement: string | null
   goals: string | null
   comments: string | null
-  employeeId: string | null
-  reviewerId: string | null
+  employeeId: number | null
+  reviewerId: number | null
   createdAt: Date | null
   updatedAt: Date | null
 }
 
 export type PerformanceReviewMaxAggregateOutputType = {
-  id: string | null
+  id: number | null
   reviewPeriod: string | null
   reviewDate: Date | null
   rating: runtime.Decimal | null
@@ -58,8 +64,8 @@ export type PerformanceReviewMaxAggregateOutputType = {
   areasForImprovement: string | null
   goals: string | null
   comments: string | null
-  employeeId: string | null
-  reviewerId: string | null
+  employeeId: number | null
+  reviewerId: number | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -82,11 +88,17 @@ export type PerformanceReviewCountAggregateOutputType = {
 
 
 export type PerformanceReviewAvgAggregateInputType = {
+  id?: true
   rating?: true
+  employeeId?: true
+  reviewerId?: true
 }
 
 export type PerformanceReviewSumAggregateInputType = {
+  id?: true
   rating?: true
+  employeeId?: true
+  reviewerId?: true
 }
 
 export type PerformanceReviewMinAggregateInputType = {
@@ -222,7 +234,7 @@ export type PerformanceReviewGroupByArgs<ExtArgs extends runtime.Types.Extension
 }
 
 export type PerformanceReviewGroupByOutputType = {
-  id: string
+  id: number
   reviewPeriod: string
   reviewDate: Date
   rating: runtime.Decimal
@@ -230,8 +242,8 @@ export type PerformanceReviewGroupByOutputType = {
   areasForImprovement: string | null
   goals: string | null
   comments: string | null
-  employeeId: string
-  reviewerId: string
+  employeeId: number
+  reviewerId: number
   createdAt: Date
   updatedAt: Date
   _count: PerformanceReviewCountAggregateOutputType | null
@@ -260,7 +272,7 @@ export type PerformanceReviewWhereInput = {
   AND?: Prisma.PerformanceReviewWhereInput | Prisma.PerformanceReviewWhereInput[]
   OR?: Prisma.PerformanceReviewWhereInput[]
   NOT?: Prisma.PerformanceReviewWhereInput | Prisma.PerformanceReviewWhereInput[]
-  id?: Prisma.StringFilter<"PerformanceReview"> | string
+  id?: Prisma.IntFilter<"PerformanceReview"> | number
   reviewPeriod?: Prisma.StringFilter<"PerformanceReview"> | string
   reviewDate?: Prisma.DateTimeFilter<"PerformanceReview"> | Date | string
   rating?: Prisma.DecimalFilter<"PerformanceReview"> | runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -268,8 +280,8 @@ export type PerformanceReviewWhereInput = {
   areasForImprovement?: Prisma.StringNullableFilter<"PerformanceReview"> | string | null
   goals?: Prisma.StringNullableFilter<"PerformanceReview"> | string | null
   comments?: Prisma.StringNullableFilter<"PerformanceReview"> | string | null
-  employeeId?: Prisma.StringFilter<"PerformanceReview"> | string
-  reviewerId?: Prisma.StringFilter<"PerformanceReview"> | string
+  employeeId?: Prisma.IntFilter<"PerformanceReview"> | number
+  reviewerId?: Prisma.IntFilter<"PerformanceReview"> | number
   createdAt?: Prisma.DateTimeFilter<"PerformanceReview"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"PerformanceReview"> | Date | string
   employee?: Prisma.XOR<Prisma.EmployeeScalarRelationFilter, Prisma.EmployeeWhereInput>
@@ -292,7 +304,7 @@ export type PerformanceReviewOrderByWithRelationInput = {
 }
 
 export type PerformanceReviewWhereUniqueInput = Prisma.AtLeast<{
-  id?: string
+  id?: number
   AND?: Prisma.PerformanceReviewWhereInput | Prisma.PerformanceReviewWhereInput[]
   OR?: Prisma.PerformanceReviewWhereInput[]
   NOT?: Prisma.PerformanceReviewWhereInput | Prisma.PerformanceReviewWhereInput[]
@@ -303,8 +315,8 @@ export type PerformanceReviewWhereUniqueInput = Prisma.AtLeast<{
   areasForImprovement?: Prisma.StringNullableFilter<"PerformanceReview"> | string | null
   goals?: Prisma.StringNullableFilter<"PerformanceReview"> | string | null
   comments?: Prisma.StringNullableFilter<"PerformanceReview"> | string | null
-  employeeId?: Prisma.StringFilter<"PerformanceReview"> | string
-  reviewerId?: Prisma.StringFilter<"PerformanceReview"> | string
+  employeeId?: Prisma.IntFilter<"PerformanceReview"> | number
+  reviewerId?: Prisma.IntFilter<"PerformanceReview"> | number
   createdAt?: Prisma.DateTimeFilter<"PerformanceReview"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"PerformanceReview"> | Date | string
   employee?: Prisma.XOR<Prisma.EmployeeScalarRelationFilter, Prisma.EmployeeWhereInput>
@@ -334,7 +346,7 @@ export type PerformanceReviewScalarWhereWithAggregatesInput = {
   AND?: Prisma.PerformanceReviewScalarWhereWithAggregatesInput | Prisma.PerformanceReviewScalarWhereWithAggregatesInput[]
   OR?: Prisma.PerformanceReviewScalarWhereWithAggregatesInput[]
   NOT?: Prisma.PerformanceReviewScalarWhereWithAggregatesInput | Prisma.PerformanceReviewScalarWhereWithAggregatesInput[]
-  id?: Prisma.StringWithAggregatesFilter<"PerformanceReview"> | string
+  id?: Prisma.IntWithAggregatesFilter<"PerformanceReview"> | number
   reviewPeriod?: Prisma.StringWithAggregatesFilter<"PerformanceReview"> | string
   reviewDate?: Prisma.DateTimeWithAggregatesFilter<"PerformanceReview"> | Date | string
   rating?: Prisma.DecimalWithAggregatesFilter<"PerformanceReview"> | runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -342,14 +354,13 @@ export type PerformanceReviewScalarWhereWithAggregatesInput = {
   areasForImprovement?: Prisma.StringNullableWithAggregatesFilter<"PerformanceReview"> | string | null
   goals?: Prisma.StringNullableWithAggregatesFilter<"PerformanceReview"> | string | null
   comments?: Prisma.StringNullableWithAggregatesFilter<"PerformanceReview"> | string | null
-  employeeId?: Prisma.StringWithAggregatesFilter<"PerformanceReview"> | string
-  reviewerId?: Prisma.StringWithAggregatesFilter<"PerformanceReview"> | string
+  employeeId?: Prisma.IntWithAggregatesFilter<"PerformanceReview"> | number
+  reviewerId?: Prisma.IntWithAggregatesFilter<"PerformanceReview"> | number
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"PerformanceReview"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"PerformanceReview"> | Date | string
 }
 
 export type PerformanceReviewCreateInput = {
-  id?: string
   reviewPeriod: string
   reviewDate: Date | string
   rating: runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -357,14 +368,14 @@ export type PerformanceReviewCreateInput = {
   areasForImprovement?: string | null
   goals?: string | null
   comments?: string | null
-  reviewerId: string
+  reviewerId: number
   createdAt?: Date | string
   updatedAt?: Date | string
   employee: Prisma.EmployeeCreateNestedOneWithoutPerformanceInput
 }
 
 export type PerformanceReviewUncheckedCreateInput = {
-  id?: string
+  id?: number
   reviewPeriod: string
   reviewDate: Date | string
   rating: runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -372,14 +383,13 @@ export type PerformanceReviewUncheckedCreateInput = {
   areasForImprovement?: string | null
   goals?: string | null
   comments?: string | null
-  employeeId: string
-  reviewerId: string
+  employeeId: number
+  reviewerId: number
   createdAt?: Date | string
   updatedAt?: Date | string
 }
 
 export type PerformanceReviewUpdateInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   reviewPeriod?: Prisma.StringFieldUpdateOperationsInput | string
   reviewDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   rating?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -387,14 +397,14 @@ export type PerformanceReviewUpdateInput = {
   areasForImprovement?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   goals?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   comments?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  reviewerId?: Prisma.StringFieldUpdateOperationsInput | string
+  reviewerId?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   employee?: Prisma.EmployeeUpdateOneRequiredWithoutPerformanceNestedInput
 }
 
 export type PerformanceReviewUncheckedUpdateInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   reviewPeriod?: Prisma.StringFieldUpdateOperationsInput | string
   reviewDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   rating?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -402,14 +412,14 @@ export type PerformanceReviewUncheckedUpdateInput = {
   areasForImprovement?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   goals?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   comments?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  employeeId?: Prisma.StringFieldUpdateOperationsInput | string
-  reviewerId?: Prisma.StringFieldUpdateOperationsInput | string
+  employeeId?: Prisma.IntFieldUpdateOperationsInput | number
+  reviewerId?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type PerformanceReviewCreateManyInput = {
-  id?: string
+  id?: number
   reviewPeriod: string
   reviewDate: Date | string
   rating: runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -417,14 +427,13 @@ export type PerformanceReviewCreateManyInput = {
   areasForImprovement?: string | null
   goals?: string | null
   comments?: string | null
-  employeeId: string
-  reviewerId: string
+  employeeId: number
+  reviewerId: number
   createdAt?: Date | string
   updatedAt?: Date | string
 }
 
 export type PerformanceReviewUpdateManyMutationInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   reviewPeriod?: Prisma.StringFieldUpdateOperationsInput | string
   reviewDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   rating?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -432,13 +441,13 @@ export type PerformanceReviewUpdateManyMutationInput = {
   areasForImprovement?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   goals?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   comments?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  reviewerId?: Prisma.StringFieldUpdateOperationsInput | string
+  reviewerId?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type PerformanceReviewUncheckedUpdateManyInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   reviewPeriod?: Prisma.StringFieldUpdateOperationsInput | string
   reviewDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   rating?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -446,8 +455,8 @@ export type PerformanceReviewUncheckedUpdateManyInput = {
   areasForImprovement?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   goals?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   comments?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  employeeId?: Prisma.StringFieldUpdateOperationsInput | string
-  reviewerId?: Prisma.StringFieldUpdateOperationsInput | string
+  employeeId?: Prisma.IntFieldUpdateOperationsInput | number
+  reviewerId?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -478,7 +487,10 @@ export type PerformanceReviewCountOrderByAggregateInput = {
 }
 
 export type PerformanceReviewAvgOrderByAggregateInput = {
+  id?: Prisma.SortOrder
   rating?: Prisma.SortOrder
+  employeeId?: Prisma.SortOrder
+  reviewerId?: Prisma.SortOrder
 }
 
 export type PerformanceReviewMaxOrderByAggregateInput = {
@@ -512,7 +524,10 @@ export type PerformanceReviewMinOrderByAggregateInput = {
 }
 
 export type PerformanceReviewSumOrderByAggregateInput = {
+  id?: Prisma.SortOrder
   rating?: Prisma.SortOrder
+  employeeId?: Prisma.SortOrder
+  reviewerId?: Prisma.SortOrder
 }
 
 export type PerformanceReviewCreateNestedManyWithoutEmployeeInput = {
@@ -558,7 +573,6 @@ export type PerformanceReviewUncheckedUpdateManyWithoutEmployeeNestedInput = {
 }
 
 export type PerformanceReviewCreateWithoutEmployeeInput = {
-  id?: string
   reviewPeriod: string
   reviewDate: Date | string
   rating: runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -566,13 +580,13 @@ export type PerformanceReviewCreateWithoutEmployeeInput = {
   areasForImprovement?: string | null
   goals?: string | null
   comments?: string | null
-  reviewerId: string
+  reviewerId: number
   createdAt?: Date | string
   updatedAt?: Date | string
 }
 
 export type PerformanceReviewUncheckedCreateWithoutEmployeeInput = {
-  id?: string
+  id?: number
   reviewPeriod: string
   reviewDate: Date | string
   rating: runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -580,7 +594,7 @@ export type PerformanceReviewUncheckedCreateWithoutEmployeeInput = {
   areasForImprovement?: string | null
   goals?: string | null
   comments?: string | null
-  reviewerId: string
+  reviewerId: number
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -615,7 +629,7 @@ export type PerformanceReviewScalarWhereInput = {
   AND?: Prisma.PerformanceReviewScalarWhereInput | Prisma.PerformanceReviewScalarWhereInput[]
   OR?: Prisma.PerformanceReviewScalarWhereInput[]
   NOT?: Prisma.PerformanceReviewScalarWhereInput | Prisma.PerformanceReviewScalarWhereInput[]
-  id?: Prisma.StringFilter<"PerformanceReview"> | string
+  id?: Prisma.IntFilter<"PerformanceReview"> | number
   reviewPeriod?: Prisma.StringFilter<"PerformanceReview"> | string
   reviewDate?: Prisma.DateTimeFilter<"PerformanceReview"> | Date | string
   rating?: Prisma.DecimalFilter<"PerformanceReview"> | runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -623,14 +637,14 @@ export type PerformanceReviewScalarWhereInput = {
   areasForImprovement?: Prisma.StringNullableFilter<"PerformanceReview"> | string | null
   goals?: Prisma.StringNullableFilter<"PerformanceReview"> | string | null
   comments?: Prisma.StringNullableFilter<"PerformanceReview"> | string | null
-  employeeId?: Prisma.StringFilter<"PerformanceReview"> | string
-  reviewerId?: Prisma.StringFilter<"PerformanceReview"> | string
+  employeeId?: Prisma.IntFilter<"PerformanceReview"> | number
+  reviewerId?: Prisma.IntFilter<"PerformanceReview"> | number
   createdAt?: Prisma.DateTimeFilter<"PerformanceReview"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"PerformanceReview"> | Date | string
 }
 
 export type PerformanceReviewCreateManyEmployeeInput = {
-  id?: string
+  id?: number
   reviewPeriod: string
   reviewDate: Date | string
   rating: runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -638,13 +652,12 @@ export type PerformanceReviewCreateManyEmployeeInput = {
   areasForImprovement?: string | null
   goals?: string | null
   comments?: string | null
-  reviewerId: string
+  reviewerId: number
   createdAt?: Date | string
   updatedAt?: Date | string
 }
 
 export type PerformanceReviewUpdateWithoutEmployeeInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   reviewPeriod?: Prisma.StringFieldUpdateOperationsInput | string
   reviewDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   rating?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -652,13 +665,13 @@ export type PerformanceReviewUpdateWithoutEmployeeInput = {
   areasForImprovement?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   goals?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   comments?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  reviewerId?: Prisma.StringFieldUpdateOperationsInput | string
+  reviewerId?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type PerformanceReviewUncheckedUpdateWithoutEmployeeInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   reviewPeriod?: Prisma.StringFieldUpdateOperationsInput | string
   reviewDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   rating?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -666,13 +679,13 @@ export type PerformanceReviewUncheckedUpdateWithoutEmployeeInput = {
   areasForImprovement?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   goals?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   comments?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  reviewerId?: Prisma.StringFieldUpdateOperationsInput | string
+  reviewerId?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type PerformanceReviewUncheckedUpdateManyWithoutEmployeeInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   reviewPeriod?: Prisma.StringFieldUpdateOperationsInput | string
   reviewDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   rating?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -680,7 +693,7 @@ export type PerformanceReviewUncheckedUpdateManyWithoutEmployeeInput = {
   areasForImprovement?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   goals?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   comments?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  reviewerId?: Prisma.StringFieldUpdateOperationsInput | string
+  reviewerId?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -767,7 +780,7 @@ export type $PerformanceReviewPayload<ExtArgs extends runtime.Types.Extensions.I
     employee: Prisma.$EmployeePayload<ExtArgs>
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
-    id: string
+    id: number
     reviewPeriod: string
     reviewDate: Date
     rating: runtime.Decimal
@@ -775,8 +788,8 @@ export type $PerformanceReviewPayload<ExtArgs extends runtime.Types.Extensions.I
     areasForImprovement: string | null
     goals: string | null
     comments: string | null
-    employeeId: string
-    reviewerId: string
+    employeeId: number
+    reviewerId: number
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["performanceReview"]>
@@ -1203,7 +1216,7 @@ export interface Prisma__PerformanceReviewClient<T, Null = never, ExtArgs extend
  * Fields of the PerformanceReview model
  */
 export interface PerformanceReviewFieldRefs {
-  readonly id: Prisma.FieldRef<"PerformanceReview", 'String'>
+  readonly id: Prisma.FieldRef<"PerformanceReview", 'Int'>
   readonly reviewPeriod: Prisma.FieldRef<"PerformanceReview", 'String'>
   readonly reviewDate: Prisma.FieldRef<"PerformanceReview", 'DateTime'>
   readonly rating: Prisma.FieldRef<"PerformanceReview", 'Decimal'>
@@ -1211,8 +1224,8 @@ export interface PerformanceReviewFieldRefs {
   readonly areasForImprovement: Prisma.FieldRef<"PerformanceReview", 'String'>
   readonly goals: Prisma.FieldRef<"PerformanceReview", 'String'>
   readonly comments: Prisma.FieldRef<"PerformanceReview", 'String'>
-  readonly employeeId: Prisma.FieldRef<"PerformanceReview", 'String'>
-  readonly reviewerId: Prisma.FieldRef<"PerformanceReview", 'String'>
+  readonly employeeId: Prisma.FieldRef<"PerformanceReview", 'Int'>
+  readonly reviewerId: Prisma.FieldRef<"PerformanceReview", 'Int'>
   readonly createdAt: Prisma.FieldRef<"PerformanceReview", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"PerformanceReview", 'DateTime'>
 }

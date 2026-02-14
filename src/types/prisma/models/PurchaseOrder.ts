@@ -27,27 +27,33 @@ export type AggregatePurchaseOrder = {
 }
 
 export type PurchaseOrderAvgAggregateOutputType = {
+  id: number | null
   subtotal: runtime.Decimal | null
   discountPercent: runtime.Decimal | null
   discountAmount: runtime.Decimal | null
   taxAmount: runtime.Decimal | null
   shippingCost: runtime.Decimal | null
   totalAmount: runtime.Decimal | null
+  supplierId: number | null
+  paymentTermId: number | null
   approvedBy: number | null
 }
 
 export type PurchaseOrderSumAggregateOutputType = {
+  id: number | null
   subtotal: runtime.Decimal | null
   discountPercent: runtime.Decimal | null
   discountAmount: runtime.Decimal | null
   taxAmount: runtime.Decimal | null
   shippingCost: runtime.Decimal | null
   totalAmount: runtime.Decimal | null
+  supplierId: number | null
+  paymentTermId: number | null
   approvedBy: number | null
 }
 
 export type PurchaseOrderMinAggregateOutputType = {
-  id: string | null
+  id: number | null
   poNumber: string | null
   orderDate: Date | null
   expectedDate: Date | null
@@ -66,8 +72,8 @@ export type PurchaseOrderMinAggregateOutputType = {
   notes: string | null
   internalNotes: string | null
   terms: string | null
-  supplierId: string | null
-  paymentTermId: string | null
+  supplierId: number | null
+  paymentTermId: number | null
   createdBy: string | null
   approvedBy: number | null
   approvedAt: Date | null
@@ -76,7 +82,7 @@ export type PurchaseOrderMinAggregateOutputType = {
 }
 
 export type PurchaseOrderMaxAggregateOutputType = {
-  id: string | null
+  id: number | null
   poNumber: string | null
   orderDate: Date | null
   expectedDate: Date | null
@@ -95,8 +101,8 @@ export type PurchaseOrderMaxAggregateOutputType = {
   notes: string | null
   internalNotes: string | null
   terms: string | null
-  supplierId: string | null
-  paymentTermId: string | null
+  supplierId: number | null
+  paymentTermId: number | null
   createdBy: string | null
   approvedBy: number | null
   approvedAt: Date | null
@@ -136,22 +142,28 @@ export type PurchaseOrderCountAggregateOutputType = {
 
 
 export type PurchaseOrderAvgAggregateInputType = {
+  id?: true
   subtotal?: true
   discountPercent?: true
   discountAmount?: true
   taxAmount?: true
   shippingCost?: true
   totalAmount?: true
+  supplierId?: true
+  paymentTermId?: true
   approvedBy?: true
 }
 
 export type PurchaseOrderSumAggregateInputType = {
+  id?: true
   subtotal?: true
   discountPercent?: true
   discountAmount?: true
   taxAmount?: true
   shippingCost?: true
   totalAmount?: true
+  supplierId?: true
+  paymentTermId?: true
   approvedBy?: true
 }
 
@@ -330,7 +342,7 @@ export type PurchaseOrderGroupByArgs<ExtArgs extends runtime.Types.Extensions.In
 }
 
 export type PurchaseOrderGroupByOutputType = {
-  id: string
+  id: number
   poNumber: string
   orderDate: Date
   expectedDate: Date | null
@@ -349,8 +361,8 @@ export type PurchaseOrderGroupByOutputType = {
   notes: string | null
   internalNotes: string | null
   terms: string | null
-  supplierId: string
-  paymentTermId: string | null
+  supplierId: number
+  paymentTermId: number | null
   createdBy: string
   approvedBy: number | null
   approvedAt: Date | null
@@ -382,7 +394,7 @@ export type PurchaseOrderWhereInput = {
   AND?: Prisma.PurchaseOrderWhereInput | Prisma.PurchaseOrderWhereInput[]
   OR?: Prisma.PurchaseOrderWhereInput[]
   NOT?: Prisma.PurchaseOrderWhereInput | Prisma.PurchaseOrderWhereInput[]
-  id?: Prisma.StringFilter<"PurchaseOrder"> | string
+  id?: Prisma.IntFilter<"PurchaseOrder"> | number
   poNumber?: Prisma.StringFilter<"PurchaseOrder"> | string
   orderDate?: Prisma.DateTimeFilter<"PurchaseOrder"> | Date | string
   expectedDate?: Prisma.DateTimeNullableFilter<"PurchaseOrder"> | Date | string | null
@@ -401,8 +413,8 @@ export type PurchaseOrderWhereInput = {
   notes?: Prisma.StringNullableFilter<"PurchaseOrder"> | string | null
   internalNotes?: Prisma.StringNullableFilter<"PurchaseOrder"> | string | null
   terms?: Prisma.StringNullableFilter<"PurchaseOrder"> | string | null
-  supplierId?: Prisma.StringFilter<"PurchaseOrder"> | string
-  paymentTermId?: Prisma.StringNullableFilter<"PurchaseOrder"> | string | null
+  supplierId?: Prisma.IntFilter<"PurchaseOrder"> | number
+  paymentTermId?: Prisma.IntNullableFilter<"PurchaseOrder"> | number | null
   createdBy?: Prisma.StringFilter<"PurchaseOrder"> | string
   approvedBy?: Prisma.IntNullableFilter<"PurchaseOrder"> | number | null
   approvedAt?: Prisma.DateTimeNullableFilter<"PurchaseOrder"> | Date | string | null
@@ -454,7 +466,7 @@ export type PurchaseOrderOrderByWithRelationInput = {
 }
 
 export type PurchaseOrderWhereUniqueInput = Prisma.AtLeast<{
-  id?: string
+  id?: number
   AND?: Prisma.PurchaseOrderWhereInput | Prisma.PurchaseOrderWhereInput[]
   OR?: Prisma.PurchaseOrderWhereInput[]
   NOT?: Prisma.PurchaseOrderWhereInput | Prisma.PurchaseOrderWhereInput[]
@@ -476,8 +488,8 @@ export type PurchaseOrderWhereUniqueInput = Prisma.AtLeast<{
   notes?: Prisma.StringNullableFilter<"PurchaseOrder"> | string | null
   internalNotes?: Prisma.StringNullableFilter<"PurchaseOrder"> | string | null
   terms?: Prisma.StringNullableFilter<"PurchaseOrder"> | string | null
-  supplierId?: Prisma.StringFilter<"PurchaseOrder"> | string
-  paymentTermId?: Prisma.StringNullableFilter<"PurchaseOrder"> | string | null
+  supplierId?: Prisma.IntFilter<"PurchaseOrder"> | number
+  paymentTermId?: Prisma.IntNullableFilter<"PurchaseOrder"> | number | null
   createdBy?: Prisma.StringFilter<"PurchaseOrder"> | string
   approvedBy?: Prisma.IntNullableFilter<"PurchaseOrder"> | number | null
   approvedAt?: Prisma.DateTimeNullableFilter<"PurchaseOrder"> | Date | string | null
@@ -530,7 +542,7 @@ export type PurchaseOrderScalarWhereWithAggregatesInput = {
   AND?: Prisma.PurchaseOrderScalarWhereWithAggregatesInput | Prisma.PurchaseOrderScalarWhereWithAggregatesInput[]
   OR?: Prisma.PurchaseOrderScalarWhereWithAggregatesInput[]
   NOT?: Prisma.PurchaseOrderScalarWhereWithAggregatesInput | Prisma.PurchaseOrderScalarWhereWithAggregatesInput[]
-  id?: Prisma.StringWithAggregatesFilter<"PurchaseOrder"> | string
+  id?: Prisma.IntWithAggregatesFilter<"PurchaseOrder"> | number
   poNumber?: Prisma.StringWithAggregatesFilter<"PurchaseOrder"> | string
   orderDate?: Prisma.DateTimeWithAggregatesFilter<"PurchaseOrder"> | Date | string
   expectedDate?: Prisma.DateTimeNullableWithAggregatesFilter<"PurchaseOrder"> | Date | string | null
@@ -549,8 +561,8 @@ export type PurchaseOrderScalarWhereWithAggregatesInput = {
   notes?: Prisma.StringNullableWithAggregatesFilter<"PurchaseOrder"> | string | null
   internalNotes?: Prisma.StringNullableWithAggregatesFilter<"PurchaseOrder"> | string | null
   terms?: Prisma.StringNullableWithAggregatesFilter<"PurchaseOrder"> | string | null
-  supplierId?: Prisma.StringWithAggregatesFilter<"PurchaseOrder"> | string
-  paymentTermId?: Prisma.StringNullableWithAggregatesFilter<"PurchaseOrder"> | string | null
+  supplierId?: Prisma.IntWithAggregatesFilter<"PurchaseOrder"> | number
+  paymentTermId?: Prisma.IntNullableWithAggregatesFilter<"PurchaseOrder"> | number | null
   createdBy?: Prisma.StringWithAggregatesFilter<"PurchaseOrder"> | string
   approvedBy?: Prisma.IntNullableWithAggregatesFilter<"PurchaseOrder"> | number | null
   approvedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"PurchaseOrder"> | Date | string | null
@@ -559,7 +571,6 @@ export type PurchaseOrderScalarWhereWithAggregatesInput = {
 }
 
 export type PurchaseOrderCreateInput = {
-  id?: string
   poNumber: string
   orderDate?: Date | string
   expectedDate?: Date | string | null
@@ -592,7 +603,7 @@ export type PurchaseOrderCreateInput = {
 }
 
 export type PurchaseOrderUncheckedCreateInput = {
-  id?: string
+  id?: number
   poNumber: string
   orderDate?: Date | string
   expectedDate?: Date | string | null
@@ -611,8 +622,8 @@ export type PurchaseOrderUncheckedCreateInput = {
   notes?: string | null
   internalNotes?: string | null
   terms?: string | null
-  supplierId: string
-  paymentTermId?: string | null
+  supplierId: number
+  paymentTermId?: number | null
   createdBy: string
   approvedBy?: number | null
   approvedAt?: Date | string | null
@@ -625,7 +636,6 @@ export type PurchaseOrderUncheckedCreateInput = {
 }
 
 export type PurchaseOrderUpdateInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   poNumber?: Prisma.StringFieldUpdateOperationsInput | string
   orderDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   expectedDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -658,7 +668,7 @@ export type PurchaseOrderUpdateInput = {
 }
 
 export type PurchaseOrderUncheckedUpdateInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   poNumber?: Prisma.StringFieldUpdateOperationsInput | string
   orderDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   expectedDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -677,8 +687,8 @@ export type PurchaseOrderUncheckedUpdateInput = {
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   internalNotes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   terms?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  supplierId?: Prisma.StringFieldUpdateOperationsInput | string
-  paymentTermId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  supplierId?: Prisma.IntFieldUpdateOperationsInput | number
+  paymentTermId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdBy?: Prisma.StringFieldUpdateOperationsInput | string
   approvedBy?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   approvedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -691,7 +701,7 @@ export type PurchaseOrderUncheckedUpdateInput = {
 }
 
 export type PurchaseOrderCreateManyInput = {
-  id?: string
+  id?: number
   poNumber: string
   orderDate?: Date | string
   expectedDate?: Date | string | null
@@ -710,8 +720,8 @@ export type PurchaseOrderCreateManyInput = {
   notes?: string | null
   internalNotes?: string | null
   terms?: string | null
-  supplierId: string
-  paymentTermId?: string | null
+  supplierId: number
+  paymentTermId?: number | null
   createdBy: string
   approvedBy?: number | null
   approvedAt?: Date | string | null
@@ -720,7 +730,6 @@ export type PurchaseOrderCreateManyInput = {
 }
 
 export type PurchaseOrderUpdateManyMutationInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   poNumber?: Prisma.StringFieldUpdateOperationsInput | string
   orderDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   expectedDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -746,7 +755,7 @@ export type PurchaseOrderUpdateManyMutationInput = {
 }
 
 export type PurchaseOrderUncheckedUpdateManyInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   poNumber?: Prisma.StringFieldUpdateOperationsInput | string
   orderDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   expectedDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -765,8 +774,8 @@ export type PurchaseOrderUncheckedUpdateManyInput = {
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   internalNotes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   terms?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  supplierId?: Prisma.StringFieldUpdateOperationsInput | string
-  paymentTermId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  supplierId?: Prisma.IntFieldUpdateOperationsInput | number
+  paymentTermId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdBy?: Prisma.StringFieldUpdateOperationsInput | string
   approvedBy?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   approvedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -814,12 +823,15 @@ export type PurchaseOrderCountOrderByAggregateInput = {
 }
 
 export type PurchaseOrderAvgOrderByAggregateInput = {
+  id?: Prisma.SortOrder
   subtotal?: Prisma.SortOrder
   discountPercent?: Prisma.SortOrder
   discountAmount?: Prisma.SortOrder
   taxAmount?: Prisma.SortOrder
   shippingCost?: Prisma.SortOrder
   totalAmount?: Prisma.SortOrder
+  supplierId?: Prisma.SortOrder
+  paymentTermId?: Prisma.SortOrder
   approvedBy?: Prisma.SortOrder
 }
 
@@ -882,12 +894,15 @@ export type PurchaseOrderMinOrderByAggregateInput = {
 }
 
 export type PurchaseOrderSumOrderByAggregateInput = {
+  id?: Prisma.SortOrder
   subtotal?: Prisma.SortOrder
   discountPercent?: Prisma.SortOrder
   discountAmount?: Prisma.SortOrder
   taxAmount?: Prisma.SortOrder
   shippingCost?: Prisma.SortOrder
   totalAmount?: Prisma.SortOrder
+  supplierId?: Prisma.SortOrder
+  paymentTermId?: Prisma.SortOrder
   approvedBy?: Prisma.SortOrder
 }
 
@@ -987,14 +1002,6 @@ export type PurchaseOrderUncheckedUpdateManyWithoutSupplierNestedInput = {
 
 export type EnumPOStatusFieldUpdateOperationsInput = {
   set?: $Enums.POStatus
-}
-
-export type NullableIntFieldUpdateOperationsInput = {
-  set?: number | null
-  increment?: number
-  decrement?: number
-  multiply?: number
-  divide?: number
 }
 
 export type PurchaseOrderCreateNestedOneWithoutItemsInput = {
@@ -1100,7 +1107,6 @@ export type PurchaseOrderUncheckedUpdateManyWithoutPaymentTermNestedInput = {
 }
 
 export type PurchaseOrderCreateWithoutApproverInput = {
-  id?: string
   poNumber: string
   orderDate?: Date | string
   expectedDate?: Date | string | null
@@ -1132,7 +1138,7 @@ export type PurchaseOrderCreateWithoutApproverInput = {
 }
 
 export type PurchaseOrderUncheckedCreateWithoutApproverInput = {
-  id?: string
+  id?: number
   poNumber: string
   orderDate?: Date | string
   expectedDate?: Date | string | null
@@ -1151,8 +1157,8 @@ export type PurchaseOrderUncheckedCreateWithoutApproverInput = {
   notes?: string | null
   internalNotes?: string | null
   terms?: string | null
-  supplierId: string
-  paymentTermId?: string | null
+  supplierId: number
+  paymentTermId?: number | null
   createdBy: string
   approvedAt?: Date | string | null
   createdAt?: Date | string
@@ -1193,7 +1199,7 @@ export type PurchaseOrderScalarWhereInput = {
   AND?: Prisma.PurchaseOrderScalarWhereInput | Prisma.PurchaseOrderScalarWhereInput[]
   OR?: Prisma.PurchaseOrderScalarWhereInput[]
   NOT?: Prisma.PurchaseOrderScalarWhereInput | Prisma.PurchaseOrderScalarWhereInput[]
-  id?: Prisma.StringFilter<"PurchaseOrder"> | string
+  id?: Prisma.IntFilter<"PurchaseOrder"> | number
   poNumber?: Prisma.StringFilter<"PurchaseOrder"> | string
   orderDate?: Prisma.DateTimeFilter<"PurchaseOrder"> | Date | string
   expectedDate?: Prisma.DateTimeNullableFilter<"PurchaseOrder"> | Date | string | null
@@ -1212,8 +1218,8 @@ export type PurchaseOrderScalarWhereInput = {
   notes?: Prisma.StringNullableFilter<"PurchaseOrder"> | string | null
   internalNotes?: Prisma.StringNullableFilter<"PurchaseOrder"> | string | null
   terms?: Prisma.StringNullableFilter<"PurchaseOrder"> | string | null
-  supplierId?: Prisma.StringFilter<"PurchaseOrder"> | string
-  paymentTermId?: Prisma.StringNullableFilter<"PurchaseOrder"> | string | null
+  supplierId?: Prisma.IntFilter<"PurchaseOrder"> | number
+  paymentTermId?: Prisma.IntNullableFilter<"PurchaseOrder"> | number | null
   createdBy?: Prisma.StringFilter<"PurchaseOrder"> | string
   approvedBy?: Prisma.IntNullableFilter<"PurchaseOrder"> | number | null
   approvedAt?: Prisma.DateTimeNullableFilter<"PurchaseOrder"> | Date | string | null
@@ -1222,7 +1228,6 @@ export type PurchaseOrderScalarWhereInput = {
 }
 
 export type PurchaseOrderCreateWithoutSupplierInput = {
-  id?: string
   poNumber: string
   orderDate?: Date | string
   expectedDate?: Date | string | null
@@ -1254,7 +1259,7 @@ export type PurchaseOrderCreateWithoutSupplierInput = {
 }
 
 export type PurchaseOrderUncheckedCreateWithoutSupplierInput = {
-  id?: string
+  id?: number
   poNumber: string
   orderDate?: Date | string
   expectedDate?: Date | string | null
@@ -1273,7 +1278,7 @@ export type PurchaseOrderUncheckedCreateWithoutSupplierInput = {
   notes?: string | null
   internalNotes?: string | null
   terms?: string | null
-  paymentTermId?: string | null
+  paymentTermId?: number | null
   createdBy: string
   approvedBy?: number | null
   approvedAt?: Date | string | null
@@ -1312,7 +1317,6 @@ export type PurchaseOrderUpdateManyWithWhereWithoutSupplierInput = {
 }
 
 export type PurchaseOrderCreateWithoutItemsInput = {
-  id?: string
   poNumber: string
   orderDate?: Date | string
   expectedDate?: Date | string | null
@@ -1344,7 +1348,7 @@ export type PurchaseOrderCreateWithoutItemsInput = {
 }
 
 export type PurchaseOrderUncheckedCreateWithoutItemsInput = {
-  id?: string
+  id?: number
   poNumber: string
   orderDate?: Date | string
   expectedDate?: Date | string | null
@@ -1363,8 +1367,8 @@ export type PurchaseOrderUncheckedCreateWithoutItemsInput = {
   notes?: string | null
   internalNotes?: string | null
   terms?: string | null
-  supplierId: string
-  paymentTermId?: string | null
+  supplierId: number
+  paymentTermId?: number | null
   createdBy: string
   approvedBy?: number | null
   approvedAt?: Date | string | null
@@ -1392,7 +1396,6 @@ export type PurchaseOrderUpdateToOneWithWhereWithoutItemsInput = {
 }
 
 export type PurchaseOrderUpdateWithoutItemsInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   poNumber?: Prisma.StringFieldUpdateOperationsInput | string
   orderDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   expectedDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1424,7 +1427,7 @@ export type PurchaseOrderUpdateWithoutItemsInput = {
 }
 
 export type PurchaseOrderUncheckedUpdateWithoutItemsInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   poNumber?: Prisma.StringFieldUpdateOperationsInput | string
   orderDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   expectedDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1443,8 +1446,8 @@ export type PurchaseOrderUncheckedUpdateWithoutItemsInput = {
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   internalNotes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   terms?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  supplierId?: Prisma.StringFieldUpdateOperationsInput | string
-  paymentTermId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  supplierId?: Prisma.IntFieldUpdateOperationsInput | number
+  paymentTermId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdBy?: Prisma.StringFieldUpdateOperationsInput | string
   approvedBy?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   approvedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1456,7 +1459,6 @@ export type PurchaseOrderUncheckedUpdateWithoutItemsInput = {
 }
 
 export type PurchaseOrderCreateWithoutReceiptsInput = {
-  id?: string
   poNumber: string
   orderDate?: Date | string
   expectedDate?: Date | string | null
@@ -1488,7 +1490,7 @@ export type PurchaseOrderCreateWithoutReceiptsInput = {
 }
 
 export type PurchaseOrderUncheckedCreateWithoutReceiptsInput = {
-  id?: string
+  id?: number
   poNumber: string
   orderDate?: Date | string
   expectedDate?: Date | string | null
@@ -1507,8 +1509,8 @@ export type PurchaseOrderUncheckedCreateWithoutReceiptsInput = {
   notes?: string | null
   internalNotes?: string | null
   terms?: string | null
-  supplierId: string
-  paymentTermId?: string | null
+  supplierId: number
+  paymentTermId?: number | null
   createdBy: string
   approvedBy?: number | null
   approvedAt?: Date | string | null
@@ -1536,7 +1538,6 @@ export type PurchaseOrderUpdateToOneWithWhereWithoutReceiptsInput = {
 }
 
 export type PurchaseOrderUpdateWithoutReceiptsInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   poNumber?: Prisma.StringFieldUpdateOperationsInput | string
   orderDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   expectedDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1568,7 +1569,7 @@ export type PurchaseOrderUpdateWithoutReceiptsInput = {
 }
 
 export type PurchaseOrderUncheckedUpdateWithoutReceiptsInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   poNumber?: Prisma.StringFieldUpdateOperationsInput | string
   orderDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   expectedDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1587,8 +1588,8 @@ export type PurchaseOrderUncheckedUpdateWithoutReceiptsInput = {
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   internalNotes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   terms?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  supplierId?: Prisma.StringFieldUpdateOperationsInput | string
-  paymentTermId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  supplierId?: Prisma.IntFieldUpdateOperationsInput | number
+  paymentTermId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdBy?: Prisma.StringFieldUpdateOperationsInput | string
   approvedBy?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   approvedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1600,7 +1601,6 @@ export type PurchaseOrderUncheckedUpdateWithoutReceiptsInput = {
 }
 
 export type PurchaseOrderCreateWithoutBillsInput = {
-  id?: string
   poNumber: string
   orderDate?: Date | string
   expectedDate?: Date | string | null
@@ -1632,7 +1632,7 @@ export type PurchaseOrderCreateWithoutBillsInput = {
 }
 
 export type PurchaseOrderUncheckedCreateWithoutBillsInput = {
-  id?: string
+  id?: number
   poNumber: string
   orderDate?: Date | string
   expectedDate?: Date | string | null
@@ -1651,8 +1651,8 @@ export type PurchaseOrderUncheckedCreateWithoutBillsInput = {
   notes?: string | null
   internalNotes?: string | null
   terms?: string | null
-  supplierId: string
-  paymentTermId?: string | null
+  supplierId: number
+  paymentTermId?: number | null
   createdBy: string
   approvedBy?: number | null
   approvedAt?: Date | string | null
@@ -1680,7 +1680,6 @@ export type PurchaseOrderUpdateToOneWithWhereWithoutBillsInput = {
 }
 
 export type PurchaseOrderUpdateWithoutBillsInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   poNumber?: Prisma.StringFieldUpdateOperationsInput | string
   orderDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   expectedDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1712,7 +1711,7 @@ export type PurchaseOrderUpdateWithoutBillsInput = {
 }
 
 export type PurchaseOrderUncheckedUpdateWithoutBillsInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   poNumber?: Prisma.StringFieldUpdateOperationsInput | string
   orderDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   expectedDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1731,8 +1730,8 @@ export type PurchaseOrderUncheckedUpdateWithoutBillsInput = {
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   internalNotes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   terms?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  supplierId?: Prisma.StringFieldUpdateOperationsInput | string
-  paymentTermId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  supplierId?: Prisma.IntFieldUpdateOperationsInput | number
+  paymentTermId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdBy?: Prisma.StringFieldUpdateOperationsInput | string
   approvedBy?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   approvedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1744,7 +1743,6 @@ export type PurchaseOrderUncheckedUpdateWithoutBillsInput = {
 }
 
 export type PurchaseOrderCreateWithoutPaymentsInput = {
-  id?: string
   poNumber: string
   orderDate?: Date | string
   expectedDate?: Date | string | null
@@ -1776,7 +1774,7 @@ export type PurchaseOrderCreateWithoutPaymentsInput = {
 }
 
 export type PurchaseOrderUncheckedCreateWithoutPaymentsInput = {
-  id?: string
+  id?: number
   poNumber: string
   orderDate?: Date | string
   expectedDate?: Date | string | null
@@ -1795,8 +1793,8 @@ export type PurchaseOrderUncheckedCreateWithoutPaymentsInput = {
   notes?: string | null
   internalNotes?: string | null
   terms?: string | null
-  supplierId: string
-  paymentTermId?: string | null
+  supplierId: number
+  paymentTermId?: number | null
   createdBy: string
   approvedBy?: number | null
   approvedAt?: Date | string | null
@@ -1824,7 +1822,6 @@ export type PurchaseOrderUpdateToOneWithWhereWithoutPaymentsInput = {
 }
 
 export type PurchaseOrderUpdateWithoutPaymentsInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   poNumber?: Prisma.StringFieldUpdateOperationsInput | string
   orderDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   expectedDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1856,7 +1853,7 @@ export type PurchaseOrderUpdateWithoutPaymentsInput = {
 }
 
 export type PurchaseOrderUncheckedUpdateWithoutPaymentsInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   poNumber?: Prisma.StringFieldUpdateOperationsInput | string
   orderDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   expectedDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1875,8 +1872,8 @@ export type PurchaseOrderUncheckedUpdateWithoutPaymentsInput = {
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   internalNotes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   terms?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  supplierId?: Prisma.StringFieldUpdateOperationsInput | string
-  paymentTermId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  supplierId?: Prisma.IntFieldUpdateOperationsInput | number
+  paymentTermId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdBy?: Prisma.StringFieldUpdateOperationsInput | string
   approvedBy?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   approvedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1888,7 +1885,6 @@ export type PurchaseOrderUncheckedUpdateWithoutPaymentsInput = {
 }
 
 export type PurchaseOrderCreateWithoutPaymentTermInput = {
-  id?: string
   poNumber: string
   orderDate?: Date | string
   expectedDate?: Date | string | null
@@ -1920,7 +1916,7 @@ export type PurchaseOrderCreateWithoutPaymentTermInput = {
 }
 
 export type PurchaseOrderUncheckedCreateWithoutPaymentTermInput = {
-  id?: string
+  id?: number
   poNumber: string
   orderDate?: Date | string
   expectedDate?: Date | string | null
@@ -1939,7 +1935,7 @@ export type PurchaseOrderUncheckedCreateWithoutPaymentTermInput = {
   notes?: string | null
   internalNotes?: string | null
   terms?: string | null
-  supplierId: string
+  supplierId: number
   createdBy: string
   approvedBy?: number | null
   approvedAt?: Date | string | null
@@ -1978,7 +1974,7 @@ export type PurchaseOrderUpdateManyWithWhereWithoutPaymentTermInput = {
 }
 
 export type PurchaseOrderCreateManyApproverInput = {
-  id?: string
+  id?: number
   poNumber: string
   orderDate?: Date | string
   expectedDate?: Date | string | null
@@ -1997,8 +1993,8 @@ export type PurchaseOrderCreateManyApproverInput = {
   notes?: string | null
   internalNotes?: string | null
   terms?: string | null
-  supplierId: string
-  paymentTermId?: string | null
+  supplierId: number
+  paymentTermId?: number | null
   createdBy: string
   approvedAt?: Date | string | null
   createdAt?: Date | string
@@ -2006,7 +2002,6 @@ export type PurchaseOrderCreateManyApproverInput = {
 }
 
 export type PurchaseOrderUpdateWithoutApproverInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   poNumber?: Prisma.StringFieldUpdateOperationsInput | string
   orderDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   expectedDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -2038,7 +2033,7 @@ export type PurchaseOrderUpdateWithoutApproverInput = {
 }
 
 export type PurchaseOrderUncheckedUpdateWithoutApproverInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   poNumber?: Prisma.StringFieldUpdateOperationsInput | string
   orderDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   expectedDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -2057,8 +2052,8 @@ export type PurchaseOrderUncheckedUpdateWithoutApproverInput = {
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   internalNotes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   terms?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  supplierId?: Prisma.StringFieldUpdateOperationsInput | string
-  paymentTermId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  supplierId?: Prisma.IntFieldUpdateOperationsInput | number
+  paymentTermId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdBy?: Prisma.StringFieldUpdateOperationsInput | string
   approvedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -2070,7 +2065,7 @@ export type PurchaseOrderUncheckedUpdateWithoutApproverInput = {
 }
 
 export type PurchaseOrderUncheckedUpdateManyWithoutApproverInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   poNumber?: Prisma.StringFieldUpdateOperationsInput | string
   orderDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   expectedDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -2089,8 +2084,8 @@ export type PurchaseOrderUncheckedUpdateManyWithoutApproverInput = {
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   internalNotes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   terms?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  supplierId?: Prisma.StringFieldUpdateOperationsInput | string
-  paymentTermId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  supplierId?: Prisma.IntFieldUpdateOperationsInput | number
+  paymentTermId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdBy?: Prisma.StringFieldUpdateOperationsInput | string
   approvedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -2098,7 +2093,7 @@ export type PurchaseOrderUncheckedUpdateManyWithoutApproverInput = {
 }
 
 export type PurchaseOrderCreateManySupplierInput = {
-  id?: string
+  id?: number
   poNumber: string
   orderDate?: Date | string
   expectedDate?: Date | string | null
@@ -2117,7 +2112,7 @@ export type PurchaseOrderCreateManySupplierInput = {
   notes?: string | null
   internalNotes?: string | null
   terms?: string | null
-  paymentTermId?: string | null
+  paymentTermId?: number | null
   createdBy: string
   approvedBy?: number | null
   approvedAt?: Date | string | null
@@ -2126,7 +2121,6 @@ export type PurchaseOrderCreateManySupplierInput = {
 }
 
 export type PurchaseOrderUpdateWithoutSupplierInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   poNumber?: Prisma.StringFieldUpdateOperationsInput | string
   orderDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   expectedDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -2158,7 +2152,7 @@ export type PurchaseOrderUpdateWithoutSupplierInput = {
 }
 
 export type PurchaseOrderUncheckedUpdateWithoutSupplierInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   poNumber?: Prisma.StringFieldUpdateOperationsInput | string
   orderDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   expectedDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -2177,7 +2171,7 @@ export type PurchaseOrderUncheckedUpdateWithoutSupplierInput = {
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   internalNotes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   terms?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  paymentTermId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  paymentTermId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdBy?: Prisma.StringFieldUpdateOperationsInput | string
   approvedBy?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   approvedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -2190,7 +2184,7 @@ export type PurchaseOrderUncheckedUpdateWithoutSupplierInput = {
 }
 
 export type PurchaseOrderUncheckedUpdateManyWithoutSupplierInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   poNumber?: Prisma.StringFieldUpdateOperationsInput | string
   orderDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   expectedDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -2209,7 +2203,7 @@ export type PurchaseOrderUncheckedUpdateManyWithoutSupplierInput = {
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   internalNotes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   terms?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  paymentTermId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  paymentTermId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdBy?: Prisma.StringFieldUpdateOperationsInput | string
   approvedBy?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   approvedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -2218,7 +2212,7 @@ export type PurchaseOrderUncheckedUpdateManyWithoutSupplierInput = {
 }
 
 export type PurchaseOrderCreateManyPaymentTermInput = {
-  id?: string
+  id?: number
   poNumber: string
   orderDate?: Date | string
   expectedDate?: Date | string | null
@@ -2237,7 +2231,7 @@ export type PurchaseOrderCreateManyPaymentTermInput = {
   notes?: string | null
   internalNotes?: string | null
   terms?: string | null
-  supplierId: string
+  supplierId: number
   createdBy: string
   approvedBy?: number | null
   approvedAt?: Date | string | null
@@ -2246,7 +2240,6 @@ export type PurchaseOrderCreateManyPaymentTermInput = {
 }
 
 export type PurchaseOrderUpdateWithoutPaymentTermInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   poNumber?: Prisma.StringFieldUpdateOperationsInput | string
   orderDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   expectedDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -2278,7 +2271,7 @@ export type PurchaseOrderUpdateWithoutPaymentTermInput = {
 }
 
 export type PurchaseOrderUncheckedUpdateWithoutPaymentTermInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   poNumber?: Prisma.StringFieldUpdateOperationsInput | string
   orderDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   expectedDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -2297,7 +2290,7 @@ export type PurchaseOrderUncheckedUpdateWithoutPaymentTermInput = {
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   internalNotes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   terms?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  supplierId?: Prisma.StringFieldUpdateOperationsInput | string
+  supplierId?: Prisma.IntFieldUpdateOperationsInput | number
   createdBy?: Prisma.StringFieldUpdateOperationsInput | string
   approvedBy?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   approvedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -2310,7 +2303,7 @@ export type PurchaseOrderUncheckedUpdateWithoutPaymentTermInput = {
 }
 
 export type PurchaseOrderUncheckedUpdateManyWithoutPaymentTermInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   poNumber?: Prisma.StringFieldUpdateOperationsInput | string
   orderDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   expectedDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -2329,7 +2322,7 @@ export type PurchaseOrderUncheckedUpdateManyWithoutPaymentTermInput = {
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   internalNotes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   terms?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  supplierId?: Prisma.StringFieldUpdateOperationsInput | string
+  supplierId?: Prisma.IntFieldUpdateOperationsInput | number
   createdBy?: Prisma.StringFieldUpdateOperationsInput | string
   approvedBy?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   approvedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -2559,7 +2552,7 @@ export type $PurchaseOrderPayload<ExtArgs extends runtime.Types.Extensions.Inter
     payments: Prisma.$PaymentPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
-    id: string
+    id: number
     poNumber: string
     orderDate: Date
     expectedDate: Date | null
@@ -2578,8 +2571,8 @@ export type $PurchaseOrderPayload<ExtArgs extends runtime.Types.Extensions.Inter
     notes: string | null
     internalNotes: string | null
     terms: string | null
-    supplierId: string
-    paymentTermId: string | null
+    supplierId: number
+    paymentTermId: number | null
     createdBy: string
     approvedBy: number | null
     approvedAt: Date | null
@@ -3015,7 +3008,7 @@ export interface Prisma__PurchaseOrderClient<T, Null = never, ExtArgs extends ru
  * Fields of the PurchaseOrder model
  */
 export interface PurchaseOrderFieldRefs {
-  readonly id: Prisma.FieldRef<"PurchaseOrder", 'String'>
+  readonly id: Prisma.FieldRef<"PurchaseOrder", 'Int'>
   readonly poNumber: Prisma.FieldRef<"PurchaseOrder", 'String'>
   readonly orderDate: Prisma.FieldRef<"PurchaseOrder", 'DateTime'>
   readonly expectedDate: Prisma.FieldRef<"PurchaseOrder", 'DateTime'>
@@ -3034,8 +3027,8 @@ export interface PurchaseOrderFieldRefs {
   readonly notes: Prisma.FieldRef<"PurchaseOrder", 'String'>
   readonly internalNotes: Prisma.FieldRef<"PurchaseOrder", 'String'>
   readonly terms: Prisma.FieldRef<"PurchaseOrder", 'String'>
-  readonly supplierId: Prisma.FieldRef<"PurchaseOrder", 'String'>
-  readonly paymentTermId: Prisma.FieldRef<"PurchaseOrder", 'String'>
+  readonly supplierId: Prisma.FieldRef<"PurchaseOrder", 'Int'>
+  readonly paymentTermId: Prisma.FieldRef<"PurchaseOrder", 'Int'>
   readonly createdBy: Prisma.FieldRef<"PurchaseOrder", 'String'>
   readonly approvedBy: Prisma.FieldRef<"PurchaseOrder", 'Int'>
   readonly approvedAt: Prisma.FieldRef<"PurchaseOrder", 'DateTime'>

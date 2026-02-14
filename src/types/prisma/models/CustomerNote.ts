@@ -20,24 +20,36 @@ export type CustomerNoteModel = runtime.Types.Result.DefaultSelection<Prisma.$Cu
 
 export type AggregateCustomerNote = {
   _count: CustomerNoteCountAggregateOutputType | null
+  _avg: CustomerNoteAvgAggregateOutputType | null
+  _sum: CustomerNoteSumAggregateOutputType | null
   _min: CustomerNoteMinAggregateOutputType | null
   _max: CustomerNoteMaxAggregateOutputType | null
 }
 
+export type CustomerNoteAvgAggregateOutputType = {
+  id: number | null
+  customerId: number | null
+}
+
+export type CustomerNoteSumAggregateOutputType = {
+  id: number | null
+  customerId: number | null
+}
+
 export type CustomerNoteMinAggregateOutputType = {
-  id: string | null
+  id: number | null
   note: string | null
   type: string | null
-  customerId: string | null
+  customerId: number | null
   createdBy: string | null
   createdAt: Date | null
 }
 
 export type CustomerNoteMaxAggregateOutputType = {
-  id: string | null
+  id: number | null
   note: string | null
   type: string | null
-  customerId: string | null
+  customerId: number | null
   createdBy: string | null
   createdAt: Date | null
 }
@@ -52,6 +64,16 @@ export type CustomerNoteCountAggregateOutputType = {
   _all: number
 }
 
+
+export type CustomerNoteAvgAggregateInputType = {
+  id?: true
+  customerId?: true
+}
+
+export type CustomerNoteSumAggregateInputType = {
+  id?: true
+  customerId?: true
+}
 
 export type CustomerNoteMinAggregateInputType = {
   id?: true
@@ -119,6 +141,18 @@ export type CustomerNoteAggregateArgs<ExtArgs extends runtime.Types.Extensions.I
   /**
    * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
    * 
+   * Select which fields to average
+  **/
+  _avg?: CustomerNoteAvgAggregateInputType
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+   * 
+   * Select which fields to sum
+  **/
+  _sum?: CustomerNoteSumAggregateInputType
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+   * 
    * Select which fields to find the minimum value
   **/
   _min?: CustomerNoteMinAggregateInputType
@@ -149,18 +183,22 @@ export type CustomerNoteGroupByArgs<ExtArgs extends runtime.Types.Extensions.Int
   take?: number
   skip?: number
   _count?: CustomerNoteCountAggregateInputType | true
+  _avg?: CustomerNoteAvgAggregateInputType
+  _sum?: CustomerNoteSumAggregateInputType
   _min?: CustomerNoteMinAggregateInputType
   _max?: CustomerNoteMaxAggregateInputType
 }
 
 export type CustomerNoteGroupByOutputType = {
-  id: string
+  id: number
   note: string
   type: string
-  customerId: string
+  customerId: number
   createdBy: string
   createdAt: Date
   _count: CustomerNoteCountAggregateOutputType | null
+  _avg: CustomerNoteAvgAggregateOutputType | null
+  _sum: CustomerNoteSumAggregateOutputType | null
   _min: CustomerNoteMinAggregateOutputType | null
   _max: CustomerNoteMaxAggregateOutputType | null
 }
@@ -184,10 +222,10 @@ export type CustomerNoteWhereInput = {
   AND?: Prisma.CustomerNoteWhereInput | Prisma.CustomerNoteWhereInput[]
   OR?: Prisma.CustomerNoteWhereInput[]
   NOT?: Prisma.CustomerNoteWhereInput | Prisma.CustomerNoteWhereInput[]
-  id?: Prisma.StringFilter<"CustomerNote"> | string
+  id?: Prisma.IntFilter<"CustomerNote"> | number
   note?: Prisma.StringFilter<"CustomerNote"> | string
   type?: Prisma.StringFilter<"CustomerNote"> | string
-  customerId?: Prisma.StringFilter<"CustomerNote"> | string
+  customerId?: Prisma.IntFilter<"CustomerNote"> | number
   createdBy?: Prisma.StringFilter<"CustomerNote"> | string
   createdAt?: Prisma.DateTimeFilter<"CustomerNote"> | Date | string
   customer?: Prisma.XOR<Prisma.CustomerScalarRelationFilter, Prisma.CustomerWhereInput>
@@ -204,13 +242,13 @@ export type CustomerNoteOrderByWithRelationInput = {
 }
 
 export type CustomerNoteWhereUniqueInput = Prisma.AtLeast<{
-  id?: string
+  id?: number
   AND?: Prisma.CustomerNoteWhereInput | Prisma.CustomerNoteWhereInput[]
   OR?: Prisma.CustomerNoteWhereInput[]
   NOT?: Prisma.CustomerNoteWhereInput | Prisma.CustomerNoteWhereInput[]
   note?: Prisma.StringFilter<"CustomerNote"> | string
   type?: Prisma.StringFilter<"CustomerNote"> | string
-  customerId?: Prisma.StringFilter<"CustomerNote"> | string
+  customerId?: Prisma.IntFilter<"CustomerNote"> | number
   createdBy?: Prisma.StringFilter<"CustomerNote"> | string
   createdAt?: Prisma.DateTimeFilter<"CustomerNote"> | Date | string
   customer?: Prisma.XOR<Prisma.CustomerScalarRelationFilter, Prisma.CustomerWhereInput>
@@ -224,24 +262,25 @@ export type CustomerNoteOrderByWithAggregationInput = {
   createdBy?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   _count?: Prisma.CustomerNoteCountOrderByAggregateInput
+  _avg?: Prisma.CustomerNoteAvgOrderByAggregateInput
   _max?: Prisma.CustomerNoteMaxOrderByAggregateInput
   _min?: Prisma.CustomerNoteMinOrderByAggregateInput
+  _sum?: Prisma.CustomerNoteSumOrderByAggregateInput
 }
 
 export type CustomerNoteScalarWhereWithAggregatesInput = {
   AND?: Prisma.CustomerNoteScalarWhereWithAggregatesInput | Prisma.CustomerNoteScalarWhereWithAggregatesInput[]
   OR?: Prisma.CustomerNoteScalarWhereWithAggregatesInput[]
   NOT?: Prisma.CustomerNoteScalarWhereWithAggregatesInput | Prisma.CustomerNoteScalarWhereWithAggregatesInput[]
-  id?: Prisma.StringWithAggregatesFilter<"CustomerNote"> | string
+  id?: Prisma.IntWithAggregatesFilter<"CustomerNote"> | number
   note?: Prisma.StringWithAggregatesFilter<"CustomerNote"> | string
   type?: Prisma.StringWithAggregatesFilter<"CustomerNote"> | string
-  customerId?: Prisma.StringWithAggregatesFilter<"CustomerNote"> | string
+  customerId?: Prisma.IntWithAggregatesFilter<"CustomerNote"> | number
   createdBy?: Prisma.StringWithAggregatesFilter<"CustomerNote"> | string
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"CustomerNote"> | Date | string
 }
 
 export type CustomerNoteCreateInput = {
-  id?: string
   note: string
   type?: string
   createdBy: string
@@ -250,16 +289,15 @@ export type CustomerNoteCreateInput = {
 }
 
 export type CustomerNoteUncheckedCreateInput = {
-  id?: string
+  id?: number
   note: string
   type?: string
-  customerId: string
+  customerId: number
   createdBy: string
   createdAt?: Date | string
 }
 
 export type CustomerNoteUpdateInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   note?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.StringFieldUpdateOperationsInput | string
   createdBy?: Prisma.StringFieldUpdateOperationsInput | string
@@ -268,25 +306,24 @@ export type CustomerNoteUpdateInput = {
 }
 
 export type CustomerNoteUncheckedUpdateInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   note?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.StringFieldUpdateOperationsInput | string
-  customerId?: Prisma.StringFieldUpdateOperationsInput | string
+  customerId?: Prisma.IntFieldUpdateOperationsInput | number
   createdBy?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type CustomerNoteCreateManyInput = {
-  id?: string
+  id?: number
   note: string
   type?: string
-  customerId: string
+  customerId: number
   createdBy: string
   createdAt?: Date | string
 }
 
 export type CustomerNoteUpdateManyMutationInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   note?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.StringFieldUpdateOperationsInput | string
   createdBy?: Prisma.StringFieldUpdateOperationsInput | string
@@ -294,10 +331,10 @@ export type CustomerNoteUpdateManyMutationInput = {
 }
 
 export type CustomerNoteUncheckedUpdateManyInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   note?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.StringFieldUpdateOperationsInput | string
-  customerId?: Prisma.StringFieldUpdateOperationsInput | string
+  customerId?: Prisma.IntFieldUpdateOperationsInput | number
   createdBy?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -321,6 +358,11 @@ export type CustomerNoteCountOrderByAggregateInput = {
   createdAt?: Prisma.SortOrder
 }
 
+export type CustomerNoteAvgOrderByAggregateInput = {
+  id?: Prisma.SortOrder
+  customerId?: Prisma.SortOrder
+}
+
 export type CustomerNoteMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
   note?: Prisma.SortOrder
@@ -337,6 +379,11 @@ export type CustomerNoteMinOrderByAggregateInput = {
   customerId?: Prisma.SortOrder
   createdBy?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
+}
+
+export type CustomerNoteSumOrderByAggregateInput = {
+  id?: Prisma.SortOrder
+  customerId?: Prisma.SortOrder
 }
 
 export type CustomerNoteCreateNestedManyWithoutCustomerInput = {
@@ -382,7 +429,6 @@ export type CustomerNoteUncheckedUpdateManyWithoutCustomerNestedInput = {
 }
 
 export type CustomerNoteCreateWithoutCustomerInput = {
-  id?: string
   note: string
   type?: string
   createdBy: string
@@ -390,7 +436,7 @@ export type CustomerNoteCreateWithoutCustomerInput = {
 }
 
 export type CustomerNoteUncheckedCreateWithoutCustomerInput = {
-  id?: string
+  id?: number
   note: string
   type?: string
   createdBy: string
@@ -427,16 +473,16 @@ export type CustomerNoteScalarWhereInput = {
   AND?: Prisma.CustomerNoteScalarWhereInput | Prisma.CustomerNoteScalarWhereInput[]
   OR?: Prisma.CustomerNoteScalarWhereInput[]
   NOT?: Prisma.CustomerNoteScalarWhereInput | Prisma.CustomerNoteScalarWhereInput[]
-  id?: Prisma.StringFilter<"CustomerNote"> | string
+  id?: Prisma.IntFilter<"CustomerNote"> | number
   note?: Prisma.StringFilter<"CustomerNote"> | string
   type?: Prisma.StringFilter<"CustomerNote"> | string
-  customerId?: Prisma.StringFilter<"CustomerNote"> | string
+  customerId?: Prisma.IntFilter<"CustomerNote"> | number
   createdBy?: Prisma.StringFilter<"CustomerNote"> | string
   createdAt?: Prisma.DateTimeFilter<"CustomerNote"> | Date | string
 }
 
 export type CustomerNoteCreateManyCustomerInput = {
-  id?: string
+  id?: number
   note: string
   type?: string
   createdBy: string
@@ -444,7 +490,6 @@ export type CustomerNoteCreateManyCustomerInput = {
 }
 
 export type CustomerNoteUpdateWithoutCustomerInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   note?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.StringFieldUpdateOperationsInput | string
   createdBy?: Prisma.StringFieldUpdateOperationsInput | string
@@ -452,7 +497,7 @@ export type CustomerNoteUpdateWithoutCustomerInput = {
 }
 
 export type CustomerNoteUncheckedUpdateWithoutCustomerInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   note?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.StringFieldUpdateOperationsInput | string
   createdBy?: Prisma.StringFieldUpdateOperationsInput | string
@@ -460,7 +505,7 @@ export type CustomerNoteUncheckedUpdateWithoutCustomerInput = {
 }
 
 export type CustomerNoteUncheckedUpdateManyWithoutCustomerInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   note?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.StringFieldUpdateOperationsInput | string
   createdBy?: Prisma.StringFieldUpdateOperationsInput | string
@@ -525,10 +570,10 @@ export type $CustomerNotePayload<ExtArgs extends runtime.Types.Extensions.Intern
     customer: Prisma.$CustomerPayload<ExtArgs>
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
-    id: string
+    id: number
     note: string
     type: string
-    customerId: string
+    customerId: number
     createdBy: string
     createdAt: Date
   }, ExtArgs["result"]["customerNote"]>
@@ -955,10 +1000,10 @@ export interface Prisma__CustomerNoteClient<T, Null = never, ExtArgs extends run
  * Fields of the CustomerNote model
  */
 export interface CustomerNoteFieldRefs {
-  readonly id: Prisma.FieldRef<"CustomerNote", 'String'>
+  readonly id: Prisma.FieldRef<"CustomerNote", 'Int'>
   readonly note: Prisma.FieldRef<"CustomerNote", 'String'>
   readonly type: Prisma.FieldRef<"CustomerNote", 'String'>
-  readonly customerId: Prisma.FieldRef<"CustomerNote", 'String'>
+  readonly customerId: Prisma.FieldRef<"CustomerNote", 'Int'>
   readonly createdBy: Prisma.FieldRef<"CustomerNote", 'String'>
   readonly createdAt: Prisma.FieldRef<"CustomerNote", 'DateTime'>
 }

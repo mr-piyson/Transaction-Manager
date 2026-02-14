@@ -27,15 +27,17 @@ export type AggregateAuditLog = {
 }
 
 export type AuditLogAvgAggregateOutputType = {
+  id: number | null
   userId: number | null
 }
 
 export type AuditLogSumAggregateOutputType = {
+  id: number | null
   userId: number | null
 }
 
 export type AuditLogMinAggregateOutputType = {
-  id: string | null
+  id: number | null
   action: $Enums.AuditAction | null
   entity: string | null
   entityId: string | null
@@ -46,7 +48,7 @@ export type AuditLogMinAggregateOutputType = {
 }
 
 export type AuditLogMaxAggregateOutputType = {
-  id: string | null
+  id: number | null
   action: $Enums.AuditAction | null
   entity: string | null
   entityId: string | null
@@ -73,10 +75,12 @@ export type AuditLogCountAggregateOutputType = {
 
 
 export type AuditLogAvgAggregateInputType = {
+  id?: true
   userId?: true
 }
 
 export type AuditLogSumAggregateInputType = {
+  id?: true
   userId?: true
 }
 
@@ -204,7 +208,7 @@ export type AuditLogGroupByArgs<ExtArgs extends runtime.Types.Extensions.Interna
 }
 
 export type AuditLogGroupByOutputType = {
-  id: string
+  id: number
   action: $Enums.AuditAction
   entity: string
   entityId: string
@@ -241,7 +245,7 @@ export type AuditLogWhereInput = {
   AND?: Prisma.AuditLogWhereInput | Prisma.AuditLogWhereInput[]
   OR?: Prisma.AuditLogWhereInput[]
   NOT?: Prisma.AuditLogWhereInput | Prisma.AuditLogWhereInput[]
-  id?: Prisma.StringFilter<"AuditLog"> | string
+  id?: Prisma.IntFilter<"AuditLog"> | number
   action?: Prisma.EnumAuditActionFilter<"AuditLog"> | $Enums.AuditAction
   entity?: Prisma.StringFilter<"AuditLog"> | string
   entityId?: Prisma.StringFilter<"AuditLog"> | string
@@ -271,7 +275,7 @@ export type AuditLogOrderByWithRelationInput = {
 }
 
 export type AuditLogWhereUniqueInput = Prisma.AtLeast<{
-  id?: string
+  id?: number
   AND?: Prisma.AuditLogWhereInput | Prisma.AuditLogWhereInput[]
   OR?: Prisma.AuditLogWhereInput[]
   NOT?: Prisma.AuditLogWhereInput | Prisma.AuditLogWhereInput[]
@@ -311,7 +315,7 @@ export type AuditLogScalarWhereWithAggregatesInput = {
   AND?: Prisma.AuditLogScalarWhereWithAggregatesInput | Prisma.AuditLogScalarWhereWithAggregatesInput[]
   OR?: Prisma.AuditLogScalarWhereWithAggregatesInput[]
   NOT?: Prisma.AuditLogScalarWhereWithAggregatesInput | Prisma.AuditLogScalarWhereWithAggregatesInput[]
-  id?: Prisma.StringWithAggregatesFilter<"AuditLog"> | string
+  id?: Prisma.IntWithAggregatesFilter<"AuditLog"> | number
   action?: Prisma.EnumAuditActionWithAggregatesFilter<"AuditLog"> | $Enums.AuditAction
   entity?: Prisma.StringWithAggregatesFilter<"AuditLog"> | string
   entityId?: Prisma.StringWithAggregatesFilter<"AuditLog"> | string
@@ -325,7 +329,6 @@ export type AuditLogScalarWhereWithAggregatesInput = {
 }
 
 export type AuditLogCreateInput = {
-  id?: string
   action: $Enums.AuditAction
   entity: string
   entityId: string
@@ -339,7 +342,7 @@ export type AuditLogCreateInput = {
 }
 
 export type AuditLogUncheckedCreateInput = {
-  id?: string
+  id?: number
   action: $Enums.AuditAction
   entity: string
   entityId: string
@@ -353,7 +356,6 @@ export type AuditLogUncheckedCreateInput = {
 }
 
 export type AuditLogUpdateInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   action?: Prisma.EnumAuditActionFieldUpdateOperationsInput | $Enums.AuditAction
   entity?: Prisma.StringFieldUpdateOperationsInput | string
   entityId?: Prisma.StringFieldUpdateOperationsInput | string
@@ -367,7 +369,7 @@ export type AuditLogUpdateInput = {
 }
 
 export type AuditLogUncheckedUpdateInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   action?: Prisma.EnumAuditActionFieldUpdateOperationsInput | $Enums.AuditAction
   entity?: Prisma.StringFieldUpdateOperationsInput | string
   entityId?: Prisma.StringFieldUpdateOperationsInput | string
@@ -381,7 +383,7 @@ export type AuditLogUncheckedUpdateInput = {
 }
 
 export type AuditLogCreateManyInput = {
-  id?: string
+  id?: number
   action: $Enums.AuditAction
   entity: string
   entityId: string
@@ -395,7 +397,6 @@ export type AuditLogCreateManyInput = {
 }
 
 export type AuditLogUpdateManyMutationInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   action?: Prisma.EnumAuditActionFieldUpdateOperationsInput | $Enums.AuditAction
   entity?: Prisma.StringFieldUpdateOperationsInput | string
   entityId?: Prisma.StringFieldUpdateOperationsInput | string
@@ -408,7 +409,7 @@ export type AuditLogUpdateManyMutationInput = {
 }
 
 export type AuditLogUncheckedUpdateManyInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   action?: Prisma.EnumAuditActionFieldUpdateOperationsInput | $Enums.AuditAction
   entity?: Prisma.StringFieldUpdateOperationsInput | string
   entityId?: Prisma.StringFieldUpdateOperationsInput | string
@@ -446,6 +447,7 @@ export type AuditLogCountOrderByAggregateInput = {
 }
 
 export type AuditLogAvgOrderByAggregateInput = {
+  id?: Prisma.SortOrder
   userId?: Prisma.SortOrder
 }
 
@@ -472,6 +474,7 @@ export type AuditLogMinOrderByAggregateInput = {
 }
 
 export type AuditLogSumOrderByAggregateInput = {
+  id?: Prisma.SortOrder
   userId?: Prisma.SortOrder
 }
 
@@ -522,7 +525,6 @@ export type EnumAuditActionFieldUpdateOperationsInput = {
 }
 
 export type AuditLogCreateWithoutUserInput = {
-  id?: string
   action: $Enums.AuditAction
   entity: string
   entityId: string
@@ -535,7 +537,7 @@ export type AuditLogCreateWithoutUserInput = {
 }
 
 export type AuditLogUncheckedCreateWithoutUserInput = {
-  id?: string
+  id?: number
   action: $Enums.AuditAction
   entity: string
   entityId: string
@@ -577,7 +579,7 @@ export type AuditLogScalarWhereInput = {
   AND?: Prisma.AuditLogScalarWhereInput | Prisma.AuditLogScalarWhereInput[]
   OR?: Prisma.AuditLogScalarWhereInput[]
   NOT?: Prisma.AuditLogScalarWhereInput | Prisma.AuditLogScalarWhereInput[]
-  id?: Prisma.StringFilter<"AuditLog"> | string
+  id?: Prisma.IntFilter<"AuditLog"> | number
   action?: Prisma.EnumAuditActionFilter<"AuditLog"> | $Enums.AuditAction
   entity?: Prisma.StringFilter<"AuditLog"> | string
   entityId?: Prisma.StringFilter<"AuditLog"> | string
@@ -591,7 +593,7 @@ export type AuditLogScalarWhereInput = {
 }
 
 export type AuditLogCreateManyUserInput = {
-  id?: string
+  id?: number
   action: $Enums.AuditAction
   entity: string
   entityId: string
@@ -604,7 +606,6 @@ export type AuditLogCreateManyUserInput = {
 }
 
 export type AuditLogUpdateWithoutUserInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   action?: Prisma.EnumAuditActionFieldUpdateOperationsInput | $Enums.AuditAction
   entity?: Prisma.StringFieldUpdateOperationsInput | string
   entityId?: Prisma.StringFieldUpdateOperationsInput | string
@@ -617,7 +618,7 @@ export type AuditLogUpdateWithoutUserInput = {
 }
 
 export type AuditLogUncheckedUpdateWithoutUserInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   action?: Prisma.EnumAuditActionFieldUpdateOperationsInput | $Enums.AuditAction
   entity?: Prisma.StringFieldUpdateOperationsInput | string
   entityId?: Prisma.StringFieldUpdateOperationsInput | string
@@ -630,7 +631,7 @@ export type AuditLogUncheckedUpdateWithoutUserInput = {
 }
 
 export type AuditLogUncheckedUpdateManyWithoutUserInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   action?: Prisma.EnumAuditActionFieldUpdateOperationsInput | $Enums.AuditAction
   entity?: Prisma.StringFieldUpdateOperationsInput | string
   entityId?: Prisma.StringFieldUpdateOperationsInput | string
@@ -720,7 +721,7 @@ export type $AuditLogPayload<ExtArgs extends runtime.Types.Extensions.InternalAr
     user: Prisma.$UserPayload<ExtArgs> | null
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
-    id: string
+    id: number
     action: $Enums.AuditAction
     entity: string
     entityId: string
@@ -1155,7 +1156,7 @@ export interface Prisma__AuditLogClient<T, Null = never, ExtArgs extends runtime
  * Fields of the AuditLog model
  */
 export interface AuditLogFieldRefs {
-  readonly id: Prisma.FieldRef<"AuditLog", 'String'>
+  readonly id: Prisma.FieldRef<"AuditLog", 'Int'>
   readonly action: Prisma.FieldRef<"AuditLog", 'AuditAction'>
   readonly entity: Prisma.FieldRef<"AuditLog", 'String'>
   readonly entityId: Prisma.FieldRef<"AuditLog", 'String'>

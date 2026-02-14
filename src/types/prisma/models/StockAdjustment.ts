@@ -20,12 +20,22 @@ export type StockAdjustmentModel = runtime.Types.Result.DefaultSelection<Prisma.
 
 export type AggregateStockAdjustment = {
   _count: StockAdjustmentCountAggregateOutputType | null
+  _avg: StockAdjustmentAvgAggregateOutputType | null
+  _sum: StockAdjustmentSumAggregateOutputType | null
   _min: StockAdjustmentMinAggregateOutputType | null
   _max: StockAdjustmentMaxAggregateOutputType | null
 }
 
+export type StockAdjustmentAvgAggregateOutputType = {
+  id: number | null
+}
+
+export type StockAdjustmentSumAggregateOutputType = {
+  id: number | null
+}
+
 export type StockAdjustmentMinAggregateOutputType = {
-  id: string | null
+  id: number | null
   adjustmentNumber: string | null
   date: Date | null
   reason: string | null
@@ -39,7 +49,7 @@ export type StockAdjustmentMinAggregateOutputType = {
 }
 
 export type StockAdjustmentMaxAggregateOutputType = {
-  id: string | null
+  id: number | null
   adjustmentNumber: string | null
   date: Date | null
   reason: string | null
@@ -67,6 +77,14 @@ export type StockAdjustmentCountAggregateOutputType = {
   _all: number
 }
 
+
+export type StockAdjustmentAvgAggregateInputType = {
+  id?: true
+}
+
+export type StockAdjustmentSumAggregateInputType = {
+  id?: true
+}
 
 export type StockAdjustmentMinAggregateInputType = {
   id?: true
@@ -149,6 +167,18 @@ export type StockAdjustmentAggregateArgs<ExtArgs extends runtime.Types.Extension
   /**
    * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
    * 
+   * Select which fields to average
+  **/
+  _avg?: StockAdjustmentAvgAggregateInputType
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+   * 
+   * Select which fields to sum
+  **/
+  _sum?: StockAdjustmentSumAggregateInputType
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+   * 
    * Select which fields to find the minimum value
   **/
   _min?: StockAdjustmentMinAggregateInputType
@@ -179,12 +209,14 @@ export type StockAdjustmentGroupByArgs<ExtArgs extends runtime.Types.Extensions.
   take?: number
   skip?: number
   _count?: StockAdjustmentCountAggregateInputType | true
+  _avg?: StockAdjustmentAvgAggregateInputType
+  _sum?: StockAdjustmentSumAggregateInputType
   _min?: StockAdjustmentMinAggregateInputType
   _max?: StockAdjustmentMaxAggregateInputType
 }
 
 export type StockAdjustmentGroupByOutputType = {
-  id: string
+  id: number
   adjustmentNumber: string
   date: Date
   reason: string
@@ -196,6 +228,8 @@ export type StockAdjustmentGroupByOutputType = {
   createdAt: Date
   updatedAt: Date
   _count: StockAdjustmentCountAggregateOutputType | null
+  _avg: StockAdjustmentAvgAggregateOutputType | null
+  _sum: StockAdjustmentSumAggregateOutputType | null
   _min: StockAdjustmentMinAggregateOutputType | null
   _max: StockAdjustmentMaxAggregateOutputType | null
 }
@@ -219,7 +253,7 @@ export type StockAdjustmentWhereInput = {
   AND?: Prisma.StockAdjustmentWhereInput | Prisma.StockAdjustmentWhereInput[]
   OR?: Prisma.StockAdjustmentWhereInput[]
   NOT?: Prisma.StockAdjustmentWhereInput | Prisma.StockAdjustmentWhereInput[]
-  id?: Prisma.StringFilter<"StockAdjustment"> | string
+  id?: Prisma.IntFilter<"StockAdjustment"> | number
   adjustmentNumber?: Prisma.StringFilter<"StockAdjustment"> | string
   date?: Prisma.DateTimeFilter<"StockAdjustment"> | Date | string
   reason?: Prisma.StringFilter<"StockAdjustment"> | string
@@ -249,7 +283,7 @@ export type StockAdjustmentOrderByWithRelationInput = {
 }
 
 export type StockAdjustmentWhereUniqueInput = Prisma.AtLeast<{
-  id?: string
+  id?: number
   AND?: Prisma.StockAdjustmentWhereInput | Prisma.StockAdjustmentWhereInput[]
   OR?: Prisma.StockAdjustmentWhereInput[]
   NOT?: Prisma.StockAdjustmentWhereInput | Prisma.StockAdjustmentWhereInput[]
@@ -279,15 +313,17 @@ export type StockAdjustmentOrderByWithAggregationInput = {
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.StockAdjustmentCountOrderByAggregateInput
+  _avg?: Prisma.StockAdjustmentAvgOrderByAggregateInput
   _max?: Prisma.StockAdjustmentMaxOrderByAggregateInput
   _min?: Prisma.StockAdjustmentMinOrderByAggregateInput
+  _sum?: Prisma.StockAdjustmentSumOrderByAggregateInput
 }
 
 export type StockAdjustmentScalarWhereWithAggregatesInput = {
   AND?: Prisma.StockAdjustmentScalarWhereWithAggregatesInput | Prisma.StockAdjustmentScalarWhereWithAggregatesInput[]
   OR?: Prisma.StockAdjustmentScalarWhereWithAggregatesInput[]
   NOT?: Prisma.StockAdjustmentScalarWhereWithAggregatesInput | Prisma.StockAdjustmentScalarWhereWithAggregatesInput[]
-  id?: Prisma.StringWithAggregatesFilter<"StockAdjustment"> | string
+  id?: Prisma.IntWithAggregatesFilter<"StockAdjustment"> | number
   adjustmentNumber?: Prisma.StringWithAggregatesFilter<"StockAdjustment"> | string
   date?: Prisma.DateTimeWithAggregatesFilter<"StockAdjustment"> | Date | string
   reason?: Prisma.StringWithAggregatesFilter<"StockAdjustment"> | string
@@ -301,7 +337,6 @@ export type StockAdjustmentScalarWhereWithAggregatesInput = {
 }
 
 export type StockAdjustmentCreateInput = {
-  id?: string
   adjustmentNumber: string
   date?: Date | string
   reason: string
@@ -316,7 +351,7 @@ export type StockAdjustmentCreateInput = {
 }
 
 export type StockAdjustmentUncheckedCreateInput = {
-  id?: string
+  id?: number
   adjustmentNumber: string
   date?: Date | string
   reason: string
@@ -331,7 +366,6 @@ export type StockAdjustmentUncheckedCreateInput = {
 }
 
 export type StockAdjustmentUpdateInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   adjustmentNumber?: Prisma.StringFieldUpdateOperationsInput | string
   date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   reason?: Prisma.StringFieldUpdateOperationsInput | string
@@ -346,7 +380,7 @@ export type StockAdjustmentUpdateInput = {
 }
 
 export type StockAdjustmentUncheckedUpdateInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   adjustmentNumber?: Prisma.StringFieldUpdateOperationsInput | string
   date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   reason?: Prisma.StringFieldUpdateOperationsInput | string
@@ -361,7 +395,7 @@ export type StockAdjustmentUncheckedUpdateInput = {
 }
 
 export type StockAdjustmentCreateManyInput = {
-  id?: string
+  id?: number
   adjustmentNumber: string
   date?: Date | string
   reason: string
@@ -375,7 +409,6 @@ export type StockAdjustmentCreateManyInput = {
 }
 
 export type StockAdjustmentUpdateManyMutationInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   adjustmentNumber?: Prisma.StringFieldUpdateOperationsInput | string
   date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   reason?: Prisma.StringFieldUpdateOperationsInput | string
@@ -389,7 +422,7 @@ export type StockAdjustmentUpdateManyMutationInput = {
 }
 
 export type StockAdjustmentUncheckedUpdateManyInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   adjustmentNumber?: Prisma.StringFieldUpdateOperationsInput | string
   date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   reason?: Prisma.StringFieldUpdateOperationsInput | string
@@ -414,6 +447,10 @@ export type StockAdjustmentCountOrderByAggregateInput = {
   approvedAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+}
+
+export type StockAdjustmentAvgOrderByAggregateInput = {
+  id?: Prisma.SortOrder
 }
 
 export type StockAdjustmentMaxOrderByAggregateInput = {
@@ -444,6 +481,10 @@ export type StockAdjustmentMinOrderByAggregateInput = {
   updatedAt?: Prisma.SortOrder
 }
 
+export type StockAdjustmentSumOrderByAggregateInput = {
+  id?: Prisma.SortOrder
+}
+
 export type StockAdjustmentScalarRelationFilter = {
   is?: Prisma.StockAdjustmentWhereInput
   isNot?: Prisma.StockAdjustmentWhereInput
@@ -468,7 +509,6 @@ export type StockAdjustmentUpdateOneRequiredWithoutItemsNestedInput = {
 }
 
 export type StockAdjustmentCreateWithoutItemsInput = {
-  id?: string
   adjustmentNumber: string
   date?: Date | string
   reason: string
@@ -482,7 +522,7 @@ export type StockAdjustmentCreateWithoutItemsInput = {
 }
 
 export type StockAdjustmentUncheckedCreateWithoutItemsInput = {
-  id?: string
+  id?: number
   adjustmentNumber: string
   date?: Date | string
   reason: string
@@ -512,7 +552,6 @@ export type StockAdjustmentUpdateToOneWithWhereWithoutItemsInput = {
 }
 
 export type StockAdjustmentUpdateWithoutItemsInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   adjustmentNumber?: Prisma.StringFieldUpdateOperationsInput | string
   date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   reason?: Prisma.StringFieldUpdateOperationsInput | string
@@ -526,7 +565,7 @@ export type StockAdjustmentUpdateWithoutItemsInput = {
 }
 
 export type StockAdjustmentUncheckedUpdateWithoutItemsInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   adjustmentNumber?: Prisma.StringFieldUpdateOperationsInput | string
   date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   reason?: Prisma.StringFieldUpdateOperationsInput | string
@@ -642,7 +681,7 @@ export type $StockAdjustmentPayload<ExtArgs extends runtime.Types.Extensions.Int
     items: Prisma.$StockAdjustmentItemPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
-    id: string
+    id: number
     adjustmentNumber: string
     date: Date
     reason: string
@@ -1077,7 +1116,7 @@ export interface Prisma__StockAdjustmentClient<T, Null = never, ExtArgs extends 
  * Fields of the StockAdjustment model
  */
 export interface StockAdjustmentFieldRefs {
-  readonly id: Prisma.FieldRef<"StockAdjustment", 'String'>
+  readonly id: Prisma.FieldRef<"StockAdjustment", 'Int'>
   readonly adjustmentNumber: Prisma.FieldRef<"StockAdjustment", 'String'>
   readonly date: Prisma.FieldRef<"StockAdjustment", 'DateTime'>
   readonly reason: Prisma.FieldRef<"StockAdjustment", 'String'>

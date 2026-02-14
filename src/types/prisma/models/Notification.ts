@@ -27,15 +27,17 @@ export type AggregateNotification = {
 }
 
 export type NotificationAvgAggregateOutputType = {
+  id: number | null
   userId: number | null
 }
 
 export type NotificationSumAggregateOutputType = {
+  id: number | null
   userId: number | null
 }
 
 export type NotificationMinAggregateOutputType = {
-  id: string | null
+  id: number | null
   type: $Enums.NotificationType | null
   title: string | null
   message: string | null
@@ -46,7 +48,7 @@ export type NotificationMinAggregateOutputType = {
 }
 
 export type NotificationMaxAggregateOutputType = {
-  id: string | null
+  id: number | null
   type: $Enums.NotificationType | null
   title: string | null
   message: string | null
@@ -71,10 +73,12 @@ export type NotificationCountAggregateOutputType = {
 
 
 export type NotificationAvgAggregateInputType = {
+  id?: true
   userId?: true
 }
 
 export type NotificationSumAggregateInputType = {
+  id?: true
   userId?: true
 }
 
@@ -200,7 +204,7 @@ export type NotificationGroupByArgs<ExtArgs extends runtime.Types.Extensions.Int
 }
 
 export type NotificationGroupByOutputType = {
-  id: string
+  id: number
   type: $Enums.NotificationType
   title: string
   message: string
@@ -235,7 +239,7 @@ export type NotificationWhereInput = {
   AND?: Prisma.NotificationWhereInput | Prisma.NotificationWhereInput[]
   OR?: Prisma.NotificationWhereInput[]
   NOT?: Prisma.NotificationWhereInput | Prisma.NotificationWhereInput[]
-  id?: Prisma.StringFilter<"Notification"> | string
+  id?: Prisma.IntFilter<"Notification"> | number
   type?: Prisma.EnumNotificationTypeFilter<"Notification"> | $Enums.NotificationType
   title?: Prisma.StringFilter<"Notification"> | string
   message?: Prisma.StringFilter<"Notification"> | string
@@ -261,7 +265,7 @@ export type NotificationOrderByWithRelationInput = {
 }
 
 export type NotificationWhereUniqueInput = Prisma.AtLeast<{
-  id?: string
+  id?: number
   AND?: Prisma.NotificationWhereInput | Prisma.NotificationWhereInput[]
   OR?: Prisma.NotificationWhereInput[]
   NOT?: Prisma.NotificationWhereInput | Prisma.NotificationWhereInput[]
@@ -297,7 +301,7 @@ export type NotificationScalarWhereWithAggregatesInput = {
   AND?: Prisma.NotificationScalarWhereWithAggregatesInput | Prisma.NotificationScalarWhereWithAggregatesInput[]
   OR?: Prisma.NotificationScalarWhereWithAggregatesInput[]
   NOT?: Prisma.NotificationScalarWhereWithAggregatesInput | Prisma.NotificationScalarWhereWithAggregatesInput[]
-  id?: Prisma.StringWithAggregatesFilter<"Notification"> | string
+  id?: Prisma.IntWithAggregatesFilter<"Notification"> | number
   type?: Prisma.EnumNotificationTypeWithAggregatesFilter<"Notification"> | $Enums.NotificationType
   title?: Prisma.StringWithAggregatesFilter<"Notification"> | string
   message?: Prisma.StringWithAggregatesFilter<"Notification"> | string
@@ -309,7 +313,6 @@ export type NotificationScalarWhereWithAggregatesInput = {
 }
 
 export type NotificationCreateInput = {
-  id?: string
   type: $Enums.NotificationType
   title: string
   message: string
@@ -321,7 +324,7 @@ export type NotificationCreateInput = {
 }
 
 export type NotificationUncheckedCreateInput = {
-  id?: string
+  id?: number
   type: $Enums.NotificationType
   title: string
   message: string
@@ -333,7 +336,6 @@ export type NotificationUncheckedCreateInput = {
 }
 
 export type NotificationUpdateInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumNotificationTypeFieldUpdateOperationsInput | $Enums.NotificationType
   title?: Prisma.StringFieldUpdateOperationsInput | string
   message?: Prisma.StringFieldUpdateOperationsInput | string
@@ -345,7 +347,7 @@ export type NotificationUpdateInput = {
 }
 
 export type NotificationUncheckedUpdateInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   type?: Prisma.EnumNotificationTypeFieldUpdateOperationsInput | $Enums.NotificationType
   title?: Prisma.StringFieldUpdateOperationsInput | string
   message?: Prisma.StringFieldUpdateOperationsInput | string
@@ -357,7 +359,7 @@ export type NotificationUncheckedUpdateInput = {
 }
 
 export type NotificationCreateManyInput = {
-  id?: string
+  id?: number
   type: $Enums.NotificationType
   title: string
   message: string
@@ -369,7 +371,6 @@ export type NotificationCreateManyInput = {
 }
 
 export type NotificationUpdateManyMutationInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumNotificationTypeFieldUpdateOperationsInput | $Enums.NotificationType
   title?: Prisma.StringFieldUpdateOperationsInput | string
   message?: Prisma.StringFieldUpdateOperationsInput | string
@@ -380,7 +381,7 @@ export type NotificationUpdateManyMutationInput = {
 }
 
 export type NotificationUncheckedUpdateManyInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   type?: Prisma.EnumNotificationTypeFieldUpdateOperationsInput | $Enums.NotificationType
   title?: Prisma.StringFieldUpdateOperationsInput | string
   message?: Prisma.StringFieldUpdateOperationsInput | string
@@ -414,6 +415,7 @@ export type NotificationCountOrderByAggregateInput = {
 }
 
 export type NotificationAvgOrderByAggregateInput = {
+  id?: Prisma.SortOrder
   userId?: Prisma.SortOrder
 }
 
@@ -440,6 +442,7 @@ export type NotificationMinOrderByAggregateInput = {
 }
 
 export type NotificationSumOrderByAggregateInput = {
+  id?: Prisma.SortOrder
   userId?: Prisma.SortOrder
 }
 
@@ -490,7 +493,6 @@ export type EnumNotificationTypeFieldUpdateOperationsInput = {
 }
 
 export type NotificationCreateWithoutUserInput = {
-  id?: string
   type: $Enums.NotificationType
   title: string
   message: string
@@ -501,7 +503,7 @@ export type NotificationCreateWithoutUserInput = {
 }
 
 export type NotificationUncheckedCreateWithoutUserInput = {
-  id?: string
+  id?: number
   type: $Enums.NotificationType
   title: string
   message: string
@@ -541,7 +543,7 @@ export type NotificationScalarWhereInput = {
   AND?: Prisma.NotificationScalarWhereInput | Prisma.NotificationScalarWhereInput[]
   OR?: Prisma.NotificationScalarWhereInput[]
   NOT?: Prisma.NotificationScalarWhereInput | Prisma.NotificationScalarWhereInput[]
-  id?: Prisma.StringFilter<"Notification"> | string
+  id?: Prisma.IntFilter<"Notification"> | number
   type?: Prisma.EnumNotificationTypeFilter<"Notification"> | $Enums.NotificationType
   title?: Prisma.StringFilter<"Notification"> | string
   message?: Prisma.StringFilter<"Notification"> | string
@@ -553,7 +555,7 @@ export type NotificationScalarWhereInput = {
 }
 
 export type NotificationCreateManyUserInput = {
-  id?: string
+  id?: number
   type: $Enums.NotificationType
   title: string
   message: string
@@ -564,7 +566,6 @@ export type NotificationCreateManyUserInput = {
 }
 
 export type NotificationUpdateWithoutUserInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumNotificationTypeFieldUpdateOperationsInput | $Enums.NotificationType
   title?: Prisma.StringFieldUpdateOperationsInput | string
   message?: Prisma.StringFieldUpdateOperationsInput | string
@@ -575,7 +576,7 @@ export type NotificationUpdateWithoutUserInput = {
 }
 
 export type NotificationUncheckedUpdateWithoutUserInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   type?: Prisma.EnumNotificationTypeFieldUpdateOperationsInput | $Enums.NotificationType
   title?: Prisma.StringFieldUpdateOperationsInput | string
   message?: Prisma.StringFieldUpdateOperationsInput | string
@@ -586,7 +587,7 @@ export type NotificationUncheckedUpdateWithoutUserInput = {
 }
 
 export type NotificationUncheckedUpdateManyWithoutUserInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   type?: Prisma.EnumNotificationTypeFieldUpdateOperationsInput | $Enums.NotificationType
   title?: Prisma.StringFieldUpdateOperationsInput | string
   message?: Prisma.StringFieldUpdateOperationsInput | string
@@ -666,7 +667,7 @@ export type $NotificationPayload<ExtArgs extends runtime.Types.Extensions.Intern
     user: Prisma.$UserPayload<ExtArgs>
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
-    id: string
+    id: number
     type: $Enums.NotificationType
     title: string
     message: string
@@ -1099,7 +1100,7 @@ export interface Prisma__NotificationClient<T, Null = never, ExtArgs extends run
  * Fields of the Notification model
  */
 export interface NotificationFieldRefs {
-  readonly id: Prisma.FieldRef<"Notification", 'String'>
+  readonly id: Prisma.FieldRef<"Notification", 'Int'>
   readonly type: Prisma.FieldRef<"Notification", 'NotificationType'>
   readonly title: Prisma.FieldRef<"Notification", 'String'>
   readonly message: Prisma.FieldRef<"Notification", 'String'>

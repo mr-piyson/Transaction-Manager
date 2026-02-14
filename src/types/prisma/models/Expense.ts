@@ -27,15 +27,21 @@ export type AggregateExpense = {
 }
 
 export type ExpenseAvgAggregateOutputType = {
+  id: number | null
   amount: runtime.Decimal | null
+  employeeId: number | null
+  projectId: number | null
 }
 
 export type ExpenseSumAggregateOutputType = {
+  id: number | null
   amount: runtime.Decimal | null
+  employeeId: number | null
+  projectId: number | null
 }
 
 export type ExpenseMinAggregateOutputType = {
-  id: string | null
+  id: number | null
   expenseNumber: string | null
   date: Date | null
   amount: runtime.Decimal | null
@@ -48,8 +54,8 @@ export type ExpenseMinAggregateOutputType = {
   isReimbursable: boolean | null
   isReimbursed: boolean | null
   reimbursedDate: Date | null
-  employeeId: string | null
-  projectId: string | null
+  employeeId: number | null
+  projectId: number | null
   approvedBy: string | null
   approvedAt: Date | null
   createdAt: Date | null
@@ -57,7 +63,7 @@ export type ExpenseMinAggregateOutputType = {
 }
 
 export type ExpenseMaxAggregateOutputType = {
-  id: string | null
+  id: number | null
   expenseNumber: string | null
   date: Date | null
   amount: runtime.Decimal | null
@@ -70,8 +76,8 @@ export type ExpenseMaxAggregateOutputType = {
   isReimbursable: boolean | null
   isReimbursed: boolean | null
   reimbursedDate: Date | null
-  employeeId: string | null
-  projectId: string | null
+  employeeId: number | null
+  projectId: number | null
   approvedBy: string | null
   approvedAt: Date | null
   createdAt: Date | null
@@ -103,11 +109,17 @@ export type ExpenseCountAggregateOutputType = {
 
 
 export type ExpenseAvgAggregateInputType = {
+  id?: true
   amount?: true
+  employeeId?: true
+  projectId?: true
 }
 
 export type ExpenseSumAggregateInputType = {
+  id?: true
   amount?: true
+  employeeId?: true
+  projectId?: true
 }
 
 export type ExpenseMinAggregateInputType = {
@@ -264,7 +276,7 @@ export type ExpenseGroupByArgs<ExtArgs extends runtime.Types.Extensions.Internal
 }
 
 export type ExpenseGroupByOutputType = {
-  id: string
+  id: number
   expenseNumber: string
   date: Date
   amount: runtime.Decimal
@@ -277,8 +289,8 @@ export type ExpenseGroupByOutputType = {
   isReimbursable: boolean
   isReimbursed: boolean
   reimbursedDate: Date | null
-  employeeId: string
-  projectId: string | null
+  employeeId: number
+  projectId: number | null
   approvedBy: string | null
   approvedAt: Date | null
   createdAt: Date
@@ -309,7 +321,7 @@ export type ExpenseWhereInput = {
   AND?: Prisma.ExpenseWhereInput | Prisma.ExpenseWhereInput[]
   OR?: Prisma.ExpenseWhereInput[]
   NOT?: Prisma.ExpenseWhereInput | Prisma.ExpenseWhereInput[]
-  id?: Prisma.StringFilter<"Expense"> | string
+  id?: Prisma.IntFilter<"Expense"> | number
   expenseNumber?: Prisma.StringFilter<"Expense"> | string
   date?: Prisma.DateTimeFilter<"Expense"> | Date | string
   amount?: Prisma.DecimalFilter<"Expense"> | runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -322,8 +334,8 @@ export type ExpenseWhereInput = {
   isReimbursable?: Prisma.BoolFilter<"Expense"> | boolean
   isReimbursed?: Prisma.BoolFilter<"Expense"> | boolean
   reimbursedDate?: Prisma.DateTimeNullableFilter<"Expense"> | Date | string | null
-  employeeId?: Prisma.StringFilter<"Expense"> | string
-  projectId?: Prisma.StringNullableFilter<"Expense"> | string | null
+  employeeId?: Prisma.IntFilter<"Expense"> | number
+  projectId?: Prisma.IntNullableFilter<"Expense"> | number | null
   approvedBy?: Prisma.StringNullableFilter<"Expense"> | string | null
   approvedAt?: Prisma.DateTimeNullableFilter<"Expense"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"Expense"> | Date | string
@@ -357,7 +369,7 @@ export type ExpenseOrderByWithRelationInput = {
 }
 
 export type ExpenseWhereUniqueInput = Prisma.AtLeast<{
-  id?: string
+  id?: number
   AND?: Prisma.ExpenseWhereInput | Prisma.ExpenseWhereInput[]
   OR?: Prisma.ExpenseWhereInput[]
   NOT?: Prisma.ExpenseWhereInput | Prisma.ExpenseWhereInput[]
@@ -373,8 +385,8 @@ export type ExpenseWhereUniqueInput = Prisma.AtLeast<{
   isReimbursable?: Prisma.BoolFilter<"Expense"> | boolean
   isReimbursed?: Prisma.BoolFilter<"Expense"> | boolean
   reimbursedDate?: Prisma.DateTimeNullableFilter<"Expense"> | Date | string | null
-  employeeId?: Prisma.StringFilter<"Expense"> | string
-  projectId?: Prisma.StringNullableFilter<"Expense"> | string | null
+  employeeId?: Prisma.IntFilter<"Expense"> | number
+  projectId?: Prisma.IntNullableFilter<"Expense"> | number | null
   approvedBy?: Prisma.StringNullableFilter<"Expense"> | string | null
   approvedAt?: Prisma.DateTimeNullableFilter<"Expense"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"Expense"> | Date | string
@@ -414,7 +426,7 @@ export type ExpenseScalarWhereWithAggregatesInput = {
   AND?: Prisma.ExpenseScalarWhereWithAggregatesInput | Prisma.ExpenseScalarWhereWithAggregatesInput[]
   OR?: Prisma.ExpenseScalarWhereWithAggregatesInput[]
   NOT?: Prisma.ExpenseScalarWhereWithAggregatesInput | Prisma.ExpenseScalarWhereWithAggregatesInput[]
-  id?: Prisma.StringWithAggregatesFilter<"Expense"> | string
+  id?: Prisma.IntWithAggregatesFilter<"Expense"> | number
   expenseNumber?: Prisma.StringWithAggregatesFilter<"Expense"> | string
   date?: Prisma.DateTimeWithAggregatesFilter<"Expense"> | Date | string
   amount?: Prisma.DecimalWithAggregatesFilter<"Expense"> | runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -427,8 +439,8 @@ export type ExpenseScalarWhereWithAggregatesInput = {
   isReimbursable?: Prisma.BoolWithAggregatesFilter<"Expense"> | boolean
   isReimbursed?: Prisma.BoolWithAggregatesFilter<"Expense"> | boolean
   reimbursedDate?: Prisma.DateTimeNullableWithAggregatesFilter<"Expense"> | Date | string | null
-  employeeId?: Prisma.StringWithAggregatesFilter<"Expense"> | string
-  projectId?: Prisma.StringNullableWithAggregatesFilter<"Expense"> | string | null
+  employeeId?: Prisma.IntWithAggregatesFilter<"Expense"> | number
+  projectId?: Prisma.IntNullableWithAggregatesFilter<"Expense"> | number | null
   approvedBy?: Prisma.StringNullableWithAggregatesFilter<"Expense"> | string | null
   approvedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Expense"> | Date | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Expense"> | Date | string
@@ -436,7 +448,6 @@ export type ExpenseScalarWhereWithAggregatesInput = {
 }
 
 export type ExpenseCreateInput = {
-  id?: string
   expenseNumber: string
   date: Date | string
   amount: runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -458,7 +469,7 @@ export type ExpenseCreateInput = {
 }
 
 export type ExpenseUncheckedCreateInput = {
-  id?: string
+  id?: number
   expenseNumber: string
   date: Date | string
   amount: runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -471,8 +482,8 @@ export type ExpenseUncheckedCreateInput = {
   isReimbursable?: boolean
   isReimbursed?: boolean
   reimbursedDate?: Date | string | null
-  employeeId: string
-  projectId?: string | null
+  employeeId: number
+  projectId?: number | null
   approvedBy?: string | null
   approvedAt?: Date | string | null
   createdAt?: Date | string
@@ -480,7 +491,6 @@ export type ExpenseUncheckedCreateInput = {
 }
 
 export type ExpenseUpdateInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   expenseNumber?: Prisma.StringFieldUpdateOperationsInput | string
   date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -502,7 +512,7 @@ export type ExpenseUpdateInput = {
 }
 
 export type ExpenseUncheckedUpdateInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   expenseNumber?: Prisma.StringFieldUpdateOperationsInput | string
   date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -515,8 +525,8 @@ export type ExpenseUncheckedUpdateInput = {
   isReimbursable?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isReimbursed?: Prisma.BoolFieldUpdateOperationsInput | boolean
   reimbursedDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  employeeId?: Prisma.StringFieldUpdateOperationsInput | string
-  projectId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  employeeId?: Prisma.IntFieldUpdateOperationsInput | number
+  projectId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   approvedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   approvedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -524,7 +534,7 @@ export type ExpenseUncheckedUpdateInput = {
 }
 
 export type ExpenseCreateManyInput = {
-  id?: string
+  id?: number
   expenseNumber: string
   date: Date | string
   amount: runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -537,8 +547,8 @@ export type ExpenseCreateManyInput = {
   isReimbursable?: boolean
   isReimbursed?: boolean
   reimbursedDate?: Date | string | null
-  employeeId: string
-  projectId?: string | null
+  employeeId: number
+  projectId?: number | null
   approvedBy?: string | null
   approvedAt?: Date | string | null
   createdAt?: Date | string
@@ -546,7 +556,6 @@ export type ExpenseCreateManyInput = {
 }
 
 export type ExpenseUpdateManyMutationInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   expenseNumber?: Prisma.StringFieldUpdateOperationsInput | string
   date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -566,7 +575,7 @@ export type ExpenseUpdateManyMutationInput = {
 }
 
 export type ExpenseUncheckedUpdateManyInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   expenseNumber?: Prisma.StringFieldUpdateOperationsInput | string
   date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -579,8 +588,8 @@ export type ExpenseUncheckedUpdateManyInput = {
   isReimbursable?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isReimbursed?: Prisma.BoolFieldUpdateOperationsInput | boolean
   reimbursedDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  employeeId?: Prisma.StringFieldUpdateOperationsInput | string
-  projectId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  employeeId?: Prisma.IntFieldUpdateOperationsInput | number
+  projectId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   approvedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   approvedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -620,7 +629,10 @@ export type ExpenseCountOrderByAggregateInput = {
 }
 
 export type ExpenseAvgOrderByAggregateInput = {
+  id?: Prisma.SortOrder
   amount?: Prisma.SortOrder
+  employeeId?: Prisma.SortOrder
+  projectId?: Prisma.SortOrder
 }
 
 export type ExpenseMaxOrderByAggregateInput = {
@@ -668,7 +680,10 @@ export type ExpenseMinOrderByAggregateInput = {
 }
 
 export type ExpenseSumOrderByAggregateInput = {
+  id?: Prisma.SortOrder
   amount?: Prisma.SortOrder
+  employeeId?: Prisma.SortOrder
+  projectId?: Prisma.SortOrder
 }
 
 export type ExpenseCreateNestedManyWithoutEmployeeInput = {
@@ -764,7 +779,6 @@ export type ExpenseUncheckedUpdateManyWithoutProjectNestedInput = {
 }
 
 export type ExpenseCreateWithoutEmployeeInput = {
-  id?: string
   expenseNumber: string
   date: Date | string
   amount: runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -785,7 +799,7 @@ export type ExpenseCreateWithoutEmployeeInput = {
 }
 
 export type ExpenseUncheckedCreateWithoutEmployeeInput = {
-  id?: string
+  id?: number
   expenseNumber: string
   date: Date | string
   amount: runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -798,7 +812,7 @@ export type ExpenseUncheckedCreateWithoutEmployeeInput = {
   isReimbursable?: boolean
   isReimbursed?: boolean
   reimbursedDate?: Date | string | null
-  projectId?: string | null
+  projectId?: number | null
   approvedBy?: string | null
   approvedAt?: Date | string | null
   createdAt?: Date | string
@@ -835,7 +849,7 @@ export type ExpenseScalarWhereInput = {
   AND?: Prisma.ExpenseScalarWhereInput | Prisma.ExpenseScalarWhereInput[]
   OR?: Prisma.ExpenseScalarWhereInput[]
   NOT?: Prisma.ExpenseScalarWhereInput | Prisma.ExpenseScalarWhereInput[]
-  id?: Prisma.StringFilter<"Expense"> | string
+  id?: Prisma.IntFilter<"Expense"> | number
   expenseNumber?: Prisma.StringFilter<"Expense"> | string
   date?: Prisma.DateTimeFilter<"Expense"> | Date | string
   amount?: Prisma.DecimalFilter<"Expense"> | runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -848,8 +862,8 @@ export type ExpenseScalarWhereInput = {
   isReimbursable?: Prisma.BoolFilter<"Expense"> | boolean
   isReimbursed?: Prisma.BoolFilter<"Expense"> | boolean
   reimbursedDate?: Prisma.DateTimeNullableFilter<"Expense"> | Date | string | null
-  employeeId?: Prisma.StringFilter<"Expense"> | string
-  projectId?: Prisma.StringNullableFilter<"Expense"> | string | null
+  employeeId?: Prisma.IntFilter<"Expense"> | number
+  projectId?: Prisma.IntNullableFilter<"Expense"> | number | null
   approvedBy?: Prisma.StringNullableFilter<"Expense"> | string | null
   approvedAt?: Prisma.DateTimeNullableFilter<"Expense"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"Expense"> | Date | string
@@ -857,7 +871,6 @@ export type ExpenseScalarWhereInput = {
 }
 
 export type ExpenseCreateWithoutProjectInput = {
-  id?: string
   expenseNumber: string
   date: Date | string
   amount: runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -878,7 +891,7 @@ export type ExpenseCreateWithoutProjectInput = {
 }
 
 export type ExpenseUncheckedCreateWithoutProjectInput = {
-  id?: string
+  id?: number
   expenseNumber: string
   date: Date | string
   amount: runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -891,7 +904,7 @@ export type ExpenseUncheckedCreateWithoutProjectInput = {
   isReimbursable?: boolean
   isReimbursed?: boolean
   reimbursedDate?: Date | string | null
-  employeeId: string
+  employeeId: number
   approvedBy?: string | null
   approvedAt?: Date | string | null
   createdAt?: Date | string
@@ -925,7 +938,7 @@ export type ExpenseUpdateManyWithWhereWithoutProjectInput = {
 }
 
 export type ExpenseCreateManyEmployeeInput = {
-  id?: string
+  id?: number
   expenseNumber: string
   date: Date | string
   amount: runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -938,7 +951,7 @@ export type ExpenseCreateManyEmployeeInput = {
   isReimbursable?: boolean
   isReimbursed?: boolean
   reimbursedDate?: Date | string | null
-  projectId?: string | null
+  projectId?: number | null
   approvedBy?: string | null
   approvedAt?: Date | string | null
   createdAt?: Date | string
@@ -946,7 +959,6 @@ export type ExpenseCreateManyEmployeeInput = {
 }
 
 export type ExpenseUpdateWithoutEmployeeInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   expenseNumber?: Prisma.StringFieldUpdateOperationsInput | string
   date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -967,7 +979,7 @@ export type ExpenseUpdateWithoutEmployeeInput = {
 }
 
 export type ExpenseUncheckedUpdateWithoutEmployeeInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   expenseNumber?: Prisma.StringFieldUpdateOperationsInput | string
   date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -980,7 +992,7 @@ export type ExpenseUncheckedUpdateWithoutEmployeeInput = {
   isReimbursable?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isReimbursed?: Prisma.BoolFieldUpdateOperationsInput | boolean
   reimbursedDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  projectId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  projectId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   approvedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   approvedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -988,7 +1000,7 @@ export type ExpenseUncheckedUpdateWithoutEmployeeInput = {
 }
 
 export type ExpenseUncheckedUpdateManyWithoutEmployeeInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   expenseNumber?: Prisma.StringFieldUpdateOperationsInput | string
   date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -1001,7 +1013,7 @@ export type ExpenseUncheckedUpdateManyWithoutEmployeeInput = {
   isReimbursable?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isReimbursed?: Prisma.BoolFieldUpdateOperationsInput | boolean
   reimbursedDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  projectId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  projectId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   approvedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   approvedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1009,7 +1021,7 @@ export type ExpenseUncheckedUpdateManyWithoutEmployeeInput = {
 }
 
 export type ExpenseCreateManyProjectInput = {
-  id?: string
+  id?: number
   expenseNumber: string
   date: Date | string
   amount: runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -1022,7 +1034,7 @@ export type ExpenseCreateManyProjectInput = {
   isReimbursable?: boolean
   isReimbursed?: boolean
   reimbursedDate?: Date | string | null
-  employeeId: string
+  employeeId: number
   approvedBy?: string | null
   approvedAt?: Date | string | null
   createdAt?: Date | string
@@ -1030,7 +1042,6 @@ export type ExpenseCreateManyProjectInput = {
 }
 
 export type ExpenseUpdateWithoutProjectInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
   expenseNumber?: Prisma.StringFieldUpdateOperationsInput | string
   date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -1051,7 +1062,7 @@ export type ExpenseUpdateWithoutProjectInput = {
 }
 
 export type ExpenseUncheckedUpdateWithoutProjectInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   expenseNumber?: Prisma.StringFieldUpdateOperationsInput | string
   date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -1064,7 +1075,7 @@ export type ExpenseUncheckedUpdateWithoutProjectInput = {
   isReimbursable?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isReimbursed?: Prisma.BoolFieldUpdateOperationsInput | boolean
   reimbursedDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  employeeId?: Prisma.StringFieldUpdateOperationsInput | string
+  employeeId?: Prisma.IntFieldUpdateOperationsInput | number
   approvedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   approvedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1072,7 +1083,7 @@ export type ExpenseUncheckedUpdateWithoutProjectInput = {
 }
 
 export type ExpenseUncheckedUpdateManyWithoutProjectInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.IntFieldUpdateOperationsInput | number
   expenseNumber?: Prisma.StringFieldUpdateOperationsInput | string
   date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -1085,7 +1096,7 @@ export type ExpenseUncheckedUpdateManyWithoutProjectInput = {
   isReimbursable?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isReimbursed?: Prisma.BoolFieldUpdateOperationsInput | boolean
   reimbursedDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  employeeId?: Prisma.StringFieldUpdateOperationsInput | string
+  employeeId?: Prisma.IntFieldUpdateOperationsInput | number
   approvedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   approvedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1209,7 +1220,7 @@ export type $ExpensePayload<ExtArgs extends runtime.Types.Extensions.InternalArg
     project: Prisma.$ProjectPayload<ExtArgs> | null
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
-    id: string
+    id: number
     expenseNumber: string
     date: Date
     amount: runtime.Decimal
@@ -1222,8 +1233,8 @@ export type $ExpensePayload<ExtArgs extends runtime.Types.Extensions.InternalArg
     isReimbursable: boolean
     isReimbursed: boolean
     reimbursedDate: Date | null
-    employeeId: string
-    projectId: string | null
+    employeeId: number
+    projectId: number | null
     approvedBy: string | null
     approvedAt: Date | null
     createdAt: Date
@@ -1653,7 +1664,7 @@ export interface Prisma__ExpenseClient<T, Null = never, ExtArgs extends runtime.
  * Fields of the Expense model
  */
 export interface ExpenseFieldRefs {
-  readonly id: Prisma.FieldRef<"Expense", 'String'>
+  readonly id: Prisma.FieldRef<"Expense", 'Int'>
   readonly expenseNumber: Prisma.FieldRef<"Expense", 'String'>
   readonly date: Prisma.FieldRef<"Expense", 'DateTime'>
   readonly amount: Prisma.FieldRef<"Expense", 'Decimal'>
@@ -1666,8 +1677,8 @@ export interface ExpenseFieldRefs {
   readonly isReimbursable: Prisma.FieldRef<"Expense", 'Boolean'>
   readonly isReimbursed: Prisma.FieldRef<"Expense", 'Boolean'>
   readonly reimbursedDate: Prisma.FieldRef<"Expense", 'DateTime'>
-  readonly employeeId: Prisma.FieldRef<"Expense", 'String'>
-  readonly projectId: Prisma.FieldRef<"Expense", 'String'>
+  readonly employeeId: Prisma.FieldRef<"Expense", 'Int'>
+  readonly projectId: Prisma.FieldRef<"Expense", 'Int'>
   readonly approvedBy: Prisma.FieldRef<"Expense", 'String'>
   readonly approvedAt: Prisma.FieldRef<"Expense", 'DateTime'>
   readonly createdAt: Prisma.FieldRef<"Expense", 'DateTime'>
