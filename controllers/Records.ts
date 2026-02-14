@@ -1,13 +1,13 @@
 import db from "@/lib/database";
-import { Records, Users } from "@/types/prisma/client";
+import { Customer, User } from "@/types/prisma/client";
 
-class Record {
+class Customers {
   static async getAllCustomers() {
-    return await db.records.findMany({});
+    return await db.customer.findMany({});
   }
 
-  static async updateCustomer(customer: Records) {
-    return await db.records.update({
+  static async updateCustomer(customer: Customer) {
+    return await db.customer.update({
       where: {
         id: customer.id,
       },
@@ -17,8 +17,8 @@ class Record {
     });
   }
 
-  static async deleteCustomer(customer: Records, user: Users) {
-    return await db.records.update({
+  static async deleteCustomer(customer: Customer, user: User) {
+    return await db.customer.update({
       where: {
         id: customer.id,
       },
@@ -29,8 +29,8 @@ class Record {
     });
   }
 
-  static async createNewRecord(customer: Omit<Records, "id">, user: Users) {
-    return await db.records.create({
+  static async createNewRecord(customer: Omit<Customer, "id">, user: User) {
+    return await db.customer.create({
       data: {
         ...customer,
       },

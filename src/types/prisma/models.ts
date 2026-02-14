@@ -8,10 +8,10 @@
  *
  * 🟢 You can import this file directly.
  */
-export type * from './models/Users'
+export type * from './models/User'
 export type * from './models/Tokens'
-export type * from './models/Companies'
-export type * from './models/Invoices'
-export type * from './models/InvoiceItems'
-export type * from './models/Records'
+export type * from './models/Organization'
+export type * from './models/Invoice'
+export type * from './models/InvoiceItem'
+export type * from './models/Customer'
 export type * from './commonInputTypes'

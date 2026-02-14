@@ -1,15 +1,15 @@
 import db from "@/lib/database";
 import { Hono } from "hono";
 
-export const recordsRoute = new Hono();
+export const Customers_Route = new Hono();
 
 // ------------------------------------------------------------------
-// RECORDS API Handler
+// Customers API Handler
 // ------------------------------------------------------------------
-recordsRoute.get("/records", async c => {
+Customers_Route.get("/customers", async c => {
   try {
     // GET logic here
-    const customers = await db.records.findMany({
+    const customers = await db.customer.findMany({
       orderBy: { id: "desc" },
     });
     return c.json(customers);
@@ -19,7 +19,7 @@ recordsRoute.get("/records", async c => {
   }
 });
 
-recordsRoute.post("/records", async c => {
+Customers_Route.post("/customers", async c => {
   try {
     const formData = await c.req.formData();
     const name = formData.get("name") as string | null;
@@ -34,12 +34,12 @@ recordsRoute.post("/records", async c => {
     }
 
     // Step 1: Insert the customer
-    const customer = await db.records.create({
+    const customer = await db.customer.create({
       data: { name, email, phone, address, image },
     });
 
     // Step 2: Update the code based on the auto-incremented ID
-    const updatedCustomer = await db.records.update({
+    const updatedCustomer = await db.customer.update({
       where: { id: customer.id },
       data: { code: `CUST-${String(customer.id).padStart(6, "0")}` },
     });

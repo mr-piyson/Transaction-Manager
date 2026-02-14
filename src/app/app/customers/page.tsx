@@ -4,32 +4,31 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { useFab } from "@/hooks/use-fab";
 import { useHeader } from "@/hooks/use-header";
-import { Records } from "@/types/prisma/client";
+import { Customer } from "@/types/prisma/client";
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
-import { ArrowLeft, LucideFileText, Plus, User2 } from "lucide-react";
+import { Plus, User2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
-import CreateRecordDialog from "./create-record-dialog";
 import { UniversalDialog } from "@/components/dialog";
 import { queryClient } from "../App";
 
-type RecordsPageProps = {
+type CustomersPageProps = {
   children?: React.ReactNode;
 };
 
-export default function RecordsPage(props: RecordsPageProps) {
+export default function CustomersPage(props: CustomersPageProps) {
   const header = useHeader();
   const fab = useFab();
 
   const {
-    data: records,
+    data: customers,
     isLoading,
     isError,
   } = useQuery({
-    queryKey: ["records"],
+    queryKey: ["customers"],
     queryFn: async () => {
-      const res = await axios.get("/api/records");
+      const res = await axios.get("/api/customers");
       return res.data;
     },
   });
@@ -39,14 +38,14 @@ export default function RecordsPage(props: RecordsPageProps) {
       leftContent: (
         <div className="flex h-full w-full items-center gap-4 print:hidden">
           <div className="bg-primary w-1 h-8"></div>
-          <h1 className="text-2xl font-semibold pb-1">Records</h1>
+          <h1 className="text-2xl font-semibold pb-1">Customers</h1>
         </div>
       ),
     });
     fab.setFabConfig({
       render: () => {
         return (
-          <UniversalDialog<Records>
+          <UniversalDialog<Customer>
             title={"Create Record"}
             fields={[
               {
@@ -66,11 +65,11 @@ export default function RecordsPage(props: RecordsPageProps) {
                 required: false,
               },
             ]}
-            apiEndpoint={"/api/records"}
+            apiEndpoint={"/api/customers"}
             onSuccess={() => {
               console.log("Hello Muntadher");
               queryClient.refetchQueries({
-                queryKey: ["records"],
+                queryKey: ["customers"],
               });
             }}
           >
@@ -87,29 +86,29 @@ export default function RecordsPage(props: RecordsPageProps) {
   }, []);
   return (
     <div className="flex-1 h-full">
-      <ListView<Records>
-        emptyTitle="No Records Found"
-        emptyIcon={<LucideFileText className="size-16 text-muted-foreground" />}
-        emptyDescription={"create new records to get started"}
-        data={records}
+      <ListView<Customer>
+        emptyTitle="No Customers Found"
+        emptyIcon={<User2 className="size-16 text-muted-foreground" />}
+        emptyDescription={"create new customer to get started"}
+        data={customers}
         isLoading={isLoading}
         isError={isError}
-        itemName="records"
+        itemName="customers"
         useTheme={true}
         cardRenderer={userCardRenderer}
-        rowHeight={70}
+        rowHeight={65}
         searchFields={["name", "phone", "code"]}
       />
     </div>
   );
 }
 
-const userCardRenderer = ({ data }: { data: Records }) => {
+const userCardRenderer = ({ data }: { data: Customer }) => {
   const router = useRouter();
   return (
     <div
       onClick={() => {
-        router.push(`/app/records/${data.id}`);
+        router.push(`/app/customers/${data.id}`);
       }}
       className="flex items-center gap-3 p-3 cursor-pointer transition-colors hover:bg-accent/50 "
     >

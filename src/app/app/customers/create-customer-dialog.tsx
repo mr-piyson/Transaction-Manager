@@ -10,7 +10,7 @@ import { Plus } from "lucide-react";
 import axios from "axios";
 import { queryClient } from "@/app/app/App";
 
-export default function CreateRecordDialog(props: any) {
+export default function CreateCustomerDialog(props: any) {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
 
@@ -21,13 +21,13 @@ export default function CreateRecordDialog(props: any) {
     const formData = new FormData(e.currentTarget);
 
     try {
-      const res = await axios.post("/api/records", formData);
+      const res = await axios.post("/api/customers", formData);
 
       toast.success("Customer created", {
         description: "Successfully create a customer",
       });
       queryClient.refetchQueries({
-        queryKey: ["records"],
+        queryKey: ["customers"],
       });
 
       setOpen(false);

@@ -3,7 +3,7 @@
   "version": "2.0.0",
   "private": true,
   "scripts": {
-    "dev": " bunx prisma db push && next dev --port 3005  --turbopack ",
+    "dev": "bunx prisma generate && bunx prisma db push && next dev ",
     "build": "next build --turbopack",
     "start": "next start",
     "lint": "next lint",
@@ -13,7 +13,7 @@
     "build:Android": "npx cap add android && npx cap sync android && npx cap open android"
   },
   "dependencies": {
-    "@base-ui/react": "^1.0.0",
+    "@base-ui/react": "^1.2.0",
     "@hookform/resolvers": "^5.2.2",
     "@prisma/adapter-libsql": "^7.1.0",
     "@prisma/adapter-pg": "^7.1.0",

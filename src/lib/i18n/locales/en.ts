@@ -3,8 +3,6 @@
 // ============================================
 export const en = {
   common: {
-    welcome: "Welcome to our application",
-    description: "This is a multi-language app with RTL/LTR support",
     selectLanguage: "Select Language",
     greeting: "Hello, World!",
     changeLanguage: "Change Language",
@@ -13,6 +11,14 @@ export const en = {
     save: "Save",
     cancel: "Cancel",
     confirm: "Confirm",
+    customers: "Customers",
+    assets: "Assets",
+    invoices: "Invoices",
+    settings: "Settings",
+    departments: "Departments",
+    profile: "Profile",
+    security: "Security",
+    appearance: "Appearance",
   },
   auth: {
     login: "Login",
@@ -31,14 +37,5 @@ export const en = {
   languages: {
     english: "English",
     arabic: "Arabic",
-  },
-  routes: {
-    customers: "Customers",
-    settings: "Settings",
-    "settings.departments": "Departments",
-    "settings.profile": "Profile",
-    "settings.account": "User Accounts",
-    "settings.security": "Security",
-    "settings.appearance": "Appearance",
   },
 } as const;

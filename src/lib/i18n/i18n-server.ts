@@ -98,7 +98,7 @@ export async function saveLocaleToDatabase(userId: number, locale: Locale): Prom
   try {
     const userIdNumber = z.coerce.number().safeParse(userId);
     if (!userIdNumber.success) return { success: false, error: "Invalid userId" };
-    await db.users.update({
+    await db.user.update({
       where: { id: Number(userId) },
       data: { locale },
     });

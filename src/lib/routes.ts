@@ -1,84 +1,69 @@
 import { Route } from "next";
 import { TranslationKeys } from "./i18n/i18n-core";
 
+// 1. Define what a single route looks like
 export type RouteConfig = {
   key: TranslationKeys;
-  title: string;
   path: Route;
   icon: string;
   children?: Record<string, RouteConfig>;
 };
 
-// Define the routes as a const to get literal types
-export const routes = {
-  settings: {
-    key: "routes.settings",
-    title: "Settings",
-    path: "/app/settings",
-    icon: "icon-[solar--settings-linear]",
-    children: {
-      profile: {
-        key: "routes.settings.profile",
-        title: "Profile",
-        path: "/app/settings/profile",
-        icon: "icon-[solar--user-circle-linear]",
-      },
-      account: {
-        key: "routes.settings.account",
-        title: "User Accounts",
-        path: "/app/settings/account",
-        icon: "icon-[ic--outline-manage-accounts]",
-      },
-      departments: {
-        key: "routes.settings.departments",
-        title: "Departments",
-        path: "/app/settings/departments",
-        icon: "icon-[solar--buildings-2-line-duotone]",
-      },
-      security: {
-        key: "routes.settings.security",
-        title: "Security",
-        path: "/app/settings/security",
-        icon: "icon-[lucide--shield]",
-      },
-      appearance: {
-        key: "routes.settings.appearance",
-        title: "Appearance",
-        path: "/app/settings/appearance",
-        icon: "icon-[lucide--palette]",
-      },
-    },
-  },
-  customers: {
-    key: "routes.customers",
-    title: "Records",
-    path: "/app/records",
-    icon: "icon-[hugeicons--note-04]",
-  },
-  assets: {
-    key: "routes.assets",
-    title: "Assets",
-    path: "/app/assets",
-    icon: "icon-[streamline-plump--computer-pc-desktop]",
-  },
-} as const;
-
 // Derive a type from the const
 export type Routes = typeof routes;
 
-export type AppRoute = { title: string; path: Route; icon: string };
+// 2. Define the container type (a map of RouteConfigs)
+export type RouteMap = Record<string, RouteConfig>;
 
-/**
- * Get top-level routes using an optional selector
- */
-export function getTopLevel(selector?: (allRoutes: typeof routes) => RouteConfig): AppRoute[] {
-  const selectedRoutes = selector ? Object.values(selector(routes).children ?? {}) : Object.values(routes);
+// Define the routes as a const to get literal types
+export const routes: RouteMap = {
+  settings: {
+    key: "common.settings",
+    path: "/app/settings",
+    icon: "icon-[solar--settings-linear]",
+    // children: {
+    //   profile: {
+    //     key: "common.profile",
+    //     path: "/app/settings/profile",
+    //     icon: "icon-[solar--user-circle-linear]",
+    //   },
+    //   account: {
+    //     key: "common.account",
+    //     path: "/app/settings/account",
+    //     icon: "icon-[ic--outline-manage-accounts]",
+    //   },
+    //   departments: {
+    //     key: "common.departments",
+    //     path: "/app/settings/departments",
+    //     icon: "icon-[solar--buildings-2-line-duotone]",
+    //   },
+    //   security: {
+    //     key: "common.security",
+    //     path: "/app/settings/security",
+    //     icon: "icon-[lucide--shield]",
+    //   },
+    //   appearance: {
+    //     key: "common.appearance",
+    //     path: "/app/settings/appearance",
+    //     icon: "icon-[lucide--palette]",
+    //   },
+    // },
+  },
+  customers: {
+    key: "common.customers",
+    path: "/app/customers",
+    icon: "icon-[lucide--user]",
+  },
+  assets: {
+    key: "common.assets",
+    path: "/app/assets",
+    icon: "icon-[streamline-plump--computer-pc-desktop]",
+  },
+  invoices: {
+    key: "common.invoices",
+    path: "/app/invoices",
+    icon: "icon-[lucide--file-text]",
+  },
+};
 
-  return selectedRoutes.map(r => ({
-    title: r.title,
-    path: r.path,
-    icon: r.icon,
-  }));
-}
-
-export const sidebarRoutes: AppRoute[] = [routes.customers, routes.assets];
+export const sidebarRoutes: RouteConfig[] = [routes.customers, routes.assets, routes.invoices];

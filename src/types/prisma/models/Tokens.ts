@@ -236,7 +236,7 @@ export type TokensWhereInput = {
   createdAt?: Prisma.DateTimeNullableFilter<"Tokens"> | Date | string | null
   updatedAt?: Prisma.DateTimeNullableFilter<"Tokens"> | Date | string | null
   userId?: Prisma.IntFilter<"Tokens"> | number
-  users?: Prisma.XOR<Prisma.UsersNullableScalarRelationFilter, Prisma.UsersWhereInput> | null
+  users?: Prisma.XOR<Prisma.UserNullableScalarRelationFilter, Prisma.UserWhereInput> | null
 }
 
 export type TokensOrderByWithRelationInput = {
@@ -247,7 +247,7 @@ export type TokensOrderByWithRelationInput = {
   createdAt?: Prisma.SortOrderInput | Prisma.SortOrder
   updatedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   userId?: Prisma.SortOrder
-  users?: Prisma.UsersOrderByWithRelationInput
+  users?: Prisma.UserOrderByWithRelationInput
 }
 
 export type TokensWhereUniqueInput = Prisma.AtLeast<{
@@ -261,7 +261,7 @@ export type TokensWhereUniqueInput = Prisma.AtLeast<{
   createdAt?: Prisma.DateTimeNullableFilter<"Tokens"> | Date | string | null
   updatedAt?: Prisma.DateTimeNullableFilter<"Tokens"> | Date | string | null
   userId?: Prisma.IntFilter<"Tokens"> | number
-  users?: Prisma.XOR<Prisma.UsersNullableScalarRelationFilter, Prisma.UsersWhereInput> | null
+  users?: Prisma.XOR<Prisma.UserNullableScalarRelationFilter, Prisma.UserWhereInput> | null
 }, "id" | "value">
 
 export type TokensOrderByWithAggregationInput = {
@@ -298,7 +298,7 @@ export type TokensCreateInput = {
   expiresAt?: Date | string | null
   createdAt?: Date | string | null
   updatedAt?: Date | string | null
-  users?: Prisma.UsersCreateNestedOneWithoutTokensInput
+  users?: Prisma.UserCreateNestedOneWithoutTokensInput
 }
 
 export type TokensUncheckedCreateInput = {
@@ -317,7 +317,7 @@ export type TokensUpdateInput = {
   expiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   updatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  users?: Prisma.UsersUpdateOneWithoutTokensNestedInput
+  users?: Prisma.UserUpdateOneWithoutTokensNestedInput
 }
 
 export type TokensUncheckedUpdateInput = {
@@ -474,6 +474,7 @@ export type TokensCreateOrConnectWithoutUsersInput = {
 
 export type TokensCreateManyUsersInputEnvelope = {
   data: Prisma.TokensCreateManyUsersInput | Prisma.TokensCreateManyUsersInput[]
+  skipDuplicates?: boolean
 }
 
 export type TokensUpsertWithWhereUniqueWithoutUsersInput = {
@@ -599,7 +600,7 @@ export type TokensIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Exten
 export type $TokensPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "Tokens"
   objects: {
-    users: Prisma.$UsersPayload<ExtArgs> | null
+    users: Prisma.$UserPayload<ExtArgs> | null
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: number
@@ -1003,7 +1004,7 @@ readonly fields: TokensFieldRefs;
  */
 export interface Prisma__TokensClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
-  users<T extends Prisma.Tokens$usersArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Tokens$usersArgs<ExtArgs>>): Prisma.Prisma__UsersClient<runtime.Types.Result.GetResult<Prisma.$UsersPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+  users<T extends Prisma.Tokens$usersArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Tokens$usersArgs<ExtArgs>>): Prisma.Prisma__UserClient<runtime.Types.Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1269,6 +1270,7 @@ export type TokensCreateManyArgs<ExtArgs extends runtime.Types.Extensions.Intern
    * The data used to create many Tokens.
    */
   data: Prisma.TokensCreateManyInput | Prisma.TokensCreateManyInput[]
+  skipDuplicates?: boolean
 }
 
 /**
@@ -1287,6 +1289,7 @@ export type TokensCreateManyAndReturnArgs<ExtArgs extends runtime.Types.Extensio
    * The data used to create many Tokens.
    */
   data: Prisma.TokensCreateManyInput | Prisma.TokensCreateManyInput[]
+  skipDuplicates?: boolean
   /**
    * Choose, which related nodes to fetch as well
    */
@@ -1438,18 +1441,18 @@ export type TokensDeleteManyArgs<ExtArgs extends runtime.Types.Extensions.Intern
  */
 export type Tokens$usersArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   /**
-   * Select specific fields to fetch from the Users
+   * Select specific fields to fetch from the User
    */
-  select?: Prisma.UsersSelect<ExtArgs> | null
+  select?: Prisma.UserSelect<ExtArgs> | null
   /**
-   * Omit specific fields from the Users
+   * Omit specific fields from the User
    */
-  omit?: Prisma.UsersOmit<ExtArgs> | null
+  omit?: Prisma.UserOmit<ExtArgs> | null
   /**
    * Choose, which related nodes to fetch as well
    */
-  include?: Prisma.UsersInclude<ExtArgs> | null
-  where?: Prisma.UsersWhereInput
+  include?: Prisma.UserInclude<ExtArgs> | null
+  where?: Prisma.UserWhereInput
 }
 
 /**

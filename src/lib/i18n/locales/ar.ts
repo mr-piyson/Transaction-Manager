@@ -1,14 +1,21 @@
 export const ar = {
   common: {
-    welcome: "مرحبا بك في تطبيقنا",
     selectLanguage: "اختر اللغة",
-    greeting: "مرحبا بالعالم!",
     changeLanguage: "تغيير اللغة",
     loading: "جاري التحميل...",
     error: "حدث خطأ",
     save: "حفظ",
     cancel: "إلغاء",
     confirm: "تأكيد",
+    customers: "الغملاء",
+    settings: "الإعدادات",
+    assets: "الموارد",
+    invoices: "الفواتير",
+    departments: "الاقستم",
+    profile: "الملف الشخصي",
+    account: "حساب المستخدم",
+    security: "الامان",
+    appearance: "السمات",
   },
   auth: {
     login: "تسجيل الدخول",
@@ -27,14 +34,5 @@ export const ar = {
   languages: {
     english: "الإنجليزية",
     arabic: "العربية",
-  },
-  routes: {
-    customers: "الغملاء",
-    settings: "الإعدادات",
-    "settings.departments": "الاقستم",
-    "settings.profile": "الملف الشخصي",
-    "settings.account": "حساب المستخدم",
-    "settings.security": "الامان",
-    "settings.appearance": "السمات",
   },
 };

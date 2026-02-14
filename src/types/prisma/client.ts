@@ -30,7 +30,7 @@ export * from "./enums"
  * ```
  * const prisma = new PrismaClient()
  * // Fetch zero or more Users
- * const users = await prisma.users.findMany()
+ * const users = await prisma.user.findMany()
  * ```
  * 
  * Read more in our [docs](https://pris.ly/d/client).
@@ -40,32 +40,32 @@ export type PrismaClient<LogOpts extends Prisma.LogLevel = never, OmitOpts exten
 export { Prisma }
 
 /**
- * Model Users
+ * Model User
  * 
  */
-export type Users = Prisma.UsersModel
+export type User = Prisma.UserModel
 /**
  * Model Tokens
  * 
  */
 export type Tokens = Prisma.TokensModel
 /**
- * Model Companies
+ * Model Organization
  * 
  */
-export type Companies = Prisma.CompaniesModel
+export type Organization = Prisma.OrganizationModel
 /**
- * Model Invoices
+ * Model Invoice
  * 
  */
-export type Invoices = Prisma.InvoicesModel
+export type Invoice = Prisma.InvoiceModel
 /**
- * Model InvoiceItems
+ * Model InvoiceItem
  * 
  */
-export type InvoiceItems = Prisma.InvoiceItemsModel
+export type InvoiceItem = Prisma.InvoiceItemModel
 /**
- * Model Records
+ * Model Customer
  * 
  */
-export type Records = Prisma.RecordsModel
+export type Customer = Prisma.CustomerModel

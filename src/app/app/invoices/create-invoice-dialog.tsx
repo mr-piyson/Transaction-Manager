@@ -11,7 +11,7 @@ import { useParams } from "next/navigation";
 import axios from "axios";
 import { toast } from "sonner";
 import { CalendarIcon } from "lucide-react";
-import { queryClient } from "../../App";
+import { queryClient } from "../App";
 
 /**
  * Dialog component for creating an Invoice

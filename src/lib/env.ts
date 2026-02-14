@@ -3,6 +3,7 @@ import { createEnv } from "@t3-oss/env-core";
 
 export const env = createEnv({
   server: {
+    DATABASE: z.string(),
     DATABASE_URL: z.string(),
     JWT_SECRET_ACCESS: z.string(),
     JWT_SECRET_REFRESH: z.string(),

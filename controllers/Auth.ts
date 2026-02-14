@@ -68,7 +68,7 @@ export class Auth {
       }
 
       // Check if user already exists
-      const existingUser = await db.users.findUnique({
+      const existingUser = await db.user.findUnique({
         where: { email: data.email.toLowerCase() },
       });
 
@@ -78,7 +78,7 @@ export class Auth {
 
       // Hash password and create user
       const hashedPassword = await hash(data.password, SALT_ROUNDS);
-      const user = await db.users.create({
+      const user = await db.user.create({
         data: {
           email: data.email.toLowerCase(),
           hashedPassword: hashedPassword,
@@ -142,7 +142,7 @@ export class Auth {
   static async signIn(credentials: LoginCredentials): Promise<AuthResult> {
     try {
       // Find user by email
-      const user = await db.users.findUnique({
+      const user = await db.user.findUnique({
         where: { email: credentials.email.toLowerCase() },
         select: { id: true, email: true, hashedPassword: true },
       });
@@ -323,7 +323,7 @@ export class Auth {
       if (!storedToken) return null;
 
       // Get user details
-      const user = await db.users.findUnique({
+      const user = await db.user.findUnique({
         where: { id: storedToken.userId },
         select: { id: true, email: true },
       });

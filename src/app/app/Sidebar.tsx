@@ -19,6 +19,7 @@ export function AppSidebar({ ...props }: AppSidebarProps) {
   const { isMobile, open, setOpenMobile } = useSidebar();
   const router = useRouter();
   const [loading, setLoading] = useState("");
+  const { t } = useI18n();
 
   useEffect(() => {
     if (loading === currentPath) {
@@ -40,12 +41,12 @@ export function AppSidebar({ ...props }: AppSidebarProps) {
       <SidebarContent>
         <SidebarGroup>
           <SidebarMenu>
-            {sidebarRoutes.map(({ title, path, icon }) => (
-              <SidebarMenuItem key={title}>
+            {sidebarRoutes.map(({ key, path, icon }) => (
+              <SidebarMenuItem key={key}>
                 <SidebarMenuButton
                   isActive={isActive(path)}
                   className={cn("flex", isActive(path) && "bg-primary!")}
-                  tooltip={title}
+                  tooltip={t(key)}
                   size={"lg"}
                   onClick={() => {
                     if (currentPath === path) {
@@ -58,7 +59,7 @@ export function AppSidebar({ ...props }: AppSidebarProps) {
                   {/* <Link href={url} className="flex justify-center items-center"> */}
                   <i className={cn("ms-1 size-6 shrink-0", icon, isActive(path) ? "text-white" : "text-foreground/92", loading === path && !open && !isMobile ? "hidden" : "")} />
                   <div className="flex items-center justify-between w-full">
-                    <span className={cn(" text-base", isActive(path) ? "text-white" : "text-foreground/92", loading === path && !open && !isMobile ? "hidden" : "")}>{title}</span>
+                    <span className={cn(" text-base", isActive(path) ? "text-white" : "text-foreground/92", loading === path && !open && !isMobile ? "hidden" : "")}>{t(key)}</span>
                     {loading === path && <Spinner />}
                   </div>
                   {/* </Link> */}

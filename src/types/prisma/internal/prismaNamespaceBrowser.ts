@@ -51,12 +51,12 @@ export const AnyNull = runtime.AnyNull
 
 
 export const ModelName = {
-  Users: 'Users',
+  User: 'User',
   Tokens: 'Tokens',
-  Companies: 'Companies',
-  Invoices: 'Invoices',
-  InvoiceItems: 'InvoiceItems',
-  Records: 'Records'
+  Organization: 'Organization',
+  Invoice: 'Invoice',
+  InvoiceItem: 'InvoiceItem',
+  Customer: 'Customer'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -66,13 +66,16 @@ export type ModelName = (typeof ModelName)[keyof typeof ModelName]
  */
 
 export const TransactionIsolationLevel = {
+  ReadUncommitted: 'ReadUncommitted',
+  ReadCommitted: 'ReadCommitted',
+  RepeatableRead: 'RepeatableRead',
   Serializable: 'Serializable'
 } as const
 
 export type TransactionIsolationLevel = (typeof TransactionIsolationLevel)[keyof typeof TransactionIsolationLevel]
 
 
-export const UsersScalarFieldEnum = {
+export const UserScalarFieldEnum = {
   id: 'id',
   name: 'name',
   email: 'email',
@@ -84,7 +87,7 @@ export const UsersScalarFieldEnum = {
   hashedPassword: 'hashedPassword'
 } as const
 
-export type UsersScalarFieldEnum = (typeof UsersScalarFieldEnum)[keyof typeof UsersScalarFieldEnum]
+export type UserScalarFieldEnum = (typeof UserScalarFieldEnum)[keyof typeof UserScalarFieldEnum]
 
 
 export const TokensScalarFieldEnum = {
@@ -100,20 +103,21 @@ export const TokensScalarFieldEnum = {
 export type TokensScalarFieldEnum = (typeof TokensScalarFieldEnum)[keyof typeof TokensScalarFieldEnum]
 
 
-export const CompaniesScalarFieldEnum = {
+export const OrganizationScalarFieldEnum = {
   id: 'id',
   name: 'name',
   address: 'address',
   telephone: 'telephone',
   logo: 'logo',
   email: 'email',
+  vat: 'vat',
   defaultCurrency: 'defaultCurrency'
 } as const
 
-export type CompaniesScalarFieldEnum = (typeof CompaniesScalarFieldEnum)[keyof typeof CompaniesScalarFieldEnum]
+export type OrganizationScalarFieldEnum = (typeof OrganizationScalarFieldEnum)[keyof typeof OrganizationScalarFieldEnum]
 
 
-export const InvoicesScalarFieldEnum = {
+export const InvoiceScalarFieldEnum = {
   id: 'id',
   title: 'title',
   total: 'total',
@@ -121,15 +125,14 @@ export const InvoicesScalarFieldEnum = {
   date: 'date',
   updatedAt: 'updatedAt',
   createdAt: 'createdAt',
-  customerId: 'customerId',
   createdById: 'createdById',
-  recordsId: 'recordsId'
+  customerId: 'customerId'
 } as const
 
-export type InvoicesScalarFieldEnum = (typeof InvoicesScalarFieldEnum)[keyof typeof InvoicesScalarFieldEnum]
+export type InvoiceScalarFieldEnum = (typeof InvoiceScalarFieldEnum)[keyof typeof InvoiceScalarFieldEnum]
 
 
-export const InvoiceItemsScalarFieldEnum = {
+export const InvoiceItemScalarFieldEnum = {
   id: 'id',
   amount: 'amount',
   charge: 'charge',
@@ -144,13 +147,14 @@ export const InvoiceItemsScalarFieldEnum = {
   deletedBy: 'deletedBy',
   qty: 'qty',
   tax: 'tax',
-  invoicesId: 'invoicesId'
+  invoicesId: 'invoicesId',
+  invoiceId: 'invoiceId'
 } as const
 
-export type InvoiceItemsScalarFieldEnum = (typeof InvoiceItemsScalarFieldEnum)[keyof typeof InvoiceItemsScalarFieldEnum]
+export type InvoiceItemScalarFieldEnum = (typeof InvoiceItemScalarFieldEnum)[keyof typeof InvoiceItemScalarFieldEnum]
 
 
-export const RecordsScalarFieldEnum = {
+export const CustomerScalarFieldEnum = {
   id: 'id',
   name: 'name',
   email: 'email',
@@ -164,7 +168,7 @@ export const RecordsScalarFieldEnum = {
   deletedBy: 'deletedBy'
 } as const
 
-export type RecordsScalarFieldEnum = (typeof RecordsScalarFieldEnum)[keyof typeof RecordsScalarFieldEnum]
+export type CustomerScalarFieldEnum = (typeof CustomerScalarFieldEnum)[keyof typeof CustomerScalarFieldEnum]
 
 
 export const SortOrder = {
@@ -173,6 +177,14 @@ export const SortOrder = {
 } as const
 
 export type SortOrder = (typeof SortOrder)[keyof typeof SortOrder]
+
+
+export const QueryMode = {
+  default: 'default',
+  insensitive: 'insensitive'
+} as const
+
+export type QueryMode = (typeof QueryMode)[keyof typeof QueryMode]
 
 
 export const NullsOrder = {

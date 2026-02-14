@@ -1,18 +1,16 @@
 "use client";
 import { ListView } from "@/components/list-view";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useFab } from "@/hooks/use-fab";
 import { useHeader } from "@/hooks/use-header";
-import { Invoices, Records } from "@/types/prisma/client";
+import { Invoice } from "@/types/prisma/client";
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
-import { ArrowLeft, LucideFileText, Plus, User2 } from "lucide-react";
+import { ArrowLeft, LucideFileText } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useMemo } from "react";
-import CreateInvoiceDialog from "./create-invoice-dialog";
-import { UniversalDialog } from "@/components/dialog";
+import CreateInvoiceDialog from "../../invoices/create-invoice-dialog";
 
 type RecordPageProps = {
   children?: React.ReactNode;
@@ -31,7 +29,7 @@ export default function RecordPage(props: RecordPageProps) {
     refetch,
   } = useQuery({
     queryKey: ["invoices", params.recordId],
-    queryFn: async () => (await axios.get(`/api/records/${params.recordId}/invoices`)).data,
+    queryFn: async () => (await axios.get(`/api/customers/${params.recordId}/invoices`)).data,
   });
 
   useEffect(() => {
@@ -41,7 +39,7 @@ export default function RecordPage(props: RecordPageProps) {
           <Button variant={"ghost"} className="p-1" onClick={() => router.back()}>
             <ArrowLeft className="size-6" />
           </Button>
-          <h1 className="text-2xl font-semibold">{`Records`}</h1>
+          <h1 className="text-2xl font-semibold">{`Invoices`}</h1>
         </div>
       ),
     });
@@ -51,7 +49,7 @@ export default function RecordPage(props: RecordPageProps) {
       render: () => (
         <CreateInvoiceDialog>
           <Button variant="default" size="icon" className="absolute -top-6 left-1/2 -translate-x-1/2 size-14 rounded-full shadow-lg">
-            <svg className="icon-[hugeicons--file-01] size-7 text-foreground" />
+            <svg className="icon-[hugeicons--file-01] size-7 " />
           </Button>
         </CreateInvoiceDialog>
       ),
@@ -64,7 +62,7 @@ export default function RecordPage(props: RecordPageProps) {
   }, []);
   return (
     <div className="flex-1 h-full">
-      <ListView<Invoices>
+      <ListView<Invoice>
         emptyTitle="No Invoices Found"
         emptyIcon={<LucideFileText className="size-16 text-muted-foreground" />}
         emptyDescription={"create new invoices to get started"}
@@ -81,7 +79,7 @@ export default function RecordPage(props: RecordPageProps) {
   );
 }
 
-const invoiceCardRenderer = ({ data: invoice }: { data: Invoices }) => {
+const invoiceCardRenderer = ({ data: invoice }: { data: Invoice }) => {
   const router = useRouter();
   const formattedDate = useMemo(() => {
     if (!invoice.createdAt) return "N/A";
@@ -108,10 +106,7 @@ const invoiceCardRenderer = ({ data: invoice }: { data: Invoices }) => {
   const { variant, label, icon } = statusConfig[status as keyof typeof statusConfig] || statusConfig.draft;
 
   return (
-    <div
-      className="flex items-center gap-4 p-4 cursor-pointer transition-colors hover:bg-accent/50 border-b border-border"
-      onClick={() => router.push(`/app/records/${params.recordId}/invoices/${invoice.id}`)}
-    >
+    <div className="flex items-center gap-4 p-4 cursor-pointer transition-colors hover:bg-accent/50 border-b border-border" onClick={() => router.push(`/app/customers/${params.recordId}`)}>
       <div className="flex items-center justify-center size-10 rounded-lg ">
         <svg className="icon-[hugeicons--file-01] size-7 text-foreground/60" />
       </div>

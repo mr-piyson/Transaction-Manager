@@ -88,7 +88,7 @@ export function I18nProvider({ children, initialLocale, userId }: I18nProviderPr
         }
       });
     },
-    [locale, userId]
+    [locale, userId],
   );
 
   const t = useCallback((key: TranslationKeys, fallback?: string) => translator.t(key, fallback), [translator]);
@@ -107,7 +107,7 @@ export function I18nProvider({ children, initialLocale, userId }: I18nProviderPr
       availableLocales: Object.keys(translations) as Locale[],
       isPending,
     }),
-    [locale, direction, isRTL, setLocale, t, exists, config, isPending]
+    [locale, direction, isRTL, setLocale, t, exists, config, isPending],
   );
 
   return <I18nContext.Provider value={value}>{children}</I18nContext.Provider>;
