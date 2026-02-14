@@ -9,20 +9,589 @@
 * 🟢 You can import this file directly.
 */
 
-export const InvoiceStatus = {
-  IN_PROGRESS: 'IN_PROGRESS',
-  PENDING: 'PENDING',
+export const Role = {
+  SUPER_ADMIN: 'SUPER_ADMIN',
+  ADMIN: 'ADMIN',
+  MANAGER: 'MANAGER',
+  ACCOUNTANT: 'ACCOUNTANT',
+  SALES_MANAGER: 'SALES_MANAGER',
+  SALES_REP: 'SALES_REP',
+  PURCHASING: 'PURCHASING',
+  WAREHOUSE: 'WAREHOUSE',
+  HR_MANAGER: 'HR_MANAGER',
+  PROJECT_MANAGER: 'PROJECT_MANAGER',
+  USER: 'USER',
+  VIEWER: 'VIEWER'
+} as const
+
+export type Role = (typeof Role)[keyof typeof Role]
+
+
+export const Gender = {
+  MALE: 'MALE',
+  FEMALE: 'FEMALE'
+} as const
+
+export type Gender = (typeof Gender)[keyof typeof Gender]
+
+
+export const MaritalStatus = {
+  SINGLE: 'SINGLE',
+  MARRIED: 'MARRIED',
+  DIVORCED: 'DIVORCED',
+  WIDOWED: 'WIDOWED'
+} as const
+
+export type MaritalStatus = (typeof MaritalStatus)[keyof typeof MaritalStatus]
+
+
+export const EmployeeType = {
+  FULL_TIME: 'FULL_TIME',
+  PART_TIME: 'PART_TIME',
+  CONTRACT: 'CONTRACT',
+  TEMPORARY: 'TEMPORARY',
+  INTERN: 'INTERN',
+  CONSULTANT: 'CONSULTANT'
+} as const
+
+export type EmployeeType = (typeof EmployeeType)[keyof typeof EmployeeType]
+
+
+export const EmployeeStatus = {
+  ACTIVE: 'ACTIVE',
+  ON_LEAVE: 'ON_LEAVE',
+  ON_PROBATION: 'ON_PROBATION',
+  SUSPENDED: 'SUSPENDED',
+  TERMINATED: 'TERMINATED',
+  RESIGNED: 'RESIGNED',
+  RETIRED: 'RETIRED'
+} as const
+
+export type EmployeeStatus = (typeof EmployeeStatus)[keyof typeof EmployeeStatus]
+
+
+export const SalaryType = {
+  HOURLY: 'HOURLY',
+  DAILY: 'DAILY',
+  MONTHLY: 'MONTHLY',
+  ANNUAL: 'ANNUAL'
+} as const
+
+export type SalaryType = (typeof SalaryType)[keyof typeof SalaryType]
+
+
+export const PayrollStatus = {
+  DRAFT: 'DRAFT',
+  PENDING_APPROVAL: 'PENDING_APPROVAL',
+  APPROVED: 'APPROVED',
+  PROCESSED: 'PROCESSED',
   PAID: 'PAID',
+  CANCELLED: 'CANCELLED'
+} as const
+
+export type PayrollStatus = (typeof PayrollStatus)[keyof typeof PayrollStatus]
+
+
+export const LeaveType = {
+  ANNUAL: 'ANNUAL',
+  SICK: 'SICK',
+  MATERNITY: 'MATERNITY',
+  PATERNITY: 'PATERNITY',
+  UNPAID: 'UNPAID',
+  COMPASSIONATE: 'COMPASSIONATE',
+  STUDY: 'STUDY',
+  OTHER: 'OTHER'
+} as const
+
+export type LeaveType = (typeof LeaveType)[keyof typeof LeaveType]
+
+
+export const LeaveStatus = {
+  PENDING: 'PENDING',
+  APPROVED: 'APPROVED',
+  REJECTED: 'REJECTED',
+  CANCELLED: 'CANCELLED'
+} as const
+
+export type LeaveStatus = (typeof LeaveStatus)[keyof typeof LeaveStatus]
+
+
+export const AttendanceStatus = {
+  PRESENT: 'PRESENT',
+  ABSENT: 'ABSENT',
+  LATE: 'LATE',
+  HALF_DAY: 'HALF_DAY',
+  ON_LEAVE: 'ON_LEAVE',
+  HOLIDAY: 'HOLIDAY',
+  WEEKEND: 'WEEKEND'
+} as const
+
+export type AttendanceStatus = (typeof AttendanceStatus)[keyof typeof AttendanceStatus]
+
+
+export const DocumentType = {
+  CONTRACT: 'CONTRACT',
+  ID_PROOF: 'ID_PROOF',
+  ADDRESS_PROOF: 'ADDRESS_PROOF',
+  CERTIFICATE: 'CERTIFICATE',
+  VISA: 'VISA',
+  PASSPORT: 'PASSPORT',
+  RESUME: 'RESUME',
+  OTHER: 'OTHER'
+} as const
+
+export type DocumentType = (typeof DocumentType)[keyof typeof DocumentType]
+
+
+export const CustomerType = {
+  INDIVIDUAL: 'INDIVIDUAL',
+  BUSINESS: 'BUSINESS',
+  GOVERNMENT: 'GOVERNMENT'
+} as const
+
+export type CustomerType = (typeof CustomerType)[keyof typeof CustomerType]
+
+
+export const CustomerStatus = {
+  ACTIVE: 'ACTIVE',
+  INACTIVE: 'INACTIVE',
+  BLOCKED: 'BLOCKED',
+  PROSPECT: 'PROSPECT'
+} as const
+
+export type CustomerStatus = (typeof CustomerStatus)[keyof typeof CustomerStatus]
+
+
+export const QuotationStatus = {
+  DRAFT: 'DRAFT',
+  SENT: 'SENT',
+  ACCEPTED: 'ACCEPTED',
+  REJECTED: 'REJECTED',
+  EXPIRED: 'EXPIRED',
+  CONVERTED: 'CONVERTED'
+} as const
+
+export type QuotationStatus = (typeof QuotationStatus)[keyof typeof QuotationStatus]
+
+
+export const OrderStatus = {
+  DRAFT: 'DRAFT',
+  PENDING: 'PENDING',
+  CONFIRMED: 'CONFIRMED',
+  PROCESSING: 'PROCESSING',
+  PARTIALLY_SHIPPED: 'PARTIALLY_SHIPPED',
+  SHIPPED: 'SHIPPED',
+  DELIVERED: 'DELIVERED',
+  COMPLETED: 'COMPLETED',
+  CANCELLED: 'CANCELLED',
+  ON_HOLD: 'ON_HOLD'
+} as const
+
+export type OrderStatus = (typeof OrderStatus)[keyof typeof OrderStatus]
+
+
+export const ShipmentStatus = {
+  PENDING: 'PENDING',
+  PACKED: 'PACKED',
+  SHIPPED: 'SHIPPED',
+  IN_TRANSIT: 'IN_TRANSIT',
+  DELIVERED: 'DELIVERED',
+  RETURNED: 'RETURNED',
+  CANCELLED: 'CANCELLED'
+} as const
+
+export type ShipmentStatus = (typeof ShipmentStatus)[keyof typeof ShipmentStatus]
+
+
+export const ProductType = {
+  GOODS: 'GOODS',
+  SERVICE: 'SERVICE',
+  DIGITAL: 'DIGITAL',
+  BUNDLE: 'BUNDLE',
+  MANUFACTURED: 'MANUFACTURED'
+} as const
+
+export type ProductType = (typeof ProductType)[keyof typeof ProductType]
+
+
+export const WarehouseType = {
+  MAIN: 'MAIN',
+  RETAIL: 'RETAIL',
+  DISTRIBUTION: 'DISTRIBUTION',
+  MANUFACTURING: 'MANUFACTURING',
+  CONSIGNMENT: 'CONSIGNMENT',
+  TRANSIT: 'TRANSIT'
+} as const
+
+export type WarehouseType = (typeof WarehouseType)[keyof typeof WarehouseType]
+
+
+export const MovementType = {
+  PURCHASE: 'PURCHASE',
+  SALE: 'SALE',
+  ADJUSTMENT_IN: 'ADJUSTMENT_IN',
+  ADJUSTMENT_OUT: 'ADJUSTMENT_OUT',
+  TRANSFER_IN: 'TRANSFER_IN',
+  TRANSFER_OUT: 'TRANSFER_OUT',
+  RETURN_IN: 'RETURN_IN',
+  RETURN_OUT: 'RETURN_OUT',
+  MANUFACTURING: 'MANUFACTURING',
+  ASSEMBLY: 'ASSEMBLY'
+} as const
+
+export type MovementType = (typeof MovementType)[keyof typeof MovementType]
+
+
+export const AdjustmentStatus = {
+  DRAFT: 'DRAFT',
+  PENDING_APPROVAL: 'PENDING_APPROVAL',
+  APPROVED: 'APPROVED',
+  REJECTED: 'REJECTED'
+} as const
+
+export type AdjustmentStatus = (typeof AdjustmentStatus)[keyof typeof AdjustmentStatus]
+
+
+export const SupplierType = {
+  VENDOR: 'VENDOR',
+  MANUFACTURER: 'MANUFACTURER',
+  DISTRIBUTOR: 'DISTRIBUTOR',
+  DROPSHIPPER: 'DROPSHIPPER',
+  SERVICE_PROVIDER: 'SERVICE_PROVIDER'
+} as const
+
+export type SupplierType = (typeof SupplierType)[keyof typeof SupplierType]
+
+
+export const SupplierStatus = {
+  ACTIVE: 'ACTIVE',
+  INACTIVE: 'INACTIVE',
+  BLOCKED: 'BLOCKED',
+  PROSPECT: 'PROSPECT'
+} as const
+
+export type SupplierStatus = (typeof SupplierStatus)[keyof typeof SupplierStatus]
+
+
+export const POStatus = {
+  DRAFT: 'DRAFT',
+  PENDING_APPROVAL: 'PENDING_APPROVAL',
+  APPROVED: 'APPROVED',
+  SENT: 'SENT',
+  PARTIALLY_RECEIVED: 'PARTIALLY_RECEIVED',
+  RECEIVED: 'RECEIVED',
+  COMPLETED: 'COMPLETED',
+  CANCELLED: 'CANCELLED'
+} as const
+
+export type POStatus = (typeof POStatus)[keyof typeof POStatus]
+
+
+export const ReceiptStatus = {
+  PENDING: 'PENDING',
+  INSPECTING: 'INSPECTING',
+  ACCEPTED: 'ACCEPTED',
+  PARTIALLY_ACCEPTED: 'PARTIALLY_ACCEPTED',
+  REJECTED: 'REJECTED'
+} as const
+
+export type ReceiptStatus = (typeof ReceiptStatus)[keyof typeof ReceiptStatus]
+
+
+export const AccountType = {
+  ASSET: 'ASSET',
+  LIABILITY: 'LIABILITY',
+  EQUITY: 'EQUITY',
+  REVENUE: 'REVENUE',
+  EXPENSE: 'EXPENSE',
+  CONTRA_ASSET: 'CONTRA_ASSET',
+  CONTRA_LIABILITY: 'CONTRA_LIABILITY',
+  CONTRA_EQUITY: 'CONTRA_EQUITY'
+} as const
+
+export type AccountType = (typeof AccountType)[keyof typeof AccountType]
+
+
+export const EntryDirection = {
+  DEBIT: 'DEBIT',
+  CREDIT: 'CREDIT'
+} as const
+
+export type EntryDirection = (typeof EntryDirection)[keyof typeof EntryDirection]
+
+
+export const TransactionType = {
+  JOURNAL: 'JOURNAL',
+  INVOICE: 'INVOICE',
+  BILL: 'BILL',
+  PAYMENT: 'PAYMENT',
+  PAYROLL: 'PAYROLL',
+  DEPRECIATION: 'DEPRECIATION',
+  ADJUSTMENT: 'ADJUSTMENT',
+  OPENING_BALANCE: 'OPENING_BALANCE'
+} as const
+
+export type TransactionType = (typeof TransactionType)[keyof typeof TransactionType]
+
+
+export const TransactionStatus = {
+  DRAFT: 'DRAFT',
+  PENDING_APPROVAL: 'PENDING_APPROVAL',
+  APPROVED: 'APPROVED',
+  POSTED: 'POSTED',
+  VOID: 'VOID'
+} as const
+
+export type TransactionStatus = (typeof TransactionStatus)[keyof typeof TransactionStatus]
+
+
+export const InvoiceStatus = {
+  DRAFT: 'DRAFT',
+  SENT: 'SENT',
+  VIEWED: 'VIEWED',
   PARTIALLY_PAID: 'PARTIALLY_PAID',
+  PAID: 'PAID',
+  OVERDUE: 'OVERDUE',
+  VOID: 'VOID',
   CANCELLED: 'CANCELLED'
 } as const
 
 export type InvoiceStatus = (typeof InvoiceStatus)[keyof typeof InvoiceStatus]
 
 
-export const TransactionType = {
-  SERVICE: 'SERVICE',
-  PRODUCT: 'PRODUCT'
+export const BillStatus = {
+  DRAFT: 'DRAFT',
+  PENDING_APPROVAL: 'PENDING_APPROVAL',
+  APPROVED: 'APPROVED',
+  PARTIALLY_PAID: 'PARTIALLY_PAID',
+  PAID: 'PAID',
+  OVERDUE: 'OVERDUE',
+  VOID: 'VOID',
+  CANCELLED: 'CANCELLED'
 } as const
 
-export type TransactionType = (typeof TransactionType)[keyof typeof TransactionType]
+export type BillStatus = (typeof BillStatus)[keyof typeof BillStatus]
+
+
+export const PaymentType = {
+  INCOMING: 'INCOMING',
+  OUTGOING: 'OUTGOING'
+} as const
+
+export type PaymentType = (typeof PaymentType)[keyof typeof PaymentType]
+
+
+export const PaymentMethod = {
+  CASH: 'CASH',
+  CHECK: 'CHECK',
+  BANK_TRANSFER: 'BANK_TRANSFER',
+  CREDIT_CARD: 'CREDIT_CARD',
+  DEBIT_CARD: 'DEBIT_CARD',
+  PAYPAL: 'PAYPAL',
+  STRIPE: 'STRIPE',
+  WIRE_TRANSFER: 'WIRE_TRANSFER',
+  DIRECT_DEBIT: 'DIRECT_DEBIT',
+  MOBILE_PAYMENT: 'MOBILE_PAYMENT',
+  OTHER: 'OTHER'
+} as const
+
+export type PaymentMethod = (typeof PaymentMethod)[keyof typeof PaymentMethod]
+
+
+export const PaymentStatus = {
+  PENDING: 'PENDING',
+  PROCESSING: 'PROCESSING',
+  COMPLETED: 'COMPLETED',
+  FAILED: 'FAILED',
+  CANCELLED: 'CANCELLED',
+  REFUNDED: 'REFUNDED'
+} as const
+
+export type PaymentStatus = (typeof PaymentStatus)[keyof typeof PaymentStatus]
+
+
+export const TaxType = {
+  SALES: 'SALES',
+  VAT: 'VAT',
+  GST: 'GST',
+  EXCISE: 'EXCISE',
+  CUSTOMS: 'CUSTOMS',
+  WITHHOLDING: 'WITHHOLDING'
+} as const
+
+export type TaxType = (typeof TaxType)[keyof typeof TaxType]
+
+
+export const ExpenseCategory = {
+  TRAVEL: 'TRAVEL',
+  MEALS: 'MEALS',
+  ACCOMMODATION: 'ACCOMMODATION',
+  TRANSPORTATION: 'TRANSPORTATION',
+  OFFICE_SUPPLIES: 'OFFICE_SUPPLIES',
+  UTILITIES: 'UTILITIES',
+  MARKETING: 'MARKETING',
+  TRAINING: 'TRAINING',
+  EQUIPMENT: 'EQUIPMENT',
+  MAINTENANCE: 'MAINTENANCE',
+  INSURANCE: 'INSURANCE',
+  RENT: 'RENT',
+  PROFESSIONAL_FEES: 'PROFESSIONAL_FEES',
+  COMMUNICATION: 'COMMUNICATION',
+  OTHER: 'OTHER'
+} as const
+
+export type ExpenseCategory = (typeof ExpenseCategory)[keyof typeof ExpenseCategory]
+
+
+export const ExpenseStatus = {
+  DRAFT: 'DRAFT',
+  SUBMITTED: 'SUBMITTED',
+  UNDER_REVIEW: 'UNDER_REVIEW',
+  APPROVED: 'APPROVED',
+  REJECTED: 'REJECTED',
+  REIMBURSED: 'REIMBURSED'
+} as const
+
+export type ExpenseStatus = (typeof ExpenseStatus)[keyof typeof ExpenseStatus]
+
+
+export const ProjectType = {
+  INTERNAL: 'INTERNAL',
+  CLIENT: 'CLIENT',
+  RESEARCH: 'RESEARCH',
+  DEVELOPMENT: 'DEVELOPMENT',
+  MAINTENANCE: 'MAINTENANCE'
+} as const
+
+export type ProjectType = (typeof ProjectType)[keyof typeof ProjectType]
+
+
+export const ProjectStatus = {
+  PLANNING: 'PLANNING',
+  IN_PROGRESS: 'IN_PROGRESS',
+  ON_HOLD: 'ON_HOLD',
+  COMPLETED: 'COMPLETED',
+  CANCELLED: 'CANCELLED'
+} as const
+
+export type ProjectStatus = (typeof ProjectStatus)[keyof typeof ProjectStatus]
+
+
+export const TaskPriority = {
+  LOW: 'LOW',
+  MEDIUM: 'MEDIUM',
+  HIGH: 'HIGH',
+  URGENT: 'URGENT'
+} as const
+
+export type TaskPriority = (typeof TaskPriority)[keyof typeof TaskPriority]
+
+
+export const TaskStatus = {
+  TODO: 'TODO',
+  IN_PROGRESS: 'IN_PROGRESS',
+  IN_REVIEW: 'IN_REVIEW',
+  COMPLETED: 'COMPLETED',
+  CANCELLED: 'CANCELLED'
+} as const
+
+export type TaskStatus = (typeof TaskStatus)[keyof typeof TaskStatus]
+
+
+export const AssetType = {
+  COMPUTER: 'COMPUTER',
+  FURNITURE: 'FURNITURE',
+  VEHICLE: 'VEHICLE',
+  EQUIPMENT: 'EQUIPMENT',
+  MACHINERY: 'MACHINERY',
+  BUILDING: 'BUILDING',
+  LAND: 'LAND',
+  SOFTWARE: 'SOFTWARE',
+  OTHER: 'OTHER'
+} as const
+
+export type AssetType = (typeof AssetType)[keyof typeof AssetType]
+
+
+export const AssetStatus = {
+  ACTIVE: 'ACTIVE',
+  MAINTENANCE: 'MAINTENANCE',
+  RETIRED: 'RETIRED',
+  DISPOSED: 'DISPOSED',
+  LOST: 'LOST',
+  DAMAGED: 'DAMAGED'
+} as const
+
+export type AssetStatus = (typeof AssetStatus)[keyof typeof AssetStatus]
+
+
+export const BudgetPeriod = {
+  MONTHLY: 'MONTHLY',
+  QUARTERLY: 'QUARTERLY',
+  ANNUAL: 'ANNUAL'
+} as const
+
+export type BudgetPeriod = (typeof BudgetPeriod)[keyof typeof BudgetPeriod]
+
+
+export const BudgetStatus = {
+  DRAFT: 'DRAFT',
+  SUBMITTED: 'SUBMITTED',
+  APPROVED: 'APPROVED',
+  ACTIVE: 'ACTIVE',
+  CLOSED: 'CLOSED'
+} as const
+
+export type BudgetStatus = (typeof BudgetStatus)[keyof typeof BudgetStatus]
+
+
+export const ReportType = {
+  FINANCIAL: 'FINANCIAL',
+  SALES: 'SALES',
+  INVENTORY: 'INVENTORY',
+  PAYROLL: 'PAYROLL',
+  TAX: 'TAX',
+  CUSTOM: 'CUSTOM'
+} as const
+
+export type ReportType = (typeof ReportType)[keyof typeof ReportType]
+
+
+export const ReportFormat = {
+  PDF: 'PDF',
+  EXCEL: 'EXCEL',
+  CSV: 'CSV',
+  HTML: 'HTML'
+} as const
+
+export type ReportFormat = (typeof ReportFormat)[keyof typeof ReportFormat]
+
+
+export const NotificationType = {
+  SYSTEM: 'SYSTEM',
+  ORDER: 'ORDER',
+  PAYMENT: 'PAYMENT',
+  INVENTORY: 'INVENTORY',
+  APPROVAL: 'APPROVAL',
+  REMINDER: 'REMINDER',
+  ALERT: 'ALERT'
+} as const
+
+export type NotificationType = (typeof NotificationType)[keyof typeof NotificationType]
+
+
+export const AuditAction = {
+  CREATE: 'CREATE',
+  UPDATE: 'UPDATE',
+  DELETE: 'DELETE',
+  VIEW: 'VIEW',
+  EXPORT: 'EXPORT',
+  IMPORT: 'IMPORT',
+  LOGIN: 'LOGIN',
+  LOGOUT: 'LOGOUT',
+  APPROVE: 'APPROVE',
+  REJECT: 'REJECT',
+  VOID: 'VOID'
+} as const
+
+export type AuditAction = (typeof AuditAction)[keyof typeof AuditAction]

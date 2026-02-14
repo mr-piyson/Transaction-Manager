@@ -1,4 +1,4 @@
-import { Auth } from "@controllers/Auth";
+import { signIn, signOut, signUp } from "@controllers/auth.controller";
 import { Hono } from "hono";
 
 export const authRoute = new Hono();
@@ -6,7 +6,7 @@ export const authRoute = new Hono();
 // Sign Out Route Handler
 authRoute.delete("/", async c => {
   try {
-    const res = await Auth.signOut();
+    const res = await signOut();
     if (res.success) {
       return c.json({ success: true }, { status: 200 });
     }
@@ -21,7 +21,7 @@ authRoute.delete("/", async c => {
 authRoute.post("/", async c => {
   try {
     const { email, password } = await c.req.json();
-    const result = await Auth.signIn({
+    const result = await signIn({
       email,
       password,
     });
@@ -40,7 +40,7 @@ authRoute.post("/", async c => {
 authRoute.put("/", async c => {
   try {
     const { email, password, name } = await c.req.json();
-    const result = await Auth.signUp({
+    const result = await signUp({
       email,
       password,
       name,

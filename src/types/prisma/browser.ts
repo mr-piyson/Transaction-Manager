@@ -18,6 +18,16 @@ export { Prisma }
 export * as $Enums from './enums'
 export * from './enums';
 /**
+ * Model Tenant
+ * 
+ */
+export type Tenant = Prisma.TenantModel
+/**
+ * Model TenantSetting
+ * 
+ */
+export type TenantSetting = Prisma.TenantSettingModel
+/**
  * Model User
  * 
  */
@@ -28,22 +38,277 @@ export type User = Prisma.UserModel
  */
 export type Tokens = Prisma.TokensModel
 /**
- * Model Organization
+ * Model Employee
  * 
  */
-export type Organization = Prisma.OrganizationModel
+export type Employee = Prisma.EmployeeModel
+/**
+ * Model Department
+ * 
+ */
+export type Department = Prisma.DepartmentModel
+/**
+ * Model Payroll
+ * 
+ */
+export type Payroll = Prisma.PayrollModel
+/**
+ * Model Leave
+ * 
+ */
+export type Leave = Prisma.LeaveModel
+/**
+ * Model Attendance
+ * 
+ */
+export type Attendance = Prisma.AttendanceModel
+/**
+ * Model PerformanceReview
+ * 
+ */
+export type PerformanceReview = Prisma.PerformanceReviewModel
+/**
+ * Model EmployeeDocument
+ * 
+ */
+export type EmployeeDocument = Prisma.EmployeeDocumentModel
+/**
+ * Model EmployeeBenefit
+ * 
+ */
+export type EmployeeBenefit = Prisma.EmployeeBenefitModel
+/**
+ * Model Customer
+ * 
+ */
+export type Customer = Prisma.CustomerModel
+/**
+ * Model CustomerContact
+ * 
+ */
+export type CustomerContact = Prisma.CustomerContactModel
+/**
+ * Model CustomerNote
+ * 
+ */
+export type CustomerNote = Prisma.CustomerNoteModel
+/**
+ * Model Quotation
+ * 
+ */
+export type Quotation = Prisma.QuotationModel
+/**
+ * Model QuotationItem
+ * 
+ */
+export type QuotationItem = Prisma.QuotationItemModel
+/**
+ * Model SalesOrder
+ * 
+ */
+export type SalesOrder = Prisma.SalesOrderModel
+/**
+ * Model OrderItem
+ * 
+ */
+export type OrderItem = Prisma.OrderItemModel
+/**
+ * Model Shipment
+ * 
+ */
+export type Shipment = Prisma.ShipmentModel
+/**
+ * Model ShipmentItem
+ * 
+ */
+export type ShipmentItem = Prisma.ShipmentItemModel
+/**
+ * Model Product
+ * 
+ */
+export type Product = Prisma.ProductModel
+/**
+ * Model ProductVariant
+ * 
+ */
+export type ProductVariant = Prisma.ProductVariantModel
+/**
+ * Model Category
+ * 
+ */
+export type Category = Prisma.CategoryModel
+/**
+ * Model Brand
+ * 
+ */
+export type Brand = Prisma.BrandModel
+/**
+ * Model Unit
+ * 
+ */
+export type Unit = Prisma.UnitModel
+/**
+ * Model Warehouse
+ * 
+ */
+export type Warehouse = Prisma.WarehouseModel
+/**
+ * Model Inventory
+ * 
+ */
+export type Inventory = Prisma.InventoryModel
+/**
+ * Model StockMovement
+ * 
+ */
+export type StockMovement = Prisma.StockMovementModel
+/**
+ * Model StockAdjustment
+ * 
+ */
+export type StockAdjustment = Prisma.StockAdjustmentModel
+/**
+ * Model StockAdjustmentItem
+ * 
+ */
+export type StockAdjustmentItem = Prisma.StockAdjustmentItemModel
+/**
+ * Model BOMItem
+ * 
+ */
+export type BOMItem = Prisma.BOMItemModel
+/**
+ * Model Supplier
+ * 
+ */
+export type Supplier = Prisma.SupplierModel
+/**
+ * Model SupplierContact
+ * 
+ */
+export type SupplierContact = Prisma.SupplierContactModel
+/**
+ * Model PurchaseOrder
+ * 
+ */
+export type PurchaseOrder = Prisma.PurchaseOrderModel
+/**
+ * Model PurchaseItem
+ * 
+ */
+export type PurchaseItem = Prisma.PurchaseItemModel
+/**
+ * Model GoodsReceipt
+ * 
+ */
+export type GoodsReceipt = Prisma.GoodsReceiptModel
+/**
+ * Model GoodsReceiptItem
+ * 
+ */
+export type GoodsReceiptItem = Prisma.GoodsReceiptItemModel
+/**
+ * Model GLAccount
+ * 
+ */
+export type GLAccount = Prisma.GLAccountModel
+/**
+ * Model Transaction
+ * 
+ */
+export type Transaction = Prisma.TransactionModel
+/**
+ * Model JournalEntry
+ * 
+ */
+export type JournalEntry = Prisma.JournalEntryModel
 /**
  * Model Invoice
  * 
  */
 export type Invoice = Prisma.InvoiceModel
 /**
- * Model InvoiceItem
+ * Model CreditNote
  * 
  */
-export type InvoiceItem = Prisma.InvoiceItemModel
+export type CreditNote = Prisma.CreditNoteModel
 /**
- * Model Customer
+ * Model Bill
  * 
  */
-export type Customer = Prisma.CustomerModel
+export type Bill = Prisma.BillModel
+/**
+ * Model DebitNote
+ * 
+ */
+export type DebitNote = Prisma.DebitNoteModel
+/**
+ * Model Payment
+ * 
+ */
+export type Payment = Prisma.PaymentModel
+/**
+ * Model PaymentTerm
+ * 
+ */
+export type PaymentTerm = Prisma.PaymentTermModel
+/**
+ * Model TaxRate
+ * 
+ */
+export type TaxRate = Prisma.TaxRateModel
+/**
+ * Model Expense
+ * 
+ */
+export type Expense = Prisma.ExpenseModel
+/**
+ * Model Project
+ * 
+ */
+export type Project = Prisma.ProjectModel
+/**
+ * Model Task
+ * 
+ */
+export type Task = Prisma.TaskModel
+/**
+ * Model Timesheet
+ * 
+ */
+export type Timesheet = Prisma.TimesheetModel
+/**
+ * Model Asset
+ * 
+ */
+export type Asset = Prisma.AssetModel
+/**
+ * Model AssetMaintenance
+ * 
+ */
+export type AssetMaintenance = Prisma.AssetMaintenanceModel
+/**
+ * Model Budget
+ * 
+ */
+export type Budget = Prisma.BudgetModel
+/**
+ * Model BudgetItem
+ * 
+ */
+export type BudgetItem = Prisma.BudgetItemModel
+/**
+ * Model Report
+ * 
+ */
+export type Report = Prisma.ReportModel
+/**
+ * Model Notification
+ * 
+ */
+export type Notification = Prisma.NotificationModel
+/**
+ * Model AuditLog
+ * 
+ */
+export type AuditLog = Prisma.AuditLogModel

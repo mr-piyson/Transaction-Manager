@@ -1,10 +1,10 @@
 "use server";
-import { Auth } from "@controllers/Auth";
 import { redirect } from "next/navigation";
 import App from "./App";
+import { isAuthenticated } from "@controllers/auth.controller";
 
 export default async function App_layout(props: any) {
-  if (!(await Auth.isAuthenticated())) {
+  if (!(await isAuthenticated())) {
     redirect("/auth");
   }
   return <App>{props.children}</App>;
