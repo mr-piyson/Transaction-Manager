@@ -27,6 +27,7 @@ export default function CustomersPage(props: CustomersPageProps) {
     data: customers,
     isLoading,
     isError,
+    refetch,
   } = useQuery({
     queryKey: ["customers"],
     queryFn: async () => {
@@ -100,6 +101,7 @@ export default function CustomersPage(props: CustomersPageProps) {
         cardRenderer={userCardRenderer}
         rowHeight={65}
         searchFields={["name", "phone"]}
+        onRefetch={refetch}
       />
     </div>
   );

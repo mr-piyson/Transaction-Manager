@@ -24,6 +24,6 @@
       "@controllers/*": ["./controllers/*"]
     }
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "src/proxy.ts", "scripts/*.ts", ".next/dev/types/**/*.ts"],
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "src/middle.ts", "scripts/*.ts", ".next/dev/types/**/*.ts"],
   "exclude": ["node_modules", "./src/components/Table/**/*"]
 }
