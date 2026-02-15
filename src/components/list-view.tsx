@@ -244,12 +244,16 @@ export function ListView<T extends Record<string, any>>({
   // Error state
   if (isError) {
     return (
-      <Card>
+      <Card className="m-8">
         <CardContent className="p-6">
           <div className="text-center text-destructive">
             <h2 className="text-lg font-semibold mb-2">Error Loading Data</h2>
             <p className="mb-4">{error instanceof Error ? error.message : "An error occurred"}</p>
-            {onRefetch && <Button onClick={onRefetch}>Try Again</Button>}
+            {onRefetch && (
+              <Button variant={"destructive"} onClick={onRefetch}>
+                Try Again
+              </Button>
+            )}
           </div>
         </CardContent>
       </Card>

@@ -7,10 +7,11 @@ import { useHeader } from "@/hooks/use-header";
 import { Invoice } from "@/types/prisma/client";
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
-import { ArrowLeft, LucideFileText, Plus, User2 } from "lucide-react";
+import { LucideFileText } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useMemo } from "react";
 import CreateInvoiceDialog from "./create-invoice-dialog";
+import { useI18n } from "@/hooks/use-i18n";
 
 type RecordPageProps = {
   children?: React.ReactNode;
@@ -21,6 +22,7 @@ export default function RecordPage(props: RecordPageProps) {
   const params = useParams();
   const router = useRouter();
   const fab = useFab();
+  const { t } = useI18n();
 
   const {
     data: invoices,
@@ -35,11 +37,9 @@ export default function RecordPage(props: RecordPageProps) {
   useEffect(() => {
     header.configureHeader({
       leftContent: (
-        <div className="flex h-full w-full items-center gap-4">
-          <Button variant={"ghost"} className="p-1" onClick={() => router.back()}>
-            <ArrowLeft className="size-6" />
-          </Button>
-          <h1 className="text-2xl font-semibold">{`Invoices`}</h1>
+        <div className="flex h-full w-full items-center gap-4 print:hidden">
+          <div className="bg-primary w-1 h-8"></div>
+          <h1 className="text-2xl font-semibold pb-1 capitalize">{t("common.invoices")}</h1>
         </div>
       ),
     });
@@ -73,7 +73,7 @@ export default function RecordPage(props: RecordPageProps) {
         useTheme={true}
         cardRenderer={invoiceCardRenderer}
         rowHeight={75}
-        searchFields={["title", "status", "total"]}
+        searchFields={["status"]}
       />
     </div>
   );
@@ -124,7 +124,7 @@ const invoiceCardRenderer = ({ data: invoice }: { data: Invoice }) => {
 
       <div className="flex items-center gap-3">
         <div className="text-right">
-          <p className="font-semibold text-sm">{invoice.total?.toFixed(3) || "0.000"} BD</p>
+          {/* <p className="font-semibold text-sm">{invoice.total?.toFixed(3) || "0.000"} BD</p> */}
           {/* <p className="font-semibold text-sm text-muted-foreground"></p> */}
         </div>
       </div>

@@ -54,6 +54,7 @@ export type CustomerMinAggregateOutputType = {
   mobile: string | null
   fax: string | null
   website: string | null
+  image: string | null
   taxId: string | null
   registrationNumber: string | null
   creditLimit: runtime.Decimal | null
@@ -88,6 +89,7 @@ export type CustomerMaxAggregateOutputType = {
   mobile: string | null
   fax: string | null
   website: string | null
+  image: string | null
   taxId: string | null
   registrationNumber: string | null
   creditLimit: runtime.Decimal | null
@@ -122,6 +124,7 @@ export type CustomerCountAggregateOutputType = {
   mobile: number
   fax: number
   website: number
+  image: number
   taxId: number
   registrationNumber: number
   creditLimit: number
@@ -176,6 +179,7 @@ export type CustomerMinAggregateInputType = {
   mobile?: true
   fax?: true
   website?: true
+  image?: true
   taxId?: true
   registrationNumber?: true
   creditLimit?: true
@@ -210,6 +214,7 @@ export type CustomerMaxAggregateInputType = {
   mobile?: true
   fax?: true
   website?: true
+  image?: true
   taxId?: true
   registrationNumber?: true
   creditLimit?: true
@@ -244,6 +249,7 @@ export type CustomerCountAggregateInputType = {
   mobile?: true
   fax?: true
   website?: true
+  image?: true
   taxId?: true
   registrationNumber?: true
   creditLimit?: true
@@ -365,6 +371,7 @@ export type CustomerGroupByOutputType = {
   mobile: string | null
   fax: string | null
   website: string | null
+  image: string | null
   taxId: string | null
   registrationNumber: string | null
   creditLimit: runtime.Decimal | null
@@ -422,6 +429,7 @@ export type CustomerWhereInput = {
   mobile?: Prisma.StringNullableFilter<"Customer"> | string | null
   fax?: Prisma.StringNullableFilter<"Customer"> | string | null
   website?: Prisma.StringNullableFilter<"Customer"> | string | null
+  image?: Prisma.StringNullableFilter<"Customer"> | string | null
   taxId?: Prisma.StringNullableFilter<"Customer"> | string | null
   registrationNumber?: Prisma.StringNullableFilter<"Customer"> | string | null
   creditLimit?: Prisma.DecimalNullableFilter<"Customer"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -465,6 +473,7 @@ export type CustomerOrderByWithRelationInput = {
   mobile?: Prisma.SortOrderInput | Prisma.SortOrder
   fax?: Prisma.SortOrderInput | Prisma.SortOrder
   website?: Prisma.SortOrderInput | Prisma.SortOrder
+  image?: Prisma.SortOrderInput | Prisma.SortOrder
   taxId?: Prisma.SortOrderInput | Prisma.SortOrder
   registrationNumber?: Prisma.SortOrderInput | Prisma.SortOrder
   creditLimit?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -512,6 +521,7 @@ export type CustomerWhereUniqueInput = Prisma.AtLeast<{
   mobile?: Prisma.StringNullableFilter<"Customer"> | string | null
   fax?: Prisma.StringNullableFilter<"Customer"> | string | null
   website?: Prisma.StringNullableFilter<"Customer"> | string | null
+  image?: Prisma.StringNullableFilter<"Customer"> | string | null
   taxId?: Prisma.StringNullableFilter<"Customer"> | string | null
   registrationNumber?: Prisma.StringNullableFilter<"Customer"> | string | null
   creditLimit?: Prisma.DecimalNullableFilter<"Customer"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -555,6 +565,7 @@ export type CustomerOrderByWithAggregationInput = {
   mobile?: Prisma.SortOrderInput | Prisma.SortOrder
   fax?: Prisma.SortOrderInput | Prisma.SortOrder
   website?: Prisma.SortOrderInput | Prisma.SortOrder
+  image?: Prisma.SortOrderInput | Prisma.SortOrder
   taxId?: Prisma.SortOrderInput | Prisma.SortOrder
   registrationNumber?: Prisma.SortOrderInput | Prisma.SortOrder
   creditLimit?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -597,6 +608,7 @@ export type CustomerScalarWhereWithAggregatesInput = {
   mobile?: Prisma.StringNullableWithAggregatesFilter<"Customer"> | string | null
   fax?: Prisma.StringNullableWithAggregatesFilter<"Customer"> | string | null
   website?: Prisma.StringNullableWithAggregatesFilter<"Customer"> | string | null
+  image?: Prisma.StringNullableWithAggregatesFilter<"Customer"> | string | null
   taxId?: Prisma.StringNullableWithAggregatesFilter<"Customer"> | string | null
   registrationNumber?: Prisma.StringNullableWithAggregatesFilter<"Customer"> | string | null
   creditLimit?: Prisma.DecimalNullableWithAggregatesFilter<"Customer"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -630,6 +642,7 @@ export type CustomerCreateInput = {
   mobile?: string | null
   fax?: string | null
   website?: string | null
+  image?: string | null
   taxId?: string | null
   registrationNumber?: string | null
   creditLimit?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -671,6 +684,7 @@ export type CustomerUncheckedCreateInput = {
   mobile?: string | null
   fax?: string | null
   website?: string | null
+  image?: string | null
   taxId?: string | null
   registrationNumber?: string | null
   creditLimit?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -711,6 +725,7 @@ export type CustomerUpdateInput = {
   mobile?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fax?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   taxId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   registrationNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   creditLimit?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -752,6 +767,7 @@ export type CustomerUncheckedUpdateInput = {
   mobile?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fax?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   taxId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   registrationNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   creditLimit?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -793,6 +809,7 @@ export type CustomerCreateManyInput = {
   mobile?: string | null
   fax?: string | null
   website?: string | null
+  image?: string | null
   taxId?: string | null
   registrationNumber?: string | null
   creditLimit?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -826,6 +843,7 @@ export type CustomerUpdateManyMutationInput = {
   mobile?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fax?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   taxId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   registrationNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   creditLimit?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -858,6 +876,7 @@ export type CustomerUncheckedUpdateManyInput = {
   mobile?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fax?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   taxId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   registrationNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   creditLimit?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -907,6 +926,7 @@ export type CustomerCountOrderByAggregateInput = {
   mobile?: Prisma.SortOrder
   fax?: Prisma.SortOrder
   website?: Prisma.SortOrder
+  image?: Prisma.SortOrder
   taxId?: Prisma.SortOrder
   registrationNumber?: Prisma.SortOrder
   creditLimit?: Prisma.SortOrder
@@ -950,6 +970,7 @@ export type CustomerMaxOrderByAggregateInput = {
   mobile?: Prisma.SortOrder
   fax?: Prisma.SortOrder
   website?: Prisma.SortOrder
+  image?: Prisma.SortOrder
   taxId?: Prisma.SortOrder
   registrationNumber?: Prisma.SortOrder
   creditLimit?: Prisma.SortOrder
@@ -984,6 +1005,7 @@ export type CustomerMinOrderByAggregateInput = {
   mobile?: Prisma.SortOrder
   fax?: Prisma.SortOrder
   website?: Prisma.SortOrder
+  image?: Prisma.SortOrder
   taxId?: Prisma.SortOrder
   registrationNumber?: Prisma.SortOrder
   creditLimit?: Prisma.SortOrder
@@ -1228,6 +1250,7 @@ export type CustomerCreateWithoutTenantInput = {
   mobile?: string | null
   fax?: string | null
   website?: string | null
+  image?: string | null
   taxId?: string | null
   registrationNumber?: string | null
   creditLimit?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -1268,6 +1291,7 @@ export type CustomerUncheckedCreateWithoutTenantInput = {
   mobile?: string | null
   fax?: string | null
   website?: string | null
+  image?: string | null
   taxId?: string | null
   registrationNumber?: string | null
   creditLimit?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -1337,6 +1361,7 @@ export type CustomerScalarWhereInput = {
   mobile?: Prisma.StringNullableFilter<"Customer"> | string | null
   fax?: Prisma.StringNullableFilter<"Customer"> | string | null
   website?: Prisma.StringNullableFilter<"Customer"> | string | null
+  image?: Prisma.StringNullableFilter<"Customer"> | string | null
   taxId?: Prisma.StringNullableFilter<"Customer"> | string | null
   registrationNumber?: Prisma.StringNullableFilter<"Customer"> | string | null
   creditLimit?: Prisma.DecimalNullableFilter<"Customer"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -1370,6 +1395,7 @@ export type CustomerCreateWithoutContactsInput = {
   mobile?: string | null
   fax?: string | null
   website?: string | null
+  image?: string | null
   taxId?: string | null
   registrationNumber?: string | null
   creditLimit?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -1410,6 +1436,7 @@ export type CustomerUncheckedCreateWithoutContactsInput = {
   mobile?: string | null
   fax?: string | null
   website?: string | null
+  image?: string | null
   taxId?: string | null
   registrationNumber?: string | null
   creditLimit?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -1465,6 +1492,7 @@ export type CustomerUpdateWithoutContactsInput = {
   mobile?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fax?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   taxId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   registrationNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   creditLimit?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -1505,6 +1533,7 @@ export type CustomerUncheckedUpdateWithoutContactsInput = {
   mobile?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fax?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   taxId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   registrationNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   creditLimit?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -1544,6 +1573,7 @@ export type CustomerCreateWithoutNotesInput = {
   mobile?: string | null
   fax?: string | null
   website?: string | null
+  image?: string | null
   taxId?: string | null
   registrationNumber?: string | null
   creditLimit?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -1584,6 +1614,7 @@ export type CustomerUncheckedCreateWithoutNotesInput = {
   mobile?: string | null
   fax?: string | null
   website?: string | null
+  image?: string | null
   taxId?: string | null
   registrationNumber?: string | null
   creditLimit?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -1639,6 +1670,7 @@ export type CustomerUpdateWithoutNotesInput = {
   mobile?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fax?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   taxId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   registrationNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   creditLimit?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -1679,6 +1711,7 @@ export type CustomerUncheckedUpdateWithoutNotesInput = {
   mobile?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fax?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   taxId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   registrationNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   creditLimit?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -1718,6 +1751,7 @@ export type CustomerCreateWithoutQuotationsInput = {
   mobile?: string | null
   fax?: string | null
   website?: string | null
+  image?: string | null
   taxId?: string | null
   registrationNumber?: string | null
   creditLimit?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -1758,6 +1792,7 @@ export type CustomerUncheckedCreateWithoutQuotationsInput = {
   mobile?: string | null
   fax?: string | null
   website?: string | null
+  image?: string | null
   taxId?: string | null
   registrationNumber?: string | null
   creditLimit?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -1813,6 +1848,7 @@ export type CustomerUpdateWithoutQuotationsInput = {
   mobile?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fax?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   taxId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   registrationNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   creditLimit?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -1853,6 +1889,7 @@ export type CustomerUncheckedUpdateWithoutQuotationsInput = {
   mobile?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fax?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   taxId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   registrationNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   creditLimit?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -1892,6 +1929,7 @@ export type CustomerCreateWithoutOrdersInput = {
   mobile?: string | null
   fax?: string | null
   website?: string | null
+  image?: string | null
   taxId?: string | null
   registrationNumber?: string | null
   creditLimit?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -1932,6 +1970,7 @@ export type CustomerUncheckedCreateWithoutOrdersInput = {
   mobile?: string | null
   fax?: string | null
   website?: string | null
+  image?: string | null
   taxId?: string | null
   registrationNumber?: string | null
   creditLimit?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -1987,6 +2026,7 @@ export type CustomerUpdateWithoutOrdersInput = {
   mobile?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fax?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   taxId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   registrationNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   creditLimit?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -2027,6 +2067,7 @@ export type CustomerUncheckedUpdateWithoutOrdersInput = {
   mobile?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fax?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   taxId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   registrationNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   creditLimit?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -2066,6 +2107,7 @@ export type CustomerCreateWithoutShipmentsInput = {
   mobile?: string | null
   fax?: string | null
   website?: string | null
+  image?: string | null
   taxId?: string | null
   registrationNumber?: string | null
   creditLimit?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -2106,6 +2148,7 @@ export type CustomerUncheckedCreateWithoutShipmentsInput = {
   mobile?: string | null
   fax?: string | null
   website?: string | null
+  image?: string | null
   taxId?: string | null
   registrationNumber?: string | null
   creditLimit?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -2161,6 +2204,7 @@ export type CustomerUpdateWithoutShipmentsInput = {
   mobile?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fax?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   taxId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   registrationNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   creditLimit?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -2201,6 +2245,7 @@ export type CustomerUncheckedUpdateWithoutShipmentsInput = {
   mobile?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fax?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   taxId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   registrationNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   creditLimit?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -2240,6 +2285,7 @@ export type CustomerCreateWithoutInvoicesInput = {
   mobile?: string | null
   fax?: string | null
   website?: string | null
+  image?: string | null
   taxId?: string | null
   registrationNumber?: string | null
   creditLimit?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -2280,6 +2326,7 @@ export type CustomerUncheckedCreateWithoutInvoicesInput = {
   mobile?: string | null
   fax?: string | null
   website?: string | null
+  image?: string | null
   taxId?: string | null
   registrationNumber?: string | null
   creditLimit?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -2335,6 +2382,7 @@ export type CustomerUpdateWithoutInvoicesInput = {
   mobile?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fax?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   taxId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   registrationNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   creditLimit?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -2375,6 +2423,7 @@ export type CustomerUncheckedUpdateWithoutInvoicesInput = {
   mobile?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fax?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   taxId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   registrationNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   creditLimit?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -2414,6 +2463,7 @@ export type CustomerCreateWithoutPaymentsInput = {
   mobile?: string | null
   fax?: string | null
   website?: string | null
+  image?: string | null
   taxId?: string | null
   registrationNumber?: string | null
   creditLimit?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -2454,6 +2504,7 @@ export type CustomerUncheckedCreateWithoutPaymentsInput = {
   mobile?: string | null
   fax?: string | null
   website?: string | null
+  image?: string | null
   taxId?: string | null
   registrationNumber?: string | null
   creditLimit?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -2509,6 +2560,7 @@ export type CustomerUpdateWithoutPaymentsInput = {
   mobile?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fax?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   taxId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   registrationNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   creditLimit?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -2549,6 +2601,7 @@ export type CustomerUncheckedUpdateWithoutPaymentsInput = {
   mobile?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fax?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   taxId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   registrationNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   creditLimit?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -2588,6 +2641,7 @@ export type CustomerCreateWithoutPaymentTermInput = {
   mobile?: string | null
   fax?: string | null
   website?: string | null
+  image?: string | null
   taxId?: string | null
   registrationNumber?: string | null
   creditLimit?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -2628,6 +2682,7 @@ export type CustomerUncheckedCreateWithoutPaymentTermInput = {
   mobile?: string | null
   fax?: string | null
   website?: string | null
+  image?: string | null
   taxId?: string | null
   registrationNumber?: string | null
   creditLimit?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -2694,6 +2749,7 @@ export type CustomerCreateManyTenantInput = {
   mobile?: string | null
   fax?: string | null
   website?: string | null
+  image?: string | null
   taxId?: string | null
   registrationNumber?: string | null
   creditLimit?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -2726,6 +2782,7 @@ export type CustomerUpdateWithoutTenantInput = {
   mobile?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fax?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   taxId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   registrationNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   creditLimit?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -2766,6 +2823,7 @@ export type CustomerUncheckedUpdateWithoutTenantInput = {
   mobile?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fax?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   taxId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   registrationNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   creditLimit?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -2806,6 +2864,7 @@ export type CustomerUncheckedUpdateManyWithoutTenantInput = {
   mobile?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fax?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   taxId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   registrationNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   creditLimit?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -2839,6 +2898,7 @@ export type CustomerCreateManyPaymentTermInput = {
   mobile?: string | null
   fax?: string | null
   website?: string | null
+  image?: string | null
   taxId?: string | null
   registrationNumber?: string | null
   creditLimit?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -2871,6 +2931,7 @@ export type CustomerUpdateWithoutPaymentTermInput = {
   mobile?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fax?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   taxId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   registrationNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   creditLimit?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -2911,6 +2972,7 @@ export type CustomerUncheckedUpdateWithoutPaymentTermInput = {
   mobile?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fax?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   taxId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   registrationNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   creditLimit?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -2951,6 +3013,7 @@ export type CustomerUncheckedUpdateManyWithoutPaymentTermInput = {
   mobile?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fax?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   taxId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   registrationNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   creditLimit?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -3069,6 +3132,7 @@ export type CustomerSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs
   mobile?: boolean
   fax?: boolean
   website?: boolean
+  image?: boolean
   taxId?: boolean
   registrationNumber?: boolean
   creditLimit?: boolean
@@ -3113,6 +3177,7 @@ export type CustomerSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exte
   mobile?: boolean
   fax?: boolean
   website?: boolean
+  image?: boolean
   taxId?: boolean
   registrationNumber?: boolean
   creditLimit?: boolean
@@ -3149,6 +3214,7 @@ export type CustomerSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exte
   mobile?: boolean
   fax?: boolean
   website?: boolean
+  image?: boolean
   taxId?: boolean
   registrationNumber?: boolean
   creditLimit?: boolean
@@ -3185,6 +3251,7 @@ export type CustomerSelectScalar = {
   mobile?: boolean
   fax?: boolean
   website?: boolean
+  image?: boolean
   taxId?: boolean
   registrationNumber?: boolean
   creditLimit?: boolean
@@ -3209,7 +3276,7 @@ export type CustomerSelectScalar = {
   updatedAt?: boolean
 }
 
-export type CustomerOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "customerNumber" | "name" | "type" | "email" | "phone" | "mobile" | "fax" | "website" | "taxId" | "registrationNumber" | "creditLimit" | "creditBalance" | "paymentTermId" | "billingAddress" | "billingCity" | "billingState" | "billingCountry" | "billingPostal" | "shippingAddress" | "shippingCity" | "shippingState" | "shippingCountry" | "shippingPostal" | "status" | "category" | "source" | "tenantId" | "salesRepId" | "createdAt" | "updatedAt", ExtArgs["result"]["customer"]>
+export type CustomerOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "customerNumber" | "name" | "type" | "email" | "phone" | "mobile" | "fax" | "website" | "image" | "taxId" | "registrationNumber" | "creditLimit" | "creditBalance" | "paymentTermId" | "billingAddress" | "billingCity" | "billingState" | "billingCountry" | "billingPostal" | "shippingAddress" | "shippingCity" | "shippingState" | "shippingCountry" | "shippingPostal" | "status" | "category" | "source" | "tenantId" | "salesRepId" | "createdAt" | "updatedAt", ExtArgs["result"]["customer"]>
 export type CustomerInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   paymentTerm?: boolean | Prisma.Customer$paymentTermArgs<ExtArgs>
   tenant?: boolean | Prisma.TenantDefaultArgs<ExtArgs>
@@ -3254,6 +3321,7 @@ export type $CustomerPayload<ExtArgs extends runtime.Types.Extensions.InternalAr
     mobile: string | null
     fax: string | null
     website: string | null
+    image: string | null
     taxId: string | null
     registrationNumber: string | null
     creditLimit: runtime.Decimal | null
@@ -3717,6 +3785,7 @@ export interface CustomerFieldRefs {
   readonly mobile: Prisma.FieldRef<"Customer", 'String'>
   readonly fax: Prisma.FieldRef<"Customer", 'String'>
   readonly website: Prisma.FieldRef<"Customer", 'String'>
+  readonly image: Prisma.FieldRef<"Customer", 'String'>
   readonly taxId: Prisma.FieldRef<"Customer", 'String'>
   readonly registrationNumber: Prisma.FieldRef<"Customer", 'String'>
   readonly creditLimit: Prisma.FieldRef<"Customer", 'Decimal'>

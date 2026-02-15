@@ -29,7 +29,8 @@ export default function App(props: any) {
               <AppSidebar />
               <div className="relative flex flex-col flex-1 min-h-full">
                 {/* Toolbar fixed at top */}
-                {isMobile && <Header />}
+                {/* {isMobile && <Header />} */}
+                <Header />
 
                 {/* Scrollable main area */}
                 <div className="flex-1 overflow-auto relative">{props.children}</div>

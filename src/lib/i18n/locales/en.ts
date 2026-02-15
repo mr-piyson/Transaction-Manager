@@ -19,6 +19,7 @@ export const en = {
     profile: "Profile",
     security: "Security",
     appearance: "Appearance",
+    inventory: "Inventory",
   },
   auth: {
     login: "Login",

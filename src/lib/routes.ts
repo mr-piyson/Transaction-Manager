@@ -16,7 +16,7 @@ export type Routes = typeof routes;
 export type RouteMap = Record<string, RouteConfig>;
 
 // Define the routes as a const to get literal types
-export const routes: RouteMap = {
+export const routes = {
   settings: {
     key: "common.settings",
     path: "/app/settings",
@@ -54,9 +54,9 @@ export const routes: RouteMap = {
     path: "/app/customers",
     icon: "icon-[lucide--user]",
   },
-  assets: {
-    key: "common.assets",
-    path: "/app/assets",
+  inventory: {
+    key: "common.inventory",
+    path: "/app/inventory",
     icon: "icon-[streamline-plump--computer-pc-desktop]",
   },
   invoices: {
@@ -64,6 +64,6 @@ export const routes: RouteMap = {
     path: "/app/invoices",
     icon: "icon-[lucide--file-text]",
   },
-};
+} as const satisfies RouteMap;
 
-export const sidebarRoutes: RouteConfig[] = [routes.customers, routes.assets, routes.invoices];
+export const sidebarRoutes = [routes.customers, routes.inventory, routes.invoices];

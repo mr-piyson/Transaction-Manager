@@ -12,6 +12,7 @@ import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { UniversalDialog } from "@/components/dialog";
 import { queryClient } from "../App";
+import { useI18n } from "@/hooks/use-i18n";
 
 type CustomersPageProps = {
   children?: React.ReactNode;
@@ -20,6 +21,7 @@ type CustomersPageProps = {
 export default function CustomersPage(props: CustomersPageProps) {
   const header = useHeader();
   const fab = useFab();
+  const { t } = useI18n();
 
   const {
     data: customers,
@@ -38,7 +40,7 @@ export default function CustomersPage(props: CustomersPageProps) {
       leftContent: (
         <div className="flex h-full w-full items-center gap-4 print:hidden">
           <div className="bg-primary w-1 h-8"></div>
-          <h1 className="text-2xl font-semibold pb-1">Customers</h1>
+          <h1 className="text-2xl font-semibold pb-1 capitalize">{t("common.customers")}</h1>
         </div>
       ),
     });
@@ -97,7 +99,7 @@ export default function CustomersPage(props: CustomersPageProps) {
         useTheme={true}
         cardRenderer={userCardRenderer}
         rowHeight={65}
-        searchFields={["name", "phone", "code"]}
+        searchFields={["name", "phone"]}
       />
     </div>
   );
@@ -125,7 +127,7 @@ const userCardRenderer = ({ data }: { data: Customer }) => {
       <div className="text-right text-xs space-y-0.5">
         <p className="flex items-center justify-end gap-1 text-primary">
           <svg className="w-3 h-3" />
-          <span className="font-semibold">{data.code}</span>
+          <span className="font-semibold">{data.id}</span>
         </p>
         <p className="flex items-center justify-end gap-1 text-muted-foreground">
           <svg className="w-3 h-3" />

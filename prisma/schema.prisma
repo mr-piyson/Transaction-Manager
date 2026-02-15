@@ -512,6 +512,7 @@ model Customer {
   mobile         String?
   fax            String?
   website        String?
+  image          String?
 
   // Tax & Legal
   taxId              String? // VAT or Tax ID

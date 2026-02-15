@@ -16,6 +16,7 @@ export const ar = {
     account: "حساب المستخدم",
     security: "الامان",
     appearance: "السمات",
+    inventory: "المخون",
   },
   auth: {
     login: "تسجيل الدخول",

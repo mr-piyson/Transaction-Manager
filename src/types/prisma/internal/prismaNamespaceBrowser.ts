@@ -408,6 +408,7 @@ export const CustomerScalarFieldEnum = {
   mobile: 'mobile',
   fax: 'fax',
   website: 'website',
+  image: 'image',
   taxId: 'taxId',
   registrationNumber: 'registrationNumber',
   creditLimit: 'creditLimit',
