@@ -1,9 +1,9 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect, useCallback, useMemo, ReactNode, useTransition } from "react";
-import { translations, LANGUAGE_CONFIG, type Direction, type Locale, type Translations, TranslationKeys } from "@/lib/i18n/i18n-core";
-import { clientCookieManager, clientStorageManager, ClientTranslator } from "@/lib/i18n/i18n-client";
-import { saveLocaleToDatabase, setLocaleAction } from "@/lib/i18n/i18n-server";
+import { translations, LANGUAGE_CONFIG, type Direction, type Locale, type Translations, TranslationKeys } from "../../i18n/i18n-core";
+import { clientCookieManager, clientStorageManager, ClientTranslator } from "../../i18n/i18n-client";
+import { saveLocaleToDatabase, setLocaleAction } from "../../i18n/i18n-server";
 
 interface I18nContextValue {
   locale: Locale;

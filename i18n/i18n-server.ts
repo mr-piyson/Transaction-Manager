@@ -6,7 +6,7 @@ import { cookies } from "next/headers";
 import { COOKIE_MAX_AGE, COOKIE_NAME, DEFAULT_LOCALE, LANGUAGE_CONFIG, Locale, TranslationKeys, Translations, translations } from "./i18n-core";
 import { revalidatePath } from "next/cache";
 import { ServerTranslator } from "./i18n-classes";
-import db from "../database";
+import db from "../src/lib/database";
 import z from "zod";
 
 export async function getLocaleFromCookie(): Promise<Locale> {

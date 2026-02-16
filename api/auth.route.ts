@@ -1,4 +1,4 @@
-import { signIn, signOut, signUp } from "@controllers/auth.controller";
+import { signIn, signOut, signUp } from "../services/auth.service";
 import { Hono } from "hono";
 
 export const authRoute = new Hono();

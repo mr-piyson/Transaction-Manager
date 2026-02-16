@@ -1,4 +1,4 @@
-import { getCurrentUser, TokenPayload } from "@controllers/auth.controller";
+import { getCurrentUser, TokenPayload } from "../../services/auth.service";
 import { createMiddleware } from "hono/factory";
 
 // Define the Hono context environment to strongly type the user object

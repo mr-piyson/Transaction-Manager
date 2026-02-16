@@ -1,5 +1,5 @@
 import { Route } from "next";
-import { TranslationKeys } from "./i18n/i18n-core";
+import { TranslationKeys } from "../../i18n/i18n-core";
 
 // 1. Define what a single route looks like
 export type RouteConfig = {
