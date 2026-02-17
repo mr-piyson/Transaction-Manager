@@ -5,6 +5,11 @@ import { ThemeProvider } from "@/components/Theme-Provider";
 import { I18nProvider } from "@/hooks/use-i18n";
 import { getLocale } from "../../i18n/i18n-server";
 import { Toaster } from "@/components/sonner";
+import db from "@/lib/database";
+import { logger } from "hono/logger";
+import { ReactNode } from "react";
+import { headers } from "next/headers";
+import { redirect } from "next/navigation";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -28,6 +33,13 @@ export const metadata: Metadata = {
 
 export default async function RootLayout(props: any) {
   const { locale, direction } = await getLocale();
+  const tenant = await db.tenant.count();
+  const headerList = headers();
+  const pathname = (await headerList).get("x-current-path");
+  console.log(pathname);
+  if (tenant == 0) {
+    if (pathname !== "/setup") redirect("/setup");
+  }
   return (
     <html lang="en" dir={direction} suppressHydrationWarning>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>

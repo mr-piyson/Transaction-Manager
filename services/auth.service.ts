@@ -7,7 +7,8 @@ import { env } from "@/lib/env";
 // controller
 // Types
 export interface TokenPayload {
-  userId: number;
+  userId: string;
+  tenantId: string;
   email: string;
   iat?: number;
   exp?: number;
@@ -84,6 +85,7 @@ export async function signUp(data: RegisterData): Promise<AuthResult> {
         fullName: data.name,
         firstName: data.name.split(" ")[0],
         lastName: data.name.split(" ").pop() || "",
+        tenantId: "default",
       },
       select: { id: true, email: true },
     });
@@ -248,7 +250,7 @@ export async function logoutAllDevices(): Promise<AuthResult> {
     }
 
     // Verify token to get user ID
-    let userId: number;
+    let userId: string;
     try {
       const payload = jwt.verify(accessToken, env.JWT_SECRET_ACCESS) as TokenPayload;
       userId = payload.userId;
@@ -326,7 +328,7 @@ export async function getCurrentUser(): Promise<TokenPayload | null> {
     // Get user details
     const user = await db.user.findUnique({
       where: { id: storedToken.userId },
-      select: { id: true, email: true },
+      select: { id: true, email: true, tenantId: true, role: true },
     });
 
     if (!user) return null;

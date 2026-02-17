@@ -1,6 +1,12 @@
 import { getCurrentUser, TokenPayload } from "../../services/auth.service";
 import { createMiddleware } from "hono/factory";
 
+declare module "hono" {
+  interface ContextVariableMap {
+    user: TokenPayload;
+  }
+}
+
 // Define the Hono context environment to strongly type the user object
 export type AuthEnv = {
   Variables: {

@@ -1,10 +1,11 @@
 import { signIn, signOut, signUp } from "../services/auth.service";
 import { Hono } from "hono";
 
-export const authRoute = new Hono();
+const authRouter = new Hono();
+export default authRouter;
 
 // Sign Out Route Handler
-authRoute.delete("/", async c => {
+authRouter.delete("/", async c => {
   try {
     const res = await signOut();
     if (res.success) {
@@ -18,7 +19,7 @@ authRoute.delete("/", async c => {
 });
 
 // Sign in Route Handler
-authRoute.post("/", async c => {
+authRouter.post("/", async c => {
   try {
     const { email, password } = await c.req.json();
     const result = await signIn({
@@ -37,7 +38,7 @@ authRoute.post("/", async c => {
 });
 
 // Sign up Route Handler
-authRoute.put("/", async c => {
+authRouter.put("/", async c => {
   try {
     const { email, password, name } = await c.req.json();
     const result = await signUp({
