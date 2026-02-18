@@ -4,15 +4,14 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { useFab } from "@/hooks/use-fab";
 import { useHeader } from "@/hooks/use-header";
-import { Customer } from "@/types/prisma/client";
 import { useQuery } from "@tanstack/react-query";
-import axios from "axios";
 import { Plus, User2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { UniversalDialog } from "@/components/dialog";
-import { queryClient } from "../App";
 import { useI18n } from "@/hooks/use-i18n";
+import { Customer } from "@prisma/client";
+import { client, queryClient } from "@/lib/client";
 
 type CustomersPageProps = {
   children?: React.ReactNode;
@@ -31,8 +30,8 @@ export default function CustomersPage(props: CustomersPageProps) {
   } = useQuery({
     queryKey: ["customers"],
     queryFn: async () => {
-      const res = await axios.get("/api/customers");
-      return res.data;
+      const res = await client.api.customers.$get();
+      return (await res.json()).data;
     },
   });
 

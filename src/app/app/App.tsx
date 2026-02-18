@@ -1,6 +1,6 @@
 "use client";
 import { SplashScreen } from "@/components/Splash-Screen";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { QueryClientProvider } from "@tanstack/react-query";
 import { SidebarProvider } from "@/components/sidebar";
 import { AppSidebar } from "./Sidebar";
 import { BottomNavigation } from "@/components/BottomNavigation";
@@ -9,14 +9,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { HeaderProvider } from "@/hooks/use-header";
 import { Header } from "@/components/Header";
 
-export const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      staleTime: 60 * 1000, // 1 minute
-      refetchOnWindowFocus: false,
-    },
-  },
-});
+import { queryClient } from "@/lib/client";
 
 export default function App(props: any) {
   const isMobile = useIsMobile();

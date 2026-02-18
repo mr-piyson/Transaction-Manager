@@ -1,6 +1,7 @@
 import { Permission, RolePermissions } from "@/types/rbac";
 import { Context, Next } from "hono";
 import { HonoResponse } from "../../utils/response";
+import db from "@/lib/database";
 
 export const requirePermission = (...permissions: Permission[]) => {
   return async (c: Context, next: Next) => {
@@ -10,7 +11,17 @@ export const requirePermission = (...permissions: Permission[]) => {
       return HonoResponse.unauthorized(c);
     }
 
-    const userPermissions = RolePermissions[user.role] || [];
+    const dbUser = await db.user.findUnique({
+      where: {
+        id: user.userId,
+      },
+    });
+
+    if (!dbUser) {
+      return HonoResponse.notFound(c);
+    }
+
+    const userPermissions = RolePermissions[dbUser.role] || [];
 
     const hasPermission = permissions.every(permission => userPermissions.includes(permission));
 
@@ -30,7 +41,17 @@ export const requireRole = (...roles: string[]) => {
       return HonoResponse.unauthorized(c);
     }
 
-    if (!roles.includes(user.role)) {
+    const dbUser = await db.user.findUnique({
+      where: {
+        id: user.userId,
+      },
+    });
+
+    if (!dbUser) {
+      return HonoResponse.notFound(c);
+    }
+
+    if (!roles.includes(dbUser.role)) {
       return HonoResponse.forbidden(c, "Insufficient role");
     }
 

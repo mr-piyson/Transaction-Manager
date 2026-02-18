@@ -31,7 +31,7 @@ export interface FilterConfig {
 // Props interface
 export interface UniversalListViewProps<T = any> {
   // Data
-  data: T[];
+  data: T[] | undefined;
   isLoading?: boolean;
   isError?: boolean;
   error?: Error | null;

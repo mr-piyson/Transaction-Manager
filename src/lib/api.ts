@@ -1,7 +1,5 @@
 import { Hono } from "hono";
-import { logger as honoLogger } from "hono/logger";
 
-import { env } from "./env";
 import { errorHandler } from "../../api/middlewares/error.middleware";
 import { logger } from "../../utils/logger.util";
 
@@ -16,40 +14,27 @@ import transactionRouter from "../../api/transaction.route";
 import notificationRouter from "../../api/notification.route";
 import tenantRouter from "../../api/tenant.route";
 // Import workers
-import { notificationWorker } from "../../workers/notification.worker";
 import setupRouter from "../../api/setup.route";
-import { AuthEnv } from "../../api/middlewares/auth.middleware";
-
-// Start Workers
-notificationWorker.start();
 
 // Create app
-const app = new Hono<AuthEnv>();
+const app = new Hono();
 
 // Global middlewares
-app.use("*", honoLogger());
-
-// Health check
-app.get("/health", c => {
-  return c.json({
-    status: "ok",
-    timestamp: new Date().toISOString(),
-    uptime: process.uptime(),
-    environment: env.NODE_ENV,
-  });
-});
+// app.use("*", honoLogger());
 
 // API routes
-app.route("/api/setup", setupRouter);
-app.route("/api/auth", authRouter);
-app.route("/api/customers", customerRouter);
-app.route("/api/invoices", invoiceRouter);
-app.route("/api/assets", assetRouter);
-app.route("/api/stock", stockRouter);
-app.route("/api/warehouses", warehouseRouter);
-app.route("/api/transactions", transactionRouter);
-app.route("/api/notifications", notificationRouter);
-app.route("/api/tenant", tenantRouter);
+
+const routes = app
+  .route("/api/setup", setupRouter)
+  .route("/api/auth", authRouter)
+  .route("/api/customers", customerRouter)
+  .route("/api/invoices", invoiceRouter)
+  .route("/api/assets", assetRouter)
+  .route("/api/stock", stockRouter)
+  .route("/api/warehouses", warehouseRouter)
+  .route("/api/transactions", transactionRouter)
+  .route("/api/notifications", notificationRouter)
+  .route("/api/tenant", tenantRouter);
 
 // 404 handler
 app.notFound(c => {
@@ -77,4 +62,5 @@ process.on("SIGINT", () => {
   process.exit(0);
 });
 
+export type AppType = typeof routes;
 export default app;

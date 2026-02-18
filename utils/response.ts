@@ -1,5 +1,6 @@
 import { Context } from "hono";
 import { ContentfulStatusCode } from "hono/utils/http-status";
+import { undefined } from "zod";
 
 export class HonoResponse {
   static success<T>(c: Context, data: T, message = "Success", statusCode: ContentfulStatusCode = 200) {
@@ -20,6 +21,7 @@ export class HonoResponse {
         success: false,
         message,
         errors,
+        data: undefined,
         timestamp: new Date().toISOString(),
       },
       statusCode,

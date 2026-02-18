@@ -8,7 +8,8 @@ import { env } from "@/lib/env";
 // Types
 export interface TokenPayload {
   userId: string;
-  tenantId: string;
+  // tenantId: string;
+  // role
   email: string;
   iat?: number;
   exp?: number;
@@ -85,7 +86,7 @@ export async function signUp(data: RegisterData): Promise<AuthResult> {
         fullName: data.name,
         firstName: data.name.split(" ")[0],
         lastName: data.name.split(" ").pop() || "",
-        tenantId: "default",
+        role: "SUPER_ADMIN",
       },
       select: { id: true, email: true },
     });

@@ -55,19 +55,18 @@ model User {
   lastName     String?
   role         Role     @default(USER)
   isActive     Boolean  @default(true)
-  tenantId     String
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
   // Relations
-  tenant          Tenant         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   transactions    Transaction[]
   createdInvoices Invoice[]      @relation("InvoiceCreator")
   notifications   Notification[]
   tokens          Tokens[]
+  tenant          Tenant?        @relation(fields: [tenantId], references: [id])
+  tenantId        String?
 
   @@index([email])
-  @@index([tenantId])
   @@index([role])
 }
 
@@ -99,6 +98,7 @@ model Customer {
   city      String?
   country   String?
   taxId     String?
+  image     String?
   isActive  Boolean  @default(true)
   tenantId  String
   createdAt DateTime @default(now())
