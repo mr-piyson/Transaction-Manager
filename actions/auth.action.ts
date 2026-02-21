@@ -1,9 +1,11 @@
 // src/lib/auth-service.ts
 import jwt from "jsonwebtoken";
 import { cookies } from "next/headers";
-import bcrypt, { hash, compare } from "bcryptjs";
+import { hash, compare } from "bcryptjs";
 import db from "@/lib/database";
 import { env } from "@/lib/env";
+import z from "zod";
+import { validateEmail, validatePassword } from "@/lib/validations";
 
 // Types
 export interface TokenPayload {
@@ -45,37 +47,19 @@ const REFRESH_TOKEN_MAX_AGE = 60 * 60 * 24 * 7; // 7 days
 export async function signUp(data: RegisterData): Promise<AuthResult> {
   try {
     // Validate email format
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(data.email)) {
-      return { success: false, error: "Invalid email format" };
-    }
+    const loginSchema = z.object({
+      name: z.string().min(3).max(30),
+      email: validateEmail(),
+      password: validatePassword(),
+    });
 
-    // Validate password strength
-    if (data.password.length < 8) {
+    const result = loginSchema.safeParse(data);
+
+    if (!result.success)
       return {
         success: false,
-        error: "Password must be at least 8 characters",
+        error: result.error.message,
       };
-    }
-
-    const hasUpperCase = /[A-Z]/.test(data.password);
-    const hasLowerCase = /[a-z]/.test(data.password);
-    const hasNumbers = /\d/.test(data.password);
-    const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(data.password);
-    const typeCount = [
-      hasUpperCase,
-      hasLowerCase,
-      hasNumbers,
-      hasSpecialChar,
-    ].filter(Boolean).length;
-
-    if (typeCount < 3) {
-      return {
-        success: false,
-        error:
-          "Password must contain at least 3 of: uppercase, lowercase, numbers, special characters",
-      };
-    }
 
     // Check if user already exists
     const existingUser = await db.user.findUnique({
@@ -173,7 +157,7 @@ export async function signIn(
     }
 
     // Verify password
-    const isValidPassword = await bcrypt.compare(
+    const isValidPassword = await compare(
       credentials.password,
       user.passwordHash,
     );
