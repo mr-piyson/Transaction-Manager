@@ -1,11 +1,10 @@
 // src/lib/auth-service.ts
 import jwt from "jsonwebtoken";
 import { cookies } from "next/headers";
-import { hash, compare } from "bcryptjs";
+import bcrypt, { hash, compare } from "bcryptjs";
 import db from "@/lib/database";
 import { env } from "@/lib/env";
-import { comparePasswords } from "@/lib/validations";
-// controller
+
 // Types
 export interface TokenPayload {
   userId: string;
@@ -174,7 +173,7 @@ export async function signIn(
     }
 
     // Verify password
-    const isValidPassword = await comparePasswords(
+    const isValidPassword = await bcrypt.compare(
       credentials.password,
       user.passwordHash,
     );
