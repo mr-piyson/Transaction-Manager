@@ -9,7 +9,8 @@
 // To add a new language:
 //   1. Add its key here.
 //   2. Create the matching locale file in src/lib/i18n/locales/<key>.ts
-//   3. That's it — everything else picks it up automatically.
+//   3. Add a case to loadLocale() below.
+//   That's it — everything else picks it up automatically.
 
 export type Locale = "en" | "ar";
 
@@ -58,8 +59,11 @@ export async function loadLocale(
       return (await import("./locales/en")).en as Record<string, unknown>;
     case "ar":
       return (await import("./locales/ar")).ar as Record<string, unknown>;
-    default:
-      return (await import("./locales/en")).en as Record<string, unknown>;
+    // FIX #6: No `default` branch — TypeScript will now show a compile error
+    // if you add a new Locale without adding a matching case here.
+    // If you need a runtime safety net (e.g. from an untyped API), add:
+    //   default: return (await import("./locales/en")).en as Record<string, unknown>;
+    // but document why explicitly.
   }
 }
 
@@ -82,14 +86,23 @@ export type TranslationKeys = PrefixedKeys<Translations>;
 
 // ─── Pure translation utilities ───────────────────────────────────────────────
 
+// FIX #7: Typed traversal — avoids `any` while still walking an arbitrary
+// nested record cleanly.
+function deepGet(obj: Record<string, unknown>, keys: string[]): unknown {
+  let current: unknown = obj;
+  for (const k of keys) {
+    if (current === null || typeof current !== "object") return undefined;
+    current = (current as Record<string, unknown>)[k];
+  }
+  return current;
+}
+
 export function translate(
   dict: Record<string, unknown>,
   key: TranslationKeys,
   fallback?: string,
 ): string {
-  const value = key
-    .split(".")
-    .reduce<unknown>((obj, k) => (obj as any)?.[k], dict);
+  const value = deepGet(dict, key.split("."));
   return typeof value === "string" ? value : (fallback ?? key);
 }
 
@@ -97,8 +110,5 @@ export function keyExists(
   dict: Record<string, unknown>,
   key: TranslationKeys,
 ): boolean {
-  const value = key
-    .split(".")
-    .reduce<unknown>((obj, k) => (obj as any)?.[k], dict);
-  return typeof value === "string";
+  return typeof deepGet(dict, key.split(".")) === "string";
 }

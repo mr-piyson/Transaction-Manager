@@ -4,6 +4,7 @@ import "./globals.css";
 import { ThemeProvider } from "@/components/Theme-Provider";
 import { I18nProvider } from "@/hooks/use-i18n";
 import { Toaster } from "@/components/sonner";
+import { getServerI18n } from "@/hooks/use-server-i18n";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -26,8 +27,9 @@ export const metadata: Metadata = {
 };
 
 export default async function RootLayout(props: any) {
+  const { locale, direction, dict } = await getServerI18n("en");
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" dir={direction} suppressHydrationWarning>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
@@ -37,7 +39,9 @@ export default async function RootLayout(props: any) {
           enableSystem={true}
           storageKey={"theme"}
         >
-          {props.children}
+          <I18nProvider initialLocale={locale} initialDict={dict}>
+            {props.children}
+          </I18nProvider>
         </ThemeProvider>
         <Toaster position="top-center" />
       </body>

@@ -2,7 +2,6 @@ import { PrismaClient } from "@prisma/client";
 import { PrismaLibSql } from "@prisma/adapter-libsql";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { env } from "./env";
-import { logger } from "../../utils/logger.util";
 
 declare global {
   // eslint-disable-next-line no-var
@@ -15,11 +14,6 @@ const adapter = new PrismaPg({
 
 const db = new PrismaClient({
   adapter,
-  log: [
-    { level: "query", emit: "event" },
-    { level: "error", emit: "stdout" },
-    { level: "warn", emit: "stdout" },
-  ],
 });
 
 if (process.env.NODE_ENV !== "production") global.prisma = db;

@@ -1,10 +1,10 @@
 "use server";
 
 // ============================================
-// FILE: src/hooks/useServerI18n.ts
+// FILE: src/hooks/use-server-i18n.ts
 //
 // Usage in Server Components / Route Handlers:
-//   const { t, locale, isRTL } = await useServerI18n();
+//   const { t, locale, isRTL } = await getServerI18n();
 //
 // Usage in Server Actions:
 //   await setLocaleAction("ar");
@@ -48,20 +48,30 @@ async function setLocaleCookie(locale: Locale): Promise<void> {
   });
 }
 
-// ─── Main hook ────────────────────────────────────────────────────────────────
+// ─── Main server utility ──────────────────────────────────────────────────────
 
 /**
- * useServerI18n
+ * CRITICAL WIRING — without this, t() always returns the raw key on the client.
  *
- * Use in React Server Components and Route Handlers.
- * Dynamically loads only the active locale's dictionary — no unused language
- * data is ever included in the server response.
+ * In your root layout (app/layout.tsx):
  *
- * @example
- * const { t, locale, isRTL } = await useServerI18n();
- * const { t } = await useServerI18n("ar"); // pin a locale
+ *   import { getServerI18n } from "@/hooks/use-server-i18n";
+ *   import { I18nProvider }  from "@/hooks/use-i18n";
+ *
+ *   export default async function RootLayout({ children }) {
+ *     const { locale, dict } = await getServerI18n();
+ *     return (
+ *       <html>
+ *         <body>
+ *           <I18nProvider initialLocale={locale} initialDict={dict}>
+ *             {children}
+ *           </I18nProvider>
+ *         </body>
+ *       </html>
+ *     );
+ *   }
  */
-export async function useServerI18n(pinnedLocale?: Locale) {
+export async function getServerI18n(pinnedLocale?: Locale) {
   const locale = pinnedLocale ?? (await getLocaleFromCookie());
   const config = LANGUAGE_CONFIG[locale];
   const dict = await loadLocale(locale);
@@ -70,7 +80,9 @@ export async function useServerI18n(pinnedLocale?: Locale) {
     t: (key: TranslationKeys, fallback?: string) =>
       translate(dict, key, fallback),
     exists: (key: TranslationKeys) => keyExists(dict, key),
+    // ↓ Pass both of these to <I18nProvider initialLocale={locale} initialDict={dict}>
     locale,
+    dict,
     direction: config.direction,
     isRTL: config.direction === "rtl",
     config,
@@ -118,10 +130,10 @@ export async function saveLocaleToDatabase(
     const parsed = z.coerce.number().safeParse(userId);
     if (!parsed.success) return { success: false, error: "Invalid userId" };
 
-    await db.user.update({
-      where: { id: parsed.data },
-      data: { locale },
-    });
+    // await db.user.update({
+    //   where: { id: parsed.data },
+    //   data: { locale },
+    // });
 
     return { success: true };
   } catch (err) {

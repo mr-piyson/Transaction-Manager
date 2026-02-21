@@ -16,7 +16,6 @@ export function useAuth() {
     try {
       setLoading(true);
       const { data: result, status } = await axios.post("/api/auth", data);
-      console.log(result);
 
       if (status === 200) {
         toast.success("Signed in successfully!");
@@ -28,7 +27,9 @@ export function useAuth() {
 
       return result;
     } catch (error) {
-      const errorMessage = axios.isAxiosError(error) ? error.response?.data?.error || "Failed to sign in" : "An unexpected error occurred";
+      const errorMessage = axios.isAxiosError(error)
+        ? error.response?.data?.error || "Failed to sign in"
+        : "An unexpected error occurred";
       toast.error(errorMessage);
       return { success: false, error: errorMessage };
     } finally {
@@ -39,7 +40,7 @@ export function useAuth() {
   const handleSignUp = async (data: z.infer<typeof SignUpSchema>) => {
     try {
       setLoading(true);
-      const res = await axios.put("/api/auth", data).then(res => res.data);
+      const res = await axios.put("/api/auth", data).then((res) => res.data);
 
       if (res.status === 200) {
         toast.success("Account created successfully!");
@@ -51,7 +52,9 @@ export function useAuth() {
 
       return res;
     } catch (error) {
-      const errorMessage = axios.isAxiosError(error) ? error.response?.data?.error || "Failed to create account" : "An unexpected error occurred";
+      const errorMessage = axios.isAxiosError(error)
+        ? error.response?.data?.error || "Failed to create account"
+        : "An unexpected error occurred";
       toast.error(errorMessage);
       return { success: false, error: errorMessage };
     } finally {
@@ -67,7 +70,9 @@ export function useAuth() {
       router.push("/auth");
       router.refresh();
     } catch (error) {
-      const errorMessage = axios.isAxiosError(error) ? error.response?.data?.error || "Failed to sign out" : "An unexpected error occurred";
+      const errorMessage = axios.isAxiosError(error)
+        ? error.response?.data?.error || "Failed to sign out"
+        : "An unexpected error occurred";
       toast.error(errorMessage);
     } finally {
       setLoading(false);

@@ -1,5 +1,5 @@
+import { TranslationKeys } from "@/i18n/config";
 import { Route } from "next";
-import { TranslationKeys } from "../../i18n/i18n-core";
 
 // 1. Define what a single route looks like
 export type RouteConfig = {
@@ -51,7 +51,7 @@ export const routes = {
   },
   customers: {
     key: "common.customers",
-    path: "/app/customers",
+    path: "",
     icon: "icon-[lucide--user]",
   },
   inventory: {
@@ -66,4 +66,8 @@ export const routes = {
   },
 } as const satisfies RouteMap;
 
-export const sidebarRoutes = [routes.customers, routes.inventory, routes.invoices];
+export const sidebarRoutes = [
+  routes.customers,
+  routes.inventory,
+  routes.invoices,
+];

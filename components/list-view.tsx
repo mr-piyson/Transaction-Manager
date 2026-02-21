@@ -12,8 +12,18 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Empty } from "@/components/ui/empty";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { Spinner } from "@/components/ui/spinner";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -88,14 +98,20 @@ export function ListView<T extends Record<string, any>>({
   // State
   const [gridApi, setGridApi] = useState<GridApi | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
-  const [filterValues, setFilterValues] = useState<Record<string, string>>(Object.fromEntries(filters.map(f => [f.key, "all"])));
+  const [filterValues, setFilterValues] = useState<Record<string, string>>(
+    Object.fromEntries(filters.map((f) => [f.key, "all"])),
+  );
   const [cardHeight, setCardHeight] = useState(0);
 
   // Extract unique values for each filter
   const filterOptions = useMemo(() => {
     return filters.reduce(
       (acc, filter) => {
-        const values = new Set<string>(data.map(item => filter.getValue(item)).filter((v): v is string => Boolean(v)));
+        const values = new Set<string>(
+          data
+            .map((item) => filter.getValue(item))
+            .filter((v): v is string => Boolean(v)),
+        );
         acc[filter.key] = Array.from(values).sort();
         return acc;
       },
@@ -105,17 +121,20 @@ export function ListView<T extends Record<string, any>>({
 
   // Filter data based on search and filters
   const filteredData = useMemo(() => {
-    return data.filter(item => {
+    return data.filter((item) => {
       // Search filter
       const matchesSearch =
         !searchTerm ||
-        searchFields.some(field => {
-          const value = typeof field === "function" ? field(item) : String(item[field] || "");
+        searchFields.some((field) => {
+          const value =
+            typeof field === "function"
+              ? field(item)
+              : String(item[field] || "");
           return value?.toLowerCase().includes(searchTerm.toLowerCase());
         });
 
       // Custom filters
-      const matchesFilters = filters.every(filter => {
+      const matchesFilters = filters.every((filter) => {
         const filterValue = filterValues[filter.key];
         if (filterValue === "all") return true;
         const itemValue = filter.getValue(item);
@@ -128,23 +147,23 @@ export function ListView<T extends Record<string, any>>({
 
   // Count active filters
   const activeFiltersCount = useMemo(() => {
-    return Object.values(filterValues).filter(v => v !== "all").length;
+    return Object.values(filterValues).filter((v) => v !== "all").length;
   }, [filterValues]);
 
   // Clear all filters
-  const clearAllFilters = useCallback(() => {
+  const clearAllFilters = () => {
     setSearchTerm("");
-    setFilterValues(Object.fromEntries(filters.map(f => [f.key, "all"])));
-  }, [filters]);
+    setFilterValues(Object.fromEntries(filters.map((f) => [f.key, "all"])));
+  };
 
   // Clear search only
-  const clearSearch = useCallback(() => {
+  const clearSearch = () => {
     setSearchTerm("");
-  }, []);
+  };
 
   // Update individual filter
   const updateFilter = useCallback((key: string, value: string) => {
-    setFilterValues(prev => ({ ...prev, [key]: value }));
+    setFilterValues((prev) => ({ ...prev, [key]: value }));
   }, []);
 
   // Measure card height using ResizeObserver (for auto height mode)
@@ -155,7 +174,7 @@ export function ListView<T extends Record<string, any>>({
       resizeObserverRef.current.disconnect();
     }
 
-    resizeObserverRef.current = new ResizeObserver(entries => {
+    resizeObserverRef.current = new ResizeObserver((entries) => {
       for (const entry of entries) {
         const height = entry.target.clientHeight;
         if (height > 0) {
@@ -248,7 +267,9 @@ export function ListView<T extends Record<string, any>>({
         <CardContent className="p-6">
           <div className="text-center text-destructive">
             <h2 className="text-lg font-semibold mb-2">Error Loading Data</h2>
-            <p className="mb-4">{error instanceof Error ? error.message : "An error occurred"}</p>
+            <p className="mb-4">
+              {error instanceof Error ? error.message : "An error occurred"}
+            </p>
             {onRefetch && (
               <Button variant={"destructive"} onClick={onRefetch}>
                 Try Again
@@ -280,9 +301,19 @@ export function ListView<T extends Record<string, any>>({
           <div className="flex flex-col sm:flex-row gap-3">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <Input placeholder={searchPlaceholder} value={searchTerm} onChange={e => setSearchTerm(e.target.value)} className="pl-10 pr-10" />
+              <Input
+                placeholder={searchPlaceholder}
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10 pr-10"
+              />
               {searchTerm && (
-                <Button variant="ghost" size="icon" className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7" onClick={clearSearch}>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7"
+                  onClick={clearSearch}
+                >
                   <X className="w-4 h-4" />
                 </Button>
               )}
@@ -291,23 +322,33 @@ export function ListView<T extends Record<string, any>>({
             {/* Filter Popover (only show if filters exist) */}
             {filters.length > 0 && (
               <Popover>
-                <PopoverTrigger asChild>
-                  <Button variant="outline" className="gap-2 relative">
-                    <Filter className="w-4 h-4" />
-                    <span className="hidden sm:inline">Filters</span>
-                    {activeFiltersCount > 0 && (
-                      <Badge variant="destructive" className="absolute -top-2 -right-2 h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs">
-                        {activeFiltersCount}
-                      </Badge>
-                    )}
-                  </Button>
-                </PopoverTrigger>
+                <PopoverTrigger
+                  render={
+                    <Button variant="outline" className="gap-2 relative">
+                      <Filter className="w-4 h-4" />
+                      <span className="hidden sm:inline">Filters</span>
+                      {activeFiltersCount > 0 && (
+                        <Badge
+                          variant="destructive"
+                          className="absolute -top-2 -right-2 h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs"
+                        >
+                          {activeFiltersCount}
+                        </Badge>
+                      )}
+                    </Button>
+                  }
+                ></PopoverTrigger>
                 <PopoverContent className="w-80" align="end">
                   <div className="space-y-4">
                     <div className="flex items-center justify-between">
                       <h4 className="font-semibold text-sm">Filters</h4>
                       {activeFiltersCount > 0 && (
-                        <Button variant="ghost" size="sm" onClick={clearAllFilters} className="h-8 text-xs">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={clearAllFilters}
+                          className="h-8 text-xs"
+                        >
                           Clear all
                         </Button>
                       )}
@@ -316,18 +357,33 @@ export function ListView<T extends Record<string, any>>({
                     <Separator />
 
                     {/* Dynamic Filters */}
-                    {filters.map(filter => (
+                    {filters.map((filter) => (
                       <div key={filter.key} className="space-y-2">
-                        <Label htmlFor={`${filter.key}-filter`} className="text-sm font-medium">
+                        <Label
+                          htmlFor={`${filter.key}-filter`}
+                          className="text-sm font-medium"
+                        >
                           {filter.label}
                         </Label>
-                        <Select value={filterValues[filter.key]} onValueChange={value => updateFilter(filter.key, value)}>
-                          <SelectTrigger className="w-full" id={`${filter.key}-filter`}>
-                            <SelectValue placeholder={`All ${filter.label.toLowerCase()}`} />
+                        <Select
+                          value={filterValues[filter.key]}
+                          onValueChange={(value) =>
+                            updateFilter(filter.key, value)
+                          }
+                        >
+                          <SelectTrigger
+                            className="w-full"
+                            id={`${filter.key}-filter`}
+                          >
+                            <SelectValue
+                              placeholder={`All ${filter.label.toLowerCase()}`}
+                            />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="all">All {filter.label.toLowerCase()}</SelectItem>
-                            {filterOptions[filter.key]?.map(option => (
+                            <SelectItem value="all">
+                              All {filter.label.toLowerCase()}
+                            </SelectItem>
+                            {filterOptions[filter.key]?.map((option) => (
                               <SelectItem key={option} value={option}>
                                 {option}
                               </SelectItem>
@@ -351,11 +407,16 @@ export function ListView<T extends Record<string, any>>({
               <>
                 <span>•</span>
                 <div className="flex flex-wrap items-center gap-2">
-                  {filters.map(filter => {
+                  {filters.map((filter) => {
                     const value = filterValues[filter.key];
                     if (value === "all") return null;
                     return (
-                      <Badge key={filter.key} variant="secondary" className="gap-1 cursor-pointer hover:bg-secondary/80" onClick={() => updateFilter(filter.key, "all")}>
+                      <Badge
+                        key={filter.key}
+                        variant="secondary"
+                        className="gap-1 cursor-pointer hover:bg-secondary/80"
+                        onClick={() => updateFilter(filter.key, "all")}
+                      >
                         {filter.label}: {value}
                         <X className="w-3 h-3" />
                       </Badge>
@@ -377,7 +438,12 @@ export function ListView<T extends Record<string, any>>({
             <p className="text-muted-foreground mb-4">{emptyDescription}</p>
             {(searchTerm || activeFiltersCount > 0) && (
               <Button variant="outline" onClick={clearAllFilters}>
-                Clear {searchTerm && activeFiltersCount > 0 ? "All" : searchTerm ? "Search" : "Filters"}
+                Clear{" "}
+                {searchTerm && activeFiltersCount > 0
+                  ? "All"
+                  : searchTerm
+                    ? "Search"
+                    : "Filters"}
               </Button>
             )}
           </Empty>
@@ -396,7 +462,7 @@ export function ListView<T extends Record<string, any>>({
               isFullWidthRow={() => true}
               fullWidthCellRenderer={FullWidthCellRenderer}
               rowHeight={calculatedRowHeight}
-              onGridReady={params => setGridApi(params.api)}
+              onGridReady={(params) => setGridApi(params.api)}
               domLayout="normal"
             />
           </div>

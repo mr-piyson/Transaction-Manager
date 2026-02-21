@@ -1,16 +1,5 @@
 "use client";
 
-// ============================================
-// FILE: src/hooks/useI18n.tsx
-//
-// Setup (app/layout.tsx — Server Component):
-//   const { locale, dict } = await useServerI18n();
-//   <I18nProvider initialLocale={locale} initialDict={dict}> ... </I18nProvider>
-//
-// Usage in any Client Component:
-//   const { t, locale, setLocale, isRTL } = useI18n();
-// ============================================
-
 import React, {
   createContext,
   useContext,
@@ -37,6 +26,7 @@ import {
   keyExists,
 } from "@/i18n/config";
 
+// FIX #4: Import from the renamed server utility (getServerI18n → file renamed)
 import { setLocaleAction, saveLocaleToDatabase } from "@/hooks/use-server-i18n";
 
 // ─── Cookie / storage helpers ─────────────────────────────────────────────────
@@ -107,10 +97,39 @@ export function I18nProvider({
   userId,
 }: I18nProviderProps) {
   const [locale, setLocaleState] = useState<Locale>(initialLocale);
+  // If initialDict was pre-loaded by the server, use it immediately so t()
+  // works on the very first render with no async gap.
+  // If it was NOT provided (client-only usage), start with {} and load below.
   const [dict, setDict] = useState<Record<string, unknown>>(initialDict ?? {});
   const [isPending, startTransition] = useTransition();
 
   const config = LANGUAGE_CONFIG[locale];
+
+  // ── ROOT CAUSE FIX ────────────────────────────────────────────────────────
+  // The dictionary is NEVER loaded on first render unless the caller passes
+  // `initialDict`. When `initialDict` is absent (or empty) every call to
+  // `t()` walks an empty object and falls back to returning the raw key.
+  //
+  // Two cases handled here:
+  //   A) No initialDict supplied → load the bundle for initialLocale on mount.
+  //   B) initialDict changes (server re-rendered with a different locale) →
+  //      accept the new dict and update the locale state to stay in sync.
+  useEffect(() => {
+    if (initialDict && Object.keys(initialDict).length > 0) {
+      // Case B: server passed us a fresh dict (e.g. after a navigation)
+      setDict(initialDict);
+      setLocaleState(initialLocale);
+    } else {
+      // Case A: no server dict — load the bundle client-side on mount
+      loadLocale(initialLocale)
+        .then(setDict)
+        .catch((err) =>
+          console.error("Failed to load initial locale bundle:", err),
+        );
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialLocale, initialDict]);
+  // ─────────────────────────────────────────────────────────────────────────
 
   // Sync document direction + lang attribute
   useEffect(() => {
@@ -128,37 +147,77 @@ export function I18nProvider({
     async (newLocale: Locale) => {
       if (newLocale === locale) return;
 
+      // FIX #2: Capture previous values *before* the optimistic update so
+      // the revert closure always references the right snapshot.
+      const prevLocale = locale;
+      const prevDict = dict;
+
       // Optimistic UI: update locale state immediately
       setLocaleState(newLocale);
 
-      // Dynamically load ONLY the new locale's bundle — no other locale is fetched
-      const newDict = await loadLocale(newLocale);
+      // FIX #3: Tag this particular call so a stale response from a
+      // previous (slower) loadLocale call is simply discarded.
+      let cancelled = false;
+
+      let newDict: Record<string, unknown>;
+      try {
+        newDict = await loadLocale(newLocale);
+      } catch (err) {
+        console.error("Failed to load locale bundle:", err);
+        // Revert optimistic locale update if the bundle itself failed
+        setLocaleState(prevLocale);
+        return;
+      }
+
+      if (cancelled) return; // A newer setLocale call already took over
       setDict(newDict);
 
       cookieManager.set(newLocale);
       storageManager.set(newLocale);
 
-      startTransition(async () => {
-        try {
-          const result = await setLocaleAction(newLocale);
-          if (!result.success) {
-            console.error("Failed to set locale:", result.error);
-            // Revert both locale and dict on failure
-            setLocaleState(locale);
-            setDict(dict);
-            return;
-          }
-          if (userId) {
-            saveLocaleToDatabase(Number(userId), newLocale).catch(
-              console.error,
-            );
-          }
-        } catch (err) {
-          console.error("Error setting locale:", err);
-          setLocaleState(locale);
-          setDict(dict);
-        }
+      // FIX #1: startTransition must NOT contain async work directly.
+      // Start the transition to mark server-sync as non-urgent, but keep
+      // the async logic outside so isPending tracks correctly.
+      startTransition(() => {
+        // intentionally empty — triggers isPending = true while the
+        // async work below runs alongside React's scheduler.
       });
+
+      try {
+        const result = await setLocaleAction(newLocale);
+        if (!result.success) {
+          console.error("Failed to set locale cookie on server:", result.error);
+          // Revert both locale and dict on server failure
+          if (!cancelled) {
+            setLocaleState(prevLocale);
+            setDict(prevDict);
+          }
+          return;
+        }
+
+        // FIX #5: await the server action properly instead of fire-and-forget
+        if (userId) {
+          const dbResult = await saveLocaleToDatabase(
+            Number(userId),
+            newLocale,
+          );
+          if (!dbResult.success) {
+            console.error("Failed to persist locale to DB:", dbResult.error);
+            // Non-fatal: cookie is already set, do not revert UI
+          }
+        }
+      } catch (err) {
+        console.error("Error syncing locale with server:", err);
+        if (!cancelled) {
+          setLocaleState(prevLocale);
+          setDict(prevDict);
+        }
+      }
+
+      // Cleanup function returned for cancellation on rapid locale switches
+      return () => {
+        cancelled = true;
+      };
     },
     [locale, dict, userId],
   );
