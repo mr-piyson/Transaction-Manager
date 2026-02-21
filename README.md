@@ -2,9 +2,9 @@
 
 <p align="center">
   <picture style="width: 500px">
-    <source media="(prefers-color-scheme: light)" srcset="/src/assets/Banner-Light.png" />
-    <source media="(prefers-color-scheme: dark)" srcset="/src/assets/Banner-Dark.png" />
-    <img src="/src/assets/Banner-Dark.png" width="100%" alt="Transaction Manager logo and name" />
+    <source media="(prefers-color-scheme: light)" srcset="/assets/Banner-Light.png" />
+    <source media="(prefers-color-scheme: dark)" srcset="/assets/Banner-Dark.png" />
+    <img src="/assets/Banner-Dark.png" width="100%" alt="Transaction Manager logo and name" />
   </picture>
 </p>
 
@@ -23,7 +23,7 @@ Transaction Manager is a web application that allows users to create Records and
 
 ## Technologies Used
 
-![Technologies ](https://go-skill-icons.vercel.app/api/icons?i=next,typescript,prisma,react,tailwind,shadcn,jwt)
+![Technologies ](https://go-skill-icons.vercel.app/api/icons?i=next,typescript,prisma,react,tailwind,shadcn,jwt,trpc,i18n)
 
 ## Installation
 
