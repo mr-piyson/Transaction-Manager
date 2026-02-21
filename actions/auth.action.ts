@@ -4,7 +4,7 @@ import { cookies } from "next/headers";
 import { hash, compare } from "bcryptjs";
 import db from "@/lib/database";
 import { env } from "@/lib/env";
-import { comparePasswords } from "@/lib/password";
+import { comparePasswords } from "@/lib/validations";
 // controller
 // Types
 export interface TokenPayload {
