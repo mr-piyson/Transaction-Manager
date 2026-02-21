@@ -25,9 +25,9 @@ import {
   translate,
   keyExists,
 } from "@/i18n/config";
+import { saveLocaleToDatabase, setLocaleAction } from "@/i18n/i18n.action";
 
 // FIX #4: Import from the renamed server utility (getServerI18n → file renamed)
-import { setLocaleAction, saveLocaleToDatabase } from "@/hooks/use-server-i18n";
 
 // ─── Cookie / storage helpers ─────────────────────────────────────────────────
 

@@ -4,7 +4,7 @@ import "./globals.css";
 import { ThemeProvider } from "@/components/Theme-Provider";
 import { I18nProvider } from "@/hooks/use-i18n";
 import { Toaster } from "@/components/sonner";
-import { getServerI18n } from "@/hooks/use-server-i18n";
+import { getServerI18n } from "@/i18n/i18n.action";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
