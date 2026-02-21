@@ -4,6 +4,7 @@ import { cookies } from "next/headers";
 import { hash, compare } from "bcryptjs";
 import db from "@/lib/database";
 import { env } from "@/lib/env";
+import { comparePasswords } from "@/lib/password";
 // controller
 // Types
 export interface TokenPayload {
@@ -52,19 +53,28 @@ export async function signUp(data: RegisterData): Promise<AuthResult> {
 
     // Validate password strength
     if (data.password.length < 8) {
-      return { success: false, error: "Password must be at least 8 characters" };
+      return {
+        success: false,
+        error: "Password must be at least 8 characters",
+      };
     }
 
     const hasUpperCase = /[A-Z]/.test(data.password);
     const hasLowerCase = /[a-z]/.test(data.password);
     const hasNumbers = /\d/.test(data.password);
     const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(data.password);
-    const typeCount = [hasUpperCase, hasLowerCase, hasNumbers, hasSpecialChar].filter(Boolean).length;
+    const typeCount = [
+      hasUpperCase,
+      hasLowerCase,
+      hasNumbers,
+      hasSpecialChar,
+    ].filter(Boolean).length;
 
     if (typeCount < 3) {
       return {
         success: false,
-        error: "Password must contain at least 3 of: uppercase, lowercase, numbers, special characters",
+        error:
+          "Password must contain at least 3 of: uppercase, lowercase, numbers, special characters",
       };
     }
 
@@ -92,9 +102,15 @@ export async function signUp(data: RegisterData): Promise<AuthResult> {
     });
 
     // Generate tokens
-    const accessToken = jwt.sign({ userId: user.id, email: user.email }, env.JWT_SECRET_ACCESS, { expiresIn: ACCESS_TOKEN_EXPIRY });
+    const accessToken = jwt.sign(
+      { userId: user.id, email: user.email },
+      env.JWT_SECRET_ACCESS,
+      { expiresIn: ACCESS_TOKEN_EXPIRY },
+    );
 
-    const refreshToken = jwt.sign({ userId: user.id }, env.JWT_SECRET_REFRESH, { expiresIn: REFRESH_TOKEN_EXPIRY });
+    const refreshToken = jwt.sign({ userId: user.id }, env.JWT_SECRET_REFRESH, {
+      expiresIn: REFRESH_TOKEN_EXPIRY,
+    });
 
     // Store refresh token in database
     const expiresAt = new Date(Date.now() + REFRESH_TOKEN_MAX_AGE * 1000);
@@ -143,7 +159,9 @@ export async function signUp(data: RegisterData): Promise<AuthResult> {
 /**
  * Login user with credentials
  */
-export async function signIn(credentials: LoginCredentials): Promise<AuthResult> {
+export async function signIn(
+  credentials: LoginCredentials,
+): Promise<AuthResult> {
   try {
     // Find user by email
     const user = await db.user.findUnique({
@@ -156,16 +174,25 @@ export async function signIn(credentials: LoginCredentials): Promise<AuthResult>
     }
 
     // Verify password
-    const isValidPassword = await compare(credentials.password, user.passwordHash);
+    const isValidPassword = await comparePasswords(
+      credentials.password,
+      user.passwordHash,
+    );
 
     if (!isValidPassword) {
       return { success: false, error: "Invalid credentials" };
     }
 
     // Generate tokens
-    const accessToken = jwt.sign({ userId: user.id, email: user.email }, env.JWT_SECRET_ACCESS, { expiresIn: ACCESS_TOKEN_EXPIRY });
+    const accessToken = jwt.sign(
+      { userId: user.id, email: user.email },
+      env.JWT_SECRET_ACCESS,
+      { expiresIn: ACCESS_TOKEN_EXPIRY },
+    );
 
-    const refreshToken = jwt.sign({ userId: user.id }, env.JWT_SECRET_REFRESH, { expiresIn: REFRESH_TOKEN_EXPIRY });
+    const refreshToken = jwt.sign({ userId: user.id }, env.JWT_SECRET_REFRESH, {
+      expiresIn: REFRESH_TOKEN_EXPIRY,
+    });
 
     // Store refresh token in database
     const expiresAt = new Date(Date.now() + REFRESH_TOKEN_MAX_AGE * 1000);
@@ -253,7 +280,10 @@ export async function logoutAllDevices(): Promise<AuthResult> {
     // Verify token to get user ID
     let userId: string;
     try {
-      const payload = jwt.verify(accessToken, env.JWT_SECRET_ACCESS) as TokenPayload;
+      const payload = jwt.verify(
+        accessToken,
+        env.JWT_SECRET_ACCESS,
+      ) as TokenPayload;
       userId = payload.userId;
     } catch {
       return { success: false, error: "Invalid token" };
@@ -286,7 +316,10 @@ export async function getCurrentUser(): Promise<TokenPayload | null> {
     // Try to verify access token
     if (accessToken) {
       try {
-        const payload = jwt.verify(accessToken, env.JWT_SECRET_ACCESS) as TokenPayload;
+        const payload = jwt.verify(
+          accessToken,
+          env.JWT_SECRET_ACCESS,
+        ) as TokenPayload;
         return payload;
       } catch (error) {
         if (!(error instanceof jwt.TokenExpiredError)) {
@@ -304,7 +337,10 @@ export async function getCurrentUser(): Promise<TokenPayload | null> {
     // Verify refresh token
     let payload: TokenPayload;
     try {
-      payload = jwt.verify(refreshToken, env.JWT_SECRET_REFRESH) as TokenPayload;
+      payload = jwt.verify(
+        refreshToken,
+        env.JWT_SECRET_REFRESH,
+      ) as TokenPayload;
     } catch {
       return null;
     }
@@ -335,9 +371,17 @@ export async function getCurrentUser(): Promise<TokenPayload | null> {
     if (!user) return null;
 
     // Generate new tokens (token rotation)
-    const newAccessToken = jwt.sign({ userId: user.id, email: user.email }, env.JWT_SECRET_ACCESS, { expiresIn: ACCESS_TOKEN_EXPIRY });
+    const newAccessToken = jwt.sign(
+      { userId: user.id, email: user.email },
+      env.JWT_SECRET_ACCESS,
+      { expiresIn: ACCESS_TOKEN_EXPIRY },
+    );
 
-    const newRefreshToken = jwt.sign({ userId: user.id }, env.JWT_SECRET_REFRESH, { expiresIn: REFRESH_TOKEN_EXPIRY });
+    const newRefreshToken = jwt.sign(
+      { userId: user.id },
+      env.JWT_SECRET_REFRESH,
+      { expiresIn: REFRESH_TOKEN_EXPIRY },
+    );
 
     // Store new refresh token
     const expiresAt = new Date(Date.now() + REFRESH_TOKEN_MAX_AGE * 1000);

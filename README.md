@@ -10,16 +10,24 @@
 
 Transaction Manager is a web application that allows users to create Records and manage Transactions. It is built using Next.js
 
+## Prerequisite
+
+- [ ] Internalization
+- [ ] Authentication : JWT + bcryptjs
+- [ ] Authorization : Attribute-Based Access Control + CASL.js
+- [ ]
+
 ## Features
 
-- Create and manage Records
-- Add transactions to each Records
-- View and edit Records details
+- [ ] Customers.
+- [ ] Supplier
+- [ ] Inventory : ( Assets + Stock ).
+- [ ] Purchases (update stock or Assets)
+- [ ] Invoices.
+- [ ] Payments. ( paid + partial + not paid + giving changes or bonus )
+- [ ] Quotation.
 
-## Upcoming Features
-
-- Filter and search Records and transactions
-- Export Records and Transactions to CSV
+---
 
 ## Technologies Used
 
@@ -56,9 +64,3 @@ Contributions are welcome! If you have any ideas, suggestions, or bug reports, p
 ## License
 
 This project is licensed under the [MIT License](LICENSE).
-
-build a modern production ready development page using latest shadcn ui shows the progress of each development stages both all the completed stages and the future ones and each stage is an collapsible card should consist of list of checkboxes of the tasks in that stage and when checkbox is marked as checked the progress bar of the stage increased,
-
-Note the timeline is vertical and the stages are collapsible closed be default except the current stage is opened and the scroll bar of the page should force in the current stage,
-
-User Can Create Stages and create the tasks for them and mark them as Completed
