@@ -17,7 +17,12 @@ import {
   ContextMenuSubContent,
   ContextMenuShortcut,
 } from "@/components/ui/context-menu";
-import { Drawer, DrawerContent, DrawerTitle, DrawerDescription } from "@/components/ui/drawer";
+import {
+  Drawer,
+  DrawerContent,
+  DrawerTitle,
+  DrawerDescription,
+} from "@/components/ui/drawer";
 
 // ─── Discriminated Union Schema Types ────────────────────────────────────────
 
@@ -58,7 +63,11 @@ export interface ContextMenuLabelItem {
   icon?: React.ReactNode;
 }
 
-export type ContextMenuItemSchema = ContextMenuActionItem | ContextMenuSwitchItem | ContextMenuSeparatorItem | ContextMenuLabelItem;
+export type ContextMenuItemSchema =
+  | ContextMenuActionItem
+  | ContextMenuSwitchItem
+  | ContextMenuSeparatorItem
+  | ContextMenuLabelItem;
 
 export interface UniversalContextMenuProps {
   /** The menu schema */
@@ -71,10 +80,14 @@ export interface UniversalContextMenuProps {
 
 // ─── Desktop: Recursive Context Menu (memoized) ─────────────────────────────
 
-const DesktopMenuItems = React.memo(function DesktopMenuItems({ items }: { items: ContextMenuItemSchema[] }) {
+const DesktopMenuItems = React.memo(function DesktopMenuItems({
+  items,
+}: {
+  items: ContextMenuItemSchema[];
+}) {
   return (
     <>
-      {items.map(item => {
+      {items.map((item) => {
         if (item.type === "separator") {
           return <ContextMenuSeparator key={item.id} />;
         }
@@ -83,7 +96,11 @@ const DesktopMenuItems = React.memo(function DesktopMenuItems({ items }: { items
           return (
             <ContextMenuLabel key={item.id}>
               <span className="flex items-center gap-2">
-                {item.icon && <span className="h-4 w-4 shrink-0 [&>svg]:h-4 [&>svg]:w-4">{item.icon}</span>}
+                {item.icon && (
+                  <span className="h-4 w-4 shrink-0 [&>svg]:h-4 [&>svg]:w-4">
+                    {item.icon}
+                  </span>
+                )}
                 {item.label}
               </span>
             </ContextMenuLabel>
@@ -95,17 +112,25 @@ const DesktopMenuItems = React.memo(function DesktopMenuItems({ items }: { items
             <ContextMenuItem
               key={item.id}
               disabled={item.disabled}
-              onSelect={e => {
+              onSelect={(e) => {
                 e.preventDefault();
                 item.onCheckedChange?.(!item.checked);
               }}
               className="flex items-center justify-between gap-4"
             >
               <span className="flex items-center gap-2">
-                {item.icon && <span className="h-4 w-4 shrink-0 [&>svg]:h-4 [&>svg]:w-4">{item.icon}</span>}
+                {item.icon && (
+                  <span className="h-4 w-4 shrink-0 [&>svg]:h-4 [&>svg]:w-4">
+                    {item.icon}
+                  </span>
+                )}
                 {item.label}
               </span>
-              <Switch checked={item.checked} tabIndex={-1} className="pointer-events-none scale-75" />
+              <Switch
+                checked={item.checked}
+                tabIndex={-1}
+                className="pointer-events-none scale-75"
+              />
             </ContextMenuItem>
           );
         }
@@ -118,7 +143,11 @@ const DesktopMenuItems = React.memo(function DesktopMenuItems({ items }: { items
             <ContextMenuSub key={item.id}>
               <ContextMenuSubTrigger disabled={item.disabled}>
                 <span className="flex items-center gap-2">
-                  {actionItem.icon && <span className="h-4 w-4 shrink-0 [&>svg]:h-4 [&>svg]:w-4">{actionItem.icon}</span>}
+                  {actionItem.icon && (
+                    <span className="h-4 w-4 shrink-0 [&>svg]:h-4 [&>svg]:w-4">
+                      {actionItem.icon}
+                    </span>
+                  )}
                   {actionItem.label}
                 </span>
               </ContextMenuSubTrigger>
@@ -134,13 +163,22 @@ const DesktopMenuItems = React.memo(function DesktopMenuItems({ items }: { items
             key={item.id}
             disabled={item.disabled}
             onSelect={() => actionItem.onClick?.()}
-            className={cn(actionItem.destructive && "text-destructive focus:bg-destructive/10 focus:text-destructive")}
+            className={cn(
+              actionItem.destructive &&
+                "text-destructive focus:bg-destructive/10 focus:text-destructive",
+            )}
           >
             <span className="flex items-center gap-2">
-              {actionItem.icon && <span className="h-4 w-4 shrink-0 [&>svg]:h-4 [&>svg]:w-4">{actionItem.icon}</span>}
+              {actionItem.icon && (
+                <span className="h-4 w-4 shrink-0 [&>svg]:h-4 [&>svg]:w-4">
+                  {actionItem.icon}
+                </span>
+              )}
               {actionItem.label}
             </span>
-            {actionItem.shortcut && <ContextMenuShortcut>{actionItem.shortcut}</ContextMenuShortcut>}
+            {actionItem.shortcut && (
+              <ContextMenuShortcut>{actionItem.shortcut}</ContextMenuShortcut>
+            )}
           </ContextMenuItem>
         );
       })}
@@ -161,15 +199,28 @@ const MobileDrawerItems = React.memo(function MobileDrawerItems({
 }) {
   return (
     <div className="flex flex-col gap-0.5" role="menu">
-      {items.map(item => {
+      {items.map((item) => {
         if (item.type === "separator") {
-          return <div key={item.id} className="my-1 h-px bg-border" role="separator" />;
+          return (
+            <div
+              key={item.id}
+              className="my-1 h-px bg-border"
+              role="separator"
+            />
+          );
         }
 
         if (item.type === "label") {
           return (
-            <div key={item.id} className="flex items-center gap-2 px-3 py-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-              {item.icon && <span className="h-4 w-4 shrink-0 [&>svg]:h-4 [&>svg]:w-4">{item.icon}</span>}
+            <div
+              key={item.id}
+              className="flex items-center gap-2 px-3 py-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground"
+            >
+              {item.icon && (
+                <span className="h-4 w-4 shrink-0 [&>svg]:h-4 [&>svg]:w-4">
+                  {item.icon}
+                </span>
+              )}
               {item.label}
             </div>
           );
@@ -183,8 +234,10 @@ const MobileDrawerItems = React.memo(function MobileDrawerItems({
               aria-checked={item.checked}
               aria-disabled={item.disabled}
               tabIndex={item.disabled ? -1 : 0}
-              onClick={() => !item.disabled && item.onCheckedChange?.(!item.checked)}
-              onKeyDown={e => {
+              onClick={() =>
+                !item.disabled && item.onCheckedChange?.(!item.checked)
+              }
+              onKeyDown={(e) => {
                 if ((e.key === "Enter" || e.key === " ") && !item.disabled) {
                   e.preventDefault();
                   item.onCheckedChange?.(!item.checked);
@@ -197,10 +250,18 @@ const MobileDrawerItems = React.memo(function MobileDrawerItems({
               )}
             >
               <span className="flex items-center gap-3 text-foreground">
-                {item.icon && <span className="flex h-5 w-5 items-center justify-center text-muted-foreground [&>svg]:h-5 [&>svg]:w-5">{item.icon}</span>}
+                {item.icon && (
+                  <span className="flex h-5 w-5 items-center justify-center text-muted-foreground [&>svg]:h-5 [&>svg]:w-5">
+                    {item.icon}
+                  </span>
+                )}
                 {item.label}
               </span>
-              <Switch checked={item.checked} tabIndex={-1} className="pointer-events-none" />
+              <Switch
+                checked={item.checked}
+                tabIndex={-1}
+                className="pointer-events-none"
+              />
             </div>
           );
         }
@@ -218,10 +279,18 @@ const MobileDrawerItems = React.memo(function MobileDrawerItems({
                   onNavigate(actionItem.label, actionItem.children!);
                 }
               }}
-              className={cn("flex w-full items-center justify-between gap-4 rounded-lg px-3 py-3 text-sm transition-colors", "active:bg-accent", item.disabled && "pointer-events-none opacity-50")}
+              className={cn(
+                "flex w-full items-center justify-between gap-4 rounded-lg px-3 py-3 text-sm transition-colors",
+                "active:bg-accent",
+                item.disabled && "pointer-events-none opacity-50",
+              )}
             >
               <span className="flex items-center gap-3 text-foreground">
-                {actionItem.icon && <span className="flex h-5 w-5 items-center justify-center text-muted-foreground [&>svg]:h-5 [&>svg]:w-5">{actionItem.icon}</span>}
+                {actionItem.icon && (
+                  <span className="flex h-5 w-5 items-center justify-center text-muted-foreground [&>svg]:h-5 [&>svg]:w-5">
+                    {actionItem.icon}
+                  </span>
+                )}
                 {actionItem.label}
               </span>
               <ChevronRight className="h-4 w-4 text-muted-foreground" />
@@ -246,11 +315,24 @@ const MobileDrawerItems = React.memo(function MobileDrawerItems({
           >
             <span className="flex items-center gap-3">
               {actionItem.icon && (
-                <span className={cn("flex h-5 w-5 items-center justify-center [&>svg]:h-5 [&>svg]:w-5", actionItem.destructive ? "text-destructive" : "text-muted-foreground")}>{actionItem.icon}</span>
+                <span
+                  className={cn(
+                    "flex h-5 w-5 items-center justify-center [&>svg]:h-5 [&>svg]:w-5",
+                    actionItem.destructive
+                      ? "text-destructive"
+                      : "text-muted-foreground",
+                  )}
+                >
+                  {actionItem.icon}
+                </span>
               )}
               {actionItem.label}
             </span>
-            {actionItem.shortcut && <span className="text-xs text-muted-foreground">{actionItem.shortcut}</span>}
+            {actionItem.shortcut && (
+              <span className="text-xs text-muted-foreground">
+                {actionItem.shortcut}
+              </span>
+            )}
           </button>
         );
       })}
@@ -265,8 +347,18 @@ interface DrawerLevel {
   items: ContextMenuItemSchema[];
 }
 
-function MobileDrawerMenu({ items, open, onOpenChange }: { items: ContextMenuItemSchema[]; open: boolean; onOpenChange: (open: boolean) => void }) {
-  const [stack, setStack] = React.useState<DrawerLevel[]>([{ title: "Menu", items }]);
+function MobileDrawerMenu({
+  items,
+  open,
+  onOpenChange,
+}: {
+  items: ContextMenuItemSchema[];
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}) {
+  const [stack, setStack] = React.useState<DrawerLevel[]>([
+    { title: "Menu", items },
+  ]);
 
   // Reset stack to root whenever drawer opens
   React.useEffect(() => {
@@ -278,12 +370,15 @@ function MobileDrawerMenu({ items, open, onOpenChange }: { items: ContextMenuIte
   const currentLevel = stack[stack.length - 1];
   const canGoBack = stack.length > 1;
 
-  const pushLevel = React.useCallback((title: string, children: ContextMenuItemSchema[]) => {
-    setStack(prev => [...prev, { title, items: children }]);
-  }, []);
+  const pushLevel = React.useCallback(
+    (title: string, children: ContextMenuItemSchema[]) => {
+      setStack((prev) => [...prev, { title, items: children }]);
+    },
+    [],
+  );
 
   const popLevel = React.useCallback(() => {
-    setStack(prev => (prev.length > 1 ? prev.slice(0, -1) : prev));
+    setStack((prev) => (prev.length > 1 ? prev.slice(0, -1) : prev));
   }, []);
 
   const handleClose = React.useCallback(() => {
@@ -294,22 +389,39 @@ function MobileDrawerMenu({ items, open, onOpenChange }: { items: ContextMenuIte
     <Drawer open={open} onOpenChange={onOpenChange}>
       <DrawerContent className="max-h-[85dvh]">
         <DrawerTitle className="sr-only">{currentLevel.title}</DrawerTitle>
-        <DrawerDescription className="sr-only">Context menu options</DrawerDescription>
+        <DrawerDescription className="sr-only">
+          Context menu options
+        </DrawerDescription>
 
         {/* Header with back navigation */}
         <div className="flex items-center gap-3 border-b border-border px-4 pb-3 pt-2">
           {canGoBack ? (
-            <button onClick={popLevel} className="flex items-center gap-1.5 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground" aria-label="Go back">
+            <button
+              onClick={popLevel}
+              className="flex items-center gap-1.5 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+              aria-label="Go back"
+            >
               <ArrowLeft className="h-4 w-4" />
               <span>Back</span>
             </button>
           ) : null}
-          <span className={cn("text-sm font-semibold text-foreground", canGoBack && "ml-auto")}>{currentLevel.title}</span>
+          <span
+            className={cn(
+              "text-sm font-semibold text-foreground",
+              canGoBack && "ml-auto",
+            )}
+          >
+            {currentLevel.title}
+          </span>
         </div>
 
         {/* Scrollable menu items */}
         <div className="overflow-y-auto overscroll-contain px-2 py-2">
-          <MobileDrawerItems items={currentLevel.items} onNavigate={pushLevel} onClose={handleClose} />
+          <MobileDrawerItems
+            items={currentLevel.items}
+            onNavigate={pushLevel}
+            onClose={handleClose}
+          />
         </div>
 
         {/* Safe area padding for iOS bottom inset */}
@@ -321,7 +433,11 @@ function MobileDrawerMenu({ items, open, onOpenChange }: { items: ContextMenuIte
 
 // ─── Universal Context Menu Wrapper ──────────────────────────────────────────
 
-export function UniversalContextMenu({ items, children, className }: UniversalContextMenuProps) {
+export function UniversalContextMenu({
+  items,
+  children,
+  className,
+}: UniversalContextMenuProps) {
   const isMobile = useIsMobile();
   const [mounted, setMounted] = React.useState(false);
   const [drawerOpen, setDrawerOpen] = React.useState(false);
@@ -353,19 +469,28 @@ export function UniversalContextMenu({ items, children, className }: UniversalCo
   if (isMobile) {
     return (
       <>
-        <div className={cn("select-none", className)} onContextMenu={handleContextMenu} style={{ WebkitTouchCallout: "none" }}>
+        <div
+          className={cn("select-none", className)}
+          onContextMenu={handleContextMenu}
+          style={{ WebkitTouchCallout: "none" }}
+        >
           {children}
         </div>
-        <MobileDrawerMenu items={items} open={drawerOpen} onOpenChange={setDrawerOpen} />
+        <MobileDrawerMenu
+          items={items}
+          open={drawerOpen}
+          onOpenChange={setDrawerOpen}
+        />
       </>
     );
   }
 
   return (
     <ContextMenu>
-      <ContextMenuTrigger className={className} asChild>
-        <div>{children}</div>
-      </ContextMenuTrigger>
+      <ContextMenuTrigger
+        className={className}
+        render={<div>{children}</div>}
+      ></ContextMenuTrigger>
       <ContextMenuContent className="min-w-56">
         <DesktopMenuItems items={items} />
       </ContextMenuContent>

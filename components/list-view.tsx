@@ -162,8 +162,14 @@ export function ListView<T extends Record<string, any>>({
   };
 
   // Update individual filter
-  const updateFilter = useCallback((key: string, value: string) => {
-    setFilterValues((prev) => ({ ...prev, [key]: value }));
+  const updateFilter = useCallback((key: string, value: string | null) => {
+    setFilterValues((prev) => {
+      if (value === null) {
+        const { [key]: _, ...rest } = prev; // Omit the key
+        return rest;
+      }
+      return { ...prev, [key]: value };
+    });
   }, []);
 
   // Measure card height using ResizeObserver (for auto height mode)

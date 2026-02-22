@@ -1,5 +1,5 @@
 "use server";
-import SignInTab from "@/app/auth/SignIn";
+import SignInTab from "@/src/app/auth/SignIn";
 import Logo from "@/components/Logo";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 

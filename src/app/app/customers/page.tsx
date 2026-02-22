@@ -83,14 +83,14 @@ export default function CustomersPage(props: CustomersPageProps) {
     return () => {
       header.resetHeader();
     };
-  }, []);
+  }, [fab, header, t]);
   return (
     <div className="flex-1 h-full">
       <ListView<Customer>
         emptyTitle="No Customers Found"
         emptyIcon={<User2 className="size-16 text-muted-foreground" />}
         emptyDescription={"create new customer to get started"}
-        data={customers}
+        data={[]}
         isLoading={isLoading}
         isError={isError}
         itemName="customers"

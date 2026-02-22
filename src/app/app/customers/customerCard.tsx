@@ -4,11 +4,11 @@ import { User2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 export function userCardRenderer({ data }: { data: Customer }) {
-  const router = useRouter();
+  //   const router = useRouter();
   return (
     <div
       onClick={() => {
-        router.push(`/app/customers/${data.id}`);
+        // router.push(`/app/customers/${data.id}`);
       }}
       className="flex items-center gap-3 p-3 cursor-pointer transition-colors hover:bg-accent/50 "
     >

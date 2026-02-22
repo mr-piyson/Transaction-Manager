@@ -16,9 +16,10 @@ import {
 import Logo from "@/components/Logo";
 // import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "../ui/collapsible";
 import { useI18n } from "@/hooks/use-i18n";
-import { sidebarRoutes } from "@/lib/routes";
+import { routes } from "@/lib/routes";
 import { useEffect, useState } from "react";
 import { Spinner } from "@/components/ui/spinner";
+import { Icon } from "lucide-react";
 
 interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {}
 
@@ -27,12 +28,12 @@ export function AppSidebar({ ...props }: AppSidebarProps) {
   const { isMobile, open, setOpenMobile } = useSidebar();
   const router = useRouter();
   const [loading, setLoading] = useState("");
-  // const { t } = useI18n();
   const i18n = useI18n();
+  
   useEffect(() => {
     if (loading === currentPath) {
       console.log(i18n.t("common.assets"));
-      if (loading !== "") setLoading("");
+      if (loading !== "") setLoading(null);
       setOpenMobile(false);
     }
   }, [currentPath, setOpenMobile, loading]);
@@ -54,40 +55,39 @@ export function AppSidebar({ ...props }: AppSidebarProps) {
       <SidebarContent>
         <SidebarGroup>
           <SidebarMenu>
-            {sidebarRoutes.map(({ key, path, icon }) => (
+            {routes.appSidebar.map(({ key, href, Icon }) => (
               <SidebarMenuItem key={key}>
                 <SidebarMenuButton
-                  isActive={isActive(path)}
-                  className={cn("flex", isActive(path) && "bg-primary!")}
+                  isActive={isActive(href)}
+                  className={cn("flex", isActive(href) && "bg-primary!")}
                   tooltip={i18n.t(key)}
                   size={"lg"}
                   onClick={() => {
-                    if (currentPath === path) {
+                    if (currentPath === href) {
                       return;
                     }
-                    setLoading(path);
-                    router.push(path);
+                    setLoading(href);
+                    router.push(href);
                   }}
                 >
-                  <i
+                  <Icon
                     className={cn(
-                      "ms-1 size-6 shrink-0",
-                      icon,
-                      isActive(path) ? "text-white" : "text-foreground/92",
-                      loading === path && !open && !isMobile ? "hidden" : "",
+                      "ms-1 size-5 shrink-0",
+                      isActive(href) ? "text-white" : "text-foreground/92",
+                      loading === href && !open && !isMobile ? "hidden" : "",
                     )}
                   />
                   <div className="flex items-center justify-between w-full">
                     <span
                       className={cn(
                         " text-base",
-                        isActive(path) ? "text-white" : "text-foreground/92",
-                        loading === path && !open && !isMobile ? "hidden" : "",
+                        isActive(href) ? "text-white" : "text-foreground/92",
+                        loading === href && !open && !isMobile ? "hidden" : "",
                       )}
                     >
                       {i18n.t(key)}
                     </span>
-                    {loading === path && <Spinner />}
+                    {loading === href && <Spinner />}
                   </div>
                 </SidebarMenuButton>
               </SidebarMenuItem>
