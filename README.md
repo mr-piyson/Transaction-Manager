@@ -12,10 +12,11 @@ Transaction Manager is a web application that allows users to create Records and
 
 ## Prerequisite
 
-- [ ] Internalization
-- [ ] Authentication : JWT + bcryptjs
+- [x] Internalization
+- [x] Authentication : JWT + bcryptjs
+- [ ] TRPC pattern
 - [ ] Authorization : Attribute-Based Access Control + CASL.js
-- [ ]
+- [ ] Setup
 
 ## Features
 
