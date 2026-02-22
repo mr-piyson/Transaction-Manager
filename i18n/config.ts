@@ -46,6 +46,18 @@ export const LANGUAGE_CONFIG: Record<Locale, LanguageConfig> = {
 
 export const AVAILABLE_LOCALES = Object.keys(LANGUAGE_CONFIG) as Locale[];
 
+// ─── Runtime locale guard ─────────────────────────────────────────────────────
+// Narrows an unknown string (e.g. from a cookie or URL param) to a typed
+// Locale, falling back to DEFAULT_LOCALE when the value is absent or invalid.
+// Use this at every trust boundary instead of casting with `as Locale`.
+
+export function parseLocale(value: string | null | undefined): Locale {
+  if (value && (AVAILABLE_LOCALES as string[]).includes(value)) {
+    return value as Locale;
+  }
+  return DEFAULT_LOCALE;
+}
+
 // ─── Dynamic locale loader ────────────────────────────────────────────────────
 // The ONE place where locale files are referenced.
 // Webpack/Turbopack will code-split each locale into its own chunk.
@@ -59,11 +71,8 @@ export async function loadLocale(
       return (await import("./locales/en")).en as Record<string, unknown>;
     case "ar":
       return (await import("./locales/ar")).ar as Record<string, unknown>;
-    // FIX #6: No `default` branch — TypeScript will now show a compile error
-    // if you add a new Locale without adding a matching case here.
-    // If you need a runtime safety net (e.g. from an untyped API), add:
-    //   default: return (await import("./locales/en")).en as Record<string, unknown>;
-    // but document why explicitly.
+    // No `default` branch — TypeScript will emit a compile error if you add a
+    // new Locale without a matching case here, keeping the switch exhaustive.
   }
 }
 
@@ -86,8 +95,7 @@ export type TranslationKeys = PrefixedKeys<Translations>;
 
 // ─── Pure translation utilities ───────────────────────────────────────────────
 
-// FIX #7: Typed traversal — avoids `any` while still walking an arbitrary
-// nested record cleanly.
+// Typed traversal — avoids `any` while still walking an arbitrary nested record.
 function deepGet(obj: Record<string, unknown>, keys: string[]): unknown {
   let current: unknown = obj;
   for (const k of keys) {

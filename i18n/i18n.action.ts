@@ -1,24 +1,23 @@
 "use server";
 
 // ============================================
-// FILE: src/hooks/use-server-i18n.ts
+// FILE: src/lib/i18n/i18n.action.ts
 //
 // Usage in Server Components / Route Handlers:
 //   const { t, locale, isRTL } = await getServerI18n();
 //
-// Usage in Server Actions:
+// Usage in Server Actions / Client Components:
 //   await setLocaleAction("ar");
 // ============================================
 
 import { cookies } from "next/headers";
 import { revalidatePath } from "next/cache";
-import z from "zod";
-import db from "@/lib/database";
+import { z } from "zod";
+// import db from "@/lib/database"; // uncomment when DB integration is needed
 
 import {
   type Locale,
   type TranslationKeys,
-  DEFAULT_LOCALE,
   COOKIE_NAME,
   COOKIE_MAX_AGE,
   LANGUAGE_CONFIG,
@@ -26,16 +25,15 @@ import {
   loadLocale,
   translate,
   keyExists,
+  parseLocale,
 } from "@/i18n/config";
 
 // ─── Cookie helpers ───────────────────────────────────────────────────────────
 
 async function getLocaleFromCookie(): Promise<Locale> {
   const cookieStore = await cookies();
-  const value = cookieStore.get(COOKIE_NAME)?.value as Locale | undefined;
-  return value && (AVAILABLE_LOCALES as string[]).includes(value)
-    ? value
-    : DEFAULT_LOCALE;
+  // parseLocale handles validation + fallback — no unsafe cast needed.
+  return parseLocale(cookieStore.get(COOKIE_NAME)?.value);
 }
 
 async function setLocaleCookie(locale: Locale): Promise<void> {
@@ -45,6 +43,9 @@ async function setLocaleCookie(locale: Locale): Promise<void> {
     path: "/",
     sameSite: "lax",
     secure: process.env.NODE_ENV === "production",
+    // HttpOnly keeps the cookie off document.cookie, preventing the client
+    // from writing a conflicting value. The server is the single writer.
+    httpOnly: true,
   });
 }
 
@@ -55,8 +56,8 @@ async function setLocaleCookie(locale: Locale): Promise<void> {
  *
  * In your root layout (app/layout.tsx):
  *
- *   import { getServerI18n } from "@/hooks/use-server-i18n";
- *   import { I18nProvider }  from "@/hooks/use-i18n";
+ *   import { getServerI18n }  from "@/i18n/i18n.action";
+ *   import { I18nProvider }   from "@/i18n/use-i18n";
  *
  *   export default async function RootLayout({ children }) {
  *     const { locale, dict } = await getServerI18n();
@@ -70,6 +71,8 @@ async function setLocaleCookie(locale: Locale): Promise<void> {
  *       </html>
  *     );
  *   }
+ *
+ * @param pinnedLocale - Override the cookie; useful for preview/storybook.
  */
 export async function getServerI18n(pinnedLocale?: Locale) {
   const locale = pinnedLocale ?? (await getLocaleFromCookie());
@@ -95,22 +98,27 @@ export async function getServerI18n(pinnedLocale?: Locale) {
 /**
  * setLocaleAction
  * Call from client components to switch the active locale.
+ * The server is the *only* cookie writer — the client never touches document.cookie.
  *
  * @example
- * await setLocaleAction("ar");
+ *   const result = await setLocaleAction("ar");
+ *   if (!result.success) console.error(result.error);
  */
 export async function setLocaleAction(
   locale: Locale,
 ): Promise<{ success: boolean; error?: string }> {
+  // Validate at the trust boundary even though Locale is typed — Server Actions
+  // can be called from untyped JS or external requests.
+  if (!AVAILABLE_LOCALES.includes(locale)) {
+    return { success: false, error: "Invalid locale" };
+  }
+
   try {
-    if (!(AVAILABLE_LOCALES as string[]).includes(locale)) {
-      return { success: false, error: "Invalid locale" };
-    }
     await setLocaleCookie(locale);
     revalidatePath("/", "layout");
     return { success: true };
   } catch (err) {
-    console.error("Error setting locale:", err);
+    console.error("[i18n] Error setting locale cookie:", err);
     return {
       success: false,
       error: err instanceof Error ? err.message : "Unknown error",
@@ -120,16 +128,25 @@ export async function setLocaleAction(
 
 /**
  * saveLocaleToDatabase
- * Persist the user's locale preference.
+ * Persist the user's locale preference after the cookie has been set.
+ * Non-fatal: a DB failure does NOT revert the cookie or the UI.
+ *
+ * TODO: uncomment the db call below once your schema includes a `locale` column.
  */
 export async function saveLocaleToDatabase(
-  userId: number,
+  userId: string | number,
   locale: Locale,
 ): Promise<{ success: boolean; error?: string }> {
-  try {
-    const parsed = z.coerce.number().safeParse(userId);
-    if (!parsed.success) return { success: false, error: "Invalid userId" };
+  const parsed = z.coerce.number().int().positive().safeParse(userId);
+  if (!parsed.success) {
+    return { success: false, error: "Invalid userId" };
+  }
 
+  if (!AVAILABLE_LOCALES.includes(locale)) {
+    return { success: false, error: "Invalid locale" };
+  }
+
+  try {
     // await db.user.update({
     //   where: { id: parsed.data },
     //   data: { locale },
@@ -137,7 +154,7 @@ export async function saveLocaleToDatabase(
 
     return { success: true };
   } catch (err) {
-    console.error("Error saving locale to database:", err);
+    console.error("[i18n] Error saving locale to database:", err);
     return {
       success: false,
       error: err instanceof Error ? err.message : "Unknown error",

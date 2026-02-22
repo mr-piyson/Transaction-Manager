@@ -1,4 +1,7 @@
+import { TranslationKeys } from "@/i18n/config";
 import { z } from "zod";
+
+type TFunction = (key: TranslationKeys, fallback?: string) => string;
 
 /**
  * Validates a password based on configurable security requirements.
@@ -105,4 +108,19 @@ export function validateEmail(
         }
       })
   );
+}
+
+export function validateConfirmPassword(
+  passwordField: string,
+  confirmPasswordField: string,
+) {
+  return z
+    .object({
+      [passwordField]: z.string(),
+      [confirmPasswordField]: z.string(),
+    })
+    .refine((data) => data[passwordField] === data[confirmPasswordField], {
+      message: "Passwords do not match",
+      path: [confirmPasswordField], // Specify the field path for better error reporting
+    });
 }
