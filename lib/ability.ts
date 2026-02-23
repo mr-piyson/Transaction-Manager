@@ -4,23 +4,25 @@ import {
   MongoAbility,
   InferSubjects,
 } from "@casl/ability";
+import { User } from "@prisma/client";
 
 // --- Define your subjects (models) ---
 type Post = { id: string; authorId: string; published: boolean };
-type User = { id: string; role: "admin" | "user" };
 
 type Subjects = InferSubjects<Post | User> | "all";
-type Actions = "create" | "read" | "update" | "delete" | "manage";
+type Actions =
+  | "manage"
+  | "read"
+  | "create"
+  | "update"
+  | "delete"
+  | "generate"
+  | "approve";
 
 export type AppAbility = MongoAbility<[Actions, Subjects]>;
 
-export interface AuthUser {
-  id: string;
-  role: "admin" | "user";
-}
-
 // --- Ability factory ---
-export function defineAbilityFor(user: AuthUser | null): AppAbility {
+export function defineAbilityFor(user: User): AppAbility {
   const { can, cannot, build } = new AbilityBuilder<AppAbility>(
     createMongoAbility,
   );

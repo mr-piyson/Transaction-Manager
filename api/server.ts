@@ -1,6 +1,5 @@
 import Elysia from "elysia";
 import { ForbiddenError } from "@casl/ability";
-import { postsRoute } from "./routes/posts";
 
 export const app = new Elysia({ prefix: "/api" })
   // Global error handler
@@ -19,12 +18,7 @@ export const app = new Elysia({ prefix: "/api" })
     }
     set.status = 500;
     return { error: "Internal Server Error" };
-  })
-  .use(postsRoute)
-  .get("/health", () => ({
-    status: "ok",
-    timestamp: new Date().toISOString(),
-  }));
+  });
 
 // Export the type for Eden Treaty RPC
 export type App = typeof app;
