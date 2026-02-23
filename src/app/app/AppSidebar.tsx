@@ -19,7 +19,6 @@ import { useI18n } from "@/hooks/use-i18n";
 import { routes } from "@/lib/routes";
 import { useEffect, useState } from "react";
 import { Spinner } from "@/components/ui/spinner";
-import { Icon } from "lucide-react";
 
 interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {}
 
@@ -29,7 +28,7 @@ export function AppSidebar({ ...props }: AppSidebarProps) {
   const router = useRouter();
   const [loading, setLoading] = useState("");
   const i18n = useI18n();
-  
+
   useEffect(() => {
     if (loading === currentPath) {
       console.log(i18n.t("common.assets"));

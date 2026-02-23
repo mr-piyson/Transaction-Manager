@@ -5,7 +5,6 @@ import { ThemeProvider } from "@/components/Theme-Provider";
 import { I18nProvider } from "@/hooks/use-i18n";
 import { Toaster } from "@/components/sonner";
 import { getServerI18n } from "@/i18n/i18n.action";
-import { TRPCReactProvider } from "@/trpc/client";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -40,11 +39,9 @@ export default async function RootLayout(props: any) {
           enableSystem={true}
           storageKey={"theme"}
         >
-          <TRPCReactProvider>
-            <I18nProvider initialLocale={locale} initialDict={dict}>
-              {props.children}
-            </I18nProvider>
-          </TRPCReactProvider>
+          <I18nProvider initialLocale={locale} initialDict={dict}>
+            {props.children}
+          </I18nProvider>
         </ThemeProvider>
         <Toaster position="top-center" />
       </body>
