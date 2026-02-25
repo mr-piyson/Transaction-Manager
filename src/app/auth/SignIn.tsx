@@ -16,7 +16,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { Spinner } from "../../../components/ui/spinner";
 
 export const SignInSchema = z.object({
-  email: z.string().email(),
+  email: z.email(),
   password: z.string().min(6),
 });
 

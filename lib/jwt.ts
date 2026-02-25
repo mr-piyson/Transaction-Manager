@@ -1,17 +1,89 @@
+import jwt from "jsonwebtoken";
+import { cookies } from "next/headers";
+import { hash, compare } from "bcryptjs";
 import db from "@/lib/database";
 import { env } from "@/lib/env";
-import jwt from "jsonwebtoken";
-import {
-  AuthResult,
-  clearSession,
-  COOKIE_NAMES,
-  issueSession,
-  TokenPayload,
-} from "@/lib/jwt";
-import { compare, hash } from "bcryptjs";
-import { cookies } from "next/headers";
 import { z } from "zod";
-import { SIGNUP_SCHEMA } from "@/lib/schemas";
+import { SIGNUP_SCHEMA, validateEmail, validatePassword } from "@/lib/schemas";
+
+// --- Types & Constants ---
+export interface TokenPayload {
+  userId: string;
+  email: string;
+  iat?: number;
+  exp?: number;
+}
+
+export interface AuthResult {
+  success: boolean;
+  error?: string;
+  user?: TokenPayload;
+}
+
+export const COOKIE_NAMES = {
+  ACCESS: "access_token",
+  REFRESH: "refresh_token",
+} as const;
+
+export const EXPIRY = {
+  ACCESS_TOKEN_EXPIRY: 60 * 60 * 24, // Matches your original 24h logic
+  REFRESH_TOKEN_EXPIRY: 60 * 60 * 24 * 7,
+};
+
+// --- Private Helpers (The Reusability Engine) ---
+
+/**
+ * Encapsulates token generation, DB persistence, and Cookie setting.
+ * This removes ~20 lines of duplicate code from signIn, signUp, and getCurrentUser.
+ */
+export async function issueSession(userId: string, email: string) {
+  const accessToken = jwt.sign({ userId, email }, env.JWT_SECRET_ACCESS, {
+    expiresIn: EXPIRY.ACCESS_TOKEN_EXPIRY,
+  });
+  const refreshToken = jwt.sign({ userId }, env.JWT_SECRET_REFRESH, {
+    expiresIn: EXPIRY.REFRESH_TOKEN_EXPIRY,
+  });
+
+  // 1. Persist Refresh Token
+  const expiresAt = new Date(Date.now() + EXPIRY.REFRESH_TOKEN_EXPIRY * 1000);
+  await db.tokens.deleteMany({ where: { userId, type: "refresh" } });
+  await db.tokens.create({
+    data: { userId, value: refreshToken, expiresAt, type: "refresh" },
+  });
+
+  // 2. Set Cookies
+  const cookieStore = await cookies();
+  const baseOptions = {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax" as const,
+    path: "/",
+  };
+
+  cookieStore.set(COOKIE_NAMES.ACCESS, accessToken, {
+    ...baseOptions,
+    maxAge: EXPIRY.ACCESS_TOKEN_EXPIRY,
+  });
+  cookieStore.set(COOKIE_NAMES.REFRESH, refreshToken, {
+    ...baseOptions,
+    maxAge: EXPIRY.REFRESH_TOKEN_EXPIRY,
+  });
+
+  return { accessToken, refreshToken };
+}
+
+export async function clearSession(refreshToken?: string) {
+  const cookieStore = await cookies();
+  if (refreshToken) {
+    await db.tokens.deleteMany({
+      where: { value: refreshToken, type: "refresh" },
+    });
+  }
+  cookieStore.delete(COOKIE_NAMES.ACCESS);
+  cookieStore.delete(COOKIE_NAMES.REFRESH);
+}
+
+// --- Public API ---
 
 export async function signUp(
   data: z.infer<typeof SIGNUP_SCHEMA>,

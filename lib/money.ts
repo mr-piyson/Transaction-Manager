@@ -1,137 +1,26 @@
-import { Decimal } from "decimal.js";
-
-// Configure Decimal.js for financial precision
-Decimal.set({ precision: 20, rounding: Decimal.ROUND_HALF_UP });
+import currency, { Options } from "currency.js";
+import { CURRENCIES, CurrencyCode } from "./currency";
 
 export class Money {
-  /**
-   * Add two monetary values with precision
-   */
-  static add(
-    a: number | string | Decimal,
-    b: number | string | Decimal,
-  ): Decimal {
-    return new Decimal(a).plus(new Decimal(b));
+  private defaultCurrency: CurrencyCode = "BHD";
+
+  static add(a: any, b: any, curr: CurrencyCode) {
+    return currency(a, CURRENCIES[curr]).add(b);
   }
 
-  /**
-   * Subtract two monetary values with precision
-   */
-  static subtract(
-    a: number | string | Decimal,
-    b: number | string | Decimal,
-  ): Decimal {
-    return new Decimal(a).minus(new Decimal(b));
+  static subtract(a: any, b: any, curr: CurrencyCode) {
+    return currency(a, CURRENCIES[curr]).subtract(b);
   }
 
-  /**
-   * Multiply monetary value with precision
-   */
-  static multiply(
-    a: number | string | Decimal,
-    b: number | string | Decimal,
-  ): Decimal {
-    return new Decimal(a).times(new Decimal(b));
+  static multiply(a: any, factor: number, curr: CurrencyCode) {
+    return currency(a, CURRENCIES[curr]).multiply(factor);
   }
 
-  /**
-   * Divide monetary value with precision
-   */
-  static divide(
-    a: number | string | Decimal,
-    b: number | string | Decimal,
-  ): Decimal {
-    return new Decimal(a).dividedBy(new Decimal(b));
+  static divide(a: any, divisor: number, curr: CurrencyCode) {
+    return currency(a, CURRENCIES[curr]).distribute(divisor)[0];
+    // .distribute is safer for splitting money without losing pennies
   }
-
-  /**
-   * Calculate percentage
-   */
-  static percentage(
-    amount: number | string | Decimal,
-    percent: number | string | Decimal,
-  ): Decimal {
-    return new Decimal(amount).times(new Decimal(percent)).dividedBy(100);
-  }
-
-  /**
-   * Round to 2 decimal places for currency
-   */
-  static round(amount: number | string | Decimal): Decimal {
-    return new Decimal(amount).toDecimalPlaces(2);
-  }
-
-  /**
-   * Format to currency string
-   */
-  static format(amount: number | string | Decimal, currency = "USD"): string {
-    const value = new Decimal(amount).toNumber();
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency,
-    }).format(value);
-  }
-
-  /**
-   * Calculate invoice total
-   */
-  static calculateInvoiceTotal(
-    subtotal: number | string | Decimal,
-    taxRate: number | string | Decimal,
-    discount: number | string | Decimal = 0,
-  ): {
-    subtotal: Decimal;
-    tax: Decimal;
-    discount: Decimal;
-    total: Decimal;
-  } {
-    const sub = new Decimal(subtotal);
-    const disc = new Decimal(discount);
-    const taxableAmount = sub.minus(disc);
-    const tax = this.percentage(taxableAmount, taxRate);
-    const total = taxableAmount.plus(tax);
-
-    return {
-      subtotal: this.round(sub),
-      tax: this.round(tax),
-      discount: this.round(disc),
-      total: this.round(total),
-    };
-  }
-
-  /**
-   * Validate monetary amount
-   */
-  static isValid(amount: any): boolean {
-    try {
-      const decimal = new Decimal(amount);
-      return decimal.isFinite() && !decimal.isNaN();
-    } catch {
-      return false;
-    }
-  }
-
-  /**
-   * Compare two amounts
-   */
-  static compare(
-    a: number | string | Decimal,
-    b: number | string | Decimal,
-  ): number {
-    return new Decimal(a).comparedTo(new Decimal(b));
-  }
-
-  /**
-   * Check if amount is positive
-   */
-  static isPositive(amount: number | string | Decimal): boolean {
-    return new Decimal(amount).isPositive();
-  }
-
-  /**
-   * Check if amount is zero
-   */
-  static isZero(amount: number | string | Decimal): boolean {
-    return new Decimal(amount).isZero();
+  static format(amount: any, curr: CurrencyCode): string {
+    return currency(amount, CURRENCIES[curr]).format();
   }
 }
