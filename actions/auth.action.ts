@@ -13,8 +13,11 @@ import { cookies } from "next/headers";
 import { z } from "zod";
 import { SIGNUP_SCHEMA } from "@/lib/schemas";
 
-// --- Public API ---
-
+/**
+ * Registers a new user, hashes their password, and initializes a session.
+ *  @param data - The signup data validated against SIGNUP_SCHEMA.
+ * @returns An AuthResult containing the user's basic info or a descriptive error.
+ */
 export async function signUp(
   data: z.infer<typeof SIGNUP_SCHEMA>,
 ): Promise<AuthResult> {
@@ -46,6 +49,12 @@ export async function signUp(
   }
 }
 
+/**
+ * Authenticates a user by email and password.
+ * If successful, issues new session tokens and sets secure cookies.
+ * @param credentials - The user's login email and plain-text password.
+ * @returns AuthResult indicating success status and user data.
+ */
 export async function signIn(credentials: {
   email: string;
   password: string;
@@ -66,12 +75,24 @@ export async function signIn(credentials: {
   }
 }
 
+/**
+ * Logs out the current user by clearing their session from the database
+ * and removing all authentication cookies.
+ * @returns AuthResult with success status.
+ */
 export async function signOut(): Promise<AuthResult> {
   const cookieStore = await cookies();
   await clearSession(cookieStore.get(COOKIE_NAMES.REFRESH)?.value);
   return { success: true };
 }
 
+/**
+ * Retrieves the current authenticated user from the session.
+ * * This function checks the access token first. If expired, it attempts to
+ * validate the refresh token against the database and issue a new session
+ * automatically (Silent Refresh).
+ * @returns The decoded token payload if authenticated, otherwise null.
+ */
 export async function getCurrentUser(): Promise<TokenPayload | null> {
   try {
     const cookieStore = await cookies();
