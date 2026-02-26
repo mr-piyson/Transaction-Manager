@@ -26,7 +26,6 @@
     "cmdk": "^1.1.1",
     "currency.js": "^2.0.4",
     "date-fns": "^4.1.0",
-    "decimal.js": "^10.6.0",
     "elysia": "^1.4.25",
     "embla-carousel-react": "^8.6.0",
     "framer-motion": "^12.34.3",

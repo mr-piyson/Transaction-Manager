@@ -13,6 +13,8 @@ import { cookies } from "next/headers";
 import { z } from "zod";
 import { SIGNUP_SCHEMA } from "@/lib/schemas";
 
+// --- Public API ---
+
 export async function signUp(
   data: z.infer<typeof SIGNUP_SCHEMA>,
 ): Promise<AuthResult> {
