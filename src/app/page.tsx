@@ -1,7 +1,8 @@
+"use client";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 
-export default async function Page() {
+export default function Page() {
   return (
     <div className="flex items-center justify-center w-full h-full ">
       <h1>This is the Landding page</h1>

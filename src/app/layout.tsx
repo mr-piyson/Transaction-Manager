@@ -5,6 +5,8 @@ import { ThemeProvider } from "@/components/Theme-Provider";
 import { I18nProvider } from "@/hooks/use-i18n";
 import { Toaster } from "@/components/sonner";
 import { getServerI18n } from "@/i18n/i18n.action";
+import { edenClient, EdenProvider } from "@/lib/client";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -25,6 +27,7 @@ export const metadata: Metadata = {
     apple: "/favicon.ico",
   },
 };
+const queryClient = new QueryClient();
 
 export default async function RootLayout(props: any) {
   const { locale, direction, dict } = await getServerI18n("en");

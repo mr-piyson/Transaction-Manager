@@ -9,6 +9,16 @@ datasource db {
   provider = "postgresql"
 }
 
+model Organization {
+  id      Int     @id @default(autoincrement())
+  name    String
+  logo    String?
+  address String?
+  country String?
+  website String?
+  tax     String?
+}
+
 model User {
   id           String   @id @default(cuid())
   email        String   @unique
@@ -46,4 +56,51 @@ enum Role {
   SUPER_ADMIN
   ADMIN
   USER
+}
+
+model InventoryItem {
+  id            Int           @id @default(autoincrement())
+  code          String?
+  name          String
+  description   String
+  purchasePrice Int
+  salesPrice    Int
+  image         String?
+  invoice       Invoice?      @relation(fields: [invoiceId], references: [id])
+  invoiceId     Int?
+  invoiceItems  InvoiceItem[]
+}
+
+model Customer {
+  id       Int       @id @default(autoincrement())
+  name     String
+  phone    String
+  address  String
+  email    String?
+  invoices Invoice[]
+}
+
+model Invoice {
+  id           Int             @id @default(autoincrement())
+  date         DateTime        @default(now())
+  description  String?
+  customer     Customer?       @relation(fields: [customerId], references: [id])
+  invoiceItems InventoryItem[]
+  customerId   Int?
+}
+
+model InvoiceItem {
+  id              Int            @id @default(autoincrement())
+  code            String?
+  description     String
+  purchasePrice   Int
+  salesPrice      Int
+  itemRef         InventoryItem? @relation(fields: [inventoryItemId], references: [id])
+  inventoryItemId Int?
+  total           Int
+
+  // Self-referential relations for Bundles/Packages
+  parentId Int?
+  parent   InvoiceItem?  @relation("BundleToItems", fields: [parentId], references: [id], onDelete: Cascade)
+  subItems InvoiceItem[] @relation("BundleToItems")
 }
