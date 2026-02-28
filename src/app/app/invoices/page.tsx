@@ -261,8 +261,9 @@ export default function InvoiceDetailPage() {
                       <User className="w-4 h-4" /> Customer
                     </p>
                     <Link
-                      href={`/customers/${invoice.customer.id}`}
+                      // href={`/customers/${invoice.customer.id}`}
                       className="font-medium text-primary hover:underline"
+                      href={"/"}
                     >
                       {invoice.customer.name}
                     </Link>
