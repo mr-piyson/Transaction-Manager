@@ -8,7 +8,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
 import {
-  ArrowLeft,
   Trash2,
   Loader2,
   User,
@@ -17,10 +16,10 @@ import {
   Package,
   File,
   PenBoxIcon,
-  CheckCircle,
   Check,
+  Receipt,
 } from "lucide-react";
-import { Money } from "@/lib/money";
+import { Money } from "@/lib/money"; // Assuming this exists in your project
 
 type InvoiceItem = {
   id: number;
@@ -49,24 +48,24 @@ function InvoiceItemRow({
   return (
     <>
       <div
-        className={`flex items-center justify-between py-2.5 ${
-          depth > 0 ? "pl-6 border-l-2 border-muted ml-4" : ""
+        className={`flex items-center justify-between py-3 px-4 transition-colors hover:bg-muted/50 ${
+          depth > 0 ? "pl-10 border-l-2 border-muted/50 ml-4" : ""
         }`}
       >
-        <div className="flex items-center gap-2.5 flex-1 min-w-0">
+        <div className="flex items-center gap-3 flex-1 min-w-0">
           <div
-            className={`w-6 h-6 rounded flex items-center justify-center shrink-0 ${
-              depth > 0 ? "bg-muted" : "bg-primary/10"
+            className={`w-8 h-8 rounded-md flex items-center justify-center shrink-0 ${
+              depth > 0
+                ? "bg-muted text-muted-foreground"
+                : "bg-primary/10 text-primary"
             }`}
           >
-            <Package
-              className={`w-3 h-3 ${
-                depth > 0 ? "text-muted-foreground" : "text-primary"
-              }`}
-            />
+            <Package className="w-4 h-4" />
           </div>
           <div className="min-w-0">
-            <p className="text-sm font-medium truncate">{item.description}</p>
+            <p className="text-sm font-medium truncate leading-none mb-1">
+              {item.description}
+            </p>
             {item.code && (
               <p className="text-xs text-muted-foreground font-mono">
                 {item.code}
@@ -80,7 +79,7 @@ function InvoiceItemRow({
             {Money.format(item.salesPrice)}
           </p>
           <p className="text-xs text-muted-foreground">
-            cost: {Money.format(item.purchasePrice)}
+            Cost: {Money.format(item.purchasePrice)}
           </p>
         </div>
       </div>
@@ -113,44 +112,47 @@ export default function InvoiceDetailPage() {
   const params = useParams();
   const id = Number(params?.id);
 
+  // Mock data setup
   const [invoice, setInvoice] = useState<Invoice | null>({
     id: 1,
     date: new Date().toDateString(),
     invoiceItems: [
       {
         id: 1,
-        description: "dsfsdklfhs",
+        description: "Website Redesign Project",
         salesPrice: 0,
         purchasePrice: 0,
-        code: "sdfsdf",
+        code: "PRJ-001",
         subItems: [
           {
             id: 3,
-            description: "dsfsdklfhs",
-            salesPrice: 10,
-            purchasePrice: 3.7,
-            code: "sdfsdf",
+            description: "Frontend Development",
+            salesPrice: 1500,
+            purchasePrice: 800,
+            code: "DEV-FE",
           },
           {
             id: 5,
-            description: "dsfsdklfhs",
-            salesPrice: 10,
-            purchasePrice: 3.7,
-            code: "sdfsdf",
+            description: "UI/UX Design",
+            salesPrice: 800,
+            purchasePrice: 400,
+            code: "DSN-UI",
           },
         ],
       },
       {
         id: 2,
-        description: "dsfsdklfhs",
-        salesPrice: 10,
-        purchasePrice: 3.7,
-        code: "sdfsdf",
+        description: "Hosting Setup (1 Year)",
+        salesPrice: 200,
+        purchasePrice: 120,
+        code: "SRV-HST",
       },
     ],
     customer: { id: 1, name: "Muntadher" },
-    description: "dsfsdfdsf",
+    description:
+      "Initial deposit for the upcoming e-commerce website redesign.",
   });
+
   const [loading, setLoading] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
 
@@ -192,21 +194,23 @@ export default function InvoiceDetailPage() {
   };
 
   const items = invoice?.invoiceItems ?? [];
-
   const revenue = useMemo(
     () => sumTree(items, (i) => i.salesPrice ?? 0),
     [items],
   );
-
   const cost = useMemo(
     () => sumTree(items, (i) => i.purchasePrice ?? 0),
     [items],
   );
+  const grossProfit = revenue - cost;
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-32">
-        <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
+      <div className="flex flex-col items-center justify-center min-h-[400px] space-y-4">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        <p className="text-sm text-muted-foreground animate-pulse">
+          Loading invoice...
+        </p>
       </div>
     );
   }
@@ -214,139 +218,176 @@ export default function InvoiceDetailPage() {
   if (!invoice) return null;
 
   return (
-    <div className="p-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
-      {/* Metadata */}
+    <div className="p-4 md:p-6 lg:p-8 max-w-6xl mx-auto space-y-6">
+      {/* Page Header */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <div className="p-2 bg-primary/10 text-primary rounded-lg">
+            <Receipt className="w-6 h-6" />
+          </div>
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight">
+              Invoice #{invoice.id}
+            </h1>
+            <p className="text-sm text-muted-foreground">
+              Manage details, items, and approvals.
+            </p>
+          </div>
+        </div>
+      </div>
 
-      <div className="space-y-4 col-span-2">
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-sm font-semibold">
-              Invoice info
-            </CardTitle>
-          </CardHeader>
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        {/* Left Column: Info & Line Items (Spans 8 cols on desktop) */}
+        <div className="lg:col-span-8 space-y-6">
+          {/* Metadata Card */}
+          <Card>
+            <CardHeader className="pb-4">
+              <CardTitle className="text-base font-semibold">
+                Invoice Information
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+                <div className="space-y-1">
+                  <p className="text-muted-foreground flex items-center gap-2">
+                    <Calendar className="w-4 h-4" /> Date
+                  </p>
+                  <p className="font-medium">{invoice.date}</p>
+                </div>
 
-          <CardContent className="space-y-3 text-sm">
-            <div className="flex items-center gap-2.5">
-              <Calendar className="w-4 h-4 text-muted-foreground" />
-              <span>{invoice.date}</span>
-            </div>
+                {invoice.customer && (
+                  <div className="space-y-1">
+                    <p className="text-muted-foreground flex items-center gap-2">
+                      <User className="w-4 h-4" /> Customer
+                    </p>
+                    <Link
+                      href={`/customers/${invoice.customer.id}`}
+                      className="font-medium text-primary hover:underline"
+                    >
+                      {invoice.customer.name}
+                    </Link>
+                  </div>
+                )}
 
-            {invoice.customer && (
-              <div className="flex items-center gap-2.5">
-                <User className="w-4 h-4 text-muted-foreground" />
-                <Link
-                  // href={`/customers/${invoice.customer.id}`}
-                  className="text-primary hover:underline"
-                  href={"/"}
-                >
-                  {invoice.customer.name}
-                </Link>
+                {invoice.description && (
+                  <div className="sm:col-span-2 space-y-1 pt-2">
+                    <p className="text-muted-foreground flex items-center gap-2">
+                      <FileText className="w-4 h-4" /> Description
+                    </p>
+                    <p className="font-medium">{invoice.description}</p>
+                  </div>
+                )}
               </div>
-            )}
+            </CardContent>
+          </Card>
 
-            {invoice.description && (
-              <div className="flex items-start gap-2.5">
-                <FileText className="w-4 h-4 text-muted-foreground mt-0.5" />
-                <span className="text-muted-foreground">
-                  {invoice.description}
+          {/* Line Items Card */}
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between pb-4">
+              <CardTitle className="text-base font-semibold">
+                Line Items
+              </CardTitle>
+              <div className="text-sm font-medium px-2.5 py-1 bg-muted rounded-full">
+                {items.length} {items.length === 1 ? "Item" : "Items"}
+              </div>
+            </CardHeader>
+
+            <CardContent className="p-0">
+              <div className="divide-y divide-border border-t">
+                {items.length === 0 ? (
+                  <div className="py-12 text-center flex flex-col items-center">
+                    <Package className="w-8 h-8 text-muted-foreground/50 mb-3" />
+                    <p className="text-sm text-muted-foreground">
+                      No items on this invoice.
+                    </p>
+                  </div>
+                ) : (
+                  items.map((item) => (
+                    <InvoiceItemRow key={item.id} item={item} />
+                  ))
+                )}
+              </div>
+
+              {items.length > 0 && (
+                <div className="flex justify-between items-center p-4 bg-muted/30 border-t rounded-b-xl">
+                  <span className="font-semibold text-muted-foreground">
+                    Total Revenue
+                  </span>
+                  <span className="text-lg font-bold">
+                    {Money.format(revenue)}
+                  </span>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Right Column: Summary & Actions (Spans 4 cols on desktop) */}
+        <div className="lg:col-span-4 space-y-6">
+          {/* Invoice Summary Card */}
+          <Card className="shadow-sm">
+            <CardHeader className="pb-4">
+              <CardTitle className="text-base font-semibold">
+                Financial Summary
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4 text-sm">
+              <div className="flex justify-between items-center">
+                <span className="text-muted-foreground">Revenue</span>
+                <span className="font-medium">{Money.format(revenue)}</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-muted-foreground">Total Cost</span>
+                <span className="font-medium">{Money.format(cost)}</span>
+              </div>
+
+              <Separator />
+
+              <div className="flex justify-between items-center pt-1">
+                <span className="font-semibold text-base">Gross Profit</span>
+                <span
+                  className={`font-bold text-base ${
+                    grossProfit >= 0
+                      ? "text-emerald-600 dark:text-emerald-400"
+                      : "text-destructive"
+                  }`}
+                >
+                  {Money.format(grossProfit)}
                 </span>
               </div>
-            )}
-          </CardContent>
-        </Card>
-      </div>
-      <div className="h-fit grid grid-cols-2 gap-3">
-        <Button variant="destructive" className="w-full">
-          {deleteLoading ? (
-            <Loader2 className="w-4 h-4 animate-spin mr-2" />
-          ) : (
-            <Trash2 className="w-4 h-4 mr-2" />
-          )}
-          Delete invoice
-        </Button>
-        <Button variant="success" className="w-full">
-          {deleteLoading ? (
-            <Loader2 className="w-4 h-4 animate-spin mr-2" />
-          ) : (
-            <File className="w-4 h-4 mr-2" />
-          )}
-          PDF
-        </Button>
-        <Button variant="secondary" className="w-full">
-          {deleteLoading ? (
-            <Loader2 className="w-4 h-4 animate-spin mr-2" />
-          ) : (
-            <PenBoxIcon className="w-4 h-4 mr-2" />
-          )}
-          Edit
-        </Button>
-        <Button variant="default" className="w-full">
-          {deleteLoading ? (
-            <Loader2 className="w-4 h-4 animate-spin mr-2" />
-          ) : (
-            <Check className="w-4 h-4 mr-2" />
-          )}
-          Approve
-        </Button>
-      </div>
-      {/* Line items */}
-      <Card className="lg:col-span-2">
-        <CardHeader>
-          <CardTitle className="text-base">
-            Line items ({items.length})
-          </CardTitle>
-        </CardHeader>
+            </CardContent>
+          </Card>
 
-        <CardContent className="divide-y divide-border p-0 px-5">
-          {items.length === 0 ? (
-            <p className="text-sm text-muted-foreground py-10 text-center">
-              No items on this invoice
-            </p>
-          ) : (
-            items.map((item) => <InvoiceItemRow key={item.id} item={item} />)
-          )}
-
-          {items.length > 0 && (
-            <div className="flex justify-between py-4 font-semibold">
-              <span>Total</span>
-              <span className="text-lg">{Money.format(revenue)}</span>
-            </div>
-          )}
-        </CardContent>
-      </Card>
-      {/* Invoice Summary */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-sm font-semibold">Summary</CardTitle>
-        </CardHeader>
-
-        <CardContent className="space-y-2 text-sm">
-          <div className="flex justify-between">
-            <span className="text-muted-foreground">Revenue</span>
-            <span className="font-medium">{Money.format(revenue)}</span>
-          </div>
-
-          <div className="flex justify-between">
-            <span className="text-muted-foreground">Cost</span>
-            <span className="font-medium">{Money.format(cost)}</span>
-          </div>
-
-          <Separator />
-
-          <div className="flex justify-between font-semibold">
-            <span>Gross profit</span>
-            <span
-              className={
-                revenue - cost >= 0
-                  ? "text-emerald-600 dark:text-emerald-400"
-                  : "text-destructive"
-              }
+          {/* Action Buttons */}
+          <div className="grid grid-cols-2 lg:grid-cols-1 gap-3">
+            <Button variant="default" className="w-full shadow-sm">
+              <Check className="w-4 h-4 mr-2" />
+              Approve
+            </Button>
+            <Button variant="secondary" className="w-full shadow-sm">
+              <PenBoxIcon className="w-4 h-4 mr-2" />
+              Edit
+            </Button>
+            <Button variant="outline" className="w-full shadow-sm">
+              <File className="w-4 h-4 mr-2" />
+              Download PDF
+            </Button>
+            <Button
+              variant="destructive"
+              className="w-full shadow-sm"
+              onClick={handleDelete}
+              disabled={deleteLoading}
             >
-              {Money.format(revenue - cost)}
-            </span>
+              {deleteLoading ? (
+                <Loader2 className="w-4 h-4 animate-spin mr-2" />
+              ) : (
+                <Trash2 className="w-4 h-4 mr-2" />
+              )}
+              Delete Invoice
+            </Button>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </div>
   );
 }
