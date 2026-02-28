@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { ChevronRight, ArrowLeft } from "lucide-react";
+import { ChevronRight, ArrowLeft, LucideIcon } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 import { Switch } from "@/components/ui/switch";
@@ -36,7 +36,8 @@ interface BaseMenuItem {
 export interface ContextMenuActionItem extends BaseMenuItem {
   type?: "item";
   label: string;
-  icon?: React.ReactNode;
+  /** Lucide icon component */
+  icon?: LucideIcon;
   onClick?: () => void;
   shortcut?: string;
   destructive?: boolean;
@@ -46,7 +47,8 @@ export interface ContextMenuActionItem extends BaseMenuItem {
 export interface ContextMenuSwitchItem extends BaseMenuItem {
   type: "switch";
   label: string;
-  icon?: React.ReactNode;
+  /** Lucide icon component */
+  icon?: LucideIcon;
   checked?: boolean;
   onCheckedChange?: (checked: boolean) => void;
 }
@@ -60,7 +62,8 @@ export interface ContextMenuLabelItem {
   id: string;
   type: "label";
   label: string;
-  icon?: React.ReactNode;
+  /** Lucide icon component */
+  icon?: LucideIcon;
 }
 
 export type ContextMenuItemSchema =
@@ -76,6 +79,26 @@ export interface UniversalContextMenuProps {
   children: React.ReactNode;
   /** Optional className for the trigger wrapper */
   className?: string;
+}
+
+// ─── Shared Icon Renderer ────────────────────────────────────────────────────
+
+function MenuIcon({
+  icon: Icon,
+  size = 16,
+  className,
+}: {
+  icon: LucideIcon;
+  size?: number;
+  className?: string;
+}) {
+  return (
+    <Icon
+      size={size}
+      className={cn("shrink-0", className)}
+      aria-hidden="true"
+    />
+  );
 }
 
 // ─── Desktop: Recursive Context Menu (memoized) ─────────────────────────────
@@ -97,9 +120,11 @@ const DesktopMenuItems = React.memo(function DesktopMenuItems({
             <ContextMenuLabel key={item.id}>
               <span className="flex items-center gap-2">
                 {item.icon && (
-                  <span className="h-4 w-4 shrink-0 [&>svg]:h-4 [&>svg]:w-4">
-                    {item.icon}
-                  </span>
+                  <MenuIcon
+                    icon={item.icon}
+                    size={14}
+                    className="text-muted-foreground"
+                  />
                 )}
                 {item.label}
               </span>
@@ -120,9 +145,11 @@ const DesktopMenuItems = React.memo(function DesktopMenuItems({
             >
               <span className="flex items-center gap-2">
                 {item.icon && (
-                  <span className="h-4 w-4 shrink-0 [&>svg]:h-4 [&>svg]:w-4">
-                    {item.icon}
-                  </span>
+                  <MenuIcon
+                    icon={item.icon}
+                    size={16}
+                    className="text-muted-foreground"
+                  />
                 )}
                 {item.label}
               </span>
@@ -144,9 +171,11 @@ const DesktopMenuItems = React.memo(function DesktopMenuItems({
               <ContextMenuSubTrigger disabled={item.disabled}>
                 <span className="flex items-center gap-2">
                   {actionItem.icon && (
-                    <span className="h-4 w-4 shrink-0 [&>svg]:h-4 [&>svg]:w-4">
-                      {actionItem.icon}
-                    </span>
+                    <MenuIcon
+                      icon={actionItem.icon}
+                      size={16}
+                      className="text-muted-foreground"
+                    />
                   )}
                   {actionItem.label}
                 </span>
@@ -170,9 +199,15 @@ const DesktopMenuItems = React.memo(function DesktopMenuItems({
           >
             <span className="flex items-center gap-2">
               {actionItem.icon && (
-                <span className="h-4 w-4 shrink-0 [&>svg]:h-4 [&>svg]:w-4">
-                  {actionItem.icon}
-                </span>
+                <MenuIcon
+                  icon={actionItem.icon}
+                  size={16}
+                  className={
+                    actionItem.destructive
+                      ? "text-destructive"
+                      : "text-muted-foreground"
+                  }
+                />
               )}
               {actionItem.label}
             </span>
@@ -216,11 +251,7 @@ const MobileDrawerItems = React.memo(function MobileDrawerItems({
               key={item.id}
               className="flex items-center gap-2 px-3 py-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground"
             >
-              {item.icon && (
-                <span className="h-4 w-4 shrink-0 [&>svg]:h-4 [&>svg]:w-4">
-                  {item.icon}
-                </span>
-              )}
+              {item.icon && <MenuIcon icon={item.icon} size={14} />}
               {item.label}
             </div>
           );
@@ -251,9 +282,11 @@ const MobileDrawerItems = React.memo(function MobileDrawerItems({
             >
               <span className="flex items-center gap-3 text-foreground">
                 {item.icon && (
-                  <span className="flex h-5 w-5 items-center justify-center text-muted-foreground [&>svg]:h-5 [&>svg]:w-5">
-                    {item.icon}
-                  </span>
+                  <MenuIcon
+                    icon={item.icon}
+                    size={20}
+                    className="text-muted-foreground"
+                  />
                 )}
                 {item.label}
               </span>
@@ -287,9 +320,11 @@ const MobileDrawerItems = React.memo(function MobileDrawerItems({
             >
               <span className="flex items-center gap-3 text-foreground">
                 {actionItem.icon && (
-                  <span className="flex h-5 w-5 items-center justify-center text-muted-foreground [&>svg]:h-5 [&>svg]:w-5">
-                    {actionItem.icon}
-                  </span>
+                  <MenuIcon
+                    icon={actionItem.icon}
+                    size={20}
+                    className="text-muted-foreground"
+                  />
                 )}
                 {actionItem.label}
               </span>
@@ -315,16 +350,15 @@ const MobileDrawerItems = React.memo(function MobileDrawerItems({
           >
             <span className="flex items-center gap-3">
               {actionItem.icon && (
-                <span
-                  className={cn(
-                    "flex h-5 w-5 items-center justify-center [&>svg]:h-5 [&>svg]:w-5",
+                <MenuIcon
+                  icon={actionItem.icon}
+                  size={20}
+                  className={
                     actionItem.destructive
                       ? "text-destructive"
-                      : "text-muted-foreground",
-                  )}
-                >
-                  {actionItem.icon}
-                </span>
+                      : "text-muted-foreground"
+                  }
+                />
               )}
               {actionItem.label}
             </span>

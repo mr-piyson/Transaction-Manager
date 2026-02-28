@@ -10,7 +10,6 @@ import { Button } from "@/components/ui/button";
 import { UniversalDialog } from "@/components/dialog";
 import { useHeader } from "@/hooks/use-header";
 import { useI18n } from "@/hooks/use-i18n";
-import { useEden } from "@/lib/client";
 import { userCardRenderer } from "./customerCard";
 
 // Optional: If you want to drop axios entirely, use Eden for the mutation.
@@ -19,11 +18,16 @@ import axios from "axios";
 export default function CustomersPage() {
   const header = useHeader();
   const { t } = useI18n();
-  const eden = useEden();
 
-  const { data, isLoading, isError, refetch } = useQuery(
-    eden.api.customers.get.queryOptions(),
-  );
+  const {
+    data: customers,
+    isLoading,
+    isError,
+    refetch,
+  } = useQuery({
+    queryKey: ["customers"],
+    queryFn: async () => (await axios.get("/api/customers")).data.customers,
+  });
 
   // 2. Memoize the header component so we don't trigger unnecessary layout repaints
   const headerLeftContent = useMemo(
@@ -71,14 +75,14 @@ export default function CustomersPage() {
 
   return (
     <div className="h-full py-4">
-      <ListView
+      <ListView<Customer>
         emptyTitle={t("customers.empty_title", "No Customers Found")}
         emptyIcon={<User2 className="size-16 text-muted-foreground" />}
         emptyDescription={
           t("customers.empty_description") ||
           "Create a new customer to get started"
         }
-        data={data?.customers || []}
+        data={customers}
         isLoading={isLoading}
         isError={isError}
         itemName="customers"

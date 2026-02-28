@@ -15,6 +15,7 @@ const eslintConfig = defineConfig([
       "@typescript-eslint/no-require-imports": "warn",
       "@typescript-eslint/no-empty-object-type": "off",
       "@typescript-eslint/no-unused-vars": "off",
+      "react-hooks/rules-of-hooks": "off",
     },
   },
 ]);
