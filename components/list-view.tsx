@@ -301,7 +301,7 @@ export function ListView<T extends Record<string, any>>({
   return (
     <div className={`w-full h-full flex flex-col ${containerClassName}`}>
       {/* Search and Filter Section */}
-      <div className="p-3 sm:p-4 lg:p-6">
+      <div>
         <div className="space-y-3">
           {/* Search Bar with Optional Filters */}
           <div className="flex flex-col sm:flex-row gap-3">

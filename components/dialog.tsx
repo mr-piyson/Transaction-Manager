@@ -1,8 +1,14 @@
-import React, { useMemo, useState } from "react";
+import React, {
+  JSXElementConstructor,
+  ReactElement,
+  useMemo,
+  useState,
+} from "react";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "sonner";
+import { useMutation, UseMutationOptions } from "@tanstack/react-query";
 import {
   Dialog,
   DialogContent,
@@ -27,7 +33,8 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { CalendarIcon, Loader2, Upload, X } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { CalendarIcon, AlertCircle, Loader2, Upload, X } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 
@@ -113,20 +120,74 @@ export type FieldSchema<T = any> =
   | FileFieldSchema<T>
   | CustomFieldSchema<T>;
 
-export interface UniversalDialogProps<T = any> {
+// ============================================================================
+// TOAST CONFIG
+// ============================================================================
+
+export interface ToastConfig {
+  /** Set to false to suppress all toasts */
+  enabled?: boolean;
+  successMessage?: string | ((data: any) => string);
+  errorMessage?: string | ((error: any) => string);
+}
+
+// ============================================================================
+// UNIVERSAL DIALOG PROPS
+// ============================================================================
+
+export interface UniversalDialogProps<
+  TData = any,
+  TVariables = Partial<TData>,
+  TError = Error,
+  TContext = unknown,
+> {
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
   title: string;
   description?: string;
-  fields: FieldSchema<T>[];
+  fields: FieldSchema<TData>[];
   submitLabel?: string;
   cancelLabel?: string;
-  /** Called with validated form data. Run your tRPC mutation here and return a promise. */
-  onSubmit: (data: Partial<T>) => Promise<void>;
-  onSuccess?: () => void;
-  onError?: (error: any) => void;
-  transformData?: (data: Partial<T>) => any;
-  children?: React.ReactNode;
+
+  /**
+   * The async function that performs the mutation (API call).
+   * Works with tRPC, fetch, axios — anything that returns a Promise.
+   *
+   * @example  mutationFn={(data) => trpc.users.create.mutate(data)}
+   * @example  mutationFn={(data) => fetch('/api/users', { method: 'POST', body: JSON.stringify(data) })}
+   */
+  mutationFn: (variables: TVariables) => Promise<TData>;
+
+  /**
+   * Optional React Query mutation options (onSuccess, onError, onSettled, etc.)
+   * These are merged with the internal handlers — you don't need to manage
+   * loading state, toasts, or dialog closing yourself.
+   */
+  mutationOptions?: Omit<
+    UseMutationOptions<TData, TError, TVariables, TContext>,
+    "mutationFn"
+  >;
+
+  /**
+   * Transform form data before it is passed to mutationFn.
+   * Useful for reshaping, stripping fields, or converting types.
+   */
+  transformData?: (data: Partial<TData>) => TVariables;
+
+  /**
+   * Control toast notifications. Pass `false` to disable all toasts,
+   * or an object to customise the messages.
+   */
+  toasts?: false | ToastConfig;
+
+  /**
+   * When true (default), the dialog stays open and shows an inline error
+   * banner when the mutation fails so the user can correct and retry.
+   * Set to false to close immediately regardless of outcome.
+   */
+  closeOnError?: boolean;
+
+  children: ReactElement<unknown, string | JSXElementConstructor<any>>;
 }
 
 // ============================================================================
@@ -138,7 +199,6 @@ const generateZodSchema = <T,>(fields: FieldSchema<T>[]) => {
 
   fields.forEach((field) => {
     let fieldSchema: z.ZodTypeAny;
-    const fieldName = String(field.name);
 
     switch (field.type) {
       case "text":
@@ -241,14 +301,14 @@ const generateZodSchema = <T,>(fields: FieldSchema<T>[]) => {
         fieldSchema = z.any();
     }
 
-    schemaObject[fieldName] = fieldSchema;
+    schemaObject[String(field.name)] = fieldSchema;
   });
 
   return z.object(schemaObject);
 };
 
 // ============================================================================
-// FIELD WRAPPER — replaces shadcn FormItem / FormLabel / FormMessage
+// FIELD WRAPPER
 // ============================================================================
 
 const FieldWrapper: React.FC<{
@@ -273,7 +333,7 @@ const FieldWrapper: React.FC<{
 );
 
 // ============================================================================
-// FILE PREVIEW COMPONENT
+// FILE PREVIEW
 // ============================================================================
 
 const FilePreview: React.FC<{
@@ -605,10 +665,44 @@ const renderField = <T,>(
 };
 
 // ============================================================================
+// HELPERS
+// ============================================================================
+
+/** Resolve a toast message that may be a string or a function of the payload */
+const resolveMessage = <T,>(
+  msg: string | ((val: T) => string) | undefined,
+  val: T,
+  fallback: string,
+) => (typeof msg === "function" ? msg(val) : (msg ?? fallback));
+
+/** Extract a human-readable error message from anything thrown */
+const extractErrorMessage = (error: unknown): string => {
+  if (!error) return "An unexpected error occurred";
+  if (typeof error === "string") return error;
+  if (error instanceof Error) return error.message;
+  if (typeof error === "object") {
+    // tRPC / Zod shaped errors
+    const e = error as any;
+    return (
+      e.message ??
+      e.error?.message ??
+      e.data?.message ??
+      "An unexpected error occurred"
+    );
+  }
+  return "An unexpected error occurred";
+};
+
+// ============================================================================
 // MAIN COMPONENT
 // ============================================================================
 
-export const UniversalDialog = <T,>({
+export const UniversalDialog = <
+  TData = any,
+  TVariables = Partial<TData>,
+  TError = Error,
+  TContext = unknown,
+>({
   open,
   onOpenChange,
   title,
@@ -616,16 +710,20 @@ export const UniversalDialog = <T,>({
   fields,
   submitLabel = "Submit",
   cancelLabel = "Cancel",
-  onSubmit,
-  onSuccess,
-  onError,
+  mutationFn,
+  mutationOptions,
   transformData,
+  toasts,
+  closeOnError = true,
   children,
-}: UniversalDialogProps<T>) => {
+}: UniversalDialogProps<TData, TVariables, TError, TContext>) => {
   const isControlled = open !== undefined;
   const [internalOpen, setInternalOpen] = useState(false);
   const effectiveOpen = isControlled ? open : internalOpen;
-  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Normalise the toast config — `false` means disabled, `undefined` means defaults
+  const toastConfig: ToastConfig | false =
+    toasts === false ? false : { enabled: true, ...toasts };
 
   const handleOpenChange = (nextOpen: boolean) => {
     if (!isControlled) setInternalOpen(nextOpen);
@@ -637,8 +735,10 @@ export const UniversalDialog = <T,>({
     handleOpenChange(false);
   };
 
-  const [zodSchema] = useState(() => generateZodSchema<T>(fields));
+  // ── Zod schema (stable reference) ────────────────────────────────────────
+  const [zodSchema] = useState(() => generateZodSchema<TData>(fields));
 
+  // ── Form ─────────────────────────────────────────────────────────────────
   const form = useForm({
     resolver: zodResolver(zodSchema),
     defaultValues: fields.reduce(
@@ -661,7 +761,7 @@ export const UniversalDialog = <T,>({
               break;
             case "image":
             case "file":
-              acc[fieldName] = (field as FileFieldSchema<T>).multiple
+              acc[fieldName] = (field as FileFieldSchema<TData>).multiple
                 ? []
                 : null;
               break;
@@ -675,25 +775,60 @@ export const UniversalDialog = <T,>({
     ),
   });
 
-  const handleSubmit = async (data: any) => {
-    setIsSubmitting(true);
-    try {
-      const payload = transformData ? transformData(data) : data;
-      await onSubmit(payload);
-      toast.success("Operation completed successfully!");
+  // ── React Query mutation ──────────────────────────────────────────────────
+  const mutation = useMutation<TData, TError, TVariables, TContext>({
+    mutationFn,
+    ...mutationOptions,
+
+    onSuccess: (data, variables, context) => {
+      // Toasts
+      if (toastConfig !== false && toastConfig.enabled !== false) {
+        toast.success(
+          resolveMessage(
+            toastConfig.successMessage,
+            data,
+            "Operation completed successfully!",
+          ),
+        );
+      }
+      // Always close on success
       closeDialog();
-      onSuccess?.();
-    } catch (error: any) {
-      toast.error(error?.message || "An error occurred");
-      onError?.(error);
-    } finally {
-      setIsSubmitting(false);
-    }
+      // Caller's onSuccess
+      // mutationOptions?.onSuccess?.(data, variables, context);
+    },
+
+    onError: (error, variables, context) => {
+      // Toasts
+      if (toastConfig !== false && toastConfig.enabled !== false) {
+        toast.error(
+          resolveMessage(
+            toastConfig.errorMessage,
+            error,
+            extractErrorMessage(error),
+          ),
+        );
+      }
+      // Close on error only if closeOnError is true
+      if (!closeOnError) closeDialog();
+      // Caller's onError
+      // mutationOptions?.onError?.(error, variables, context);
+    },
+  });
+
+  // ── Submit handler ────────────────────────────────────────────────────────
+  const handleSubmit = (data: any) => {
+    // Reset previous mutation error so the inline banner clears on retry
+    mutation.reset();
+    const payload = transformData
+      ? transformData(data as Partial<TData>)
+      : (data as TVariables);
+    mutation.mutate(payload);
   };
 
+  // ── Field layout (memoised) ───────────────────────────────────────────────
   const groupedFields = useMemo(() => {
-    const rows: FieldSchema<T>[][] = [];
-    let currentRow: FieldSchema<T>[] = [];
+    const rows: FieldSchema<TData>[][] = [];
+    let currentRow: FieldSchema<TData>[] = [];
 
     fields.forEach((field) => {
       if (field.width === "full") {
@@ -715,33 +850,49 @@ export const UniversalDialog = <T,>({
     return rows;
   }, [fields]);
 
-  const trigger =
-    !isControlled && children ? (
-      <DialogTrigger render={<>{children}</>}></DialogTrigger>
-    ) : !isControlled ? (
-      <DialogTrigger render={<Button>{title}</Button>}></DialogTrigger>
-    ) : null;
+  const isSubmitting = mutation.isPending;
 
+  // Derive a clean error string to display in the inline banner
+  const mutationError =
+    mutation.isError && closeOnError
+      ? extractErrorMessage(mutation.error)
+      : null;
+
+  // ── Render ────────────────────────────────────────────────────────────────
   return (
     <Dialog open={effectiveOpen} onOpenChange={handleOpenChange}>
-      {trigger}
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>{title}</DialogTitle>
-          {description && <DialogDescription>{description}</DialogDescription>}
-        </DialogHeader>
-
+      <DialogTrigger render={children} />
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto p-0 gap-2">
         <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
-          {groupedFields.map((row, rowIndex) => (
-            <div key={rowIndex} className="flex gap-4">
-              {row.map((field) => (
-                <React.Fragment key={String(field.name)}>
-                  {renderField<T>(field, form, isSubmitting)}
-                </React.Fragment>
-              ))}
-            </div>
-          ))}
-          <DialogFooter className="flex flex-row w-full pt-4">
+          <div className="p-4">
+            <DialogHeader className="pb-4">
+              <DialogTitle>{title}</DialogTitle>
+              {description && (
+                <DialogDescription>{description}</DialogDescription>
+              )}
+            </DialogHeader>
+
+            {/* ── Inline error banner ── */}
+            {mutationError && (
+              <Alert variant="destructive" className="mb-4">
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription>{mutationError}</AlertDescription>
+              </Alert>
+            )}
+
+            {/* ── Fields ── */}
+            {groupedFields.map((row, rowIndex) => (
+              <div key={rowIndex} className="flex gap-4 mb-4">
+                {row.map((field) => (
+                  <React.Fragment key={String(field.name)}>
+                    {renderField<TData>(field, form, isSubmitting)}
+                  </React.Fragment>
+                ))}
+              </div>
+            ))}
+          </div>
+
+          <DialogFooter className="flex flex-row w-full p-5 m-0">
             <Button
               type="button"
               className="flex-1"

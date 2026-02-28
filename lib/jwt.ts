@@ -2,6 +2,7 @@ import jwt from "jsonwebtoken";
 import { cookies } from "next/headers";
 import db from "@/lib/database";
 import { env } from "@/lib/env";
+import { Role } from "@prisma/client";
 
 // --- Types & Constants ---
 export interface TokenPayload {
@@ -9,6 +10,7 @@ export interface TokenPayload {
   email: string;
   iat?: number;
   exp?: number;
+  role: Role;
 }
 
 export interface AuthResult {

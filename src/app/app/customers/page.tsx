@@ -1,17 +1,17 @@
 "use client";
 import { ListView } from "@/components/list-view";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { useFab } from "@/hooks/use-fab";
 import { useHeader } from "@/hooks/use-header";
 import { useQuery } from "@tanstack/react-query";
-import { Plus, User2 } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { Plus, PlusCircle, User2 } from "lucide-react";
 import { useEffect } from "react";
 import { UniversalDialog } from "@/components/dialog";
 import { useI18n } from "@/hooks/use-i18n";
 import { Customer } from "@prisma/client";
 import { userCardRenderer } from "./customerCard";
+import { useEden } from "@/lib/client";
+import axios from "axios";
 
 type CustomersPageProps = {
   children?: React.ReactNode;
@@ -21,16 +21,11 @@ export default function CustomersPage(props: CustomersPageProps) {
   const header = useHeader();
   const fab = useFab();
   const { t } = useI18n();
+  const { api } = useEden();
 
-  const {
-    data: customers,
-    isLoading,
-    isError,
-    refetch,
-  } = useQuery({
-    queryKey: ["customers"],
-    queryFn: async () => {},
-  });
+  const { data, isLoading, isError, refetch } = useQuery(
+    api.customers.get.queryOptions(),
+  );
 
   useEffect(() => {
     header.configureHeader({
@@ -66,7 +61,6 @@ export default function CustomersPage(props: CustomersPageProps) {
                 required: false,
               },
             ]}
-            onSuccess={() => {}}
             onSubmit={async () => {}}
           >
             <Button
@@ -83,14 +77,47 @@ export default function CustomersPage(props: CustomersPageProps) {
     return () => {
       header.resetHeader();
     };
-  }, [fab, header, t]);
+  }, []);
+
   return (
-    <div className="flex-1 h-full">
-      <ListView<Customer>
+    <div className="flex-1 h-full p-4">
+      <div className="flex gap-2bg-red-500 w-full pb-4">
+        <UniversalDialog<Customer>
+          title={"Create new Customer"}
+          fields={[
+            {
+              name: "name",
+              label: "Name",
+              required: true,
+              type: "text",
+            },
+            {
+              name: "phone",
+              label: "Phone",
+              required: true,
+              type: "text",
+            },
+            {
+              name: "address",
+              label: "Address",
+              required: true,
+              type: "text",
+            },
+          ]}
+          mutationFn={async () => {
+            return await axios.get("/api/customers/asdas");
+          }}
+        >
+          <Button>
+            <Plus /> Create
+          </Button>
+        </UniversalDialog>
+      </div>
+      <ListView
         emptyTitle="No Customers Found"
         emptyIcon={<User2 className="size-16 text-muted-foreground" />}
         emptyDescription={"create new customer to get started"}
-        data={[]}
+        data={data?.customers}
         isLoading={isLoading}
         isError={isError}
         itemName="customers"

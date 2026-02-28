@@ -8,8 +8,8 @@ import { HeaderProvider } from "@/hooks/use-header";
 import { Header } from "@/components/Header";
 import { edenClient, EdenProvider } from "@/lib/client";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-
 // import { BottomNavigation } from "@/components/BottomNavigation";
+
 const queryClient = new QueryClient();
 export default function App(props: any) {
   return (
@@ -27,7 +27,7 @@ export default function App(props: any) {
                   <div className="flex-1 overflow-auto relative">
                     {props.children}
                   </div>
-                  {/* FIXME: <BottomNavigation /> */}
+                  {/* <BottomNavigation /> */}
                 </div>
               </SidebarProvider>
             </FabProvider>

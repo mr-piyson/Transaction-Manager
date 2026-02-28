@@ -43,7 +43,10 @@ export async function signUp(
     });
 
     await issueSession(user.id, user.email);
-    return { success: true, user: { userId: user.id, email: user.email } };
+    return {
+      success: true,
+      user: { userId: user.id, email: user.email, role: user.role },
+    };
   } catch (error) {
     return { success: false, error: "Registration failed" };
   }
@@ -69,7 +72,10 @@ export async function signIn(credentials: {
     }
 
     await issueSession(user.id, user.email);
-    return { success: true, user: { userId: user.id, email: user.email } };
+    return {
+      success: true,
+      user: { userId: user.id, email: user.email, role: user.role },
+    };
   } catch (error) {
     return { success: false, error: "Login failed" };
   }
@@ -125,7 +131,11 @@ export async function getCurrentUser(): Promise<TokenPayload | null> {
     }
 
     await issueSession(storedToken.userId, storedToken.user.email);
-    return { userId: storedToken.userId, email: storedToken.user.email };
+    return {
+      userId: storedToken.userId,
+      email: storedToken.user.email,
+      role: storedToken.user.role,
+    };
   } catch (error) {
     return null;
   }
