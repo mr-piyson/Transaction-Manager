@@ -1,6 +1,5 @@
 import { Elysia, t } from "elysia";
 import { authMiddleware } from "../middleware/auth.middleware";
-import { invoiceAction } from "@/actions/invoice.action";
 
 const InvoiceItemSchema = t.Object({
   code: t.Optional(t.String()),
@@ -29,13 +28,7 @@ export const invoiceRoutes = new Elysia({ prefix: "/invoices" })
     "/",
     async ({ query, set }) => {
       try {
-        const data = await invoiceAction.getAll({
-          page: query.page ? Number(query.page) : undefined,
-          limit: query.limit ? Number(query.limit) : undefined,
-          customerId: query.customerId ? Number(query.customerId) : undefined,
-          from: query.from ? new Date(query.from) : undefined,
-          to: query.to ? new Date(query.to) : undefined,
-        });
+        const data = {};
         return { success: true, ...data };
       } catch (e: any) {
         set.status = 500;
@@ -56,10 +49,7 @@ export const invoiceRoutes = new Elysia({ prefix: "/invoices" })
     "/summary",
     async ({ query, set }) => {
       try {
-        const data = await invoiceAction.getSummary({
-          from: query.from ? new Date(query.from) : undefined,
-          to: query.to ? new Date(query.to) : undefined,
-        });
+        const data = {};
         return { success: true, data };
       } catch (e: any) {
         set.status = 500;
@@ -77,7 +67,7 @@ export const invoiceRoutes = new Elysia({ prefix: "/invoices" })
     "/:id",
     async ({ params, set }) => {
       try {
-        const data = await invoiceAction.getById(Number(params.id));
+        const data = {};
         return { success: true, data };
       } catch (e: any) {
         set.status = 404;
@@ -90,7 +80,7 @@ export const invoiceRoutes = new Elysia({ prefix: "/invoices" })
     "/",
     async ({ body, set }) => {
       try {
-        const data = await invoiceAction.create(body as any);
+        const data = {};
         set.status = 201;
         return { success: true, data };
       } catch (e: any) {
@@ -111,7 +101,7 @@ export const invoiceRoutes = new Elysia({ prefix: "/invoices" })
     "/:id",
     async ({ params, body, set }) => {
       try {
-        const data = await invoiceAction.update(Number(params.id), body as any);
+        const data = {};
         return { success: true, data };
       } catch (e: any) {
         set.status = 400;
@@ -131,10 +121,7 @@ export const invoiceRoutes = new Elysia({ prefix: "/invoices" })
     "/:id/items",
     async ({ params, body, set }) => {
       try {
-        const data = await invoiceAction.addItem(
-          Number(params.id),
-          body as any,
-        );
+        const data = {};
         return { success: true, data };
       } catch (e: any) {
         set.status = 400;
@@ -150,7 +137,7 @@ export const invoiceRoutes = new Elysia({ prefix: "/invoices" })
     "/:id/items/:itemId",
     async ({ params, set }) => {
       try {
-        const data = await invoiceAction.removeItem(Number(params.itemId));
+        const data = {};
         return { success: true, data };
       } catch (e: any) {
         set.status = 400;
@@ -163,7 +150,7 @@ export const invoiceRoutes = new Elysia({ prefix: "/invoices" })
     "/:id",
     async ({ params, set }) => {
       try {
-        const data = await invoiceAction.delete(Number(params.id));
+        const data = {};
         return { success: true, data };
       } catch (e: any) {
         set.status = 400;

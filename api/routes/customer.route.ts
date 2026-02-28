@@ -1,6 +1,6 @@
 import { Elysia, t } from "elysia";
 import { authMiddleware } from "../middleware/auth.middleware";
-import { customerAction } from "@/actions/customer.action";
+import db from "@/lib/database";
 
 export const customerRoutes = new Elysia({ prefix: "/customers" })
   .use(authMiddleware)
@@ -8,12 +8,8 @@ export const customerRoutes = new Elysia({ prefix: "/customers" })
     "/",
     async ({ query, set }) => {
       try {
-        const data = await customerAction.getAll({
-          page: query.page ? Number(query.page) : undefined,
-          limit: query.limit ? Number(query.limit) : undefined,
-          search: query.search,
-        });
-        return { success: true, ...data };
+        const data = await db.customer.findMany({});
+        return data;
       } catch (e: any) {
         throw new Error("Failed to retrieve data");
       }
@@ -30,7 +26,7 @@ export const customerRoutes = new Elysia({ prefix: "/customers" })
     "/:id",
     async ({ params, set }) => {
       try {
-        const data = await customerAction.getById(Number(params.id));
+        const data = {};
         return { success: true, data };
       } catch (e: any) {
         set.status = 404;
@@ -43,7 +39,7 @@ export const customerRoutes = new Elysia({ prefix: "/customers" })
     "/",
     async ({ body, set }) => {
       try {
-        const data = await customerAction.create(body);
+        const data = {};
         set.status = 201;
         return { success: true, data };
       } catch (e: any) {
@@ -64,7 +60,7 @@ export const customerRoutes = new Elysia({ prefix: "/customers" })
     "/:id",
     async ({ params, body, set }) => {
       try {
-        const data = await customerAction.update(Number(params.id), body);
+        const data = {};
         return { success: true, data };
       } catch (e: any) {
         set.status = 400;
@@ -85,7 +81,7 @@ export const customerRoutes = new Elysia({ prefix: "/customers" })
     "/:id",
     async ({ params, set }) => {
       try {
-        const data = await customerAction.delete(Number(params.id));
+        const data = {};
         return { success: true, data };
       } catch (e: any) {
         set.status = 400;

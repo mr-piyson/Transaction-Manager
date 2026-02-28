@@ -1,16 +1,11 @@
 import { Elysia, t } from "elysia";
-import { userAction } from "@/actions/user.action";
 
 export const userRoutes = new Elysia({ prefix: "/users" })
   .get(
     "/",
     async ({ query, set }) => {
       try {
-        const data = await userAction.getAll({
-          page: query.page ? Number(query.page) : undefined,
-          limit: query.limit ? Number(query.limit) : undefined,
-          role: query.role as any,
-        });
+        const data = {};
         return { success: true, ...data };
       } catch (e: any) {
         set.status = 500;
@@ -29,7 +24,7 @@ export const userRoutes = new Elysia({ prefix: "/users" })
     "/:id",
     async ({ params, set }) => {
       try {
-        const data = await userAction.getById(params.id);
+        const data = {};
         return { success: true, data };
       } catch (e: any) {
         set.status = 404;
@@ -42,7 +37,7 @@ export const userRoutes = new Elysia({ prefix: "/users" })
     "/:id",
     async ({ params, body, set }) => {
       try {
-        const data = await userAction.update(params.id, body);
+        const data = {};
         return { success: true, data };
       } catch (e: any) {
         set.status = 400;
@@ -71,7 +66,7 @@ export const userRoutes = new Elysia({ prefix: "/users" })
     "/:id",
     async ({ params, set }) => {
       try {
-        const data = await userAction.delete(params.id);
+        const data = {}
         return { success: true, data };
       } catch (e: any) {
         set.status = 400;

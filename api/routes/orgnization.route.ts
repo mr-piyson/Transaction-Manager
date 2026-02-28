@@ -1,12 +1,11 @@
 import { Elysia, t } from "elysia";
 import { authMiddleware } from "../middleware/auth.middleware";
-import { organizationAction } from "@/actions/orgnization.action";
 
 export const organizationRoutes = new Elysia({ prefix: "/organization" })
   .use(authMiddleware)
   .get("/", async ({ set }) => {
     try {
-      const data = await organizationAction.get();
+      const data = {};
       return { success: true, data };
     } catch (e: any) {
       set.status = 500;
@@ -17,7 +16,7 @@ export const organizationRoutes = new Elysia({ prefix: "/organization" })
     "/",
     async ({ body, set }) => {
       try {
-        const data = await organizationAction.upsert(body);
+        const data = {};
         return { success: true, data };
       } catch (e: any) {
         set.status = 400;

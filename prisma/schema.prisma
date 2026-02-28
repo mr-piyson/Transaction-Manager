@@ -92,7 +92,7 @@ model Invoice {
 model InvoiceItem {
   id              Int            @id @default(autoincrement())
   code            String?
-  description     String
+  description     String?
   purchasePrice   Int
   salesPrice      Int
   itemRef         InventoryItem? @relation(fields: [inventoryItemId], references: [id])

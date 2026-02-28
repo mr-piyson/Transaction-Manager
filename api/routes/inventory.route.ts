@@ -1,6 +1,6 @@
 import { Elysia, t } from "elysia";
 import { authMiddleware } from "../middleware/auth.middleware";
-import { inventoryAction } from "@/actions/inventory.action";
+import db from "@/lib/database";
 
 export const inventoryRoutes = new Elysia({ prefix: "/inventory" })
   .use(authMiddleware)
@@ -8,12 +8,8 @@ export const inventoryRoutes = new Elysia({ prefix: "/inventory" })
     "/",
     async ({ query, set }) => {
       try {
-        const data = await inventoryAction.getAll({
-          page: query.page ? Number(query.page) : undefined,
-          limit: query.limit ? Number(query.limit) : undefined,
-          search: query.search,
-        });
-        return { success: true, ...data };
+        const data = await db.inventoryItem.findMany({});
+        return data;
       } catch (e: any) {
         set.status = 500;
         return { success: false, message: e.message };
@@ -31,7 +27,7 @@ export const inventoryRoutes = new Elysia({ prefix: "/inventory" })
     "/:id",
     async ({ params, set }) => {
       try {
-        const data = await inventoryAction.getById(Number(params.id));
+        const data = {};
         return { success: true, data };
       } catch (e: any) {
         set.status = 404;
@@ -44,9 +40,9 @@ export const inventoryRoutes = new Elysia({ prefix: "/inventory" })
     "/",
     async ({ body, set }) => {
       try {
-        const data = await inventoryAction.create(body);
+        console.log(body);
         set.status = 201;
-        return { success: true, data };
+        return { success: true };
       } catch (e: any) {
         set.status = 400;
         return { success: false, message: e.message };
@@ -56,7 +52,7 @@ export const inventoryRoutes = new Elysia({ prefix: "/inventory" })
       body: t.Object({
         code: t.Optional(t.String()),
         name: t.String({ minLength: 1 }),
-        description: t.String({ minLength: 1 }),
+        description: t.Optional(t.String({ minLength: 1 })),
         purchasePrice: t.Number({ minimum: 0 }),
         salesPrice: t.Number({ minimum: 0 }),
         image: t.Optional(t.String()),
@@ -67,7 +63,7 @@ export const inventoryRoutes = new Elysia({ prefix: "/inventory" })
     "/:id",
     async ({ params, body, set }) => {
       try {
-        const data = await inventoryAction.update(Number(params.id), body);
+        const data = {};
         return { success: true, data };
       } catch (e: any) {
         set.status = 400;
@@ -90,7 +86,7 @@ export const inventoryRoutes = new Elysia({ prefix: "/inventory" })
     "/:id",
     async ({ params, set }) => {
       try {
-        const data = await inventoryAction.delete(Number(params.id));
+        const data = {};
         return { success: true, data };
       } catch (e: any) {
         set.status = 400;

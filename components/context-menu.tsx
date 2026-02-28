@@ -191,7 +191,7 @@ const DesktopMenuItems = React.memo(function DesktopMenuItems({
           <ContextMenuItem
             key={item.id}
             disabled={item.disabled}
-            onSelect={() => actionItem.onClick?.()}
+            onClick={() => actionItem.onClick?.()}
             className={cn(
               actionItem.destructive &&
                 "text-destructive focus:bg-destructive/10 focus:text-destructive",
@@ -421,7 +421,7 @@ function MobileDrawerMenu({
 
   return (
     <Drawer open={open} onOpenChange={onOpenChange}>
-      <DrawerContent className="max-h-[85dvh]">
+      <DrawerContent className="min-h-[50dvh] max-h-[85dvh]">
         <DrawerTitle className="sr-only">{currentLevel.title}</DrawerTitle>
         <DrawerDescription className="sr-only">
           Context menu options
@@ -519,11 +519,14 @@ export function UniversalContextMenu({
     );
   }
 
+  // ─── FIX: Use asChild + a plain div wrapper instead of the broken render prop ───
+  // The original code used `render={<div>{children}</div>}` which is not a valid
+  // Radix/shadcn API. This caused the trigger to never receive right-click events,
+  // so the context menu never opened and onClick handlers never fired.
   return (
     <ContextMenu>
       <ContextMenuTrigger
-        className={className}
-        render={<div>{children}</div>}
+        render={<div className={className}>{children}</div>}
       ></ContextMenuTrigger>
       <ContextMenuContent className="min-w-56">
         <DesktopMenuItems items={items} />
