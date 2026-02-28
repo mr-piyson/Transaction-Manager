@@ -1,123 +1,84 @@
 "use client";
+
+import { useEffect, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { Plus, User2 } from "lucide-react";
+import { Customer } from "@prisma/client";
+
 import { ListView } from "@/components/list-view";
 import { Button } from "@/components/ui/button";
-import { useFab } from "@/hooks/use-fab";
-import { useHeader } from "@/hooks/use-header";
-import { useQuery } from "@tanstack/react-query";
-import { Plus, PlusCircle, User2 } from "lucide-react";
-import { useEffect } from "react";
 import { UniversalDialog } from "@/components/dialog";
+import { useHeader } from "@/hooks/use-header";
 import { useI18n } from "@/hooks/use-i18n";
-import { Customer } from "@prisma/client";
-import { userCardRenderer } from "./customerCard";
 import { useEden } from "@/lib/client";
+import { userCardRenderer } from "./customerCard";
+
+// Optional: If you want to drop axios entirely, use Eden for the mutation.
 import axios from "axios";
 
-type CustomersPageProps = {
-  children?: React.ReactNode;
-};
-
-export default function CustomersPage(props: CustomersPageProps) {
+export default function CustomersPage() {
   const header = useHeader();
-  const fab = useFab();
   const { t } = useI18n();
-  const { api } = useEden();
+  const eden = useEden();
 
   const { data, isLoading, isError, refetch } = useQuery(
-    api.customers.get.queryOptions(),
+    eden.api.customers.get.queryOptions(),
   );
 
-  useEffect(() => {
-    header.configureHeader({
-      leftContent: (
-        <div className="flex h-full w-full items-center gap-4 print:hidden">
-          <div className="bg-primary w-1 h-8"></div>
+  // 2. Memoize the header component so we don't trigger unnecessary layout repaints
+  const headerLeftContent = useMemo(
+    () => (
+      <div className="flex h-full w-full items-center gap-4 print:hidden justify-between">
+        <div className="flex flex-row gap-4">
+          <div className="bg-primary w-1 h-8 rounded-sm" />
           <h1 className="text-2xl font-semibold pb-1 capitalize">
             {t("common.customers")}
           </h1>
         </div>
-      ),
+        <UniversalDialog<Customer>
+          title={t("customers.new", "Create new Customer")}
+          fields={[
+            { name: "name", label: "Name", required: true, type: "text" },
+            { name: "phone", label: "Phone", required: true, type: "text" },
+            { name: "address", label: "Address", required: true, type: "text" },
+          ]}
+          mutationFn={async (payload) =>
+            // Tip: Consider using `eden.api.customers.post(payload)` here if your Eden client supports it!
+            await axios.post("/api/customers", payload)
+          }
+          onSuccess={() => refetch()}
+        >
+          <Button>
+            <Plus className="mr-2 size-4" />
+            {t("common.create", "Create")}
+          </Button>
+        </UniversalDialog>
+      </div>
+    ),
+    [t, refetch],
+  );
+
+  // 3. Fix useEffect dependencies
+  useEffect(() => {
+    header.configureHeader({
+      leftContent: headerLeftContent,
     });
-    fab.setFabConfig({
-      render: () => {
-        return (
-          <UniversalDialog<Partial<Customer>>
-            title={"Create Record"}
-            fields={[
-              {
-                name: "name",
-                label: "Name",
-                width: "full",
-                type: "text",
-                minLength: 3,
-                required: false,
-                description: "Enter the name of the customer",
-              },
-              {
-                name: "phone",
-                label: "Phone",
-                width: "full",
-                type: "text",
-                required: false,
-              },
-            ]}
-            onSubmit={async () => {}}
-          >
-            <Button
-              variant="default"
-              size="icon"
-              className="absolute -top-6 left-1/2 -translate-x-1/2 size-14 rounded-full shadow-lg"
-            >
-              <Plus className="size-7 text-foreground" />
-            </Button>
-          </UniversalDialog>
-        );
-      },
-    });
+
     return () => {
       header.resetHeader();
     };
   }, []);
 
   return (
-    <div className="flex-1 h-full p-4">
-      <div className="flex gap-2bg-red-500 w-full pb-4">
-        <UniversalDialog<Customer>
-          title={"Create new Customer"}
-          fields={[
-            {
-              name: "name",
-              label: "Name",
-              required: true,
-              type: "text",
-            },
-            {
-              name: "phone",
-              label: "Phone",
-              required: true,
-              type: "text",
-            },
-            {
-              name: "address",
-              label: "Address",
-              required: true,
-              type: "text",
-            },
-          ]}
-          mutationFn={async () => {
-            return await axios.get("/api/customers/asdas");
-          }}
-        >
-          <Button>
-            <Plus /> Create
-          </Button>
-        </UniversalDialog>
-      </div>
+    <div className="h-full py-4">
       <ListView
-        emptyTitle="No Customers Found"
+        emptyTitle={t("customers.empty_title", "No Customers Found")}
         emptyIcon={<User2 className="size-16 text-muted-foreground" />}
-        emptyDescription={"create new customer to get started"}
-        data={data?.customers}
+        emptyDescription={
+          t("customers.empty_description") ||
+          "Create a new customer to get started"
+        }
+        data={data?.customers || []}
         isLoading={isLoading}
         isError={isError}
         itemName="customers"

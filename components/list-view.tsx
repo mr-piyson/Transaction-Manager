@@ -302,136 +302,134 @@ export function ListView<T extends Record<string, any>>({
     <div className={`w-full h-full flex flex-col ${containerClassName}`}>
       {/* Search and Filter Section */}
       <div>
-        <div className="space-y-3">
-          {/* Search Bar with Optional Filters */}
-          <div className="flex flex-col sm:flex-row gap-3">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <Input
-                placeholder={searchPlaceholder}
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 pr-10"
-              />
-              {searchTerm && (
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7"
-                  onClick={clearSearch}
-                >
-                  <X className="w-4 h-4" />
-                </Button>
-              )}
-            </div>
-
-            {/* Filter Popover (only show if filters exist) */}
-            {filters.length > 0 && (
-              <Popover>
-                <PopoverTrigger
-                  render={
-                    <Button variant="outline" className="gap-2 relative">
-                      <Filter className="w-4 h-4" />
-                      <span className="hidden sm:inline">Filters</span>
-                      {activeFiltersCount > 0 && (
-                        <Badge
-                          variant="destructive"
-                          className="absolute -top-2 -right-2 h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs"
-                        >
-                          {activeFiltersCount}
-                        </Badge>
-                      )}
-                    </Button>
-                  }
-                ></PopoverTrigger>
-                <PopoverContent className="w-80" align="end">
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <h4 className="font-semibold text-sm">Filters</h4>
-                      {activeFiltersCount > 0 && (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={clearAllFilters}
-                          className="h-8 text-xs"
-                        >
-                          Clear all
-                        </Button>
-                      )}
-                    </div>
-
-                    <Separator />
-
-                    {/* Dynamic Filters */}
-                    {filters.map((filter) => (
-                      <div key={filter.key} className="space-y-2">
-                        <Label
-                          htmlFor={`${filter.key}-filter`}
-                          className="text-sm font-medium"
-                        >
-                          {filter.label}
-                        </Label>
-                        <Select
-                          value={filterValues[filter.key]}
-                          onValueChange={(value) =>
-                            updateFilter(filter.key, value)
-                          }
-                        >
-                          <SelectTrigger
-                            className="w-full"
-                            id={`${filter.key}-filter`}
-                          >
-                            <SelectValue
-                              placeholder={`All ${filter.label.toLowerCase()}`}
-                            />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="all">
-                              All {filter.label.toLowerCase()}
-                            </SelectItem>
-                            {filterOptions[filter.key]?.map((option) => (
-                              <SelectItem key={option} value={option}>
-                                {option}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    ))}
-                  </div>
-                </PopoverContent>
-              </Popover>
+        {/* Search Bar with Optional Filters */}
+        <div className="flex flex-col sm:flex-row gap-3 px-4">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <Input
+              placeholder={searchPlaceholder}
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10 pr-10"
+            />
+            {searchTerm && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7"
+                onClick={clearSearch}
+              >
+                <X className="w-4 h-4" />
+              </Button>
             )}
           </div>
 
-          {/* Results Count and Active Filters */}
-          <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
-            <span>
-              Showing {filteredData.length} of {data.length} {itemName}
-            </span>
-            {activeFiltersCount > 0 && (
-              <>
-                <span>•</span>
-                <div className="flex flex-wrap items-center gap-2">
-                  {filters.map((filter) => {
-                    const value = filterValues[filter.key];
-                    if (value === "all") return null;
-                    return (
+          {/* Filter Popover (only show if filters exist) */}
+          {filters.length > 0 && (
+            <Popover>
+              <PopoverTrigger
+                render={
+                  <Button variant="outline" className="gap-2 relative">
+                    <Filter className="w-4 h-4" />
+                    <span className="hidden sm:inline">Filters</span>
+                    {activeFiltersCount > 0 && (
                       <Badge
-                        key={filter.key}
-                        variant="secondary"
-                        className="gap-1 cursor-pointer hover:bg-secondary/80"
-                        onClick={() => updateFilter(filter.key, "all")}
+                        variant="destructive"
+                        className="absolute -top-2 -right-2 h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs"
                       >
-                        {filter.label}: {value}
-                        <X className="w-3 h-3" />
+                        {activeFiltersCount}
                       </Badge>
-                    );
-                  })}
+                    )}
+                  </Button>
+                }
+              ></PopoverTrigger>
+              <PopoverContent className="w-80" align="end">
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <h4 className="font-semibold text-sm">Filters</h4>
+                    {activeFiltersCount > 0 && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={clearAllFilters}
+                        className="h-8 text-xs"
+                      >
+                        Clear all
+                      </Button>
+                    )}
+                  </div>
+
+                  <Separator />
+
+                  {/* Dynamic Filters */}
+                  {filters.map((filter) => (
+                    <div key={filter.key} className="space-y-2">
+                      <Label
+                        htmlFor={`${filter.key}-filter`}
+                        className="text-sm font-medium"
+                      >
+                        {filter.label}
+                      </Label>
+                      <Select
+                        value={filterValues[filter.key]}
+                        onValueChange={(value) =>
+                          updateFilter(filter.key, value)
+                        }
+                      >
+                        <SelectTrigger
+                          className="w-full"
+                          id={`${filter.key}-filter`}
+                        >
+                          <SelectValue
+                            placeholder={`All ${filter.label.toLowerCase()}`}
+                          />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">
+                            All {filter.label.toLowerCase()}
+                          </SelectItem>
+                          {filterOptions[filter.key]?.map((option) => (
+                            <SelectItem key={option} value={option}>
+                              {option}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  ))}
                 </div>
-              </>
-            )}
-          </div>
+              </PopoverContent>
+            </Popover>
+          )}
+        </div>
+
+        {/* Results Count and Active Filters */}
+        <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+          <span>
+            Showing {filteredData.length} of {data.length} {itemName}
+          </span>
+          {activeFiltersCount > 0 && (
+            <>
+              <span>•</span>
+              <div className="flex flex-wrap items-center gap-2">
+                {filters.map((filter) => {
+                  const value = filterValues[filter.key];
+                  if (value === "all") return null;
+                  return (
+                    <Badge
+                      key={filter.key}
+                      variant="secondary"
+                      className="gap-1 cursor-pointer hover:bg-secondary/80"
+                      onClick={() => updateFilter(filter.key, "all")}
+                    >
+                      {filter.label}: {value}
+                      <X className="w-3 h-3" />
+                    </Badge>
+                  );
+                })}
+              </div>
+            </>
+          )}
         </div>
       </div>
 

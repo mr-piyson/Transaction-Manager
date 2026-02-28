@@ -8,7 +8,7 @@ import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "sonner";
-import { useMutation, UseMutationOptions } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import {
   Dialog,
   DialogContent,
@@ -125,7 +125,6 @@ export type FieldSchema<T = any> =
 // ============================================================================
 
 export interface ToastConfig {
-  /** Set to false to suppress all toasts */
   enabled?: boolean;
   successMessage?: string | ((data: any) => string);
   errorMessage?: string | ((error: any) => string);
@@ -139,7 +138,6 @@ export interface UniversalDialogProps<
   TData = any,
   TVariables = Partial<TData>,
   TError = Error,
-  TContext = unknown,
 > {
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
@@ -152,25 +150,24 @@ export interface UniversalDialogProps<
   /**
    * The async function that performs the mutation (API call).
    * Works with tRPC, fetch, axios — anything that returns a Promise.
-   *
-   * @example  mutationFn={(data) => trpc.users.create.mutate(data)}
-   * @example  mutationFn={(data) => fetch('/api/users', { method: 'POST', body: JSON.stringify(data) })}
    */
   mutationFn: (variables: TVariables) => Promise<TData>;
 
   /**
-   * Optional React Query mutation options (onSuccess, onError, onSettled, etc.)
-   * These are merged with the internal handlers — you don't need to manage
-   * loading state, toasts, or dialog closing yourself.
+   * Called with the mutation result after a successful submission.
+   * The dialog will already be closed when this fires.
    */
-  mutationOptions?: Omit<
-    UseMutationOptions<TData, TError, TVariables, TContext>,
-    "mutationFn"
-  >;
+  onSuccess?: (data: TData, variables: TVariables) => void;
+
+  /**
+   * Called with the error after a failed submission.
+   * Use this for side-effects (e.g. logging); the inline error banner
+   * is shown automatically when `closeOnError` is true.
+   */
+  onError?: (error: TError, variables: TVariables) => void;
 
   /**
    * Transform form data before it is passed to mutationFn.
-   * Useful for reshaping, stripping fields, or converting types.
    */
   transformData?: (data: Partial<TData>) => TVariables;
 
@@ -182,7 +179,7 @@ export interface UniversalDialogProps<
 
   /**
    * When true (default), the dialog stays open and shows an inline error
-   * banner when the mutation fails so the user can correct and retry.
+   * banner on failure so the user can correct and retry.
    * Set to false to close immediately regardless of outcome.
    */
   closeOnError?: boolean;
@@ -538,7 +535,7 @@ const renderField = <T,>(
                       <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                     </Button>
                   }
-                ></PopoverTrigger>
+                />
                 <PopoverContent className="w-auto p-0" align="start">
                   <Calendar
                     mode="single"
@@ -668,20 +665,17 @@ const renderField = <T,>(
 // HELPERS
 // ============================================================================
 
-/** Resolve a toast message that may be a string or a function of the payload */
 const resolveMessage = <T,>(
   msg: string | ((val: T) => string) | undefined,
   val: T,
   fallback: string,
 ) => (typeof msg === "function" ? msg(val) : (msg ?? fallback));
 
-/** Extract a human-readable error message from anything thrown */
 const extractErrorMessage = (error: unknown): string => {
   if (!error) return "An unexpected error occurred";
   if (typeof error === "string") return error;
   if (error instanceof Error) return error.message;
   if (typeof error === "object") {
-    // tRPC / Zod shaped errors
     const e = error as any;
     return (
       e.message ??
@@ -701,7 +695,6 @@ export const UniversalDialog = <
   TData = any,
   TVariables = Partial<TData>,
   TError = Error,
-  TContext = unknown,
 >({
   open,
   onOpenChange,
@@ -711,17 +704,17 @@ export const UniversalDialog = <
   submitLabel = "Submit",
   cancelLabel = "Cancel",
   mutationFn,
-  mutationOptions,
+  onSuccess,
+  onError,
   transformData,
   toasts,
   closeOnError = true,
   children,
-}: UniversalDialogProps<TData, TVariables, TError, TContext>) => {
+}: UniversalDialogProps<TData, TVariables, TError>) => {
   const isControlled = open !== undefined;
   const [internalOpen, setInternalOpen] = useState(false);
   const effectiveOpen = isControlled ? open : internalOpen;
 
-  // Normalise the toast config — `false` means disabled, `undefined` means defaults
   const toastConfig: ToastConfig | false =
     toasts === false ? false : { enabled: true, ...toasts };
 
@@ -735,10 +728,8 @@ export const UniversalDialog = <
     handleOpenChange(false);
   };
 
-  // ── Zod schema (stable reference) ────────────────────────────────────────
   const [zodSchema] = useState(() => generateZodSchema<TData>(fields));
 
-  // ── Form ─────────────────────────────────────────────────────────────────
   const form = useForm({
     resolver: zodResolver(zodSchema),
     defaultValues: fields.reduce(
@@ -775,13 +766,10 @@ export const UniversalDialog = <
     ),
   });
 
-  // ── React Query mutation ──────────────────────────────────────────────────
-  const mutation = useMutation<TData, TError, TVariables, TContext>({
+  const mutation = useMutation<TData, TError, TVariables>({
     mutationFn,
-    ...mutationOptions,
 
-    onSuccess: (data, variables, context) => {
-      // Toasts
+    onSuccess: (data, variables) => {
       if (toastConfig !== false && toastConfig.enabled !== false) {
         toast.success(
           resolveMessage(
@@ -791,14 +779,11 @@ export const UniversalDialog = <
           ),
         );
       }
-      // Always close on success
       closeDialog();
-      // Caller's onSuccess
-      // mutationOptions?.onSuccess?.(data, variables, context);
+      onSuccess?.(data, variables);
     },
 
-    onError: (error, variables, context) => {
-      // Toasts
+    onError: (error, variables) => {
       if (toastConfig !== false && toastConfig.enabled !== false) {
         toast.error(
           resolveMessage(
@@ -808,16 +793,12 @@ export const UniversalDialog = <
           ),
         );
       }
-      // Close on error only if closeOnError is true
       if (!closeOnError) closeDialog();
-      // Caller's onError
-      // mutationOptions?.onError?.(error, variables, context);
+      onError?.(error, variables);
     },
   });
 
-  // ── Submit handler ────────────────────────────────────────────────────────
   const handleSubmit = (data: any) => {
-    // Reset previous mutation error so the inline banner clears on retry
     mutation.reset();
     const payload = transformData
       ? transformData(data as Partial<TData>)
@@ -825,7 +806,6 @@ export const UniversalDialog = <
     mutation.mutate(payload);
   };
 
-  // ── Field layout (memoised) ───────────────────────────────────────────────
   const groupedFields = useMemo(() => {
     const rows: FieldSchema<TData>[][] = [];
     let currentRow: FieldSchema<TData>[] = [];
@@ -851,14 +831,11 @@ export const UniversalDialog = <
   }, [fields]);
 
   const isSubmitting = mutation.isPending;
-
-  // Derive a clean error string to display in the inline banner
   const mutationError =
     mutation.isError && closeOnError
       ? extractErrorMessage(mutation.error)
       : null;
 
-  // ── Render ────────────────────────────────────────────────────────────────
   return (
     <Dialog open={effectiveOpen} onOpenChange={handleOpenChange}>
       <DialogTrigger render={children} />
@@ -872,7 +849,6 @@ export const UniversalDialog = <
               )}
             </DialogHeader>
 
-            {/* ── Inline error banner ── */}
             {mutationError && (
               <Alert variant="destructive" className="mb-4">
                 <AlertCircle className="h-4 w-4" />
@@ -880,7 +856,6 @@ export const UniversalDialog = <
               </Alert>
             )}
 
-            {/* ── Fields ── */}
             {groupedFields.map((row, rowIndex) => (
               <div key={rowIndex} className="flex gap-4 mb-4">
                 {row.map((field) => (

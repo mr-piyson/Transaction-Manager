@@ -11,6 +11,7 @@ export const en = {
     save: "Save",
     cancel: "Cancel",
     confirm: "Confirm",
+    create: "Create",
     customers: "Customers",
     assets: "Assets",
     invoices: "Invoices",
@@ -38,5 +39,10 @@ export const en = {
   languages: {
     english: "English",
     arabic: "Arabic",
+  },
+  customers: {
+    new: "Create new Customer",
+    empty_title: "No Customers Found",
+    empty_description: "Create a new customer to get started",
   },
 } as const;
