@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils";
 // ─── Variants ────────────────────────────────────────────────────────────────
 
 const buttonVariants = cva(
-  "inline-flex items-center whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive relative",
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive",
   {
     variants: {
       variant: {
@@ -113,10 +113,7 @@ export interface ButtonProps
     VariantProps<typeof buttonVariants> {
   asChild?: boolean;
 
-  /** Left-side icon element */
-  icon?: React.ReactNode;
-
-  /** Button label text */
+  /** Button content — accepts text, icons, or any mix of elements */
   children?: React.ReactNode;
 
   // ── Mutation / async state ──────────────────────────────────────────────────
@@ -135,7 +132,7 @@ export interface ButtonProps
 
   /**
    * Pass the `isError` flag from a React Query mutation.
-   * Switches the icon to a warning indicator.
+   * Prepends a warning icon to the button content.
    */
   isError?: boolean;
 
@@ -172,7 +169,6 @@ function Button({
   size = "default",
   asChild = false,
 
-  icon,
   children,
 
   isLoading = false,
@@ -191,7 +187,6 @@ function Button({
   ...props
 }: ButtonProps) {
   const [alertOpen, setAlertOpen] = React.useState(false);
-  // Holds the synthetic event so we can pass it after confirmation
   const pendingEventRef =
     React.useRef<React.MouseEvent<HTMLButtonElement> | null>(null);
 
@@ -221,13 +216,13 @@ function Button({
     pendingEventRef.current = null;
   }, []);
 
-  // ── Resolve icon ────────────────────────────────────────────────────────────
-  const resolvedIcon = React.useMemo(() => {
+  // ── Resolve leading state icon (loading / error) ────────────────────────────
+  const stateIcon = React.useMemo(() => {
     if (isLoading) return <Loader2 className="animate-spin" aria-hidden />;
     if (isError)
       return <AlertTriangle className="text-destructive" aria-hidden />;
-    return icon ?? null;
-  }, [isLoading, isError, icon]);
+    return null;
+  }, [isLoading, isError]);
 
   const resolvedChildren = isLoading && loadingText ? loadingText : children;
 
@@ -247,30 +242,8 @@ function Button({
         onClick={handleClick}
         {...props}
       >
-        {/*
-          Layout:
-          ┌──────────────────────────────────────┐
-          │ [icon]   [     label     ]            │
-          └──────────────────────────────────────┘
-          Icon sits at the start (left-aligned).
-          Label is centered in the remaining space.
-          We use an absolutely-positioned icon trick so the text truly centres
-          relative to the full button width.
-        */}
-        {resolvedIcon && (
-          <span className="absolute left-3 flex items-center">
-            {resolvedIcon}
-          </span>
-        )}
-        <span
-          className={cn(
-            "flex-1 text-center",
-            // Only offset when there's an icon so text remains centred
-            resolvedIcon && "px-5",
-          )}
-        >
-          {resolvedChildren}
-        </span>
+        {stateIcon}
+        {resolvedChildren}
       </Comp>
 
       <ConfirmAlert

@@ -28,7 +28,6 @@ export default function CustomersPage() {
     queryKey: ["customers"],
     queryFn: async () => (await axios.get<Customer[]>("/api/customers")).data,
   });
-  console.log(customers);
   // 2. Memoize the header component so we don't trigger unnecessary layout repaints
   const headerLeftContent = useMemo(
     () => (
