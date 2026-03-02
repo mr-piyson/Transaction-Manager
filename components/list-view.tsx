@@ -299,12 +299,12 @@ export function ListView<T extends Record<string, any>>({
   }
 
   return (
-    <div className={`w-full h-full flex flex-col ${containerClassName}`}>
+    <>
       {/* Search and Filter Section */}
       <div>
         {/* Search Bar with Optional Filters */}
-        <div className="flex flex-col sm:flex-row gap-3 p-4">
-          <div className="relative flex-1">
+        <div className="flex flex-1 flex-col sm:flex-row gap-3 p-4">
+          <div className="flex relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input
               placeholder={searchPlaceholder}
@@ -431,7 +431,7 @@ export function ListView<T extends Record<string, any>>({
       </div>
 
       {/* Grid Section */}
-      <div className="flex-1 min-h-0 p-0">
+      <div className="flex-1 p-0">
         {filteredData.length === 0 ? (
           <Empty>
             {emptyIcon}
@@ -449,26 +449,24 @@ export function ListView<T extends Record<string, any>>({
             )}
           </Empty>
         ) : (
-          <div className="h-full w-full">
-            <AgGridReact
-              ref={gridRef}
-              rowData={filteredData}
-              columnDefs={columnDefs}
-              defaultColDef={defaultColDef}
-              gridOptions={gridOptions}
-              animateRows={true}
-              suppressMenuHide={true}
-              theme={useTheme ? theme : undefined}
-              loading={isLoading}
-              isFullWidthRow={() => true}
-              fullWidthCellRenderer={FullWidthCellRenderer}
-              rowHeight={calculatedRowHeight}
-              onGridReady={(params) => setGridApi(params.api)}
-              domLayout="normal"
-            />
-          </div>
+          <AgGridReact
+            ref={gridRef}
+            rowData={filteredData}
+            columnDefs={columnDefs}
+            defaultColDef={defaultColDef}
+            gridOptions={gridOptions}
+            animateRows={true}
+            suppressMenuHide={true}
+            theme={useTheme ? theme : undefined}
+            loading={isLoading}
+            isFullWidthRow={() => true}
+            fullWidthCellRenderer={FullWidthCellRenderer}
+            rowHeight={calculatedRowHeight}
+            onGridReady={(params) => setGridApi(params.api)}
+            domLayout="normal"
+          />
         )}
       </div>
-    </div>
+    </>
   );
 }

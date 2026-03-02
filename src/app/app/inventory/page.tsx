@@ -97,25 +97,27 @@ export default function InventoryPage() {
   );
 
   return (
-    <div className="h-full ">
-      <Header showBorder={true} title="Customer" />
-      <ListView<Customer>
-        emptyTitle={t("inventory.empty_title", "No inventory items Found")}
-        emptyIcon={<Box className="size-16 text-muted-foreground" />}
-        emptyDescription={
-          t("inventory.empty_description") ||
-          "Create a new inventory item to get started"
-        }
-        data={inventory}
-        isLoading={isLoading}
-        isError={isError}
-        itemName="inventory items"
-        useTheme={true}
-        cardRenderer={() => <></>}
-        rowHeight={65}
-        searchFields={[]}
-        onRefetch={refetch}
-      />
-    </div>
+    <>
+      <div>
+        {/* <Header showBorder={true} title="Inventory" /> */}
+        <ListView<Customer>
+          emptyTitle={t("inventory.empty_title", "No inventory items Found")}
+          emptyIcon={<Box className="size-16 text-muted-foreground" />}
+          emptyDescription={
+            t("inventory.empty_description") ||
+            "Create a new inventory item to get started"
+          }
+          data={inventory}
+          isLoading={isLoading}
+          isError={isError}
+          itemName="inventory items"
+          useTheme={true}
+          cardRenderer={() => <></>}
+          rowHeight={65}
+          searchFields={[]}
+          onRefetch={refetch}
+        />
+      </div>
+    </>
   );
 }

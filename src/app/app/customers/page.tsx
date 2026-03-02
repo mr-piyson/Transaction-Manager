@@ -13,6 +13,7 @@ import { CustomerCardRenderer } from "./customerCard";
 
 // Optional: If you want to drop axios entirely, use Eden for the mutation.
 import axios from "axios";
+import { Header } from "@/components/Header";
 
 export default function CustomersPage() {
   const { t } = useI18n();
@@ -60,7 +61,8 @@ export default function CustomersPage() {
   );
 
   return (
-    <div className="h-full ">
+    <>
+      <Header showBorder={true} title="Customers" />
       <ListView
         emptyTitle={t("customers.empty_title", "No Customers Found")}
         emptyIcon={<User2 className="size-16 text-muted-foreground" />}
@@ -78,6 +80,6 @@ export default function CustomersPage() {
         searchFields={["name", "phone"]}
         onRefetch={refetch}
       />
-    </div>
+    </>
   );
 }
