@@ -1,14 +1,5 @@
 import { TranslationKeys } from "@/i18n/config";
-import {
-  Building2,
-  FileText,
-  LayoutDashboard,
-  LucideIcon,
-  Package,
-  User,
-  UserCircle,
-  Users,
-} from "lucide-react";
+import { FileText, LucideIcon, Package, User } from "lucide-react";
 import { Route } from "next";
 
 // 1. Define what a single route looks like
