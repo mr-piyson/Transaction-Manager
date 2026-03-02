@@ -8,14 +8,13 @@ import { Customer, InventoryItem } from "@prisma/client";
 import { ListView } from "@/components/list-view";
 import { Button } from "@/components/ui/button";
 import { UniversalDialog } from "@/components/dialog";
-import { useHeader } from "@/hooks/use-header";
 import { useI18n } from "@/hooks/use-i18n";
 
 // Optional: If you want to drop axios entirely, use Eden for the mutation.
 import axios from "axios";
+import { Header } from "@/components/Header";
 
 export default function InventoryPage() {
-  const header = useHeader();
   const { t } = useI18n();
 
   const {
@@ -97,19 +96,9 @@ export default function InventoryPage() {
     [t, refetch],
   );
 
-  // 3. Fix useEffect dependencies
-  useEffect(() => {
-    header.configureHeader({
-      leftContent: headerLeftContent,
-    });
-
-    return () => {
-      header.resetHeader();
-    };
-  }, []);
-
   return (
-    <div className="h-full py-4">
+    <div className="h-full ">
+      <Header showBorder={true} title="Customer" />
       <ListView<Customer>
         emptyTitle={t("inventory.empty_title", "No inventory items Found")}
         emptyIcon={<Box className="size-16 text-muted-foreground" />}

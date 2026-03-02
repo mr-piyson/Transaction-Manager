@@ -8,7 +8,6 @@ import { Customer } from "@prisma/client";
 import { ListView } from "@/components/list-view";
 import { Button } from "@/components/ui/button";
 import { UniversalDialog } from "@/components/dialog";
-import { useHeader } from "@/hooks/use-header";
 import { useI18n } from "@/hooks/use-i18n";
 import { CustomerCardRenderer } from "./customerCard";
 
@@ -16,7 +15,6 @@ import { CustomerCardRenderer } from "./customerCard";
 import axios from "axios";
 
 export default function CustomersPage() {
-  const header = useHeader();
   const { t } = useI18n();
 
   const {
@@ -61,20 +59,9 @@ export default function CustomersPage() {
     [t, refetch],
   );
 
-  // 3. Fix useEffect dependencies
-  useEffect(() => {
-    header.configureHeader({
-      leftContent: headerLeftContent,
-    });
-
-    return () => {
-      header.resetHeader();
-    };
-  }, []);
-
   return (
-    <div className="h-full py-4">
-      <ListView<Customer>
+    <div className="h-full ">
+      <ListView
         emptyTitle={t("customers.empty_title", "No Customers Found")}
         emptyIcon={<User2 className="size-16 text-muted-foreground" />}
         emptyDescription={

@@ -1,5 +1,6 @@
 import { Elysia, t } from "elysia";
 import { authMiddleware } from "../middleware/auth.middleware";
+import db from "@/lib/database";
 
 const InvoiceItemSchema = t.Object({
   code: t.Optional(t.String()),
@@ -28,8 +29,8 @@ export const invoiceRoutes = new Elysia({ prefix: "/invoices" })
     "/",
     async ({ query, set }) => {
       try {
-        const data = {};
-        return { success: true, ...data };
+        const data = await db.invoice.findMany({});
+        return data;
       } catch (e: any) {
         set.status = 500;
         return { success: false, message: e.message };

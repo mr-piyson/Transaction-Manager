@@ -303,7 +303,7 @@ export function ListView<T extends Record<string, any>>({
       {/* Search and Filter Section */}
       <div>
         {/* Search Bar with Optional Filters */}
-        <div className="flex flex-col sm:flex-row gap-3 px-4">
+        <div className="flex flex-col sm:flex-row gap-3 p-4">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input

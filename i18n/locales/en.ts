@@ -50,4 +50,9 @@ export const en = {
     empty_title: "No inventory item Found",
     empty_description: "Create a new inventory item to get started",
   },
+  invoices: {
+    new: "Create new invoice",
+    empty_title: "No invoices Found",
+    empty_description: "Create a new invoice to get started",
+  },
 } as const;

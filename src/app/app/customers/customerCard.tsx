@@ -14,7 +14,7 @@ export function CustomerCardRenderer({
 }: {
   data: Customer;
   itemList?: boolean;
-  disabled: boolean;
+  disabled?: boolean;
 }) {
   const router = useRouter();
 
@@ -29,7 +29,7 @@ export function CustomerCardRenderer({
           onClick: () => {
             alert.delete({
               title: <span>Are you sure you want to delete</span>,
-              description: <CustomerCardRenderer data={data} />,
+              description: <CustomerCardRenderer data={data} disabled={true} />,
               confirmText: "Delete",
               onConfirm: async () => {
                 toast.error("Item was deleted");
