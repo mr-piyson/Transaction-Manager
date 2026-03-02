@@ -405,9 +405,6 @@ export function ListView<T extends Record<string, any>>({
 
         {/* Results Count and Active Filters */}
         <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
-          <span>
-            Showing {filteredData.length} of {data.length} {itemName}
-          </span>
           {activeFiltersCount > 0 && (
             <>
               <span>•</span>

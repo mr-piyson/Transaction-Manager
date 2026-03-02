@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { UniversalDialog } from "@/components/dialog";
 import { useHeader } from "@/hooks/use-header";
 import { useI18n } from "@/hooks/use-i18n";
-import { userCardRenderer } from "./customerCard";
+import { CustomerCardRenderer } from "./customerCard";
 
 // Optional: If you want to drop axios entirely, use Eden for the mutation.
 import axios from "axios";
@@ -86,7 +86,7 @@ export default function CustomersPage() {
         isError={isError}
         itemName="customers"
         useTheme={true}
-        cardRenderer={userCardRenderer}
+        cardRenderer={CustomerCardRenderer}
         rowHeight={65}
         searchFields={["name", "phone"]}
         onRefetch={refetch}

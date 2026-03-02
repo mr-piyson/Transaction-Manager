@@ -526,6 +526,7 @@ export function UniversalContextMenu({
   return (
     <ContextMenu>
       <ContextMenuTrigger
+        onContextMenu={(e) => e.preventDefault()}
         render={<div className={className}>{children}</div>}
       ></ContextMenuTrigger>
       <ContextMenuContent className="min-w-56">

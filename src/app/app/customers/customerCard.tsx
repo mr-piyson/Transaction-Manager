@@ -1,14 +1,22 @@
+import { alert } from "@/components/Alert-dialog";
 import { UniversalContextMenu } from "@/components/context-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { cn } from "@/lib/utils";
 import { Customer } from "@prisma/client";
 import { Trash, User2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
-export function userCardRenderer({ data }: { data: Customer }) {
-  
+export function CustomerCardRenderer({
+  data,
+  itemList = false,
+  disabled = true,
+}: {
+  data: Customer;
+  itemList?: boolean;
+  disabled: boolean;
+}) {
   const router = useRouter();
-
 
   return (
     <UniversalContextMenu
@@ -19,17 +27,27 @@ export function userCardRenderer({ data }: { data: Customer }) {
           icon: Trash,
           destructive: true,
           onClick: () => {
-            console.log("Delete clicked");
-            toast.error("Item was deleted");
+            alert.delete({
+              title: <span>Are you sure you want to delete</span>,
+              description: <CustomerCardRenderer data={data} />,
+              confirmText: "Delete",
+              onConfirm: async () => {
+                toast.error("Item was deleted");
+              },
+              destructive: false,
+            });
           },
         },
       ]}
     >
       <div
         onClick={() => {
-          router.push(`/app/customers/${data.id}`);
+          itemList ?? router.push(`/app/customers/${data.id}`);
         }}
-        className="flex items-center gap-3 p-3 cursor-pointer transition-colors hover:bg-accent/50 "
+        className={cn(
+          itemList ?? "hover:bg-accent/50 cursor-pointer",
+          "flex items-center gap-3 p-3  transition-colors ",
+        )}
       >
         <Avatar className="size-10">
           <AvatarImage

@@ -57,7 +57,7 @@
   --card-foreground: #fbfbfb;
   --popover: #111111;
   --popover-foreground: #fbfbfb;
-  --primary: #009dd1;
+  --primary: #2a558f;
   --primary-foreground: #fbfbfb;
   --secondary: #2b2b2b;
   --secondary-foreground: #fbfbfb;
@@ -68,7 +68,7 @@
   --default: #1a3150;
   --default-foreground: #0099cc;
   --destructive-foreground: #501a2d;
-  --destructive: #ff4b72;
+  --destructive: #b33752;
   --success-foreground: #36551d;
   --success: #4bff78;
   --warning: #55500d;
