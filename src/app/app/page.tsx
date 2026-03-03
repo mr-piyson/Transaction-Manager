@@ -20,13 +20,14 @@ export default function App_Page(props: any) {
 
   return (
     <div className="p-4 space-y-4">
-      <SelectDialog
-        onSelect={function (item: Record<string, any>): void {
-          throw new Error("Function not implemented.");
+      <SelectDialog<Customer>
+        onSelect={function (item: Record<string, any>) {
+          console.log(item);
         }}
         data={customers}
-        searchFields={[]}
+        searchFields={["name", "phone"]}
         cardRenderer={CustomerCardRenderer}
+        rowHeight={75}
       >
         <Button>Hello world</Button>
       </SelectDialog>
