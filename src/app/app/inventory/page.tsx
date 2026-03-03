@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useMemo } from "react";
+import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Box, Plus, User2 } from "lucide-react";
-import { Customer, InventoryItem, InvoiceItem } from "@prisma/client";
+import { Box, Plus } from "lucide-react";
+import { Customer, InventoryItem } from "@prisma/client";
 
 import { ListView } from "@/components/list-view";
 import { Button } from "@/components/ui/button";
@@ -13,6 +13,7 @@ import { useI18n } from "@/hooks/use-i18n";
 // Optional: If you want to drop axios entirely, use Eden for the mutation.
 import axios from "axios";
 import { Header } from "@/components/Header";
+import { InventoryCardRenderer } from "./inventoryCard";
 
 export default function InventoryPage() {
   const { t } = useI18n();
@@ -98,68 +99,82 @@ export default function InventoryPage() {
 
   return (
     <>
-      <div>
-        <Header
-          showBorder={true}
-          title="Inventory"
-          rightContent={
-            <>
-              <UniversalDialog<InventoryItem>
-                title={"Create new Inventory item"}
-                fields={[
-                  {
-                    label: "Image",
-                    name: "image",
-                    type: "image",
-                    width: "full",
-                  },
-                  {
-                    label: "Description",
-                    name: "description",
-                    type: "text",
-                    required: true,
-                    width: "full",
-                  },
-                  {
-                    label: "Purchase Price",
-                    name: "purchasePrice",
-                    type: "number",
-                    required: true,
-                  },
-                  {
-                    label: "Sales Price",
-                    name: "salesPrice",
-                    type: "number",
-                    required: true,
-                  },
-                ]}
-                mutationFn={function (variables: Partial<any>): Promise<any> {
-                  throw new Error("Function not implemented.");
-                }}
-              >
-                <Button>Create</Button>
-              </UniversalDialog>
-            </>
-          }
-        />
-        <ListView<Customer>
-          emptyTitle={t("inventory.empty_title", "No inventory items Found")}
-          emptyIcon={<Box className="size-16 text-muted-foreground" />}
-          emptyDescription={
-            t("inventory.empty_description") ||
-            "Create a new inventory item to get started"
-          }
-          data={inventory}
-          isLoading={isLoading}
-          isError={isError}
-          itemName="inventory items"
-          useTheme={true}
-          cardRenderer={() => <></>}
-          rowHeight={65}
-          searchFields={[]}
-          onRefetch={refetch}
-        />
-      </div>
+      <Header
+        showBorder={true}
+        title="Inventory"
+        rightContent={
+          <>
+            <UniversalDialog<InventoryItem>
+              title={"Create new Inventory item"}
+              fields={[
+                // {
+                //   label: "Image",
+                //   name: "image",
+                //   type: "image",
+                //   width: "full",
+                // },
+                {
+                  label: "Name",
+                  name: "name",
+                  type: "text",
+                  required: true,
+                  width: "full",
+                },
+                {
+                  label: "Description",
+                  name: "description",
+                  type: "textarea",
+                  required: true,
+                  width: "full",
+                },
+                {
+                  label: "Purchase Price",
+                  name: "purchasePrice",
+                  type: "number",
+                  required: true,
+                },
+                {
+                  label: "Sales Price",
+                  name: "salesPrice",
+                  type: "number",
+                  required: true,
+                },
+                {
+                  label: "Bar/QR Code",
+                  name: "code",
+                  type: "text",
+                  required: false,
+                },
+              ]}
+              mutationFn={async function (
+                variables: Partial<any>,
+              ): Promise<any> {
+                return await axios.post("/api/inventory", variables);
+              }}
+              onSuccess={() => refetch()}
+            >
+              <Button>Create</Button>
+            </UniversalDialog>
+          </>
+        }
+      />
+      <ListView<Customer>
+        emptyTitle={t("inventory.empty_title", "No inventory items Found")}
+        emptyIcon={<Box className="size-16 text-muted-foreground" />}
+        emptyDescription={
+          t("inventory.empty_description") ||
+          "Create a new inventory item to get started"
+        }
+        data={inventory}
+        isLoading={isLoading}
+        isError={isError}
+        itemName="inventory items"
+        useTheme={true}
+        cardRenderer={InventoryCardRenderer}
+        rowHeight={71}
+        searchFields={[]}
+        onRefetch={refetch}
+      />
     </>
   );
 }

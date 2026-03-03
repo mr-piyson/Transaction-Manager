@@ -62,7 +62,7 @@ model InventoryItem {
   id            Int           @id @default(autoincrement())
   code          String?
   name          String
-  description   String
+  description   String?
   purchasePrice Int
   salesPrice    Int
   image         String?
@@ -91,7 +91,7 @@ model Invoice {
 
 model InvoiceItem {
   id              Int            @id @default(autoincrement())
-  code            String?
+  code            String?        @unique
   description     String?
   purchasePrice   Int
   salesPrice      Int

@@ -182,9 +182,8 @@ export function AlertProvider({ children }: { children: ReactNode }) {
   return (
     <>
       {children}
-
       <AlertDialog open={open} onOpenChange={(v) => !v && handleCancel()}>
-        <AlertDialogContent>
+        <AlertDialogContent className={"w-300!"}>
           <AlertDialogHeader>
             <AlertDialogTitle className="flex items-center gap-2">
               {opts?.title}
@@ -192,7 +191,7 @@ export function AlertProvider({ children }: { children: ReactNode }) {
 
             {opts?.description && (
               <AlertDialogDescription
-                className="w-full"
+                className="w-full "
                 render={<div>{opts.description}</div>}
               ></AlertDialogDescription>
             )}

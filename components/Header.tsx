@@ -19,8 +19,10 @@ export function Header({
   sticky = true,
   transparent = false,
   className,
+  icon,
 }: {
-  title?: string;
+  title?: ReactNode | string;
+  icon?: ReactNode | undefined;
   leftContent?: ReactNode;
   rightContent?: ReactNode;
   showBorder?: boolean;
@@ -45,24 +47,31 @@ export function Header({
       <div className=" mx-auto px-2 sm:px-6 ">
         <div className="flex h-16 items-center justify-between gap-4">
           {/* Left Section */}
-          {leftContent || (
-            <div className="flex items-center gap-4 flex-1">
-              <div className="flex flex-row gap-4">
-                <div className="bg-primary w-1 h-8 rounded-sm" />
-                <h1 className="text-2xl font-semibold pb-1 capitalize">
-                  {title}
-                </h1>
-              </div>
+          {title && (
+            <div className="flex flex-1 flex-row items-center w-full gap-2 text-foreground/85">
+              <div className="inline bg-primary  w-1 h-8 rounded-sm" />
+              {icon}
+              <span className=" text-2xl font-semibold capitalize">
+                Invoices
+              </span>
             </div>
           )}
 
           {/* Right Section */}
           {rightContent || (
             <div className="flex items-center gap-2 flex-1 justify-end">
-              <Button onClick={router.back} variant={"ghost"}>
+              <Button
+                className="text-foreground/50"
+                onClick={router.back}
+                variant={"ghost"}
+              >
                 <ArrowLeftIcon />
               </Button>
-              <Button onClick={router.forward} variant={"ghost"}>
+              <Button
+                className="text-foreground/50"
+                onClick={router.forward}
+                variant={"ghost"}
+              >
                 <ArrowRightIcon />
               </Button>
             </div>

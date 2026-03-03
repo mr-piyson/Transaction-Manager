@@ -27,8 +27,9 @@ export const inventoryRoutes = new Elysia({ prefix: "/inventory" })
     "/:id",
     async ({ params, set }) => {
       try {
-        const data = {};
-        return { success: true, data };
+        return await db.inventoryItem.findUnique({
+          where: { id: Number(params.id) },
+        });
       } catch (e: any) {
         set.status = 404;
         return { success: false, message: e.message };
@@ -39,12 +40,23 @@ export const inventoryRoutes = new Elysia({ prefix: "/inventory" })
   .post(
     "/",
     async ({ body, set }) => {
+      const { name, purchasePrice, salesPrice, code, description, image } =
+        body;
       try {
-        console.log(body);
+        await db.inventoryItem.create({
+          data: {
+            name,
+            description,
+            salesPrice,
+            purchasePrice,
+            code,
+          },
+        });
         set.status = 201;
         return { success: true };
       } catch (e: any) {
         set.status = 400;
+        console.log(e.message);
         return { success: false, message: e.message };
       }
     },
@@ -63,31 +75,39 @@ export const inventoryRoutes = new Elysia({ prefix: "/inventory" })
     "/:id",
     async ({ params, body, set }) => {
       try {
-        const data = {};
-        return { success: true, data };
+        return db.inventoryItem.update({
+          data: body,
+          where: {
+            id: Number(params.id),
+          },
+        });
       } catch (e: any) {
         set.status = 400;
         return { success: false, message: e.message };
       }
     },
-    {
-      params: t.Object({ id: t.String() }),
-      body: t.Object({
-        code: t.Optional(t.String()),
-        name: t.Optional(t.String()),
-        description: t.Optional(t.String()),
-        purchasePrice: t.Optional(t.Number({ minimum: 0 })),
-        salesPrice: t.Optional(t.Number({ minimum: 0 })),
-        image: t.Optional(t.String()),
-      }),
-    },
+    // {
+    //   params: t.Object({ id: t.String() }),
+    //   body: t.Object({
+    //     code: t.Optional(t.String()),
+    //     name: t.Optional(t.String()),
+    //     description: t.Optional(t.String()),
+    //     purchasePrice: t.Optional(t.Number({ minimum: 0 })),
+    //     salesPrice: t.Optional(t.Number({ minimum: 0 })),
+    //     image: t.Optional(t.String()),
+    //   }),
+    // },
   )
   .delete(
     "/:id",
     async ({ params, set }) => {
       try {
-        const data = {};
-        return { success: true, data };
+        const data = await db.inventoryItem.delete({
+          where: {
+            id: Number(params.id),
+          },
+        });
+        set.status = 201;
       } catch (e: any) {
         set.status = 400;
         return { success: false, message: e.message };
