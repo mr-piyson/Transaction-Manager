@@ -3,7 +3,7 @@
 import { useEffect, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Box, Plus, User2 } from "lucide-react";
-import { Customer, InventoryItem } from "@prisma/client";
+import { Customer, InventoryItem, InvoiceItem } from "@prisma/client";
 
 import { ListView } from "@/components/list-view";
 import { Button } from "@/components/ui/button";
@@ -99,7 +99,49 @@ export default function InventoryPage() {
   return (
     <>
       <div>
-        {/* <Header showBorder={true} title="Inventory" /> */}
+        <Header
+          showBorder={true}
+          title="Inventory"
+          rightContent={
+            <>
+              <UniversalDialog<InventoryItem>
+                title={"Create new Inventory item"}
+                fields={[
+                  {
+                    label: "Image",
+                    name: "image",
+                    type: "image",
+                    width: "full",
+                  },
+                  {
+                    label: "Description",
+                    name: "description",
+                    type: "text",
+                    required: true,
+                    width: "full",
+                  },
+                  {
+                    label: "Purchase Price",
+                    name: "purchasePrice",
+                    type: "number",
+                    required: true,
+                  },
+                  {
+                    label: "Sales Price",
+                    name: "salesPrice",
+                    type: "number",
+                    required: true,
+                  },
+                ]}
+                mutationFn={function (variables: Partial<any>): Promise<any> {
+                  throw new Error("Function not implemented.");
+                }}
+              >
+                <Button>Create</Button>
+              </UniversalDialog>
+            </>
+          }
+        />
         <ListView<Customer>
           emptyTitle={t("inventory.empty_title", "No inventory items Found")}
           emptyIcon={<Box className="size-16 text-muted-foreground" />}

@@ -2,7 +2,12 @@
 
 import { ReactNode } from "react";
 import { Button } from "./button";
-import { ArrowBigLeft, ArrowBigRight } from "lucide-react";
+import {
+  ArrowBigLeft,
+  ArrowBigRight,
+  ArrowLeftIcon,
+  ArrowRightIcon,
+} from "lucide-react";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 
@@ -52,13 +57,13 @@ export function Header({
           )}
 
           {/* Right Section */}
-          {rightContent && (
+          {rightContent || (
             <div className="flex items-center gap-2 flex-1 justify-end">
               <Button onClick={router.back} variant={"ghost"}>
-                <ArrowBigLeft />
+                <ArrowLeftIcon />
               </Button>
               <Button onClick={router.forward} variant={"ghost"}>
-                <ArrowBigRight />
+                <ArrowRightIcon />
               </Button>
             </div>
           )}

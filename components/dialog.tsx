@@ -570,7 +570,7 @@ const renderField = <T,>(
                 <label
                   htmlFor={fieldName}
                   className={cn(
-                    "flex items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer hover:bg-neutral-50 transition-colors",
+                    "flex items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer hover:bg-card transition-colors",
                     isSubmitting && "opacity-50 cursor-not-allowed",
                   )}
                 >
