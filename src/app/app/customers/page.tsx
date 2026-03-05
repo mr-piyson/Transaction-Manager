@@ -62,7 +62,7 @@ export default function CustomersPage() {
 
   return (
     <>
-      <Header showBorder={true} title="Customers" />
+      <Header icon={<User2 />} showBorder={true} title="Customers" />
       <ListView
         emptyTitle={t("customers.empty_title", "No Customers Found")}
         emptyIcon={<User2 className="size-16 text-muted-foreground" />}

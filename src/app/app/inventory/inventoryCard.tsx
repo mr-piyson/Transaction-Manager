@@ -26,10 +26,7 @@ export type InventoryItem = {
   invoiceId?: number | null;
 };
 
-export function InventoryCardRenderer(
-  props: ICellRendererParams<InventoryItem>,
-) {
-  const { data } = props;
+export function InventoryCardRenderer({ data }: { data: InventoryItem }) {
   const router = useRouter();
 
   if (!data) return null;

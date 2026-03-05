@@ -39,6 +39,8 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { Spinner } from "@/components/ui/spinner";
 import { useTableTheme } from "@/hooks/use-table-theme";
+import { ButtonProps } from "./button";
+import React from "react";
 
 ModuleRegistry.registerModules([AllCommunityModule]);
 
@@ -56,7 +58,7 @@ export interface SelectDialogProps<
   T extends Record<string, any> = Record<string, any>,
 > {
   /** Anything here becomes the dialog trigger */
-  children: ReactNode;
+  children?: ReactNode;
   title?: string;
   /** Controlled open state */
   open?: boolean;
@@ -95,6 +97,7 @@ export interface SelectDialogProps<
   rowHeight: number;
   useTheme?: boolean;
   itemName?: string;
+  props?: ButtonProps;
 }
 
 // ---------------------------------------------------------------------------
@@ -121,6 +124,7 @@ export function SelectDialog<T extends Record<string, any>>({
   rowHeight,
   useTheme = false,
   itemName = "items",
+  ...props
 }: SelectDialogProps<T>) {
   // ── open state ────────────────────────────────────────────────────────────
   const [internalOpen, setInternalOpen] = useState(false);
@@ -264,7 +268,15 @@ export function SelectDialog<T extends Record<string, any>>({
   // ── render ────────────────────────────────────────────────────────────────
   return (
     <Dialog open={isOpen} onOpenChange={setOpen}>
-      <DialogTrigger render={<span>{children}</span>}></DialogTrigger>
+      <DialogTrigger
+        render={
+          React.isValidElement(children) ? (
+            children
+          ) : (
+            <Button type="button">Select</Button>
+          )
+        }
+      />
 
       <DialogContent className="h-120 max-w-2xl max-h-[80vh] flex flex-col gap-0 p-0 overflow-hidden">
         <DialogHeader className="px-4 pt-4 pb-0 shrink-0">

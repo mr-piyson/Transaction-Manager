@@ -29,7 +29,7 @@ export default function App_Page(props: any) {
         cardRenderer={CustomerCardRenderer}
         rowHeight={75}
       >
-        <Button>Hello world</Button>
+        <Button variant={"destructive"}>Hello world</Button>
       </SelectDialog>
     </div>
   );

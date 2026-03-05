@@ -52,7 +52,7 @@ export function Header({
               <div className="inline bg-primary  w-1 h-8 rounded-sm" />
               {icon}
               <span className=" text-2xl font-semibold capitalize">
-                Invoices
+                {title}
               </span>
             </div>
           )}

@@ -215,7 +215,7 @@ export default function InventoryItemClientPage() {
                         id="description"
                         defaultValue={item.description ?? ""}
                         placeholder="Add product specifications or notes..."
-                        className="min-h-[120px]"
+                        className="min-h-30"
                       />
                     </div>
                   </div>
@@ -297,6 +297,7 @@ export default function InventoryItemClientPage() {
               </CardHeader>
               <CardContent className="flex flex-col items-center justify-center p-0">
                 {item.image ? (
+                  // eslint-disable-next-line @next/next/no-img-element
                   <img
                     src={item.image}
                     alt={item.name}
