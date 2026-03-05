@@ -11,20 +11,20 @@ import { AlertProvider } from "@/components/Alert-dialog";
 export default function App(props: any) {
   return (
     <QueryClientProvider client={queryClient}>
-      <SplashScreen>
-        <AlertProvider>
-          <SidebarProvider className="flex h-screen overflow-hidden">
-            <AppSidebar />
-            <div className="relative flex flex-col flex-1 min-h-full">
-              {/* Toolbar fixed at top */}
-              {/* Scrollable main area */}
-              <div className="flex flex-col flex-1 overflow-auto relative">
-                {props.children}
-              </div>
+      {/* <SplashScreen> */}
+      <AlertProvider>
+        <SidebarProvider className="flex h-screen overflow-hidden">
+          <AppSidebar />
+          <div className="relative flex flex-col flex-1 min-h-full">
+            {/* Toolbar fixed at top */}
+            {/* Scrollable main area */}
+            <div className="flex flex-col flex-1 overflow-auto relative">
+              {props.children}
             </div>
-          </SidebarProvider>
-        </AlertProvider>
-      </SplashScreen>
+          </div>
+        </SidebarProvider>
+      </AlertProvider>
+      {/* </SplashScreen> */}
     </QueryClientProvider>
   );
 }

@@ -1,61 +1,109 @@
 "use client";
 
 import { Button } from "@/components/button";
+import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Select } from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+} from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
-import { TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
+import { CurrencyCode } from "@/lib/currency";
+import { Money } from "@/lib/money";
+import { cn } from "@/lib/utils";
+import { Customer } from "@prisma/client";
+import {
+  ChevronDown,
+  ChevronRight,
+  Folder,
+  List,
+  Plus,
+  Trash,
+} from "lucide-react";
 import { useState } from "react";
-import Icons from "lucide-react";
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 // lib/utils
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-const uid = () => Math.random().toString(36).slice(2, 9);
+export const uid = () => Math.random().toString(36).slice(2, 9);
 
-const fmt = (n) =>
-  new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-    minimumFractionDigits: 2,
-  }).format(n ?? 0);
+export const today = () => new Date().toISOString().slice(0, 10);
 
-const today = () => new Date().toISOString().slice(0, 10);
-
-const addDays = (dateStr, n) => {
+export const addDays = (dateStr: string, n: number) => {
   const d = new Date(dateStr);
   d.setDate(d.getDate() + n);
   return d.toISOString().slice(0, 10);
 };
 
-const calcItemAmount = (item) =>
-  (parseFloat(item.qty) || 0) * (parseFloat(item.unitPrice) || 0);
-
-const calcGroupTotal = (group) =>
-  (group.items || []).reduce((s, i) => s + calcItemAmount(i), 0);
+// --- Financial Utils ---
 
 /**
- * Compute invoice subtotal.
- * - Standalone items are summed directly.
- * - Groups are summed as their constituent item totals.
+ * Formats a value using your Money class.
+ * Defaults to BHD per your class definition.
  */
-const calcSubtotal = (lines) =>
-  (lines || []).reduce((s, line) => {
-    if (line.type === "group") return s + calcGroupTotal(line);
-    return s + calcItemAmount(line);
+export const fmt = (n: any, curr: CurrencyCode = "BHD") =>
+  Money.format(n ?? 0, curr);
+
+/**
+ * Calculates item total: unitPrice * qty
+ */
+export const calcItemAmount = (item: any, curr: CurrencyCode = "BHD") =>
+  Money.multiply(item.unitPrice || 0, parseFloat(item.qty) || 0, curr);
+
+/**
+ * Sums up items within a group
+ */
+export const calcGroupTotal = (group: any, curr: CurrencyCode = "BHD") =>
+  (group.items || []).reduce(
+    (sum: number, item: number) =>
+      Money.add(sum, calcItemAmount(item, curr), curr),
+    0,
+  );
+
+/**
+ * Calculates subtotal for a mix of standard items and grouped items
+ */
+export const calcSubtotal = (lines: any[], curr: CurrencyCode = "BHD") =>
+  (lines || []).reduce((sum, line) => {
+    const amount =
+      line.type === "group"
+        ? calcGroupTotal(line, curr)
+        : calcItemAmount(line, curr);
+    return Money.add(sum, amount, curr);
   }, 0);
 
-const calcTotal = (lines, taxRate) => {
-  const sub = calcSubtotal(lines);
-  return sub + sub * ((parseFloat(taxRate) || 0) / 100);
+/**
+ * Calculates the tax amount based on a percentage rate
+ */
+export const calcTax = (
+  lines: any[],
+  taxRate: number | string,
+  curr: CurrencyCode = "BHD",
+) => {
+  const subtotal = calcSubtotal(lines, curr);
+  const rate = (parseFloat(taxRate as string) || 0) / 100;
+  return Money.multiply(subtotal, rate, curr);
 };
 
-const calcTax = (lines, taxRate) => {
-  const sub = calcSubtotal(lines);
-  return sub * ((parseFloat(taxRate) || 0) / 100);
+/**
+ * Calculates total: Subtotal + Tax
+ */
+export const calcTotal = (
+  lines: any[],
+  taxRate: number | string,
+  curr: CurrencyCode = "BHD",
+) => {
+  const subtotal = calcSubtotal(lines, curr);
+  const tax = calcTax(lines, taxRate, curr);
+  return Money.add(subtotal, tax, curr);
 };
-
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 // components/invoice/InvoiceForm
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -70,7 +118,7 @@ export function InvoiceForm({
 }) {
   const [tab, setTab] = useState("details");
   const [form, setForm] = useState({
-    customerId: customers[0]?.id || "",
+    customerId: customers?.length ? customers[0].id : "",
     isNewCustomer: false,
     newCustomerData: { name: "", email: "", address: "" },
     date: today(),
@@ -80,7 +128,7 @@ export function InvoiceForm({
     status: "draft",
     lines: [],
   });
-  const set = (k, v) => setForm((f) => ({ ...f, [k]: v }));
+  const set = (k: string, v: any) => setForm((f) => ({ ...f, [k]: v }));
 
   const subtotal = calcSubtotal(form.lines);
   const tax = calcTax(form.lines, form.taxRate);
@@ -94,172 +142,208 @@ export function InvoiceForm({
     <div className="space-y-0">
       {/* Tabs */}
       <div className="px-6 pt-2 pb-0">
-        <TabsList>
-          <TabsTrigger
-            value="details"
-            // currentValue={tab}
-            onClick={(e) => setTab(e.currentTarget.value)}
-          >
-            Details
-          </TabsTrigger>
-          <TabsTrigger
-            value="items"
-            // currentValue={tab}
-            onClick={(e) => setTab(e.currentTarget.value)}
-          >
-            Line Items
-            {form.lines.length > 0 && (
-              <span className="ml-1.5 rounded-full bg-indigo-100 text-indigo-700 px-1.5 py-0.5 text-xs font-semibold">
-                {form.lines.length}
-              </span>
-            )}
-          </TabsTrigger>
-        </TabsList>
-      </div>
-
-      <div className="px-6 py-5 space-y-5">
-        {tab === "details" && (
-          <>
-            {/* Customer section */}
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                  Customer
-                </span>
-                <button
-                  onClick={() => set("isNewCustomer", !form.isNewCustomer)}
-                  className="text-xs text-indigo-600 hover:text-indigo-800 font-medium underline-offset-2 hover:underline transition-colors"
+        <Tabs className="flex flex-col w-full">
+          <TabsList className="w-full">
+            <TabsTrigger value="details">Details</TabsTrigger>
+            <TabsTrigger value="items">
+              Line Items
+              {form.lines.length > 0 && (
+                <span
+                  className="ml-1.5 rounded-full px-1.5 py-0.5 text-xs font-semibold"
+                  style={{
+                    background: "var(--default)",
+                    color: "var(--default-foreground)",
+                  }}
                 >
-                  {form.isNewCustomer ? "← Select existing" : "+ New customer"}
-                </button>
+                  {form.lines.length}
+                </span>
+              )}
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="details">
+            <>
+              {/* Customer section */}
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <span
+                    className="text-xs font-semibold uppercase tracking-wider"
+                    style={{ color: "var(--muted-foreground)" }}
+                  >
+                    Customer
+                  </span>
+                  <button
+                    onClick={() => set("isNewCustomer", !form.isNewCustomer)}
+                    className="text-xs font-medium underline-offset-2 hover:underline transition-colors"
+                    style={{ color: "var(--primary)" }}
+                  >
+                    {form.isNewCustomer
+                      ? "← Select existing"
+                      : "+ New customer"}
+                  </button>
+                </div>
+
+                {form.isNewCustomer ? (
+                  <div
+                    className="rounded-lg border border-dashed p-4 space-y-3"
+                    style={{
+                      borderColor: "var(--primary)",
+                      background:
+                        "color-mix(in srgb, var(--default) 30%, transparent)",
+                    }}
+                  >
+                    <p
+                      className="text-xs font-medium"
+                      style={{ color: "var(--primary)" }}
+                    >
+                      New customer will be created automatically
+                    </p>
+                    <Input
+                      placeholder="Company name *"
+                      value={form.newCustomerData.name}
+                      onChange={(e) =>
+                        set("newCustomerData", {
+                          ...form.newCustomerData,
+                          name: e.target.value,
+                        })
+                      }
+                    />
+                    <Input
+                      placeholder="Email"
+                      type="email"
+                      value={form.newCustomerData.email}
+                      onChange={(e) =>
+                        set("newCustomerData", {
+                          ...form.newCustomerData,
+                          email: e.target.value,
+                        })
+                      }
+                    />
+                    <Input
+                      placeholder="Address"
+                      value={form.newCustomerData.address}
+                      onChange={(e) =>
+                        set("newCustomerData", {
+                          ...form.newCustomerData,
+                          address: e.target.value,
+                        })
+                      }
+                    />
+                  </div>
+                ) : (
+                  <Select items={customers}>
+                    <SelectTrigger value="">Select customer…</SelectTrigger>
+                    <SelectContent>
+                      <SelectGroup>
+                        <SelectLabel>Customers</SelectLabel>
+                        {customers?.map((c: Customer) => (
+                          <SelectItem key={c.id} value={c.id}>
+                            {c.name}
+                          </SelectItem>
+                        ))}
+                      </SelectGroup>
+                    </SelectContent>
+                  </Select>
+                )}
               </div>
 
-              {form.isNewCustomer ? (
-                <div className="rounded-lg border border-dashed border-indigo-200 bg-indigo-50/40 p-4 space-y-3">
-                  <p className="text-xs text-indigo-600 font-medium">
-                    New customer will be created automatically
-                  </p>
-                  <Input
-                    placeholder="Company name *"
-                    value={form.newCustomerData.name}
-                    onChange={(e) =>
-                      set("newCustomerData", {
-                        ...form.newCustomerData,
-                        name: e.target.value,
-                      })
-                    }
-                  />
-                  <Input
-                    placeholder="Email"
-                    type="email"
-                    value={form.newCustomerData.email}
-                    onChange={(e) =>
-                      set("newCustomerData", {
-                        ...form.newCustomerData,
-                        email: e.target.value,
-                      })
-                    }
-                  />
-                  <Input
-                    placeholder="Address"
-                    value={form.newCustomerData.address}
-                    onChange={(e) =>
-                      set("newCustomerData", {
-                        ...form.newCustomerData,
-                        address: e.target.value,
-                      })
-                    }
-                  />
-                </div>
-              ) : (
+              <Separator />
+
+              {/* Dates + meta */}
+              <div className="grid grid-cols-1 gap-4">
+                <Label htmlFor="date" className="text-muted-foreground">
+                  Issue Date
+                </Label>
+                <Input
+                  id="date"
+                  type="date"
+                  value={form.date}
+                  onChange={(e) => set("date", e.target.value)}
+                />
+                <Label htmlFor="dueDate" className="text-muted-foreground">
+                  Due Date
+                </Label>
+                <Input
+                  id="dueDate"
+                  type="date"
+                  value={form.dueDate}
+                  onChange={(e) => set("dueDate", e.target.value)}
+                />
+                <Input
+                  label="Tax Rate %"
+                  type="number"
+                  min="0"
+                  max="100"
+                  step="0.1"
+                  value={form.taxRate}
+                  onChange={(e) => set("taxRate", e.target.value)}
+                />
                 <Select
-                  value={form.customerId}
-                  onChange={(e) => set("customerId", e.target.value)}
+                  label="Status"
+                  value={form.status}
+                  onChange={(e) => set("status", e.target.value)}
                 >
-                  <option value="">Select customer…</option>
-                  {customers.map((c) => (
-                    <option key={c.id} value={c.id}>
-                      {c.name}
+                  {["draft", "sent", "paid", "overdue"].map((s) => (
+                    <option key={s} value={s}>
+                      {s.charAt(0).toUpperCase() + s.slice(1)}
                     </option>
                   ))}
                 </Select>
-              )}
-            </div>
+              </div>
 
-            <Separator />
-
-            {/* Dates + meta */}
-            <div className="grid grid-cols-2 gap-4">
-              <Input
-                label="Issue Date"
-                type="date"
-                value={form.date}
-                onChange={(e) => set("date", e.target.value)}
+              <Textarea
+                label="Notes"
+                value={form.notes}
+                onChange={(e) => set("notes", e.target.value)}
+                rows={3}
+                placeholder="Payment terms, additional information…"
               />
-              <Input
-                label="Due Date"
-                type="date"
-                value={form.dueDate}
-                onChange={(e) => set("dueDate", e.target.value)}
-              />
-              <Input
-                label="Tax Rate %"
-                type="number"
-                min="0"
-                max="100"
-                step="0.1"
-                value={form.taxRate}
-                onChange={(e) => set("taxRate", e.target.value)}
-              />
-              <Select
-                label="Status"
-                value={form.status}
-                onChange={(e) => set("status", e.target.value)}
-              >
-                {["draft", "sent", "paid", "overdue"].map((s) => (
-                  <option key={s} value={s}>
-                    {s.charAt(0).toUpperCase() + s.slice(1)}
-                  </option>
-                ))}
-              </Select>
-            </div>
+            </>
+          </TabsContent>
 
-            <Textarea
-              label="Notes"
-              value={form.notes}
-              onChange={(e) => set("notes", e.target.value)}
-              rows={3}
-              placeholder="Payment terms, additional information…"
-            />
-          </>
-        )}
-
-        {tab === "items" && (
-          <>
-            <div className="rounded-lg bg-amber-50 border border-amber-200 px-3 py-2 text-xs text-amber-700">
-              <strong>Mixed mode:</strong> Add standalone items and/or groups
-              freely. Groups are shown as a single summary line in the PDF;
-              items inside are not listed individually.
-            </div>
-            <LineItemsEditor
-              lines={form.lines}
-              onChange={(l) => set("lines", l)}
-            />
-          </>
-        )}
+          <TabsContent value="items">
+            <>
+              {/* Info banner using warning schema colors */}
+              <div className="rounded-lg border px-3 my-5 py-2 text-xs text-warning-foreground bg-warning border-warning-foreground">
+                <strong>Mixed mode:</strong> Add standalone items and/or groups
+                freely. Groups are shown as a single summary line in the PDF;
+                items inside are not listed individually.
+              </div>
+              <LineItemsEditor
+                lines={form.lines}
+                onChange={(l) => set("lines", l)}
+              />
+            </>
+          </TabsContent>
+        </Tabs>
       </div>
 
       {/* Footer with totals + actions */}
-      <div className="px-6 py-4 border-t border-slate-100 bg-slate-50/60 rounded-b-xl">
+      <div
+        className="px-6 py-4 border-t rounded-b-xl"
+        style={{
+          borderColor: "var(--border)",
+          background: "var(--card)",
+        }}
+      >
         <div className="flex items-center justify-between">
-          <div className="flex gap-4 text-sm text-slate-500">
+          <div
+            className="flex gap-4 text-sm"
+            style={{ color: "var(--muted-foreground)" }}
+          >
             <span>
               Tax:{" "}
-              <span className="text-slate-800 font-medium tabular-nums">
+              <span
+                className="font-medium tabular-nums"
+                style={{ color: "var(--foreground)" }}
+              >
                 {fmt(tax)}
               </span>
             </span>
-            <span className="font-semibold text-slate-900">
+            <span
+              className="font-semibold"
+              style={{ color: "var(--foreground)" }}
+            >
               Total: <span className="tabular-nums">{fmt(total)}</span>
             </span>
           </div>
@@ -279,9 +363,7 @@ export function InvoiceForm({
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 // components/invoice/LineItemsEditor
-// Unified editor: both standalone items + groups coexist
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
 function LineItemsEditor({ lines, onChange }) {
   const updateLine = (idx, updated) =>
     onChange(lines.map((l, i) => (i === idx ? updated : l)));
@@ -315,7 +397,8 @@ function LineItemsEditor({ lines, onChange }) {
           {["Description", "Qty", "Unit Price", "Amount", ""].map((h) => (
             <span
               key={h}
-              className="text-xs font-medium text-slate-400 uppercase tracking-wider text-right first:text-left"
+              className="text-xs font-medium uppercase tracking-wider text-right first:text-left"
+              style={{ color: "var(--muted-foreground)" }}
             >
               {h}
             </span>
@@ -324,8 +407,14 @@ function LineItemsEditor({ lines, onChange }) {
       )}
 
       {lines.length === 0 && (
-        <div className="flex flex-col items-center justify-center py-10 text-slate-400 border-2 border-dashed border-slate-200 rounded-lg">
-          <Icons.List className="h-8 w-8 mb-2 opacity-40" />
+        <div
+          className="flex flex-col items-center justify-center py-10 border-2 border-dashed rounded-lg"
+          style={{
+            color: "var(--muted-foreground)",
+            borderColor: "var(--border)",
+          }}
+        >
+          <List className="h-8 w-8 mb-2 opacity-40" />
           <p className="text-sm">No line items yet</p>
           <p className="text-xs mt-1">
             Add individual items or organized groups below
@@ -355,21 +444,31 @@ function LineItemsEditor({ lines, onChange }) {
       <div className="flex items-center justify-between pt-1">
         <div className="flex gap-2">
           <Button variant="outline" size="sm" onClick={addItem}>
-            <Icons.Plus className="h-3.5 w-3.5" /> Add Item
+            <Plus className="h-3.5 w-3.5" /> Add Item
           </Button>
-          <Button
-            variant="outline"
-            size="sm"
+          {/* Group button styled with schema default/primary colors */}
+          <button
             onClick={addGroup}
-            className="text-indigo-600 border-indigo-200 hover:bg-indigo-50 hover:text-indigo-700"
+            className="inline-flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-sm font-medium transition-colors hover:opacity-80"
+            style={{
+              borderColor: "var(--primary)",
+              color: "var(--primary)",
+              background: "color-mix(in srgb, var(--default) 40%, transparent)",
+            }}
           >
-            <Icons.Folder className="h-3.5 w-3.5" /> Add Group
-          </Button>
+            <Folder className="h-3.5 w-3.5" /> Add Group
+          </button>
         </div>
         {lines.length > 0 && (
-          <span className="text-sm font-medium text-slate-600 tabular-nums">
+          <span
+            className="text-sm font-medium tabular-nums"
+            style={{ color: "var(--muted-foreground)" }}
+          >
             Subtotal:{" "}
-            <span className="font-semibold text-slate-900">
+            <span
+              className="font-semibold"
+              style={{ color: "var(--foreground)" }}
+            >
               {fmt(subtotal)}
             </span>
           </span>
@@ -407,37 +506,70 @@ function GroupBlock({ group, onChange, onRemove }) {
     });
 
   return (
-    <div className="rounded-lg border border-indigo-200 bg-indigo-50/30 overflow-hidden">
+    <div
+      className="rounded-lg border overflow-hidden"
+      style={{
+        borderColor: "var(--primary)",
+        background: "color-mix(in srgb, var(--default) 15%, transparent)",
+      }}
+    >
       {/* Group header */}
-      <div className="flex items-center gap-2 px-3 py-2 bg-indigo-50 border-b border-indigo-200">
+      <div
+        className="flex items-center gap-2 px-3 py-2 border-b"
+        style={{
+          background: "var(--default)",
+          borderColor: "color-mix(in srgb, var(--primary) 30%, transparent)",
+        }}
+      >
         <button
           onClick={() => setExpanded((x) => !x)}
-          className="text-indigo-500 hover:text-indigo-700 transition-colors"
+          className="transition-colors"
+          style={{ color: "var(--default-foreground)" }}
         >
           {expanded ? (
-            <Icons.ChevronDown className="h-3.5 w-3.5" />
+            <ChevronDown className="h-3.5 w-3.5" />
           ) : (
-            <Icons.ChevronRight className="h-3.5 w-3.5" />
+            <ChevronRight className="h-3.5 w-3.5" />
           )}
         </button>
-        <Icons.Folder className="h-3.5 w-3.5 text-indigo-500 shrink-0" />
+        <Folder
+          className="h-3.5 w-3.5 shrink-0"
+          style={{ color: "var(--default-foreground)" }}
+        />
         <input
-          className="flex-1 bg-transparent text-sm font-semibold text-indigo-900 focus:outline-none placeholder:text-indigo-400 min-w-0"
+          className="flex-1 bg-transparent text-sm font-semibold focus:outline-none min-w-0"
+          style={{
+            color: "var(--default-foreground)",
+          }}
           value={group.name || ""}
           placeholder="Group name…"
           onChange={(e) => onChange({ ...group, name: e.target.value })}
         />
-        <span className="text-sm font-semibold text-indigo-700 tabular-nums shrink-0">
+        <span
+          className="text-sm font-semibold tabular-nums shrink-0"
+          style={{ color: "var(--default-foreground)" }}
+        >
           {fmt(total)}
         </span>
-        <Badge variant="group" className="shrink-0">
+        <Badge variant="default" className="shrink-0">
           {group.items?.length || 0} item{group.items?.length !== 1 ? "s" : ""}
         </Badge>
         <button
           onClick={onRemove}
-          className="h-7 w-7 flex items-center justify-center rounded text-indigo-400 hover:text-red-500 hover:bg-red-50 transition-colors shrink-0"
+          className="h-7 w-7 flex items-center justify-center rounded transition-colors shrink-0"
+          style={{ color: "var(--muted-foreground)" }}
+          onMouseEnter={(e) => {
+            (e.currentTarget as HTMLElement).style.color = "var(--destructive)";
+            (e.currentTarget as HTMLElement).style.background =
+              "color-mix(in srgb, var(--destructive) 10%, transparent)";
+          }}
+          onMouseLeave={(e) => {
+            (e.currentTarget as HTMLElement).style.color =
+              "var(--muted-foreground)";
+            (e.currentTarget as HTMLElement).style.background = "transparent";
+          }}
         >
-          <Icons.Trash className="h-3.5 w-3.5" />
+          <Trash className="h-3.5 w-3.5" />
         </button>
       </div>
 
@@ -449,7 +581,8 @@ function GroupBlock({ group, onChange, onRemove }) {
             {["Description", "Qty", "Unit $", "Amount", ""].map((h) => (
               <span
                 key={h}
-                className="text-xs font-medium text-slate-400 uppercase tracking-wider text-right first:text-left"
+                className="text-xs font-medium uppercase tracking-wider text-right first:text-left"
+                style={{ color: "var(--muted-foreground)" }}
               >
                 {h}
               </span>
@@ -466,9 +599,16 @@ function GroupBlock({ group, onChange, onRemove }) {
           ))}
           <button
             onClick={addItem}
-            className="mt-1 flex items-center gap-1.5 text-xs font-medium text-indigo-600 hover:text-indigo-800 transition-colors py-1"
+            className="mt-1 flex items-center gap-1.5 text-xs font-medium transition-colors py-1"
+            style={{ color: "var(--primary)" }}
+            onMouseEnter={(e) =>
+              ((e.currentTarget as HTMLElement).style.opacity = "0.7")
+            }
+            onMouseLeave={(e) =>
+              ((e.currentTarget as HTMLElement).style.opacity = "1")
+            }
           >
-            <Icons.Plus className="h-3 w-3" /> Add line item
+            <Plus className="h-3 w-3" /> Add line item
           </button>
         </div>
       )}
@@ -481,6 +621,20 @@ function GroupBlock({ group, onChange, onRemove }) {
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 function LineItemRow({ item, onChange, onRemove, compact = false }) {
   const amount = calcItemAmount(item);
+
+  const inputStyle = {
+    height: "2rem",
+    width: "100%",
+    borderRadius: "var(--radius-sm)",
+    border: "1px solid var(--input)",
+    background: "var(--background)",
+    padding: "0 0.5rem",
+    fontSize: "0.875rem",
+    color: "var(--foreground)",
+    outline: "none",
+    transition: "border-color 0.15s, box-shadow 0.15s",
+  };
+
   return (
     <div
       className={cn(
@@ -491,36 +645,74 @@ function LineItemRow({ item, onChange, onRemove, compact = false }) {
       )}
     >
       <input
-        className="h-8 w-full rounded border border-slate-200 bg-white px-2 text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-1 focus:ring-indigo-500 transition-colors"
+        style={inputStyle}
         placeholder="Description"
         value={item.description || ""}
         onChange={(e) => onChange("description", e.target.value)}
+        onFocus={(e) => {
+          e.currentTarget.style.borderColor = "var(--primary)";
+          e.currentTarget.style.boxShadow = `0 0 0 2px color-mix(in srgb, var(--ring) 40%, transparent)`;
+        }}
+        onBlur={(e) => {
+          e.currentTarget.style.borderColor = "var(--input)";
+          e.currentTarget.style.boxShadow = "none";
+        }}
       />
       <input
-        className="h-8 w-full rounded border border-slate-200 bg-white px-2 text-sm text-right text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-1 focus:ring-indigo-500 transition-colors"
+        style={{ ...inputStyle, textAlign: "right" }}
         placeholder="Qty"
         type="number"
         min="0"
         value={item.qty ?? ""}
         onChange={(e) => onChange("qty", e.target.value)}
+        onFocus={(e) => {
+          e.currentTarget.style.borderColor = "var(--primary)";
+          e.currentTarget.style.boxShadow = `0 0 0 2px color-mix(in srgb, var(--ring) 40%, transparent)`;
+        }}
+        onBlur={(e) => {
+          e.currentTarget.style.borderColor = "var(--input)";
+          e.currentTarget.style.boxShadow = "none";
+        }}
       />
       <input
-        className="h-8 w-full rounded border border-slate-200 bg-white px-2 text-sm text-right text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-1 focus:ring-indigo-500 transition-colors"
+        style={{ ...inputStyle, textAlign: "right" }}
         placeholder="Unit $"
         type="number"
         min="0"
         step="0.01"
         value={item.unitPrice ?? ""}
         onChange={(e) => onChange("unitPrice", e.target.value)}
+        onFocus={(e) => {
+          e.currentTarget.style.borderColor = "var(--primary)";
+          e.currentTarget.style.boxShadow = `0 0 0 2px color-mix(in srgb, var(--ring) 40%, transparent)`;
+        }}
+        onBlur={(e) => {
+          e.currentTarget.style.borderColor = "var(--input)";
+          e.currentTarget.style.boxShadow = "none";
+        }}
       />
-      <span className="text-right text-sm font-medium text-slate-700 tabular-nums pr-1">
+      <span
+        className="text-right text-sm font-medium tabular-nums pr-1"
+        style={{ color: "var(--foreground)" }}
+      >
         {fmt(amount)}
       </span>
       <button
         onClick={onRemove}
-        className="h-8 w-8 flex items-center justify-center rounded text-slate-400 hover:text-red-500 hover:bg-red-50 transition-colors"
+        className="h-8 w-8 flex items-center justify-center rounded transition-colors"
+        style={{ color: "var(--muted-foreground)" }}
+        onMouseEnter={(e) => {
+          (e.currentTarget as HTMLElement).style.color = "var(--destructive)";
+          (e.currentTarget as HTMLElement).style.background =
+            "color-mix(in srgb, var(--destructive) 10%, transparent)";
+        }}
+        onMouseLeave={(e) => {
+          (e.currentTarget as HTMLElement).style.color =
+            "var(--muted-foreground)";
+          (e.currentTarget as HTMLElement).style.background = "transparent";
+        }}
       >
-        <Icons.Trash className="h-3.5 w-3.5" />
+        <Trash className="h-3.5 w-3.5" />
       </button>
     </div>
   );

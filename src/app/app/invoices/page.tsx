@@ -10,6 +10,7 @@ import { useI18n } from "@/hooks/use-i18n";
 import axios from "axios";
 import { Invoice } from "@prisma/client";
 import { Header } from "@/components/Header";
+import { Button } from "@/components/ui/button";
 
 export default function invoicesPage() {
   const { t } = useI18n();
@@ -30,7 +31,16 @@ export default function invoicesPage() {
 
   return (
     <div className="h-full ">
-      <Header title={"Invoices"} icon={<FileText className="inline" />} />
+      <Header
+        title={"Invoices"}
+        icon={<FileText className="inline" />}
+        leftContent={
+          <>
+            <Button>Create Invoice</Button>
+          </>
+        }
+      />
+
       <ListView<Invoice>
         emptyTitle={t("invoices.empty_title", "No invoices items Found")}
         emptyIcon={<Box className="size-16 text-muted-foreground" />}

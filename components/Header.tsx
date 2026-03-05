@@ -58,24 +58,7 @@ export function Header({
           )}
 
           {/* Right Section */}
-          {rightContent || (
-            <div className="flex items-center gap-2 flex-1 justify-end">
-              <Button
-                className="text-foreground/50"
-                onClick={router.back}
-                variant={"ghost"}
-              >
-                <ArrowLeftIcon />
-              </Button>
-              <Button
-                className="text-foreground/50"
-                onClick={router.forward}
-                variant={"ghost"}
-              >
-                <ArrowRightIcon />
-              </Button>
-            </div>
-          )}
+          {rightContent}
         </div>
       </div>
     </header>
