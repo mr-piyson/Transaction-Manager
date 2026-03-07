@@ -11,6 +11,7 @@ import axios from "axios";
 import { Invoice } from "@prisma/client";
 import { Header } from "@/components/Header";
 import { Button } from "@/components/ui/button";
+import { CreateInvoiceDialog } from "./create-invoice-dialog";
 
 export default function invoicesPage() {
   const { t } = useI18n();
@@ -34,11 +35,7 @@ export default function invoicesPage() {
       <Header
         title={"Invoices"}
         icon={<FileText className="inline" />}
-        leftContent={
-          <>
-            <Button>Create Invoice</Button>
-          </>
-        }
+        rightContent={<CreateInvoiceDialog />}
       />
 
       <ListView<Invoice>

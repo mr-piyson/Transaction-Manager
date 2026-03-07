@@ -8,8 +8,15 @@ declare global {
   var prisma: PrismaClient;
 }
 
-const adapter = new PrismaPg({
+
+
+
+`const adapter = new PrismaPg({
   connectionString: env.DATABASE_URL,
+});`;
+
+const adapter = new PrismaLibSql({
+  url: env.DATABASE_URL,
 });
 
 const db = new PrismaClient({

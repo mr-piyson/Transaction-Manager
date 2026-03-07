@@ -3,7 +3,6 @@ import { createEnv } from "@t3-oss/env-core";
 
 export const env = createEnv({
   server: {
-    DATABASE: z.string(),
     DATABASE_URL: z.string(),
     JWT_SECRET_ACCESS: z.string(),
     JWT_SECRET_REFRESH: z.string(),
@@ -12,10 +11,19 @@ export const env = createEnv({
     NODE_ENV: z.enum(["development", "production"]).optional(),
   },
   runtimeEnv: process.env,
-  onValidationError: issues => {
+  onValidationError: (issues) => {
     console.error(`Invalid environment variables:`);
-    issues.forEach(issue => {
-      if (issue.path) console.log("\x1b[31m", issue.path[0].toString().trim(), "\x1b[31m", "\x1b[0m=\x1b[0m", "\x1b[32m", '""', "\x1b[32m");
+    issues.forEach((issue) => {
+      if (issue.path)
+        console.log(
+          "\x1b[31m",
+          issue.path[0].toString().trim(),
+          "\x1b[31m",
+          "\x1b[0m=\x1b[0m",
+          "\x1b[32m",
+          '""',
+          "\x1b[32m",
+        );
     });
     // throw error with out log the zod runtime error log
     process.exit(1);

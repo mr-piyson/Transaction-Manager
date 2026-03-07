@@ -27,42 +27,39 @@ export default function CustomersPage() {
     queryKey: ["customers"],
     queryFn: async () => (await axios.get<Customer[]>("/api/customers")).data,
   });
-  // 2. Memoize the header component so we don't trigger unnecessary layout repaints
-  const headerLeftContent = useMemo(
-    () => (
-      <div className="flex h-full w-full items-center gap-4 print:hidden justify-between">
-        <div className="flex flex-row gap-4">
-          <div className="bg-primary w-1 h-8 rounded-sm" />
-          <h1 className="text-2xl font-semibold pb-1 capitalize">
-            {t("common.customers")}
-          </h1>
-        </div>
-        <UniversalDialog<Customer>
-          title={t("customers.new", "Create new Customer")}
-          fields={[
-            { name: "name", label: "Name", required: true, type: "text" },
-            { name: "phone", label: "Phone", required: true, type: "text" },
-            { name: "address", label: "Address", required: true, type: "text" },
-          ]}
-          mutationFn={async (payload) =>
-            // Tip: Consider using `eden.api.customers.post(payload)` here if your Eden client supports it!
-            await axios.post("/api/customers", payload)
-          }
-          onSuccess={() => refetch()}
-        >
-          <Button>
-            <Plus className="mr-2 size-4" />
-            {t("common.create", "Create")}
-          </Button>
-        </UniversalDialog>
-      </div>
-    ),
-    [t, refetch],
-  );
 
   return (
     <>
-      <Header icon={<User2 />} showBorder={true} title="Customers" />
+      <Header
+        icon={<User2 />}
+        showBorder={true}
+        title="Customers"
+        rightContent={
+          <UniversalDialog<Customer>
+            title={t("customers.new", "Create new Customer")}
+            fields={[
+              { name: "name", label: "Name", required: true, type: "text" },
+              { name: "phone", label: "Phone", required: true, type: "text" },
+              {
+                name: "address",
+                label: "Address",
+                required: true,
+                type: "text",
+              },
+            ]}
+            mutationFn={async (payload) =>
+              // Tip: Consider using `eden.api.customers.post(payload)` here if your Eden client supports it!
+              await axios.post("/api/customers", payload)
+            }
+            onSuccess={() => refetch()}
+          >
+            <Button>
+              <Plus className="mr-2 size-4" />
+              {t("common.create", "Create")}
+            </Button>
+          </UniversalDialog>
+        }
+      />
       <ListView
         emptyTitle={t("customers.empty_title", "No Customers Found")}
         emptyIcon={<User2 className="size-16 text-muted-foreground" />}

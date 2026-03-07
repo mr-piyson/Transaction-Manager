@@ -39,9 +39,9 @@ export const customerRoutes = new Elysia({ prefix: "/customers" })
     "/",
     async ({ body, set }) => {
       try {
-        const data = {};
-        set.status = 201;
-        return { success: true, data };
+        return await db.customer.create({
+          data: body,
+        });
       } catch (e: any) {
         set.status = 400;
         return { success: false, message: e.message };
