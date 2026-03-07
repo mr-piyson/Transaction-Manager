@@ -1,6 +1,7 @@
 import { Elysia, t } from "elysia";
 import { authMiddleware } from "../middleware/auth.middleware";
 import db from "@/lib/database";
+import { log } from "console";
 
 const InvoiceItemSchema = t.Object({
   code: t.Optional(t.String()),
@@ -29,8 +30,23 @@ export const invoiceRoutes = new Elysia({ prefix: "/invoices" })
     "/",
     async ({ query, set }) => {
       try {
-        const data = await db.invoice.findMany({});
-        return data;
+        const invoices = await prisma.invoice.findMany({
+          // 1. Include the related models
+          include: {
+            customer: {
+              select: {
+                name: true,
+                phone: true,
+                address: true,
+              },
+            },
+          },
+          // 2. Order by newest first
+          orderBy: {
+            date: "desc",
+          },
+        });
+        return invoices;
       } catch (e: any) {
         set.status = 500;
         return { success: false, message: e.message };
@@ -81,9 +97,15 @@ export const invoiceRoutes = new Elysia({ prefix: "/invoices" })
     "/",
     async ({ body, set }) => {
       try {
-        const data = {};
-        set.status = 201;
-        return { success: true, data };
+        log(body);
+        const invoice = db.invoice.create({
+          data: {
+            customerId: body.customerId,
+            date: body.date,
+            description: body.description,
+          },
+        });
+        return invoice;
       } catch (e: any) {
         set.status = 400;
         return { success: false, message: e.message };
@@ -94,7 +116,6 @@ export const invoiceRoutes = new Elysia({ prefix: "/invoices" })
         customerId: t.Optional(t.Number()),
         description: t.Optional(t.String()),
         date: t.Optional(t.String()),
-        items: t.Array(InvoiceItemSchema),
       }),
     },
   )

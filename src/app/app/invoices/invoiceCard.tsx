@@ -1,10 +1,9 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import {  User, Calendar, Hash } from "lucide-react";
+import { User, Calendar, Hash, FileSpreadsheet, FileText } from "lucide-react";
 
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Money } from "@/lib/money";
 
 // Aligning with your Prisma Schema
 export type InvoiceWithRelations = {
@@ -17,9 +16,6 @@ export type InvoiceWithRelations = {
     phone: string;
     address: string;
   } | null;
-  invoiceItems: {
-    salesPrice: number;
-  }[];
 };
 
 export function InvoiceCardRenderer({ data }: { data: InvoiceWithRelations }) {
@@ -27,11 +23,6 @@ export function InvoiceCardRenderer({ data }: { data: InvoiceWithRelations }) {
 
   if (!data) return null;
 
-  // Calculate total from the relation
-  const totalAmount = data.invoiceItems.reduce(
-    (acc, item) => acc + item.salesPrice,
-    0,
-  );
   const customerName = data.customer?.name ?? "Walking Customer";
   const customerPhone = data.customer?.phone ?? "No Phone";
 
@@ -43,7 +34,7 @@ export function InvoiceCardRenderer({ data }: { data: InvoiceWithRelations }) {
       {/* Customer Avatar */}
       <Avatar className="size-10 shrink-0 border bg-background">
         <AvatarFallback className="text-muted-foreground">
-          <User className="size-5" />
+          <FileText className="size-5" />
         </AvatarFallback>
       </Avatar>
 
@@ -60,21 +51,16 @@ export function InvoiceCardRenderer({ data }: { data: InvoiceWithRelations }) {
           <span>•</span>
           <span>{customerPhone}</span>
           <span className="hidden sm:inline">•</span>
-          <span className="flex items-center gap-1">
-            <Calendar className="size-3" />
-            {new Date(data.date).toLocaleDateString()}
-          </span>
         </div>
       </div>
 
       {/* Amount */}
-      <div className="text-right shrink-0">
-        <p className="font-bold text-base text-primary">
-          {Money.format(totalAmount)}
-        </p>
-        <p className="text-[10px] text-muted-foreground uppercase">
-          {data.invoiceItems.length} items
-        </p>
+      <div className="text-right shrink-0 text-muted-foreground">
+        <span>Total : 12.000 DB</span>
+        <span className="flex items-center gap-1">
+          <Calendar className="size-3" />
+          {new Date(data.date).toLocaleDateString()}
+        </span>
       </div>
     </div>
   );

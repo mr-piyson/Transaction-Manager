@@ -33,6 +33,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { queryClient } from "@/lib/client";
 import { UniversalDialog } from "@/components/dialog";
+import { Invoice } from "@prisma/client";
 
 interface Customer {
   id: number;
@@ -41,7 +42,9 @@ interface Customer {
   address: string;
 }
 
-export function CreateInvoiceDialog() {
+export function CreateInvoiceDialog(props: {
+  onSuccess?: (invoice: any) => void;
+}) {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [selectedCustomerId, setSelectedCustomerId] = useState<number | null>(
@@ -66,7 +69,7 @@ export function CreateInvoiceDialog() {
 
     setLoading(true);
     try {
-      await axios.post("/api/invoices", {
+      const res = await axios.post<Invoice>("/api/invoices", {
         customerId: selectedCustomerId,
         description,
         date: new Date(),
@@ -75,6 +78,7 @@ export function CreateInvoiceDialog() {
       toast.success("Invoice created successfully");
       queryClient.refetchQueries({ queryKey: ["invoices"] });
       setOpen(false);
+      props.onSuccess?.({ invoice: res.data });
       resetForm();
     } catch (error) {
       toast.error("Failed to create invoice");
@@ -125,7 +129,7 @@ export function CreateInvoiceDialog() {
                     </Button>
                   }
                 ></PopoverTrigger>
-                <PopoverContent className="w-[300px] p-0">
+                <PopoverContent className="w-75 p-0">
                   <Command>
                     <CommandInput placeholder="Search customers..." />
                     <CommandList>
@@ -135,9 +139,10 @@ export function CreateInvoiceDialog() {
                           <CommandItem
                             key={customer.id}
                             value={customer.name}
+                            className="mb-1"
                             onSelect={() => {
-                              setSelectedCustomerId(customer.id);
                               setComboOpen(false);
+                              setSelectedCustomerId(customer.id);
                             }}
                           >
                             <Check
@@ -181,10 +186,14 @@ export function CreateInvoiceDialog() {
                   },
                 ]}
                 mutationFn={async (payload) =>
-                  await axios.post("/api/customers", payload)
+                  (await axios.post("/api/customers", payload)).data
                 }
                 onSuccess={(newCustomer) => {
-                  console.log(newCustomer);
+                  refetchCustomers();
+                  // Automatically select the newly created customer
+                  if (newCustomer?.id) {
+                    setSelectedCustomerId(newCustomer.id);
+                  }
                 }}
               >
                 <Button

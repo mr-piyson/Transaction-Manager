@@ -12,6 +12,7 @@ import { Invoice } from "@prisma/client";
 import { Header } from "@/components/Header";
 import { Button } from "@/components/ui/button";
 import { CreateInvoiceDialog } from "./create-invoice-dialog";
+import { InvoiceCardRenderer, InvoiceWithRelations } from "./invoiceCard";
 
 export default function invoicesPage() {
   const { t } = useI18n();
@@ -31,14 +32,14 @@ export default function invoicesPage() {
   });
 
   return (
-    <div className="h-full ">
+    <>
       <Header
         title={"Invoices"}
         icon={<FileText className="inline" />}
         rightContent={<CreateInvoiceDialog />}
       />
 
-      <ListView<Invoice>
+      <ListView<InvoiceWithRelations>
         emptyTitle={t("invoices.empty_title", "No invoices items Found")}
         emptyIcon={<Box className="size-16 text-muted-foreground" />}
         emptyDescription={
@@ -50,11 +51,11 @@ export default function invoicesPage() {
         isError={isError}
         itemName="invoices items"
         useTheme={true}
-        cardRenderer={() => <></>}
+        cardRenderer={InvoiceCardRenderer}
         rowHeight={65}
         searchFields={[]}
         onRefetch={refetch}
       />
-    </div>
+    </>
   );
 }
