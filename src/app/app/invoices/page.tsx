@@ -26,7 +26,6 @@ export default function invoicesPage() {
     queryKey: ["invoices"],
     queryFn: async () => {
       const data = (await axios.get("/api/invoices")).data;
-      console.log(data);
       return data;
     },
   });

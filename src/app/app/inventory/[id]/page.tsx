@@ -64,8 +64,6 @@ export default function InventoryItemClientPage() {
     },
   });
 
-  console.log(item);
-
   /* ------------------------------ Mutations ------------------------------ */
 
   const updateMutation = useMutation({

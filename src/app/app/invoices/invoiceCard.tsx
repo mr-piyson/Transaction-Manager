@@ -48,9 +48,6 @@ export function InvoiceCardRenderer({ data }: { data: InvoiceWithRelations }) {
             <Hash className="size-3" />
             INV-{data.id.toString().padStart(4, "0")}
           </span>
-          <span>•</span>
-          <span>{customerPhone}</span>
-          <span className="hidden sm:inline">•</span>
         </div>
       </div>
 

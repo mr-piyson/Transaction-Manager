@@ -86,17 +86,17 @@ export const inventoryRoutes = new Elysia({ prefix: "/inventory" })
         return { success: false, message: e.message };
       }
     },
-    // {
-    //   params: t.Object({ id: t.String() }),
-    //   body: t.Object({
-    //     code: t.Optional(t.String()),
-    //     name: t.Optional(t.String()),
-    //     description: t.Optional(t.String()),
-    //     purchasePrice: t.Optional(t.Number({ minimum: 0 })),
-    //     salesPrice: t.Optional(t.Number({ minimum: 0 })),
-    //     image: t.Optional(t.String()),
-    //   }),
-    // },
+    {
+      params: t.Object({ id: t.String() }),
+      body: t.Object({
+        code: t.Optional(t.String()),
+        name: t.Optional(t.String()),
+        description: t.Optional(t.String()),
+        purchasePrice: t.Optional(t.Number({ minimum: 0 })),
+        salesPrice: t.Optional(t.Number({ minimum: 0 })),
+        image: t.Optional(t.String()),
+      }),
+    },
   )
   .delete(
     "/:id",

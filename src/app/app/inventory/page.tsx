@@ -27,7 +27,6 @@ export default function InventoryPage() {
     queryKey: ["inventory"],
     queryFn: async () => {
       const data = (await axios.get("/api/inventory")).data;
-      console.log(data);
       return data;
     },
   });
