@@ -1,7 +1,9 @@
-type SorryProps = {
-  children?: React.ReactNode;
-};
+import { CustomerProfile } from "./customer-profile";
 
-export default function Sorry(props: SorryProps) {
-  return <div></div>;
+export default async function Page({
+  params,
+}: {
+  params: { customerId: string };
+}) {
+  return <CustomerProfile customerId={(await params).customerId} />;
 }

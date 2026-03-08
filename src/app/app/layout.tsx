@@ -6,6 +6,7 @@ import { AppSidebar } from "./AppSidebar";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { queryClient } from "@/lib/client";
 import { AlertProvider } from "@/components/Alert-dialog";
+import { BottomNavigation } from "@/components/nav-bar";
 // import { BottomNavigation } from "@/components/BottomNavigation";
 
 export default function App(props: any) {
@@ -21,6 +22,8 @@ export default function App(props: any) {
             <div className="flex flex-col flex-1 overflow-auto relative">
               {props.children}
             </div>
+            {/* Bottom Navigation */}
+            <BottomNavigation />
           </div>
         </SidebarProvider>
       </AlertProvider>

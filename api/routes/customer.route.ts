@@ -26,8 +26,12 @@ export const customerRoutes = new Elysia({ prefix: "/customers" })
     "/:id",
     async ({ params, set }) => {
       try {
-        const data = {};
-        return { success: true, data };
+        const customer = db.customer.findUnique({
+          where: {
+            id: Number(params.id),
+          },
+        });
+        return customer;
       } catch (e: any) {
         set.status = 404;
         return { success: false, message: e.message };
