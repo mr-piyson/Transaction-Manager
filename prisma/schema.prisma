@@ -7,7 +7,7 @@ generator client {
 
 datasource db {
   provider = "sqlite"
-} 
+}
 
 model Organization {
   id      Int     @id @default(autoincrement())
@@ -17,18 +17,22 @@ model Organization {
   country String?
   website String?
   tax     String?
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime? @updatedAt
 }
 
 model User {
-  id           String   @id @default(cuid())
-  email        String   @unique
+  id           String  @id @default(cuid())
+  email        String  @unique
   passwordHash String
   firstName    String
   lastName     String?
-  role         Role     @default(USER)
-  isActive     Boolean  @default(true)
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  role         Role    @default(USER)
+  isActive     Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // Relations
   tokens Tokens[]
@@ -69,6 +73,9 @@ model InventoryItem {
   invoice       Invoice?      @relation(fields: [invoiceId], references: [id])
   invoiceId     Int?
   invoiceItems  InvoiceItem[]
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime? @updatedAt
 }
 
 model Customer {
@@ -78,6 +85,9 @@ model Customer {
   address  String
   email    String?
   invoices Invoice[]
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime? @updatedAt
 }
 
 model Invoice {
@@ -87,6 +97,10 @@ model Invoice {
   customer     Customer?       @relation(fields: [customerId], references: [id])
   invoiceItems InventoryItem[]
   customerId   Int?
+  payments     Payment[]
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime? @updatedAt
 }
 
 model InvoiceItem {
@@ -103,4 +117,31 @@ model InvoiceItem {
   parentId Int?
   parent   InvoiceItem?  @relation("BundleToItems", fields: [parentId], references: [id], onDelete: Cascade)
   subItems InvoiceItem[] @relation("BundleToItems")
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime? @updatedAt
+}
+
+model Payment {
+  id        Int           @id @default(autoincrement())
+  date      DateTime      @default(now()) // Maps to draft.date
+  method    PaymentMethod @default(CASH)
+  amount    Int // Stored in fils
+  reference String? // Cheque # or Transaction ID
+  notes     String? // Optional note
+
+  // Relations
+  invoiceId Int
+  invoice   Invoice @relation(fields: [invoiceId], references: [id])
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime? @updatedAt
+}
+
+enum PaymentMethod {
+  CASH
+  BANK
+  CARD
+  CHEQUE
+  ONLINE
 }
