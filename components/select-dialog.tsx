@@ -82,7 +82,7 @@ export interface SelectDialogProps<
   filters?: FilterConfig<T>[];
 
   /** Card renderer component */
-  cardRenderer: React.ComponentType<{ data: T }>;
+  cardRenderer: React.ComponentType<{ data: T } | any>;
 
   // Empty state
   emptyTitle?: ReactNode;

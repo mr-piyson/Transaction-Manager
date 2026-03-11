@@ -6,6 +6,7 @@ import axios from "axios";
 import { useQuery } from "@tanstack/react-query";
 import { CustomerCardRenderer } from "./customers/customerCard";
 import { Button } from "@/components/button";
+import { UniversalContextMenu } from "@/components/context-menu";
 
 export default function App_Page(props: any) {
   const {
@@ -26,7 +27,22 @@ export default function App_Page(props: any) {
         }}
         data={customers}
         searchFields={["name", "phone"]}
-        cardRenderer={CustomerCardRenderer}
+        cardRenderer={(data) => {
+          <>
+            <UniversalContextMenu
+              items={[
+                {
+                  id: "delete",
+                  label: "Delete",
+                  onClick: async () =>
+                    await axios.delete(`/api/customers/${data.id}`),
+                },
+              ]}
+            >
+              <CustomerCardRenderer itemList={false} data={data} />
+            </UniversalContextMenu>
+          </>;
+        }}
         rowHeight={75}
       >
         <Button variant={"destructive"}>Hello world</Button>

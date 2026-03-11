@@ -14,6 +14,8 @@ import { CustomerCardRenderer } from "./customerCard";
 // Optional: If you want to drop axios entirely, use Eden for the mutation.
 import axios from "axios";
 import { Header } from "@/components/Header";
+import { UniversalContextMenu } from "@/components/context-menu";
+import { alert } from "@/components/Alert-dialog";
 
 export default function CustomersPage() {
   const { t } = useI18n();
@@ -60,7 +62,7 @@ export default function CustomersPage() {
           </UniversalDialog>
         }
       />
-      <ListView
+      <ListView<Customer>
         emptyTitle={t("customers.empty_title", "No Customers Found")}
         emptyIcon={<User2 className="size-16 text-muted-foreground" />}
         emptyDescription={
@@ -72,7 +74,32 @@ export default function CustomersPage() {
         isError={isError}
         itemName="customers"
         useTheme={true}
-        cardRenderer={CustomerCardRenderer}
+        cardRenderer={(data) => (
+          <UniversalContextMenu
+            items={[
+              {
+                id: "delete",
+                label: "Delete",
+                destructive: true,
+                onClick: async () => {
+                  alert.delete({
+                    title: "Are you sure",
+                    onConfirm: async () => {
+                      const res = await axios.delete(
+                        `/api/customers/${data.id}`,
+                      );
+                      if (res.status == 200 || res.status == 201) {
+                        refetch();
+                      }
+                    },
+                  });
+                },
+              },
+            ]}
+          >
+            <CustomerCardRenderer data={data} />;
+          </UniversalContextMenu>
+        )}
         rowHeight={65}
         searchFields={["name", "phone"]}
         onRefetch={refetch}

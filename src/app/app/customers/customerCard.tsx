@@ -1,5 +1,3 @@
-import { alert } from "@/components/Alert-dialog";
-import { UniversalContextMenu } from "@/components/context-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 import { Customer } from "@prisma/client";
@@ -8,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
 export function CustomerCardRenderer(props: {
-  itemList: boolean;
+  itemList?: boolean;
   data: Customer;
 }) {
   const router = useRouter();

@@ -55,7 +55,7 @@ export interface UniversalListViewProps<T = any> {
   filters?: FilterConfig[];
 
   // Card renderer
-  cardRenderer: React.ComponentType<{ data: T }>;
+  cardRenderer: (data: T) => React.ReactNode;
 
   // Empty state
   emptyIcon?: React.ReactNode;
@@ -218,7 +218,7 @@ export function ListView<T extends Record<string, any>>({
 
       return (
         <div ref={isFirstRow && rowHeight === "auto" ? cardRef : null}>
-          <CardRenderer data={itemData} />
+          {CardRenderer(itemData)}
         </div>
       );
     },

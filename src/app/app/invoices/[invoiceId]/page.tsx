@@ -206,7 +206,7 @@ export default function InvoiceDetailPage() {
 
   if (loading) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[400px] space-y-4">
+      <div className="flex flex-col items-center justify-center min-h-100 space-y-4">
         <Loader2 className="w-8 h-8 animate-spin text-primary" />
         <p className="text-sm text-muted-foreground animate-pulse">
           Loading invoice...
@@ -218,7 +218,7 @@ export default function InvoiceDetailPage() {
   if (!invoice) return null;
 
   return (
-    <div className="p-4 md:p-6 lg:p-8 max-w-6xl mx-auto space-y-6">
+    <div className="p-4 md:p-6 lg:p-8 space-y-6">
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div className="flex items-center gap-3">

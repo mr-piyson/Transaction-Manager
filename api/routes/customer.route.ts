@@ -85,8 +85,13 @@ export const customerRoutes = new Elysia({ prefix: "/customers" })
     "/:id",
     async ({ params, set }) => {
       try {
-        const data = {};
-        return { success: true, data };
+        const res = await db.customer.delete({
+          where: {
+            id: Number(params.id),
+          },
+        });
+        set.status = 200;
+        return res;
       } catch (e: any) {
         set.status = 400;
         return { success: false, message: e.message };

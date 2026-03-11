@@ -5,8 +5,6 @@ import { ThemeProvider } from "@/components/Theme-Provider";
 import { I18nProvider } from "@/hooks/use-i18n";
 import { Toaster } from "@/components/sonner";
 import { getServerI18n } from "@/i18n/i18n.action";
-import { QueryClientProvider } from "@tanstack/react-query";
-import { queryClient } from "@/lib/client";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
