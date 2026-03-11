@@ -104,7 +104,7 @@ export default function InventoryPage() {
         isError={isError}
         itemName="inventory items"
         useTheme={true}
-        cardRenderer={InventoryCardRenderer}
+        cardRenderer={(data) => <InventoryCardRenderer data={data} />}
         rowHeight={71}
         searchFields={[]}
         onRefetch={refetch}

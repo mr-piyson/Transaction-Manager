@@ -38,6 +38,8 @@ import {
   ChevronUp,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useQuery } from "@tanstack/react-query";
+import axios from "axios";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Mock data  (replace with react-query)
@@ -153,7 +155,12 @@ function InventoryPicker({ open, onOpenChange, onSelect }) {
   const [q, setQ] = useState("");
   const [sel, setSel] = useState([]);
 
-  const filtered = MOCK_INVENTORY.filter((i) =>
+  const { data: inventoryItems, isLoading } = useQuery({
+    queryKey: ["inventory"],
+    queryFn: async () => (await axios.get("/api/inventory")).data,
+  });
+
+  const filtered = inventoryItems?.filter((i) =>
     `${i.code} ${i.name} ${i.description}`
       .toLowerCase()
       .includes(q.toLowerCase()),
@@ -212,7 +219,7 @@ function InventoryPicker({ open, onOpenChange, onSelect }) {
 
         {/* List */}
         <div className="flex-1 overflow-y-auto">
-          {filtered.map((item) => {
+          {filtered?.map((item) => {
             const isSel = !!sel.find((x) => x.id === item.id);
             return (
               <button

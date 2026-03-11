@@ -13,6 +13,7 @@ import { Header } from "@/components/Header";
 import { Button } from "@/components/ui/button";
 import { CreateInvoiceDialog } from "./create-invoice-dialog";
 import { InvoiceCardRenderer, InvoiceWithRelations } from "./invoiceCard";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export default function invoicesPage() {
   const { t } = useI18n();
@@ -37,6 +38,14 @@ export default function invoicesPage() {
         icon={<FileText className="inline" />}
         rightContent={<CreateInvoiceDialog />}
       />
+      <Tabs defaultValue="overview" className="w-full m-4">
+        <TabsList className="w-full">
+          <TabsTrigger value="overview">All</TabsTrigger>
+          <TabsTrigger value="analytics">Pending</TabsTrigger>
+          <TabsTrigger value="settings">PARTIAL</TabsTrigger>
+          <TabsTrigger value="reports">Paid</TabsTrigger>
+        </TabsList>
+      </Tabs>
 
       <ListView<InvoiceWithRelations>
         emptyTitle={t("invoices.empty_title", "No invoices items Found")}
@@ -50,7 +59,7 @@ export default function invoicesPage() {
         isError={isError}
         itemName="invoices items"
         useTheme={true}
-        cardRenderer={InvoiceCardRenderer}
+        cardRenderer={(data) => <InvoiceCardRenderer data={data} />}
         rowHeight={65}
         searchFields={[]}
         onRefetch={refetch}
