@@ -9,6 +9,37 @@ datasource db {
   provider = "sqlite"
 }
 
+// ENUMS
+enum CurrencyCode {
+  BHD
+  USD
+  EUR
+}
+
+enum InvoiceStatus {
+  DRAFT
+  APPROVED
+  SENT
+  PARTIAL
+  PAID
+  OVERDUE
+  CANCELLED
+}
+
+enum PaymentMethod {
+  CASH
+  BANK
+  CARD
+  CHEQUE
+  ONLINE
+}
+
+enum Role {
+  SUPER_ADMIN
+  ADMIN
+  USER
+}
+
 model Organization {
   id      Int     @id @default(autoincrement())
   name    String
@@ -56,12 +87,6 @@ model Tokens {
   @@index([expiresAt])
 }
 
-enum Role {
-  SUPER_ADMIN
-  ADMIN
-  USER
-}
-
 model InventoryItem {
   id            Int           @id @default(autoincrement())
   code          String?
@@ -91,16 +116,23 @@ model Customer {
 }
 
 model Invoice {
-  id           Int             @id @default(autoincrement())
-  date         DateTime        @default(now())
-  description  String?
-  customer     Customer?       @relation(fields: [customerId], references: [id])
-  invoiceItems InventoryItem[]
-  customerId   Int?
-  payments     Payment[]
+  id          Int            @id @default(autoincrement())
+  date        DateTime       @default(now())
+  description String?
+  customerId  Int?
+  status      InvoiceStatus? @default(DRAFT)
+  currency    CurrencyCode   @default(BHD)
 
   createdAt DateTime  @default(now())
   updatedAt DateTime? @updatedAt
+
+  // Relations
+  payments     Payment[]
+  invoiceItems InventoryItem[]
+  customer     Customer?       @relation(fields: [customerId], references: [id])
+
+  @@index([customerId])
+  @@index([status])
 }
 
 model InvoiceItem {
@@ -136,12 +168,4 @@ model Payment {
 
   createdAt DateTime  @default(now())
   updatedAt DateTime? @updatedAt
-}
-
-enum PaymentMethod {
-  CASH
-  BANK
-  CARD
-  CHEQUE
-  ONLINE
 }

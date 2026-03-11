@@ -1,9 +1,8 @@
 "use client";
 
-import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Box, Plus } from "lucide-react";
-import { Customer, InventoryItem } from "@prisma/client";
+import { Box } from "lucide-react";
+import { InventoryItem } from "@prisma/client";
 
 import { ListView } from "@/components/list-view";
 import { Button } from "@/components/ui/button";

@@ -319,10 +319,7 @@ function GroupBlock({
         <span className="text-xs font-bold text-primary tabular-nums">
           {total.format()}
         </span>
-        <Badge
-          variant="secondary"
-          className="px-1.5 min-w-[20px] justify-center"
-        >
+        <Badge variant="secondary" className="px-1.5 min-w-5 justify-center">
           {group.items?.length ?? 0}
         </Badge>
         <Button
@@ -505,7 +502,7 @@ function InventoryPickerDrawer({
           <Button
             onClick={confirm}
             disabled={selected.length === 0}
-            className="flex-[2]"
+            className="flex-2"
           >
             Add {selected.length > 0 ? `${selected.length} ` : ""}Item
             {selected.length !== 1 ? "s" : ""}
@@ -572,7 +569,7 @@ function PaymentsDrawer() {
             <button
               key={key}
               onClick={() => setTab(key)}
-              className={`px-4 py-2 text-sm font-semibold transition-colors border-b-2 -mb-[1px] ${
+              className={`px-4 py-2 text-sm font-semibold transition-colors border-b-2 -mb-px ${
                 tab === key
                   ? "border-primary text-primary"
                   : "border-transparent text-muted-foreground"
@@ -839,7 +836,7 @@ export default function InvoiceEditor() {
               <FileSignature className="w-7 h-7 text-muted-foreground" />
             </div>
             <p className="text-sm font-bold text-foreground">No items yet</p>
-            <p className="text-xs text-muted-foreground mt-1 text-center max-w-[200px]">
+            <p className="text-xs text-muted-foreground mt-1 text-center max-w-50">
               Add manual entries or select from your inventory to begin.
             </p>
           </div>
