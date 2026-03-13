@@ -48,7 +48,6 @@ export default function invoicesPage() {
           </TabsList>
         </Tabs>
       )}
-
       <ListView<InvoiceWithRelations>
         emptyTitle={t("invoices.empty_title", "No invoices items Found")}
         emptyIcon={<Box className="size-16 text-muted-foreground" />}
