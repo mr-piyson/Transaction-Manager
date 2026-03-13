@@ -1,13 +1,6 @@
 "use client";
 
 /**
- * InvoiceEditor — line items, groups, inventory picker, payment dialog
- * Stack: Tailwind CSS (CSS-variable tokens) + shadcn/ui components
- *
- * shadcn imports used:
- *   Button, Input, Badge, Separator, Sheet (SheetContent / SheetHeader…),
- *   Tabs (TabsList / TabsTrigger / TabsContent)
- *
  * Replace MOCK_INVENTORY with useQuery + axios call.
  * Replace alert() stubs with useMutation calls.
  */
@@ -40,76 +33,7 @@ import {
 import { cn } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Mock data  (replace with react-query)
-// ─────────────────────────────────────────────────────────────────────────────
-const MOCK_INVENTORY = [
-  {
-    id: 1,
-    code: "SVC-001",
-    name: "Web Development (hourly)",
-    description: "Frontend/Backend development",
-    salesPrice: 25000,
-    purchasePrice: 15000,
-  },
-  {
-    id: 2,
-    code: "SVC-002",
-    name: "UI/UX Design",
-    description: "Figma design & prototyping",
-    salesPrice: 18000,
-    purchasePrice: 10000,
-  },
-  {
-    id: 3,
-    code: "HW-001",
-    name: "Dell XPS 15 Laptop",
-    description: "Intel i7, 32GB RAM, 1TB SSD",
-    salesPrice: 450000,
-    purchasePrice: 380000,
-  },
-  {
-    id: 4,
-    code: "HW-002",
-    name: "Logitech MX Master 3",
-    description: "Wireless ergonomic mouse",
-    salesPrice: 28000,
-    purchasePrice: 20000,
-  },
-  {
-    id: 5,
-    code: "SW-001",
-    name: "Microsoft 365 License",
-    description: "Annual subscription per seat",
-    salesPrice: 12000,
-    purchasePrice: 9000,
-  },
-  {
-    id: 6,
-    code: "SW-002",
-    name: "Adobe Creative Cloud",
-    description: "All apps, annual plan",
-    salesPrice: 35000,
-    purchasePrice: 28000,
-  },
-  {
-    id: 7,
-    code: "CONS-001",
-    name: "IT Consulting (day rate)",
-    description: "On-site consulting",
-    salesPrice: 80000,
-    purchasePrice: 50000,
-  },
-  {
-    id: 8,
-    code: "NET-001",
-    name: "Network Switch 24-port",
-    description: "Managed Gigabit Switch",
-    salesPrice: 95000,
-    purchasePrice: 72000,
-  },
-];
+import { InventoryItem } from "@prisma/client";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Utils
@@ -153,9 +77,14 @@ const methodBadgeClass = {
 // ─────────────────────────────────────────────────────────────────────────────
 function InventoryPicker({ open, onOpenChange, onSelect }) {
   const [q, setQ] = useState("");
-  const [sel, setSel] = useState([]);
+  const [sel, setSel] = useState<InventoryItem[]>([]);
 
-  const { data: inventoryItems, isLoading } = useQuery({
+  const {
+    data: inventoryItems,
+    error,
+    isLoading,
+    refetch,
+  } = useQuery<InventoryItem[]>({
     queryKey: ["inventory"],
     queryFn: async () => (await axios.get("/api/inventory")).data,
   });
@@ -166,7 +95,7 @@ function InventoryPicker({ open, onOpenChange, onSelect }) {
       .includes(q.toLowerCase()),
   );
 
-  const toggle = (item) =>
+  const toggle = (item: InventoryItem) =>
     setSel((p) =>
       p.find((x) => x.id === item.id)
         ? p.filter((x) => x.id !== item.id)

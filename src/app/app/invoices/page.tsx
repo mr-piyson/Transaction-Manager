@@ -38,14 +38,16 @@ export default function invoicesPage() {
         icon={<FileText className="inline" />}
         rightContent={<CreateInvoiceDialog />}
       />
-      <Tabs defaultValue="overview" className="w-full m-4">
-        <TabsList className="w-full">
-          <TabsTrigger value="overview">All</TabsTrigger>
-          <TabsTrigger value="analytics">Pending</TabsTrigger>
-          <TabsTrigger value="settings">PARTIAL</TabsTrigger>
-          <TabsTrigger value="reports">Paid</TabsTrigger>
-        </TabsList>
-      </Tabs>
+      {!isLoading && (
+        <Tabs defaultValue="overview" className="w-full px-4 pt-4">
+          <TabsList className="w-full">
+            <TabsTrigger value="overview">All</TabsTrigger>
+            <TabsTrigger value="analytics">Pending</TabsTrigger>
+            <TabsTrigger value="settings">PARTIAL</TabsTrigger>
+            <TabsTrigger value="reports">Paid</TabsTrigger>
+          </TabsList>
+        </Tabs>
+      )}
 
       <ListView<InvoiceWithRelations>
         emptyTitle={t("invoices.empty_title", "No invoices items Found")}

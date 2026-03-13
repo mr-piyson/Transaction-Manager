@@ -120,6 +120,7 @@ model Invoice {
   date        DateTime       @default(now())
   description String?
   customerId  Int?
+  tax         Int?
   status      InvoiceStatus? @default(DRAFT)
   currency    CurrencyCode   @default(BHD)
 
@@ -168,4 +169,14 @@ model Payment {
 
   createdAt DateTime  @default(now())
   updatedAt DateTime? @updatedAt
+}
+model Payment {
+  id        String   @id @default(cuid())
+  invoiceId String
+  invoice   Invoice  @relation(fields: [invoiceId], references: [id])
+  date      DateTime
+  method    String
+  amount    Int
+  reference String?
+  notes     String?
 }
