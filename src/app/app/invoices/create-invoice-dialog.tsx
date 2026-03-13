@@ -31,9 +31,9 @@ import {
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
-import { queryClient } from "@/lib/client";
 import { UniversalDialog } from "@/components/dialog";
 import { Invoice } from "@prisma/client";
+import { queryClient } from "../layout";
 
 interface Customer {
   id: number;

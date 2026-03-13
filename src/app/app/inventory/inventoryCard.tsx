@@ -1,7 +1,5 @@
 "use client";
 
-import { memo, useCallback } from "react";
-import type { ICellRendererParams } from "ag-grid-community";
 import { useRouter } from "next/navigation";
 import { Trash, Package } from "lucide-react";
 import { toast } from "sonner";
@@ -9,11 +7,10 @@ import { toast } from "sonner";
 import { alert } from "@/components/Alert-dialog";
 import { UniversalContextMenu } from "@/components/context-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { Money } from "@/lib/money";
 import axios from "axios";
-import { queryClient } from "@/lib/client";
+import { queryClient } from "../layout";
 
 export type InventoryItem = {
   id: number;

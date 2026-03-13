@@ -1,19 +1,16 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
 import { Box, FileText } from "lucide-react";
 
 import { ListView } from "@/components/list-view";
 import { useI18n } from "@/hooks/use-i18n";
 
 // Optional: If you want to drop axios entirely, use Eden for the mutation.
-import axios from "axios";
-import { Invoice } from "@prisma/client";
 import { Header } from "@/components/Header";
-import { Button } from "@/components/ui/button";
 import { CreateInvoiceDialog } from "./create-invoice-dialog";
 import { InvoiceCardRenderer, InvoiceWithRelations } from "./invoiceCard";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useInvoices } from "@/hooks/data/use-invoices";
 
 export default function invoicesPage() {
   const { t } = useI18n();
@@ -23,13 +20,7 @@ export default function invoicesPage() {
     isLoading,
     isError,
     refetch,
-  } = useQuery({
-    queryKey: ["invoices"],
-    queryFn: async () => {
-      const data = (await axios.get("/api/invoices")).data;
-      return data;
-    },
-  });
+  } = useInvoices().getAll();
 
   return (
     <>
