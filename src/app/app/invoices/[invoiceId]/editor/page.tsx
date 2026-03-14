@@ -16,8 +16,19 @@ import {
   SheetContent,
   SheetHeader,
   SheetTitle,
+
+
+  
   SheetDescription,
 } from "@/components/ui/sheet";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import {
   ChevronDown,
   ChevronRight,
@@ -40,22 +51,24 @@ import { InventoryItem } from "@prisma/client";
 // ─────────────────────────────────────────────────────────────────────────────
 const uid = () => Math.random().toString(36).slice(2, 9);
 const todayStr = () => new Date().toISOString().slice(0, 10);
-const fmtBHD = (fils) => `${((fils ?? 0) / 1000).toFixed(3)}`;
-const toFils = (v) => Math.round((parseFloat(v) || 0) * 1000);
-const fromFils = (v) => ((v ?? 0) / 1000).toFixed(3);
-const calcItemTotal = (item) =>
+const fmtBHD = (fils: number | null | undefined) =>
+  `${((fils ?? 0) / 1000).toFixed(3)}`;
+const toFils = (v: string | number) =>
+  Math.round((parseFloat(v as string) || 0) * 1000);
+const fromFils = (v: number | null | undefined) => ((v ?? 0) / 1000).toFixed(3);
+const calcItemTotal = (item: any) =>
   Math.round((parseFloat(item.qty) || 0) * (item.salesPrice || 0));
-const calcGroupTotal = (g) =>
-  (g.items || []).reduce((s, it) => s + calcItemTotal(it), 0);
-const calcSubtotal = (lines) =>
+const calcGroupTotal = (g: any) =>
+  (g.items || []).reduce((s: number, it: any) => s + calcItemTotal(it), 0);
+const calcSubtotal = (lines: any[]) =>
   (lines || []).reduce(
     (s, l) => s + (l.type === "group" ? calcGroupTotal(l) : calcItemTotal(l)),
     0,
   );
-const calcTax = (sub, rate) =>
-  Math.round(sub * ((parseFloat(rate) || 0) / 100));
+const calcTax = (sub: number, rate: string | number) =>
+  Math.round(sub * ((parseFloat(rate as string) || 0) / 100));
 
-const METHOD_META = {
+const METHOD_META: Record<string, { label: string; icon: string }> = {
   cash: { label: "Cash", icon: "💵" },
   bank: { label: "Bank Transfer", icon: "🏦" },
   card: { label: "Card", icon: "💳" },
@@ -63,28 +76,153 @@ const METHOD_META = {
   online: { label: "Online", icon: "🌐" },
 };
 
-// Badge variant classes per method (uses theme tokens)
-const methodBadgeClass = {
-  cash: "bg-success text-success-foreground",
-  bank: "bg-default text-default-foreground",
-  card: "bg-accent text-accent-foreground",
-  cheque: "bg-warning text-warning-foreground",
-  online: "bg-secondary text-secondary-foreground",
-};
+// ─────────────────────────────────────────────────────────────────────────────
+// Add Manual Item Dialog
+// ─────────────────────────────────────────────────────────────────────────────
+function AddManualItemDialog({ open, onOpenChange, onAdd }: any) {
+  const [desc, setDesc] = useState("");
+  const [qty, setQty] = useState("1");
+  const [price, setPrice] = useState("");
+
+  const handleOpenChange = (v: boolean) => {
+    if (!v) {
+      setDesc("");
+      setQty("1");
+      setPrice("");
+    }
+    onOpenChange(v);
+  };
+
+  const submit = () => {
+    onAdd({
+      description: desc,
+      qty: parseFloat(qty) || 1,
+      salesPrice: toFils(price),
+    });
+    handleOpenChange(false);
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={handleOpenChange}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>Add Manual Item</DialogTitle>
+          <DialogDescription>
+            Enter the details for the new line item.
+          </DialogDescription>
+        </DialogHeader>
+        <div className="grid gap-4 py-4">
+          <div className="grid gap-2">
+            <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+              Description
+            </label>
+            <Input
+              placeholder="Item description"
+              value={desc}
+              onChange={(e) => setDesc(e.target.value)}
+              autoFocus
+            />
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="grid gap-2">
+              <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                Quantity
+              </label>
+              <Input
+                type="number"
+                min="0"
+                step="1"
+                placeholder="1"
+                value={qty}
+                onChange={(e) => setQty(e.target.value)}
+              />
+            </div>
+            <div className="grid gap-2">
+              <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                Unit Price (BHD)
+              </label>
+              <Input
+                type="number"
+                min="0"
+                step="0.001"
+                placeholder="0.000"
+                value={price}
+                onChange={(e) => setPrice(e.target.value)}
+              />
+            </div>
+          </div>
+        </div>
+        <DialogFooter>
+          <Button variant="outline" onClick={() => handleOpenChange(false)}>
+            Cancel
+          </Button>
+          <Button onClick={submit} disabled={!desc.trim()}>
+            Add Item
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Inventory Picker — rendered inside a Sheet
+// Add Group Dialog
 // ─────────────────────────────────────────────────────────────────────────────
-function InventoryPicker({ open, onOpenChange, onSelect }) {
+function AddGroupDialog({ open, onOpenChange, onAdd }: any) {
+  const [name, setName] = useState("");
+
+  const handleOpenChange = (v: boolean) => {
+    if (!v) setName("");
+    onOpenChange(v);
+  };
+
+  const submit = () => {
+    onAdd({ name: name.trim() || "New Group" });
+    handleOpenChange(false);
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={handleOpenChange}>
+      <DialogContent className="sm:max-w-sm">
+        <DialogHeader>
+          <DialogTitle>Add Item Group</DialogTitle>
+          <DialogDescription>
+            Create a folder to group multiple items together.
+          </DialogDescription>
+        </DialogHeader>
+        <div className="grid gap-4 py-4">
+          <div className="grid gap-2">
+            <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+              Group Name
+            </label>
+            <Input
+              placeholder="e.g. Services, Hardware..."
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              autoFocus
+              onKeyDown={(e) => e.key === "Enter" && submit()}
+            />
+          </div>
+        </div>
+        <DialogFooter>
+          <Button variant="outline" onClick={() => handleOpenChange(false)}>
+            Cancel
+          </Button>
+          <Button onClick={submit}>Create Group</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Inventory Picker — handled via Dialog
+// ─────────────────────────────────────────────────────────────────────────────
+function InventoryPicker({ open, onOpenChange, onSelect }: any) {
   const [q, setQ] = useState("");
   const [sel, setSel] = useState<InventoryItem[]>([]);
 
-  const {
-    data: inventoryItems,
-    error,
-    isLoading,
-    refetch,
-  } = useQuery<InventoryItem[]>({
+  const { data: inventoryItems, isLoading } = useQuery<InventoryItem[]>({
     queryKey: ["inventory"],
     queryFn: async () => (await axios.get("/api/inventory")).data,
   });
@@ -109,7 +247,7 @@ function InventoryPicker({ open, onOpenChange, onSelect }) {
     onOpenChange(false);
   };
 
-  const handleOpenChange = (v) => {
+  const handleOpenChange = (v: boolean) => {
     if (!v) {
       setSel([]);
       setQ("");
@@ -118,22 +256,14 @@ function InventoryPicker({ open, onOpenChange, onSelect }) {
   };
 
   return (
-    <Sheet open={open} onOpenChange={handleOpenChange}>
-      <SheetContent
-        side="bottom"
-        className="rounded-t-2xl max-h-[90vh] flex flex-col p-0 gap-0 sm:max-w-lg sm:mx-auto"
-      >
-        {/* drag handle */}
-        <div className="flex justify-center pt-3 pb-1 shrink-0">
-          <div className="w-9 h-1 rounded-full bg-muted" />
-        </div>
-
-        <SheetHeader className="px-5 pb-3 border-b border-border shrink-0">
-          <SheetTitle className="text-base">Add from Inventory</SheetTitle>
-          <SheetDescription className="text-xs">
-            Select one or more items to add
-          </SheetDescription>
-        </SheetHeader>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
+      <DialogContent className="sm:max-w-xl p-0 gap-0 overflow-hidden flex flex-col max-h-[85vh]">
+        <DialogHeader className="px-5 pt-5 pb-3 border-b border-border shrink-0">
+          <DialogTitle>Add from Inventory</DialogTitle>
+          <DialogDescription>
+            Select one or more items to add to the invoice.
+          </DialogDescription>
+        </DialogHeader>
 
         {/* Search */}
         <div className="px-5 py-3 border-b border-border shrink-0">
@@ -147,7 +277,12 @@ function InventoryPicker({ open, onOpenChange, onSelect }) {
         </div>
 
         {/* List */}
-        <div className="flex-1 overflow-y-auto">
+        <div className="flex-1 overflow-y-auto min-h-75">
+          {isLoading && (
+            <div className="flex justify-center py-8 text-sm text-muted-foreground">
+              Loading inventory...
+            </div>
+          )}
           {filtered?.map((item) => {
             const isSel = !!sel.find((x) => x.id === item.id);
             return (
@@ -205,28 +340,24 @@ function InventoryPicker({ open, onOpenChange, onSelect }) {
         </div>
 
         {/* Footer */}
-        <div className="px-5 py-4 border-t border-border flex gap-3 shrink-0">
-          <Button
-            variant="outline"
-            className="flex-1"
-            onClick={() => handleOpenChange(false)}
-          >
+        <DialogFooter className="px-5 py-4 border-t border-border shrink-0 bg-muted/20">
+          <Button variant="outline" onClick={() => handleOpenChange(false)}>
             Cancel
           </Button>
-          <Button className="flex-[2]" disabled={!sel.length} onClick={confirm}>
+          <Button disabled={!sel.length} onClick={confirm}>
             Add {sel.length > 0 ? sel.length : ""} Item
             {sel.length !== 1 ? "s" : ""}
           </Button>
-        </div>
-      </SheetContent>
-    </Sheet>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Payment Dialog — rendered inside a Sheet
 // ─────────────────────────────────────────────────────────────────────────────
-function PaymentDialog({ open, onOpenChange, payments, total, onChange }) {
+function PaymentDialog({ open, onOpenChange, payments, total, onChange }: any) {
   const [draft, setDraft] = useState({
     date: todayStr(),
     method: "cash",
@@ -235,7 +366,7 @@ function PaymentDialog({ open, onOpenChange, payments, total, onChange }) {
     notes: "",
   });
 
-  const paid = payments.reduce((s, p) => s + toFils(p.amount), 0);
+  const paid = payments.reduce((s: number, p: any) => s + toFils(p.amount), 0);
   const balance = total - paid;
 
   const addPayment = () => {
@@ -256,7 +387,6 @@ function PaymentDialog({ open, onOpenChange, payments, total, onChange }) {
         side="bottom"
         className="rounded-t-2xl max-h-[92vh] flex flex-col p-0 gap-0 sm:max-w-lg sm:mx-auto"
       >
-        {/* drag handle */}
         <div className="flex justify-center pt-3 pb-1 shrink-0">
           <div className="w-9 h-1 rounded-full bg-muted" />
         </div>
@@ -289,7 +419,6 @@ function PaymentDialog({ open, onOpenChange, payments, total, onChange }) {
             </TabsTrigger>
           </TabsList>
 
-          {/* ── History tab ── */}
           <TabsContent
             value="list"
             className="flex-1 flex flex-col overflow-hidden mt-0"
@@ -301,7 +430,7 @@ function PaymentDialog({ open, onOpenChange, payments, total, onChange }) {
                   <p className="text-sm">No payments recorded yet</p>
                 </div>
               ) : (
-                payments.map((p, i) => {
+                payments.map((p: any, i: number) => {
                   const m = METHOD_META[p.method] || METHOD_META.cash;
                   return (
                     <div
@@ -334,7 +463,9 @@ function PaymentDialog({ open, onOpenChange, payments, total, onChange }) {
                         size="icon"
                         className="w-7 h-7 text-muted-foreground hover:text-destructive shrink-0"
                         onClick={() =>
-                          onChange(payments.filter((_, j) => j !== i))
+                          onChange(
+                            payments.filter((_: any, j: number) => j !== i),
+                          )
                         }
                       >
                         <Trash2 className="w-3.5 h-3.5" />
@@ -345,7 +476,6 @@ function PaymentDialog({ open, onOpenChange, payments, total, onChange }) {
               )}
             </div>
 
-            {/* Summary */}
             <div className="shrink-0 px-5 py-4 bg-card border-t border-border space-y-2">
               <div className="flex justify-between text-xs text-muted-foreground">
                 <span>Invoice Total</span>
@@ -380,12 +510,10 @@ function PaymentDialog({ open, onOpenChange, payments, total, onChange }) {
             </div>
           </TabsContent>
 
-          {/* ── Add payment tab ── */}
           <TabsContent
             value="add"
             className="flex-1 overflow-y-auto px-5 pt-4 pb-6 mt-0 space-y-4"
           >
-            {/* Method picker */}
             <div>
               <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
                 Payment Method
@@ -408,7 +536,6 @@ function PaymentDialog({ open, onOpenChange, payments, total, onChange }) {
               </div>
             </div>
 
-            {/* Amount + Date */}
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
                 <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
@@ -441,7 +568,6 @@ function PaymentDialog({ open, onOpenChange, payments, total, onChange }) {
               </div>
             </div>
 
-            {/* Reference */}
             <div className="space-y-1.5">
               <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                 Reference #
@@ -456,7 +582,6 @@ function PaymentDialog({ open, onOpenChange, payments, total, onChange }) {
               />
             </div>
 
-            {/* Notes */}
             <div className="space-y-1.5">
               <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                 Notes
@@ -488,7 +613,7 @@ function PaymentDialog({ open, onOpenChange, payments, total, onChange }) {
 // ─────────────────────────────────────────────────────────────────────────────
 // LineItemRow
 // ─────────────────────────────────────────────────────────────────────────────
-function LineItemRow({ item, onChange, onRemove, compact = false }) {
+function LineItemRow({ item, onChange, onRemove, compact = false }: any) {
   const total = calcItemTotal(item);
   return (
     <div
@@ -499,7 +624,6 @@ function LineItemRow({ item, onChange, onRemove, compact = false }) {
           : "grid-cols-[1fr_52px_90px_78px_28px]",
       )}
     >
-      {/* Description */}
       <div className="relative">
         <Input
           placeholder="Description"
@@ -516,7 +640,6 @@ function LineItemRow({ item, onChange, onRemove, compact = false }) {
         )}
       </div>
 
-      {/* Qty */}
       <Input
         type="number"
         min="0"
@@ -527,7 +650,6 @@ function LineItemRow({ item, onChange, onRemove, compact = false }) {
         className={cn("h-8 text-right", compact ? "text-xs" : "text-sm")}
       />
 
-      {/* Unit price */}
       <Input
         type="number"
         min="0"
@@ -538,12 +660,10 @@ function LineItemRow({ item, onChange, onRemove, compact = false }) {
         className={cn("h-8 text-right", compact ? "text-xs" : "text-sm")}
       />
 
-      {/* Amount */}
       <span className="text-right text-xs font-semibold text-muted-foreground tabular-nums pr-1">
         {fmtBHD(total)}
       </span>
 
-      {/* Remove */}
       <Button
         variant="ghost"
         size="icon"
@@ -559,29 +679,31 @@ function LineItemRow({ item, onChange, onRemove, compact = false }) {
 // ─────────────────────────────────────────────────────────────────────────────
 // GroupBlock
 // ─────────────────────────────────────────────────────────────────────────────
-function GroupBlock({ group, onChange, onRemove, onPickInventory }) {
+function GroupBlock({
+  group,
+  onChange,
+  onRemove,
+  onPickInventory,
+  onAddManual,
+}: any) {
   const [expanded, setExpanded] = useState(true);
   const total = calcGroupTotal(group);
 
-  const updItem = (idx, k, v) =>
+  const updItem = (idx: number, k: string, v: any) =>
     onChange({
       ...group,
-      items: group.items.map((it, i) => (i === idx ? { ...it, [k]: v } : it)),
+      items: group.items.map((it: any, i: number) =>
+        i === idx ? { ...it, [k]: v } : it,
+      ),
     });
-  const delItem = (idx) =>
-    onChange({ ...group, items: group.items.filter((_, i) => i !== idx) });
-  const addManual = () =>
+  const delItem = (idx: number) =>
     onChange({
       ...group,
-      items: [
-        ...group.items,
-        { id: uid(), description: "", qty: 1, salesPrice: 0, purchasePrice: 0 },
-      ],
+      items: group.items.filter((_: any, i: number) => i !== idx),
     });
 
   return (
     <div className="rounded-xl border border-default overflow-hidden mb-2">
-      {/* Group header */}
       <div className="flex items-center gap-2 px-3 py-2 bg-default/20">
         <Button
           variant="ghost"
@@ -623,10 +745,8 @@ function GroupBlock({ group, onChange, onRemove, onPickInventory }) {
         </Button>
       </div>
 
-      {/* Group body */}
       {expanded && (
         <div className="px-3 py-2.5 border-t border-border/50">
-          {/* Inner column headers */}
           {group.items?.length > 0 && (
             <div className="grid grid-cols-[1fr_48px_82px_70px_26px] gap-1.5 px-0.5 mb-1">
               {["Description", "Qty", "Unit $", "Amount", ""].map((h) => (
@@ -645,12 +765,12 @@ function GroupBlock({ group, onChange, onRemove, onPickInventory }) {
             </div>
           )}
 
-          {(group.items || []).map((item, idx) => (
+          {(group.items || []).map((item: any, idx: number) => (
             <LineItemRow
               key={item.id}
               item={item}
               compact
-              onChange={(k, v) => updItem(idx, k, v)}
+              onChange={(k: string, v: any) => updItem(idx, k, v)}
               onRemove={() => delItem(idx)}
             />
           ))}
@@ -661,10 +781,9 @@ function GroupBlock({ group, onChange, onRemove, onPickInventory }) {
             </p>
           )}
 
-          {/* Inner add buttons */}
           <div className="flex gap-2 mt-2 pt-2 border-t border-border/40">
             <button
-              onClick={addManual}
+              onClick={onAddManual}
               className="inline-flex items-center gap-1 text-xs font-semibold text-primary hover:opacity-70 transition-opacity"
             >
               <Plus className="w-3 h-3" /> Manual
@@ -695,7 +814,7 @@ function FooterBar({
   onPayments,
   onSave,
   onDraft,
-}) {
+}: any) {
   const [expanded, setExpanded] = useState(false);
   const balance = total - paid;
 
@@ -730,7 +849,6 @@ function FooterBar({
 
   return (
     <div className="fixed bottom-0 left-0 right-0 z-50 bg-card border-t border-border shadow-[0_-4px_24px_rgba(0,0,0,0.08)]">
-      {/* Expanded summary */}
       {expanded && (
         <div className="px-4 py-3 border-b border-border bg-card animate-in slide-in-from-bottom-2 duration-150">
           <div className="max-w-xl mx-auto space-y-1.5">
@@ -764,9 +882,7 @@ function FooterBar({
         </div>
       )}
 
-      {/* Main bar */}
-      <div className="px-4 py-2.5 max-w-[900px] mx-auto flex items-center gap-2">
-        {/* Total pill */}
+      <div className="px-4 py-2.5 max-w-225 mx-auto flex items-center gap-2">
         <button
           onClick={() => setExpanded((x) => !x)}
           className="inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-border bg-card hover:bg-accent transition-colors shrink-0"
@@ -784,7 +900,6 @@ function FooterBar({
           )}
         </button>
 
-        {/* Payments pill */}
         <button
           onClick={onPayments}
           className={cn(
@@ -800,7 +915,6 @@ function FooterBar({
 
         <div className="flex-1" />
 
-        {/* Actions */}
         <Button variant="outline" size="sm" className="h-9" onClick={onDraft}>
           Draft
         </Button>
@@ -816,45 +930,75 @@ function FooterBar({
 // Main Invoice Editor
 // ─────────────────────────────────────────────────────────────────────────────
 export default function InvoiceEditor() {
-  const [lines, setLines] = useState([]);
+  const [lines, setLines] = useState<any[]>([]);
   const [taxRate, setTaxRate] = useState("");
-  const [payments, setPayments] = useState([]);
+  const [payments, setPayments] = useState<any[]>([]);
+
+  // Dialog states
+  const [manualOpen, setManualOpen] = useState(false);
+  const [manualTarget, setManualTarget] = useState<string | null>(null); // null = top-level | groupId
+
+  const [groupOpen, setGroupOpen] = useState(false);
 
   const [pickerOpen, setPickerOpen] = useState(false);
-  const [pickerTarget, setPickerTarget] = useState(null); // null = top-level | groupId
+  const [pickerTarget, setPickerTarget] = useState<string | null>(null); // null = top-level | groupId
+
   const [paymentsOpen, setPaymentsOpen] = useState(false);
 
   // ── Line mutations ──
-  const addManualItem = () =>
+  const handleAddManualSubmit = (data: {
+    description: string;
+    qty: number;
+    salesPrice: number;
+  }) => {
+    const item = {
+      id: uid(),
+      type: "item",
+      ...data,
+      purchasePrice: 0,
+    };
+
+    if (manualTarget === null) {
+      setLines((l) => [...l, item]);
+    } else {
+      setLines((l) =>
+        l.map((line) =>
+          line.id === manualTarget
+            ? { ...line, items: [...(line.items || []), item] }
+            : line,
+        ),
+      );
+    }
+  };
+
+  const handleAddGroupSubmit = (data: { name: string }) => {
     setLines((l) => [
       ...l,
-      {
-        id: uid(),
-        type: "item",
-        description: "",
-        qty: 1,
-        salesPrice: 0,
-        purchasePrice: 0,
-      },
+      { id: uid(), type: "group", name: data.name, items: [] },
     ]);
+  };
 
-  const addGroup = () =>
-    setLines((l) => [
-      ...l,
-      { id: uid(), type: "group", name: "New Group", items: [] },
-    ]);
-
-  const updateLine = (idx, v) =>
+  const updateLine = (idx: number, v: any) =>
     setLines((l) => l.map((x, i) => (i === idx ? v : x)));
-  const removeLine = (idx) => setLines((l) => l.filter((_, i) => i !== idx));
+  const removeLine = (idx: number) =>
+    setLines((l) => l.filter((_, i) => i !== idx));
 
-  // ── Inventory pick handler ──
-  const openPicker = (target = null) => {
+  // ── Handlers to Open Dialogs ──
+  const openManualDialog = (target: string | null = null) => {
+    setManualTarget(target);
+    setManualOpen(true);
+  };
+
+  const openGroupDialog = () => {
+    setGroupOpen(true);
+  };
+
+  const openPicker = (target: string | null = null) => {
     setPickerTarget(target);
     setPickerOpen(true);
   };
 
-  const handleInvSelect = (inv) => {
+  const handleInvSelect = (inv: any) => {
     const item = {
       id: uid(),
       description: inv.name,
@@ -886,7 +1030,6 @@ export default function InvoiceEditor() {
 
   return (
     <div className="min-h-screen bg-background text-foreground pb-20">
-      {/* ── Top bar ── */}
       <div className="sticky top-0 z-40 bg-card border-b border-border flex items-center gap-2 px-4 h-13">
         <Button
           variant="ghost"
@@ -900,7 +1043,6 @@ export default function InvoiceEditor() {
           Invoice Items
         </h1>
 
-        {/* Tax rate */}
         <div className="flex items-center gap-1.5 bg-background border border-input rounded-lg px-2.5 py-1.5">
           <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider whitespace-nowrap">
             Tax %
@@ -918,9 +1060,7 @@ export default function InvoiceEditor() {
         </div>
       </div>
 
-      {/* ── Content ── */}
       <div className="max-w-3xl mx-auto px-3.5 pt-4">
-        {/* Column headers — only when flat items exist */}
         {hasItems && (
           <div className="grid grid-cols-[1fr_52px_90px_78px_28px] gap-1.5 px-0.5 mb-2">
             {["Description", "Qty", "Unit Price", "Amount", ""].map((h) => (
@@ -937,7 +1077,6 @@ export default function InvoiceEditor() {
           </div>
         )}
 
-        {/* Empty state */}
         {lines.length === 0 && (
           <div className="flex flex-col items-center justify-center py-14 border-2 border-dashed border-border rounded-2xl mb-4 text-center gap-2">
             <ClipboardList className="w-9 h-9 text-muted-foreground opacity-40" />
@@ -950,29 +1089,30 @@ export default function InvoiceEditor() {
           </div>
         )}
 
-        {/* Lines */}
         <div className="space-y-0.5">
           {lines.map((line, idx) =>
             line.type === "group" ? (
               <GroupBlock
                 key={line.id}
                 group={line}
-                onChange={(v) => updateLine(idx, v)}
+                onChange={(v: any) => updateLine(idx, v)}
                 onRemove={() => removeLine(idx)}
                 onPickInventory={() => openPicker(line.id)}
+                onAddManual={() => openManualDialog(line.id)}
               />
             ) : (
               <LineItemRow
                 key={line.id}
                 item={line}
-                onChange={(k, v) => updateLine(idx, { ...line, [k]: v })}
+                onChange={(k: string, v: any) =>
+                  updateLine(idx, { ...line, [k]: v })
+                }
                 onRemove={() => removeLine(idx)}
               />
             ),
           )}
         </div>
 
-        {/* Subtotal */}
         {lines.length > 0 && (
           <div className="flex justify-end pt-2.5 mt-2 border-t border-border">
             <span className="text-xs text-muted-foreground">
@@ -984,13 +1124,12 @@ export default function InvoiceEditor() {
           </div>
         )}
 
-        {/* Add buttons */}
         <div className="flex flex-wrap gap-2 mt-4">
           <Button
             variant="outline"
             size="sm"
             className="h-9 gap-1.5"
-            onClick={addManualItem}
+            onClick={() => openManualDialog(null)}
           >
             <Plus className="w-3.5 h-3.5" /> Manual Item
           </Button>
@@ -1008,14 +1147,13 @@ export default function InvoiceEditor() {
             size="sm"
             variant="outline"
             className="h-9 gap-1.5 border-success/40 text-success-foreground hover:bg-success/10"
-            onClick={addGroup}
+            onClick={openGroupDialog}
           >
             <Folder className="w-3.5 h-3.5" /> Add Group
           </Button>
         </div>
       </div>
 
-      {/* ── Footer ── */}
       <FooterBar
         subtotal={subtotal}
         taxAmt={taxAmt}
@@ -1026,6 +1164,19 @@ export default function InvoiceEditor() {
         onPayments={() => setPaymentsOpen(true)}
         onSave={() => alert("Invoice saved!")}
         onDraft={() => alert("Saved as draft!")}
+      />
+
+      {/* ── Add Dialogs ── */}
+      <AddManualItemDialog
+        open={manualOpen}
+        onOpenChange={setManualOpen}
+        onAdd={handleAddManualSubmit}
+      />
+
+      <AddGroupDialog
+        open={groupOpen}
+        onOpenChange={setGroupOpen}
+        onAdd={handleAddGroupSubmit}
       />
 
       {/* ── Sheets / Dialogs ── */}
