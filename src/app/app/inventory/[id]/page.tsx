@@ -28,6 +28,7 @@ import {
   CardDescription,
 } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { toast } from "sonner";
 
 /* ------------------------------ Validation ------------------------------ */
 
@@ -68,11 +69,12 @@ export default function InventoryItemClientPage() {
 
   const updateMutation = useMutation({
     mutationFn: async (payload: UpdateFormData) => {
+      console.log(payload);
       return axios.patch(`/api/inventory/${id}`, payload);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["inventory", id] });
-      // Optional: toast.success("Item updated")
+      toast.success("Item updated");
     },
   });
 

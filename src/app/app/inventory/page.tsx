@@ -1,7 +1,7 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { Box } from "lucide-react";
+import { Box, Trash } from "lucide-react";
 import { InventoryItem } from "@prisma/client";
 
 import { ListView } from "@/components/list-view";
@@ -13,6 +13,10 @@ import { useI18n } from "@/hooks/use-i18n";
 import axios from "axios";
 import { Header } from "@/components/Header";
 import { InventoryCardRenderer } from "./inventoryCard";
+import { toast } from "sonner";
+import { queryClient } from "../layout";
+import { alert } from "@/components/Alert-dialog";
+import { UniversalContextMenu } from "@/components/context-menu";
 
 export default function InventoryPage() {
   const { t } = useI18n();
@@ -30,6 +34,24 @@ export default function InventoryPage() {
     },
   });
 
+  const handleDelete = (data: InventoryItem) => {
+    alert.delete({
+      title: "Delete item?",
+      description: data.name,
+      confirmText: "Delete",
+      destructive: true,
+      onConfirm: async () => {
+        const res = axios.delete(`/api/inventory/${data.id}`);
+        if ((await res).status === 201) {
+          toast.success("Item deleted");
+          queryClient.refetchQueries({
+            queryKey: ["inventory"],
+          });
+        }
+      },
+    });
+  };
+
   return (
     <>
       <Header
@@ -41,12 +63,6 @@ export default function InventoryPage() {
             <UniversalDialog<InventoryItem>
               title={"Create new Inventory item"}
               fields={[
-                // {
-                //   label: "Image",
-                //   name: "image",
-                //   type: "image",
-                //   width: "full",
-                // },
                 {
                   label: "Name",
                   name: "name",
@@ -104,8 +120,26 @@ export default function InventoryPage() {
         isError={isError}
         itemName="inventory items"
         useTheme={true}
-        cardRenderer={(data) => <InventoryCardRenderer data={data} />}
-        rowHeight={71}
+        cardRenderer={(data) => (
+          <div key={data.id}>
+            <UniversalContextMenu
+              items={[
+                {
+                  id: "delete",
+                  label: "Delete",
+                  icon: Trash,
+                  destructive: true,
+                  onClick: () => {
+                    handleDelete(data);
+                  },
+                },
+              ]}
+            >
+              <InventoryCardRenderer data={data} />
+            </UniversalContextMenu>
+          </div>
+        )}
+        rowHeight={72}
         searchFields={[]}
         onRefetch={refetch}
       />

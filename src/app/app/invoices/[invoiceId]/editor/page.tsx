@@ -11,16 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
 
-
-  
-  SheetDescription,
-} from "@/components/ui/sheet";
 import {
   Dialog,
   DialogContent,
@@ -40,11 +31,19 @@ import {
   ArrowLeft,
   ClipboardList,
   ChevronUp,
+  Clock,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import { InventoryItem } from "@prisma/client";
+import {
+  Drawer,
+  DrawerContent,
+  DrawerDescription,
+  DrawerHeader,
+  DrawerTitle,
+} from "@/components/ui/drawer";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Utils
@@ -382,18 +381,11 @@ function PaymentDialog({ open, onOpenChange, payments, total, onChange }: any) {
   };
 
   return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent
-        side="bottom"
-        className="rounded-t-2xl max-h-[92vh] flex flex-col p-0 gap-0 sm:max-w-lg sm:mx-auto"
-      >
-        <div className="flex justify-center pt-3 pb-1 shrink-0">
-          <div className="w-9 h-1 rounded-full bg-muted" />
-        </div>
-
-        <SheetHeader className="px-5 pb-3 border-b border-border shrink-0">
-          <SheetTitle className="text-base">Payments</SheetTitle>
-          <SheetDescription className="text-xs">
+    <Drawer open={open} onOpenChange={onOpenChange}>
+      <DrawerContent className="rounded-t-2xl min-h-[85vh] max-h-[92vh] flex flex-col p-0 gap-0 sm:max-w-lg sm:mx-auto">
+        <DrawerHeader className="px-5 pb-3 border-b border-border shrink-0">
+          <DrawerTitle className="text-base">Payments</DrawerTitle>
+          <DrawerDescription className="text-xs">
             Balance:{" "}
             <span
               className={cn(
@@ -403,19 +395,19 @@ function PaymentDialog({ open, onOpenChange, payments, total, onChange }: any) {
             >
               {fmtBHD(balance)}
             </span>
-          </SheetDescription>
-        </SheetHeader>
+          </DrawerDescription>
+        </DrawerHeader>
 
         <Tabs
           defaultValue="list"
-          className="flex flex-col flex-1 overflow-hidden"
+          className="flex flex-col w-full p-4 flex-1 overflow-hidden"
         >
-          <TabsList className="mx-5 mt-3 shrink-0">
+          <TabsList className="w-full  shrink-0">
             <TabsTrigger value="list" className="flex-1">
-              History
+              <Clock /> History
             </TabsTrigger>
             <TabsTrigger value="add" className="flex-1">
-              ＋ Record
+              <Plus /> Record
             </TabsTrigger>
           </TabsList>
 
@@ -512,13 +504,13 @@ function PaymentDialog({ open, onOpenChange, payments, total, onChange }: any) {
 
           <TabsContent
             value="add"
-            className="flex-1 overflow-y-auto px-5 pt-4 pb-6 mt-0 space-y-4"
+            className="flex flex-col flex-1 overflow-y-auto px-5 pt-4 pb-6 mt-0 space-y-4"
           >
-            <div>
+            <div className="flex-1">
               <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
                 Payment Method
               </p>
-              <div className="flex flex-wrap gap-2">
+              <div className="flex  flex-wrap gap-2">
                 {Object.entries(METHOD_META).map(([key, m]) => (
                   <button
                     key={key}
@@ -536,7 +528,7 @@ function PaymentDialog({ open, onOpenChange, payments, total, onChange }: any) {
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
+            <div className=" grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
                 <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                   Amount (BHD)
@@ -568,7 +560,7 @@ function PaymentDialog({ open, onOpenChange, payments, total, onChange }: any) {
               </div>
             </div>
 
-            <div className="space-y-1.5">
+            {/* <div className="space-y-1.5">
               <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                 Reference #
               </label>
@@ -594,7 +586,7 @@ function PaymentDialog({ open, onOpenChange, payments, total, onChange }: any) {
                 }
                 className="h-9"
               />
-            </div>
+            </div> */}
 
             <Button
               className="w-full h-11 text-sm"
@@ -605,73 +597,88 @@ function PaymentDialog({ open, onOpenChange, payments, total, onChange }: any) {
             </Button>
           </TabsContent>
         </Tabs>
-      </SheetContent>
-    </Sheet>
+      </DrawerContent>
+    </Drawer>
   );
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// LineItemRow
+// LineItemCard
 // ─────────────────────────────────────────────────────────────────────────────
-function LineItemRow({ item, onChange, onRemove, compact = false }: any) {
+function LineItemRow({ item, onRemove, compact = false }: any) {
   const total = calcItemTotal(item);
+
   return (
     <div
       className={cn(
-        "grid gap-1.5 items-center py-1",
-        compact
-          ? "grid-cols-[1fr_48px_82px_70px_26px]"
-          : "grid-cols-[1fr_52px_90px_78px_28px]",
+        "relative flex flex-col gap-3 rounded-xl border bg-card p-4 shadow-sm transition-colors hover:border-primary/20",
+        compact && "p-3 gap-2",
       )}
     >
-      <div className="relative">
-        <Input
-          placeholder="Description"
-          value={item.description || ""}
-          onChange={(e) => onChange("description", e.target.value)}
-          className={cn(
-            "h-8 pr-2",
-            compact ? "text-xs" : "text-sm",
-            item.inventoryItemId && "pr-7",
+      {/* Header: Description & Delete */}
+      <div className="flex items-start justify-between gap-4">
+        <div className="flex items-center gap-2">
+          {item.inventoryItemId && (
+            <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-primary/10">
+              <Package className="h-3.5 w-3.5 text-primary" />
+            </div>
           )}
-        />
-        {item.inventoryItemId && (
-          <Package className="absolute right-2 top-1/2 -translate-y-1/2 w-3 h-3 text-primary opacity-60 pointer-events-none" />
-        )}
+          <span
+            className={cn(
+              "font-semibold leading-tight text-foreground",
+              compact ? "text-sm" : "text-base",
+            )}
+          >
+            {item.description || "No Description"}
+          </span>
+        </div>
+
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-8 w-8 -mt-1 -mr-1 text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+          onClick={onRemove}
+        >
+          <Trash2 className="h-4 w-4" />
+        </Button>
       </div>
 
-      <Input
-        type="number"
-        min="0"
-        step="1"
-        placeholder="1"
-        value={item.qty ?? ""}
-        onChange={(e) => onChange("qty", e.target.value)}
-        className={cn("h-8 text-right", compact ? "text-xs" : "text-sm")}
-      />
+      {/* Details Row: Qty & Price Breakdown */}
+      <div className="flex items-end justify-between border-t pt-3 border-dashed">
+        <div className="flex gap-6 text-xs text-muted-foreground">
+          <div className="flex flex-col gap-0.5">
+            <span className="uppercase tracking-wider opacity-60">
+              Quantity
+            </span>
+            <span className="font-medium text-foreground text-sm">
+              {item.qty || 0}
+            </span>
+          </div>
+          <div className="flex flex-col gap-0.5">
+            <span className="uppercase tracking-wider opacity-60">
+              Unit Price
+            </span>
+            <span className="font-medium text-foreground text-sm">
+              {fmtBHD(fromFils(item.salesPrice))}
+            </span>
+          </div>
+        </div>
 
-      <Input
-        type="number"
-        min="0"
-        step="0.001"
-        placeholder="0.000"
-        value={item.salesPrice ? fromFils(item.salesPrice) : ""}
-        onChange={(e) => onChange("salesPrice", toFils(e.target.value))}
-        className={cn("h-8 text-right", compact ? "text-xs" : "text-sm")}
-      />
-
-      <span className="text-right text-xs font-semibold text-muted-foreground tabular-nums pr-1">
-        {fmtBHD(total)}
-      </span>
-
-      <Button
-        variant="ghost"
-        size="icon"
-        className="w-6 h-6 text-muted-foreground hover:text-destructive shrink-0"
-        onClick={onRemove}
-      >
-        <Trash2 className="w-3 h-3" />
-      </Button>
+        {/* Total Price */}
+        <div className="text-right">
+          <span className="block text-[10px] uppercase tracking-widest text-muted-foreground font-bold">
+            Subtotal
+          </span>
+          <span
+            className={cn(
+              "font-bold text-primary tabular-nums",
+              compact ? "text-base" : "text-lg",
+            )}
+          >
+            {fmtBHD(total)}
+          </span>
+        </div>
+      </div>
     </div>
   );
 }
@@ -915,9 +922,6 @@ function FooterBar({
 
         <div className="flex-1" />
 
-        <Button variant="outline" size="sm" className="h-9" onClick={onDraft}>
-          Draft
-        </Button>
         <Button size="sm" className="h-9 px-5 font-bold" onClick={onSave}>
           Save Invoice
         </Button>
