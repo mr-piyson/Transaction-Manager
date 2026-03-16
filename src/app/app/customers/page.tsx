@@ -88,7 +88,7 @@ export default function CustomersPage() {
                       const res = await axios.delete(
                         `/api/customers/${data.id}`,
                       );
-                      if (res.status == 200 || res.status == 201) {
+                      if (res.status == 200) {
                         refetch();
                       }
                     },

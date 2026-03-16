@@ -1,35 +1,34 @@
 "use client";
 
 import { ReactNode } from "react";
-import { Button } from "./button";
-import {
-  ArrowBigLeft,
-  ArrowBigRight,
-  ArrowLeftIcon,
-  ArrowRightIcon,
-} from "lucide-react";
 import { useRouter } from "next/navigation";
+import { ChevronLeft } from "lucide-react";
+import { Button } from "./button";
 import { cn } from "@/lib/utils";
 
-export function Header({
-  title = "",
-  leftContent,
-  rightContent,
-  showBorder = true,
-  sticky = true,
-  transparent = false,
-  className,
-  icon,
-}: {
-  title?: ReactNode | string;
-  icon?: ReactNode | undefined;
+interface HeaderProps {
+  title?: ReactNode;
+  icon?: ReactNode;
   leftContent?: ReactNode;
   rightContent?: ReactNode;
   showBorder?: boolean;
   sticky?: boolean;
   transparent?: boolean;
+  showBackButton?: boolean;
   className?: string;
-}) {
+}
+
+export function Header({
+  title,
+  icon,
+  leftContent,
+  rightContent,
+  showBorder = true,
+  sticky = true,
+  transparent = false,
+  showBackButton = false,
+  className,
+}: HeaderProps) {
   const router = useRouter();
 
   return (
@@ -39,26 +38,47 @@ export function Header({
         sticky && "sticky top-0",
         transparent
           ? "bg-transparent"
-          : "bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60",
+          : "bg-background/95 backdrop-blur-md supports-backdrop-filter:bg-background/60",
         showBorder && "border-b border-border",
         className,
       )}
     >
-      <div className=" mx-auto px-2 sm:px-6 ">
+      <div className="mx-auto px-4 sm:px-6">
         <div className="flex h-16 items-center justify-between gap-4">
           {/* Left Section */}
-          {title && (
-            <div className="flex flex-1 flex-row items-center w-full gap-2 text-foreground/85">
-              <div className="inline bg-primary  w-1 h-8 rounded-sm" />
-              {icon}
-              <span className=" text-2xl font-semibold capitalize">
-                {title}
-              </span>
-            </div>
-          )}
+          <div className="flex items-center gap-3 flex-1 min-w-0">
+            {showBackButton && (
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => router.back()}
+                className="mr-1"
+              >
+                <ChevronLeft className="h-5 w-5" />
+              </Button>
+            )}
+
+            {leftContent || (
+              <div className="flex items-center gap-2 truncate">
+                {title && (
+                  <>
+                    <div className="hidden sm:block bg-primary w-1 h-6 rounded-full" />
+                    {icon && (
+                      <span className="text-muted-foreground">{icon}</span>
+                    )}
+                    <h1 className="text-xl sm:text-2xl font-semibold capitalize truncate">
+                      {title}
+                    </h1>
+                  </>
+                )}
+              </div>
+            )}
+          </div>
 
           {/* Right Section */}
-          {rightContent}
+          {rightContent && (
+            <div className="flex items-center gap-2">{rightContent}</div>
+          )}
         </div>
       </div>
     </header>

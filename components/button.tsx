@@ -3,34 +3,29 @@ import { Slot } from "@radix-ui/react-slot";
 import { cva, type VariantProps } from "class-variance-authority";
 import { Loader2, AlertTriangle } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { UseMutationResult } from "@tanstack/react-query";
 
-// ─── Variants ────────────────────────────────────────────────────────────────
-
+// --- Variants remain the same ---
 const buttonVariants = cva(
   "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive",
   {
     variants: {
       variant: {
-        default:
-          "bg-primary/50 hover:bg-primary/20 focus-visible:ring-primary/20 dark:focus-visible:ring-primary/40 dark:bg-primary/20 text-primary focus-visible:border-primary/40 dark:hover:bg-primary/30",
-        outline:
-          "border border-border bg-background hover:bg-muted hover:text-foreground dark:bg-input/30 dark:border-input dark:hover:bg-input/50",
+        default: "bg-primary/50 hover:bg-primary/20 text-primary",
+        outline: "border border-border bg-background hover:bg-muted",
         secondary:
           "bg-secondary text-secondary-foreground hover:bg-secondary/80",
-        ghost: "hover:bg-muted hover:text-foreground dark:hover:bg-muted/50",
+        ghost: "hover:bg-muted hover:text-foreground",
         destructive:
-          "bg-destructive/10 hover:bg-destructive/20 focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40 dark:bg-destructive/20 text-destructive focus-visible:border-destructive/40 dark:hover:bg-destructive/30",
-        success:
-          "bg-success/10 hover:bg-success/20 focus-visible:ring-success/20 dark:focus-visible:ring-success/40 dark:bg-success/20 text-success focus-visible:border-success/40 dark:hover:bg-success/30",
+          "bg-destructive/10 hover:bg-destructive/20 text-destructive",
+        success: "bg-success/10 hover:bg-success/20 text-success",
         link: "text-primary underline-offset-4 hover:underline",
       },
       size: {
-        default: "h-9 px-4 py-2 has-[>svg]:px-3",
-        sm: "h-8 rounded-md gap-1.5 px-3 has-[>svg]:px-2.5",
-        lg: "h-10 rounded-md px-6 has-[>svg]:px-4",
+        default: "h-9 px-4 py-2",
+        sm: "h-8 rounded-md px-3",
+        lg: "h-10 rounded-md px-6",
         icon: "size-9",
-        "icon-sm": "size-8",
-        "icon-lg": "size-10",
       },
     },
     defaultVariants: {
@@ -40,223 +35,88 @@ const buttonVariants = cva(
   },
 );
 
-// ─── Alert Dialog (headless, no extra dep) ───────────────────────────────────
-
-interface ConfirmAlertProps {
-  open: boolean;
-  title?: string;
-  description?: string;
-  confirmLabel?: string;
-  cancelLabel?: string;
-  onConfirm: () => void;
-  onCancel: () => void;
-}
-
-function ConfirmAlert({
-  open,
-  title = "Are you sure?",
-  description = "This action cannot be undone.",
-  confirmLabel = "Confirm",
-  cancelLabel = "Cancel",
-  onConfirm,
-  onCancel,
-}: ConfirmAlertProps) {
-  if (!open) return null;
-  return (
-    <div
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="confirm-title"
-      aria-describedby="confirm-desc"
-      className="fixed inset-0 z-50 flex items-center justify-center"
-    >
-      {/* Backdrop */}
-      <div
-        className="absolute inset-0 bg-black/40 backdrop-blur-sm"
-        onClick={onCancel}
-      />
-      {/* Panel */}
-      <div className="relative z-10 w-full max-w-sm rounded-xl border border-border bg-background p-6 shadow-xl">
-        <div className="mb-1 flex items-center gap-2 text-base font-semibold text-foreground">
-          <AlertTriangle className="size-4 text-destructive" />
-          <span id="confirm-title">{title}</span>
-        </div>
-        <p id="confirm-desc" className="mb-5 text-sm text-muted-foreground">
-          {description}
-        </p>
-        <div className="flex justify-end gap-2">
-          <button
-            type="button"
-            onClick={onCancel}
-            className="rounded-md border border-border bg-background px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-muted"
-          >
-            {cancelLabel}
-          </button>
-          <button
-            type="button"
-            onClick={onConfirm}
-            className="rounded-md bg-destructive/90 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-destructive"
-          >
-            {confirmLabel}
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// ─── Button Props ─────────────────────────────────────────────────────────────
-
 export interface ButtonProps
   extends
     Omit<React.ComponentProps<"button">, "children">,
     VariantProps<typeof buttonVariants> {
   asChild?: boolean;
-
-  /** Button content — accepts text, icons, or any mix of elements */
   children?: React.ReactNode;
 
-  // ── Mutation / async state ──────────────────────────────────────────────────
-
-  /**
-   * Pass the `isPending` / `isLoading` flag from a React Query mutation or
-   * any axios-driven state — the button will show a spinner and be disabled.
+  /** * Directly pass a TanStack Mutation object.
+   * It will automatically sync isLoading, isError, and disabled states.
    */
+  mutation?: UseMutationResult<any, any, any, any>;
+
   isLoading?: boolean;
-
-  /**
-   * Label shown beside the spinner while `isLoading` is true.
-   * Defaults to the button's normal children.
-   */
   loadingText?: string;
-
-  /**
-   * Pass the `isError` flag from a React Query mutation.
-   * Prepends a warning icon to the button content.
-   */
   isError?: boolean;
-
-  /**
-   * Error message tooltip / aria-label when `isError` is true.
-   */
   errorText?: string;
 
-  // ── Confirmation alert ──────────────────────────────────────────────────────
-
-  /**
-   * When `true`, a confirmation dialog is shown before the `onClick` fires.
-   */
+  // Confirmation Props
   confirm?: boolean;
-
-  /** Title shown in the confirmation dialog. */
   confirmTitle?: string;
-
-  /** Body text shown in the confirmation dialog. */
-  confirmDescription?: string;
-
-  /** Label for the confirm action button. */
-  confirmLabel?: string;
-
-  /** Label for the cancel button. */
-  cancelLabel?: string;
 }
 
-// ─── Button ───────────────────────────────────────────────────────────────────
+const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
+  (
+    {
+      className,
+      variant,
+      size,
+      asChild = false,
+      children,
+      mutation,
+      isLoading: manualIsLoading,
+      loadingText,
+      isError: manualIsError,
+      errorText = "An error occurred",
+      confirm,
+      onClick,
+      disabled,
+      ...props
+    },
+    ref,
+  ) => {
+    // Sync with React Query state if mutation prop is provided
+    const loading = manualIsLoading || mutation?.isPending;
+    const error = manualIsError || mutation?.isError;
 
-function Button({
-  className,
-  variant = "default",
-  size = "default",
-  asChild = false,
-
-  children,
-
-  isLoading = false,
-  loadingText,
-  isError = false,
-  errorText = "An error occurred",
-
-  confirm = false,
-  confirmTitle,
-  confirmDescription,
-  confirmLabel,
-  cancelLabel,
-
-  onClick,
-  disabled,
-  ...props
-}: ButtonProps) {
-  const [alertOpen, setAlertOpen] = React.useState(false);
-  const pendingEventRef =
-    React.useRef<React.MouseEvent<HTMLButtonElement> | null>(null);
-
-  const handleClick = React.useCallback(
-    (e: React.MouseEvent<HTMLButtonElement>) => {
-      if (confirm) {
-        e.preventDefault();
-        pendingEventRef.current = e;
-        setAlertOpen(true);
+    const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+      if (confirm && !window.confirm("Are you sure?")) {
         return;
       }
       onClick?.(e);
-    },
-    [confirm, onClick],
-  );
+    };
 
-  const handleConfirm = React.useCallback(() => {
-    setAlertOpen(false);
-    if (pendingEventRef.current && onClick) {
-      onClick(pendingEventRef.current);
-    }
-    pendingEventRef.current = null;
-  }, [onClick]);
+    const Comp = asChild ? Slot : "button";
 
-  const handleCancel = React.useCallback(() => {
-    setAlertOpen(false);
-    pendingEventRef.current = null;
-  }, []);
-
-  // ── Resolve leading state icon (loading / error) ────────────────────────────
-  const stateIcon = React.useMemo(() => {
-    if (isLoading) return <Loader2 className="animate-spin" aria-hidden />;
-    if (isError)
-      return <AlertTriangle className="text-destructive" aria-hidden />;
-    return null;
-  }, [isLoading, isError]);
-
-  const resolvedChildren = isLoading && loadingText ? loadingText : children;
-
-  const Comp = asChild ? Slot : "button";
-
-  return (
-    <>
+    return (
       <Comp
-        data-slot="button"
-        data-variant={variant}
-        data-size={size}
-        aria-busy={isLoading || undefined}
-        aria-label={isError ? errorText : props["aria-label"]}
-        title={isError ? errorText : props.title}
+        ref={ref}
         className={cn(buttonVariants({ variant, size, className }))}
-        disabled={disabled || isLoading}
+        disabled={disabled || loading}
         onClick={handleClick}
+        aria-busy={loading}
         {...props}
       >
-        {stateIcon}
-        {resolvedChildren}
+        {loading ? (
+          <>
+            <Loader2 className="animate-spin" />
+            {loadingText || children}
+          </>
+        ) : error ? (
+          <>
+            <AlertTriangle className="text-destructive" />
+            {children}
+          </>
+        ) : (
+          children
+        )}
       </Comp>
+    );
+  },
+);
 
-      <ConfirmAlert
-        open={alertOpen}
-        title={confirmTitle}
-        description={confirmDescription}
-        confirmLabel={confirmLabel}
-        cancelLabel={cancelLabel}
-        onConfirm={handleConfirm}
-        onCancel={handleCancel}
-      />
-    </>
-  );
-}
+Button.displayName = "Button";
 
 export { Button, buttonVariants };

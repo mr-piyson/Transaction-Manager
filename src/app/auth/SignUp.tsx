@@ -5,7 +5,6 @@ import { User } from "lucide-react";
 import type React from "react";
 import { useRef, useState } from "react";
 import { useForm } from "react-hook-form";
-import { z } from "zod";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -18,24 +17,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/hooks/use-auth";
 import { Spinner } from "../../../components/ui/spinner";
+import { SignUpInput, SignUpSchema } from "@/lib/validators/auth";
 
 // SIGN UP SCHEMA
-export const SignUpSchema = z
-  .object({
-    name: z.string().min(1, "Name is required"),
-    email: z.email("Please enter a valid email address"),
-    password: z.string().min(6, "Password must be at least 6 characters"),
-    confirmPassword: z
-      .string()
-      .min(6, "Password must be at least 6 characters"),
-    image: z.string().optional(),
-  })
-  .refine((data) => data.password === data.confirmPassword, {
-    message: "Passwords do not match",
-    path: ["confirmPassword"],
-  });
-
-type FormData = z.infer<typeof SignUpSchema>;
 
 export default function SignUpTab() {
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
@@ -48,7 +32,7 @@ export default function SignUpTab() {
     handleSubmit,
     setValue,
     formState: { errors },
-  } = useForm<FormData>({
+  } = useForm<SignUpInput>({
     resolver: zodResolver(SignUpSchema),
     defaultValues: {
       name: "",
@@ -89,7 +73,7 @@ export default function SignUpTab() {
     reader.readAsDataURL(file);
   };
 
-  const onSubmit = async (data: FormData) => {
+  const onSubmit = async (data: SignUpInput) => {
     await signUp(data);
   };
 
@@ -185,7 +169,7 @@ export default function SignUpTab() {
               id="confirmPassword"
               type="password"
               {...register("confirmPassword")}
-              className={`border-1 ${errors.confirmPassword ? "border-red-500" : "border-muted-foreground/50"}`}
+              className={`border ${errors.confirmPassword ? "border-red-500" : "border-muted-foreground/50"}`}
             />
             {errors.confirmPassword && (
               <p className="text-sm text-red-500">

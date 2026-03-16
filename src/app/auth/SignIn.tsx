@@ -14,11 +14,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/hooks/use-auth";
 import { Spinner } from "../../../components/ui/spinner";
-
-export const SignInSchema = z.object({
-  email: z.email(),
-  password: z.string().min(6),
-});
+import { SignInInput, SignInSchema } from "@/lib/validators/auth";
 
 export default function SignInTab() {
   const { signIn, isLoading: loading } = useAuth();
@@ -34,7 +30,7 @@ export default function SignInTab() {
     },
   });
 
-  async function onSubmit(data: z.infer<typeof SignInSchema>) {
+  async function onSubmit(data: SignInInput) {
     await signIn(data);
   }
 

@@ -17,9 +17,11 @@ import { toast } from "sonner";
 import { queryClient } from "../layout";
 import { alert } from "@/components/Alert-dialog";
 import { UniversalContextMenu } from "@/components/context-menu";
+import { useRouter } from "next/navigation";
 
 export default function InventoryPage() {
   const { t } = useI18n();
+  const router = useRouter();
 
   const {
     data: inventory,
@@ -41,12 +43,10 @@ export default function InventoryPage() {
       confirmText: "Delete",
       destructive: true,
       onConfirm: async () => {
-        const res = axios.delete(`/api/inventory/${data.id}`);
-        if ((await res).status === 201) {
+        const res = await axios.delete(`/api/inventory/${data.id}`);
+        if (res.status == 200) {
           toast.success("Item deleted");
-          queryClient.refetchQueries({
-            queryKey: ["inventory"],
-          });
+          refetch();
         }
       },
     });
@@ -59,53 +59,49 @@ export default function InventoryPage() {
         title={t("common.inventory")}
         icon={<Box />}
         rightContent={
-          <>
-            <UniversalDialog<InventoryItem>
-              title={"Create new Inventory item"}
-              fields={[
-                {
-                  label: "Name",
-                  name: "name",
-                  type: "text",
-                  required: true,
-                  width: "full",
-                },
-                {
-                  label: "Description",
-                  name: "description",
-                  type: "textarea",
-                  required: true,
-                  width: "full",
-                },
-                {
-                  label: "Purchase Price",
-                  name: "purchasePrice",
-                  type: "number",
-                  required: true,
-                },
-                {
-                  label: "Sales Price",
-                  name: "salesPrice",
-                  type: "number",
-                  required: true,
-                },
-                {
-                  label: "Bar/QR Code",
-                  name: "code",
-                  type: "text",
-                  required: false,
-                },
-              ]}
-              mutationFn={async function (
-                variables: Partial<any>,
-              ): Promise<any> {
-                return await axios.post("/api/inventory", variables);
-              }}
-              onSuccess={() => refetch()}
-            >
-              <Button>Create</Button>
-            </UniversalDialog>
-          </>
+          <UniversalDialog<InventoryItem>
+            title={"Create new Inventory item"}
+            fields={[
+              {
+                label: "Name",
+                name: "name",
+                type: "text",
+                required: true,
+                width: "full",
+              },
+              {
+                label: "Description",
+                name: "description",
+                type: "textarea",
+                required: true,
+                width: "full",
+              },
+              {
+                label: "Purchase Price",
+                name: "purchasePrice",
+                type: "number",
+                required: true,
+              },
+              {
+                label: "Sales Price",
+                name: "salesPrice",
+                type: "number",
+                required: true,
+              },
+              {
+                label: "Bar/QR Code",
+                name: "code",
+                type: "text",
+                required: false,
+              },
+            ]}
+            mutationFn={async function (variables: Partial<any>): Promise<any> {
+              return await axios.post("/api/inventory", variables);
+            }}
+            onSuccess={() => refetch()}
+          >
+            <Button>Create</Button>
+          </UniversalDialog>
         }
       />
       <ListView<InventoryItem>
@@ -135,12 +131,15 @@ export default function InventoryPage() {
                 },
               ]}
             >
-              <InventoryCardRenderer data={data} />
+              <InventoryCardRenderer
+                data={data}
+                onClick={() => router.push(`/app/inventory/${data.id}`)}
+              />
             </UniversalContextMenu>
           </div>
         )}
         rowHeight={72}
-        searchFields={[]}
+        searchFields={["name", "code"]}
         onRefetch={refetch}
       />
     </>
