@@ -1,14 +1,8 @@
 // lib/alert.ts
-"use client";
-import { ReactNode } from "react";
+'use client';
+import { ReactNode } from 'react';
 
-export type AlertVariant =
-  | "default"
-  | "success"
-  | "error"
-  | "warning"
-  | "info"
-  | "delete";
+export type AlertVariant = 'default' | 'success' | 'error' | 'warning' | 'info' | 'delete';
 
 export type ConfirmOptions = {
   title: ReactNode;
@@ -27,7 +21,7 @@ export type AlertController = {
 let controller: AlertController | null = null;
 
 function ensureController() {
-  if (!controller) throw new Error("AlertProvider is not mounted");
+  if (!controller) throw new Error('AlertProvider is not mounted');
   return controller;
 }
 
@@ -40,34 +34,34 @@ export const alert = {
     return ensureController().confirm(options);
   },
 
-  success(options: Omit<ConfirmOptions, "variant">) {
-    return ensureController().confirm({ ...options, variant: "success" });
+  success(options: Omit<ConfirmOptions, 'variant'>) {
+    return ensureController().confirm({ ...options, variant: 'success' });
   },
 
-  error(options: Omit<ConfirmOptions, "variant">) {
+  error(options: Omit<ConfirmOptions, 'variant'>) {
     return ensureController().confirm({
       ...options,
-      variant: "error",
+      variant: 'error',
       destructive: true,
     });
   },
 
-  warning(options: Omit<ConfirmOptions, "variant">) {
+  warning(options: Omit<ConfirmOptions, 'variant'>) {
     return ensureController().confirm({
       ...options,
-      variant: "warning",
+      variant: 'warning',
       destructive: true,
     });
   },
 
-  info(options: Omit<ConfirmOptions, "variant">) {
-    return ensureController().confirm({ ...options, variant: "info" });
+  info(options: Omit<ConfirmOptions, 'variant'>) {
+    return ensureController().confirm({ ...options, variant: 'info' });
   },
 
-  delete(options: Omit<ConfirmOptions, "variant">) {
+  delete(options: Omit<ConfirmOptions, 'variant'>) {
     return ensureController().confirm({
       ...options,
-      variant: "delete",
+      variant: 'delete',
       destructive: true,
     });
   },
@@ -75,26 +69,11 @@ export const alert = {
 
 // components/providers/alert-provider.tsx
 
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 
-import {
-  CheckCircle2,
-  XCircle,
-  AlertTriangle,
-  Info,
-  Trash2,
-} from "lucide-react";
-import { useCallback, useEffect, useRef, useState } from "react";
-import { cn } from "@/lib/utils";
+import { CheckCircle2, XCircle, AlertTriangle, Info, Trash2 } from 'lucide-react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { cn } from '@/lib/utils';
 
 type QueueItem = {
   options: ConfirmOptions;
@@ -103,15 +82,15 @@ type QueueItem = {
 
 function VariantIcon({ variant }: { variant?: AlertVariant }) {
   switch (variant) {
-    case "success":
+    case 'success':
       return <CheckCircle2 />;
-    case "delete":
+    case 'delete':
       return <Trash2 />;
-    case "error":
+    case 'error':
       return <XCircle />;
-    case "warning":
+    case 'warning':
       return <AlertTriangle />;
-    case "info":
+    case 'info':
       return <Info />;
     default:
       return null;
@@ -183,33 +162,21 @@ export function AlertProvider({ children }: { children: ReactNode }) {
     <>
       {children}
       <AlertDialog open={open} onOpenChange={(v) => !v && handleCancel()}>
-        <AlertDialogContent className={"w-300!"}>
+        <AlertDialogContent className={'w-300!'}>
           <AlertDialogHeader>
-            <AlertDialogTitle className="flex items-center gap-2">
-              {opts?.title}
-            </AlertDialogTitle>
+            <AlertDialogTitle className="flex items-center gap-2">{opts?.title}</AlertDialogTitle>
 
-            {opts?.description && (
-              <AlertDialogDescription
-                className="w-full "
-                render={<div>{opts.description}</div>}
-              ></AlertDialogDescription>
-            )}
+            {opts?.description && <AlertDialogDescription className="w-full " render={<div>{opts.description}</div>}></AlertDialogDescription>}
           </AlertDialogHeader>
 
           <AlertDialogFooter>
             <AlertDialogCancel disabled={loading} onClick={handleCancel}>
-              {opts?.cancelText ?? "Cancel"}
+              {opts?.cancelText ?? 'Cancel'}
             </AlertDialogCancel>
 
-            <AlertDialogAction
-              disabled={loading}
-              data-destructive={opts?.destructive || undefined}
-              className={cn(opts?.destructive && "bg-destructive")}
-              onClick={handleConfirm}
-            >
+            <AlertDialogAction disabled={loading} data-destructive={opts?.destructive || undefined} className={cn(opts?.destructive && 'bg-destructive')} onClick={handleConfirm}>
               <VariantIcon variant={opts?.variant} />
-              {loading ? "Processing..." : (opts?.confirmText ?? "Confirm")}
+              {loading ? 'Processing...' : (opts?.confirmText ?? 'Confirm')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

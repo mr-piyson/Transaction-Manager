@@ -1,5 +1,5 @@
-import { z } from "zod";
-import { createEnv } from "@t3-oss/env-core";
+import { z } from 'zod';
+import { createEnv } from '@t3-oss/env-core';
 
 export const env = createEnv({
   server: {
@@ -7,22 +7,13 @@ export const env = createEnv({
     NEXT_PUBLIC_API_URL: z.string().optional(),
     JWT_SECRET_ACCESS: z.string(),
     JWT_SECRET_REFRESH: z.string(),
-    NODE_ENV: z.enum(["development", "production"]).optional(),
+    NODE_ENV: z.enum(['development', 'production']).optional(),
   },
   runtimeEnv: process.env,
   onValidationError: (issues) => {
     console.error(`Invalid environment variables:`);
     issues.forEach((issue) => {
-      if (issue.path)
-        console.log(
-          "\x1b[31m",
-          issue.path[0].toString().trim(),
-          "\x1b[31m",
-          "\x1b[0m=\x1b[0m",
-          "\x1b[32m",
-          '""',
-          "\x1b[32m",
-        );
+      if (issue.path) console.log('\x1b[31m', issue.path[0].toString().trim(), '\x1b[31m', '\x1b[0m=\x1b[0m', '\x1b[32m', '""', '\x1b[32m');
     });
     // throw error with out log the zod runtime error log
     process.exit(1);

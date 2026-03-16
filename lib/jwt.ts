@@ -1,8 +1,8 @@
-import jwt from "jsonwebtoken";
-import { cookies } from "next/headers";
-import db from "@/lib/database";
-import { env } from "@/lib/env";
-import { Role } from "@prisma/client";
+import jwt from 'jsonwebtoken';
+import { cookies } from 'next/headers';
+import db from '@/lib/database';
+import { env } from '@/lib/env';
+import { Role } from '@prisma/client';
 
 // --- Types & Constants ---
 export interface TokenPayload {
@@ -20,8 +20,8 @@ export interface AuthResult {
 }
 
 export const COOKIE_NAMES = {
-  ACCESS: "access_token",
-  REFRESH: "refresh_token",
+  ACCESS: 'access_token',
+  REFRESH: 'refresh_token',
 } as const;
 
 export const EXPIRY = {
@@ -47,18 +47,18 @@ export async function issueSession(userId: string, email: string) {
 
   // 1. Persist Refresh Token
   const expiresAt = new Date(Date.now() + EXPIRY.REFRESH_TOKEN_EXPIRY * 1000);
-  await db.tokens.deleteMany({ where: { userId, type: "refresh" } });
+  await db.tokens.deleteMany({ where: { userId, type: 'refresh' } });
   await db.tokens.create({
-    data: { userId, value: refreshToken, expiresAt, type: "refresh" },
+    data: { userId, value: refreshToken, expiresAt, type: 'refresh' },
   });
 
   // 2. Set Cookies
   const cookieStore = await cookies();
   const baseOptions = {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax" as const,
-    path: "/",
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax' as const,
+    path: '/',
   };
 
   cookieStore.set(COOKIE_NAMES.ACCESS, accessToken, {
@@ -82,7 +82,7 @@ export async function clearSession(refreshToken?: string) {
   const cookieStore = await cookies();
   if (refreshToken) {
     await db.tokens.deleteMany({
-      where: { value: refreshToken, type: "refresh" },
+      where: { value: refreshToken, type: 'refresh' },
     });
   }
   cookieStore.delete(COOKIE_NAMES.ACCESS);

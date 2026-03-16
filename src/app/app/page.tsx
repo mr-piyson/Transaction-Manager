@@ -1,12 +1,12 @@
-"use client";
+'use client';
 
-import { SelectDialog } from "@/components/select-dialog";
-import { Customer } from "@prisma/client";
-import axios from "axios";
-import { useQuery } from "@tanstack/react-query";
-import { CustomerCardRenderer } from "./customers/customerCard";
-import { Button } from "@/components/button";
-import { UniversalContextMenu } from "@/components/context-menu";
+import { SelectDialog } from '@/components/select-dialog';
+import { Customer } from '@prisma/client';
+import axios from 'axios';
+import { useQuery } from '@tanstack/react-query';
+import { CustomerCardRenderer } from './customers/customerCard';
+import { Button } from '@/components/button';
+import { UniversalContextMenu } from '@/components/context-menu';
 
 export default function App_Page(props: any) {
   const {
@@ -15,8 +15,8 @@ export default function App_Page(props: any) {
     isError,
     refetch,
   } = useQuery({
-    queryKey: ["customers"],
-    queryFn: async () => (await axios.get<Customer[]>("/api/customers")).data,
+    queryKey: ['customers'],
+    queryFn: async () => (await axios.get<Customer[]>('/api/customers')).data,
   });
 
   return (
@@ -26,11 +26,11 @@ export default function App_Page(props: any) {
           console.log(item);
         }}
         data={customers}
-        searchFields={["name", "phone"]}
+        searchFields={['name', 'phone']}
         cardRenderer={CustomerCardRenderer}
         rowHeight={75}
       >
-        <Button variant={"destructive"}>Hello world</Button>
+        <Button variant={'destructive'}>Hello world</Button>
       </SelectDialog>
     </div>
   );

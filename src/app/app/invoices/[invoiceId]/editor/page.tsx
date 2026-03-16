@@ -1,9 +1,9 @@
-"use client";
-import { alert } from "@/components/Alert-dialog";
-import { Button } from "@/components/button";
-import { Header } from "@/components/Header";
-import { ArrowLeft } from "lucide-react";
-import { PaymentDialog } from "./payments-dialog";
+'use client';
+import { alert } from '@/components/Alert-dialog';
+import { Button } from '@/components/button';
+import { Header } from '@/components/Header';
+import { ArrowLeft } from 'lucide-react';
+import { PaymentDialog } from './payments-dialog';
 type InvoiceEditorProps = {
   children?: React.ReactNode;
 };
@@ -14,9 +14,8 @@ export default function InvoiceEditor(props: InvoiceEditorProps) {
       <Header
         leftContent={
           <div className="flex items-center gap-2">
-            <Button variant={"ghost"} className="text-muted-foreground">
-              <ArrowLeft size={16} />{" "}
-              <span className="max-sm:hidden">Back</span>
+            <Button variant={'ghost'} className="text-muted-foreground">
+              <ArrowLeft size={16} /> <span className="max-sm:hidden">Back</span>
             </Button>
             <div className="flex flex-col">
               <span>#INV-0001</span>

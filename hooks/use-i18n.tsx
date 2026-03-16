@@ -1,29 +1,9 @@
-"use client";
+'use client';
 
-import React, {
-  createContext,
-  useContext,
-  useState,
-  useEffect,
-  useRef,
-  useCallback,
-  useMemo,
-  type ReactNode,
-} from "react";
+import React, { createContext, useContext, useState, useEffect, useRef, useCallback, useMemo, type ReactNode } from 'react';
 
-import {
-  type Locale,
-  type Direction,
-  type TranslationKeys,
-  type LanguageConfig,
-  DEFAULT_LOCALE,
-  LANGUAGE_CONFIG,
-  AVAILABLE_LOCALES,
-  loadLocale,
-  translate,
-  keyExists,
-} from "@/i18n/config";
-import { saveLocaleToDatabase, setLocaleAction } from "@/i18n/i18n.action";
+import { type Locale, type Direction, type TranslationKeys, type LanguageConfig, DEFAULT_LOCALE, LANGUAGE_CONFIG, AVAILABLE_LOCALES, loadLocale, translate, keyExists } from '@/i18n/config';
+import { saveLocaleToDatabase, setLocaleAction } from '@/i18n/i18n.action';
 
 // ─── Context ──────────────────────────────────────────────────────────────────
 
@@ -58,12 +38,7 @@ interface I18nProviderProps {
   userId?: string;
 }
 
-export function I18nProvider({
-  children,
-  initialLocale = DEFAULT_LOCALE,
-  initialDict,
-  userId,
-}: I18nProviderProps) {
+export function I18nProvider({ children, initialLocale = DEFAULT_LOCALE, initialDict, userId }: I18nProviderProps) {
   // ── State ─────────────────────────────────────────────────────────────────
   const [locale, setLocaleState] = useState<Locale>(initialLocale);
   const [dict, setDict] = useState<Record<string, unknown>>(initialDict ?? {});
@@ -98,9 +73,7 @@ export function I18nProvider({
       // No server dict and the locale changed — load the bundle client-side.
       loadLocale(initialLocale)
         .then(setDict)
-        .catch((err) =>
-          console.error("[i18n] Failed to load initial locale bundle:", err),
-        );
+        .catch((err) => console.error('[i18n] Failed to load initial locale bundle:', err));
       setLocaleState(initialLocale);
     }
   }, [initialLocale, initialDict]);
@@ -110,9 +83,7 @@ export function I18nProvider({
     if (!initialDict || Object.keys(initialDict).length === 0) {
       loadLocale(initialLocale)
         .then(setDict)
-        .catch((err) =>
-          console.error("[i18n] Failed to load locale bundle on mount:", err),
-        );
+        .catch((err) => console.error('[i18n] Failed to load locale bundle on mount:', err));
     }
     // Only runs once on mount — intentional.
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -154,7 +125,7 @@ export function I18nProvider({
       try {
         newDict = await loadLocale(newLocale);
       } catch (err) {
-        console.error("[i18n] Failed to load locale bundle:", err);
+        console.error('[i18n] Failed to load locale bundle:', err);
         if (isCurrent()) {
           setLocaleState(prevLocale);
           setIsPending(false);
@@ -174,10 +145,7 @@ export function I18nProvider({
         if (!isCurrent()) return;
 
         if (!result.success) {
-          console.error(
-            "[i18n] Server failed to set locale cookie:",
-            result.error,
-          );
+          console.error('[i18n] Server failed to set locale cookie:', result.error);
           setLocaleState(prevLocale);
           setDict(prevDict);
           setIsPending(false);
@@ -196,7 +164,7 @@ export function I18nProvider({
         //   }
         // }
       } catch (err) {
-        console.error("[i18n] Error syncing locale with server:", err);
+        console.error('[i18n] Error syncing locale with server:', err);
         if (isCurrent()) {
           setLocaleState(prevLocale);
           setDict(prevDict);
@@ -213,7 +181,7 @@ export function I18nProvider({
     () => ({
       locale,
       direction: config.direction,
-      isRTL: config.direction === "rtl",
+      isRTL: config.direction === 'rtl',
       config,
       availableLocales: AVAILABLE_LOCALES,
       isPending,
@@ -231,6 +199,6 @@ export function I18nProvider({
 
 export function useI18n(): I18nContextValue {
   const ctx = useContext(I18nContext);
-  if (!ctx) throw new Error("useI18n must be used inside <I18nProvider>");
+  if (!ctx) throw new Error('useI18n must be used inside <I18nProvider>');
   return ctx;
 }

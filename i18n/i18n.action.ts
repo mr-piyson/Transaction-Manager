@@ -1,4 +1,4 @@
-"use server";
+'use server';
 
 // ============================================
 // FILE: src/lib/i18n/i18n.action.ts
@@ -10,23 +10,12 @@
 //   await setLocaleAction("ar");
 // ============================================
 
-import { cookies } from "next/headers";
-import { revalidatePath } from "next/cache";
-import { z } from "zod";
+import { cookies } from 'next/headers';
+import { revalidatePath } from 'next/cache';
+import { z } from 'zod';
 // import db from "@/lib/database"; // uncomment when DB integration is needed
 
-import {
-  type Locale,
-  type TranslationKeys,
-  COOKIE_NAME,
-  COOKIE_MAX_AGE,
-  LANGUAGE_CONFIG,
-  AVAILABLE_LOCALES,
-  loadLocale,
-  translate,
-  keyExists,
-  parseLocale,
-} from "@/i18n/config";
+import { type Locale, type TranslationKeys, COOKIE_NAME, COOKIE_MAX_AGE, LANGUAGE_CONFIG, AVAILABLE_LOCALES, loadLocale, translate, keyExists, parseLocale } from '@/i18n/config';
 
 // ─── Cookie helpers ───────────────────────────────────────────────────────────
 
@@ -40,9 +29,9 @@ async function setLocaleCookie(locale: Locale): Promise<void> {
   const cookieStore = await cookies();
   cookieStore.set(COOKIE_NAME, locale, {
     maxAge: COOKIE_MAX_AGE,
-    path: "/",
-    sameSite: "lax",
-    secure: process.env.NODE_ENV === "production",
+    path: '/',
+    sameSite: 'lax',
+    secure: process.env.NODE_ENV === 'production',
     // HttpOnly keeps the cookie off document.cookie, preventing the client
     // from writing a conflicting value. The server is the single writer.
     httpOnly: true,
@@ -80,14 +69,13 @@ export async function getServerI18n(pinnedLocale?: Locale) {
   const dict = await loadLocale(locale);
 
   return {
-    t: (key: TranslationKeys, fallback?: string) =>
-      translate(dict, key, fallback),
+    t: (key: TranslationKeys, fallback?: string) => translate(dict, key, fallback),
     exists: (key: TranslationKeys) => keyExists(dict, key),
     // ↓ Pass both of these to <I18nProvider initialLocale={locale} initialDict={dict}>
     locale,
     dict,
     direction: config.direction,
-    isRTL: config.direction === "rtl",
+    isRTL: config.direction === 'rtl',
     config,
     availableLocales: AVAILABLE_LOCALES,
   };
@@ -104,24 +92,22 @@ export async function getServerI18n(pinnedLocale?: Locale) {
  *   const result = await setLocaleAction("ar");
  *   if (!result.success) console.error(result.error);
  */
-export async function setLocaleAction(
-  locale: Locale,
-): Promise<{ success: boolean; error?: string }> {
+export async function setLocaleAction(locale: Locale): Promise<{ success: boolean; error?: string }> {
   // Validate at the trust boundary even though Locale is typed — Server Actions
   // can be called from untyped JS or external requests.
   if (!AVAILABLE_LOCALES.includes(locale)) {
-    return { success: false, error: "Invalid locale" };
+    return { success: false, error: 'Invalid locale' };
   }
 
   try {
     await setLocaleCookie(locale);
-    revalidatePath("/", "layout");
+    revalidatePath('/', 'layout');
     return { success: true };
   } catch (err) {
-    console.error("[i18n] Error setting locale cookie:", err);
+    console.error('[i18n] Error setting locale cookie:', err);
     return {
       success: false,
-      error: err instanceof Error ? err.message : "Unknown error",
+      error: err instanceof Error ? err.message : 'Unknown error',
     };
   }
 }
@@ -133,17 +119,14 @@ export async function setLocaleAction(
  *
  * TODO: uncomment the db call below once your schema includes a `locale` column.
  */
-export async function saveLocaleToDatabase(
-  userId: string | number,
-  locale: Locale,
-): Promise<{ success: boolean; error?: string }> {
+export async function saveLocaleToDatabase(userId: string | number, locale: Locale): Promise<{ success: boolean; error?: string }> {
   const parsed = z.coerce.number().int().positive().safeParse(userId);
   if (!parsed.success) {
-    return { success: false, error: "Invalid userId" };
+    return { success: false, error: 'Invalid userId' };
   }
 
   if (!AVAILABLE_LOCALES.includes(locale)) {
-    return { success: false, error: "Invalid locale" };
+    return { success: false, error: 'Invalid locale' };
   }
 
   try {
@@ -154,10 +137,10 @@ export async function saveLocaleToDatabase(
 
     return { success: true };
   } catch (err) {
-    console.error("[i18n] Error saving locale to database:", err);
+    console.error('[i18n] Error saving locale to database:', err);
     return {
       success: false,
-      error: err instanceof Error ? err.message : "Unknown error",
+      error: err instanceof Error ? err.message : 'Unknown error',
     };
   }
 }

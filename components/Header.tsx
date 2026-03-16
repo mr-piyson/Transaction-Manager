@@ -1,10 +1,10 @@
-"use client";
+'use client';
 
-import { ReactNode } from "react";
-import { useRouter } from "next/navigation";
-import { ChevronLeft } from "lucide-react";
-import { Button } from "./button";
-import { cn } from "@/lib/utils";
+import { ReactNode } from 'react';
+import { useRouter } from 'next/navigation';
+import { ChevronLeft } from 'lucide-react';
+import { Button } from './button';
+import { cn } from '@/lib/utils';
 
 interface HeaderProps {
   title?: ReactNode;
@@ -18,42 +18,17 @@ interface HeaderProps {
   className?: string;
 }
 
-export function Header({
-  title,
-  icon,
-  leftContent,
-  rightContent,
-  showBorder = true,
-  sticky = true,
-  transparent = false,
-  showBackButton = false,
-  className,
-}: HeaderProps) {
+export function Header({ title, icon, leftContent, rightContent, showBorder = true, sticky = true, transparent = false, showBackButton = false, className }: HeaderProps) {
   const router = useRouter();
 
   return (
-    <header
-      className={cn(
-        "w-full z-50 transition-all duration-300 print:hidden",
-        sticky && "sticky top-0",
-        transparent
-          ? "bg-transparent"
-          : "bg-background/95 backdrop-blur-md supports-backdrop-filter:bg-background/60",
-        showBorder && "border-b border-border",
-        className,
-      )}
-    >
+    <header className={cn('w-full z-50 transition-all duration-300 print:hidden', sticky && 'sticky top-0', transparent ? 'bg-transparent' : 'bg-background/95 backdrop-blur-md supports-backdrop-filter:bg-background/60', showBorder && 'border-b border-border', className)}>
       <div className="mx-auto px-4 sm:px-6">
         <div className="flex h-16 items-center justify-between gap-4">
           {/* Left Section */}
           <div className="flex items-center gap-3 flex-1 min-w-0">
             {showBackButton && (
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => router.back()}
-                className="mr-1"
-              >
+              <Button variant="ghost" size="icon" onClick={() => router.back()} className="mr-1">
                 <ChevronLeft className="h-5 w-5" />
               </Button>
             )}
@@ -63,12 +38,8 @@ export function Header({
                 {title && (
                   <>
                     <div className="hidden sm:block bg-primary w-1 h-6 rounded-full" />
-                    {icon && (
-                      <span className="text-muted-foreground">{icon}</span>
-                    )}
-                    <h1 className="text-xl sm:text-2xl font-semibold capitalize truncate">
-                      {title}
-                    </h1>
+                    {icon && <span className="text-muted-foreground">{icon}</span>}
+                    <h1 className="text-xl sm:text-2xl font-semibold capitalize truncate">{title}</h1>
                   </>
                 )}
               </div>
@@ -76,9 +47,7 @@ export function Header({
           </div>
 
           {/* Right Section */}
-          {rightContent && (
-            <div className="flex items-center gap-2">{rightContent}</div>
-          )}
+          {rightContent && <div className="flex items-center gap-2">{rightContent}</div>}
         </div>
       </div>
     </header>

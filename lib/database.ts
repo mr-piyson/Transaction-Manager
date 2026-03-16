@@ -1,7 +1,7 @@
-import { PrismaClient } from "@prisma/client";
-import { PrismaLibSql } from "@prisma/adapter-libsql";
-import { PrismaPg } from "@prisma/adapter-pg";
-import { env } from "./env";
+import { PrismaClient } from '@prisma/client';
+import { PrismaLibSql } from '@prisma/adapter-libsql';
+import { PrismaPg } from '@prisma/adapter-pg';
+import { env } from './env';
 
 declare global {
   // eslint-disable-next-line no-var
@@ -20,7 +20,7 @@ const db = new PrismaClient({
   adapter,
 });
 
-if (process.env.NODE_ENV !== "production") global.prisma = db;
+if (process.env.NODE_ENV !== 'production') global.prisma = db;
 
 // Log queries in development
 // db.$on("query", e => {

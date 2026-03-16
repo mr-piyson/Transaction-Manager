@@ -1,23 +1,18 @@
-"use client";
+'use client';
 
-import { zodResolver } from "@hookform/resolvers/zod";
-import { User } from "lucide-react";
-import type React from "react";
-import { useRef, useState } from "react";
-import { useForm } from "react-hook-form";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardTitle,
-} from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { useAuth } from "@/hooks/use-auth";
-import { Spinner } from "../../../components/ui/spinner";
-import { SignUpInput, SignUpSchema } from "@/lib/validators/auth";
+import { zodResolver } from '@hookform/resolvers/zod';
+import { User } from 'lucide-react';
+import type React from 'react';
+import { useRef, useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { useAuth } from '@/hooks/use-auth';
+import { Spinner } from '../../../components/ui/spinner';
+import { SignUpInput, SignUpSchema } from '@/lib/validators/auth';
 
 // SIGN UP SCHEMA
 
@@ -35,10 +30,10 @@ export default function SignUpTab() {
   } = useForm<SignUpInput>({
     resolver: zodResolver(SignUpSchema),
     defaultValues: {
-      name: "",
-      email: "",
-      password: "",
-      confirmPassword: "",
+      name: '',
+      email: '',
+      password: '',
+      confirmPassword: '',
       image: undefined,
     },
   });
@@ -53,13 +48,13 @@ export default function SignUpTab() {
 
     // Check file size (1MB = 1048576 bytes)
     if (file.size > 1048576) {
-      alert("Avatar image must be less than 1MB");
+      alert('Avatar image must be less than 1MB');
       return;
     }
 
     // Check file type
-    if (!file.type.startsWith("image/")) {
-      alert("Please upload an image file");
+    if (!file.type.startsWith('image/')) {
+      alert('Please upload an image file');
       return;
     }
 
@@ -67,7 +62,7 @@ export default function SignUpTab() {
     const reader = new FileReader();
     reader.onloadend = () => {
       const base64 = reader.result as string;
-      setValue("image", base64);
+      setValue('image', base64);
       setAvatarPreview(base64);
     };
     reader.readAsDataURL(file);
@@ -86,17 +81,10 @@ export default function SignUpTab() {
         </div>
 
         <div className="flex flex-col items-center space-y-2">
-          <div
-            className="relative group cursor-pointer hover:outline-5 hover:outline-blue-500 rounded-full"
-            onClick={handleAvatarClick}
-          >
+          <div className="relative group cursor-pointer hover:outline-5 hover:outline-blue-500 rounded-full" onClick={handleAvatarClick}>
             <Avatar className="w-24 h-24 border-transparent">
               {avatarPreview ? (
-                <AvatarImage
-                  src={avatarPreview}
-                  className="object-cover"
-                  alt="Avatar preview"
-                />
+                <AvatarImage src={avatarPreview} className="object-cover" alt="Avatar preview" />
               ) : (
                 <AvatarFallback className="bg-card border-3 border-muted-foreground/50">
                   <User className="w-12 h-12 text-accent-foreground/50" />
@@ -109,14 +97,7 @@ export default function SignUpTab() {
             </div>
           </div>
 
-          <Input
-            ref={fileInputRef}
-            id="image"
-            type="file"
-            accept="image/*"
-            className="hidden"
-            onChange={handleAvatarChange}
-          />
+          <Input ref={fileInputRef} id="image" type="file" accept="image/*" className="hidden" onChange={handleAvatarChange} />
 
           <p className="text-xs text-center text-gray-500">Max size: 1MB</p>
         </div>
@@ -127,60 +108,31 @@ export default function SignUpTab() {
           {/* Name Field */}
           <div className="grid gap-2">
             <Label htmlFor="name">Full Name</Label>
-            <Input
-              id="name"
-              {...register("name")}
-              className={`border ${errors.name ? "border-red-500" : "border-muted-foreground/50"}`}
-            />
-            {errors.name && (
-              <p className="text-sm text-red-500">{errors.name.message}</p>
-            )}
+            <Input id="name" {...register('name')} className={`border ${errors.name ? 'border-red-500' : 'border-muted-foreground/50'}`} />
+            {errors.name && <p className="text-sm text-red-500">{errors.name.message}</p>}
           </div>
           {/* Email Field */}
           <div className="grid gap-2">
             <Label htmlFor="email">Email</Label>
-            <Input
-              id="email"
-              type="email"
-              {...register("email")}
-              className={`border ${errors.email ? "border-red-500" : "border-muted-foreground/50"}`}
-            />
-            {errors.email && (
-              <p className="text-sm text-red-500">{errors.email.message}</p>
-            )}
+            <Input id="email" type="email" {...register('email')} className={`border ${errors.email ? 'border-red-500' : 'border-muted-foreground/50'}`} />
+            {errors.email && <p className="text-sm text-red-500">{errors.email.message}</p>}
           </div>
           {/* Password Field */}
           <div className="grid gap-2">
             <Label htmlFor="password">Password</Label>
-            <Input
-              id="password"
-              type="password"
-              {...register("password")}
-              className={`border ${errors.password ? "border-red-500" : "border-muted-foreground/50"}`}
-            />
-            {errors.password && (
-              <p className="text-sm text-red-500">{errors.password.message}</p>
-            )}
+            <Input id="password" type="password" {...register('password')} className={`border ${errors.password ? 'border-red-500' : 'border-muted-foreground/50'}`} />
+            {errors.password && <p className="text-sm text-red-500">{errors.password.message}</p>}
           </div>
           {/* Confirm Password Field */}
           <div className="grid gap-2">
             <Label htmlFor="confirmPassword">Confirm Password</Label>
-            <Input
-              id="confirmPassword"
-              type="password"
-              {...register("confirmPassword")}
-              className={`border ${errors.confirmPassword ? "border-red-500" : "border-muted-foreground/50"}`}
-            />
-            {errors.confirmPassword && (
-              <p className="text-sm text-red-500">
-                {errors.confirmPassword.message}
-              </p>
-            )}
+            <Input id="confirmPassword" type="password" {...register('confirmPassword')} className={`border ${errors.confirmPassword ? 'border-red-500' : 'border-muted-foreground/50'}`} />
+            {errors.confirmPassword && <p className="text-sm text-red-500">{errors.confirmPassword.message}</p>}
           </div>
 
           <Button disabled={loading} type="submit" className="w-full font-bold">
             {loading && <Spinner className="ps-2 h-4 w-4 " />}
-            {!loading && "Sign Up"}
+            {!loading && 'Sign Up'}
           </Button>
         </form>
       </CardContent>

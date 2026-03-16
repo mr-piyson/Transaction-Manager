@@ -1,24 +1,14 @@
-"use client";
+'use client';
 
-import { usePathname, useRouter } from "next/navigation";
-import { cn } from "@/lib/utils";
-import {
-  SidebarGroup,
-  SidebarMenu,
-  SidebarMenuItem,
-  SidebarMenuButton,
-  Sidebar,
-  SidebarHeader,
-  SidebarContent,
-  SidebarRail,
-  useSidebar,
-} from "@/components/sidebar";
-import Logo from "@/components/Logo";
+import { usePathname, useRouter } from 'next/navigation';
+import { cn } from '@/lib/utils';
+import { SidebarGroup, SidebarMenu, SidebarMenuItem, SidebarMenuButton, Sidebar, SidebarHeader, SidebarContent, SidebarRail, useSidebar } from '@/components/sidebar';
+import Logo from '@/components/Logo';
 // import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "../ui/collapsible";
-import { useI18n } from "@/hooks/use-i18n";
-import { routes } from "@/lib/routes";
-import { useEffect, useState } from "react";
-import { Spinner } from "@/components/ui/spinner";
+import { useI18n } from '@/hooks/use-i18n';
+import { routes } from '@/lib/routes';
+import { useEffect, useState } from 'react';
+import { Spinner } from '@/components/ui/spinner';
 
 interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {}
 
@@ -26,28 +16,23 @@ export function AppSidebar({ ...props }: AppSidebarProps) {
   const currentPath = usePathname();
   const { isMobile, open, setOpenMobile } = useSidebar();
   const router = useRouter();
-  const [loading, setLoading] = useState("");
+  const [loading, setLoading] = useState('');
   const i18n = useI18n();
 
   useEffect(() => {
     if (loading === currentPath) {
-      console.log(i18n.t("common.assets"));
-      if (loading !== "") setLoading(null);
+      console.log(i18n.t('common.assets'));
+      if (loading !== '') setLoading(null);
       setOpenMobile(false);
     }
   }, [currentPath, setOpenMobile, loading]);
 
   const isActive = (Activity: string) => {
-    const url = currentPath.split("/").slice(0, 3).join("/");
+    const url = currentPath.split('/').slice(0, 3).join('/');
     return url === Activity;
   };
   return (
-    <Sidebar
-      collapsible="icon"
-      side={i18n.direction === "ltr" ? "left" : "right"}
-      type="Drawer"
-      {...props}
-    >
+    <Sidebar collapsible="icon" side={i18n.direction === 'ltr' ? 'left' : 'right'} type="Drawer" {...props}>
       <SidebarHeader>
         <AppLogo />
       </SidebarHeader>
@@ -58,9 +43,9 @@ export function AppSidebar({ ...props }: AppSidebarProps) {
               <SidebarMenuItem key={key}>
                 <SidebarMenuButton
                   isActive={isActive(href)}
-                  className={cn("flex", isActive(href) && "bg-primary!")}
+                  className={cn('flex', isActive(href) && 'bg-primary!')}
                   tooltip={i18n.t(key)}
-                  size={"lg"}
+                  size={'lg'}
                   onClick={() => {
                     if (currentPath === href) {
                       return;
@@ -69,23 +54,9 @@ export function AppSidebar({ ...props }: AppSidebarProps) {
                     router.push(href);
                   }}
                 >
-                  <Icon
-                    className={cn(
-                      "ms-1 size-5 shrink-0",
-                      isActive(href) ? "text-white" : "text-foreground/92",
-                      loading === href && !open && !isMobile ? "hidden" : "",
-                    )}
-                  />
+                  <Icon className={cn('ms-1 size-5 shrink-0', isActive(href) ? 'text-white' : 'text-foreground/92', loading === href && !open && !isMobile ? 'hidden' : '')} />
                   <div className="flex items-center justify-between w-full">
-                    <span
-                      className={cn(
-                        " text-base",
-                        isActive(href) ? "text-white" : "text-foreground/92",
-                        loading === href && !open && !isMobile ? "hidden" : "",
-                      )}
-                    >
-                      {i18n.t(key)}
-                    </span>
+                    <span className={cn(' text-base', isActive(href) ? 'text-white' : 'text-foreground/92', loading === href && !open && !isMobile ? 'hidden' : '')}>{i18n.t(key)}</span>
                     {loading === href && <Spinner />}
                   </div>
                 </SidebarMenuButton>
@@ -103,18 +74,12 @@ function AppLogo() {
   return (
     <SidebarMenu>
       <SidebarMenuItem>
-        <SidebarMenuButton
-          size="lg"
-          className="opacity-100! data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
-          disabled
-        >
+        <SidebarMenuButton size="lg" className="opacity-100! data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground" disabled>
           <div className="flex aspect-square size-8 items-center justify-center rounded-lg  text-sidebar-primary-foreground">
             <Logo className=" size-7!" />
           </div>
           <div className="grid flex-1 text-left text-sm leading-tight">
-            <span className="truncate font-semibold text-lg">
-              Transaction Manager
-            </span>
+            <span className="truncate font-semibold text-lg">Transaction Manager</span>
             <span className="truncate text-xs"></span>
           </div>
         </SidebarMenuButton>
@@ -148,16 +113,10 @@ function isItemActive(itemUrl: string, currentPath: string): boolean {
 }
 
 // Recursive function to get all parent URLs for a given path
-function getParentUrls(
-  activities: ActivityItem[],
-  targetPath: string,
-): string[] {
+function getParentUrls(activities: ActivityItem[], targetPath: string): string[] {
   const parents: string[] = [];
 
-  function findParents(
-    items: ActivityItem[],
-    currentParents: string[] = [],
-  ): boolean {
+  function findParents(items: ActivityItem[], currentParents: string[] = []): boolean {
     for (const item of items) {
       if (isItemActive(item.path, targetPath)) {
         parents.push(...currentParents);

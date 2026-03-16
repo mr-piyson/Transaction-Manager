@@ -1,60 +1,27 @@
-import React, {
-  JSXElementConstructor,
-  ReactElement,
-  useMemo,
-  useState,
-} from "react";
-import { useForm, Controller } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-import { toast } from "sonner";
-import { useMutation } from "@tanstack/react-query";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Calendar } from "@/components/ui/calendar";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { CalendarIcon, AlertCircle, Loader2, Upload, X } from "lucide-react";
-import { format } from "date-fns";
-import { cn } from "@/lib/utils";
+import React, { JSXElementConstructor, ReactElement, useMemo, useState } from 'react';
+import { useForm, Controller } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import { toast } from 'sonner';
+import { useMutation } from '@tanstack/react-query';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Calendar } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { CalendarIcon, AlertCircle, Loader2, Upload, X } from 'lucide-react';
+import { format } from 'date-fns';
+import { cn } from '@/lib/utils';
 
 // ============================================================================
 // TYPES & INTERFACES
 // ============================================================================
 
-export type FieldType =
-  | "text"
-  | "number"
-  | "email"
-  | "password"
-  | "select"
-  | "date"
-  | "image"
-  | "file"
-  | "textarea"
-  | "custom";
+export type FieldType = 'text' | 'number' | 'email' | 'password' | 'select' | 'date' | 'image' | 'file' | 'textarea' | 'custom';
 
-export type FieldWidth = "full" | "half";
+export type FieldWidth = 'full' | 'half';
 
 export interface SelectOption {
   label: string;
@@ -73,38 +40,38 @@ export interface BaseFieldSchema<T = any> {
 }
 
 export interface TextFieldSchema<T = any> extends BaseFieldSchema<T> {
-  type: "text" | "email" | "password" | "textarea";
+  type: 'text' | 'email' | 'password' | 'textarea';
   minLength?: number;
   maxLength?: number;
 }
 
 export interface NumberFieldSchema<T = any> extends BaseFieldSchema<T> {
-  type: "number";
+  type: 'number';
   min?: number;
   max?: number;
   step?: number;
 }
 
 export interface SelectFieldSchema<T = any> extends BaseFieldSchema<T> {
-  type: "select";
+  type: 'select';
   options: SelectOption[];
 }
 
 export interface DateFieldSchema<T = any> extends BaseFieldSchema<T> {
-  type: "date";
+  type: 'date';
   minDate?: Date;
   maxDate?: Date;
 }
 
 export interface FileFieldSchema<T = any> extends BaseFieldSchema<T> {
-  type: "image" | "file";
+  type: 'image' | 'file';
   accept?: string;
   maxSize?: number;
   multiple?: boolean;
 }
 
 export interface CustomFieldSchema<T = any> extends BaseFieldSchema<T> {
-  type: "custom";
+  type: 'custom';
   component: React.ComponentType<{
     value: any;
     onChange: (value: any) => void;
@@ -112,13 +79,7 @@ export interface CustomFieldSchema<T = any> extends BaseFieldSchema<T> {
   }>;
 }
 
-export type FieldSchema<T = any> =
-  | TextFieldSchema<T>
-  | NumberFieldSchema<T>
-  | SelectFieldSchema<T>
-  | DateFieldSchema<T>
-  | FileFieldSchema<T>
-  | CustomFieldSchema<T>;
+export type FieldSchema<T = any> = TextFieldSchema<T> | NumberFieldSchema<T> | SelectFieldSchema<T> | DateFieldSchema<T> | FileFieldSchema<T> | CustomFieldSchema<T>;
 
 // ============================================================================
 // TOAST CONFIG
@@ -134,11 +95,7 @@ export interface ToastConfig {
 // UNIVERSAL DIALOG PROPS
 // ============================================================================
 
-export interface UniversalDialogProps<
-  TData = any,
-  TVariables = Partial<TData>,
-  TError = Error,
-> {
+export interface UniversalDialogProps<TData = any, TVariables = Partial<TData>, TError = Error> {
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
   title: string;
@@ -198,42 +155,25 @@ const generateZodSchema = <T,>(fields: FieldSchema<T>[]) => {
     let fieldSchema: z.ZodTypeAny;
 
     switch (field.type) {
-      case "text":
-      case "email":
-      case "password":
-      case "textarea": {
+      case 'text':
+      case 'email':
+      case 'password':
+      case 'textarea': {
         const textField = field as TextFieldSchema;
         fieldSchema = z.string();
-        if (field.required)
-          fieldSchema = (fieldSchema as z.ZodString).min(
-            1,
-            `${field.label} is required`,
-          );
-        if (field.type === "email")
-          fieldSchema = (fieldSchema as z.ZodString).email(
-            "Invalid email address",
-          );
-        if (textField.minLength)
-          fieldSchema = (fieldSchema as z.ZodString).min(
-            textField.minLength,
-            `Minimum ${textField.minLength} characters required`,
-          );
-        if (textField.maxLength)
-          fieldSchema = (fieldSchema as z.ZodString).max(
-            textField.maxLength,
-            `Maximum ${textField.maxLength} characters allowed`,
-          );
-        if (!field.required)
-          fieldSchema = fieldSchema.optional().or(z.literal(""));
+        if (field.required) fieldSchema = (fieldSchema as z.ZodString).min(1, `${field.label} is required`);
+        if (field.type === 'email') fieldSchema = (fieldSchema as z.ZodString).email('Invalid email address');
+        if (textField.minLength) fieldSchema = (fieldSchema as z.ZodString).min(textField.minLength, `Minimum ${textField.minLength} characters required`);
+        if (textField.maxLength) fieldSchema = (fieldSchema as z.ZodString).max(textField.maxLength, `Maximum ${textField.maxLength} characters allowed`);
+        if (!field.required) fieldSchema = fieldSchema.optional().or(z.literal(''));
         break;
       }
 
-      case "number": {
+      case 'number': {
         const numberField = field as NumberFieldSchema;
         fieldSchema = z.preprocess(
           (val) => {
-            if (val === "" || val === undefined || val === null)
-              return field.required ? undefined : null;
+            if (val === '' || val === undefined || val === null) return field.required ? undefined : null;
             const num = Number(val);
             return isNaN(num) ? val : num;
           },
@@ -241,56 +181,38 @@ const generateZodSchema = <T,>(fields: FieldSchema<T>[]) => {
             let numSchema = z.number().refine((val) => !isNaN(val), {
               message: `${field.label} must be a number`,
             });
-            if (numberField.min !== undefined)
-              numSchema = numSchema.min(
-                numberField.min,
-                `Min: ${numberField.min}`,
-              );
-            if (numberField.max !== undefined)
-              numSchema = numSchema.max(
-                numberField.max,
-                `Max: ${numberField.max}`,
-              );
+            if (numberField.min !== undefined) numSchema = numSchema.min(numberField.min, `Min: ${numberField.min}`);
+            if (numberField.max !== undefined) numSchema = numSchema.max(numberField.max, `Max: ${numberField.max}`);
             return field.required ? numSchema : numSchema.optional().nullable();
           })(),
         );
         break;
       }
 
-      case "select":
-        fieldSchema = field.required
-          ? z.string().min(1, `${field.label} is required`)
-          : z.string().optional().or(z.literal(""));
+      case 'select':
+        fieldSchema = field.required ? z.string().min(1, `${field.label} is required`) : z.string().optional().or(z.literal(''));
         break;
 
-      case "date":
+      case 'date':
         fieldSchema = field.required
-          ? z
-              .date()
-              .refine((val) => val instanceof Date && !isNaN(val.getTime()), {
-                message: `${field.label} is required`,
-              })
+          ? z.date().refine((val) => val instanceof Date && !isNaN(val.getTime()), {
+              message: `${field.label} is required`,
+            })
           : z.date().optional().nullable();
         break;
 
-      case "image":
-      case "file": {
+      case 'image':
+      case 'file': {
         const fileField = field as FileFieldSchema;
         if (fileField.multiple) {
-          fieldSchema = field.required
-            ? z
-                .array(z.instanceof(File))
-                .min(1, `At least one ${field.label.toLowerCase()} is required`)
-            : z.array(z.instanceof(File)).optional();
+          fieldSchema = field.required ? z.array(z.instanceof(File)).min(1, `At least one ${field.label.toLowerCase()} is required`) : z.array(z.instanceof(File)).optional();
         } else {
-          fieldSchema = field.required
-            ? z.instanceof(File, { message: `${field.label} is required` })
-            : z.instanceof(File).optional().nullable();
+          fieldSchema = field.required ? z.instanceof(File, { message: `${field.label} is required` }) : z.instanceof(File).optional().nullable();
         }
         break;
       }
 
-      case "custom":
+      case 'custom':
         fieldSchema = field.required ? z.any() : z.any().optional();
         break;
 
@@ -316,15 +238,13 @@ const FieldWrapper: React.FC<{
   className?: string;
   children: React.ReactNode;
 }> = ({ label, required, description, error, className, children }) => (
-  <div className={cn("flex flex-col gap-1.5", className)}>
+  <div className={cn('flex flex-col gap-1.5', className)}>
     <label className="text-sm font-medium leading-none">
       {label}
       {required && <span className="text-destructive ml-1">*</span>}
     </label>
     {children}
-    {description && (
-      <p className="text-sm text-muted-foreground">{description}</p>
-    )}
+    {description && <p className="text-sm text-muted-foreground">{description}</p>}
     {error && <p className="text-sm text-destructive">{error}</p>}
   </div>
 );
@@ -344,26 +264,15 @@ const FilePreview: React.FC<{
   return (
     <div className="mt-2 grid grid-cols-2 gap-2">
       {fileArray.map((file, index) => (
-        <div
-          key={index}
-          className="relative group rounded-lg border border-neutral-200 overflow-hidden"
-        >
-          {isImage && file.type.startsWith("image/") ? (
-            <img
-              src={URL.createObjectURL(file)}
-              alt={file.name}
-              className="w-full h-24 object-cover"
-            />
+        <div key={index} className="relative group rounded-lg border border-neutral-200 overflow-hidden">
+          {isImage && file.type.startsWith('image/') ? (
+            <img src={URL.createObjectURL(file)} alt={file.name} className="w-full h-24 object-cover" />
           ) : (
             <div className="w-full h-24 flex items-center justify-center bg-neutral-50 p-2">
               <p className="text-xs text-neutral-600 truncate">{file.name}</p>
             </div>
           )}
-          <button
-            type="button"
-            onClick={() => onRemove(Array.isArray(files) ? index : undefined)}
-            className="absolute top-1 right-1 p-1 bg-white rounded-full shadow-sm opacity-0 group-hover:opacity-100 transition-opacity"
-          >
+          <button type="button" onClick={() => onRemove(Array.isArray(files) ? index : undefined)} className="absolute top-1 right-1 p-1 bg-white rounded-full shadow-sm opacity-0 group-hover:opacity-100 transition-opacity">
             <X className="w-3 h-3" />
           </button>
         </div>
@@ -376,64 +285,32 @@ const FilePreview: React.FC<{
 // FIELD RENDERER
 // ============================================================================
 
-const renderField = <T,>(
-  field: FieldSchema<T>,
-  form: any,
-  isSubmitting: boolean,
-) => {
+const renderField = <T,>(field: FieldSchema<T>, form: any, isSubmitting: boolean) => {
   const fieldName = String(field.name);
   const error = form.formState.errors[fieldName]?.message as string | undefined;
-  const wrapperClass = field.width === "half" ? "flex-1" : "w-full";
+  const wrapperClass = field.width === 'half' ? 'flex-1' : 'w-full';
 
   switch (field.type) {
-    case "text":
-    case "email":
-    case "password":
+    case 'text':
+    case 'email':
+    case 'password':
       return (
-        <FieldWrapper
-          label={field.label}
-          required={field.required}
-          description={field.description}
-          error={error}
-          className={wrapperClass}
-        >
-          <Input
-            type={field.type}
-            placeholder={field.placeholder}
-            disabled={isSubmitting}
-            {...form.register(fieldName)}
-          />
+        <FieldWrapper label={field.label} required={field.required} description={field.description} error={error} className={wrapperClass}>
+          <Input type={field.type} placeholder={field.placeholder} disabled={isSubmitting} {...form.register(fieldName)} />
         </FieldWrapper>
       );
 
-    case "textarea":
+    case 'textarea':
       return (
-        <FieldWrapper
-          label={field.label}
-          required={field.required}
-          description={field.description}
-          error={error}
-          className={wrapperClass}
-        >
-          <textarea
-            placeholder={field.placeholder}
-            disabled={isSubmitting}
-            className="flex min-h-20 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-            {...form.register(fieldName)}
-          />
+        <FieldWrapper label={field.label} required={field.required} description={field.description} error={error} className={wrapperClass}>
+          <textarea placeholder={field.placeholder} disabled={isSubmitting} className="flex min-h-20 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50" {...form.register(fieldName)} />
         </FieldWrapper>
       );
 
-    case "number": {
+    case 'number': {
       const numberField = field as NumberFieldSchema<T>;
       return (
-        <FieldWrapper
-          label={field.label}
-          required={field.required}
-          description={field.description}
-          error={error}
-          className={wrapperClass}
-        >
+        <FieldWrapper label={field.label} required={field.required} description={field.description} error={error} className={wrapperClass}>
           <Controller
             control={form.control}
             name={fieldName}
@@ -445,10 +322,10 @@ const renderField = <T,>(
                 min={numberField.min}
                 max={numberField.max}
                 step={numberField.step}
-                value={f.value ?? ""}
+                value={f.value ?? ''}
                 onChange={(e) => {
                   const val = e.target.value;
-                  if (val === "") {
+                  if (val === '') {
                     f.onChange(field.required ? undefined : null);
                   } else {
                     const num = Number(val);
@@ -465,29 +342,17 @@ const renderField = <T,>(
       );
     }
 
-    case "select": {
+    case 'select': {
       const selectField = field as SelectFieldSchema<T>;
       return (
-        <FieldWrapper
-          label={field.label}
-          required={field.required}
-          description={field.description}
-          error={error}
-          className={wrapperClass}
-        >
+        <FieldWrapper label={field.label} required={field.required} description={field.description} error={error} className={wrapperClass}>
           <Controller
             control={form.control}
             name={fieldName}
             render={({ field: f }) => (
-              <Select
-                onValueChange={f.onChange}
-                defaultValue={f.value}
-                disabled={isSubmitting}
-              >
+              <Select onValueChange={f.onChange} defaultValue={f.value} disabled={isSubmitting}>
                 <SelectTrigger>
-                  <SelectValue
-                    placeholder={field.placeholder || "Select an option"}
-                  />
+                  <SelectValue placeholder={field.placeholder || 'Select an option'} />
                 </SelectTrigger>
                 <SelectContent>
                   {selectField.options.map((option) => (
@@ -503,15 +368,9 @@ const renderField = <T,>(
       );
     }
 
-    case "date":
+    case 'date':
       return (
-        <FieldWrapper
-          label={field.label}
-          required={field.required}
-          description={field.description}
-          error={error}
-          className={wrapperClass}
-        >
+        <FieldWrapper label={field.label} required={field.required} description={field.description} error={error} className={wrapperClass}>
           <Controller
             control={form.control}
             name={fieldName}
@@ -519,31 +378,14 @@ const renderField = <T,>(
               <Popover>
                 <PopoverTrigger
                   render={
-                    <Button
-                      variant="outline"
-                      disabled={isSubmitting}
-                      className={cn(
-                        "w-full pl-3 text-left font-normal",
-                        !f.value && "text-muted-foreground",
-                      )}
-                    >
-                      {f.value ? (
-                        format(f.value, "PPP")
-                      ) : (
-                        <span>{field.placeholder || "Pick a date"}</span>
-                      )}
+                    <Button variant="outline" disabled={isSubmitting} className={cn('w-full pl-3 text-left font-normal', !f.value && 'text-muted-foreground')}>
+                      {f.value ? format(f.value, 'PPP') : <span>{field.placeholder || 'Pick a date'}</span>}
                       <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                     </Button>
                   }
                 />
                 <PopoverContent className="w-auto p-0" align="start">
-                  <Calendar
-                    mode="single"
-                    selected={f.value}
-                    onSelect={f.onChange}
-                    disabled={isSubmitting}
-                    initialFocus
-                  />
+                  <Calendar mode="single" selected={f.value} onSelect={f.onChange} disabled={isSubmitting} initialFocus />
                 </PopoverContent>
               </Popover>
             )}
@@ -551,39 +393,21 @@ const renderField = <T,>(
         </FieldWrapper>
       );
 
-    case "image":
-    case "file": {
+    case 'image':
+    case 'file': {
       const fileField = field as FileFieldSchema<T>;
       return (
-        <FieldWrapper
-          label={field.label}
-          required={field.required}
-          description={field.description}
-          error={error}
-          className={wrapperClass}
-        >
+        <FieldWrapper label={field.label} required={field.required} description={field.description} error={error} className={wrapperClass}>
           <Controller
             control={form.control}
             name={fieldName}
             render={({ field: f }) => (
               <div>
-                <label
-                  htmlFor={fieldName}
-                  className={cn(
-                    "flex items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer hover:bg-card transition-colors",
-                    isSubmitting && "opacity-50 cursor-not-allowed",
-                  )}
-                >
+                <label htmlFor={fieldName} className={cn('flex items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer hover:bg-card transition-colors', isSubmitting && 'opacity-50 cursor-not-allowed')}>
                   <div className="flex flex-col items-center justify-center">
                     <Upload className="w-8 h-8 mb-2 text-neutral-400" />
-                    <p className="text-sm text-neutral-600">
-                      {field.placeholder || "Click to upload"}
-                    </p>
-                    {fileField.maxSize && (
-                      <p className="text-xs text-neutral-400 mt-1">
-                        Max size: {fileField.maxSize}MB
-                      </p>
-                    )}
+                    <p className="text-sm text-neutral-600">{field.placeholder || 'Click to upload'}</p>
+                    {fileField.maxSize && <p className="text-xs text-neutral-400 mt-1">Max size: {fileField.maxSize}MB</p>}
                   </div>
                   <input
                     id={fieldName}
@@ -595,14 +419,9 @@ const renderField = <T,>(
                     onChange={(e) => {
                       const files = Array.from(e.target.files || []);
                       if (fileField.maxSize) {
-                        const invalid = files.filter(
-                          (file) =>
-                            file.size > fileField.maxSize! * 1024 * 1024,
-                        );
+                        const invalid = files.filter((file) => file.size > fileField.maxSize! * 1024 * 1024);
                         if (invalid.length > 0) {
-                          toast.error(
-                            `File size exceeds ${fileField.maxSize}MB limit`,
-                          );
+                          toast.error(`File size exceeds ${fileField.maxSize}MB limit`);
                           return;
                         }
                       }
@@ -614,14 +433,12 @@ const renderField = <T,>(
                   files={f.value}
                   onRemove={(index) => {
                     if (fileField.multiple && Array.isArray(f.value)) {
-                      f.onChange(
-                        f.value.filter((_: any, i: number) => i !== index),
-                      );
+                      f.onChange(f.value.filter((_: any, i: number) => i !== index));
                     } else {
                       f.onChange(null);
                     }
                   }}
-                  isImage={field.type === "image"}
+                  isImage={field.type === 'image'}
                 />
               </div>
             )}
@@ -630,28 +447,12 @@ const renderField = <T,>(
       );
     }
 
-    case "custom": {
+    case 'custom': {
       const customField = field as CustomFieldSchema<T>;
       const CustomComponent = customField.component;
       return (
-        <FieldWrapper
-          label={field.label}
-          required={field.required}
-          description={field.description}
-          error={error}
-          className={wrapperClass}
-        >
-          <Controller
-            control={form.control}
-            name={fieldName}
-            render={({ field: f, fieldState }) => (
-              <CustomComponent
-                value={f.value}
-                onChange={f.onChange}
-                error={fieldState.error?.message}
-              />
-            )}
-          />
+        <FieldWrapper label={field.label} required={field.required} description={field.description} error={error} className={wrapperClass}>
+          <Controller control={form.control} name={fieldName} render={({ field: f, fieldState }) => <CustomComponent value={f.value} onChange={f.onChange} error={fieldState.error?.message} />} />
         </FieldWrapper>
       );
     }
@@ -665,58 +466,29 @@ const renderField = <T,>(
 // HELPERS
 // ============================================================================
 
-const resolveMessage = <T,>(
-  msg: string | ((val: T) => string) | undefined,
-  val: T,
-  fallback: string,
-) => (typeof msg === "function" ? msg(val) : (msg ?? fallback));
+const resolveMessage = <T,>(msg: string | ((val: T) => string) | undefined, val: T, fallback: string) => (typeof msg === 'function' ? msg(val) : (msg ?? fallback));
 
 const extractErrorMessage = (error: unknown): string => {
-  if (!error) return "An unexpected error occurred";
-  if (typeof error === "string") return error;
+  if (!error) return 'An unexpected error occurred';
+  if (typeof error === 'string') return error;
   if (error instanceof Error) return error.message;
-  if (typeof error === "object") {
+  if (typeof error === 'object') {
     const e = error as any;
-    return (
-      e.message ??
-      e.error?.message ??
-      e.data?.message ??
-      "An unexpected error occurred"
-    );
+    return e.message ?? e.error?.message ?? e.data?.message ?? 'An unexpected error occurred';
   }
-  return "An unexpected error occurred";
+  return 'An unexpected error occurred';
 };
 
 // ============================================================================
 // MAIN COMPONENT
 // ============================================================================
 
-export const UniversalDialog = <
-  TData = any,
-  TVariables = Partial<TData>,
-  TError = Error,
->({
-  open,
-  onOpenChange,
-  title,
-  description,
-  fields,
-  submitLabel = "Submit",
-  cancelLabel = "Cancel",
-  mutationFn,
-  onSuccess,
-  onError,
-  transformData,
-  toasts,
-  closeOnError = true,
-  children,
-}: UniversalDialogProps<TData, TVariables, TError>) => {
+export const UniversalDialog = <TData = any, TVariables = Partial<TData>, TError = Error>({ open, onOpenChange, title, description, fields, submitLabel = 'Submit', cancelLabel = 'Cancel', mutationFn, onSuccess, onError, transformData, toasts, closeOnError = true, children }: UniversalDialogProps<TData, TVariables, TError>) => {
   const isControlled = open !== undefined;
   const [internalOpen, setInternalOpen] = useState(false);
   const effectiveOpen = isControlled ? open : internalOpen;
 
-  const toastConfig: ToastConfig | false =
-    toasts === false ? false : { enabled: true, ...toasts };
+  const toastConfig: ToastConfig | false = toasts === false ? false : { enabled: true, ...toasts };
 
   const handleOpenChange = (nextOpen: boolean) => {
     if (!isControlled) setInternalOpen(nextOpen);
@@ -739,25 +511,23 @@ export const UniversalDialog = <
           acc[fieldName] = field.defaultValue;
         } else {
           switch (field.type) {
-            case "text":
-            case "email":
-            case "password":
-            case "textarea":
-            case "select":
-              acc[fieldName] = "";
+            case 'text':
+            case 'email':
+            case 'password':
+            case 'textarea':
+            case 'select':
+              acc[fieldName] = '';
               break;
-            case "number":
-            case "date":
+            case 'number':
+            case 'date':
               acc[fieldName] = undefined;
               break;
-            case "image":
-            case "file":
-              acc[fieldName] = (field as FileFieldSchema<TData>).multiple
-                ? []
-                : null;
+            case 'image':
+            case 'file':
+              acc[fieldName] = (field as FileFieldSchema<TData>).multiple ? [] : null;
               break;
             default:
-              acc[fieldName] = "";
+              acc[fieldName] = '';
           }
         }
         return acc;
@@ -771,13 +541,7 @@ export const UniversalDialog = <
 
     onSuccess: (data, variables) => {
       if (toastConfig !== false && toastConfig.enabled !== false) {
-        toast.success(
-          resolveMessage(
-            toastConfig.successMessage,
-            data,
-            "Operation completed successfully!",
-          ),
-        );
+        toast.success(resolveMessage(toastConfig.successMessage, data, 'Operation completed successfully!'));
       }
       closeDialog();
       onSuccess?.(data, variables);
@@ -785,13 +549,7 @@ export const UniversalDialog = <
 
     onError: (error, variables) => {
       if (toastConfig !== false && toastConfig.enabled !== false) {
-        toast.error(
-          resolveMessage(
-            toastConfig.errorMessage,
-            error,
-            extractErrorMessage(error),
-          ),
-        );
+        toast.error(resolveMessage(toastConfig.errorMessage, error, extractErrorMessage(error)));
       }
       if (!closeOnError) closeDialog();
       onError?.(error, variables);
@@ -800,9 +558,7 @@ export const UniversalDialog = <
 
   const handleSubmit = (data: any) => {
     mutation.reset();
-    const payload = transformData
-      ? transformData(data as Partial<TData>)
-      : (data as TVariables);
+    const payload = transformData ? transformData(data as Partial<TData>) : (data as TVariables);
     mutation.mutate(payload);
   };
 
@@ -811,7 +567,7 @@ export const UniversalDialog = <
     let currentRow: FieldSchema<TData>[] = [];
 
     fields.forEach((field) => {
-      if (field.width === "full") {
+      if (field.width === 'full') {
         if (currentRow.length > 0) {
           rows.push(currentRow);
           currentRow = [];
@@ -831,10 +587,7 @@ export const UniversalDialog = <
   }, [fields]);
 
   const isSubmitting = mutation.isPending;
-  const mutationError =
-    mutation.isError && closeOnError
-      ? extractErrorMessage(mutation.error)
-      : null;
+  const mutationError = mutation.isError && closeOnError ? extractErrorMessage(mutation.error) : null;
 
   return (
     <Dialog open={effectiveOpen} onOpenChange={handleOpenChange}>
@@ -844,9 +597,7 @@ export const UniversalDialog = <
           <div className="p-4">
             <DialogHeader className="pb-4">
               <DialogTitle>{title}</DialogTitle>
-              {description && (
-                <DialogDescription>{description}</DialogDescription>
-              )}
+              {description && <DialogDescription>{description}</DialogDescription>}
             </DialogHeader>
 
             {mutationError && (
@@ -859,28 +610,18 @@ export const UniversalDialog = <
             {groupedFields.map((row, rowIndex) => (
               <div key={rowIndex} className="flex gap-4 mb-4">
                 {row.map((field) => (
-                  <React.Fragment key={String(field.name)}>
-                    {renderField<TData>(field, form, isSubmitting)}
-                  </React.Fragment>
+                  <React.Fragment key={String(field.name)}>{renderField<TData>(field, form, isSubmitting)}</React.Fragment>
                 ))}
               </div>
             ))}
           </div>
 
           <DialogFooter className="flex flex-row w-full p-5 m-0">
-            <Button
-              type="button"
-              className="flex-1"
-              variant="outline"
-              onClick={closeDialog}
-              disabled={isSubmitting}
-            >
+            <Button type="button" className="flex-1" variant="outline" onClick={closeDialog} disabled={isSubmitting}>
               {cancelLabel}
             </Button>
             <Button type="submit" className="flex-1" disabled={isSubmitting}>
-              {isSubmitting && (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              )}
+              {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               {submitLabel}
             </Button>
           </DialogFooter>

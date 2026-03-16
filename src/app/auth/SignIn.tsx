@@ -1,20 +1,13 @@
-"use client";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
-import z from "zod";
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { useAuth } from "@/hooks/use-auth";
-import { Spinner } from "../../../components/ui/spinner";
-import { SignInInput, SignInSchema } from "@/lib/validators/auth";
+'use client';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm } from 'react-hook-form';
+import z from 'zod';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { useAuth } from '@/hooks/use-auth';
+import { Spinner } from '../../../components/ui/spinner';
+import { SignInInput, SignInSchema } from '@/lib/validators/auth';
 
 export default function SignInTab() {
   const { signIn, isLoading: loading } = useAuth();
@@ -25,8 +18,8 @@ export default function SignInTab() {
   } = useForm<z.infer<typeof SignInSchema>>({
     resolver: zodResolver(SignInSchema),
     defaultValues: {
-      email: "",
-      password: "",
+      email: '',
+      password: '',
     },
   });
 
@@ -38,9 +31,7 @@ export default function SignInTab() {
     <Card>
       <CardHeader>
         <CardTitle className="text-2xl font-bold">Sign In</CardTitle>
-        <CardDescription>
-          Sign in or create an account to begin managing your finances.
-        </CardDescription>
+        <CardDescription>Sign in or create an account to begin managing your finances.</CardDescription>
       </CardHeader>
       <form onSubmit={handleSubmit(onSubmit)}>
         <CardContent className="space-y-2">
@@ -48,38 +39,21 @@ export default function SignInTab() {
             <label htmlFor="email" className="text-sm font-medium">
               Email
             </label>
-            <Input
-              id="email"
-              type="email"
-              placeholder="user@example.com"
-              className="border border-muted-foreground/50"
-              {...register("email")}
-            />
-            {errors.email && (
-              <p className="text-sm text-destructive">{errors.email.message}</p>
-            )}
+            <Input id="email" type="email" placeholder="user@example.com" className="border border-muted-foreground/50" {...register('email')} />
+            {errors.email && <p className="text-sm text-destructive">{errors.email.message}</p>}
           </div>
           <div className="space-y-1">
             <label htmlFor="password" className="text-sm font-medium">
               Password
             </label>
-            <Input
-              id="password"
-              type="password"
-              className="border border-muted-foreground/50"
-              {...register("password")}
-            />
-            {errors.password && (
-              <p className="text-sm text-destructive">
-                {errors.password.message}
-              </p>
-            )}
+            <Input id="password" type="password" className="border border-muted-foreground/50" {...register('password')} />
+            {errors.password && <p className="text-sm text-destructive">{errors.password.message}</p>}
           </div>
         </CardContent>
         <CardFooter className="mt-5">
           <Button disabled={loading} type="submit" className="w-full font-bold">
             {loading && <Spinner />}
-            {!loading && "Sign In"}
+            {!loading && 'Sign In'}
           </Button>
         </CardFooter>
       </form>

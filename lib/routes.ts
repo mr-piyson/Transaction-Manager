@@ -1,6 +1,6 @@
-import { TranslationKeys } from "@/i18n/config";
-import { FileText, LucideIcon, Package, User } from "lucide-react";
-import { Route } from "next";
+import { TranslationKeys } from '@/i18n/config';
+import { FileText, LucideIcon, Package, User } from 'lucide-react';
+import { Route } from 'next';
 
 // 1. Define what a single route looks like
 export type RouteConfig = {
@@ -21,21 +21,21 @@ export type RouteMap = Record<string, RouteConfig>;
 export const routes = {
   appSidebar: [
     {
-      label: "Customers",
-      key: "common.customers",
-      href: "/app/customers",
+      label: 'Customers',
+      key: 'common.customers',
+      href: '/app/customers',
       Icon: User,
     },
     {
-      key: "common.inventory",
-      href: "/app/inventory",
-      label: "Inventory",
+      key: 'common.inventory',
+      href: '/app/inventory',
+      label: 'Inventory',
       Icon: Package,
     },
     {
-      key: "common.invoices",
-      href: "/app/invoices",
-      label: "Invoices",
+      key: 'common.invoices',
+      href: '/app/invoices',
+      label: 'Invoices',
       Icon: FileText,
     },
   ],
