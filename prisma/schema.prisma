@@ -19,19 +19,14 @@ enum CurrencyCode {
 enum InvoiceStatus {
   DRAFT
   APPROVED
-  SENT
   PARTIAL
   PAID
-  OVERDUE
   CANCELLED
 }
 
 enum PaymentMethod {
   CASH
-  BANK
-  CARD
-  CHEQUE
-  ONLINE
+  TRANSFER
 }
 
 enum Role {
@@ -116,13 +111,17 @@ model Customer {
 }
 
 model Invoice {
-  id          Int            @id @default(autoincrement())
-  date        DateTime       @default(now())
-  description String?
-  customerId  Int?
-  tax         Int?
-  status      InvoiceStatus? @default(DRAFT)
-  currency    CurrencyCode   @default(BHD)
+  id            Int            @id @default(autoincrement())
+  date          DateTime       @default(now())
+  description   String?
+  customerId    Int?
+  tax           Int?
+  status        InvoiceStatus? @default(DRAFT)
+  currency      CurrencyCode   @default(BHD)
+  subtotal      Int?
+  total         Int?
+  discountTotal Int?
+  taxTotal      Int?
 
   createdAt DateTime  @default(now())
   updatedAt DateTime? @updatedAt
@@ -169,14 +168,4 @@ model Payment {
 
   createdAt DateTime  @default(now())
   updatedAt DateTime? @updatedAt
-}
-model Payment {
-  id        String   @id @default(cuid())
-  invoiceId String
-  invoice   Invoice  @relation(fields: [invoiceId], references: [id])
-  date      DateTime
-  method    String
-  amount    Int
-  reference String?
-  notes     String?
 }

@@ -1,12 +1,9 @@
 'use client';
 
-import { SelectDialog } from '@/components/select-dialog';
 import { Customer } from '@prisma/client';
 import axios from 'axios';
 import { useQuery } from '@tanstack/react-query';
-import { CustomerCardRenderer } from './customers/customerCard';
-import { Button } from '@/components/button';
-import { UniversalContextMenu } from '@/components/context-menu';
+import { InvoiceEditor } from '@/components/invoice/invoice-editor';
 
 export default function App_Page(props: any) {
   const {
@@ -21,17 +18,7 @@ export default function App_Page(props: any) {
 
   return (
     <div className="p-4 space-y-4">
-      <SelectDialog<Customer>
-        onSelect={function (item: Record<string, any>) {
-          console.log(item);
-        }}
-        data={customers}
-        searchFields={['name', 'phone']}
-        cardRenderer={CustomerCardRenderer}
-        rowHeight={75}
-      >
-        <Button variant={'destructive'}>Hello world</Button>
-      </SelectDialog>
+      <InvoiceEditor />
     </div>
   );
 }

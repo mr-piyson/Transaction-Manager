@@ -8,33 +8,13 @@ import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Money } from '@/lib/money'; // Ensure this handles your currency logic
 import { cn } from '@/lib/utils';
-import { Clock, CreditCard, HandCoinsIcon, Plus, Trash2 } from 'lucide-react';
-
-interface Payment {
-  id: string;
-  method: 'cash' | 'card' | 'cheque';
-  amount: number;
-  date: string;
-  reference?: string;
-  notes?: string;
-}
+import { Clock, CreditCard, HandCoinsIcon, Plus } from 'lucide-react';
 
 interface PaymentDialogProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  payments: Payment[];
-  total: number;
-  onChange: (payments: Payment[]) => void;
   children: React.ReactNode;
 }
 
-const PAYMENT_METHODS = {
-  cash: { label: 'Cash', icon: '💵' },
-  card: { label: 'Transfer', icon: '💳' },
-  cheque: { label: 'Cheque', icon: '📝' },
-} as const;
-
-export function PaymentDialog({ payments = [], total, onChange, children }: PaymentDialogProps) {
+export function PaymentDialog({ children }: PaymentDialogProps) {
   return (
     <Drawer>
       <DrawerTrigger asChild>{children}</DrawerTrigger>
@@ -58,42 +38,21 @@ export function PaymentDialog({ payments = [], total, onChange, children }: Paym
           <Separator />
           <TabsContent value="list" className="flex-1 flex flex-col overflow-hidden mt-0">
             <div className="flex-1 overflow-y-auto">
-              {payments.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-12 text-muted-foreground gap-2">
-                  <CreditCard className="w-8 h-8 opacity-30" />
-                  <p className="text-sm">No payments recorded yet</p>
-                </div>
-              ) : (
-                payments.map((p, i) => {
-                  const m = PAYMENT_METHODS[p.method] || PAYMENT_METHODS.cash;
-                  return (
-                    <div key={p.id} className="flex items-center gap-3 px-2 py-3 border-b border-border/40">
-                      <div className="w-9 h-9 rounded-xl bg-muted flex items-center justify-center text-lg shrink-0">{m.icon}</div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-semibold">
-                          {m.label} {p.reference && <span className="text-muted-foreground font-normal">· #{p.reference}</span>}
-                        </p>
-                        <p className="text-xs text-muted-foreground">{p.date}</p>
-                      </div>
-                      <span className="text-sm font-bold text-emerald-600 tabular-nums">{Money.format(p.amount)}</span>
-                      <Button variant="ghost" size="icon" className="w-7 h-7 text-muted-foreground hover:text-destructive" onClick={() => onChange(payments.filter((_, j) => j !== i))}>
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </Button>
-                    </div>
-                  );
-                })
-              )}
+              <div className="flex flex-col items-center justify-center py-12 text-muted-foreground gap-2">
+                <CreditCard className="w-8 h-8 opacity-30" />
+                <p className="text-sm">No payments recorded yet</p>
+              </div>
             </div>
 
             {/* Sticky Summary */}
             <div className="shrink-0 px-2 py-4 bg-card border-t border-border space-y-2">
               <div className="flex justify-between text-xs text-muted-foreground">
                 <span>Invoice Total</span>
-                <span className="tabular-nums">{Money.format(total)}</span>
+                <span className="tabular-nums">{Money.format(150)}</span>
               </div>
               <div className="flex justify-between text-xs">
-                <span className="text-emerald-600">Total Paid</span>
-                <span className="font-semibold text-emerald-600 tabular-nums">100</span>
+                <span className="text-success-foreground">Total Paid</span>
+                <span className="font-semibold text-success-foreground tabular-nums">100</span>
               </div>
               <Separator />
               <div className="flex justify-between text-sm font-bold">
@@ -113,7 +72,6 @@ export function PaymentDialog({ payments = [], total, onChange, children }: Paym
                       <HandCoinsIcon /> Cash
                     </TabsTrigger>
                     <TabsTrigger value={'Transfer'}>
-                      {' '}
                       <CreditCard /> Transfer
                     </TabsTrigger>
                   </TabsList>

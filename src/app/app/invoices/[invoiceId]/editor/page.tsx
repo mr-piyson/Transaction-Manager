@@ -1,9 +1,10 @@
 'use client';
-import { alert } from '@/components/Alert-dialog';
 import { Button } from '@/components/button';
 import { Header } from '@/components/Header';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, DollarSign, HandCoinsIcon } from 'lucide-react';
 import { PaymentDialog } from './payments-dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 type InvoiceEditorProps = {
   children?: React.ReactNode;
 };
@@ -23,13 +24,23 @@ export default function InvoiceEditor(props: InvoiceEditorProps) {
             </div>
           </div>
         }
+        rightContent={
+          <>
+            <PaymentDialog>
+              <Button disabled variant={'success'}>
+                <HandCoinsIcon />
+                Payment
+              </Button>
+            </PaymentDialog>
+            {/* <Label>
+              <DollarSign className="absolute text-muted-foreground ms-2" size={16} />
+              <Input type="number" className="ps-8 w-26" placeholder="Tax" />
+            </Label> */}
+          </>
+        }
       />
       <main className="flex-1"></main>
-      <footer>
-        <PaymentDialog>
-          <Button>Hello world</Button>
-        </PaymentDialog>
-      </footer>
+      <footer></footer>
     </>
   );
 }
