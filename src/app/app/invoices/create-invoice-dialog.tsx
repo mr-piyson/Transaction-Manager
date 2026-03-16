@@ -207,16 +207,6 @@ export function CreateInvoiceDialog(props: {
               </UniversalDialog>
             </div>
           </div>
-
-          <div className="grid gap-2">
-            <Label htmlFor="description">Description (Optional)</Label>
-            <Textarea
-              id="description"
-              placeholder="Notes for this invoice..."
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-            />
-          </div>
         </div>
 
         <DialogFooter>

@@ -1,9 +1,8 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 import { Customer } from "@prisma/client";
-import { Trash, User2 } from "lucide-react";
+import { User2 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { toast } from "sonner";
 
 export function CustomerCardRenderer(props: {
   itemList?: boolean;
@@ -13,9 +12,6 @@ export function CustomerCardRenderer(props: {
 
   return (
     <div
-      onClick={() => {
-        props.itemList ?? router.push(`/app/customers/${props.data.id}`);
-      }}
       className={cn(
         props.itemList ?? "hover:bg-accent/50 cursor-pointer",
         "flex items-center gap-3 p-3  transition-colors ",

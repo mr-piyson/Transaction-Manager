@@ -27,22 +27,7 @@ export default function App_Page(props: any) {
         }}
         data={customers}
         searchFields={["name", "phone"]}
-        cardRenderer={(data) => {
-          <>
-            <UniversalContextMenu
-              items={[
-                {
-                  id: "delete",
-                  label: "Delete",
-                  onClick: async () =>
-                    await axios.delete(`/api/customers/${data.id}`),
-                },
-              ]}
-            >
-              <CustomerCardRenderer itemList={false} data={data} />
-            </UniversalContextMenu>
-          </>;
-        }}
+        cardRenderer={CustomerCardRenderer}
         rowHeight={75}
       >
         <Button variant={"destructive"}>Hello world</Button>
