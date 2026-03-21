@@ -5,14 +5,9 @@ import { User, Calendar, Hash, FileSpreadsheet, FileText } from 'lucide-react';
 
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { cn } from '@/lib/utils';
-import { Customer, Invoice } from '@prisma/client';
+import { InvoiceWithCustomer } from '@/hooks/data/use-invoices';
 
-// Aligning with your Prisma Schema
-export interface InvoiceWithRelations extends Invoice {
-  customer: Customer;
-}
-
-export function InvoiceCardRenderer({ data }: { data: InvoiceWithRelations }) {
+export function InvoiceCard({ data }: { data: InvoiceWithCustomer }) {
   const router = useRouter();
 
   if (!data) return null;

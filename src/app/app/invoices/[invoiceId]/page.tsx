@@ -1,14 +1,14 @@
 'use client';
 
-import React, { useEffect, useMemo, useState } from 'react';
-import { useRouter, useParams } from 'next/navigation';
+import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { toast } from 'sonner';
+import { Money } from '@/lib/money';
+import { useRouter, useParams } from 'next/navigation';
 import { Trash2, Loader2, User, Calendar, FileText, Package, File, PenBoxIcon, Check, Receipt } from 'lucide-react';
-import { Money } from '@/lib/money'; // Assuming this exists in your project
 
 type InvoiceItem = {
   id: number;

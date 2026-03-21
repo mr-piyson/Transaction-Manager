@@ -4,7 +4,7 @@ import { Customer } from '@prisma/client';
 import { User2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
-export function CustomerCardRenderer(props: { itemList?: boolean; data: Customer }) {
+export function CustomerCard(props: { itemList?: boolean; data: Customer }) {
   const router = useRouter();
 
   return (

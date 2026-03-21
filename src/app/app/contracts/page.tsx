@@ -2,7 +2,7 @@
 import { ListView } from '@/components/list-view';
 import { useContracts } from '@/hooks/data/use-contracts';
 import { Contract } from '@prisma/client';
-import { ContractCardRenderer } from './contractItemCard';
+import { ContractCard } from './contractItemCard';
 import { Button } from '@/components/ui/button';
 import { ChevronLeft, LucideFilePenLine, Plus } from 'lucide-react';
 import { useRouter } from 'next/navigation';
@@ -46,7 +46,7 @@ export default function ContractsPage(props: ContractsPageProps) {
         searchFields={[]}
         cardRenderer={(contract) => (
           <>
-            <ContractCardRenderer data={contract} />;
+            <ContractCard data={contract} />;
           </>
         )}
         rowHeight={80}

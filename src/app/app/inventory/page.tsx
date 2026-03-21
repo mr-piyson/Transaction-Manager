@@ -12,7 +12,7 @@ import { useI18n } from '@/hooks/use-i18n';
 // Optional: If you want to drop axios entirely, use Eden for the mutation.
 import axios from 'axios';
 import { Header } from '@/components/Header';
-import { InventoryCardRenderer } from './inventoryCard';
+import { InventoryCard } from './inventoryCard';
 import { toast } from 'sonner';
 import { queryClient } from '../layout';
 import { alert } from '@/components/Alert-dialog';
@@ -128,7 +128,7 @@ export default function InventoryPage() {
                 },
               ]}
             >
-              <InventoryCardRenderer data={data} onClick={() => router.push(`/app/inventory/${data.id}`)} />
+              <InventoryCard data={data} onClick={() => router.push(`/app/inventory/${data.id}`)} />
             </UniversalContextMenu>
           </div>
         )}

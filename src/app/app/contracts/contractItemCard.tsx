@@ -4,7 +4,7 @@ import { Contract } from '@prisma/client';
 import { Calendar, Banknote, FilePenLine } from 'lucide-react';
 import { Progress } from '@/components/ui/progress'; // Ensure this component is installed
 
-export function ContractCardRenderer(props: { data: Contract }) {
+export function ContractCard(props: { data: Contract }) {
   if (!props.data) return null;
 
   const { data } = props;

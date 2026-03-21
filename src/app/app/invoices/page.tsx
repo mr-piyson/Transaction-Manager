@@ -8,9 +8,10 @@ import { useI18n } from '@/hooks/use-i18n';
 // Optional: If you want to drop axios entirely, use Eden for the mutation.
 import { Header } from '@/components/Header';
 import { CreateInvoiceDialog } from './create-invoice-dialog';
-import { InvoiceCardRenderer, InvoiceWithRelations } from './invoiceCard';
+import { InvoiceCard } from './invoiceCard';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useInvoices } from '@/hooks/data/use-invoices';
+import { InvoiceWithCustomer, useInvoices } from '@/hooks/data/use-invoices';
+import { Invoice } from '@prisma/client';
 
 export default function invoicesPage() {
   const { t } = useI18n();
@@ -30,7 +31,24 @@ export default function invoicesPage() {
           </TabsList>
         </Tabs>
       )}
-      <ListView<InvoiceWithRelations> emptyTitle={t('invoices.empty_title', 'No invoices items Found')} emptyIcon={<Box className="size-16 text-muted-foreground" />} emptyDescription={t('invoices.empty_description') || 'Create a new invoices item to get started'} data={invoices} isLoading={isLoading} isError={isError} itemName="invoices items" useTheme={true} cardRenderer={(data) => <InvoiceCardRenderer data={data} />} rowHeight={65} searchFields={[]} onRefetch={refetch} />
+      <ListView<InvoiceWithCustomer>
+        emptyTitle={t('invoices.empty_title', 'No invoices items Found')}
+        emptyIcon={<Box className="size-16 text-muted-foreground" />}
+        emptyDescription={t('invoices.empty_description') || 'Create a new invoices item to get started'}
+        data={invoices}
+        isLoading={isLoading}
+        isError={isError}
+        itemName="invoices items"
+        useTheme={true}
+        cardRenderer={(data) => (
+          <>
+            <InvoiceCard data={data} />
+          </>
+        )}
+        rowHeight={65}
+        searchFields={[]}
+        onRefetch={refetch}
+      />
     </>
   );
 }

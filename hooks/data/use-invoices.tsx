@@ -1,11 +1,15 @@
-import { Invoice } from '@prisma/client';
+import { Customer, Invoice } from '@prisma/client';
 import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';
+
+export interface InvoiceWithCustomer extends Invoice {
+  customer: Customer;
+}
 
 export const useInvoices = () => {
   return {
     getAll: () =>
-      useQuery<Invoice[]>({
+      useQuery<InvoiceWithCustomer[]>({
         queryKey: ['invoices'],
         queryFn: async () => (await axios.get('/api/invoices')).data,
       }),

@@ -14,7 +14,7 @@ function PriceRow({ icon: Icon, value, className, iconClass }: { icon: React.Ele
   );
 }
 
-export function InventoryCardRenderer(props: { data: InventoryItem; onClick?: (data: InventoryItem) => void }) {
+export function InventoryCard(props: { data: InventoryItem; onClick?: (data: InventoryItem) => void }) {
   if (!props.data) return null;
 
   const profit = props.data.salesPrice - props.data.purchasePrice;

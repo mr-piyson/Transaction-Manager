@@ -1,34 +1,23 @@
 'use client';
 
-import { useEffect, useMemo } from 'react';
-import { useQuery } from '@tanstack/react-query';
 import { Plus, User2 } from 'lucide-react';
 import { Customer } from '@prisma/client';
-
 import { ListView } from '@/components/list-view';
 import { Button } from '@/components/ui/button';
 import { UniversalDialog } from '@/components/dialog';
 import { useI18n } from '@/hooks/use-i18n';
-import { CustomerCardRenderer } from './customerCard';
-
-// Optional: If you want to drop axios entirely, use Eden for the mutation.
+import { CustomerCard } from './customerCard';
 import axios from 'axios';
 import { Header } from '@/components/Header';
 import { UniversalContextMenu } from '@/components/context-menu';
 import { alert } from '@/components/Alert-dialog';
+import { useCustomers } from '@/hooks/data/use-customers';
 
 export default function CustomersPage() {
   const { t } = useI18n();
 
-  const {
-    data: customers,
-    isLoading,
-    isError,
-    refetch,
-  } = useQuery({
-    queryKey: ['customers'],
-    queryFn: async () => (await axios.get<Customer[]>('/api/customers')).data,
-  });
+  const api = useCustomers();
+  const { data: customers, isLoading, isError, refetch } = api.getAll();
 
   return (
     <>
@@ -92,7 +81,7 @@ export default function CustomersPage() {
               },
             ]}
           >
-            <CustomerCardRenderer data={data} />;
+            <CustomerCard data={data} />;
           </UniversalContextMenu>
         )}
         rowHeight={65}
