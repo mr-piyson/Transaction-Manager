@@ -45,7 +45,7 @@ export default function invoicesPage() {
             <InvoiceCard data={data} />
           </>
         )}
-        rowHeight={65}
+        rowHeight={72}
         searchFields={[]}
         onRefetch={refetch}
       />

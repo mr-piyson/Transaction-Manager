@@ -14,7 +14,7 @@ function PriceRow({ icon: Icon, value, className, iconClass }: { icon: React.Ele
   );
 }
 
-export function InventoryCard(props: { data: InventoryItem; onClick?: (data: InventoryItem) => void }) {
+export function InventoryItemCard(props: { data: InventoryItem; onClick?: (data: InventoryItem) => void }) {
   if (!props.data) return null;
 
   const profit = props.data.salesPrice - props.data.purchasePrice;
@@ -25,9 +25,9 @@ export function InventoryCard(props: { data: InventoryItem; onClick?: (data: Inv
     .join('');
 
   return (
-    <div onClick={() => props.onClick?.(props.data)} className="flex items-center gap-3 h-18 min-h-18 max-h-18 px-3.5 py-3 overflow-hidden">
+    <div onClick={() => props.onClick?.(props.data)} className="flex  hover:bg-accent/50 items-center gap-3 h-18 min-h-18 max-h-18 px-3.5 py-3 overflow-hidden">
       {/* Avatar */}
-      <Avatar className="h-11 w-11 after:border-0 shrink-0 ">
+      <Avatar className="size-11 after:border-0 shrink-0 ">
         <AvatarImage src={props.data.image ?? undefined} alt={props.data.name} className="object-cover  rounded-lg" />
         <AvatarFallback className="border-0 rounded-lg bg-muted text-muted-foreground text-xs font-medium">{<Package size={23} className="" />}</AvatarFallback>
       </Avatar>

@@ -81,10 +81,10 @@ export default function CustomersPage() {
               },
             ]}
           >
-            <CustomerCard data={data} onClick={() => router.push(`/app/customers/${data.id}`)} />;
+            <CustomerCard data={data} onClick={() => router.push(`/app/customers/${data.id}`)} />
           </UniversalContextMenu>
         )}
-        rowHeight={65}
+        rowHeight={72}
         searchFields={['name', 'phone']}
         onRefetch={refetch}
       />

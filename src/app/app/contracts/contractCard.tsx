@@ -33,8 +33,8 @@ export function ContractCard(props: { data: Contract }) {
     : '0.000';
 
   return (
-    <div className="flex items-center gap-3 p-3 h-20 w-full bg-transparent group transition-colors">
-      <Avatar className="size-10 rounded-lg shrink-0 after:border-0">
+    <div className="flex items-center hover:bg-accent/50 gap-3 p-3 h-20 w-full bg-transparent group transition-colors">
+      <Avatar className="size-11 rounded-lg shrink-0 after:border-0">
         <AvatarFallback className={cn('rounded-lg transition-colors', data.active ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-400' : 'bg-muted text-muted-foreground')}>
           <FilePenLine className="size-5" />
         </AvatarFallback>

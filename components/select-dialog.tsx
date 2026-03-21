@@ -64,11 +64,6 @@ export interface SelectDialogProps<T extends Record<string, any> = Record<string
   emptyDescription?: ReactNode;
 
   // Grid
-  /**
-   * Fixed row height in pixels — required because AG Grid needs an exact value
-   * for its virtual scroller. Measure your card once and pass the number here.
-   * e.g. rowHeight={80}
-   */
   rowHeight: number;
   useTheme?: boolean;
   itemName?: string;

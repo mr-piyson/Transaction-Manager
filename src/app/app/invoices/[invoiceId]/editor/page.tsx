@@ -7,7 +7,7 @@ import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { SelectDialog } from '@/components/select-dialog';
-import { InventoryCard } from '../../../inventory/inventoryCard';
+import { InventoryItemCard } from '../../../inventory/inventoryCard';
 import { InventoryItem } from '@prisma/client';
 import { toast } from 'sonner';
 import { useInventoryItems } from '@/hooks/data/use-inventoryItems';
@@ -73,7 +73,7 @@ export default function InvoiceEditor(props: InvoiceEditorProps) {
             }}
             data={data}
             searchFields={['code', 'description']}
-            cardRenderer={InventoryCard}
+            cardRenderer={InventoryItemCard}
             rowHeight={72}
           >
             <Button size="sm" className="h-8 gap-1.5 text-xs flex-1 sm:flex-none">
