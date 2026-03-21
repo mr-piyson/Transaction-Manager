@@ -34,7 +34,7 @@ export default function InvoiceEditor(props: InvoiceEditorProps) {
 
           <div className="ml-auto shrink-0">
             {true ? (
-              <Badge className="bg-success/15 text-success border-success/30 text-xs">Paid</Badge>
+              <Badge className="bg-success/15 text-success-foreground border-success/30 text-xs">Paid</Badge>
             ) : 100 > 0 ? (
               <Badge variant="secondary" className="text-xs">
                 Partial
@@ -57,11 +57,11 @@ export default function InvoiceEditor(props: InvoiceEditorProps) {
           </div>
           <div className="flex flex-col px-2">
             <span className="text-[10px] text-muted-foreground uppercase tracking-wide">Paid</span>
-            <span className="text-sm font-semibold tabular-nums text-success">{200}</span>
+            <span className="text-sm font-semibold tabular-nums text-success-foreground">{200}</span>
           </div>
           <div className="flex flex-col px-2">
             <span className="text-[10px] text-muted-foreground uppercase tracking-wide">Due</span>
-            <span className={cn('text-sm font-semibold tabular-nums', 100 > 0 ? 'text-destructive' : 'text-success')}>{200}</span>
+            <span className={cn('text-sm font-semibold tabular-nums', 100 > 0 ? 'text-destructive' : 'text-success-foreground')}>{200}</span>
           </div>
         </div>
 
@@ -88,7 +88,7 @@ export default function InvoiceEditor(props: InvoiceEditorProps) {
           </Button>
 
           <PaymentDialog>
-            <Button size="sm" className="h-8 gap-1.5 text-xs bg-success hover:bg-success/80 ml-auto" disabled={false}>
+            <Button size="sm" className="h-8 gap-1.5 text-xs bg-success-foreground/50 hover:bg-success-foreground/30 ml-auto" disabled={false}>
               <HandCoinsIcon size={13} />
               <span>Pay</span>
             </Button>

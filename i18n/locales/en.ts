@@ -21,6 +21,8 @@ export const en = {
     security: 'Security',
     appearance: 'Appearance',
     inventory: 'Inventory',
+    inventoryItems: 'Inventory Items',
+    contracts: 'Contracts',
   },
   auth: {
     login: 'Login',

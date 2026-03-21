@@ -1,5 +1,5 @@
 import { TranslationKeys } from '@/i18n/config';
-import { FileText, LucideIcon, Package, User } from 'lucide-react';
+import { FilePenLine, FileText, LucideIcon, Package, User } from 'lucide-react';
 import { Route } from 'next';
 
 // 1. Define what a single route looks like
@@ -27,9 +27,9 @@ export const routes = {
       Icon: User,
     },
     {
-      key: 'common.inventory',
+      key: 'common.inventoryItems',
       href: '/app/inventory',
-      label: 'Inventory',
+      label: 'Inventory Items',
       Icon: Package,
     },
     {
@@ -37,6 +37,13 @@ export const routes = {
       href: '/app/invoices',
       label: 'Invoices',
       Icon: FileText,
+    },
+
+    {
+      key: 'common.contracts',
+      href: '/app/contracts',
+      label: 'Contracts',
+      Icon: FilePenLine,
     },
   ],
 } as const satisfies Record<string, RouteConfig[]>;

@@ -9,13 +9,6 @@ datasource db {
   provider = "sqlite"
 }
 
-// ENUMS
-enum CurrencyCode {
-  BHD
-  USD
-  EUR
-}
-
 enum InvoiceStatus {
   DRAFT
   APPROVED
@@ -44,8 +37,9 @@ model Organization {
   website String?
   tax     String?
 
-  createdAt DateTime  @default(now())
-  updatedAt DateTime? @updatedAt
+  createdAt DateTime   @default(now())
+  updatedAt DateTime?  @updatedAt
+  contracts Contract[]
 }
 
 model User {
@@ -123,13 +117,14 @@ model Customer {
 }
 
 model Invoice {
-  id            Int            @id @default(autoincrement())
-  date          DateTime       @default(now())
-  description   String?
-  customerId    Int?
-  tax           Int?
-  status        InvoiceStatus? @default(DRAFT)
-  currency      CurrencyCode   @default(BHD)
+  id          Int            @id @default(autoincrement())
+  date        DateTime       @default(now())
+  description String?
+  customerId  Int?
+  tax         Int?
+  status      InvoiceStatus? @default(DRAFT)
+  currency    String         @default("BHD")
+
   subtotal      Int?
   total         Int?
   discountTotal Int?
@@ -175,4 +170,28 @@ model Payment {
 
   createdAt DateTime  @default(now())
   updatedAt DateTime? @updatedAt
+}
+
+model Contract {
+  id          String  @id @default(uuid())
+  title       String
+  description String?
+  active      Boolean @default(true)
+
+  // Enterprise Details
+  contractValue Int? // in fils
+  currency      String @default("BHD")
+
+  // Dates
+  startDate   DateTime
+  endDate     DateTime
+  renewalDate DateTime? // For auto-renewals
+
+  // Versioning and Auditing
+  version   Int      @default(1)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  organization   Organization? @relation(fields: [organizationId], references: [id])
+  organizationId Int?
 }

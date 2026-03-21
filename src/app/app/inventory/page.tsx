@@ -133,7 +133,7 @@ export default function InventoryPage() {
           </div>
         )}
         rowHeight={72}
-        searchFields={['name', 'code']}
+        searchFields={['name', 'code', 'description']}
         onRefetch={refetch}
       />
     </>

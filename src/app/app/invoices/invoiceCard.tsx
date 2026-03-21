@@ -4,19 +4,13 @@ import { useRouter } from 'next/navigation';
 import { User, Calendar, Hash, FileSpreadsheet, FileText } from 'lucide-react';
 
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { cn } from '@/lib/utils';
+import { Customer, Invoice } from '@prisma/client';
 
 // Aligning with your Prisma Schema
-export type InvoiceWithRelations = {
-  id: number;
-  date: string | Date;
-  description?: string | null;
-  customerId?: number | null;
-  customer?: {
-    name: string;
-    phone: string;
-    address: string;
-  } | null;
-};
+export interface InvoiceWithRelations extends Invoice {
+  customer: Customer;
+}
 
 export function InvoiceCardRenderer({ data }: { data: InvoiceWithRelations }) {
   const router = useRouter();
@@ -29,8 +23,8 @@ export function InvoiceCardRenderer({ data }: { data: InvoiceWithRelations }) {
   return (
     <div onClick={() => router.push(`/app/invoices/${data.id}`)} className="flex items-center gap-4 px-4 py-3 hover:bg-accent/50 cursor-pointer transition-colors border-b last:border-0">
       {/* Customer Avatar */}
-      <Avatar className="size-10 shrink-0 border bg-background">
-        <AvatarFallback className="text-muted-foreground">
+      <Avatar className="size-10 rounded-lg shrink-0 after:border-0">
+        <AvatarFallback className={cn('rounded-lg transition-colors', data.status === 'APPROVED' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-400' : 'bg-muted text-muted-foreground')}>
           <FileText className="size-5" />
         </AvatarFallback>
       </Avatar>
