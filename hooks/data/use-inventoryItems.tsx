@@ -7,12 +7,12 @@ export const useInventoryItems = () => {
     getAll: () =>
       useQuery<InventoryItem[]>({
         queryKey: ['Inventory'],
-        queryFn: async () => (await axios.get('/api/Inventory')).data,
+        queryFn: async () => (await axios.get('/api/inventory')).data,
       }),
     getById: (id?: string) =>
       useQuery<InventoryItem>({
         queryKey: ['Inventory', id],
-        queryFn: async () => (await axios.get(`/api/Inventory/${id}`)).data,
+        queryFn: async () => (await axios.get(`/api/inventory/${id}`)).data,
         enabled: !!id,
       }),
   };

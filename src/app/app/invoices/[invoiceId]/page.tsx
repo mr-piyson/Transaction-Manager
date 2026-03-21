@@ -290,7 +290,14 @@ export default function InvoiceDetailPage() {
               <Check className="h-4 w-4" />
               <span>Approve</span>
             </Button>
-            <Button variant="secondary" className="w-full shadow-sm">
+
+            <Button
+              onClick={() => {
+                router.push(`/app/invoices/${params.invoiceId}/editor`);
+              }}
+              variant="secondary"
+              className="w-full shadow-sm"
+            >
               <PenBoxIcon className="w-4 h-4 mr-2" />
               Edit
             </Button>

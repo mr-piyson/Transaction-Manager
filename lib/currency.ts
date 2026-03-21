@@ -10,6 +10,7 @@ export const CURRENCIES = {
     precision: 2,
     separator: ',',
     decimal: '.',
+    pattern: '! #',
   },
   EUR: {
     code: 'EUR',
@@ -18,6 +19,7 @@ export const CURRENCIES = {
     precision: 2,
     separator: '.',
     decimal: ',',
+    pattern: '! #',
   },
   JPY: {
     code: 'JPY',
@@ -26,6 +28,7 @@ export const CURRENCIES = {
     precision: 0,
     separator: ',',
     decimal: '.',
+    pattern: '! #',
   },
   BHD: {
     code: 'BHD',
@@ -34,5 +37,6 @@ export const CURRENCIES = {
     precision: 3,
     separator: ',',
     decimal: '.',
+    pattern: '! #',
   },
 } as const;

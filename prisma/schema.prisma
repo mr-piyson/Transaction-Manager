@@ -94,6 +94,18 @@ model InventoryItem {
   invoiceId     Int?
   invoiceItems  InvoiceItem[]
 
+  createdAt            DateTime            @default(now())
+  updatedAt            DateTime?           @updatedAt
+  inventoryItemGroup   InventoryItemGroup? @relation(fields: [inventoryItemGroupId], references: [id])
+  inventoryItemGroupId Int?
+}
+
+model InventoryItemGroup {
+  id    Int             @id @default(autoincrement())
+  name  String
+  total Int
+  items InventoryItem[]
+
   createdAt DateTime  @default(now())
   updatedAt DateTime? @updatedAt
 }
@@ -144,11 +156,6 @@ model InvoiceItem {
   itemRef         InventoryItem? @relation(fields: [inventoryItemId], references: [id])
   inventoryItemId Int?
   total           Int
-
-  // Self-referential relations for Bundles/Packages
-  parentId Int?
-  parent   InvoiceItem?  @relation("BundleToItems", fields: [parentId], references: [id], onDelete: Cascade)
-  subItems InvoiceItem[] @relation("BundleToItems")
 
   createdAt DateTime  @default(now())
   updatedAt DateTime? @updatedAt
