@@ -12,12 +12,15 @@ import { Header } from '@/components/Header';
 import { UniversalContextMenu } from '@/components/context-menu';
 import { alert } from '@/components/Alert-dialog';
 import { useCustomers } from '@/hooks/data/use-customers';
+import { useRouter } from 'next/navigation';
 
 export default function CustomersPage() {
   const { t } = useI18n();
 
-  const api = useCustomers();
-  const { data: customers, isLoading, isError, refetch } = api.getAll();
+  const { getAll, remove } = useCustomers();
+  const { data: customers, isLoading, isError, refetch } = getAll();
+  const deleteMutation = remove();
+  const router = useRouter();
 
   return (
     <>
@@ -71,17 +74,14 @@ export default function CustomersPage() {
                   alert.delete({
                     title: 'Are you sure',
                     onConfirm: async () => {
-                      const res = await axios.delete(`/api/customers/${data.id}`);
-                      if (res.status == 200) {
-                        refetch();
-                      }
+                      deleteMutation.mutate(String(data.id));
                     },
                   });
                 },
               },
             ]}
           >
-            <CustomerCard data={data} />;
+            <CustomerCard data={data} onClick={() => router.push(`/app/customers/${data.id}`)} />;
           </UniversalContextMenu>
         )}
         rowHeight={65}

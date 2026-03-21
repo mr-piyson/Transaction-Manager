@@ -57,8 +57,8 @@ export const useCustomers = () => {
         },
       }),
 
-    // --- DELETE ---
-    delete: (): UseMutationResult<void, Error, string> =>
+    // Rename 'delete' to 'remove' here once
+    remove: (): UseMutationResult<void, Error, string> =>
       useMutation({
         mutationFn: async (id) => {
           await axios.delete(`/api/customers/${id}`);
