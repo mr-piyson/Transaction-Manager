@@ -24,7 +24,16 @@ function SheetPortal({ ...props }: SheetPrimitive.Portal.Props) {
 }
 
 function SheetOverlay({ className, ...props }: SheetPrimitive.Backdrop.Props) {
-  return <SheetPrimitive.Backdrop data-slot="sheet-overlay" className={cn('data-open:animate-in data-closed:animate-out data-closed:fade-out-0 data-open:fade-in-0 bg-black/10 duration-100 data-ending-style:opacity-0 data-starting-style:opacity-0 supports-backdrop-filter:backdrop-blur-xs fixed inset-0 z-50', className)} {...props} />;
+  return (
+    <SheetPrimitive.Backdrop
+      data-slot="sheet-overlay"
+      className={cn(
+        'data-open:animate-in data-closed:animate-out data-closed:fade-out-0 data-open:fade-in-0 bg-black/10 duration-100 data-ending-style:opacity-0 data-starting-style:opacity-0 supports-backdrop-filter:backdrop-blur-xs fixed inset-0 z-50',
+        className,
+      )}
+      {...props}
+    />
+  );
 }
 
 function SheetContent({
@@ -51,7 +60,10 @@ function SheetContent({
       >
         {children}
         {showCloseButton && (
-          <SheetPrimitive.Close data-slot="sheet-close" render={<Button variant="ghost" className="absolute top-3 end-3" size="icon-sm" />}>
+          <SheetPrimitive.Close
+            data-slot="sheet-close"
+            render={<Button variant="ghost" className="absolute top-3 end-3" size="icon-sm" />}
+          >
             <XIcon />
             <span className="sr-only">Close</span>
           </SheetPrimitive.Close>
@@ -70,11 +82,23 @@ function SheetFooter({ className, ...props }: React.ComponentProps<'div'>) {
 }
 
 function SheetTitle({ className, ...props }: SheetPrimitive.Title.Props) {
-  return <SheetPrimitive.Title data-slot="sheet-title" className={cn('text-foreground text-base font-medium', className)} {...props} />;
+  return (
+    <SheetPrimitive.Title
+      data-slot="sheet-title"
+      className={cn('text-foreground text-base font-medium', className)}
+      {...props}
+    />
+  );
 }
 
 function SheetDescription({ className, ...props }: SheetPrimitive.Description.Props) {
-  return <SheetPrimitive.Description data-slot="sheet-description" className={cn('text-muted-foreground text-sm', className)} {...props} />;
+  return (
+    <SheetPrimitive.Description
+      data-slot="sheet-description"
+      className={cn('text-muted-foreground text-sm', className)}
+      {...props}
+    />
+  );
 }
 
 export { Sheet, SheetTrigger, SheetClose, SheetContent, SheetHeader, SheetFooter, SheetTitle, SheetDescription };

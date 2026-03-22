@@ -2,7 +2,12 @@ import { Card, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Package, Tag, ArrowUpRight, ArrowDownLeft, Menu, Trash2, Edit } from 'lucide-react';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
 import { Money } from '@/lib/money';
 import { UniversalContextMenu } from '@/components/context-menu';
@@ -57,7 +62,9 @@ export default function InvoiceItemCard({ item }: { item: InventoryItem }) {
                 </Badge>
               )}
             </div>
-            <p className="text-sm text-muted-foreground line-clamp-1 mt-1">{item.description || 'No description provided'}</p>
+            <p className="text-sm text-muted-foreground line-clamp-1 mt-1">
+              {item.description || 'No description provided'}
+            </p>
           </div>
         </div>
         <div className="flex flex-col">

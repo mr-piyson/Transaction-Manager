@@ -30,9 +30,13 @@ type Invoice = {
 function InvoiceItemRow({ item, depth = 0 }: { item: InvoiceItem; depth?: number }) {
   return (
     <>
-      <div className={`flex items-center justify-between py-3 px-4 transition-colors hover:bg-muted/50 ${depth > 0 ? 'pl-10 border-l-2 border-muted/50 ml-4' : ''}`}>
+      <div
+        className={`flex items-center justify-between py-3 px-4 transition-colors hover:bg-muted/50 ${depth > 0 ? 'pl-10 border-l-2 border-muted/50 ml-4' : ''}`}
+      >
         <div className="flex items-center gap-3 flex-1 min-w-0">
-          <div className={`w-8 h-8 rounded-md flex items-center justify-center shrink-0 ${depth > 0 ? 'bg-muted text-muted-foreground' : 'bg-primary/10 text-primary'}`}>
+          <div
+            className={`w-8 h-8 rounded-md flex items-center justify-center shrink-0 ${depth > 0 ? 'bg-muted text-muted-foreground' : 'bg-primary/10 text-primary'}`}
+          >
             <Package className="w-4 h-4" />
           </div>
           <div className="min-w-0">
@@ -279,7 +283,11 @@ export default function InvoiceDetailPage() {
 
               <div className="flex justify-between items-center pt-1">
                 <span className="font-semibold text-base">Gross Profit</span>
-                <span className={`font-bold text-base ${grossProfit >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-destructive'}`}>{Money.format(grossProfit)}</span>
+                <span
+                  className={`font-bold text-base ${grossProfit >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-destructive'}`}
+                >
+                  {Money.format(grossProfit)}
+                </span>
               </div>
             </CardContent>
           </Card>

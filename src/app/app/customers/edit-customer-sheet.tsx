@@ -73,7 +73,11 @@ export function CustomersClient() {
         <SheetContent className="w-full sm:max-w-md overflow-y-auto p-4">
           <SheetHeader className="mb-6">
             <SheetTitle>{editingId ? 'Edit Customer' : 'New Customer'}</SheetTitle>
-            <SheetDescription>{editingId ? 'Update the details for this customer below.' : 'Fill in the details to add a new customer to the system.'}</SheetDescription>
+            <SheetDescription>
+              {editingId
+                ? 'Update the details for this customer below.'
+                : 'Fill in the details to add a new customer to the system.'}
+            </SheetDescription>
           </SheetHeader>
 
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
@@ -98,7 +102,14 @@ export function CustomersClient() {
               <Label htmlFor="email" className={errors.email ? 'text-destructive' : ''}>
                 Email (Optional)
               </Label>
-              <Input id="email" type="email" placeholder="ali@example.com" dir="ltr" className="text-left" {...register('email')} />
+              <Input
+                id="email"
+                type="email"
+                placeholder="ali@example.com"
+                dir="ltr"
+                className="text-left"
+                {...register('email')}
+              />
               {errors.email && <p className="text-[0.8rem] font-medium text-destructive">{errors.email.message}</p>}
             </div>
 

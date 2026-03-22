@@ -52,7 +52,12 @@ export function InventorySelector({ open, onOpenChange, onSelect, selectedItems 
 
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input placeholder="Search by name, SKU, or description..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="pl-10" />
+          <Input
+            placeholder="Search by name, SKU, or description..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-10"
+          />
         </div>
 
         <ScrollArea className="flex-1 min-h-[300px] max-h-[400px] border rounded-lg">
@@ -70,7 +75,11 @@ export function InventorySelector({ open, onOpenChange, onSelect, selectedItems 
               {items.map((item) => {
                 const isSelected = selectedItems.includes(item.id);
                 return (
-                  <div key={item.id} className={`group flex items-center justify-between p-3 rounded-lg border transition-colors cursor-pointer hover:bg-accent ${isSelected ? 'bg-primary/5 border-primary/20' : 'border-transparent'}`} onClick={() => handleSelect(item)}>
+                  <div
+                    key={item.id}
+                    className={`group flex items-center justify-between p-3 rounded-lg border transition-colors cursor-pointer hover:bg-accent ${isSelected ? 'bg-primary/5 border-primary/20' : 'border-transparent'}`}
+                    onClick={() => handleSelect(item)}
+                  >
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
                         <span className="font-medium text-foreground truncate">{item.name}</span>

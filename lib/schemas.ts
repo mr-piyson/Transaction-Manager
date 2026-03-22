@@ -14,9 +14,19 @@ export function validatePassword(
     requireSpecialChar?: boolean;
   } = {},
 ) {
-  const { minLength = 6, maxLength = 20, requireNumber = true, requireLowercase = true, requireUppercase = true, requireSpecialChar = true } = options;
+  const {
+    minLength = 6,
+    maxLength = 20,
+    requireNumber = true,
+    requireLowercase = true,
+    requireUppercase = true,
+    requireSpecialChar = true,
+  } = options;
 
-  let schema = z.string().min(minLength, `Password must be at least ${minLength} characters long`).max(maxLength, `Password must be at most ${maxLength} characters long`);
+  let schema = z
+    .string()
+    .min(minLength, `Password must be at least ${minLength} characters long`)
+    .max(maxLength, `Password must be at most ${maxLength} characters long`);
 
   const validationRules = [
     {

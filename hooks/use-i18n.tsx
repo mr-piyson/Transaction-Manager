@@ -1,8 +1,28 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect, useRef, useCallback, useMemo, type ReactNode } from 'react';
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useRef,
+  useCallback,
+  useMemo,
+  type ReactNode,
+} from 'react';
 
-import { type Locale, type Direction, type TranslationKeys, type LanguageConfig, DEFAULT_LOCALE, LANGUAGE_CONFIG, AVAILABLE_LOCALES, loadLocale, translate, keyExists } from '@/i18n/config';
+import {
+  type Locale,
+  type Direction,
+  type TranslationKeys,
+  type LanguageConfig,
+  DEFAULT_LOCALE,
+  LANGUAGE_CONFIG,
+  AVAILABLE_LOCALES,
+  loadLocale,
+  translate,
+  keyExists,
+} from '@/i18n/config';
 import { saveLocaleToDatabase, setLocaleAction } from '@/i18n/i18n.action';
 
 // ─── Context ──────────────────────────────────────────────────────────────────

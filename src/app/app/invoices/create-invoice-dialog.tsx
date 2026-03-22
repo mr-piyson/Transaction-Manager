@@ -112,7 +112,12 @@ export function CreateInvoiceDialog(props: { onSuccess?: (invoice: any) => void 
                               setSelectedCustomerId(customer.id);
                             }}
                           >
-                            <Check className={cn('mr-2 h-4 w-4', selectedCustomerId === customer.id ? 'opacity-100' : 'opacity-0')} />
+                            <Check
+                              className={cn(
+                                'mr-2 h-4 w-4',
+                                selectedCustomerId === customer.id ? 'opacity-100' : 'opacity-0',
+                              )}
+                            />
                             <div className="flex flex-col">
                               <span>{customer.name}</span>
                               <span className="text-xs text-muted-foreground">{customer.phone}</span>

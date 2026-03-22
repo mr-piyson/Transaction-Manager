@@ -43,9 +43,7 @@ export function AddGroupDialog({ open, onOpenChange, onAdd }: AddGroupDialogProp
             <FolderPlus className="h-5 w-5 text-primary" />
             Create Item Group
           </DialogTitle>
-          <DialogDescription>
-            Groups help organize related line items together on the invoice.
-          </DialogDescription>
+          <DialogDescription>Groups help organize related line items together on the invoice.</DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit}>

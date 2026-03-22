@@ -63,7 +63,25 @@ export interface UniversalListViewProps<T = any> {
   externalFilter?: (item: T) => boolean;
 }
 
-export function ListView<T extends Record<string, any>>({ data = [], isLoading = false, isError = false, error = null, onRefetch, searchPlaceholder = 'Search...', searchFields, filters = [], cardRenderer: CardRenderer, emptyIcon, emptyTitle = 'No items found', emptyDescription = 'Try adjusting your search or filters', rowHeight = 'auto', useTheme = false, containerClassName = '', itemName = 'items', externalFilter }: UniversalListViewProps<T>) {
+export function ListView<T extends Record<string, any>>({
+  data = [],
+  isLoading = false,
+  isError = false,
+  error = null,
+  onRefetch,
+  searchPlaceholder = 'Search...',
+  searchFields,
+  filters = [],
+  cardRenderer: CardRenderer,
+  emptyIcon,
+  emptyTitle = 'No items found',
+  emptyDescription = 'Try adjusting your search or filters',
+  rowHeight = 'auto',
+  useTheme = false,
+  containerClassName = '',
+  itemName = 'items',
+  externalFilter,
+}: UniversalListViewProps<T>) {
   const isMobile = useIsMobile();
   const gridRef = useRef<any>(null);
   const cardRef = useRef<HTMLDivElement>(null);
@@ -73,14 +91,18 @@ export function ListView<T extends Record<string, any>>({ data = [], isLoading =
   // State
   const [gridApi, setGridApi] = useState<GridApi | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
-  const [filterValues, setFilterValues] = useState<Record<string, string>>(Object.fromEntries(filters.map((f) => [f.key, 'all'])));
+  const [filterValues, setFilterValues] = useState<Record<string, string>>(
+    Object.fromEntries(filters.map((f) => [f.key, 'all'])),
+  );
   const [cardHeight, setCardHeight] = useState(0);
 
   // Extract unique values for each filter
   const filterOptions = useMemo(() => {
     return filters.reduce(
       (acc, filter) => {
-        const values = new Set<string>(data.map((item) => filter.getValue(item)).filter((v): v is string => Boolean(v)));
+        const values = new Set<string>(
+          data.map((item) => filter.getValue(item)).filter((v): v is string => Boolean(v)),
+        );
         acc[filter.key] = Array.from(values).sort();
         return acc;
       },
@@ -268,9 +290,19 @@ export function ListView<T extends Record<string, any>>({ data = [], isLoading =
         <div className="flex flex-1 flex-col sm:flex-row gap-3 p-4">
           <div className="flex relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-            <Input placeholder={searchPlaceholder} value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="pl-10 pr-10" />
+            <Input
+              placeholder={searchPlaceholder}
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10 pr-10"
+            />
             {searchTerm && (
-              <Button variant="ghost" size="icon" className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7" onClick={clearSearch}>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7"
+                onClick={clearSearch}
+              >
                 <X className="w-4 h-4" />
               </Button>
             )}
@@ -285,7 +317,10 @@ export function ListView<T extends Record<string, any>>({ data = [], isLoading =
                     <Filter className="w-4 h-4" />
                     <span className="hidden sm:inline">Filters</span>
                     {activeFiltersCount > 0 && (
-                      <Badge variant="destructive" className="absolute -top-2 -right-2 h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs">
+                      <Badge
+                        variant="destructive"
+                        className="absolute -top-2 -right-2 h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs"
+                      >
                         {activeFiltersCount}
                       </Badge>
                     )}
@@ -311,7 +346,10 @@ export function ListView<T extends Record<string, any>>({ data = [], isLoading =
                       <Label htmlFor={`${filter.key}-filter`} className="text-sm font-medium">
                         {filter.label}
                       </Label>
-                      <Select value={filterValues[filter.key]} onValueChange={(value) => updateFilter(filter.key, value)}>
+                      <Select
+                        value={filterValues[filter.key]}
+                        onValueChange={(value) => updateFilter(filter.key, value)}
+                      >
                         <SelectTrigger className="w-full" id={`${filter.key}-filter`}>
                           <SelectValue placeholder={`All ${filter.label.toLowerCase()}`} />
                         </SelectTrigger>
@@ -342,7 +380,12 @@ export function ListView<T extends Record<string, any>>({ data = [], isLoading =
                   const value = filterValues[filter.key];
                   if (value === 'all') return null;
                   return (
-                    <Badge key={filter.key} variant="secondary" className="gap-1 cursor-pointer hover:bg-secondary/80" onClick={() => updateFilter(filter.key, 'all')}>
+                    <Badge
+                      key={filter.key}
+                      variant="secondary"
+                      className="gap-1 cursor-pointer hover:bg-secondary/80"
+                      onClick={() => updateFilter(filter.key, 'all')}
+                    >
                       {filter.label}: {value}
                       <X className="w-3 h-3" />
                     </Badge>
@@ -368,7 +411,22 @@ export function ListView<T extends Record<string, any>>({ data = [], isLoading =
             )}
           </Empty>
         ) : (
-          <AgGridReact ref={gridRef} rowData={filteredData} columnDefs={columnDefs} defaultColDef={defaultColDef} gridOptions={gridOptions} animateRows={true} suppressMenuHide={true} theme={useTheme ? theme : undefined} loading={isLoading} isFullWidthRow={() => true} fullWidthCellRenderer={FullWidthCellRenderer} rowHeight={calculatedRowHeight} onGridReady={(params) => setGridApi(params.api)} domLayout="normal" />
+          <AgGridReact
+            ref={gridRef}
+            rowData={filteredData}
+            columnDefs={columnDefs}
+            defaultColDef={defaultColDef}
+            gridOptions={gridOptions}
+            animateRows={true}
+            suppressMenuHide={true}
+            theme={useTheme ? theme : undefined}
+            loading={isLoading}
+            isFullWidthRow={() => true}
+            fullWidthCellRenderer={FullWidthCellRenderer}
+            rowHeight={calculatedRowHeight}
+            onGridReady={(params) => setGridApi(params.api)}
+            domLayout="normal"
+          />
         )}
       </div>
     </>

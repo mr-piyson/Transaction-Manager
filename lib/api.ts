@@ -62,7 +62,12 @@ export const inventoryApi = {
   search: async (query: string): Promise<InventoryItem[]> => {
     await delay(200);
     const lowerQuery = query.toLowerCase();
-    return mockInventoryItems.filter((item) => item.name.toLowerCase().includes(lowerQuery) || item.sku.toLowerCase().includes(lowerQuery) || item.description.toLowerCase().includes(lowerQuery));
+    return mockInventoryItems.filter(
+      (item) =>
+        item.name.toLowerCase().includes(lowerQuery) ||
+        item.sku.toLowerCase().includes(lowerQuery) ||
+        item.description.toLowerCase().includes(lowerQuery),
+    );
   },
 
   getById: async (id: string): Promise<InventoryItem | undefined> => {

@@ -13,7 +13,16 @@ export const env = createEnv({
   onValidationError: (issues) => {
     console.error(`Invalid environment variables:`);
     issues.forEach((issue) => {
-      if (issue.path) console.log('\x1b[31m', issue.path[0].toString().trim(), '\x1b[31m', '\x1b[0m=\x1b[0m', '\x1b[32m', '""', '\x1b[32m');
+      if (issue.path)
+        console.log(
+          '\x1b[31m',
+          issue.path[0].toString().trim(),
+          '\x1b[31m',
+          '\x1b[0m=\x1b[0m',
+          '\x1b[32m',
+          '""',
+          '\x1b[32m',
+        );
     });
     // throw error with out log the zod runtime error log
     process.exit(1);

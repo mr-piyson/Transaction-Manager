@@ -21,7 +21,11 @@ export default function InvoicesPage() {
 
   return (
     <>
-      <Header title={t('common.invoices', 'Invoices')} icon={<FileText className="inline" />} rightContent={<CreateInvoiceDialog />} />
+      <Header
+        title={t('common.invoices', 'Invoices')}
+        icon={<FileText className="inline" />}
+        rightContent={<CreateInvoiceDialog />}
+      />
 
       {!isLoading && (
         <div className="flex flex-col gap-2 px-4 pt-4">
@@ -32,7 +36,10 @@ export default function InvoicesPage() {
                 All
               </TabsTrigger>
 
-              <TabsTrigger className="group-data-[variant=default]/tabs-list:data-active:bg-destructive!" value="Unpaid">
+              <TabsTrigger
+                className="group-data-[variant=default]/tabs-list:data-active:bg-destructive!"
+                value="Unpaid"
+              >
                 Unpaid
               </TabsTrigger>
 
@@ -67,7 +74,7 @@ export default function InvoicesPage() {
         emptyTitle={t('invoices.empty_title', 'No invoices found')}
         emptyIcon={<Box className="size-16 text-muted-foreground" />}
         emptyDescription={'No invoices to show'}
-        data={invoices} // Use the filtered data here
+        data={invoices}
         isLoading={isLoading}
         isError={isError}
         itemName="invoices items"

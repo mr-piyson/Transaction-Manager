@@ -22,7 +22,16 @@ function DrawerClose({ ...props }: React.ComponentProps<typeof DrawerPrimitive.C
 }
 
 function DrawerOverlay({ className, ...props }: React.ComponentProps<typeof DrawerPrimitive.Overlay>) {
-  return <DrawerPrimitive.Overlay data-slot="drawer-overlay" className={cn('data-open:animate-in data-closed:animate-out data-closed:fade-out-0 data-open:fade-in-0 bg-black/10 supports-backdrop-filter:backdrop-blur-xs fixed inset-0 z-50', className)} {...props} />;
+  return (
+    <DrawerPrimitive.Overlay
+      data-slot="drawer-overlay"
+      className={cn(
+        'data-open:animate-in data-closed:animate-out data-closed:fade-out-0 data-open:fade-in-0 bg-black/10 supports-backdrop-filter:backdrop-blur-xs fixed inset-0 z-50',
+        className,
+      )}
+      {...props}
+    />
+  );
 }
 
 function DrawerContent({ className, children, ...props }: React.ComponentProps<typeof DrawerPrimitive.Content>) {
@@ -45,7 +54,16 @@ function DrawerContent({ className, children, ...props }: React.ComponentProps<t
 }
 
 function DrawerHeader({ className, ...props }: React.ComponentProps<'div'>) {
-  return <div data-slot="drawer-header" className={cn('gap-0.5 p-4 group-data-[vaul-drawer-direction=bottom]/drawer-content:text-center group-data-[vaul-drawer-direction=top]/drawer-content:text-center md:gap-0.5 md:text-start flex flex-col', className)} {...props} />;
+  return (
+    <div
+      data-slot="drawer-header"
+      className={cn(
+        'gap-0.5 p-4 group-data-[vaul-drawer-direction=bottom]/drawer-content:text-center group-data-[vaul-drawer-direction=top]/drawer-content:text-center md:gap-0.5 md:text-start flex flex-col',
+        className,
+      )}
+      {...props}
+    />
+  );
 }
 
 function DrawerFooter({ className, ...props }: React.ComponentProps<'div'>) {
@@ -53,11 +71,34 @@ function DrawerFooter({ className, ...props }: React.ComponentProps<'div'>) {
 }
 
 function DrawerTitle({ className, ...props }: React.ComponentProps<typeof DrawerPrimitive.Title>) {
-  return <DrawerPrimitive.Title data-slot="drawer-title" className={cn('text-foreground text-base font-medium', className)} {...props} />;
+  return (
+    <DrawerPrimitive.Title
+      data-slot="drawer-title"
+      className={cn('text-foreground text-base font-medium', className)}
+      {...props}
+    />
+  );
 }
 
 function DrawerDescription({ className, ...props }: React.ComponentProps<typeof DrawerPrimitive.Description>) {
-  return <DrawerPrimitive.Description data-slot="drawer-description" className={cn('text-muted-foreground text-sm', className)} {...props} />;
+  return (
+    <DrawerPrimitive.Description
+      data-slot="drawer-description"
+      className={cn('text-muted-foreground text-sm', className)}
+      {...props}
+    />
+  );
 }
 
-export { Drawer, DrawerPortal, DrawerOverlay, DrawerTrigger, DrawerClose, DrawerContent, DrawerHeader, DrawerFooter, DrawerTitle, DrawerDescription };
+export {
+  Drawer,
+  DrawerPortal,
+  DrawerOverlay,
+  DrawerTrigger,
+  DrawerClose,
+  DrawerContent,
+  DrawerHeader,
+  DrawerFooter,
+  DrawerTitle,
+  DrawerDescription,
+};

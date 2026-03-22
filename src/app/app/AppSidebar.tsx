@@ -2,7 +2,17 @@
 
 import { usePathname, useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
-import { SidebarGroup, SidebarMenu, SidebarMenuItem, SidebarMenuButton, Sidebar, SidebarHeader, SidebarContent, SidebarRail, useSidebar } from '@/components/sidebar';
+import {
+  SidebarGroup,
+  SidebarMenu,
+  SidebarMenuItem,
+  SidebarMenuButton,
+  Sidebar,
+  SidebarHeader,
+  SidebarContent,
+  SidebarRail,
+  useSidebar,
+} from '@/components/sidebar';
 import Logo from '@/components/Logo';
 // import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "../ui/collapsible";
 import { useI18n } from '@/hooks/use-i18n';
@@ -54,9 +64,23 @@ export function AppSidebar({ ...props }: AppSidebarProps) {
                     router.push(href);
                   }}
                 >
-                  <Icon className={cn('ms-1 size-5 shrink-0', isActive(href) ? 'text-white' : 'text-foreground/92', loading === href && !open && !isMobile ? 'hidden' : '')} />
+                  <Icon
+                    className={cn(
+                      'ms-1 size-5 shrink-0',
+                      isActive(href) ? 'text-white' : 'text-foreground/92',
+                      loading === href && !open && !isMobile ? 'hidden' : '',
+                    )}
+                  />
                   <div className="flex items-center justify-between w-full">
-                    <span className={cn(' text-base', isActive(href) ? 'text-white' : 'text-foreground/92', loading === href && !open && !isMobile ? 'hidden' : '')}>{i18n.t(key)}</span>
+                    <span
+                      className={cn(
+                        ' text-base',
+                        isActive(href) ? 'text-white' : 'text-foreground/92',
+                        loading === href && !open && !isMobile ? 'hidden' : '',
+                      )}
+                    >
+                      {i18n.t(key)}
+                    </span>
                     {loading === href && <Spinner />}
                   </div>
                 </SidebarMenuButton>
@@ -74,7 +98,11 @@ function AppLogo() {
   return (
     <SidebarMenu>
       <SidebarMenuItem>
-        <SidebarMenuButton size="lg" className="opacity-100! data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground" disabled>
+        <SidebarMenuButton
+          size="lg"
+          className="opacity-100! data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+          disabled
+        >
           <div className="flex aspect-square size-8 items-center justify-center rounded-lg  text-sidebar-primary-foreground">
             <Logo className=" size-7!" />
           </div>

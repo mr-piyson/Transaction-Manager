@@ -82,7 +82,11 @@ import type { en } from './locales/en';
 export type Translations = typeof en;
 
 type PrefixedKeys<T, P extends string = ''> = {
-  [K in keyof T & string]: T[K] extends string ? (P extends '' ? K : `${P}.${K}`) : PrefixedKeys<T[K], P extends '' ? K : `${P}.${K}`>;
+  [K in keyof T & string]: T[K] extends string
+    ? P extends ''
+      ? K
+      : `${P}.${K}`
+    : PrefixedKeys<T[K], P extends '' ? K : `${P}.${K}`>;
 }[keyof T & string];
 
 export type TranslationKeys = PrefixedKeys<Translations>;

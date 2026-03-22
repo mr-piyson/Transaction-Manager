@@ -74,7 +74,28 @@ export interface SelectDialogProps<T extends Record<string, any> = Record<string
 // Component
 // ---------------------------------------------------------------------------
 
-export function SelectDialog<T extends Record<string, any>>({ children, title = 'Select item', open: controlledOpen, onOpenChange, onSelect, data = [], isLoading = false, isError = false, error = null, onRefetch, searchPlaceholder = 'Search...', searchFields, filters = [], cardRenderer: CardRenderer, emptyTitle = 'No items found', emptyDescription = 'Try adjusting your search or filters', rowHeight, useTheme = false, itemName = 'items', ...props }: SelectDialogProps<T>) {
+export function SelectDialog<T extends Record<string, any>>({
+  children,
+  title = 'Select item',
+  open: controlledOpen,
+  onOpenChange,
+  onSelect,
+  data = [],
+  isLoading = false,
+  isError = false,
+  error = null,
+  onRefetch,
+  searchPlaceholder = 'Search...',
+  searchFields,
+  filters = [],
+  cardRenderer: CardRenderer,
+  emptyTitle = 'No items found',
+  emptyDescription = 'Try adjusting your search or filters',
+  rowHeight,
+  useTheme = false,
+  itemName = 'items',
+  ...props
+}: SelectDialogProps<T>) {
   // ── open state ────────────────────────────────────────────────────────────
   const [internalOpen, setInternalOpen] = useState(false);
   const isControlled = controlledOpen !== undefined;
@@ -98,7 +119,9 @@ export function SelectDialog<T extends Record<string, any>>({ children, title = 
   // ── local state ───────────────────────────────────────────────────────────
   const [gridApi, setGridApi] = useState<GridApi<T> | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
-  const [filterValues, setFilterValues] = useState<Record<string, string>>(() => Object.fromEntries(filters.map((f) => [f.key, 'all'])));
+  const [filterValues, setFilterValues] = useState<Record<string, string>>(() =>
+    Object.fromEntries(filters.map((f) => [f.key, 'all'])),
+  );
 
   // ── reset when dialog opens ───────────────────────────────────────────────
   useEffect(() => {
@@ -139,7 +162,10 @@ export function SelectDialog<T extends Record<string, any>>({ children, title = 
   }, [data, searchTerm, searchFields, filters, filterValues]);
 
   // ── active filters count ──────────────────────────────────────────────────
-  const activeFiltersCount = useMemo(() => Object.values(filterValues).filter((v) => v !== 'all').length, [filterValues]);
+  const activeFiltersCount = useMemo(
+    () => Object.values(filterValues).filter((v) => v !== 'all').length,
+    [filterValues],
+  );
 
   // ── helpers ───────────────────────────────────────────────────────────────
   const clearAllFilters = useCallback(() => {
@@ -205,9 +231,21 @@ export function SelectDialog<T extends Record<string, any>>({ children, title = 
           <div className="flex gap-2">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
-              <Input ref={searchInputRef} placeholder={searchPlaceholder} value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="pl-10 pr-10" />
+              <Input
+                ref={searchInputRef}
+                placeholder={searchPlaceholder}
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10 pr-10"
+              />
               {searchTerm && (
-                <Button variant="ghost" size="icon" tabIndex={-1} className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7" onClick={() => setSearchTerm('')}>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  tabIndex={-1}
+                  className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7"
+                  onClick={() => setSearchTerm('')}
+                >
                   <X className="w-4 h-4" />
                 </Button>
               )}
@@ -221,7 +259,10 @@ export function SelectDialog<T extends Record<string, any>>({ children, title = 
                       <Filter className="w-4 h-4" />
                       <span className="hidden sm:inline">Filters</span>
                       {activeFiltersCount > 0 && (
-                        <Badge variant="destructive" className="absolute -top-2 -right-2 h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs">
+                        <Badge
+                          variant="destructive"
+                          className="absolute -top-2 -right-2 h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs"
+                        >
                           {activeFiltersCount}
                         </Badge>
                       )}
@@ -244,7 +285,10 @@ export function SelectDialog<T extends Record<string, any>>({ children, title = 
                         <Label htmlFor={`${filter.key}-filter`} className="text-sm font-medium">
                           {filter.label}
                         </Label>
-                        <Select value={filterValues[filter.key]} onValueChange={(value) => updateFilter(filter.key, value as string)}>
+                        <Select
+                          value={filterValues[filter.key]}
+                          onValueChange={(value) => updateFilter(filter.key, value as string)}
+                        >
                           <SelectTrigger id={`${filter.key}-filter`} className="w-full">
                             <SelectValue placeholder={`All ${filter.label.toLowerCase()}`} />
                           </SelectTrigger>
@@ -271,7 +315,12 @@ export function SelectDialog<T extends Record<string, any>>({ children, title = 
                 const value = filterValues[filter.key];
                 if (value === 'all') return null;
                 return (
-                  <Badge key={filter.key} variant="secondary" className="gap-1 cursor-pointer hover:bg-secondary/80" onClick={() => updateFilter(filter.key, 'all')}>
+                  <Badge
+                    key={filter.key}
+                    variant="secondary"
+                    className="gap-1 cursor-pointer hover:bg-secondary/80"
+                    onClick={() => updateFilter(filter.key, 'all')}
+                  >
                     {filter.label}: {value}
                     <X className="w-3 h-3" />
                   </Badge>
@@ -300,7 +349,9 @@ export function SelectDialog<T extends Record<string, any>>({ children, title = 
           ) : isError ? (
             <div className="flex flex-col items-center justify-center h-full gap-3 text-center px-6">
               <p className="text-sm font-medium text-destructive">Error loading data</p>
-              <p className="text-xs text-muted-foreground">{error instanceof Error ? error.message : 'An error occurred'}</p>
+              <p className="text-xs text-muted-foreground">
+                {error instanceof Error ? error.message : 'An error occurred'}
+              </p>
               {onRefetch && (
                 <Button variant="destructive" size="sm" onClick={onRefetch}>
                   Try Again
@@ -318,7 +369,22 @@ export function SelectDialog<T extends Record<string, any>>({ children, title = 
               )}
             </div>
           ) : (
-            <AgGridReact<T> ref={gridRef} rowData={filteredData} columnDefs={columnDefs} defaultColDef={defaultColDef} gridOptions={gridOptions} animateRows={true} suppressMenuHide={true} theme={theme} loading={isLoading} isFullWidthRow={() => true} fullWidthCellRenderer={FullWidthCellRenderer} rowHeight={rowHeight} onGridReady={onGridReady} domLayout="normal" />
+            <AgGridReact<T>
+              ref={gridRef}
+              rowData={filteredData}
+              columnDefs={columnDefs}
+              defaultColDef={defaultColDef}
+              gridOptions={gridOptions}
+              animateRows={true}
+              suppressMenuHide={true}
+              theme={theme}
+              loading={isLoading}
+              isFullWidthRow={() => true}
+              fullWidthCellRenderer={FullWidthCellRenderer}
+              rowHeight={rowHeight}
+              onGridReady={onGridReady}
+              domLayout="normal"
+            />
           )}
         </div>
       </DialogContent>

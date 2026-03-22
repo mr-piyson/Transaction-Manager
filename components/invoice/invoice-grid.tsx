@@ -2,10 +2,23 @@
 
 import { useCallback, useMemo, useRef, useState } from 'react';
 import { AgGridReact } from 'ag-grid-react';
-import { type ColDef, type CellValueChangedEvent, type ICellRendererParams, type GridApi, ModuleRegistry, AllCommunityModule } from 'ag-grid-community';
+import {
+  type ColDef,
+  type CellValueChangedEvent,
+  type ICellRendererParams,
+  type GridApi,
+  ModuleRegistry,
+  AllCommunityModule,
+} from 'ag-grid-community';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { Trash2, MoreHorizontal, ChevronDown, ChevronRight, FolderOpen, Package, Copy, MoveRight } from 'lucide-react';
 import { InvoiceRow, InvoiceLine, InvoiceGroup } from '@/types/generics';
 
@@ -97,8 +110,15 @@ function TypeCellRenderer(props: ICellRendererParams<FlatRow>) {
 
   if (data.type === 'group') {
     return (
-      <div className="flex items-center gap-2 cursor-pointer h-full" onClick={() => context.onToggleGroupExpanded(data.id)}>
-        {data.expanded ? <ChevronDown className="h-4 w-4 text-muted-foreground" /> : <ChevronRight className="h-4 w-4 text-muted-foreground" />}
+      <div
+        className="flex items-center gap-2 cursor-pointer h-full"
+        onClick={() => context.onToggleGroupExpanded(data.id)}
+      >
+        {data.expanded ? (
+          <ChevronDown className="h-4 w-4 text-muted-foreground" />
+        ) : (
+          <ChevronRight className="h-4 w-4 text-muted-foreground" />
+        )}
         <FolderOpen className="h-4 w-4 text-primary" />
         <span className="font-medium">{data.groupName}</span>
         <Badge variant="secondary" className="ml-1 text-xs">
@@ -161,7 +181,9 @@ function ActionsCellRenderer(props: ICellRendererParams<FlatRow>) {
             }
           ></DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuItem onClick={() => context.onToggleGroupExpanded(data.id)}>{data.expanded ? 'Collapse Group' : 'Expand Group'}</DropdownMenuItem>
+            <DropdownMenuItem onClick={() => context.onToggleGroupExpanded(data.id)}>
+              {data.expanded ? 'Collapse Group' : 'Expand Group'}
+            </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem className="text-destructive" onClick={() => context.onRemoveGroup(data.id)}>
               <Trash2 className="h-4 w-4 mr-2" />
@@ -219,7 +241,14 @@ function ActionsCellRenderer(props: ICellRendererParams<FlatRow>) {
   );
 }
 
-export function InvoiceGrid({ items, onUpdateLine, onRemoveLine, onRemoveGroup, onToggleGroupExpanded, groups }: InvoiceGridProps) {
+export function InvoiceGrid({
+  items,
+  onUpdateLine,
+  onRemoveLine,
+  onRemoveGroup,
+  onToggleGroupExpanded,
+  groups,
+}: InvoiceGridProps) {
   const gridRef = useRef<AgGridReact>(null);
   const [gridApi, setGridApi] = useState<GridApi | null>(null);
 
@@ -384,7 +413,21 @@ export function InvoiceGrid({ items, onUpdateLine, onRemoveLine, onRemoveGroup, 
 
   return (
     <div className="w-full h-[400px] border rounded-lg overflow-hidden">
-      <AgGridReact ref={gridRef} rowData={rowData} columnDefs={columnDefs} defaultColDef={defaultColDef} onCellValueChanged={onCellValueChanged} onGridReady={onGridReady} getRowClass={getRowClass} getRowId={getRowId} context={context} rowHeight={48} headerHeight={44} animateRows={true} suppressRowClickSelection={true} />
+      <AgGridReact
+        ref={gridRef}
+        rowData={rowData}
+        columnDefs={columnDefs}
+        defaultColDef={defaultColDef}
+        onCellValueChanged={onCellValueChanged}
+        onGridReady={onGridReady}
+        getRowClass={getRowClass}
+        getRowId={getRowId}
+        context={context}
+        rowHeight={48}
+        headerHeight={44}
+        animateRows={true}
+        suppressRowClickSelection={true}
+      />
     </div>
   );
 }

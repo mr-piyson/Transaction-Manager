@@ -8,7 +8,14 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+  DialogDescription,
+} from '@/components/ui/dialog';
 import { Empty } from '@/components/ui/empty';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -84,7 +91,34 @@ export interface SelectionDialogProps<T extends Record<string, any>> {
 
 // ─── Component ───────────────────────────────────────────────────────────────
 
-export function SelectionDialog<T extends Record<string, any>>({ open, onOpenChange, title = 'Select items', description, data = [], isLoading = false, isError = false, error = null, onRefetch, getItemId, mode = 'multi', selectedIds: controlledSelectedIds, onSelect, onCancel, searchPlaceholder = 'Search...', searchFields, filters = [], cardRenderer, emptyIcon, emptyTitle = 'No items found', emptyDescription = 'Try adjusting your search or filters', rowHeight = 'auto', useTheme = false, itemName = 'items', confirmLabel = 'Confirm', cancelLabel = 'Cancel' }: SelectionDialogProps<T>) {
+export function SelectionDialog<T extends Record<string, any>>({
+  open,
+  onOpenChange,
+  title = 'Select items',
+  description,
+  data = [],
+  isLoading = false,
+  isError = false,
+  error = null,
+  onRefetch,
+  getItemId,
+  mode = 'multi',
+  selectedIds: controlledSelectedIds,
+  onSelect,
+  onCancel,
+  searchPlaceholder = 'Search...',
+  searchFields,
+  filters = [],
+  cardRenderer,
+  emptyIcon,
+  emptyTitle = 'No items found',
+  emptyDescription = 'Try adjusting your search or filters',
+  rowHeight = 'auto',
+  useTheme = false,
+  itemName = 'items',
+  confirmLabel = 'Confirm',
+  cancelLabel = 'Cancel',
+}: SelectionDialogProps<T>) {
   const isMobile = useIsMobile();
   const gridRef = useRef<any>(null);
   const cardRef = useRef<HTMLDivElement>(null);
@@ -94,7 +128,9 @@ export function SelectionDialog<T extends Record<string, any>>({ open, onOpenCha
   // Internal selection state (mirrors controlled if provided)
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set(controlledSelectedIds ?? []));
   const [searchTerm, setSearchTerm] = useState('');
-  const [filterValues, setFilterValues] = useState<Record<string, string>>(Object.fromEntries(filters.map((f) => [f.key, 'all'])));
+  const [filterValues, setFilterValues] = useState<Record<string, string>>(
+    Object.fromEntries(filters.map((f) => [f.key, 'all'])),
+  );
   const [cardHeight, setCardHeight] = useState(0);
 
   // Sync controlled selectedIds when dialog opens
@@ -112,7 +148,9 @@ export function SelectionDialog<T extends Record<string, any>>({ open, onOpenCha
   const filterOptions = useMemo(() => {
     return filters.reduce(
       (acc, filter) => {
-        const values = new Set<string>(data.map((item) => filter.getValue(item)).filter((v): v is string => Boolean(v)));
+        const values = new Set<string>(
+          data.map((item) => filter.getValue(item)).filter((v): v is string => Boolean(v)),
+        );
         acc[filter.key] = Array.from(values).sort();
         return acc;
       },
@@ -182,7 +220,10 @@ export function SelectionDialog<T extends Record<string, any>>({ open, onOpenCha
 
   // ─── Active Filters ───────────────────────────────────────────────────────
 
-  const activeFiltersCount = useMemo(() => Object.values(filterValues).filter((v) => v !== 'all').length, [filterValues]);
+  const activeFiltersCount = useMemo(
+    () => Object.values(filterValues).filter((v) => v !== 'all').length,
+    [filterValues],
+  );
 
   const clearAllFilters = () => {
     setSearchTerm('');
@@ -232,7 +273,15 @@ export function SelectionDialog<T extends Record<string, any>>({ open, onOpenCha
       const isFirst = props.rowIndex === 0;
 
       return (
-        <div ref={isFirst && rowHeight === 'auto' ? cardRef : null} onClick={() => toggleItem(item)} className={cn('cursor-pointer transition-colors w-full', 'ring-inset', isSelected ? 'ring-2 ring-primary rounded-lg bg-primary/5' : 'hover:bg-muted/50')}>
+        <div
+          ref={isFirst && rowHeight === 'auto' ? cardRef : null}
+          onClick={() => toggleItem(item)}
+          className={cn(
+            'cursor-pointer transition-colors w-full',
+            'ring-inset',
+            isSelected ? 'ring-2 ring-primary rounded-lg bg-primary/5' : 'hover:bg-muted/50',
+          )}
+        >
           {cardRenderer(item, isSelected)}
         </div>
       );
@@ -283,9 +332,19 @@ export function SelectionDialog<T extends Record<string, any>>({ open, onOpenCha
           <div className="flex gap-2">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
-              <Input placeholder={searchPlaceholder} value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="pl-10 pr-9" />
+              <Input
+                placeholder={searchPlaceholder}
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10 pr-9"
+              />
               {searchTerm && (
-                <Button variant="ghost" size="icon" className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7" onClick={() => setSearchTerm('')}>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7"
+                  onClick={() => setSearchTerm('')}
+                >
                   <X className="w-3.5 h-3.5" />
                 </Button>
               )}
@@ -299,7 +358,10 @@ export function SelectionDialog<T extends Record<string, any>>({ open, onOpenCha
                       <Filter className="w-4 h-4" />
                       <span className="hidden sm:inline">Filters</span>
                       {activeFiltersCount > 0 && (
-                        <Badge variant="destructive" className="absolute -top-2 -right-2 h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs">
+                        <Badge
+                          variant="destructive"
+                          className="absolute -top-2 -right-2 h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs"
+                        >
                           {activeFiltersCount}
                         </Badge>
                       )}
@@ -322,7 +384,10 @@ export function SelectionDialog<T extends Record<string, any>>({ open, onOpenCha
                         <Label htmlFor={`${filter.key}-filter`} className="text-sm">
                           {filter.label}
                         </Label>
-                        <Select value={filterValues[filter.key]} onValueChange={(v) => updateFilter(filter.key, v as string)}>
+                        <Select
+                          value={filterValues[filter.key]}
+                          onValueChange={(v) => updateFilter(filter.key, v as string)}
+                        >
                           <SelectTrigger className="w-full" id={`${filter.key}-filter`}>
                             <SelectValue placeholder={`All ${filter.label.toLowerCase()}`} />
                           </SelectTrigger>
@@ -350,7 +415,12 @@ export function SelectionDialog<T extends Record<string, any>>({ open, onOpenCha
                 const value = filterValues[filter.key];
                 if (value === 'all') return null;
                 return (
-                  <Badge key={filter.key} variant="secondary" className="gap-1 cursor-pointer hover:bg-secondary/80 text-xs" onClick={() => updateFilter(filter.key, 'all')}>
+                  <Badge
+                    key={filter.key}
+                    variant="secondary"
+                    className="gap-1 cursor-pointer hover:bg-secondary/80 text-xs"
+                    onClick={() => updateFilter(filter.key, 'all')}
+                  >
                     {filter.label}: {value}
                     <X className="w-2.5 h-2.5" />
                   </Badge>
@@ -372,7 +442,12 @@ export function SelectionDialog<T extends Record<string, any>>({ open, onOpenCha
             </span>
 
             {mode === 'multi' && filteredData.length > 0 && (
-              <Button variant="ghost" size="sm" className="h-7 text-xs gap-1.5" onClick={allFilteredSelected ? deselectAll : selectAll}>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-7 text-xs gap-1.5"
+                onClick={allFilteredSelected ? deselectAll : selectAll}
+              >
                 {allFilteredSelected ? (
                   <>
                     <CheckSquare className="w-3.5 h-3.5" /> Deselect all
@@ -398,7 +473,9 @@ export function SelectionDialog<T extends Record<string, any>>({ open, onOpenCha
           {isError ? (
             <div className="flex flex-col items-center justify-center h-full gap-3 p-6 text-center">
               <p className="text-destructive font-semibold">Failed to load {itemName}</p>
-              <p className="text-sm text-muted-foreground">{error instanceof Error ? error.message : 'An unexpected error occurred'}</p>
+              <p className="text-sm text-muted-foreground">
+                {error instanceof Error ? error.message : 'An unexpected error occurred'}
+              </p>
               {onRefetch && (
                 <Button variant="destructive" size="sm" onClick={onRefetch}>
                   Try again
@@ -422,7 +499,22 @@ export function SelectionDialog<T extends Record<string, any>>({ open, onOpenCha
               )}
             </div>
           ) : (
-            <AgGridReact ref={gridRef} rowData={filteredData} columnDefs={columnDefs} defaultColDef={defaultColDef} gridOptions={gridOptions} animateRows suppressMenuHide theme={useTheme ? theme : undefined} loading={isLoading} isFullWidthRow={() => true} fullWidthCellRenderer={FullWidthCellRenderer} rowHeight={calculatedRowHeight} domLayout="normal" className="h-full w-full" />
+            <AgGridReact
+              ref={gridRef}
+              rowData={filteredData}
+              columnDefs={columnDefs}
+              defaultColDef={defaultColDef}
+              gridOptions={gridOptions}
+              animateRows
+              suppressMenuHide
+              theme={useTheme ? theme : undefined}
+              loading={isLoading}
+              isFullWidthRow={() => true}
+              fullWidthCellRenderer={FullWidthCellRenderer}
+              rowHeight={calculatedRowHeight}
+              domLayout="normal"
+              className="h-full w-full"
+            />
           )}
         </div>
 

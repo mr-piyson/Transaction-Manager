@@ -15,7 +15,18 @@ import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 // import db from "@/lib/database"; // uncomment when DB integration is needed
 
-import { type Locale, type TranslationKeys, COOKIE_NAME, COOKIE_MAX_AGE, LANGUAGE_CONFIG, AVAILABLE_LOCALES, loadLocale, translate, keyExists, parseLocale } from '@/i18n/config';
+import {
+  type Locale,
+  type TranslationKeys,
+  COOKIE_NAME,
+  COOKIE_MAX_AGE,
+  LANGUAGE_CONFIG,
+  AVAILABLE_LOCALES,
+  loadLocale,
+  translate,
+  keyExists,
+  parseLocale,
+} from '@/i18n/config';
 
 // ─── Cookie helpers ───────────────────────────────────────────────────────────
 
@@ -119,7 +130,10 @@ export async function setLocaleAction(locale: Locale): Promise<{ success: boolea
  *
  * TODO: uncomment the db call below once your schema includes a `locale` column.
  */
-export async function saveLocaleToDatabase(userId: string | number, locale: Locale): Promise<{ success: boolean; error?: string }> {
+export async function saveLocaleToDatabase(
+  userId: string | number,
+  locale: Locale,
+): Promise<{ success: boolean; error?: string }> {
   const parsed = z.coerce.number().int().positive().safeParse(userId);
   if (!parsed.success) {
     return { success: false, error: 'Invalid userId' };

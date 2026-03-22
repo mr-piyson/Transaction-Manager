@@ -18,20 +18,34 @@ function Tabs({ className, orientation = 'horizontal', ...props }: TabsPrimitive
   );
 }
 
-const tabsListVariants = cva('rounded-lg p-[3px] group-data-horizontal/tabs:h-8 data-[variant=line]:rounded-none group/tabs-list text-muted-foreground inline-flex w-fit items-center justify-center group-data-vertical/tabs:h-fit group-data-vertical/tabs:flex-col', {
-  variants: {
-    variant: {
-      default: 'bg-muted',
-      line: 'gap-1 bg-transparent',
+const tabsListVariants = cva(
+  'rounded-lg p-[3px] group-data-horizontal/tabs:h-8 data-[variant=line]:rounded-none group/tabs-list text-muted-foreground inline-flex w-fit items-center justify-center group-data-vertical/tabs:h-fit group-data-vertical/tabs:flex-col',
+  {
+    variants: {
+      variant: {
+        default: 'bg-muted',
+        line: 'gap-1 bg-transparent',
+      },
+    },
+    defaultVariants: {
+      variant: 'default',
     },
   },
-  defaultVariants: {
-    variant: 'default',
-  },
-});
+);
 
-function TabsList({ className, variant = 'default', ...props }: TabsPrimitive.List.Props & VariantProps<typeof tabsListVariants>) {
-  return <TabsPrimitive.List data-slot="tabs-list" data-variant={variant} className={cn(tabsListVariants({ variant }), className)} {...props} />;
+function TabsList({
+  className,
+  variant = 'default',
+  ...props
+}: TabsPrimitive.List.Props & VariantProps<typeof tabsListVariants>) {
+  return (
+    <TabsPrimitive.List
+      data-slot="tabs-list"
+      data-variant={variant}
+      className={cn(tabsListVariants({ variant }), className)}
+      {...props}
+    />
+  );
 }
 
 function TabsTrigger({ className, ...props }: TabsPrimitive.Tab.Props) {
@@ -51,7 +65,9 @@ function TabsTrigger({ className, ...props }: TabsPrimitive.Tab.Props) {
 }
 
 function TabsContent({ className, ...props }: TabsPrimitive.Panel.Props) {
-  return <TabsPrimitive.Panel data-slot="tabs-content" className={cn('text-sm flex-1 outline-none', className)} {...props} />;
+  return (
+    <TabsPrimitive.Panel data-slot="tabs-content" className={cn('text-sm flex-1 outline-none', className)} {...props} />
+  );
 }
 
 export { Tabs, TabsList, TabsTrigger, TabsContent, tabsListVariants };

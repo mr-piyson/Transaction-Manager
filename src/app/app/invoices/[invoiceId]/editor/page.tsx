@@ -20,7 +20,14 @@ export default function InvoiceEditor(props: InvoiceEditorProps) {
   return (
     <>
       {/* Header */}
-      <header className={cn('w-full z-50 transition-all duration-300 print:hidden', 'sticky top-0', 'bg-background/95 backdrop-blur-md supports-backdrop-filter:bg-background/60', 'border-b border-border')}>
+      <header
+        className={cn(
+          'w-full z-50 transition-all duration-300 print:hidden',
+          'sticky top-0',
+          'bg-background/95 backdrop-blur-md supports-backdrop-filter:bg-background/60',
+          'border-b border-border',
+        )}
+      >
         {/* ── Row 1: Back + Invoice ID + Status ── */}
         <div className="flex items-center gap-2 px-2 pt-2 pb-1">
           <Button variant="ghost" size="icon" className="shrink-0 text-muted-foreground h-8 w-8">
@@ -61,7 +68,14 @@ export default function InvoiceEditor(props: InvoiceEditorProps) {
           </div>
           <div className="flex flex-col px-2">
             <span className="text-[10px] text-muted-foreground uppercase tracking-wide">Due</span>
-            <span className={cn('text-sm font-semibold tabular-nums', 100 > 0 ? 'text-destructive' : 'text-success-foreground')}>{200}</span>
+            <span
+              className={cn(
+                'text-sm font-semibold tabular-nums',
+                100 > 0 ? 'text-destructive' : 'text-success-foreground',
+              )}
+            >
+              {200}
+            </span>
           </div>
         </div>
 
@@ -88,7 +102,11 @@ export default function InvoiceEditor(props: InvoiceEditorProps) {
           </Button>
 
           <PaymentDialog>
-            <Button size="sm" className="h-8 gap-1.5 text-xs bg-success-foreground/50 hover:bg-success-foreground/30 ml-auto" disabled={false}>
+            <Button
+              size="sm"
+              className="h-8 gap-1.5 text-xs bg-success-foreground/50 hover:bg-success-foreground/30 ml-auto"
+              disabled={false}
+            >
               <HandCoinsIcon size={13} />
               <span>Pay</span>
             </Button>

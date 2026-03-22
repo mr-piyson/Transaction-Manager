@@ -27,7 +27,9 @@ export function useAuth() {
 
       return result;
     } catch (error) {
-      const errorMessage = axios.isAxiosError(error) ? error.response?.data?.error || 'Failed to sign in' : 'An unexpected error occurred';
+      const errorMessage = axios.isAxiosError(error)
+        ? error.response?.data?.error || 'Failed to sign in'
+        : 'An unexpected error occurred';
       toast.error(errorMessage);
       return { success: false, error: errorMessage };
     } finally {
@@ -50,7 +52,9 @@ export function useAuth() {
 
       return res;
     } catch (error) {
-      const errorMessage = axios.isAxiosError(error) ? error.response?.data?.error || 'Failed to create account' : 'An unexpected error occurred';
+      const errorMessage = axios.isAxiosError(error)
+        ? error.response?.data?.error || 'Failed to create account'
+        : 'An unexpected error occurred';
       toast.error(errorMessage);
       return { success: false, error: errorMessage };
     } finally {
@@ -66,7 +70,9 @@ export function useAuth() {
       router.push('/auth');
       router.refresh();
     } catch (error) {
-      const errorMessage = axios.isAxiosError(error) ? error.response?.data?.error || 'Failed to sign out' : 'An unexpected error occurred';
+      const errorMessage = axios.isAxiosError(error)
+        ? error.response?.data?.error || 'Failed to sign out'
+        : 'An unexpected error occurred';
       toast.error(errorMessage);
     } finally {
       setLoading(false);

@@ -136,8 +136,17 @@ export default function InventoryItemClientPage() {
           </div>
 
           <div className="flex items-center gap-3">
-            <Button variant="ghost" disabled={deleteMutation.isPending} onClick={() => deleteMutation.mutate()} className="text-destructive hover:bg-destructive/10 hover:text-destructive">
-              {deleteMutation.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Trash2 className="mr-2 h-4 w-4" />}
+            <Button
+              variant="ghost"
+              disabled={deleteMutation.isPending}
+              onClick={() => deleteMutation.mutate()}
+              className="text-destructive hover:bg-destructive/10 hover:text-destructive"
+            >
+              {deleteMutation.isPending ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <Trash2 className="mr-2 h-4 w-4" />
+              )}
               Delete Item
             </Button>
           </div>
@@ -168,7 +177,13 @@ export default function InventoryItemClientPage() {
 
                     <div className="grid gap-2">
                       <Label htmlFor="description">Detailed Description</Label>
-                      <Textarea name="description" id="description" defaultValue={item.description ?? ''} placeholder="Add product specifications or notes..." className="min-h-30" />
+                      <Textarea
+                        name="description"
+                        id="description"
+                        defaultValue={item.description ?? ''}
+                        placeholder="Add product specifications or notes..."
+                        className="min-h-30"
+                      />
                     </div>
                   </div>
 
@@ -177,7 +192,14 @@ export default function InventoryItemClientPage() {
                       <Label htmlFor="purchasePrice">Cost (Purchase Price)</Label>
                       <div className="relative">
                         <span className="absolute left-3 top-2.5 text-muted-foreground text-sm">$</span>
-                        <Input className="pl-7" name="purchasePrice" id="purchasePrice" type="number" defaultValue={item.purchasePrice} required />
+                        <Input
+                          className="pl-7"
+                          name="purchasePrice"
+                          id="purchasePrice"
+                          type="number"
+                          defaultValue={item.purchasePrice}
+                          required
+                        />
                       </div>
                     </div>
 
@@ -185,19 +207,35 @@ export default function InventoryItemClientPage() {
                       <Label htmlFor="salesPrice">Retail (Sales Price)</Label>
                       <div className="relative">
                         <span className="absolute left-3 top-2.5 text-muted-foreground text-sm">$</span>
-                        <Input className="pl-7" name="salesPrice" id="salesPrice" type="number" defaultValue={item.salesPrice} required />
+                        <Input
+                          className="pl-7"
+                          name="salesPrice"
+                          id="salesPrice"
+                          type="number"
+                          defaultValue={item.salesPrice}
+                          required
+                        />
                       </div>
                     </div>
                   </div>
 
                   <div className="grid gap-2">
                     <Label htmlFor="image">External Image URL</Label>
-                    <Input name="image" id="image" defaultValue={item.image ?? ''} placeholder="https://example.com/image.jpg" />
+                    <Input
+                      name="image"
+                      id="image"
+                      defaultValue={item.image ?? ''}
+                      placeholder="https://example.com/image.jpg"
+                    />
                   </div>
 
                   <div className="pt-4 flex justify-end">
                     <Button type="submit" className="w-full md:w-auto px-8" disabled={updateMutation.isPending}>
-                      {updateMutation.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
+                      {updateMutation.isPending ? (
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      ) : (
+                        <Save className="mr-2 h-4 w-4" />
+                      )}
                       Update Product
                     </Button>
                   </div>
@@ -210,7 +248,9 @@ export default function InventoryItemClientPage() {
           <div className="space-y-6">
             <Card className="overflow-hidden border-dashed">
               <CardHeader className="py-3 bg-muted/30">
-                <CardTitle className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Product Preview</CardTitle>
+                <CardTitle className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  Product Preview
+                </CardTitle>
               </CardHeader>
               <CardContent className="flex flex-col items-center justify-center p-0">
                 {item.image ? (

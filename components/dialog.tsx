@@ -4,7 +4,15 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { toast } from 'sonner';
 import { useMutation } from '@tanstack/react-query';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -19,7 +27,17 @@ import { cn } from '@/lib/utils';
 // TYPES & INTERFACES
 // ============================================================================
 
-export type FieldType = 'text' | 'number' | 'email' | 'password' | 'select' | 'date' | 'image' | 'file' | 'textarea' | 'custom';
+export type FieldType =
+  | 'text'
+  | 'number'
+  | 'email'
+  | 'password'
+  | 'select'
+  | 'date'
+  | 'image'
+  | 'file'
+  | 'textarea'
+  | 'custom';
 
 export type FieldWidth = 'full' | 'half';
 
@@ -79,7 +97,13 @@ export interface CustomFieldSchema<T = any> extends BaseFieldSchema<T> {
   }>;
 }
 
-export type FieldSchema<T = any> = TextFieldSchema<T> | NumberFieldSchema<T> | SelectFieldSchema<T> | DateFieldSchema<T> | FileFieldSchema<T> | CustomFieldSchema<T>;
+export type FieldSchema<T = any> =
+  | TextFieldSchema<T>
+  | NumberFieldSchema<T>
+  | SelectFieldSchema<T>
+  | DateFieldSchema<T>
+  | FileFieldSchema<T>
+  | CustomFieldSchema<T>;
 
 // ============================================================================
 // TOAST CONFIG
@@ -163,8 +187,16 @@ const generateZodSchema = <T,>(fields: FieldSchema<T>[]) => {
         fieldSchema = z.string();
         if (field.required) fieldSchema = (fieldSchema as z.ZodString).min(1, `${field.label} is required`);
         if (field.type === 'email') fieldSchema = (fieldSchema as z.ZodString).email('Invalid email address');
-        if (textField.minLength) fieldSchema = (fieldSchema as z.ZodString).min(textField.minLength, `Minimum ${textField.minLength} characters required`);
-        if (textField.maxLength) fieldSchema = (fieldSchema as z.ZodString).max(textField.maxLength, `Maximum ${textField.maxLength} characters allowed`);
+        if (textField.minLength)
+          fieldSchema = (fieldSchema as z.ZodString).min(
+            textField.minLength,
+            `Minimum ${textField.minLength} characters required`,
+          );
+        if (textField.maxLength)
+          fieldSchema = (fieldSchema as z.ZodString).max(
+            textField.maxLength,
+            `Maximum ${textField.maxLength} characters allowed`,
+          );
         if (!field.required) fieldSchema = fieldSchema.optional().or(z.literal(''));
         break;
       }
@@ -190,7 +222,9 @@ const generateZodSchema = <T,>(fields: FieldSchema<T>[]) => {
       }
 
       case 'select':
-        fieldSchema = field.required ? z.string().min(1, `${field.label} is required`) : z.string().optional().or(z.literal(''));
+        fieldSchema = field.required
+          ? z.string().min(1, `${field.label} is required`)
+          : z.string().optional().or(z.literal(''));
         break;
 
       case 'date':
@@ -205,9 +239,13 @@ const generateZodSchema = <T,>(fields: FieldSchema<T>[]) => {
       case 'file': {
         const fileField = field as FileFieldSchema;
         if (fileField.multiple) {
-          fieldSchema = field.required ? z.array(z.instanceof(File)).min(1, `At least one ${field.label.toLowerCase()} is required`) : z.array(z.instanceof(File)).optional();
+          fieldSchema = field.required
+            ? z.array(z.instanceof(File)).min(1, `At least one ${field.label.toLowerCase()} is required`)
+            : z.array(z.instanceof(File)).optional();
         } else {
-          fieldSchema = field.required ? z.instanceof(File, { message: `${field.label} is required` }) : z.instanceof(File).optional().nullable();
+          fieldSchema = field.required
+            ? z.instanceof(File, { message: `${field.label} is required` })
+            : z.instanceof(File).optional().nullable();
         }
         break;
       }
@@ -272,7 +310,11 @@ const FilePreview: React.FC<{
               <p className="text-xs text-neutral-600 truncate">{file.name}</p>
             </div>
           )}
-          <button type="button" onClick={() => onRemove(Array.isArray(files) ? index : undefined)} className="absolute top-1 right-1 p-1 bg-white rounded-full shadow-sm opacity-0 group-hover:opacity-100 transition-opacity">
+          <button
+            type="button"
+            onClick={() => onRemove(Array.isArray(files) ? index : undefined)}
+            className="absolute top-1 right-1 p-1 bg-white rounded-full shadow-sm opacity-0 group-hover:opacity-100 transition-opacity"
+          >
             <X className="w-3 h-3" />
           </button>
         </div>
@@ -295,22 +337,50 @@ const renderField = <T,>(field: FieldSchema<T>, form: any, isSubmitting: boolean
     case 'email':
     case 'password':
       return (
-        <FieldWrapper label={field.label} required={field.required} description={field.description} error={error} className={wrapperClass}>
-          <Input type={field.type} placeholder={field.placeholder} disabled={isSubmitting} {...form.register(fieldName)} />
+        <FieldWrapper
+          label={field.label}
+          required={field.required}
+          description={field.description}
+          error={error}
+          className={wrapperClass}
+        >
+          <Input
+            type={field.type}
+            placeholder={field.placeholder}
+            disabled={isSubmitting}
+            {...form.register(fieldName)}
+          />
         </FieldWrapper>
       );
 
     case 'textarea':
       return (
-        <FieldWrapper label={field.label} required={field.required} description={field.description} error={error} className={wrapperClass}>
-          <textarea placeholder={field.placeholder} disabled={isSubmitting} className="flex min-h-20 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50" {...form.register(fieldName)} />
+        <FieldWrapper
+          label={field.label}
+          required={field.required}
+          description={field.description}
+          error={error}
+          className={wrapperClass}
+        >
+          <textarea
+            placeholder={field.placeholder}
+            disabled={isSubmitting}
+            className="flex min-h-20 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+            {...form.register(fieldName)}
+          />
         </FieldWrapper>
       );
 
     case 'number': {
       const numberField = field as NumberFieldSchema<T>;
       return (
-        <FieldWrapper label={field.label} required={field.required} description={field.description} error={error} className={wrapperClass}>
+        <FieldWrapper
+          label={field.label}
+          required={field.required}
+          description={field.description}
+          error={error}
+          className={wrapperClass}
+        >
           <Controller
             control={form.control}
             name={fieldName}
@@ -345,7 +415,13 @@ const renderField = <T,>(field: FieldSchema<T>, form: any, isSubmitting: boolean
     case 'select': {
       const selectField = field as SelectFieldSchema<T>;
       return (
-        <FieldWrapper label={field.label} required={field.required} description={field.description} error={error} className={wrapperClass}>
+        <FieldWrapper
+          label={field.label}
+          required={field.required}
+          description={field.description}
+          error={error}
+          className={wrapperClass}
+        >
           <Controller
             control={form.control}
             name={fieldName}
@@ -370,7 +446,13 @@ const renderField = <T,>(field: FieldSchema<T>, form: any, isSubmitting: boolean
 
     case 'date':
       return (
-        <FieldWrapper label={field.label} required={field.required} description={field.description} error={error} className={wrapperClass}>
+        <FieldWrapper
+          label={field.label}
+          required={field.required}
+          description={field.description}
+          error={error}
+          className={wrapperClass}
+        >
           <Controller
             control={form.control}
             name={fieldName}
@@ -378,14 +460,24 @@ const renderField = <T,>(field: FieldSchema<T>, form: any, isSubmitting: boolean
               <Popover>
                 <PopoverTrigger
                   render={
-                    <Button variant="outline" disabled={isSubmitting} className={cn('w-full pl-3 text-left font-normal', !f.value && 'text-muted-foreground')}>
+                    <Button
+                      variant="outline"
+                      disabled={isSubmitting}
+                      className={cn('w-full pl-3 text-left font-normal', !f.value && 'text-muted-foreground')}
+                    >
                       {f.value ? format(f.value, 'PPP') : <span>{field.placeholder || 'Pick a date'}</span>}
                       <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                     </Button>
                   }
                 />
                 <PopoverContent className="w-auto p-0" align="start">
-                  <Calendar mode="single" selected={f.value} onSelect={f.onChange} disabled={isSubmitting} initialFocus />
+                  <Calendar
+                    mode="single"
+                    selected={f.value}
+                    onSelect={f.onChange}
+                    disabled={isSubmitting}
+                    initialFocus
+                  />
                 </PopoverContent>
               </Popover>
             )}
@@ -397,17 +489,31 @@ const renderField = <T,>(field: FieldSchema<T>, form: any, isSubmitting: boolean
     case 'file': {
       const fileField = field as FileFieldSchema<T>;
       return (
-        <FieldWrapper label={field.label} required={field.required} description={field.description} error={error} className={wrapperClass}>
+        <FieldWrapper
+          label={field.label}
+          required={field.required}
+          description={field.description}
+          error={error}
+          className={wrapperClass}
+        >
           <Controller
             control={form.control}
             name={fieldName}
             render={({ field: f }) => (
               <div>
-                <label htmlFor={fieldName} className={cn('flex items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer hover:bg-card transition-colors', isSubmitting && 'opacity-50 cursor-not-allowed')}>
+                <label
+                  htmlFor={fieldName}
+                  className={cn(
+                    'flex items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer hover:bg-card transition-colors',
+                    isSubmitting && 'opacity-50 cursor-not-allowed',
+                  )}
+                >
                   <div className="flex flex-col items-center justify-center">
                     <Upload className="w-8 h-8 mb-2 text-neutral-400" />
                     <p className="text-sm text-neutral-600">{field.placeholder || 'Click to upload'}</p>
-                    {fileField.maxSize && <p className="text-xs text-neutral-400 mt-1">Max size: {fileField.maxSize}MB</p>}
+                    {fileField.maxSize && (
+                      <p className="text-xs text-neutral-400 mt-1">Max size: {fileField.maxSize}MB</p>
+                    )}
                   </div>
                   <input
                     id={fieldName}
@@ -451,8 +557,20 @@ const renderField = <T,>(field: FieldSchema<T>, form: any, isSubmitting: boolean
       const customField = field as CustomFieldSchema<T>;
       const CustomComponent = customField.component;
       return (
-        <FieldWrapper label={field.label} required={field.required} description={field.description} error={error} className={wrapperClass}>
-          <Controller control={form.control} name={fieldName} render={({ field: f, fieldState }) => <CustomComponent value={f.value} onChange={f.onChange} error={fieldState.error?.message} />} />
+        <FieldWrapper
+          label={field.label}
+          required={field.required}
+          description={field.description}
+          error={error}
+          className={wrapperClass}
+        >
+          <Controller
+            control={form.control}
+            name={fieldName}
+            render={({ field: f, fieldState }) => (
+              <CustomComponent value={f.value} onChange={f.onChange} error={fieldState.error?.message} />
+            )}
+          />
         </FieldWrapper>
       );
     }
@@ -466,7 +584,8 @@ const renderField = <T,>(field: FieldSchema<T>, form: any, isSubmitting: boolean
 // HELPERS
 // ============================================================================
 
-const resolveMessage = <T,>(msg: string | ((val: T) => string) | undefined, val: T, fallback: string) => (typeof msg === 'function' ? msg(val) : (msg ?? fallback));
+const resolveMessage = <T,>(msg: string | ((val: T) => string) | undefined, val: T, fallback: string) =>
+  typeof msg === 'function' ? msg(val) : (msg ?? fallback);
 
 const extractErrorMessage = (error: unknown): string => {
   if (!error) return 'An unexpected error occurred';
@@ -483,7 +602,22 @@ const extractErrorMessage = (error: unknown): string => {
 // MAIN COMPONENT
 // ============================================================================
 
-export const UniversalDialog = <TData = any, TVariables = Partial<TData>, TError = Error>({ open, onOpenChange, title, description, fields, submitLabel = 'Submit', cancelLabel = 'Cancel', mutationFn, onSuccess, onError, transformData, toasts, closeOnError = true, children }: UniversalDialogProps<TData, TVariables, TError>) => {
+export const UniversalDialog = <TData = any, TVariables = Partial<TData>, TError = Error>({
+  open,
+  onOpenChange,
+  title,
+  description,
+  fields,
+  submitLabel = 'Submit',
+  cancelLabel = 'Cancel',
+  mutationFn,
+  onSuccess,
+  onError,
+  transformData,
+  toasts,
+  closeOnError = true,
+  children,
+}: UniversalDialogProps<TData, TVariables, TError>) => {
   const isControlled = open !== undefined;
   const [internalOpen, setInternalOpen] = useState(false);
   const effectiveOpen = isControlled ? open : internalOpen;
@@ -610,7 +744,9 @@ export const UniversalDialog = <TData = any, TVariables = Partial<TData>, TError
             {groupedFields.map((row, rowIndex) => (
               <div key={rowIndex} className="flex gap-4 mb-4">
                 {row.map((field) => (
-                  <React.Fragment key={String(field.name)}>{renderField<TData>(field, form, isSubmitting)}</React.Fragment>
+                  <React.Fragment key={String(field.name)}>
+                    {renderField<TData>(field, form, isSubmitting)}
+                  </React.Fragment>
                 ))}
               </div>
             ))}

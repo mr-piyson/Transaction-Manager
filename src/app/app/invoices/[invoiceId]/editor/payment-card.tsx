@@ -34,7 +34,11 @@ export default function PaymentCard({ payment }: { payment: Payment }) {
       <span className="text-sm font-bold text-success-foreground tabular-nums">{Money.format(payment.amount)}</span>
 
       {/* Actions */}
-      <Button variant="ghost" size="icon" className="w-7 h-7 text-muted-foreground hover:text-destructive opacity-0 group-hover:opacity-100 transition-opacity">
+      <Button
+        variant="ghost"
+        size="icon"
+        className="w-7 h-7 text-muted-foreground hover:text-destructive opacity-0 group-hover:opacity-100 transition-opacity"
+      >
         <Trash2 className="w-3.5 h-3.5" />
       </Button>
     </div>

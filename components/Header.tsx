@@ -18,11 +18,29 @@ interface HeaderProps {
   className?: string;
 }
 
-export function Header({ title, icon, leftContent, rightContent, showBorder = true, sticky = true, transparent = false, showBackButton = false, className }: HeaderProps) {
+export function Header({
+  title,
+  icon,
+  leftContent,
+  rightContent,
+  showBorder = true,
+  sticky = true,
+  transparent = false,
+  showBackButton = false,
+  className,
+}: HeaderProps) {
   const router = useRouter();
 
   return (
-    <header className={cn('w-full z-50 transition-all duration-300 print:hidden', sticky && 'sticky top-0', transparent ? 'bg-transparent' : 'bg-background/95 backdrop-blur-md supports-backdrop-filter:bg-background/60', showBorder && 'border-b border-border', className)}>
+    <header
+      className={cn(
+        'w-full z-50 transition-all duration-300 print:hidden',
+        sticky && 'sticky top-0',
+        transparent ? 'bg-transparent' : 'bg-background/95 backdrop-blur-md supports-backdrop-filter:bg-background/60',
+        showBorder && 'border-b border-border',
+        className,
+      )}
+    >
       <div className="mx-auto px-4 sm:px-6">
         <div className="flex h-16 items-center justify-between gap-4">
           {/* Left Section */}

@@ -89,8 +89,19 @@ export function SplashScreen(props: { children: React.ReactNode; minimumLoadingT
     <>
       <AnimatePresence mode="wait">
         {loading ? (
-          <motion.div key="splash" initial={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.5 }} className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-background">
-            <motion.div initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ duration: 0.5 }} className="flex w-full max-w-md flex-col items-center gap-4 px-4">
+          <motion.div
+            key="splash"
+            initial={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.5 }}
+            className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-background"
+          >
+            <motion.div
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ duration: 0.5 }}
+              className="flex w-full max-w-md flex-col items-center gap-4 px-4"
+            >
               <Logo className="size-64" />
               <h1 className="text-2xl font-bold">Loading your application</h1>
 
@@ -108,7 +119,13 @@ export function SplashScreen(props: { children: React.ReactNode; minimumLoadingT
 
       <AnimatePresence>
         {!loading && (
-          <motion.div key="content" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5 }} className="h-full">
+          <motion.div
+            key="content"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.5 }}
+            className="h-full"
+          >
             {props.children}
           </motion.div>
         )}

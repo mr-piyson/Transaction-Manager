@@ -10,7 +10,13 @@ function Breadcrumb({ className, ...props }: React.ComponentProps<'nav'>) {
 }
 
 function BreadcrumbList({ className, ...props }: React.ComponentProps<'ol'>) {
-  return <ol data-slot="breadcrumb-list" className={cn('text-muted-foreground gap-1.5 text-sm flex flex-wrap items-center wrap-break-word', className)} {...props} />;
+  return (
+    <ol
+      data-slot="breadcrumb-list"
+      className={cn('text-muted-foreground gap-1.5 text-sm flex flex-wrap items-center wrap-break-word', className)}
+      {...props}
+    />
+  );
 }
 
 function BreadcrumbItem({ className, ...props }: React.ComponentProps<'li'>) {
@@ -34,12 +40,27 @@ function BreadcrumbLink({ className, render, ...props }: useRender.ComponentProp
 }
 
 function BreadcrumbPage({ className, ...props }: React.ComponentProps<'span'>) {
-  return <span data-slot="breadcrumb-page" role="link" aria-disabled="true" aria-current="page" className={cn('text-foreground font-normal', className)} {...props} />;
+  return (
+    <span
+      data-slot="breadcrumb-page"
+      role="link"
+      aria-disabled="true"
+      aria-current="page"
+      className={cn('text-foreground font-normal', className)}
+      {...props}
+    />
+  );
 }
 
 function BreadcrumbSeparator({ children, className, ...props }: React.ComponentProps<'li'>) {
   return (
-    <li data-slot="breadcrumb-separator" role="presentation" aria-hidden="true" className={cn('[&>svg]:size-3.5', className)} {...props}>
+    <li
+      data-slot="breadcrumb-separator"
+      role="presentation"
+      aria-hidden="true"
+      className={cn('[&>svg]:size-3.5', className)}
+      {...props}
+    >
       {children ?? <ChevronRightIcon className="rtl:rotate-180" />}
     </li>
   );
@@ -47,11 +68,25 @@ function BreadcrumbSeparator({ children, className, ...props }: React.ComponentP
 
 function BreadcrumbEllipsis({ className, ...props }: React.ComponentProps<'span'>) {
   return (
-    <span data-slot="breadcrumb-ellipsis" role="presentation" aria-hidden="true" className={cn('size-5 [&>svg]:size-4 flex items-center justify-center', className)} {...props}>
+    <span
+      data-slot="breadcrumb-ellipsis"
+      role="presentation"
+      aria-hidden="true"
+      className={cn('size-5 [&>svg]:size-4 flex items-center justify-center', className)}
+      {...props}
+    >
       <MoreHorizontalIcon />
       <span className="sr-only">More</span>
     </span>
   );
 }
 
-export { Breadcrumb, BreadcrumbList, BreadcrumbItem, BreadcrumbLink, BreadcrumbPage, BreadcrumbSeparator, BreadcrumbEllipsis };
+export {
+  Breadcrumb,
+  BreadcrumbList,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+  BreadcrumbEllipsis,
+};

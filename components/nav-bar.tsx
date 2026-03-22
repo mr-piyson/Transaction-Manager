@@ -45,7 +45,14 @@ export function BottomNavigation() {
           const isActive = item.href === '/app' ? pathname === '/app' : pathname.startsWith(item.href);
 
           return (
-            <Link key={item.name} href={item.href} className={cn('inline-flex flex-col items-center justify-center transition-colors', isActive ? 'text-primary' : 'text-muted-foreground')}>
+            <Link
+              key={item.name}
+              href={item.href}
+              className={cn(
+                'inline-flex flex-col items-center justify-center transition-colors',
+                isActive ? 'text-primary' : 'text-muted-foreground',
+              )}
+            >
               <Icon className={cn('w-5 h-5 mb-1', isActive && 'fill-primary/10')} />
               <span className="text-[10px]">{item.name}</span>
             </Link>

@@ -13,7 +13,10 @@ export function CustomerCard({ data, className, ...props }: CustomerCardProps) {
   const { name, phone, id, address } = data;
 
   return (
-    <div className={cn('flex h-18 items-center gap-3 p-3 transition-colors hover:bg-accent/50 cursor-pointer', className)} {...props}>
+    <div
+      className={cn('flex h-18 items-center gap-3 p-3 transition-colors hover:bg-accent/50 cursor-pointer', className)}
+      {...props}
+    >
       <Avatar className="size-11 rounded-lg shrink-0 after:border-0">
         <AvatarFallback className={cn('rounded-lg transition-colors')}>
           <User2 className="size-6" />

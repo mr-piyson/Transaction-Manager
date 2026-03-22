@@ -69,7 +69,16 @@ export const alert = {
 
 // components/providers/alert-provider.tsx
 
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 
 import { CheckCircle2, XCircle, AlertTriangle, Info, Trash2 } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -166,7 +175,12 @@ export function AlertProvider({ children }: { children: ReactNode }) {
           <AlertDialogHeader>
             <AlertDialogTitle className="flex items-center gap-2">{opts?.title}</AlertDialogTitle>
 
-            {opts?.description && <AlertDialogDescription className="w-full " render={<div>{opts.description}</div>}></AlertDialogDescription>}
+            {opts?.description && (
+              <AlertDialogDescription
+                className="w-full "
+                render={<div>{opts.description}</div>}
+              ></AlertDialogDescription>
+            )}
           </AlertDialogHeader>
 
           <AlertDialogFooter>
@@ -174,7 +188,12 @@ export function AlertProvider({ children }: { children: ReactNode }) {
               {opts?.cancelText ?? 'Cancel'}
             </AlertDialogCancel>
 
-            <AlertDialogAction disabled={loading} data-destructive={opts?.destructive || undefined} className={cn(opts?.destructive && 'bg-destructive')} onClick={handleConfirm}>
+            <AlertDialogAction
+              disabled={loading}
+              data-destructive={opts?.destructive || undefined}
+              className={cn(opts?.destructive && 'bg-destructive')}
+              onClick={handleConfirm}
+            >
               <VariantIcon variant={opts?.variant} />
               {loading ? 'Processing...' : (opts?.confirmText ?? 'Confirm')}
             </AlertDialogAction>

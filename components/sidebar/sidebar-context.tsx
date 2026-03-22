@@ -10,7 +10,10 @@ export interface BadgeConfig {
   variant?: BadgeVariant;
 }
 
-export type NodeAction = { type: 'link'; href: string; exact?: boolean } | { type: 'button'; onClick: () => void } | { type: 'custom'; render: () => React.ReactNode };
+export type NodeAction =
+  | { type: 'link'; href: string; exact?: boolean }
+  | { type: 'button'; onClick: () => void }
+  | { type: 'custom'; render: () => React.ReactNode };
 
 export interface BaseNode {
   id: string;

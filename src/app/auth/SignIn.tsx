@@ -39,14 +39,25 @@ export default function SignInTab() {
             <label htmlFor="email" className="text-sm font-medium">
               Email
             </label>
-            <Input id="email" type="email" placeholder="user@example.com" className="border border-muted-foreground/50" {...register('email')} />
+            <Input
+              id="email"
+              type="email"
+              placeholder="user@example.com"
+              className="border border-muted-foreground/50"
+              {...register('email')}
+            />
             {errors.email && <p className="text-sm text-destructive">{errors.email.message}</p>}
           </div>
           <div className="space-y-1">
             <label htmlFor="password" className="text-sm font-medium">
               Password
             </label>
-            <Input id="password" type="password" className="border border-muted-foreground/50" {...register('password')} />
+            <Input
+              id="password"
+              type="password"
+              className="border border-muted-foreground/50"
+              {...register('password')}
+            />
             {errors.password && <p className="text-sm text-destructive">{errors.password.message}</p>}
           </div>
         </CardContent>

@@ -16,10 +16,20 @@ export function InvoiceCard({ data }: { data: InvoiceWithCustomer }) {
   const customerPhone = data.customer?.phone ?? 'No Phone';
 
   return (
-    <div onClick={() => router.push(`/app/invoices/${data.id}`)} className="flex h-18 items-center gap-4 px-4 py-3 hover:bg-accent/50 cursor-pointer transition-colors border-b last:border-0">
+    <div
+      onClick={() => router.push(`/app/invoices/${data.id}`)}
+      className="flex h-18 items-center gap-4 px-4 py-3 hover:bg-accent/50 cursor-pointer transition-colors border-b last:border-0"
+    >
       {/* Customer Avatar */}
       <Avatar className="size-11 rounded-lg shrink-0 after:border-0">
-        <AvatarFallback className={cn('rounded-lg transition-colors', data.status === 'APPROVED' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-400' : 'bg-muted text-muted-foreground')}>
+        <AvatarFallback
+          className={cn(
+            'rounded-lg transition-colors',
+            data.status === 'APPROVED'
+              ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-400'
+              : 'bg-muted text-muted-foreground',
+          )}
+        >
           <FileText className="size-5" />
         </AvatarFallback>
       </Avatar>

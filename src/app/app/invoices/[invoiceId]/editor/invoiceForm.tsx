@@ -8,9 +8,5 @@ type InvoiceFormProps = {
 };
 
 export default function InvoiceForm(props: InvoiceFormProps) {
-  return (
-    <div className="flex flex-col">
-      
-    </div>
-  );
+  return <div className="flex flex-col"></div>;
 }

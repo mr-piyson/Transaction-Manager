@@ -122,10 +122,16 @@ export function CustomerProfile({ customerId }: CustomerProfileProps) {
         <div className="lg:col-span-2">
           <Tabs defaultValue="invoices" orientation="horizontal">
             <TabsList className="w-full justify-start border-b bg-transparent h-auto p-0 mb-4">
-              <TabsTrigger value="invoices" className=" border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent pb-2 px-4">
+              <TabsTrigger
+                value="invoices"
+                className=" border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent pb-2 px-4"
+              >
                 Invoices
               </TabsTrigger>
-              <TabsTrigger value="activity" className=" border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent pb-2 px-4">
+              <TabsTrigger
+                value="activity"
+                className=" border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent pb-2 px-4"
+              >
                 Activity Log
               </TabsTrigger>
             </TabsList>
@@ -142,7 +148,9 @@ export function CustomerProfile({ customerId }: CustomerProfileProps) {
                           </div>
                           <div>
                             <p className="font-semibold text-sm">Invoice #{invoice.id}</p>
-                            <p className="text-xs text-muted-foreground">{new Date(invoice.date).toLocaleDateString()}</p>
+                            <p className="text-xs text-muted-foreground">
+                              {new Date(invoice.date).toLocaleDateString()}
+                            </p>
                           </div>
                         </div>
                         <div className="text-right">
@@ -165,7 +173,9 @@ export function CustomerProfile({ customerId }: CustomerProfileProps) {
 
             <TabsContent value="activity">
               <Card>
-                <CardContent className="p-6 text-sm text-muted-foreground text-center">Account created on {new Date(customer.createdAt).toLocaleDateString()}</CardContent>
+                <CardContent className="p-6 text-sm text-muted-foreground text-center">
+                  Account created on {new Date(customer.createdAt).toLocaleDateString()}
+                </CardContent>
               </Card>
             </TabsContent>
           </Tabs>
