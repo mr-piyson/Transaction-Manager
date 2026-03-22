@@ -24,7 +24,10 @@ function PriceRow({
   );
 }
 
-export function InventoryItemCard(props: { data: InventoryItem; onClick?: (data: InventoryItem) => void }) {
+export function InventoryItemCard(props: {
+  data: InventoryItem;
+  onClick?: (data: InventoryItem) => void;
+}) {
   if (!props.data) return null;
 
   const profit = props.data.salesPrice - props.data.purchasePrice;
@@ -41,7 +44,11 @@ export function InventoryItemCard(props: { data: InventoryItem; onClick?: (data:
     >
       {/* Avatar */}
       <Avatar className="size-11 after:border-0 shrink-0 ">
-        <AvatarImage src={props.data.image ?? undefined} alt={props.data.name} className="object-cover  rounded-lg" />
+        <AvatarImage
+          src={props.data.image ?? undefined}
+          alt={props.data.name}
+          className="object-cover  rounded-lg"
+        />
         <AvatarFallback className="border-0 rounded-lg bg-muted text-muted-foreground text-xs font-medium">
           {<Package size={23} className="" />}
         </AvatarFallback>
@@ -49,9 +56,13 @@ export function InventoryItemCard(props: { data: InventoryItem; onClick?: (data:
 
       {/* Name + description */}
       <div className="flex-1 min-w-0 overflow-hidden">
-        <p className="text-sm font-medium leading-tight truncate text-foreground">{props.data.name}</p>
+        <p className="text-sm font-medium leading-tight truncate text-foreground">
+          {props.data.name}
+        </p>
         {props.data.description && (
-          <p className="text-xs text-muted-foreground truncate mt-0.5 leading-tight">{props.data.description}</p>
+          <p className="text-xs text-muted-foreground truncate mt-0.5 leading-tight">
+            {props.data.description}
+          </p>
         )}
       </div>
 

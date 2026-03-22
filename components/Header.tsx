@@ -36,7 +36,9 @@ export function Header({
       className={cn(
         'w-full z-50 transition-all duration-300 print:hidden',
         sticky && 'sticky top-0',
-        transparent ? 'bg-transparent' : 'bg-background/95 backdrop-blur-md supports-backdrop-filter:bg-background/60',
+        transparent
+          ? 'bg-transparent'
+          : 'bg-background/95 backdrop-blur-md supports-backdrop-filter:bg-background/60',
         showBorder && 'border-b border-border',
         className,
       )}
@@ -46,7 +48,12 @@ export function Header({
           {/* Left Section */}
           <div className="flex items-center gap-3 flex-1 min-w-0">
             {showBackButton && (
-              <Button variant="ghost" size="icon" onClick={() => router.back()} className="mr-1">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => router.back()}
+                className="mr-1"
+              >
                 <ChevronLeft className="h-5 w-5" />
               </Button>
             )}
@@ -56,8 +63,12 @@ export function Header({
                 {title && (
                   <>
                     <div className="hidden sm:block bg-primary w-1 h-6 rounded-full" />
-                    {icon && <span className="text-muted-foreground">{icon}</span>}
-                    <h1 className="text-xl sm:text-2xl font-semibold capitalize truncate">{title}</h1>
+                    {icon && (
+                      <span className="text-muted-foreground">{icon}</span>
+                    )}
+                    <h1 className="text-xl sm:text-2xl font-semibold capitalize truncate">
+                      {title}
+                    </h1>
                   </>
                 )}
               </div>
@@ -65,7 +76,9 @@ export function Header({
           </div>
 
           {/* Right Section */}
-          {rightContent && <div className="flex items-center gap-2">{rightContent}</div>}
+          {rightContent && (
+            <div className="flex items-center gap-2">{rightContent}</div>
+          )}
         </div>
       </div>
     </header>

@@ -27,22 +27,22 @@ export const routes = {
       Icon: User,
     },
     {
+      label: 'Inventory Items',
       key: 'common.inventoryItems',
       href: '/app/inventory',
-      label: 'Inventory Items',
       Icon: Package,
     },
     {
+      label: 'Invoices',
       key: 'common.invoices',
       href: '/app/invoices',
-      label: 'Invoices',
       Icon: FileText,
     },
 
     {
+      label: 'Contracts',
       key: 'common.contracts',
       href: '/app/contracts',
-      label: 'Contracts',
       Icon: FilePenLine,
     },
   ],

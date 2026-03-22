@@ -45,20 +45,26 @@ export function InvoiceSummary({ invoice, onUpdate }: InvoiceSummaryProps) {
             {invoice?.subtotal && (
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">Subtotal</span>
-                <span className="font-mono">{formatCurrency(invoice?.subtotal)}</span>
+                <span className="font-mono">
+                  {formatCurrency(invoice?.subtotal)}
+                </span>
               </div>
             )}
             {invoice?.discountTotal && (
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">Discount</span>
-                <span className="font-mono text-green-600">-{formatCurrency(invoice?.discountTotal)}</span>
+                <span className="font-mono text-green-600">
+                  -{formatCurrency(invoice?.discountTotal)}
+                </span>
               </div>
             )}
 
             {invoice?.taxTotal && (
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">Tax</span>
-                <span className="font-mono">{formatCurrency(invoice?.taxTotal)}</span>
+                <span className="font-mono">
+                  {formatCurrency(invoice?.taxTotal)}
+                </span>
               </div>
             )}
 
@@ -66,7 +72,9 @@ export function InvoiceSummary({ invoice, onUpdate }: InvoiceSummaryProps) {
             {invoice.total && (
               <div className="flex justify-between items-center pt-1">
                 <span className="font-semibold text-foreground">Total</span>
-                <span className="text-2xl font-bold text-primary font-mono">{formatCurrency(invoice?.total)}</span>
+                <span className="text-2xl font-bold text-primary font-mono">
+                  {formatCurrency(invoice?.total)}
+                </span>
               </div>
             )}
           </div>

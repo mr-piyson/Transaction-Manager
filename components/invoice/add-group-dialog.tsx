@@ -21,7 +21,11 @@ interface AddGroupDialogProps {
   onAdd: (name: string, description?: string) => void;
 }
 
-export function AddGroupDialog({ open, onOpenChange, onAdd }: AddGroupDialogProps) {
+export function AddGroupDialog({
+  open,
+  onOpenChange,
+  onAdd,
+}: AddGroupDialogProps) {
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
 
@@ -43,7 +47,9 @@ export function AddGroupDialog({ open, onOpenChange, onAdd }: AddGroupDialogProp
             <FolderPlus className="h-5 w-5 text-primary" />
             Create Item Group
           </DialogTitle>
-          <DialogDescription>Groups help organize related line items together on the invoice.</DialogDescription>
+          <DialogDescription>
+            Groups help organize related line items together on the invoice.
+          </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit}>
@@ -71,7 +77,11 @@ export function AddGroupDialog({ open, onOpenChange, onAdd }: AddGroupDialogProp
           </FieldGroup>
 
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => onOpenChange(false)}
+            >
               Cancel
             </Button>
             <Button type="submit" disabled={!name.trim()}>

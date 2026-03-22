@@ -1,7 +1,13 @@
 import db from '@/lib/database';
 import { env } from '@/lib/env';
 import jwt from 'jsonwebtoken';
-import { AuthResult, clearSession, COOKIE_NAMES, issueSession, TokenPayload } from '@/lib/jwt';
+import {
+  AuthResult,
+  clearSession,
+  COOKIE_NAMES,
+  issueSession,
+  TokenPayload,
+} from '@/lib/jwt';
 import { compare, hash } from 'bcryptjs';
 import { cookies } from 'next/headers';
 import { z } from 'zod';
@@ -12,10 +18,13 @@ import { SIGNUP_SCHEMA } from '@/lib/schemas';
  *  @param data - The signup data validated against SIGNUP_SCHEMA.
  * @returns An AuthResult containing the user's basic info or a descriptive error.
  */
-export async function signUp(data: z.infer<typeof SIGNUP_SCHEMA>): Promise<AuthResult> {
+export async function signUp(
+  data: z.infer<typeof SIGNUP_SCHEMA>,
+): Promise<AuthResult> {
   try {
     const validation = SIGNUP_SCHEMA.safeParse(data);
-    if (!validation.success) return { success: false, error: validation.error.message };
+    if (!validation.success)
+      return { success: false, error: validation.error.message };
 
     const existingUser = await db.user.findUnique({
       where: { email: data.email.toLowerCase() },
@@ -49,7 +58,10 @@ export async function signUp(data: z.infer<typeof SIGNUP_SCHEMA>): Promise<AuthR
  * @param credentials - The user's login email and plain-text password.
  * @returns AuthResult indicating success status and user data.
  */
-export async function signIn(credentials: { email: string; password: string }): Promise<AuthResult> {
+export async function signIn(credentials: {
+  email: string;
+  password: string;
+}): Promise<AuthResult> {
   try {
     const user = await db.user.findUnique({
       where: { email: credentials.email.toLowerCase() },

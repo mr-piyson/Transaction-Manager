@@ -66,7 +66,9 @@ export function ContractCard(props: { data: Contract }) {
               {new Date(data.startDate).toLocaleDateString()}
             </span>
             <span>→</span>
-            <span className="flex items-center gap-1">{new Date(data.endDate).toLocaleDateString()}</span>
+            <span className="flex items-center gap-1">
+              {new Date(data.endDate).toLocaleDateString()}
+            </span>
           </div>
         </div>
       </div>
@@ -74,7 +76,9 @@ export function ContractCard(props: { data: Contract }) {
       <div className="text-right flex flex-col justify-center items-end min-w-27.5 gap-1">
         <div className="flex items-center gap-1 text-primary font-bold text-sm leading-none">
           <Banknote className="size-3 text-muted-foreground/50" />
-          <span className="text-[10px] font-normal text-muted-foreground mr-0.5">{data.currency}</span>
+          <span className="text-[10px] font-normal text-muted-foreground mr-0.5">
+            {data.currency}
+          </span>
           {formattedValue}
         </div>
 
@@ -87,7 +91,10 @@ export function ContractCard(props: { data: Contract }) {
           )}
         >
           <span
-            className={cn('size-1.5 rounded-full animate-pulse', data.active ? 'bg-emerald-500' : 'bg-slate-400')}
+            className={cn(
+              'size-1.5 rounded-full animate-pulse',
+              data.active ? 'bg-emerald-500' : 'bg-slate-400',
+            )}
           />
           {data.active ? 'Active' : 'Inactive'}
         </div>

@@ -58,7 +58,12 @@ interface I18nProviderProps {
   userId?: string;
 }
 
-export function I18nProvider({ children, initialLocale = DEFAULT_LOCALE, initialDict, userId }: I18nProviderProps) {
+export function I18nProvider({
+  children,
+  initialLocale = DEFAULT_LOCALE,
+  initialDict,
+  userId,
+}: I18nProviderProps) {
   // ── State ─────────────────────────────────────────────────────────────────
   const [locale, setLocaleState] = useState<Locale>(initialLocale);
   const [dict, setDict] = useState<Record<string, unknown>>(initialDict ?? {});
@@ -93,7 +98,9 @@ export function I18nProvider({ children, initialLocale = DEFAULT_LOCALE, initial
       // No server dict and the locale changed — load the bundle client-side.
       loadLocale(initialLocale)
         .then(setDict)
-        .catch((err) => console.error('[i18n] Failed to load initial locale bundle:', err));
+        .catch((err) =>
+          console.error('[i18n] Failed to load initial locale bundle:', err),
+        );
       setLocaleState(initialLocale);
     }
   }, [initialLocale, initialDict]);
@@ -103,7 +110,9 @@ export function I18nProvider({ children, initialLocale = DEFAULT_LOCALE, initial
     if (!initialDict || Object.keys(initialDict).length === 0) {
       loadLocale(initialLocale)
         .then(setDict)
-        .catch((err) => console.error('[i18n] Failed to load locale bundle on mount:', err));
+        .catch((err) =>
+          console.error('[i18n] Failed to load locale bundle on mount:', err),
+        );
     }
     // Only runs once on mount — intentional.
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -165,7 +174,10 @@ export function I18nProvider({ children, initialLocale = DEFAULT_LOCALE, initial
         if (!isCurrent()) return;
 
         if (!result.success) {
-          console.error('[i18n] Server failed to set locale cookie:', result.error);
+          console.error(
+            '[i18n] Server failed to set locale cookie:',
+            result.error,
+          );
           setLocaleState(prevLocale);
           setDict(prevDict);
           setIsPending(false);

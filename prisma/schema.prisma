@@ -53,7 +53,8 @@ model User {
   updatedAt DateTime @updatedAt
 
   // Relations
-  tokens Tokens[]
+  tokens   Tokens[]
+  invoices Invoice[]
 
   @@index([email])
   @@index([role])
@@ -131,12 +132,14 @@ model Invoice {
 
   createdAt DateTime? @default(now())
   updatedAt DateTime? @updatedAt
+  createdBy User      @relation(fields: [userId], references: [id])
 
   // Relations
   payments       Payment[]
   invoiceLines   InvoiceLine[]
   customer       Customer?       @relation(fields: [customerId], references: [id])
   inventoryItems InventoryItem[]
+  userId         String
 
   @@index([customerId])
   @@index([isCompleted])

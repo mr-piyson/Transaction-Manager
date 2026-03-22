@@ -19,7 +19,9 @@ export default function App(props: any) {
           <div className="relative flex flex-col flex-1 min-h-full">
             {/* Toolbar fixed at top */}
             {/* Scrollable main area */}
-            <div className="flex flex-col flex-1 overflow-auto relative">{props.children}</div>
+            <div className="flex flex-col flex-1 overflow-auto relative">
+              {props.children}
+            </div>
             {/* Bottom Navigation */}
             <BottomNavigation />
           </div>

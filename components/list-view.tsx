@@ -12,8 +12,18 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Empty } from '@/components/ui/empty';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
 import { Spinner } from '@/components/ui/spinner';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -101,7 +111,9 @@ export function ListView<T extends Record<string, any>>({
     return filters.reduce(
       (acc, filter) => {
         const values = new Set<string>(
-          data.map((item) => filter.getValue(item)).filter((v): v is string => Boolean(v)),
+          data
+            .map((item) => filter.getValue(item))
+            .filter((v): v is string => Boolean(v)),
         );
         acc[filter.key] = Array.from(values).sort();
         return acc;
@@ -117,7 +129,10 @@ export function ListView<T extends Record<string, any>>({
       const matchesSearch =
         !searchTerm ||
         searchFields.some((field) => {
-          const value = typeof field === 'function' ? field(item) : String(item[field] || '');
+          const value =
+            typeof field === 'function'
+              ? field(item)
+              : String(item[field] || '');
           return value?.toLowerCase().includes(searchTerm.toLowerCase());
         });
 
@@ -206,7 +221,11 @@ export function ListView<T extends Record<string, any>>({
       const isFirstRow = props.rowIndex === 0;
       const itemData = props.data as T;
 
-      return <div ref={isFirstRow && rowHeight === 'auto' ? cardRef : null}>{CardRenderer(itemData)}</div>;
+      return (
+        <div ref={isFirstRow && rowHeight === 'auto' ? cardRef : null}>
+          {CardRenderer(itemData)}
+        </div>
+      );
     },
     [CardRenderer, rowHeight],
   );
@@ -259,7 +278,9 @@ export function ListView<T extends Record<string, any>>({
         <CardContent className="p-6">
           <div className="text-center text-destructive">
             <h2 className="text-lg font-semibold mb-2">Error Loading Data</h2>
-            <p className="mb-4">{error instanceof Error ? error.message : 'An error occurred'}</p>
+            <p className="mb-4">
+              {error instanceof Error ? error.message : 'An error occurred'}
+            </p>
             {onRefetch && (
               <Button variant={'destructive'} onClick={onRefetch}>
                 Try Again
@@ -332,7 +353,12 @@ export function ListView<T extends Record<string, any>>({
                   <div className="flex items-center justify-between">
                     <h4 className="font-semibold text-sm">Filters</h4>
                     {activeFiltersCount > 0 && (
-                      <Button variant="ghost" size="sm" onClick={clearAllFilters} className="h-8 text-xs">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={clearAllFilters}
+                        className="h-8 text-xs"
+                      >
                         Clear all
                       </Button>
                     )}
@@ -343,18 +369,30 @@ export function ListView<T extends Record<string, any>>({
                   {/* Dynamic Filters */}
                   {filters.map((filter) => (
                     <div key={filter.key} className="space-y-2">
-                      <Label htmlFor={`${filter.key}-filter`} className="text-sm font-medium">
+                      <Label
+                        htmlFor={`${filter.key}-filter`}
+                        className="text-sm font-medium"
+                      >
                         {filter.label}
                       </Label>
                       <Select
                         value={filterValues[filter.key]}
-                        onValueChange={(value) => updateFilter(filter.key, value)}
+                        onValueChange={(value) =>
+                          updateFilter(filter.key, value)
+                        }
                       >
-                        <SelectTrigger className="w-full" id={`${filter.key}-filter`}>
-                          <SelectValue placeholder={`All ${filter.label.toLowerCase()}`} />
+                        <SelectTrigger
+                          className="w-full"
+                          id={`${filter.key}-filter`}
+                        >
+                          <SelectValue
+                            placeholder={`All ${filter.label.toLowerCase()}`}
+                          />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="all">All {filter.label.toLowerCase()}</SelectItem>
+                          <SelectItem value="all">
+                            All {filter.label.toLowerCase()}
+                          </SelectItem>
                           {filterOptions[filter.key]?.map((option) => (
                             <SelectItem key={option} value={option}>
                               {option}
@@ -406,7 +444,12 @@ export function ListView<T extends Record<string, any>>({
             <p className="text-muted-foreground mb-4">{emptyDescription}</p>
             {(searchTerm || activeFiltersCount > 0) && (
               <Button variant="outline" onClick={clearAllFilters}>
-                Clear {searchTerm && activeFiltersCount > 0 ? 'All' : searchTerm ? 'Search' : 'Filters'}
+                Clear{' '}
+                {searchTerm && activeFiltersCount > 0
+                  ? 'All'
+                  : searchTerm
+                    ? 'Search'
+                    : 'Filters'}
               </Button>
             )}
           </Empty>

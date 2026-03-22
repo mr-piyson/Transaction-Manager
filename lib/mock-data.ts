@@ -1,4 +1,9 @@
-import { InventoryItem, Invoice, InvoiceLine, InvoiceGroup } from '@/types/generics';
+import {
+  InventoryItem,
+  Invoice,
+  InvoiceLine,
+  InvoiceGroup,
+} from '@/types/generics';
 
 export const mockInventoryItems: InventoryItem[] = [
   {
@@ -123,7 +128,10 @@ export const mockInvoice: Invoice = {
   notes: '',
 };
 
-export function createInvoiceLine(item: InventoryItem, quantity: number = 1): InvoiceLine {
+export function createInvoiceLine(
+  item: InventoryItem,
+  quantity: number = 1,
+): InvoiceLine {
   const subtotal = item.unitPrice * quantity;
   return {
     id: `line-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,

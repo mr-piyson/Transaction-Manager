@@ -36,7 +36,9 @@ export function InvoiceCard({ data }: { data: InvoiceWithCustomer }) {
 
       {/* Customer & Invoice Details */}
       <div className="flex-1 min-w-0">
-        <p className="font-semibold truncate text-sm sm:text-base">{customerName}</p>
+        <p className="font-semibold truncate text-sm sm:text-base">
+          {customerName}
+        </p>
         <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
           <span className="flex items-center gap-1">
             <Hash className="size-3" />

@@ -40,9 +40,16 @@ export function InvoiceHeader({ invoice }: InvoiceHeaderProps) {
           <div className="flex-1">
             <div className="flex items-center gap-3 mb-4">
               <FileText className="h-6 w-6 text-primary" />
-              <h2 className="text-xl font-semibold text-foreground">Invoice Details</h2>
-              <Badge className={getStatusColor(invoice.status)} variant="outline">
-                {invoice?.status && invoice?.status.charAt(0).toUpperCase() + invoice?.status.slice(1)}
+              <h2 className="text-xl font-semibold text-foreground">
+                Invoice Details
+              </h2>
+              <Badge
+                className={getStatusColor(invoice.status)}
+                variant="outline"
+              >
+                {invoice?.status &&
+                  invoice?.status.charAt(0).toUpperCase() +
+                    invoice?.status.slice(1)}
               </Badge>
             </div>
 

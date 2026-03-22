@@ -2,7 +2,10 @@ import { ApiResponse } from '@/lib/api';
 import db from '@/lib/database';
 import { NextRequest, NextResponse } from 'next/server';
 
-export async function GET(req: NextRequest, ctx: RouteContext<'/api/customers'>) {
+export async function GET(
+  req: NextRequest,
+  ctx: RouteContext<'/api/customers'>,
+) {
   try {
     // GET logic here
     const items = await db.customer.findMany({});
@@ -12,7 +15,10 @@ export async function GET(req: NextRequest, ctx: RouteContext<'/api/customers'>)
   }
 }
 
-export async function POST(req: NextRequest, ctx: RouteContext<'/api/customers'>) {
+export async function POST(
+  req: NextRequest,
+  ctx: RouteContext<'/api/customers'>,
+) {
   try {
     const body = await req.json();
     const items = await db.customer.create({ data: body });

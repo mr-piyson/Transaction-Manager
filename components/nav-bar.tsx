@@ -22,7 +22,10 @@ export function BottomNavigation() {
   useEffect(() => {
     const handleResize = () => {
       // If the window height shrinks significantly, the keyboard is likely open
-      if (window.visualViewport && window.visualViewport.height < window.innerHeight * 0.9) {
+      if (
+        window.visualViewport &&
+        window.visualViewport.height < window.innerHeight * 0.9
+      ) {
         setIsVisible(false);
       } else {
         setIsVisible(true);
@@ -30,7 +33,8 @@ export function BottomNavigation() {
     };
 
     window.visualViewport?.addEventListener('resize', handleResize);
-    return () => window.visualViewport?.removeEventListener('resize', handleResize);
+    return () =>
+      window.visualViewport?.removeEventListener('resize', handleResize);
   }, []);
 
   // If keyboard is open, return null to remove it from DOM and let content use full height
@@ -42,7 +46,10 @@ export function BottomNavigation() {
       <div className="grid h-full max-w-lg grid-cols-5 mx-auto">
         {navItems.map((item) => {
           const Icon = item.icon;
-          const isActive = item.href === '/app' ? pathname === '/app' : pathname.startsWith(item.href);
+          const isActive =
+            item.href === '/app'
+              ? pathname === '/app'
+              : pathname.startsWith(item.href);
 
           return (
             <Link
@@ -53,7 +60,9 @@ export function BottomNavigation() {
                 isActive ? 'text-primary' : 'text-muted-foreground',
               )}
             >
-              <Icon className={cn('w-5 h-5 mb-1', isActive && 'fill-primary/10')} />
+              <Icon
+                className={cn('w-5 h-5 mb-1', isActive && 'fill-primary/10')}
+              />
               <span className="text-[10px]">{item.name}</span>
             </Link>
           );

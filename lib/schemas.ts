@@ -67,7 +67,12 @@ export function validateEmail(
     allowPlusSign?: boolean;
   } = {},
 ) {
-  const { allowedDomains = [], blockedDomains = [], maxLength = 254, allowPlusSign = false } = options;
+  const {
+    allowedDomains = [],
+    blockedDomains = [],
+    maxLength = 254,
+    allowPlusSign = false,
+  } = options;
 
   return (
     z
@@ -103,7 +108,10 @@ export function validateEmail(
   );
 }
 
-export function validateConfirmPassword(passwordField: string, confirmPasswordField: string) {
+export function validateConfirmPassword(
+  passwordField: string,
+  confirmPasswordField: string,
+) {
   return z
     .object({
       [passwordField]: z.string(),

@@ -13,6 +13,7 @@
   "dependencies": {
     "@base-ui/react": "^1.2.0",
     "@casl/ability": "^6.8.0",
+    "@casl/prisma": "^1.6.1",
     "@elysiajs/eden": "^1.4.8",
     "@hookform/resolvers": "^5.2.2",
     "@prisma/adapter-libsql": "^7.4.1",

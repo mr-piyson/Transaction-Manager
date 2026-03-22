@@ -1,4 +1,10 @@
-import { useQuery, useMutation, useQueryClient, UseQueryResult, UseMutationResult } from '@tanstack/react-query';
+import {
+  useQuery,
+  useMutation,
+  useQueryClient,
+  UseQueryResult,
+  UseMutationResult,
+} from '@tanstack/react-query';
 import axios from 'axios';
 import { Customer } from '@prisma/client';
 
@@ -35,7 +41,10 @@ export const useCustomers = () => {
     create: (): UseMutationResult<Customer, Error, CustomerInput> =>
       useMutation({
         mutationFn: async (newCustomer) => {
-          const { data } = await axios.post<Customer>('/api/customers', newCustomer);
+          const { data } = await axios.post<Customer>(
+            '/api/customers',
+            newCustomer,
+          );
           return data;
         },
         onSuccess: () => {
@@ -45,15 +54,24 @@ export const useCustomers = () => {
 
     // --- UPDATE ---
     // We use Partial<Customer> so you can send only the fields that changed
-    update: (): UseMutationResult<Customer, Error, Partial<Customer> & { id: string }> =>
+    update: (): UseMutationResult<
+      Customer,
+      Error,
+      Partial<Customer> & { id: string }
+    > =>
       useMutation({
         mutationFn: async ({ id, ...updates }) => {
-          const { data } = await axios.patch<Customer>(`/api/customers/${id}`, updates);
+          const { data } = await axios.patch<Customer>(
+            `/api/customers/${id}`,
+            updates,
+          );
           return data;
         },
         onSuccess: (updatedCustomer) => {
           queryClient.invalidateQueries({ queryKey });
-          queryClient.invalidateQueries({ queryKey: [...queryKey, updatedCustomer.id] });
+          queryClient.invalidateQueries({
+            queryKey: [...queryKey, updatedCustomer.id],
+          });
         },
       }),
 

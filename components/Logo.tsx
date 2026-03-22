@@ -1,4 +1,10 @@
-export default function Logo({ primaryColor = '#4A7BF5', width = '100%', height = '100%', className = '', ...props }) {
+export default function Logo({
+  primaryColor = '#4A7BF5',
+  width = '100%',
+  height = '100%',
+  className = '',
+  ...props
+}) {
   // Helper function to convert hex to HSL
   const hexToHSL = (hex: string) => {
     const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
@@ -54,53 +60,119 @@ export default function Logo({ primaryColor = '#4A7BF5', width = '100%', height 
   };
 
   return (
-    <svg width={width} height={height} viewBox="0 0 186 249" xmlns="http://www.w3.org/2000/svg" className={className}>
+    <svg
+      width={width}
+      height={height}
+      viewBox="0 0 186 249"
+      xmlns="http://www.w3.org/2000/svg"
+      className={className}
+    >
       {/* Top left section - darkest facet */}
-      <path d="M99,0 L0,155.5 L65.5,101 Z" fill="url(#paint0_linear)" stroke="none" />
+      <path
+        d="M99,0 L0,155.5 L65.5,101 Z"
+        fill="url(#paint0_linear)"
+        stroke="none"
+      />
 
       {/* Top middle section - brightest top facet */}
-      <path d="M95,95.5 L65.5,101 L99,0 Z" fill="url(#paint1_linear)" stroke="none" />
+      <path
+        d="M95,95.5 L65.5,101 L99,0 Z"
+        fill="url(#paint1_linear)"
+        stroke="none"
+      />
 
       {/* Middle left section - medium facet */}
-      <path d="M95,95.5 L65.5,101 L0,155.5 Z" fill={colors.base} stroke="none" />
+      <path
+        d="M95,95.5 L65.5,101 L0,155.5 Z"
+        fill={colors.base}
+        stroke="none"
+      />
 
       {/* Middle horizontal section - transitional facet */}
-      <path d="M95,95.5 L0,155.5 L185.5,95.5 Z" fill="url(#paint2_linear)" stroke="none" />
+      <path
+        d="M95,95.5 L0,155.5 L185.5,95.5 Z"
+        fill="url(#paint2_linear)"
+        stroke="none"
+      />
 
       {/* Bottom horizontal section - darker middle */}
-      <path d="M91,155.5 L185.5,95.5 L0,155.5 Z" fill={colors.darker} stroke="none" />
+      <path
+        d="M91,155.5 L185.5,95.5 L0,155.5 Z"
+        fill={colors.darker}
+        stroke="none"
+      />
 
       {/* Bottom right large section - main bright facet */}
-      <path d="M87.5,249 L121,149.5 L185.5,95.5 Z" fill="url(#paint3_linear)" stroke="none" />
+      <path
+        d="M87.5,249 L121,149.5 L185.5,95.5 Z"
+        fill="url(#paint3_linear)"
+        stroke="none"
+      />
 
       {/* Bottom middle section - bright highlight */}
-      <path d="M91,155.5 L121,149.5 L87.5,249 Z" fill={colors.lighter} stroke="none" />
+      <path
+        d="M91,155.5 L121,149.5 L87.5,249 Z"
+        fill={colors.lighter}
+        stroke="none"
+      />
 
       {/* Bottom left section - complementary facet */}
-      <path d="M91,155.5 L121,149.5 L185.5,95.5 Z" fill={colors.lighter} stroke="none" />
+      <path
+        d="M91,155.5 L121,149.5 L185.5,95.5 Z"
+        fill={colors.lighter}
+        stroke="none"
+      />
 
       <defs>
         {/* Top left - dark to light gradient for depth */}
-        <linearGradient id="paint0_linear" x1="0%" y1="0%" x2="100%" y2="100%" gradientUnits="userSpaceOnUse">
+        <linearGradient
+          id="paint0_linear"
+          x1="0%"
+          y1="0%"
+          x2="100%"
+          y2="100%"
+          gradientUnits="userSpaceOnUse"
+        >
           <stop offset="0%" stopColor={colors.darkest} />
           <stop offset="50%" stopColor={colors.base} />
           <stop offset="100%" stopColor={colors.highlight} />
         </linearGradient>
 
         {/* Top center - bright reflective surface */}
-        <linearGradient id="paint1_linear" x1="0%" y1="50%" x2="100%" y2="50%" gradientUnits="userSpaceOnUse">
+        <linearGradient
+          id="paint1_linear"
+          x1="0%"
+          y1="50%"
+          x2="100%"
+          y2="50%"
+          gradientUnits="userSpaceOnUse"
+        >
           <stop offset="0%" stopColor={colors.base} />
           <stop offset="100%" stopColor={colors.lightest} />
         </linearGradient>
 
         {/* Middle horizontal - vertical depth gradient */}
-        <linearGradient id="paint2_linear" x1="50%" y1="0%" x2="50%" y2="100%" gradientUnits="userSpaceOnUse">
+        <linearGradient
+          id="paint2_linear"
+          x1="50%"
+          y1="0%"
+          x2="50%"
+          y2="100%"
+          gradientUnits="userSpaceOnUse"
+        >
           <stop offset="0%" stopColor={colors.lighter} />
           <stop offset="100%" stopColor={colors.base} />
         </linearGradient>
 
         {/* Bottom - largest facet with dramatic light */}
-        <linearGradient id="paint3_linear" x1="0%" y1="0%" x2="100%" y2="100%" gradientUnits="userSpaceOnUse">
+        <linearGradient
+          id="paint3_linear"
+          x1="0%"
+          y1="0%"
+          x2="100%"
+          y2="100%"
+          gradientUnits="userSpaceOnUse"
+        >
           <stop offset="0%" stopColor={colors.darkest} />
           <stop offset="60%" stopColor={colors.base} />
           <stop offset="100%" stopColor={colors.highlight} />

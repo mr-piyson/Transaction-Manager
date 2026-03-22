@@ -42,7 +42,12 @@ export function AppSidebar({ ...props }: AppSidebarProps) {
     return url === Activity;
   };
   return (
-    <Sidebar collapsible="icon" side={i18n.direction === 'ltr' ? 'left' : 'right'} type="Drawer" {...props}>
+    <Sidebar
+      collapsible="icon"
+      side={i18n.direction === 'ltr' ? 'left' : 'right'}
+      type="Drawer"
+      {...props}
+    >
       <SidebarHeader>
         <AppLogo />
       </SidebarHeader>
@@ -55,7 +60,6 @@ export function AppSidebar({ ...props }: AppSidebarProps) {
                   isActive={isActive(href)}
                   className={cn('flex', isActive(href) && 'bg-primary!')}
                   tooltip={i18n.t(key)}
-                  size={'lg'}
                   onClick={() => {
                     if (currentPath === href) {
                       return;
@@ -107,7 +111,9 @@ function AppLogo() {
             <Logo className=" size-7!" />
           </div>
           <div className="grid flex-1 text-left text-sm leading-tight">
-            <span className="truncate font-semibold text-lg">Transaction Manager</span>
+            <span className="truncate font-semibold text-lg">
+              Transaction Manager
+            </span>
             <span className="truncate text-xs"></span>
           </div>
         </SidebarMenuButton>
@@ -141,10 +147,16 @@ function isItemActive(itemUrl: string, currentPath: string): boolean {
 }
 
 // Recursive function to get all parent URLs for a given path
-function getParentUrls(activities: ActivityItem[], targetPath: string): string[] {
+function getParentUrls(
+  activities: ActivityItem[],
+  targetPath: string,
+): string[] {
   const parents: string[] = [];
 
-  function findParents(items: ActivityItem[], currentParents: string[] = []): boolean {
+  function findParents(
+    items: ActivityItem[],
+    currentParents: string[] = [],
+  ): boolean {
     for (const item of items) {
       if (isItemActive(item.path, targetPath)) {
         parents.push(...currentParents);

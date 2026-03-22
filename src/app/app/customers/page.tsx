@@ -57,7 +57,10 @@ export default function CustomersPage() {
       <ListView<Customer>
         emptyTitle={t('customers.empty_title', 'No Customers Found')}
         emptyIcon={<User2 className="size-16 text-muted-foreground" />}
-        emptyDescription={t('customers.empty_description') || 'Create a new customer to get started'}
+        emptyDescription={
+          t('customers.empty_description') ||
+          'Create a new customer to get started'
+        }
         data={customers}
         isLoading={isLoading}
         isError={isError}
@@ -81,7 +84,10 @@ export default function CustomersPage() {
               },
             ]}
           >
-            <CustomerCard data={data} onClick={() => router.push(`/app/customers/${data.id}`)} />
+            <CustomerCard
+              data={data}
+              onClick={() => router.push(`/app/customers/${data.id}`)}
+            />
           </UniversalContextMenu>
         )}
         rowHeight={72}

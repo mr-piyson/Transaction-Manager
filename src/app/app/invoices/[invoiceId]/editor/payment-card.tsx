@@ -22,7 +22,9 @@ export default function PaymentCard({ payment }: { payment: Payment }) {
   return (
     <div className="flex items-center gap-3 px-2 py-3 border-b border-border/40 group">
       {/* Icon Container */}
-      <div className="w-9 h-9 rounded-xl bg-muted flex items-center justify-center shrink-0">{icon}</div>
+      <div className="w-9 h-9 rounded-xl bg-muted flex items-center justify-center shrink-0">
+        {icon}
+      </div>
 
       {/* Info Section */}
       <div className="flex-1 min-w-0">
@@ -31,7 +33,9 @@ export default function PaymentCard({ payment }: { payment: Payment }) {
       </div>
 
       {/* Amount Section */}
-      <span className="text-sm font-bold text-success-foreground tabular-nums">{Money.format(payment.amount)}</span>
+      <span className="text-sm font-bold text-success-foreground tabular-nums">
+        {Money.format(payment.amount)}
+      </span>
 
       {/* Actions */}
       <Button

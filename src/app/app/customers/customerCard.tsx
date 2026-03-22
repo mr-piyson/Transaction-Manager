@@ -14,7 +14,10 @@ export function CustomerCard({ data, className, ...props }: CustomerCardProps) {
 
   return (
     <div
-      className={cn('flex h-18 items-center gap-3 p-3 transition-colors hover:bg-accent/50 cursor-pointer', className)}
+      className={cn(
+        'flex h-18 items-center gap-3 p-3 transition-colors hover:bg-accent/50 cursor-pointer',
+        className,
+      )}
       {...props}
     >
       <Avatar className="size-11 rounded-lg shrink-0 after:border-0">
@@ -33,7 +36,9 @@ export function CustomerCard({ data, className, ...props }: CustomerCardProps) {
           {/* Example Icon */}
           <span className="font-mono font-semibold">Cus-{id}</span>
         </p>
-        <p className="flex items-center justify-end gap-1 text-muted-foreground">{address}</p>
+        <p className="flex items-center justify-end gap-1 text-muted-foreground">
+          {address}
+        </p>
       </div>
     </div>
   );

@@ -1,11 +1,20 @@
 'use client';
 
 import * as React from 'react';
-import { DayPicker, getDefaultClassNames, type DayButton, type Locale } from 'react-day-picker';
+import {
+  DayPicker,
+  getDefaultClassNames,
+  type DayButton,
+  type Locale,
+} from 'react-day-picker';
 
 import { cn } from '@/lib/utils';
 import { Button, buttonVariants } from '@/components/ui/button';
-import { ChevronLeftIcon, ChevronRightIcon, ChevronDownIcon } from 'lucide-react';
+import {
+  ChevronLeftIcon,
+  ChevronRightIcon,
+  ChevronDownIcon,
+} from 'lucide-react';
 
 function Calendar({
   className,
@@ -34,14 +43,21 @@ function Calendar({
       captionLayout={captionLayout}
       locale={locale}
       formatters={{
-        formatMonthDropdown: (date) => date.toLocaleString(locale?.code, { month: 'short' }),
+        formatMonthDropdown: (date) =>
+          date.toLocaleString(locale?.code, { month: 'short' }),
         ...formatters,
       }}
       classNames={{
         root: cn('w-fit', defaultClassNames.root),
-        months: cn('flex gap-4 flex-col md:flex-row relative', defaultClassNames.months),
+        months: cn(
+          'flex gap-4 flex-col md:flex-row relative',
+          defaultClassNames.months,
+        ),
         month: cn('flex flex-col w-full gap-4', defaultClassNames.month),
-        nav: cn('flex items-center gap-1 w-full absolute top-0 inset-x-0 justify-between', defaultClassNames.nav),
+        nav: cn(
+          'flex items-center gap-1 w-full absolute top-0 inset-x-0 justify-between',
+          defaultClassNames.nav,
+        ),
         button_previous: cn(
           buttonVariants({ variant: buttonVariant }),
           'size-(--cell-size) aria-disabled:opacity-50 p-0 select-none',
@@ -60,8 +76,14 @@ function Calendar({
           'w-full flex items-center text-sm font-medium justify-center h-(--cell-size) gap-1.5',
           defaultClassNames.dropdowns,
         ),
-        dropdown_root: cn('relative rounded-(--cell-radius)', defaultClassNames.dropdown_root),
-        dropdown: cn('absolute bg-popover inset-0 opacity-0', defaultClassNames.dropdown),
+        dropdown_root: cn(
+          'relative rounded-(--cell-radius)',
+          defaultClassNames.dropdown_root,
+        ),
+        dropdown: cn(
+          'absolute bg-popover inset-0 opacity-0',
+          defaultClassNames.dropdown,
+        ),
         caption_label: cn(
           'select-none font-medium',
           captionLayout === 'label'
@@ -76,8 +98,14 @@ function Calendar({
           defaultClassNames.weekday,
         ),
         week: cn('flex w-full mt-2', defaultClassNames.week),
-        week_number_header: cn('select-none w-(--cell-size)', defaultClassNames.week_number_header),
-        week_number: cn('text-[0.8rem] select-none text-muted-foreground', defaultClassNames.week_number),
+        week_number_header: cn(
+          'select-none w-(--cell-size)',
+          defaultClassNames.week_number_header,
+        ),
+        week_number: cn(
+          'text-[0.8rem] select-none text-muted-foreground',
+          defaultClassNames.week_number,
+        ),
         day: cn(
           'relative w-full rounded-(--cell-radius) h-full p-0 text-center [&:last-child[data-selected=true]_button]:rounded-e-(--cell-radius) group/day aspect-square select-none',
           props.showWeekNumber
@@ -98,31 +126,60 @@ function Calendar({
           'bg-muted text-foreground rounded-(--cell-radius) data-[selected=true]:rounded-none',
           defaultClassNames.today,
         ),
-        outside: cn('text-muted-foreground aria-selected:text-muted-foreground', defaultClassNames.outside),
-        disabled: cn('text-muted-foreground opacity-50', defaultClassNames.disabled),
+        outside: cn(
+          'text-muted-foreground aria-selected:text-muted-foreground',
+          defaultClassNames.outside,
+        ),
+        disabled: cn(
+          'text-muted-foreground opacity-50',
+          defaultClassNames.disabled,
+        ),
         hidden: cn('invisible', defaultClassNames.hidden),
         ...classNames,
       }}
       components={{
         Root: ({ className, rootRef, ...props }) => {
-          return <div data-slot="calendar" ref={rootRef} className={cn(className)} {...props} />;
+          return (
+            <div
+              data-slot="calendar"
+              ref={rootRef}
+              className={cn(className)}
+              {...props}
+            />
+          );
         },
         Chevron: ({ className, orientation, ...props }) => {
           if (orientation === 'left') {
-            return <ChevronLeftIcon className={cn('rtl:rotate-180 size-4', className)} {...props} />;
+            return (
+              <ChevronLeftIcon
+                className={cn('rtl:rotate-180 size-4', className)}
+                {...props}
+              />
+            );
           }
 
           if (orientation === 'right') {
-            return <ChevronRightIcon className={cn('rtl:rotate-180 size-4', className)} {...props} />;
+            return (
+              <ChevronRightIcon
+                className={cn('rtl:rotate-180 size-4', className)}
+                {...props}
+              />
+            );
           }
 
-          return <ChevronDownIcon className={cn('size-4', className)} {...props} />;
+          return (
+            <ChevronDownIcon className={cn('size-4', className)} {...props} />
+          );
         },
-        DayButton: ({ ...props }) => <CalendarDayButton locale={locale} {...props} />,
+        DayButton: ({ ...props }) => (
+          <CalendarDayButton locale={locale} {...props} />
+        ),
         WeekNumber: ({ children, ...props }) => {
           return (
             <td {...props}>
-              <div className="flex size-(--cell-size) items-center justify-center text-center">{children}</div>
+              <div className="flex size-(--cell-size) items-center justify-center text-center">
+                {children}
+              </div>
             </td>
           );
         },
@@ -153,7 +210,10 @@ function CalendarDayButton({
       size="icon"
       data-day={day.date.toLocaleDateString(locale?.code)}
       data-selected-single={
-        modifiers.selected && !modifiers.range_start && !modifiers.range_end && !modifiers.range_middle
+        modifiers.selected &&
+        !modifiers.range_start &&
+        !modifiers.range_end &&
+        !modifiers.range_middle
       }
       data-range-start={modifiers.range_start}
       data-range-end={modifiers.range_end}

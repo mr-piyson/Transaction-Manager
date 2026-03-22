@@ -3,7 +3,14 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import z from 'zod';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { useAuth } from '@/hooks/use-auth';
 import { Spinner } from '../../../components/ui/spinner';
@@ -31,7 +38,9 @@ export default function SignInTab() {
     <Card>
       <CardHeader>
         <CardTitle className="text-2xl font-bold">Sign In</CardTitle>
-        <CardDescription>Sign in or create an account to begin managing your finances.</CardDescription>
+        <CardDescription>
+          Sign in or create an account to begin managing your finances.
+        </CardDescription>
       </CardHeader>
       <form onSubmit={handleSubmit(onSubmit)}>
         <CardContent className="space-y-2">
@@ -46,7 +55,9 @@ export default function SignInTab() {
               className="border border-muted-foreground/50"
               {...register('email')}
             />
-            {errors.email && <p className="text-sm text-destructive">{errors.email.message}</p>}
+            {errors.email && (
+              <p className="text-sm text-destructive">{errors.email.message}</p>
+            )}
           </div>
           <div className="space-y-1">
             <label htmlFor="password" className="text-sm font-medium">
@@ -58,7 +69,11 @@ export default function SignInTab() {
               className="border border-muted-foreground/50"
               {...register('password')}
             />
-            {errors.password && <p className="text-sm text-destructive">{errors.password.message}</p>}
+            {errors.password && (
+              <p className="text-sm text-destructive">
+                {errors.password.message}
+              </p>
+            )}
           </div>
         </CardContent>
         <CardFooter className="mt-5">

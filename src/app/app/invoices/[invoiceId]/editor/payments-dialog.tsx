@@ -33,7 +33,10 @@ export function PaymentDialog({ children }: PaymentDialogProps) {
           </DrawerDescription>
         </DrawerHeader>
 
-        <Tabs defaultValue="list" className="flex flex-col w-full p-4 flex-1 overflow-hidden">
+        <Tabs
+          defaultValue="list"
+          className="flex flex-col w-full p-4 flex-1 overflow-hidden"
+        >
           <TabsList className="w-full shrink-0">
             <TabsTrigger value="list" className="flex-1 gap-2">
               <Clock className="w-4 h-4" /> History
@@ -43,7 +46,10 @@ export function PaymentDialog({ children }: PaymentDialogProps) {
             </TabsTrigger>
           </TabsList>
           <Separator />
-          <TabsContent value="list" className="flex-1 flex flex-col overflow-hidden mt-0">
+          <TabsContent
+            value="list"
+            className="flex-1 flex flex-col overflow-hidden mt-0"
+          >
             <div className="flex-1 overflow-y-auto">
               <div className="flex flex-col items-center justify-center py-12 text-muted-foreground gap-2">
                 <CreditCard className="w-8 h-8 opacity-30" />
@@ -59,7 +65,9 @@ export function PaymentDialog({ children }: PaymentDialogProps) {
               </div>
               <div className="flex justify-between text-xs">
                 <span className="text-success-foreground">Total Paid</span>
-                <span className="font-semibold text-success-foreground tabular-nums">100</span>
+                <span className="font-semibold text-success-foreground tabular-nums">
+                  100
+                </span>
               </div>
               <Separator />
               <div className="flex justify-between text-sm font-bold">
@@ -69,9 +77,14 @@ export function PaymentDialog({ children }: PaymentDialogProps) {
             </div>
           </TabsContent>
 
-          <TabsContent value="add" className="flex flex-col flex-1 overflow-y-auto pt-4 space-y-6">
+          <TabsContent
+            value="add"
+            className="flex flex-col flex-1 overflow-y-auto pt-4 space-y-6"
+          >
             <div className="space-y-3">
-              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Method</p>
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                Method
+              </p>
               <div className="flex flex-wrap gap-2">
                 <Tabs defaultValue={'cash'} className={'w-full'}>
                   <TabsList className={'w-full'}>
@@ -88,7 +101,9 @@ export function PaymentDialog({ children }: PaymentDialogProps) {
 
             <div className="flex-1 grid grid-cols-1 gap-4">
               <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-muted-foreground uppercase">Amount</label>
+                <label className="text-xs font-semibold text-muted-foreground uppercase">
+                  Amount
+                </label>
                 <Input type="number" className="h-10 border-primary border-2" />
               </div>
             </div>

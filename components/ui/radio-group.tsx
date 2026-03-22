@@ -6,7 +6,13 @@ import { RadioGroup as RadioGroupPrimitive } from '@base-ui/react/radio-group';
 import { cn } from '@/lib/utils';
 
 function RadioGroup({ className, ...props }: RadioGroupPrimitive.Props) {
-  return <RadioGroupPrimitive data-slot="radio-group" className={cn('grid gap-2 w-full', className)} {...props} />;
+  return (
+    <RadioGroupPrimitive
+      data-slot="radio-group"
+      className={cn('grid gap-2 w-full', className)}
+      {...props}
+    />
+  );
 }
 
 function RadioGroupItem({ className, ...props }: RadioPrimitive.Root.Props) {
@@ -19,7 +25,10 @@ function RadioGroupItem({ className, ...props }: RadioPrimitive.Root.Props) {
       )}
       {...props}
     >
-      <RadioPrimitive.Indicator data-slot="radio-group-indicator" className="flex size-4 items-center justify-center">
+      <RadioPrimitive.Indicator
+        data-slot="radio-group-indicator"
+        className="flex size-4 items-center justify-center"
+      >
         <span className="bg-primary-foreground absolute top-1/2 start-1/2 size-2 -translate-x-1/2 rtl:translate-x-1/2 -translate-y-1/2 rounded-full" />
       </RadioPrimitive.Indicator>
     </RadioPrimitive.Root>

@@ -17,7 +17,12 @@ import {
   ContextMenuSubContent,
   ContextMenuShortcut,
 } from '@/components/ui/context-menu';
-import { Drawer, DrawerContent, DrawerTitle, DrawerDescription } from '@/components/ui/drawer';
+import {
+  Drawer,
+  DrawerContent,
+  DrawerTitle,
+  DrawerDescription,
+} from '@/components/ui/drawer';
 
 // ─── Discriminated Union Schema Types ────────────────────────────────────────
 
@@ -78,13 +83,31 @@ export interface UniversalContextMenuProps {
 
 // ─── Shared Icon Renderer ────────────────────────────────────────────────────
 
-function MenuIcon({ icon: Icon, size = 16, className }: { icon: LucideIcon; size?: number; className?: string }) {
-  return <Icon size={size} className={cn('shrink-0', className)} aria-hidden="true" />;
+function MenuIcon({
+  icon: Icon,
+  size = 16,
+  className,
+}: {
+  icon: LucideIcon;
+  size?: number;
+  className?: string;
+}) {
+  return (
+    <Icon
+      size={size}
+      className={cn('shrink-0', className)}
+      aria-hidden="true"
+    />
+  );
 }
 
 // ─── Desktop: Recursive Context Menu (memoized) ─────────────────────────────
 
-const DesktopMenuItems = React.memo(function DesktopMenuItems({ items }: { items: ContextMenuItemSchema[] }) {
+const DesktopMenuItems = React.memo(function DesktopMenuItems({
+  items,
+}: {
+  items: ContextMenuItemSchema[];
+}) {
   return (
     <>
       {items.map((item) => {
@@ -96,7 +119,13 @@ const DesktopMenuItems = React.memo(function DesktopMenuItems({ items }: { items
           return (
             <ContextMenuLabel key={item.id}>
               <span className="flex items-center gap-2">
-                {item.icon && <MenuIcon icon={item.icon} size={14} className="text-muted-foreground" />}
+                {item.icon && (
+                  <MenuIcon
+                    icon={item.icon}
+                    size={14}
+                    className="text-muted-foreground"
+                  />
+                )}
                 {item.label}
               </span>
             </ContextMenuLabel>
@@ -115,10 +144,20 @@ const DesktopMenuItems = React.memo(function DesktopMenuItems({ items }: { items
               className="flex items-center justify-between gap-4"
             >
               <span className="flex items-center gap-2">
-                {item.icon && <MenuIcon icon={item.icon} size={16} className="text-muted-foreground" />}
+                {item.icon && (
+                  <MenuIcon
+                    icon={item.icon}
+                    size={16}
+                    className="text-muted-foreground"
+                  />
+                )}
                 {item.label}
               </span>
-              <Switch checked={item.checked} tabIndex={-1} className="pointer-events-none scale-75" />
+              <Switch
+                checked={item.checked}
+                tabIndex={-1}
+                className="pointer-events-none scale-75"
+              />
             </ContextMenuItem>
           );
         }
@@ -131,7 +170,13 @@ const DesktopMenuItems = React.memo(function DesktopMenuItems({ items }: { items
             <ContextMenuSub key={item.id}>
               <ContextMenuSubTrigger disabled={item.disabled}>
                 <span className="flex items-center gap-2">
-                  {actionItem.icon && <MenuIcon icon={actionItem.icon} size={16} className="text-muted-foreground" />}
+                  {actionItem.icon && (
+                    <MenuIcon
+                      icon={actionItem.icon}
+                      size={16}
+                      className="text-muted-foreground"
+                    />
+                  )}
                   {actionItem.label}
                 </span>
               </ContextMenuSubTrigger>
@@ -147,19 +192,28 @@ const DesktopMenuItems = React.memo(function DesktopMenuItems({ items }: { items
             key={item.id}
             disabled={item.disabled}
             onClick={() => actionItem.onClick?.()}
-            className={cn(actionItem.destructive && 'text-destructive focus:bg-destructive/10 focus:text-destructive')}
+            className={cn(
+              actionItem.destructive &&
+                'text-destructive focus:bg-destructive/10 focus:text-destructive',
+            )}
           >
             <span className="flex items-center gap-2">
               {actionItem.icon && (
                 <MenuIcon
                   icon={actionItem.icon}
                   size={16}
-                  className={actionItem.destructive ? 'text-destructive' : 'text-muted-foreground'}
+                  className={
+                    actionItem.destructive
+                      ? 'text-destructive'
+                      : 'text-muted-foreground'
+                  }
                 />
               )}
               {actionItem.label}
             </span>
-            {actionItem.shortcut && <ContextMenuShortcut>{actionItem.shortcut}</ContextMenuShortcut>}
+            {actionItem.shortcut && (
+              <ContextMenuShortcut>{actionItem.shortcut}</ContextMenuShortcut>
+            )}
           </ContextMenuItem>
         );
       })}
@@ -182,7 +236,13 @@ const MobileDrawerItems = React.memo(function MobileDrawerItems({
     <div className="flex flex-col gap-0.5" role="menu">
       {items.map((item) => {
         if (item.type === 'separator') {
-          return <div key={item.id} className="my-1 h-px bg-border" role="separator" />;
+          return (
+            <div
+              key={item.id}
+              className="my-1 h-px bg-border"
+              role="separator"
+            />
+          );
         }
 
         if (item.type === 'label') {
@@ -205,7 +265,9 @@ const MobileDrawerItems = React.memo(function MobileDrawerItems({
               aria-checked={item.checked}
               aria-disabled={item.disabled}
               tabIndex={item.disabled ? -1 : 0}
-              onClick={() => !item.disabled && item.onCheckedChange?.(!item.checked)}
+              onClick={() =>
+                !item.disabled && item.onCheckedChange?.(!item.checked)
+              }
               onKeyDown={(e) => {
                 if ((e.key === 'Enter' || e.key === ' ') && !item.disabled) {
                   e.preventDefault();
@@ -219,10 +281,20 @@ const MobileDrawerItems = React.memo(function MobileDrawerItems({
               )}
             >
               <span className="flex items-center gap-3 text-foreground">
-                {item.icon && <MenuIcon icon={item.icon} size={20} className="text-muted-foreground" />}
+                {item.icon && (
+                  <MenuIcon
+                    icon={item.icon}
+                    size={20}
+                    className="text-muted-foreground"
+                  />
+                )}
                 {item.label}
               </span>
-              <Switch checked={item.checked} tabIndex={-1} className="pointer-events-none" />
+              <Switch
+                checked={item.checked}
+                tabIndex={-1}
+                className="pointer-events-none"
+              />
             </div>
           );
         }
@@ -247,7 +319,13 @@ const MobileDrawerItems = React.memo(function MobileDrawerItems({
               )}
             >
               <span className="flex items-center gap-3 text-foreground">
-                {actionItem.icon && <MenuIcon icon={actionItem.icon} size={20} className="text-muted-foreground" />}
+                {actionItem.icon && (
+                  <MenuIcon
+                    icon={actionItem.icon}
+                    size={20}
+                    className="text-muted-foreground"
+                  />
+                )}
                 {actionItem.label}
               </span>
               <ChevronRight className="h-4 w-4 text-muted-foreground" />
@@ -275,12 +353,20 @@ const MobileDrawerItems = React.memo(function MobileDrawerItems({
                 <MenuIcon
                   icon={actionItem.icon}
                   size={20}
-                  className={actionItem.destructive ? 'text-destructive' : 'text-muted-foreground'}
+                  className={
+                    actionItem.destructive
+                      ? 'text-destructive'
+                      : 'text-muted-foreground'
+                  }
                 />
               )}
               {actionItem.label}
             </span>
-            {actionItem.shortcut && <span className="text-xs text-muted-foreground">{actionItem.shortcut}</span>}
+            {actionItem.shortcut && (
+              <span className="text-xs text-muted-foreground">
+                {actionItem.shortcut}
+              </span>
+            )}
           </button>
         );
       })}
@@ -304,7 +390,9 @@ function MobileDrawerMenu({
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }) {
-  const [stack, setStack] = React.useState<DrawerLevel[]>([{ title: 'Menu', items }]);
+  const [stack, setStack] = React.useState<DrawerLevel[]>([
+    { title: 'Menu', items },
+  ]);
 
   // Reset stack to root whenever drawer opens
   React.useEffect(() => {
@@ -316,9 +404,12 @@ function MobileDrawerMenu({
   const currentLevel = stack[stack.length - 1];
   const canGoBack = stack.length > 1;
 
-  const pushLevel = React.useCallback((title: string, children: ContextMenuItemSchema[]) => {
-    setStack((prev) => [...prev, { title, items: children }]);
-  }, []);
+  const pushLevel = React.useCallback(
+    (title: string, children: ContextMenuItemSchema[]) => {
+      setStack((prev) => [...prev, { title, items: children }]);
+    },
+    [],
+  );
 
   const popLevel = React.useCallback(() => {
     setStack((prev) => (prev.length > 1 ? prev.slice(0, -1) : prev));
@@ -332,7 +423,9 @@ function MobileDrawerMenu({
     <Drawer open={open} onOpenChange={onOpenChange}>
       <DrawerContent className="min-h-[50dvh] max-h-[85dvh]">
         <DrawerTitle className="sr-only">{currentLevel.title}</DrawerTitle>
-        <DrawerDescription className="sr-only">Context menu options</DrawerDescription>
+        <DrawerDescription className="sr-only">
+          Context menu options
+        </DrawerDescription>
 
         {/* Header with back navigation */}
         <div className="flex items-center gap-3 border-b border-border px-4 pb-3 pt-2">
@@ -346,14 +439,23 @@ function MobileDrawerMenu({
               <span>Back</span>
             </button>
           ) : null}
-          <span className={cn('text-sm font-semibold text-foreground', canGoBack && 'ml-auto')}>
+          <span
+            className={cn(
+              'text-sm font-semibold text-foreground',
+              canGoBack && 'ml-auto',
+            )}
+          >
             {currentLevel.title}
           </span>
         </div>
 
         {/* Scrollable menu items */}
         <div className="overflow-y-auto overscroll-contain px-2 py-2">
-          <MobileDrawerItems items={currentLevel.items} onNavigate={pushLevel} onClose={handleClose} />
+          <MobileDrawerItems
+            items={currentLevel.items}
+            onNavigate={pushLevel}
+            onClose={handleClose}
+          />
         </div>
 
         {/* Safe area padding for iOS bottom inset */}
@@ -365,7 +467,11 @@ function MobileDrawerMenu({
 
 // ─── Universal Context Menu Wrapper ──────────────────────────────────────────
 
-export function UniversalContextMenu({ items, children, className }: UniversalContextMenuProps) {
+export function UniversalContextMenu({
+  items,
+  children,
+  className,
+}: UniversalContextMenuProps) {
   const isMobile = useIsMobile();
   const [mounted, setMounted] = React.useState(false);
   const [drawerOpen, setDrawerOpen] = React.useState(false);
@@ -404,7 +510,11 @@ export function UniversalContextMenu({ items, children, className }: UniversalCo
         >
           {children}
         </div>
-        <MobileDrawerMenu items={items} open={drawerOpen} onOpenChange={setDrawerOpen} />
+        <MobileDrawerMenu
+          items={items}
+          open={drawerOpen}
+          onOpenChange={setDrawerOpen}
+        />
       </>
     );
   }

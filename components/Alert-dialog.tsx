@@ -2,7 +2,13 @@
 'use client';
 import { ReactNode } from 'react';
 
-export type AlertVariant = 'default' | 'success' | 'error' | 'warning' | 'info' | 'delete';
+export type AlertVariant =
+  | 'default'
+  | 'success'
+  | 'error'
+  | 'warning'
+  | 'info'
+  | 'delete';
 
 export type ConfirmOptions = {
   title: ReactNode;
@@ -80,7 +86,13 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 
-import { CheckCircle2, XCircle, AlertTriangle, Info, Trash2 } from 'lucide-react';
+import {
+  CheckCircle2,
+  XCircle,
+  AlertTriangle,
+  Info,
+  Trash2,
+} from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { cn } from '@/lib/utils';
 
@@ -173,7 +185,9 @@ export function AlertProvider({ children }: { children: ReactNode }) {
       <AlertDialog open={open} onOpenChange={(v) => !v && handleCancel()}>
         <AlertDialogContent className={'w-300!'}>
           <AlertDialogHeader>
-            <AlertDialogTitle className="flex items-center gap-2">{opts?.title}</AlertDialogTitle>
+            <AlertDialogTitle className="flex items-center gap-2">
+              {opts?.title}
+            </AlertDialogTitle>
 
             {opts?.description && (
               <AlertDialogDescription

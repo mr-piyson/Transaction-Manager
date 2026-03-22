@@ -80,7 +80,8 @@ export async function getServerI18n(pinnedLocale?: Locale) {
   const dict = await loadLocale(locale);
 
   return {
-    t: (key: TranslationKeys, fallback?: string) => translate(dict, key, fallback),
+    t: (key: TranslationKeys, fallback?: string) =>
+      translate(dict, key, fallback),
     exists: (key: TranslationKeys) => keyExists(dict, key),
     // ↓ Pass both of these to <I18nProvider initialLocale={locale} initialDict={dict}>
     locale,
@@ -103,7 +104,9 @@ export async function getServerI18n(pinnedLocale?: Locale) {
  *   const result = await setLocaleAction("ar");
  *   if (!result.success) console.error(result.error);
  */
-export async function setLocaleAction(locale: Locale): Promise<{ success: boolean; error?: string }> {
+export async function setLocaleAction(
+  locale: Locale,
+): Promise<{ success: boolean; error?: string }> {
   // Validate at the trust boundary even though Locale is typed — Server Actions
   // can be called from untyped JS or external requests.
   if (!AVAILABLE_LOCALES.includes(locale)) {

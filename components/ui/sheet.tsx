@@ -62,7 +62,13 @@ function SheetContent({
         {showCloseButton && (
           <SheetPrimitive.Close
             data-slot="sheet-close"
-            render={<Button variant="ghost" className="absolute top-3 end-3" size="icon-sm" />}
+            render={
+              <Button
+                variant="ghost"
+                className="absolute top-3 end-3"
+                size="icon-sm"
+              />
+            }
           >
             <XIcon />
             <span className="sr-only">Close</span>
@@ -74,11 +80,23 @@ function SheetContent({
 }
 
 function SheetHeader({ className, ...props }: React.ComponentProps<'div'>) {
-  return <div data-slot="sheet-header" className={cn('gap-0.5 p-4 flex flex-col', className)} {...props} />;
+  return (
+    <div
+      data-slot="sheet-header"
+      className={cn('gap-0.5 p-4 flex flex-col', className)}
+      {...props}
+    />
+  );
 }
 
 function SheetFooter({ className, ...props }: React.ComponentProps<'div'>) {
-  return <div data-slot="sheet-footer" className={cn('gap-2 p-4 mt-auto flex flex-col', className)} {...props} />;
+  return (
+    <div
+      data-slot="sheet-footer"
+      className={cn('gap-2 p-4 mt-auto flex flex-col', className)}
+      {...props}
+    />
+  );
 }
 
 function SheetTitle({ className, ...props }: SheetPrimitive.Title.Props) {
@@ -91,7 +109,10 @@ function SheetTitle({ className, ...props }: SheetPrimitive.Title.Props) {
   );
 }
 
-function SheetDescription({ className, ...props }: SheetPrimitive.Description.Props) {
+function SheetDescription({
+  className,
+  ...props
+}: SheetPrimitive.Description.Props) {
   return (
     <SheetPrimitive.Description
       data-slot="sheet-description"
@@ -101,4 +122,13 @@ function SheetDescription({ className, ...props }: SheetPrimitive.Description.Pr
   );
 }
 
-export { Sheet, SheetTrigger, SheetClose, SheetContent, SheetHeader, SheetFooter, SheetTitle, SheetDescription };
+export {
+  Sheet,
+  SheetTrigger,
+  SheetClose,
+  SheetContent,
+  SheetHeader,
+  SheetFooter,
+  SheetTitle,
+  SheetDescription,
+};

@@ -7,7 +7,12 @@ import { useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardTitle } from '@/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardTitle,
+} from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useAuth } from '@/hooks/use-auth';
@@ -87,7 +92,11 @@ export default function SignUpTab() {
           >
             <Avatar className="w-24 h-24 border-transparent">
               {avatarPreview ? (
-                <AvatarImage src={avatarPreview} className="object-cover" alt="Avatar preview" />
+                <AvatarImage
+                  src={avatarPreview}
+                  className="object-cover"
+                  alt="Avatar preview"
+                />
               ) : (
                 <AvatarFallback className="bg-card border-3 border-muted-foreground/50">
                   <User className="w-12 h-12 text-accent-foreground/50" />
@@ -123,7 +132,9 @@ export default function SignUpTab() {
               {...register('name')}
               className={`border ${errors.name ? 'border-red-500' : 'border-muted-foreground/50'}`}
             />
-            {errors.name && <p className="text-sm text-red-500">{errors.name.message}</p>}
+            {errors.name && (
+              <p className="text-sm text-red-500">{errors.name.message}</p>
+            )}
           </div>
           {/* Email Field */}
           <div className="grid gap-2">
@@ -134,7 +145,9 @@ export default function SignUpTab() {
               {...register('email')}
               className={`border ${errors.email ? 'border-red-500' : 'border-muted-foreground/50'}`}
             />
-            {errors.email && <p className="text-sm text-red-500">{errors.email.message}</p>}
+            {errors.email && (
+              <p className="text-sm text-red-500">{errors.email.message}</p>
+            )}
           </div>
           {/* Password Field */}
           <div className="grid gap-2">
@@ -145,7 +158,9 @@ export default function SignUpTab() {
               {...register('password')}
               className={`border ${errors.password ? 'border-red-500' : 'border-muted-foreground/50'}`}
             />
-            {errors.password && <p className="text-sm text-red-500">{errors.password.message}</p>}
+            {errors.password && (
+              <p className="text-sm text-red-500">{errors.password.message}</p>
+            )}
           </div>
           {/* Confirm Password Field */}
           <div className="grid gap-2">
@@ -156,7 +171,11 @@ export default function SignUpTab() {
               {...register('confirmPassword')}
               className={`border ${errors.confirmPassword ? 'border-red-500' : 'border-muted-foreground/50'}`}
             />
-            {errors.confirmPassword && <p className="text-sm text-red-500">{errors.confirmPassword.message}</p>}
+            {errors.confirmPassword && (
+              <p className="text-sm text-red-500">
+                {errors.confirmPassword.message}
+              </p>
+            )}
           </div>
 
           <Button disabled={loading} type="submit" className="w-full font-bold">

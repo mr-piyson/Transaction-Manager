@@ -19,7 +19,16 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Trash2, MoreHorizontal, ChevronDown, ChevronRight, FolderOpen, Package, Copy, MoveRight } from 'lucide-react';
+import {
+  Trash2,
+  MoreHorizontal,
+  ChevronDown,
+  ChevronRight,
+  FolderOpen,
+  Package,
+  Copy,
+  MoveRight,
+} from 'lucide-react';
 import { InvoiceRow, InvoiceLine, InvoiceGroup } from '@/types/generics';
 
 // Register AG Grid modules
@@ -27,7 +36,11 @@ ModuleRegistry.registerModules([AllCommunityModule]);
 
 interface InvoiceGridProps {
   items: InvoiceRow[];
-  onUpdateLine: (lineId: string, updates: Partial<InvoiceLine>, groupId?: string) => void;
+  onUpdateLine: (
+    lineId: string,
+    updates: Partial<InvoiceLine>,
+    groupId?: string,
+  ) => void;
   onRemoveLine: (lineId: string, groupId?: string) => void;
   onRemoveGroup: (groupId: string) => void;
   onToggleGroupExpanded: (groupId: string) => void;
@@ -181,11 +194,16 @@ function ActionsCellRenderer(props: ICellRendererParams<FlatRow>) {
             }
           ></DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuItem onClick={() => context.onToggleGroupExpanded(data.id)}>
+            <DropdownMenuItem
+              onClick={() => context.onToggleGroupExpanded(data.id)}
+            >
               {data.expanded ? 'Collapse Group' : 'Expand Group'}
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem className="text-destructive" onClick={() => context.onRemoveGroup(data.id)}>
+            <DropdownMenuItem
+              className="text-destructive"
+              onClick={() => context.onRemoveGroup(data.id)}
+            >
               <Trash2 className="h-4 w-4 mr-2" />
               Delete Group
             </DropdownMenuItem>
@@ -216,13 +234,22 @@ function ActionsCellRenderer(props: ICellRendererParams<FlatRow>) {
             <>
               <DropdownMenuSeparator />
               {groupId ? (
-                <DropdownMenuItem onClick={() => context.onMoveToGroup(data.id, groupId, undefined)}>
+                <DropdownMenuItem
+                  onClick={() =>
+                    context.onMoveToGroup(data.id, groupId, undefined)
+                  }
+                >
                   <MoveRight className="h-4 w-4 mr-2" />
                   Move out of group
                 </DropdownMenuItem>
               ) : (
                 context.groups.map((group: InvoiceGroup) => (
-                  <DropdownMenuItem key={group.id} onClick={() => context.onMoveToGroup(data.id, undefined, group.id)}>
+                  <DropdownMenuItem
+                    key={group.id}
+                    onClick={() =>
+                      context.onMoveToGroup(data.id, undefined, group.id)
+                    }
+                  >
                     <MoveRight className="h-4 w-4 mr-2" />
                     Move to {group.name}
                   </DropdownMenuItem>
@@ -231,7 +258,10 @@ function ActionsCellRenderer(props: ICellRendererParams<FlatRow>) {
             </>
           )}
           <DropdownMenuSeparator />
-          <DropdownMenuItem className="text-destructive" onClick={() => context.onRemoveLine(data.id, groupId)}>
+          <DropdownMenuItem
+            className="text-destructive"
+            onClick={() => context.onRemoveLine(data.id, groupId)}
+          >
             <Trash2 className="h-4 w-4 mr-2" />
             Delete
           </DropdownMenuItem>
@@ -386,7 +416,10 @@ export function InvoiceGrid({
     return '';
   }, []);
 
-  const getRowId = useCallback((params: { data: FlatRow }) => params.data.id, []);
+  const getRowId = useCallback(
+    (params: { data: FlatRow }) => params.data.id,
+    [],
+  );
 
   const context = useMemo(
     () => ({
@@ -394,7 +427,11 @@ export function InvoiceGrid({
       onRemoveGroup,
       onToggleGroupExpanded,
       groups,
-      onMoveToGroup: (lineId: string, fromGroupId: string | undefined, toGroupId: string | undefined) => {
+      onMoveToGroup: (
+        lineId: string,
+        fromGroupId: string | undefined,
+        toGroupId: string | undefined,
+      ) => {
         // This would need to be passed from parent
       },
     }),
@@ -406,7 +443,9 @@ export function InvoiceGrid({
       <div className="flex flex-col items-center justify-center h-[300px] border rounded-lg bg-muted/20">
         <Package className="h-12 w-12 text-muted-foreground/50 mb-3" />
         <p className="text-muted-foreground">No items added yet</p>
-        <p className="text-sm text-muted-foreground/70 mt-1">Click {'"Add Item"'} to get started</p>
+        <p className="text-sm text-muted-foreground/70 mt-1">
+          Click {'"Add Item"'} to get started
+        </p>
       </div>
     );
   }

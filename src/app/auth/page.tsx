@@ -11,7 +11,10 @@ export default async function Auth() {
         <span className="max-[375px]:hidden">Transaction Manager</span>
       </div>
       <div className="w-full h-full flex flex-col  items-center pt-10 ">
-        <Tabs defaultValue="Sign-In" className="flex flex-col w-90 max-[400px]:w-full ">
+        <Tabs
+          defaultValue="Sign-In"
+          className="flex flex-col w-90 max-[400px]:w-full "
+        >
           <TabsList className="flex w-full ">
             <TabsTrigger value="Sign-In">Sign In</TabsTrigger>
           </TabsList>

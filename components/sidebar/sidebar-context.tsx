@@ -1,7 +1,14 @@
 'use client';
 
 import { useIsMobile } from '@/hooks/use-mobile';
-import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react';
 
 export type BadgeVariant = 'default' | 'secondary' | 'destructive' | 'outline';
 
@@ -78,12 +85,19 @@ interface SidebarProviderProps {
   onNavigate?: (href: string) => void;
 }
 
-export function SidebarProvider({ children, defaultOpen = true, onNavigate }: SidebarProviderProps) {
+export function SidebarProvider({
+  children,
+  defaultOpen = true,
+  onNavigate,
+}: SidebarProviderProps) {
   const isMobile = useIsMobile();
   const [open, setOpen] = useState(defaultOpen);
   const [openMobile, setOpenMobile] = useState(false);
 
-  const toggleSidebar = useCallback(() => (isMobile ? setOpenMobile((o) => !o) : setOpen((o) => !o)), [isMobile]);
+  const toggleSidebar = useCallback(
+    () => (isMobile ? setOpenMobile((o) => !o) : setOpen((o) => !o)),
+    [isMobile],
+  );
 
   const value = useMemo(
     () => ({
@@ -100,7 +114,9 @@ export function SidebarProvider({ children, defaultOpen = true, onNavigate }: Si
 
   return (
     <NavContext.Provider value={onNavigate ?? null}>
-      <SidebarStateContext.Provider value={value}>{children}</SidebarStateContext.Provider>
+      <SidebarStateContext.Provider value={value}>
+        {children}
+      </SidebarStateContext.Provider>
     </NavContext.Provider>
   );
 }

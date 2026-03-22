@@ -2,7 +2,13 @@
 
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -19,12 +25,18 @@ interface InventorySelectorProps {
   selectedItems?: string[];
 }
 
-export function InventorySelector({ open, onOpenChange, onSelect, selectedItems = [] }: InventorySelectorProps) {
+export function InventorySelector({
+  open,
+  onOpenChange,
+  onSelect,
+  selectedItems = [],
+}: InventorySelectorProps) {
   const [searchQuery, setSearchQuery] = useState('');
 
   const { data: items = [], isLoading } = useQuery({
     queryKey: ['inventory', searchQuery],
-    queryFn: () => (searchQuery ? inventoryApi.search(searchQuery) : inventoryApi.getAll()),
+    queryFn: () =>
+      searchQuery ? inventoryApi.search(searchQuery) : inventoryApi.getAll(),
     enabled: open,
   });
 
@@ -47,7 +59,9 @@ export function InventorySelector({ open, onOpenChange, onSelect, selectedItems 
             <Package className="h-5 w-5 text-primary" />
             Select Inventory Item
           </DialogTitle>
-          <DialogDescription>Search and select items to add to your invoice</DialogDescription>
+          <DialogDescription>
+            Search and select items to add to your invoice
+          </DialogDescription>
         </DialogHeader>
 
         <div className="relative">
@@ -82,15 +96,23 @@ export function InventorySelector({ open, onOpenChange, onSelect, selectedItems 
                   >
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
-                        <span className="font-medium text-foreground truncate">{item.name}</span>
+                        <span className="font-medium text-foreground truncate">
+                          {item.name}
+                        </span>
                         <Badge variant="outline" className="text-xs shrink-0">
                           {item.sku}
                         </Badge>
                       </div>
-                      <p className="text-sm text-muted-foreground truncate mt-0.5">{item.description}</p>
+                      <p className="text-sm text-muted-foreground truncate mt-0.5">
+                        {item.description}
+                      </p>
                       <div className="flex items-center gap-3 mt-1">
-                        <span className="text-sm font-semibold text-primary">{formatPrice(item.unitPrice)}</span>
-                        <span className="text-xs text-muted-foreground">per {item.unit}</span>
+                        <span className="text-sm font-semibold text-primary">
+                          {formatPrice(item.unitPrice)}
+                        </span>
+                        <span className="text-xs text-muted-foreground">
+                          per {item.unit}
+                        </span>
                         <Badge variant="secondary" className="text-xs">
                           {item.category}
                         </Badge>

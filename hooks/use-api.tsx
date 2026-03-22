@@ -23,5 +23,9 @@ export function ApiProvider({ children }: { children: React.ReactNode }) {
     window.location.reload(); // Reloading ensures all hooks reset with the new client
   };
 
-  return <ApiContext.Provider value={{ client, updateServer, baseUrl }}>{children}</ApiContext.Provider>;
+  return (
+    <ApiContext.Provider value={{ client, updateServer, baseUrl }}>
+      {children}
+    </ApiContext.Provider>
+  );
 }

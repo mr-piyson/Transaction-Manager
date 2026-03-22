@@ -1,4 +1,9 @@
-import React, { JSXElementConstructor, ReactElement, useMemo, useState } from 'react';
+import React, {
+  JSXElementConstructor,
+  ReactElement,
+  useMemo,
+  useState,
+} from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -15,9 +20,19 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Calendar } from '@/components/ui/calendar';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { CalendarIcon, AlertCircle, Loader2, Upload, X } from 'lucide-react';
 import { format } from 'date-fns';
@@ -119,7 +134,11 @@ export interface ToastConfig {
 // UNIVERSAL DIALOG PROPS
 // ============================================================================
 
-export interface UniversalDialogProps<TData = any, TVariables = Partial<TData>, TError = Error> {
+export interface UniversalDialogProps<
+  TData = any,
+  TVariables = Partial<TData>,
+  TError = Error,
+> {
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
   title: string;
@@ -185,8 +204,15 @@ const generateZodSchema = <T,>(fields: FieldSchema<T>[]) => {
       case 'textarea': {
         const textField = field as TextFieldSchema;
         fieldSchema = z.string();
-        if (field.required) fieldSchema = (fieldSchema as z.ZodString).min(1, `${field.label} is required`);
-        if (field.type === 'email') fieldSchema = (fieldSchema as z.ZodString).email('Invalid email address');
+        if (field.required)
+          fieldSchema = (fieldSchema as z.ZodString).min(
+            1,
+            `${field.label} is required`,
+          );
+        if (field.type === 'email')
+          fieldSchema = (fieldSchema as z.ZodString).email(
+            'Invalid email address',
+          );
         if (textField.minLength)
           fieldSchema = (fieldSchema as z.ZodString).min(
             textField.minLength,
@@ -197,7 +223,8 @@ const generateZodSchema = <T,>(fields: FieldSchema<T>[]) => {
             textField.maxLength,
             `Maximum ${textField.maxLength} characters allowed`,
           );
-        if (!field.required) fieldSchema = fieldSchema.optional().or(z.literal(''));
+        if (!field.required)
+          fieldSchema = fieldSchema.optional().or(z.literal(''));
         break;
       }
 
@@ -205,7 +232,8 @@ const generateZodSchema = <T,>(fields: FieldSchema<T>[]) => {
         const numberField = field as NumberFieldSchema;
         fieldSchema = z.preprocess(
           (val) => {
-            if (val === '' || val === undefined || val === null) return field.required ? undefined : null;
+            if (val === '' || val === undefined || val === null)
+              return field.required ? undefined : null;
             const num = Number(val);
             return isNaN(num) ? val : num;
           },
@@ -213,8 +241,16 @@ const generateZodSchema = <T,>(fields: FieldSchema<T>[]) => {
             let numSchema = z.number().refine((val) => !isNaN(val), {
               message: `${field.label} must be a number`,
             });
-            if (numberField.min !== undefined) numSchema = numSchema.min(numberField.min, `Min: ${numberField.min}`);
-            if (numberField.max !== undefined) numSchema = numSchema.max(numberField.max, `Max: ${numberField.max}`);
+            if (numberField.min !== undefined)
+              numSchema = numSchema.min(
+                numberField.min,
+                `Min: ${numberField.min}`,
+              );
+            if (numberField.max !== undefined)
+              numSchema = numSchema.max(
+                numberField.max,
+                `Max: ${numberField.max}`,
+              );
             return field.required ? numSchema : numSchema.optional().nullable();
           })(),
         );
@@ -229,9 +265,11 @@ const generateZodSchema = <T,>(fields: FieldSchema<T>[]) => {
 
       case 'date':
         fieldSchema = field.required
-          ? z.date().refine((val) => val instanceof Date && !isNaN(val.getTime()), {
-              message: `${field.label} is required`,
-            })
+          ? z
+              .date()
+              .refine((val) => val instanceof Date && !isNaN(val.getTime()), {
+                message: `${field.label} is required`,
+              })
           : z.date().optional().nullable();
         break;
 
@@ -240,7 +278,9 @@ const generateZodSchema = <T,>(fields: FieldSchema<T>[]) => {
         const fileField = field as FileFieldSchema;
         if (fileField.multiple) {
           fieldSchema = field.required
-            ? z.array(z.instanceof(File)).min(1, `At least one ${field.label.toLowerCase()} is required`)
+            ? z
+                .array(z.instanceof(File))
+                .min(1, `At least one ${field.label.toLowerCase()} is required`)
             : z.array(z.instanceof(File)).optional();
         } else {
           fieldSchema = field.required
@@ -282,7 +322,9 @@ const FieldWrapper: React.FC<{
       {required && <span className="text-destructive ml-1">*</span>}
     </label>
     {children}
-    {description && <p className="text-sm text-muted-foreground">{description}</p>}
+    {description && (
+      <p className="text-sm text-muted-foreground">{description}</p>
+    )}
     {error && <p className="text-sm text-destructive">{error}</p>}
   </div>
 );
@@ -302,9 +344,16 @@ const FilePreview: React.FC<{
   return (
     <div className="mt-2 grid grid-cols-2 gap-2">
       {fileArray.map((file, index) => (
-        <div key={index} className="relative group rounded-lg border border-neutral-200 overflow-hidden">
+        <div
+          key={index}
+          className="relative group rounded-lg border border-neutral-200 overflow-hidden"
+        >
           {isImage && file.type.startsWith('image/') ? (
-            <img src={URL.createObjectURL(file)} alt={file.name} className="w-full h-24 object-cover" />
+            <img
+              src={URL.createObjectURL(file)}
+              alt={file.name}
+              className="w-full h-24 object-cover"
+            />
           ) : (
             <div className="w-full h-24 flex items-center justify-center bg-neutral-50 p-2">
               <p className="text-xs text-neutral-600 truncate">{file.name}</p>
@@ -327,7 +376,11 @@ const FilePreview: React.FC<{
 // FIELD RENDERER
 // ============================================================================
 
-const renderField = <T,>(field: FieldSchema<T>, form: any, isSubmitting: boolean) => {
+const renderField = <T,>(
+  field: FieldSchema<T>,
+  form: any,
+  isSubmitting: boolean,
+) => {
   const fieldName = String(field.name);
   const error = form.formState.errors[fieldName]?.message as string | undefined;
   const wrapperClass = field.width === 'half' ? 'flex-1' : 'w-full';
@@ -426,9 +479,15 @@ const renderField = <T,>(field: FieldSchema<T>, form: any, isSubmitting: boolean
             control={form.control}
             name={fieldName}
             render={({ field: f }) => (
-              <Select onValueChange={f.onChange} defaultValue={f.value} disabled={isSubmitting}>
+              <Select
+                onValueChange={f.onChange}
+                defaultValue={f.value}
+                disabled={isSubmitting}
+              >
                 <SelectTrigger>
-                  <SelectValue placeholder={field.placeholder || 'Select an option'} />
+                  <SelectValue
+                    placeholder={field.placeholder || 'Select an option'}
+                  />
                 </SelectTrigger>
                 <SelectContent>
                   {selectField.options.map((option) => (
@@ -463,9 +522,16 @@ const renderField = <T,>(field: FieldSchema<T>, form: any, isSubmitting: boolean
                     <Button
                       variant="outline"
                       disabled={isSubmitting}
-                      className={cn('w-full pl-3 text-left font-normal', !f.value && 'text-muted-foreground')}
+                      className={cn(
+                        'w-full pl-3 text-left font-normal',
+                        !f.value && 'text-muted-foreground',
+                      )}
                     >
-                      {f.value ? format(f.value, 'PPP') : <span>{field.placeholder || 'Pick a date'}</span>}
+                      {f.value ? (
+                        format(f.value, 'PPP')
+                      ) : (
+                        <span>{field.placeholder || 'Pick a date'}</span>
+                      )}
                       <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                     </Button>
                   }
@@ -510,9 +576,13 @@ const renderField = <T,>(field: FieldSchema<T>, form: any, isSubmitting: boolean
                 >
                   <div className="flex flex-col items-center justify-center">
                     <Upload className="w-8 h-8 mb-2 text-neutral-400" />
-                    <p className="text-sm text-neutral-600">{field.placeholder || 'Click to upload'}</p>
+                    <p className="text-sm text-neutral-600">
+                      {field.placeholder || 'Click to upload'}
+                    </p>
                     {fileField.maxSize && (
-                      <p className="text-xs text-neutral-400 mt-1">Max size: {fileField.maxSize}MB</p>
+                      <p className="text-xs text-neutral-400 mt-1">
+                        Max size: {fileField.maxSize}MB
+                      </p>
                     )}
                   </div>
                   <input
@@ -525,9 +595,14 @@ const renderField = <T,>(field: FieldSchema<T>, form: any, isSubmitting: boolean
                     onChange={(e) => {
                       const files = Array.from(e.target.files || []);
                       if (fileField.maxSize) {
-                        const invalid = files.filter((file) => file.size > fileField.maxSize! * 1024 * 1024);
+                        const invalid = files.filter(
+                          (file) =>
+                            file.size > fileField.maxSize! * 1024 * 1024,
+                        );
                         if (invalid.length > 0) {
-                          toast.error(`File size exceeds ${fileField.maxSize}MB limit`);
+                          toast.error(
+                            `File size exceeds ${fileField.maxSize}MB limit`,
+                          );
                           return;
                         }
                       }
@@ -539,7 +614,9 @@ const renderField = <T,>(field: FieldSchema<T>, form: any, isSubmitting: boolean
                   files={f.value}
                   onRemove={(index) => {
                     if (fileField.multiple && Array.isArray(f.value)) {
-                      f.onChange(f.value.filter((_: any, i: number) => i !== index));
+                      f.onChange(
+                        f.value.filter((_: any, i: number) => i !== index),
+                      );
                     } else {
                       f.onChange(null);
                     }
@@ -568,7 +645,11 @@ const renderField = <T,>(field: FieldSchema<T>, form: any, isSubmitting: boolean
             control={form.control}
             name={fieldName}
             render={({ field: f, fieldState }) => (
-              <CustomComponent value={f.value} onChange={f.onChange} error={fieldState.error?.message} />
+              <CustomComponent
+                value={f.value}
+                onChange={f.onChange}
+                error={fieldState.error?.message}
+              />
             )}
           />
         </FieldWrapper>
@@ -584,8 +665,11 @@ const renderField = <T,>(field: FieldSchema<T>, form: any, isSubmitting: boolean
 // HELPERS
 // ============================================================================
 
-const resolveMessage = <T,>(msg: string | ((val: T) => string) | undefined, val: T, fallback: string) =>
-  typeof msg === 'function' ? msg(val) : (msg ?? fallback);
+const resolveMessage = <T,>(
+  msg: string | ((val: T) => string) | undefined,
+  val: T,
+  fallback: string,
+) => (typeof msg === 'function' ? msg(val) : (msg ?? fallback));
 
 const extractErrorMessage = (error: unknown): string => {
   if (!error) return 'An unexpected error occurred';
@@ -593,7 +677,12 @@ const extractErrorMessage = (error: unknown): string => {
   if (error instanceof Error) return error.message;
   if (typeof error === 'object') {
     const e = error as any;
-    return e.message ?? e.error?.message ?? e.data?.message ?? 'An unexpected error occurred';
+    return (
+      e.message ??
+      e.error?.message ??
+      e.data?.message ??
+      'An unexpected error occurred'
+    );
   }
   return 'An unexpected error occurred';
 };
@@ -602,7 +691,11 @@ const extractErrorMessage = (error: unknown): string => {
 // MAIN COMPONENT
 // ============================================================================
 
-export const UniversalDialog = <TData = any, TVariables = Partial<TData>, TError = Error>({
+export const UniversalDialog = <
+  TData = any,
+  TVariables = Partial<TData>,
+  TError = Error,
+>({
   open,
   onOpenChange,
   title,
@@ -622,7 +715,8 @@ export const UniversalDialog = <TData = any, TVariables = Partial<TData>, TError
   const [internalOpen, setInternalOpen] = useState(false);
   const effectiveOpen = isControlled ? open : internalOpen;
 
-  const toastConfig: ToastConfig | false = toasts === false ? false : { enabled: true, ...toasts };
+  const toastConfig: ToastConfig | false =
+    toasts === false ? false : { enabled: true, ...toasts };
 
   const handleOpenChange = (nextOpen: boolean) => {
     if (!isControlled) setInternalOpen(nextOpen);
@@ -658,7 +752,9 @@ export const UniversalDialog = <TData = any, TVariables = Partial<TData>, TError
               break;
             case 'image':
             case 'file':
-              acc[fieldName] = (field as FileFieldSchema<TData>).multiple ? [] : null;
+              acc[fieldName] = (field as FileFieldSchema<TData>).multiple
+                ? []
+                : null;
               break;
             default:
               acc[fieldName] = '';
@@ -675,7 +771,13 @@ export const UniversalDialog = <TData = any, TVariables = Partial<TData>, TError
 
     onSuccess: (data, variables) => {
       if (toastConfig !== false && toastConfig.enabled !== false) {
-        toast.success(resolveMessage(toastConfig.successMessage, data, 'Operation completed successfully!'));
+        toast.success(
+          resolveMessage(
+            toastConfig.successMessage,
+            data,
+            'Operation completed successfully!',
+          ),
+        );
       }
       closeDialog();
       onSuccess?.(data, variables);
@@ -683,7 +785,13 @@ export const UniversalDialog = <TData = any, TVariables = Partial<TData>, TError
 
     onError: (error, variables) => {
       if (toastConfig !== false && toastConfig.enabled !== false) {
-        toast.error(resolveMessage(toastConfig.errorMessage, error, extractErrorMessage(error)));
+        toast.error(
+          resolveMessage(
+            toastConfig.errorMessage,
+            error,
+            extractErrorMessage(error),
+          ),
+        );
       }
       if (!closeOnError) closeDialog();
       onError?.(error, variables);
@@ -692,7 +800,9 @@ export const UniversalDialog = <TData = any, TVariables = Partial<TData>, TError
 
   const handleSubmit = (data: any) => {
     mutation.reset();
-    const payload = transformData ? transformData(data as Partial<TData>) : (data as TVariables);
+    const payload = transformData
+      ? transformData(data as Partial<TData>)
+      : (data as TVariables);
     mutation.mutate(payload);
   };
 
@@ -721,7 +831,10 @@ export const UniversalDialog = <TData = any, TVariables = Partial<TData>, TError
   }, [fields]);
 
   const isSubmitting = mutation.isPending;
-  const mutationError = mutation.isError && closeOnError ? extractErrorMessage(mutation.error) : null;
+  const mutationError =
+    mutation.isError && closeOnError
+      ? extractErrorMessage(mutation.error)
+      : null;
 
   return (
     <Dialog open={effectiveOpen} onOpenChange={handleOpenChange}>
@@ -731,7 +844,9 @@ export const UniversalDialog = <TData = any, TVariables = Partial<TData>, TError
           <div className="p-4">
             <DialogHeader className="pb-4">
               <DialogTitle>{title}</DialogTitle>
-              {description && <DialogDescription>{description}</DialogDescription>}
+              {description && (
+                <DialogDescription>{description}</DialogDescription>
+              )}
             </DialogHeader>
 
             {mutationError && (
@@ -753,11 +868,19 @@ export const UniversalDialog = <TData = any, TVariables = Partial<TData>, TError
           </div>
 
           <DialogFooter className="flex flex-row w-full p-5 m-0">
-            <Button type="button" className="flex-1" variant="outline" onClick={closeDialog} disabled={isSubmitting}>
+            <Button
+              type="button"
+              className="flex-1"
+              variant="outline"
+              onClick={closeDialog}
+              disabled={isSubmitting}
+            >
               {cancelLabel}
             </Button>
             <Button type="submit" className="flex-1" disabled={isSubmitting}>
-              {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {isSubmitting && (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              )}
               {submitLabel}
             </Button>
           </DialogFooter>

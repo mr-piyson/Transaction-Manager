@@ -20,8 +20,18 @@ function ItemGroup({ className, ...props }: React.ComponentProps<'div'>) {
   );
 }
 
-function ItemSeparator({ className, ...props }: React.ComponentProps<typeof Separator>) {
-  return <Separator data-slot="item-separator" orientation="horizontal" className={cn('my-2', className)} {...props} />;
+function ItemSeparator({
+  className,
+  ...props
+}: React.ComponentProps<typeof Separator>) {
+  return (
+    <Separator
+      data-slot="item-separator"
+      orientation="horizontal"
+      className={cn('my-2', className)}
+      {...props}
+    />
+  );
 }
 
 const itemVariants = cva(
@@ -142,14 +152,23 @@ function ItemDescription({ className, ...props }: React.ComponentProps<'p'>) {
 }
 
 function ItemActions({ className, ...props }: React.ComponentProps<'div'>) {
-  return <div data-slot="item-actions" className={cn('gap-2 flex items-center', className)} {...props} />;
+  return (
+    <div
+      data-slot="item-actions"
+      className={cn('gap-2 flex items-center', className)}
+      {...props}
+    />
+  );
 }
 
 function ItemHeader({ className, ...props }: React.ComponentProps<'div'>) {
   return (
     <div
       data-slot="item-header"
-      className={cn('gap-2 flex basis-full items-center justify-between', className)}
+      className={cn(
+        'gap-2 flex basis-full items-center justify-between',
+        className,
+      )}
       {...props}
     />
   );
@@ -159,7 +178,10 @@ function ItemFooter({ className, ...props }: React.ComponentProps<'div'>) {
   return (
     <div
       data-slot="item-footer"
-      className={cn('gap-2 flex basis-full items-center justify-between', className)}
+      className={cn(
+        'gap-2 flex basis-full items-center justify-between',
+        className,
+      )}
       {...props}
     />
   );

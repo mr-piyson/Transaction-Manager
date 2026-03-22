@@ -8,7 +8,11 @@ interface InvoiceItemCardGroupProps {
   children: React.ReactNode;
 }
 
-export default function InvoiceItemCardGroup({ title, totalQty, children }: InvoiceItemCardGroupProps) {
+export default function InvoiceItemCardGroup({
+  title,
+  totalQty,
+  children,
+}: InvoiceItemCardGroupProps) {
   return (
     <div className="flex flex-col w-full border  overflow-hidden bg-background pb-8 mb-1">
       {/* Group Header - Matches InvoiceItemCard style */}
@@ -20,18 +24,24 @@ export default function InvoiceItemCardGroup({ title, totalQty, children }: Invo
             </AvatarFallback>
           </Avatar>
           <div>
-            <h3 className="font-bold text-sm uppercase tracking-wider text-muted-foreground">{title}</h3>
+            <h3 className="font-bold text-sm uppercase tracking-wider text-muted-foreground">
+              {title}
+            </h3>
           </div>
         </div>
 
         <div className="flex flex-col items-end">
-          <span className="text-xs font-medium text-muted-foreground uppercase">Total Items</span>
+          <span className="text-xs font-medium text-muted-foreground uppercase">
+            Total Items
+          </span>
           <p className="text-sm font-bold">{totalQty}</p>
         </div>
       </div>
 
       {/* List of Children (The InvoiceItemCards) */}
-      <div className="flex ps-8 flex-col divide-y divide-border/50">{children}</div>
+      <div className="flex ps-8 flex-col divide-y divide-border/50">
+        {children}
+      </div>
     </div>
   );
 }
