@@ -10,7 +10,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Spinner } from '@/components/ui/spinner';
 import { Search, Package, Plus, Check } from 'lucide-react';
 import { inventoryApi } from '@/lib/api';
-import { InventoryItem } from '@/types/generics';
+import { InventoryItem } from '@prisma/client';
 
 interface InventorySelectorProps {
   open: boolean;
@@ -60,13 +60,13 @@ export function InventorySelector({ open, onOpenChange, onSelect, selectedItems 
           />
         </div>
 
-        <ScrollArea className="flex-1 min-h-[300px] max-h-[400px] border rounded-lg">
+        <ScrollArea className="flex-1 min-h-75 max-h-100 border rounded-lg">
           {isLoading ? (
-            <div className="flex items-center justify-center h-[300px]">
+            <div className="flex items-center justify-center h-75">
               <Spinner className="h-8 w-8" />
             </div>
           ) : items.length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-[300px] text-muted-foreground">
+            <div className="flex flex-col items-center justify-center h-75 text-muted-foreground">
               <Package className="h-12 w-12 mb-3 opacity-50" />
               <p>No items found</p>
             </div>

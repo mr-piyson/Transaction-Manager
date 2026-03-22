@@ -58,7 +58,7 @@ export function ContractCard(props: { data: Contract }) {
         </div>
 
         {/* Progress Bar with Date Labels */}
-        <div className="w-full max-w-[200px] space-y-1">
+        <div className="w-full max-w-50 space-y-1">
           <Progress value={progressValue} className="h-1" />
           <div className="flex items-center gap-3 text-[10px] text-muted-foreground italic leading-none">
             <span className="flex items-center gap-1">
