@@ -4,7 +4,7 @@ import { useState, useMemo } from 'react';
 import { Box, FileText, CheckCircle2, Clock } from 'lucide-react';
 
 import { ListView } from '@/components/list-view';
-import { useI18n } from '@/hooks/use-i18n';
+import { useI18n } from '@/i18n/use-i18n';
 import { Header } from '@/components/Header';
 import { CreateInvoiceDialog } from './create-invoice-dialog';
 import { InvoiceCard } from './invoiceCard';
@@ -49,7 +49,7 @@ export default function InvoicesPage() {
               </TabsTrigger>
 
               <TabsTrigger
-                className="group-data-[variant=default]/tabs-list:data-active:bg-destructive!"
+                className="group-data-[variant=default]/tabs-list:data-active:bg-destructive-foreground!"
                 value="Unpaid"
               >
                 Unpaid

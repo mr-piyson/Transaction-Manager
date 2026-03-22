@@ -9,7 +9,11 @@ import {
 import { AbilityBuilder, PureAbility } from '@casl/ability';
 import { createPrismaAbility, PrismaQuery, Subjects } from '@casl/prisma';
 
-type AppSubjects =
+// 1. Define Actions as a standalone type
+export type AppActions = 'manage' | 'read' | 'create' | 'update' | 'delete';
+
+// 2. Define Subjects (keep your existing logic)
+export type AppSubjects =
   | Subjects<{
       User: User;
       Invoice: Invoice;
@@ -19,10 +23,8 @@ type AppSubjects =
     }>
   | 'all';
 
-export type AppAbility = PureAbility<
-  ['manage' | 'read' | 'create' | 'update' | 'delete', AppSubjects],
-  PrismaQuery
->;
+// 3. Use them in your Ability type
+export type AppAbility = PureAbility<[AppActions, AppSubjects], PrismaQuery>;
 
 /**
  * 1. MANUAL PRISMA FILTERS (For Readability/Performance)

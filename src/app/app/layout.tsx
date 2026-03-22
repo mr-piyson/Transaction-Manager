@@ -1,11 +1,10 @@
 'use client';
 
 import { SplashScreen } from '@/components/Splash-Screen';
-import { SidebarProvider } from '@/components/sidebar';
 import { AppSidebar } from './AppSidebar';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AlertProvider } from '@/components/Alert-dialog';
-import { BottomNavigation } from '@/components/nav-bar';
+import { SidebarProvider } from '@/components/sidebar';
 // import { BottomNavigation } from "@/components/BottomNavigation";
 export const queryClient = new QueryClient();
 
@@ -23,7 +22,6 @@ export default function App(props: any) {
               {props.children}
             </div>
             {/* Bottom Navigation */}
-            <BottomNavigation />
           </div>
         </SidebarProvider>
       </AlertProvider>

@@ -23,6 +23,7 @@ export const en = {
     inventory: 'Inventory',
     inventoryItems: 'Inventory Items',
     contracts: 'Contracts',
+    navigation: 'Navigation',
   },
   auth: {
     login: 'Login',

@@ -7,7 +7,7 @@ import { InventoryItem } from '@prisma/client';
 import { ListView } from '@/components/list-view';
 import { Button } from '@/components/ui/button';
 import { UniversalDialog } from '@/components/dialog';
-import { useI18n } from '@/hooks/use-i18n';
+import { useI18n } from '@/i18n/use-i18n';
 
 // Optional: If you want to drop axios entirely, use Eden for the mutation.
 import axios from 'axios';

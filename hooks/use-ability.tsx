@@ -1,7 +1,7 @@
 // components/AbilityProvider.tsx
 'use client';
 
-import { AppAbility } from '@/lib/access_control';
+import { AppAbility } from '@/lib/permissions';
 import { createContext, useContext } from 'react';
 
 const AbilityContext = createContext<AppAbility>(null!);

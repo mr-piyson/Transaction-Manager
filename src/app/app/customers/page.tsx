@@ -5,7 +5,7 @@ import { Customer } from '@prisma/client';
 import { ListView } from '@/components/list-view';
 import { Button } from '@/components/ui/button';
 import { UniversalDialog } from '@/components/dialog';
-import { useI18n } from '@/hooks/use-i18n';
+import { useI18n } from '@/i18n/use-i18n';
 import { CustomerCard } from './customerCard';
 import axios from 'axios';
 import { Header } from '@/components/Header';
