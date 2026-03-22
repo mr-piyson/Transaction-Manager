@@ -36,7 +36,7 @@ export class ApiResponse {
 }
 
 import axios from 'axios';
-import { InventoryItem, Invoice } from '@/types/invoice';
+import { InventoryItem, Invoice } from '@/types/generics';
 import { mockInventoryItems, mockInvoice } from './mock-data';
 
 // Create axios instance with default config

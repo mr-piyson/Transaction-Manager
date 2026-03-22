@@ -1,4 +1,4 @@
-import { InventoryItem, Invoice, InvoiceLine, InvoiceGroup } from '@/types/invoice';
+import { InventoryItem, Invoice, InvoiceLine, InvoiceGroup } from '@/types/generics';
 
 export const mockInventoryItems: InventoryItem[] = [
   {

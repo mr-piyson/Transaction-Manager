@@ -7,8 +7,8 @@ export interface InvoiceWithCustomer extends Invoice {
   customer: Customer;
 }
 
-// We define a type for creating a customer (usually excludes the ID and timestamps)
-type InvoiceInput = Omit<Invoice, 'id' | 'createdAt' | 'updatedAt'>;
+// Now Omit will respect those optional flags
+type InvoiceInput = Omit<OptionalIfNullable<Invoice>, 'id' | 'createdAt' | 'updatedAt'>;
 
 export const useInvoices = () => {
   const queryKey = ['invoices'];
@@ -25,10 +25,10 @@ export const useInvoices = () => {
         enabled: !!id,
       }),
     // --- CREATE ---
-    create: (): UseMutationResult<Customer, Error, InvoiceInput> =>
+    create: (): UseMutationResult<Invoice, Error, InvoiceInput> =>
       useMutation({
         mutationFn: async (newCustomer) => {
-          const { data } = await axios.post<Customer>('/api/invoices', newCustomer);
+          const { data } = await axios.post<Invoice>('/api/invoices', newCustomer);
           return data;
         },
         onSuccess: () => {
@@ -37,11 +37,10 @@ export const useInvoices = () => {
       }),
 
     // --- UPDATE ---
-    // We use Partial<Customer> so you can send only the fields that changed
-    update: (): UseMutationResult<Customer, Error, Partial<Customer> & { id: string }> =>
+    update: (): UseMutationResult<Invoice, Error, Partial<Invoice> & { id: string }> =>
       useMutation({
         mutationFn: async ({ id, ...updates }) => {
-          const { data } = await axios.patch<Customer>(`/api/invoices/${id}`, updates);
+          const { data } = await axios.patch<Invoice>(`/api/invoices/${id}`, updates);
           return data;
         },
         onSuccess: (updatedCustomer) => {

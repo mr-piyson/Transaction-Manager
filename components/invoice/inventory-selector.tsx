@@ -2,13 +2,7 @@
 
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-} from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -16,7 +10,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Spinner } from '@/components/ui/spinner';
 import { Search, Package, Plus, Check } from 'lucide-react';
 import { inventoryApi } from '@/lib/api';
-import { InventoryItem } from '@/types/invoice';
+import { InventoryItem } from '@/types/generics';
 
 interface InventorySelectorProps {
   open: boolean;
@@ -25,12 +19,7 @@ interface InventorySelectorProps {
   selectedItems?: string[];
 }
 
-export function InventorySelector({
-  open,
-  onOpenChange,
-  onSelect,
-  selectedItems = [],
-}: InventorySelectorProps) {
+export function InventorySelector({ open, onOpenChange, onSelect, selectedItems = [] }: InventorySelectorProps) {
   const [searchQuery, setSearchQuery] = useState('');
 
   const { data: items = [], isLoading } = useQuery({
@@ -58,19 +47,12 @@ export function InventorySelector({
             <Package className="h-5 w-5 text-primary" />
             Select Inventory Item
           </DialogTitle>
-          <DialogDescription>
-            Search and select items to add to your invoice
-          </DialogDescription>
+          <DialogDescription>Search and select items to add to your invoice</DialogDescription>
         </DialogHeader>
 
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Search by name, SKU, or description..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10"
-          />
+          <Input placeholder="Search by name, SKU, or description..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="pl-10" />
         </div>
 
         <ScrollArea className="flex-1 min-h-[300px] max-h-[400px] border rounded-lg">
@@ -88,32 +70,18 @@ export function InventorySelector({
               {items.map((item) => {
                 const isSelected = selectedItems.includes(item.id);
                 return (
-                  <div
-                    key={item.id}
-                    className={`group flex items-center justify-between p-3 rounded-lg border transition-colors cursor-pointer hover:bg-accent ${
-                      isSelected ? 'bg-primary/5 border-primary/20' : 'border-transparent'
-                    }`}
-                    onClick={() => handleSelect(item)}
-                  >
+                  <div key={item.id} className={`group flex items-center justify-between p-3 rounded-lg border transition-colors cursor-pointer hover:bg-accent ${isSelected ? 'bg-primary/5 border-primary/20' : 'border-transparent'}`} onClick={() => handleSelect(item)}>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
-                        <span className="font-medium text-foreground truncate">
-                          {item.name}
-                        </span>
+                        <span className="font-medium text-foreground truncate">{item.name}</span>
                         <Badge variant="outline" className="text-xs shrink-0">
                           {item.sku}
                         </Badge>
                       </div>
-                      <p className="text-sm text-muted-foreground truncate mt-0.5">
-                        {item.description}
-                      </p>
+                      <p className="text-sm text-muted-foreground truncate mt-0.5">{item.description}</p>
                       <div className="flex items-center gap-3 mt-1">
-                        <span className="text-sm font-semibold text-primary">
-                          {formatPrice(item.unitPrice)}
-                        </span>
-                        <span className="text-xs text-muted-foreground">
-                          per {item.unit}
-                        </span>
+                        <span className="text-sm font-semibold text-primary">{formatPrice(item.unitPrice)}</span>
+                        <span className="text-xs text-muted-foreground">per {item.unit}</span>
                         <Badge variant="secondary" className="text-xs">
                           {item.category}
                         </Badge>

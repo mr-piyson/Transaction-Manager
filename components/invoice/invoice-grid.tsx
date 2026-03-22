@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Trash2, MoreHorizontal, ChevronDown, ChevronRight, FolderOpen, Package, Copy, MoveRight } from 'lucide-react';
-import { InvoiceRow, InvoiceLine, InvoiceGroup } from '@/types/invoice';
+import { InvoiceRow, InvoiceLine, InvoiceGroup } from '@/types/generics';
 
 // Register AG Grid modules
 ModuleRegistry.registerModules([AllCommunityModule]);

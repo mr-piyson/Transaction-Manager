@@ -16,6 +16,8 @@ import { cn } from '@/lib/utils';
 import { UniversalDialog } from '@/components/dialog';
 import { Invoice } from '@prisma/client';
 import { queryClient } from '../layout';
+import { useCustomers } from '@/hooks/data/use-customers';
+import { useInvoices } from '@/hooks/data/use-invoices';
 
 interface Customer {
   id: number;
@@ -30,31 +32,26 @@ export function CreateInvoiceDialog(props: { onSuccess?: (invoice: any) => void 
   const [selectedCustomerId, setSelectedCustomerId] = useState<number | null>(null);
   const [description, setDescription] = useState('');
   const [comboOpen, setComboOpen] = useState(false);
+  const invoiceMutation = useInvoices().create();
 
   // Fetch customers for the dropdown
-  const { data: customers = [], refetch: refetchCustomers } = useQuery<Customer[]>({
-    queryKey: ['customers'],
-    queryFn: async () => {
-      const res = await axios.get('/api/customers');
-      return res.data;
-    },
-  });
+  const { data: customers = [], refetch: refetchCustomers } = useCustomers().getAll();
 
   const handleCreateInvoice = async () => {
     if (!selectedCustomerId) return toast.error('Please select a customer');
 
     setLoading(true);
     try {
-      const res = await axios.post<Invoice>('/api/invoices', {
+      invoiceMutation.mutate({
         customerId: selectedCustomerId,
-        description,
         date: new Date(),
+        description: '',
+        currency: 'BHD',
+        isCompleted: false,
       });
 
       toast.success('Invoice created successfully');
-      queryClient.refetchQueries({ queryKey: ['invoices'] });
       setOpen(false);
-      props.onSuccess?.({ invoice: res.data });
       resetForm();
     } catch (error) {
       toast.error('Failed to create invoice');

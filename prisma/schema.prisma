@@ -9,12 +9,10 @@ datasource db {
   provider = "sqlite"
 }
 
-enum InvoiceStatus {
-  DRAFT
-  APPROVED
-  PARTIAL
-  PAID
-  CANCELLED
+enum InvoicePaymentStatus {
+  Paid
+  Unpaid
+  Partial
 }
 
 enum PaymentMethod {
@@ -83,10 +81,11 @@ model InventoryItem {
   description   String?
   purchasePrice Int
   salesPrice    Int
-  image         String?
+  filePath      String?
+  imageUrl      String?
   invoice       Invoice?      @relation(fields: [invoiceId], references: [id])
   invoiceId     Int?
-  invoiceItems  InvoiceItem[]
+  invoiceItems  InvoiceLine[]
 
   createdAt            DateTime            @default(now())
   updatedAt            DateTime?           @updatedAt
@@ -117,32 +116,33 @@ model Customer {
 }
 
 model Invoice {
-  id          Int            @id @default(autoincrement())
-  date        DateTime       @default(now())
-  description String?
-  customerId  Int?
-  tax         Int?
-  status      InvoiceStatus? @default(DRAFT)
-  currency    String         @default("BHD")
+  id            Int                   @id @default(autoincrement())
+  date          DateTime              @default(now())
+  description   String?
+  customerId    Int?
+  paymentStatus InvoicePaymentStatus? @default(Unpaid)
+  isCompleted   Boolean               @default(false)
+  currency      String?               @default("BHD")
 
-  subtotal      Int?
-  total         Int?
-  discountTotal Int?
-  taxTotal      Int?
+  subtotal      Int? @default(0)
+  total         Int? @default(0)
+  discountTotal Int? @default(0)
+  taxTotal      Int? @default(0)
 
-  createdAt DateTime  @default(now())
+  createdAt DateTime? @default(now())
   updatedAt DateTime? @updatedAt
 
   // Relations
-  payments     Payment[]
-  invoiceItems InventoryItem[]
-  customer     Customer?       @relation(fields: [customerId], references: [id])
+  payments       Payment[]
+  invoiceLines   InvoiceLine[]
+  customer       Customer?       @relation(fields: [customerId], references: [id])
+  inventoryItems InventoryItem[]
 
   @@index([customerId])
-  @@index([status])
+  @@index([isCompleted])
 }
 
-model InvoiceItem {
+model InvoiceLine {
   id              Int            @id @default(autoincrement())
   code            String?        @unique
   description     String?
@@ -154,6 +154,8 @@ model InvoiceItem {
 
   createdAt DateTime  @default(now())
   updatedAt DateTime? @updatedAt
+  invoice   Invoice?  @relation(fields: [invoiceId], references: [id])
+  invoiceId Int?
 }
 
 model Payment {

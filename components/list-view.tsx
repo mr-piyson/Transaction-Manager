@@ -22,10 +22,10 @@ import { useTableTheme } from '@/hooks/use-table-theme';
 ModuleRegistry.registerModules([AllCommunityModule]);
 
 // Filter configuration type
-export interface FilterConfig {
+export interface FilterConfig<T> {
   key: string;
   label: string;
-  getValue: (item: any) => string | undefined;
+  getValue: (item: T) => any | undefined;
 }
 
 // Props interface
@@ -42,7 +42,7 @@ export interface UniversalListViewProps<T = any> {
   searchFields: (keyof T | ((item: T) => string | undefined))[];
 
   // Filter configuration
-  filters?: FilterConfig[];
+  filters?: FilterConfig<T>[];
 
   // Card renderer
   cardRenderer: (data: T) => React.ReactNode;
@@ -59,9 +59,11 @@ export interface UniversalListViewProps<T = any> {
 
   // Results text
   itemName?: string; // e.g., "assets", "printers"
+  // external filter
+  externalFilter?: (item: T) => boolean;
 }
 
-export function ListView<T extends Record<string, any>>({ data = [], isLoading = false, isError = false, error = null, onRefetch, searchPlaceholder = 'Search...', searchFields, filters = [], cardRenderer: CardRenderer, emptyIcon, emptyTitle = 'No items found', emptyDescription = 'Try adjusting your search or filters', rowHeight = 'auto', useTheme = false, containerClassName = '', itemName = 'items' }: UniversalListViewProps<T>) {
+export function ListView<T extends Record<string, any>>({ data = [], isLoading = false, isError = false, error = null, onRefetch, searchPlaceholder = 'Search...', searchFields, filters = [], cardRenderer: CardRenderer, emptyIcon, emptyTitle = 'No items found', emptyDescription = 'Try adjusting your search or filters', rowHeight = 'auto', useTheme = false, containerClassName = '', itemName = 'items', externalFilter }: UniversalListViewProps<T>) {
   const isMobile = useIsMobile();
   const gridRef = useRef<any>(null);
   const cardRef = useRef<HTMLDivElement>(null);
@@ -104,10 +106,12 @@ export function ListView<T extends Record<string, any>>({ data = [], isLoading =
         const itemValue = filter.getValue(item);
         return itemValue === filterValue;
       });
+      // External filter
+      const matchesExternal = externalFilter ? externalFilter(item) : true;
 
       return matchesSearch && matchesFilters;
     });
-  }, [data, searchTerm, searchFields, filters, filterValues]);
+  }, [data, searchTerm, searchFields, filters, filterValues, externalFilter]);
 
   // Count active filters
   const activeFiltersCount = useMemo(() => {
