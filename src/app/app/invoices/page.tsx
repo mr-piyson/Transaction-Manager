@@ -19,21 +19,6 @@ export default function InvoicesPage() {
   const [paymentTab, setPaymentTab] = useState('all');
   const [processTab, setProcessTab] = useState('all');
 
-  // Filter Logic: Combined Payment and Process Status
-  const filteredInvoices = useMemo(() => {
-    if (!invoices) return [];
-
-    return invoices.filter((invoice) => {
-      // 1. Payment Filter
-      const matchesPayment = paymentTab === 'all' || invoice.paymentStatus === paymentTab; // adjust property name based on your API
-
-      // 2. Process/Work Filter (Assuming 'isCompleted' or 'processStatus' exists in your data)
-      const matchesProcess = processTab === 'all' || (processTab === 'completed' ? invoice.isCompleted === true : invoice.isCompleted === false);
-
-      return matchesPayment && matchesProcess;
-    });
-  }, [invoices, paymentTab, processTab]);
-
   return (
     <>
       <Header title={t('common.invoices', 'Invoices')} icon={<FileText className="inline" />} rightContent={<CreateInvoiceDialog />} />
@@ -81,8 +66,8 @@ export default function InvoicesPage() {
       <ListView<InvoiceWithCustomer>
         emptyTitle={t('invoices.empty_title', 'No invoices found')}
         emptyIcon={<Box className="size-16 text-muted-foreground" />}
-        emptyDescription={t('invoices.empty_description') || 'Try adjusting your filters'}
-        data={filteredInvoices} // Use the filtered data here
+        emptyDescription={'No invoices to show'}
+        data={invoices} // Use the filtered data here
         isLoading={isLoading}
         isError={isError}
         itemName="invoices items"
@@ -91,14 +76,7 @@ export default function InvoicesPage() {
         rowHeight={72}
         searchFields={[]}
         onRefetch={refetch}
-        filters={[
-          {
-            key: 'status',
-            label: 'Status',
-            getValue: (item) => item.paymentStatus,
-          },
-        ]}
-        externalFilter={(item) => paymentTab === item.paymentStatus}
+        externalFilter={(item) => (paymentTab === 'all' ? true : paymentTab === item.paymentStatus)}
       />
     </>
   );

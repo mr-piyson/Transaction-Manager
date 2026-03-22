@@ -109,7 +109,7 @@ export function ListView<T extends Record<string, any>>({ data = [], isLoading =
       // External filter
       const matchesExternal = externalFilter ? externalFilter(item) : true;
 
-      return matchesSearch && matchesFilters;
+      return matchesSearch && matchesFilters && matchesExternal;
     });
   }, [data, searchTerm, searchFields, filters, filterValues, externalFilter]);
 

@@ -45,16 +45,13 @@ export const en = {
   customers: {
     new: 'Create new Customer',
     empty_title: 'No Customers Found',
-    empty_description: 'Create a new customer to get started',
   },
   inventory: {
     new: 'Create new inventory',
     empty_title: 'No inventory item Found',
-    empty_description: 'Create a new inventory item to get started',
   },
   invoices: {
     new: 'Create new invoice',
     empty_title: 'No invoices Found',
-    empty_description: 'Create a new invoice to get started',
   },
 } as const;
