@@ -5,8 +5,6 @@ import { ThemeProvider } from '@/components/Theme-Provider';
 import { I18nProvider } from '@/i18n/use-i18n';
 import { Toaster } from '@/components/sonner';
 import { getServerI18n } from '@/i18n/i18n.action';
-import { QueryClientProvider } from '@tanstack/react-query';
-import { getQueryClient } from '@/lib/query-client';
 import QueryProvider from '@/components/QueryProvider';
 
 const geistSans = Geist({
@@ -31,7 +29,6 @@ export const metadata: Metadata = {
 
 export default async function RootLayout(props: any) {
   const { locale, direction, dict } = await getServerI18n('en');
-  const queryClient = getQueryClient();
   return (
     <html lang="en" dir={direction} suppressHydrationWarning>
       <body

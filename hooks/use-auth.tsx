@@ -7,11 +7,10 @@ import { toast } from 'sonner';
 import axios from 'axios';
 import { SignInSchema, SignUpSchema } from '@/lib/validators/auth';
 import { Route } from 'next';
-import { getQueryClient } from '@/lib/query-client';
+import { queryClient } from '@/components/QueryProvider';
 
 export function useAuth() {
   const router = useRouter();
-  const queryClient = getQueryClient();
 
   // Helper to handle navigation and cache invalidation after success
   const handleAuthSuccess = (message: string, redirectPath: Route) => {

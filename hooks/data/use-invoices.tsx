@@ -1,4 +1,6 @@
-import { getQueryClient } from '@/lib/query-client';
+'use client';
+
+import { queryClient } from '@/components/QueryProvider';
 import { Customer, Invoice } from '@prisma/client';
 import {
   useMutation,
@@ -19,8 +21,7 @@ type InvoiceInput = Omit<
 
 export const useInvoices = () => {
   const queryKey = ['invoices'];
-    const queryClient = getQueryClient();
-  
+
   return {
     getAll: () =>
       useQuery<InvoiceWithCustomer[]>({

@@ -1,3 +1,4 @@
+// money.ts
 import currency, { Options } from 'currency.js';
 import { CURRENCIES, CurrencyCode } from './currency';
 
@@ -30,6 +31,17 @@ export class Money {
   static divide(a: number, divisor: number, curr: CurrencyCode = 'BHD') {
     const unitDivisor = this.getDivisor(curr);
     return currency(a / unitDivisor, CURRENCIES[curr]).distribute(divisor)[0];
+  }
+
+  /**
+   * Converts a decimal input to the integer stored in DB.
+   * e.g. 1.5 (BHD, precision 3) → 1500
+   *      1.50 (USD, precision 2) → 150
+   *      100 (JPY, precision 0) → 100
+   */
+  static toInt(amount: number, curr: CurrencyCode = 'BHD'): number {
+    const divisor = this.getDivisor(curr);
+    return Math.round(amount * divisor);
   }
 
   static format(amount: number, curr: CurrencyCode = 'BHD'): string {

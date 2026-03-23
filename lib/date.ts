@@ -1,14 +1,29 @@
+// date.ts
 import { format, formatDistanceToNow, isValid } from 'date-fns';
 
 // 1. Define your app-wide standard formats here
 export const APP_DATE_FORMATS = {
-  display: 'MMM d, yyyy', // e.g., Oct 24, 2026
-  table: 'dd/MM/yyyy', // e.g., 24/10/2026
-  timestamp: 'MMM d, yyyy HH:mm', // e.g., Oct 24, 2026 14:30
-  iso: 'yyyy-MM-dd', // For input type="date"
+  // Existing
+  display: 'MMM d, yyyy',
+  table: 'dd/MM/yyyy',
+  timestamp: 'MMM d, yyyy HH:mm',
+  iso: 'yyyy-MM-dd',
+  full: 'EEEE, MMMM d, yyyy',
+  short: 'MM/dd/yyyy',
+  time12: 'hh:mm a',
+  time24: 'HH:mm',
+  datetime12: 'MMM d, yyyy hh:mm a',
+  datetime24: 'yyyy-MM-dd HH:mm:ss',
+  compact: 'yyyyMMdd',
+  fileSafe: 'yyyy-MM-dd_HH-mm-ss',
+  relativeFriendly: 'EEE, MMM d',
+  monthYear: 'MMMM yyyy',
+  dayMonth: 'd MMM',
+  weekdayShort: 'EEE',
+  weekdayFull: 'EEEE',
 } as const;
 
-type FormatKey = keyof typeof APP_DATE_FORMATS;
+export type FormatKey = keyof typeof APP_DATE_FORMATS;
 
 /**
  * Universal formatter that accepts Prisma Dates, strings, or numbers.

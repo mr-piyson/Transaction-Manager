@@ -23,7 +23,7 @@ type InvoiceEditorProps = {
 };
 
 export default function InvoiceEditor(props: InvoiceEditorProps) {
-  const { data } = useInventoryItems().getAll();
+  const { data } = useInventoryItems().getAll;
   return (
     <>
       {/* Header */}

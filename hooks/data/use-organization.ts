@@ -1,5 +1,6 @@
+'use client';
 import { SetupData } from '@/app/setup/setup-types';
-import { getQueryClient } from '@/lib/query-client';
+import { queryClient } from '@/components/QueryProvider';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import axios from 'axios';
 
@@ -16,8 +17,6 @@ export function useCheckOrganization() {
 }
 
 export function useCreateOrganization() {
-  const queryClient = getQueryClient();
-
   return useMutation({
     mutationFn: async (newOrg: {
       name: string;
@@ -35,8 +34,6 @@ export function useCreateOrganization() {
 }
 
 export function useSetupApplication() {
-  const queryClient = getQueryClient();
-
   return useMutation({
     mutationFn: async (payload: SetupData) => {
       // We send everything to a single unified endpoint
