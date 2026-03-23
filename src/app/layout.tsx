@@ -5,6 +5,7 @@ import { ThemeProvider } from '@/components/Theme-Provider';
 import { I18nProvider } from '@/i18n/use-i18n';
 import { Toaster } from '@/components/sonner';
 import { getServerI18n } from '@/i18n/i18n.action';
+import { OrganizationGuard } from '@/components/OrganizationGuard';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',

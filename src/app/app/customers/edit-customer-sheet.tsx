@@ -29,6 +29,7 @@ import {
 import { Card, CardContent } from '@/components/ui/card';
 import { toast } from 'sonner';
 import { Customer } from '@prisma/client';
+import { queryClient } from '../layout';
 
 // Zod Schema for strict end-to-end type safety
 const customerSchema = z.object({
@@ -46,7 +47,6 @@ const customerSchema = z.object({
 type CustomerFormValues = z.infer<typeof customerSchema>;
 
 export function CustomersClient() {
-  const queryClient = useQueryClient();
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
 

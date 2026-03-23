@@ -29,6 +29,7 @@ import {
 } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { toast } from 'sonner';
+import { queryClient } from '../../layout';
 
 /* ------------------------------ Validation ------------------------------ */
 
@@ -48,7 +49,6 @@ type UpdateFormData = z.infer<typeof UpdateSchema>;
 export default function InventoryItemClientPage() {
   const router = useRouter();
   const params = useParams();
-  const queryClient = useQueryClient();
   const id = params.id as string;
 
   /* ------------------------------ Queries ------------------------------ */
