@@ -11,7 +11,7 @@ import {
 } from '@/components/ui/select';
 import { Locale } from '@/i18n/config';
 import { useI18n } from '@/i18n/use-i18n';
-import { SetupData } from './setup-wizard-types';
+import { SetupData } from './setup-types';
 import { CurrencyCode } from '@/lib/currency';
 
 export function Step1Language() {

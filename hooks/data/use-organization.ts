@@ -1,5 +1,5 @@
 import { queryClient } from '@/src/app/app/layout';
-import { SetupData } from '@/src/app/setup/page';
+import { SetupData } from '@/src/app/setup/setup-types';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import axios from 'axios';
 

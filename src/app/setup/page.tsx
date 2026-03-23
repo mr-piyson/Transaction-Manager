@@ -19,12 +19,7 @@ import { ArrowLeft } from 'lucide-react';
 import { useSetupApplication } from '@/hooks/data/use-organization';
 import { useI18n } from '@/i18n/use-i18n';
 
-import {
-  setupSchema,
-  SetupData,
-  STEP_FIELDS,
-  STEP_META,
-} from './setup-wizard-types';
+import { setupSchema, SetupData, STEP_FIELDS, STEP_META } from './setup-types';
 import { Step1Language } from './step1';
 import { Step2Organization } from './step2';
 import { Step3Admin } from './step3';
