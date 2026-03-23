@@ -13,7 +13,7 @@ import {
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { useAuth } from '@/hooks/use-auth';
-import { Spinner } from '../../../components/ui/spinner';
+import { Spinner } from '@/components/ui/spinner';
 import { SignInInput, SignInSchema } from '@/lib/validators/auth';
 
 export default function SignInTab() {

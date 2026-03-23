@@ -16,7 +16,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useAuth } from '@/hooks/use-auth';
-import { Spinner } from '../../../components/ui/spinner';
+import { Spinner } from '@/components/ui/spinner';
 import { SignUpInput, SignUpSchema } from '@/lib/validators/auth';
 
 // SIGN UP SCHEMA
