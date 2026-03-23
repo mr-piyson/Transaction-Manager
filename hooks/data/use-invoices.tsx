@@ -1,4 +1,4 @@
-import { queryClient } from '@/src/app/app/layout';
+import { queryClient } from '@/app/app/layout';
 import { Customer, Invoice } from '@prisma/client';
 import {
   useMutation,

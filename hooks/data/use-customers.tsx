@@ -7,7 +7,7 @@ import {
 } from '@tanstack/react-query';
 import axios from 'axios';
 import { Customer } from '@prisma/client';
-import { queryClient } from '@/src/app/app/layout';
+import { queryClient } from '@/app/app/layout';
 
 // We define a type for creating a customer (usually excludes the ID and timestamps)
 type CustomerInput = Omit<Customer, 'id' | 'createdAt' | 'updatedAt'>;
