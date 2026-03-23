@@ -29,7 +29,7 @@ Transaction Manager is a web application that allows users to create Records and
 
 ## Technologies Used
 
-![Technologies](https://go-skill-icons.vercel.app/api/icons?i=next,typescript,prisma,react,tailwind,shadcn,jwt,trpc,i18n)
+![Technologies](https://go-skill-icons.vercel.app/api/icons?i=next,typescript,prisma,react,tailwind,shadcn,jwt,i18n)
 
 ## Installation
 

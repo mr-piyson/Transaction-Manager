@@ -29,7 +29,7 @@ import {
 } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { toast } from 'sonner';
-import { queryClient } from '../../layout';
+import { useInventoryItems } from '@/hooks/data/use-inventoryItems';
 
 /* ------------------------------ Validation ------------------------------ */
 
@@ -53,17 +53,8 @@ export default function InventoryItemClientPage() {
 
   /* ------------------------------ Queries ------------------------------ */
 
-  const {
-    data: item,
-    isLoading,
-    isError,
-  } = useQuery({
-    queryKey: ['inventory', id],
-    queryFn: async () => {
-      const { data } = await axios.get(`/api/inventory/${id}`);
-      return data;
-    },
-  });
+  const { data, isLoading, isError } = useInventoryItems().getAll;
+  const item = data as any;
 
   /* ------------------------------ Mutations ------------------------------ */
 
@@ -73,7 +64,6 @@ export default function InventoryItemClientPage() {
       return axios.patch(`/api/inventory/${id}`, payload);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['inventory', id] });
       toast.success('Item updated');
     },
   });

@@ -17,7 +17,7 @@ import { Spinner } from '@/components/ui/spinner';
 import { SignInInput, SignInSchema } from '@/lib/validators/auth';
 
 export default function SignInTab() {
-  const { signIn, isLoading: loading } = useAuth();
+  const { signIn, isLoading: loading ,  } = useAuth();
   const {
     register,
     handleSubmit,

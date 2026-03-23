@@ -14,10 +14,10 @@ import axios from 'axios';
 import { Header } from '@/components/Header';
 import { InventoryItemCard } from './inventoryCard';
 import { toast } from 'sonner';
-import { queryClient } from '../layout';
 import { alert } from '@/components/Alert-dialog';
 import { UniversalContextMenu } from '@/components/context-menu';
 import { useRouter } from 'next/navigation';
+import { useInventoryItems } from '@/hooks/data/use-inventoryItems';
 
 export default function InventoryPage() {
   const { t } = useI18n();
@@ -28,13 +28,7 @@ export default function InventoryPage() {
     isLoading,
     isError,
     refetch,
-  } = useQuery({
-    queryKey: ['inventory'],
-    queryFn: async () => {
-      const data = (await axios.get('/api/inventory')).data;
-      return data;
-    },
-  });
+  } = useInventoryItems().getAll;
 
   const handleDelete = (data: InventoryItem) => {
     alert.delete({

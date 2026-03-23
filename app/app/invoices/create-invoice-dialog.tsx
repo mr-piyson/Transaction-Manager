@@ -33,7 +33,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
 import { UniversalDialog } from '@/components/dialog';
 import { Invoice } from '@prisma/client';
-import { queryClient } from '../layout';
+
 import { useCustomers } from '@/hooks/data/use-customers';
 import { useInvoices } from '@/hooks/data/use-invoices';
 import { useAuth } from '@/hooks/use-auth';

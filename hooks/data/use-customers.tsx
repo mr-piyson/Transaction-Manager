@@ -7,13 +7,14 @@ import {
 } from '@tanstack/react-query';
 import axios from 'axios';
 import { Customer } from '@prisma/client';
-import { queryClient } from '@/app/app/layout';
+import { getQueryClient } from '@/lib/query-client';
 
 // We define a type for creating a customer (usually excludes the ID and timestamps)
 type CustomerInput = Omit<Customer, 'id' | 'createdAt' | 'updatedAt'>;
 
 export const useCustomers = () => {
   const queryKey = ['customers'];
+  const queryClient = getQueryClient();
 
   return {
     // --- READ ALL ---
