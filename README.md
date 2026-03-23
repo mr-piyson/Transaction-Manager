@@ -14,18 +14,15 @@ Transaction Manager is a web application that allows users to create Records and
 
 - [x] Internalization
 - [x] Authentication : JWT + bcryptjs
-- [ ] TRPC pattern
+- [x] Setup
 - [ ] Authorization : Attribute-Based Access Control + CASL.js
-- [ ] Setup
 
 ## Features
 
 - [ ] Customers.
-- [ ] Supplier
-- [ ] Inventory : ( Assets + Stock ).
-- [ ] Purchases (update stock or Assets)
+- [ ] Inventory Items.
 - [ ] Invoices.
-- [ ] Payments. ( paid + partial + not paid + giving changes or bonus )
+- [ ] Payments. ( paid + partial + not paid )
 - [ ] Quotation.
 
 ---
