@@ -29,29 +29,10 @@ export default function CustomersPage() {
         showBorder={true}
         title="Customers"
         rightContent={
-          <UniversalDialog<Customer>
-            title={t('customers.new', 'Create new Customer')}
-            fields={[
-              { name: 'name', label: 'Name', required: true, type: 'text' },
-              { name: 'phone', label: 'Phone', required: true, type: 'text' },
-              {
-                name: 'address',
-                label: 'Address',
-                required: true,
-                type: 'text',
-              },
-            ]}
-            mutationFn={async (payload) =>
-              // Tip: Consider using `eden.api.customers.post(payload)` here if your Eden client supports it!
-              await axios.post('/api/customers', payload)
-            }
-            onSuccess={() => refetch()}
-          >
-            <Button>
-              <Plus className="mr-2 size-4" />
-              {t('common.create', 'Create')}
-            </Button>
-          </UniversalDialog>
+          <Button>
+            <Plus />
+            New
+          </Button>
         }
       />
       <ListView<Customer>

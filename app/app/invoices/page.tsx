@@ -100,7 +100,7 @@ export default function InvoicesPage() {
 
       <ListView<InvoiceWithCustomer>
         emptyTitle={t('invoices.empty_title', 'No invoices found')}
-        emptyIcon={<Box className="size-16 text-muted-foreground" />}
+        emptyIcon={<FileText className="size-16 text-muted-foreground" />}
         emptyDescription={'No invoices to show'}
         data={invoices}
         isLoading={isLoading}

@@ -59,6 +59,7 @@ export function AppSidebar({ ...props }: AppSidebarProps) {
   return (
     <Sidebar
       collapsible="icon"
+      type="Drawer"
       side={i18n.direction === 'ltr' ? 'left' : 'right'}
       {...props}
     >

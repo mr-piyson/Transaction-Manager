@@ -1,7 +1,7 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
-import { Box, Trash } from 'lucide-react';
+import { Box, Plus, Trash } from 'lucide-react';
 import { InventoryItem } from '@prisma/client';
 
 import { ListView } from '@/components/list-view';
@@ -100,7 +100,10 @@ export default function InventoryPage() {
             }}
             onSuccess={() => refetch()}
           >
-            <Button>Create</Button>
+            <Button>
+              <Plus />
+              New
+            </Button>
           </UniversalDialog>
         }
       />

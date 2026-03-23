@@ -97,7 +97,7 @@ export function CreateInvoiceDialog(props: {
       <DialogTrigger
         render={
           <Button size="sm" className="gap-2">
-            <Plus className="size-4" /> New Invoice
+            <Plus className="size-4" /> New
           </Button>
         }
       ></DialogTrigger>
