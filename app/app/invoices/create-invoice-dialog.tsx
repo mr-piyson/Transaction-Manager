@@ -73,6 +73,12 @@ export function CreateInvoiceDialog(props: {
         currency: 'BHD',
         isCompleted: false,
         userId: '',
+        organizationId: 1,
+        discountTotal: 10,
+        total: 0,
+        taxTotal: 0,
+        subtotal: 0,
+        paymentStatus: 'Unpaid',
       });
 
       toast.success('Invoice created successfully');

@@ -115,7 +115,7 @@ export async function getCurrentUser(): Promise<TokenPayload | null> {
     const refreshToken = cookieStore.get(COOKIE_NAMES.REFRESH)?.value;
     if (!refreshToken) return null;
 
-    const storedToken = await db.tokens.findUnique({
+    const storedToken = await db.token.findUnique({
       where: {
         value: refreshToken,
         type: 'refresh',

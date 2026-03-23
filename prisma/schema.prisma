@@ -1,13 +1,186 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
+// Prisma schema — compatible with both SQLite (dev) and PostgreSQL (prod)
+// Switch provider via DATABASE_PROVIDER env var or by editing the datasource block.
+// All monetary values are stored as Int in the smallest currency unit (e.g. fils for BHD, cents for USD).
 
 generator client {
   provider = "prisma-client-js"
 }
 
+// -------------------------------------------------------
+// For SQLite (local dev):
+//   provider = "sqlite"
+//   url      = "file:./dev.db"
+//
+// For PostgreSQL (production):
+//   provider = "postgresql"
+//   url      = env("DATABASE_URL")
+// -------------------------------------------------------
 datasource db {
   provider = "sqlite"
 }
+
+// ====================================================
+// Geography
+// ====================================================
+
+model Country {
+  id            Int                  @id @default(autoincrement())
+  isoCode       String               @unique
+  translations  CountryTranslation[]
+  cities        City[]
+  organizations Organization[]
+  customers     Customer[]
+}
+
+model CountryTranslation {
+  id           Int     @id @default(autoincrement())
+  name         String
+  languageCode String
+  countryId    Int
+  country      Country @relation(fields: [countryId], references: [id], onDelete: Cascade)
+
+  @@unique([countryId, languageCode])
+  @@index([languageCode])
+}
+
+model City {
+  id            Int               @id @default(autoincrement())
+  countryId     Int
+  country       Country           @relation(fields: [countryId], references: [id], onDelete: Cascade)
+  translations  CityTranslation[]
+  organizations Organization[]
+  customers     Customer[]
+
+  @@index([countryId])
+}
+
+model CityTranslation {
+  id           Int    @id @default(autoincrement())
+  name         String
+  languageCode String
+  cityId       Int
+  city         City   @relation(fields: [cityId], references: [id], onDelete: Cascade)
+
+  @@unique([cityId, languageCode])
+  @@index([languageCode])
+}
+
+// ====================================================
+// Settings
+// ====================================================
+
+model Organization {
+  id       Int     @id @default(autoincrement())
+  name     String
+  logo     String?
+  address  String?
+  website  String?
+  tax      String?
+  currency String  @default("BHD")
+
+  countryId Int?
+  country   Country? @relation(fields: [countryId], references: [id])
+  cityId    Int?
+  city      City?    @relation(fields: [cityId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  users          User[]
+  contracts      Contract[]
+  invoices       Invoice[]
+  customers      Customer[]
+  inventoryItems InventoryItem[]
+
+  @@index([countryId])
+  @@index([cityId])
+}
+
+// ====================================================
+// Auth
+// ====================================================
+
+enum Role {
+  SUPER_ADMIN
+  ADMIN
+  USER
+}
+
+model User {
+  id           String  @id @default(cuid())
+  email        String  @unique
+  passwordHash String
+  firstName    String
+  lastName     String?
+  role         Role    @default(USER)
+  isActive     Boolean @default(true)
+  locale       String  @default("en")
+
+  organizationId Int?
+  organization   Organization? @relation(fields: [organizationId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  tokens   Token[]
+  invoices Invoice[]
+
+  @@index([email])
+  @@index([role])
+  @@index([organizationId])
+}
+
+// Renamed from "Tokens" -> "Token" (Prisma convention: singular model names)
+model Token {
+  id         Int       @id @default(autoincrement())
+  type       String?
+  value      String?   @unique
+  expiresAt  DateTime?
+  deviceInfo String?
+  ipAddress  String?
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([expiresAt])
+  @@map("tokens")
+}
+
+// ====================================================
+// Inventory
+// ====================================================
+
+model InventoryItem {
+  id            Int     @id @default(autoincrement())
+  code          String?
+  name          String
+  description   String?
+  /// Stored in smallest currency unit (e.g. fils)
+  purchasePrice Int
+  /// Stored in smallest currency unit (e.g. fils)
+  salesPrice    Int
+  filePath      String?
+  imageUrl      String?
+
+  organizationId Int?
+  organization   Organization? @relation(fields: [organizationId], references: [id])
+
+  invoiceLines InvoiceLine[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([organizationId])
+  @@index([code])
+}
+
+// ====================================================
+// Invoices
+// ====================================================
 
 enum InvoicePaymentStatus {
   Paid
@@ -20,175 +193,117 @@ enum PaymentMethod {
   TRANSFER
 }
 
-enum Role {
-  SUPER_ADMIN
-  ADMIN
-  USER
-}
+model Invoice {
+  id            Int                  @id @default(autoincrement())
+  date          DateTime             @default(now())
+  description   String?
+  paymentStatus InvoicePaymentStatus @default(Unpaid)
+  isCompleted   Boolean              @default(false)
+  currency      String               @default("BHD")
 
-model Organization {
-  id       Int     @id @default(autoincrement())
-  name     String
-  logo     String?
-  address  String?
-  country  String? @default("Bahrain") // Defaulting based on your locale
-  website  String?
-  tax      String?
-  currency String  @default("BHD") // Added for setup preferences
+  /// All totals stored in smallest currency unit (e.g. fils)
+  subtotal      Int @default(0)
+  discountTotal Int @default(0)
+  taxTotal      Int @default(0)
+  total         Int @default(0)
 
-  createdAt DateTime  @default(now())
-  updatedAt DateTime? @updatedAt
+  customerId Int?
+  customer   Customer? @relation(fields: [customerId], references: [id])
 
-  contracts Contract[]
-  Users     User[]
-  Invoices  Invoice[]
-  Customers Customer[]
-}
+  userId    String
+  createdBy User   @relation(fields: [userId], references: [id])
 
-// Ensure User has a relation to Organization
-model User {
-  id           String  @id @default(cuid())
-  email        String  @unique
-  passwordHash String
-  firstName    String
-  lastName     String?
-  role         Role    @default(USER) // Will set to SUPER_ADMIN in setup
-  isActive     Boolean @default(true)
-  locale       String  @default("en")
+  organizationId Int?
+  organization   Organization? @relation(fields: [organizationId], references: [id])
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  // Relations
-  tokens         Tokens[]
-  invoices       Invoice[]
-  organization   Organization? @relation(fields: [organizationId], references: [id])
-  organizationId Int?
-
-  @@index([email])
-  @@index([role])
-}
-
-model Tokens {
-  id         Int       @id @default(autoincrement())
-  type       String?
-  value      String?   @unique
-  expiresAt  DateTime?
-  deviceInfo String?
-  ipAddress  String?
-  createdAt  DateTime? @default(now())
-  updatedAt  DateTime? @default(now()) @updatedAt
-  userId     String
-  user       User?     @relation(fields: [userId], references: [id])
-
-  @@index([expiresAt])
-}
-
-model InventoryItem {
-  id            Int           @id @default(autoincrement())
-  code          String?
-  name          String
-  description   String?
-  purchasePrice Int
-  salesPrice    Int
-  filePath      String?
-  imageUrl      String?
-  invoice       Invoice?      @relation(fields: [invoiceId], references: [id])
-  invoiceId     Int?
-  invoiceItems  InvoiceLine[]
-
-  createdAt            DateTime            @default(now())
-  updatedAt            DateTime?           @updatedAt
-  inventoryItemGroup   InventoryItemGroup? @relation(fields: [inventoryItemGroupId], references: [id])
-  inventoryItemGroupId Int?
-}
-
-model InventoryItemGroup {
-  id    Int             @id @default(autoincrement())
-  name  String
-  total Int
-  items InventoryItem[]
-
-  createdAt DateTime  @default(now())
-  updatedAt DateTime? @updatedAt
-}
-
-model Customer {
-  id       Int       @id @default(autoincrement())
-  name     String
-  phone    String
-  address  String
-  email    String?
-  invoices Invoice[]
-
-  createdAt      DateTime      @default(now())
-  updatedAt      DateTime?     @updatedAt
-  organization   Organization? @relation(fields: [organizationId], references: [id])
-  organizationId Int?
-}
-
-model Invoice {
-  id            Int                   @id @default(autoincrement())
-  date          DateTime              @default(now())
-  description   String?
-  customerId    Int?
-  paymentStatus InvoicePaymentStatus? @default(Unpaid)
-  isCompleted   Boolean               @default(false)
-  currency      String?               @default("BHD")
-
-  subtotal      Int? @default(0)
-  total         Int? @default(0)
-  discountTotal Int? @default(0)
-  taxTotal      Int? @default(0)
-
-  createdAt DateTime? @default(now())
-  updatedAt DateTime? @updatedAt
-  createdBy User      @relation(fields: [userId], references: [id])
-
-  // Relations
-  payments       Payment[]
-  invoiceLines   InvoiceLine[]
-  customer       Customer?       @relation(fields: [customerId], references: [id])
-  inventoryItems InventoryItem[]
-  userId         String
-  organization   Organization?   @relation(fields: [organizationId], references: [id])
-  organizationId Int?
+  payments     Payment[]
+  invoiceLines InvoiceLine[]
 
   @@index([customerId])
+  @@index([userId])
+  @@index([organizationId])
   @@index([isCompleted])
+  @@index([paymentStatus])
+  @@index([date])
 }
 
 model InvoiceLine {
-  id              Int            @id @default(autoincrement())
-  code            String?        @unique
-  description     String?
-  purchasePrice   Int
-  salesPrice      Int
-  itemRef         InventoryItem? @relation(fields: [inventoryItemId], references: [id])
-  inventoryItemId Int?
-  total           Int
+  id            Int     @id @default(autoincrement())
+  description   String?
+  /// Stored in smallest currency unit (e.g. fils)
+  purchasePrice Int
+  /// Stored in smallest currency unit (e.g. fils)
+  salesPrice    Int
+  quantity      Int     @default(1)
+  /// Stored in smallest currency unit (e.g. fils)
+  total         Int
 
-  createdAt DateTime  @default(now())
-  updatedAt DateTime? @updatedAt
-  invoice   Invoice?  @relation(fields: [invoiceId], references: [id])
+  inventoryItemId Int?
+  itemRef         InventoryItem? @relation(fields: [inventoryItemId], references: [id])
+
   invoiceId Int?
+  invoice   Invoice? @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([invoiceId])
+  @@index([inventoryItemId])
 }
 
 model Payment {
   id        Int           @id @default(autoincrement())
-  date      DateTime      @default(now()) // Maps to draft.date
+  date      DateTime      @default(now())
   method    PaymentMethod @default(CASH)
-  amount    Int // Stored in fils
-  reference String? // Cheque # or Transaction ID
-  notes     String? // Optional note
+  /// Stored in smallest currency unit (e.g. fils)
+  amount    Int
+  reference String?
+  notes     String?
 
-  // Relations
   invoiceId Int
-  invoice   Invoice @relation(fields: [invoiceId], references: [id])
+  invoice   Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
 
-  createdAt DateTime  @default(now())
-  updatedAt DateTime? @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([invoiceId])
 }
+
+// ====================================================
+// Customers
+// ====================================================
+
+model Customer {
+  id      Int     @id @default(autoincrement())
+  name    String
+  phone   String
+  address String
+  email   String?
+
+  countryId Int?
+  country   Country? @relation(fields: [countryId], references: [id])
+  cityId    Int?
+  city      City?    @relation(fields: [cityId], references: [id])
+
+  organizationId Int?
+  organization   Organization? @relation(fields: [organizationId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  invoices Invoice[]
+
+  @@index([organizationId])
+  @@index([countryId])
+  @@index([cityId])
+}
+
+// ====================================================
+// Contracts
+// ====================================================
 
 model Contract {
   id          String  @id @default(uuid())
@@ -196,20 +311,23 @@ model Contract {
   description String?
   active      Boolean @default(true)
 
-  // Enterprise Details
-  contractValue Int? // in fils
+  /// Stored in smallest currency unit (e.g. fils)
+  contractValue Int?
   currency      String @default("BHD")
 
-  // Dates
   startDate   DateTime
   endDate     DateTime
-  renewalDate DateTime? // For auto-renewals
+  renewalDate DateTime?
 
-  // Versioning and Auditing
-  version   Int      @default(1)
+  version Int @default(1)
+
+  organizationId Int?
+  organization   Organization? @relation(fields: [organizationId], references: [id])
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  organization   Organization? @relation(fields: [organizationId], references: [id])
-  organizationId Int?
+  @@index([organizationId])
+  @@index([active])
+  @@index([endDate])
 }

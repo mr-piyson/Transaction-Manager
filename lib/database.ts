@@ -1,6 +1,6 @@
 import { PrismaClient } from '@prisma/client';
 import { PrismaLibSql } from '@prisma/adapter-libsql';
-import { PrismaPg } from '@prisma/adapter-pg';
+// import { PrismaPg } from '@prisma/adapter-pg';
 import { env } from './env';
 
 declare global {
