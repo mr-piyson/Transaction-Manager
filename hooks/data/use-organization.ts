@@ -1,6 +1,6 @@
 import { SetupData } from '@/app/setup/setup-types';
 import { getQueryClient } from '@/lib/query-client';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation } from '@tanstack/react-query';
 import axios from 'axios';
 
 export function useCheckOrganization() {

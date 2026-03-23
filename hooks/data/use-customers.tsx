@@ -1,7 +1,6 @@
 import {
   useQuery,
   useMutation,
-  useQueryClient,
   UseQueryResult,
   UseMutationResult,
 } from '@tanstack/react-query';

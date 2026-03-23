@@ -3,7 +3,7 @@
 import React from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import {  useMutation,  } from '@tanstack/react-query';
 import axios from 'axios';
 import { z } from 'zod';
 import {
