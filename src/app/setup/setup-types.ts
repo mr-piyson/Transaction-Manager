@@ -7,7 +7,7 @@ export const setupSchema = z.object({
   website: z.url('Must be a valid URL').optional().or(z.literal('')),
   adminFirstName: z.string().min(2, 'First name is required'),
   adminLastName: z.string().optional(),
-  adminEmail: z.string().email('Invalid email address'),
+  adminEmail: z.email('Invalid email address'),
   adminPassword: z.string().min(6, 'Password must be at least 6 characters'),
 });
 

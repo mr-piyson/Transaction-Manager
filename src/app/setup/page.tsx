@@ -137,7 +137,7 @@ export default function SetupWizard() {
         {/* Card */}
         <Card className="shadow-xl relative overflow-hidden">
           <CardHeader className="text-center">
-            <CardTitle>{STEP_META[step].title}</CardTitle>
+            <CardTitle className="text-2xl">{STEP_META[step].title}</CardTitle>
           </CardHeader>
 
           <CardContent className="min-h-75">
