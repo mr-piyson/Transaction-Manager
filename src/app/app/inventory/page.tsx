@@ -107,10 +107,7 @@ export default function InventoryPage() {
       <ListView<InventoryItem>
         emptyTitle={t('inventory.empty_title', 'No inventory items Found')}
         emptyIcon={<Box className="size-16 text-muted-foreground" />}
-        emptyDescription={
-          t('inventory.empty_description') ||
-          'Create a new inventory item to get started'
-        }
+        emptyDescription={'Create a new inventory item to get started'}
         data={inventory}
         isLoading={isLoading}
         isError={isError}

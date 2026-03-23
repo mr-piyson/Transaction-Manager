@@ -36,6 +36,7 @@ import { Invoice } from '@prisma/client';
 import { queryClient } from '../layout';
 import { useCustomers } from '@/hooks/data/use-customers';
 import { useInvoices } from '@/hooks/data/use-invoices';
+import { useAuth } from '@/hooks/use-auth';
 
 interface Customer {
   id: number;
@@ -71,6 +72,7 @@ export function CreateInvoiceDialog(props: {
         description: '',
         currency: 'BHD',
         isCompleted: false,
+        userId: '',
       });
 
       toast.success('Invoice created successfully');

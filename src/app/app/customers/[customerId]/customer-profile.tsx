@@ -71,7 +71,6 @@ export function CustomerProfile({ customerId }: CustomerProfileProps) {
               <div className="flex gap-5">
                 <Avatar className="size-16">
                   <AvatarImage
-                    // src={data.image ?? ""}
                     alt={customer.name || 'image'}
                     loading="lazy"
                     style={{ transition: 'opacity 0.2s' }}

@@ -191,7 +191,7 @@ const DesktopMenuItems = React.memo(function DesktopMenuItems({
           <ContextMenuItem
             key={item.id}
             disabled={item.disabled}
-            onClick={() => actionItem.onClick?.()}
+            onClick={() => actionItem.onClick?.(item)}
             className={cn(
               actionItem.destructive &&
                 'text-destructive focus:bg-destructive/10 focus:text-destructive',
@@ -338,7 +338,7 @@ const MobileDrawerItems = React.memo(function MobileDrawerItems({
             key={item.id}
             disabled={item.disabled}
             onClick={() => {
-              actionItem.onClick?.();
+              actionItem.onClick?.(item);
               onClose();
             }}
             className={cn(

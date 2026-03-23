@@ -2,11 +2,10 @@
 
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
-import type { SignInSchema } from '@/src/app/auth/SignIn';
-import type { SignUpSchema } from '@/src/app/auth/SignUp';
 import type { z } from 'zod';
 import { toast } from 'sonner';
 import axios from 'axios';
+import { SignInSchema, SignUpSchema } from '@/lib/validators/auth';
 
 export function useAuth() {
   const router = useRouter();

@@ -25,7 +25,7 @@ export function InvoiceCard({ data }: { data: InvoiceWithCustomer }) {
         <AvatarFallback
           className={cn(
             'rounded-lg transition-colors',
-            data.status === 'APPROVED'
+            data.isCompleted 
               ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-400'
               : 'bg-muted text-muted-foreground',
           )}

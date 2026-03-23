@@ -35,7 +35,6 @@ export async function signUp(
       data: {
         email: data.email.toLowerCase(),
         passwordHash: await hash(data.password, 12),
-        fullName: data.name,
         firstName: data.name.split(' ')[0],
         lastName: data.name.split(' ').pop() || '',
         role: 'SUPER_ADMIN',

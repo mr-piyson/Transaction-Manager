@@ -45,7 +45,7 @@ export function InventoryItemCard(props: {
       {/* Avatar */}
       <Avatar className="size-11 after:border-0 shrink-0 ">
         <AvatarImage
-          src={props.data.image ?? undefined}
+          src={props.data?.imageUrl ?? undefined}
           alt={props.data.name}
           className="object-cover  rounded-lg"
         />

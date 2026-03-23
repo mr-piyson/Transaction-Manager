@@ -8,7 +8,7 @@ export const invoiceWithDetails = Prisma.validator<Prisma.InvoiceDefaultArgs>()(
   {
     include: {
       customer: true,
-      invoiceItems: true,
+      invoiceLines: true,
       payments: true,
     },
   },
@@ -31,7 +31,7 @@ export async function GET(
       },
       include: {
         customer: true,
-        invoiceItems: true,
+        invoiceLines: true,
         payments: true,
       },
     });
