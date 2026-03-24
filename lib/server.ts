@@ -2,7 +2,6 @@
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { env } from './env';
-import { superSerialize } from './superjson';
 
 export type ApiResponseType<T = any> = {
   success: boolean;
@@ -13,7 +12,7 @@ export type ApiResponseType<T = any> = {
 
 export class ApiResponse {
   static success<T>(data: T, status = 200) {
-    return NextResponse.json(superSerialize(data), { status });
+    return NextResponse.json(data, { status });
   }
 
   static validationError(errors: z.ZodError) {

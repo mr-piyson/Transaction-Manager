@@ -1,14 +1,14 @@
 'use client';
 import { SetupData } from '@/app/setup/setup-types';
 import { queryClient } from '@/components/QueryProvider';
+import api from '@/lib/api';
 import { useQuery, useMutation } from '@tanstack/react-query';
-import axios from 'axios';
 
 export function useCheckOrganization() {
   return useQuery({
     queryKey: ['organizationStatus'],
     queryFn: async () => {
-      const { data } = await axios.get<{ hasOrganization: boolean }>('/api/organizations/check');
+      const { data } = await api.get<{ hasOrganization: boolean }>('/api/organizations/check');
       return data.hasOrganization;
     },
   });
@@ -17,7 +17,7 @@ export function useCheckOrganization() {
 export function useCreateOrganization() {
   return useMutation({
     mutationFn: async (newOrg: { name: string; address?: string; website?: string }) => {
-      const { data } = await axios.post('/api/organizations', newOrg);
+      const { data } = await api.post('/api/organizations', newOrg);
       return data;
     },
     onSuccess: () => {
@@ -31,7 +31,7 @@ export function useSetupApplication() {
   return useMutation({
     mutationFn: async (payload: SetupData) => {
       // We send everything to a single unified endpoint
-      const { data } = await axios.post('/api/setup', payload);
+      const { data } = await api.post('/api/setup', payload);
       return data;
     },
     onSuccess: () => {

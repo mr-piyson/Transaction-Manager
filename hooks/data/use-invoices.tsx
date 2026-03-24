@@ -1,9 +1,9 @@
 'use client';
 
 import { queryClient } from '@/components/QueryProvider';
+import api from '@/lib/api';
 import { Customer, Invoice } from '@prisma/client';
 import { useMutation, UseMutationResult, useQuery } from '@tanstack/react-query';
-import axios from 'axios';
 
 export interface InvoiceWithCustomer extends Invoice {
   customer: Customer;
@@ -19,19 +19,19 @@ export const useInvoices = () => {
     getAll: () =>
       useQuery<InvoiceWithCustomer[]>({
         queryKey,
-        queryFn: async () => (await axios.get('/api/invoices')).data,
+        queryFn: async () => (await api.get('/api/invoices')).data,
       }),
     getById: (id?: string) =>
       useQuery<Invoice>({
         queryKey: [...queryKey, id],
-        queryFn: async () => (await axios.get(`/api/invoices/${id}`)).data,
+        queryFn: async () => (await api.get(`/api/invoices/${id}`)).data,
         enabled: !!id,
       }),
     // --- CREATE ---
     create: (): UseMutationResult<Invoice, Error, InvoiceInput> =>
       useMutation({
         mutationFn: async (newCustomer) => {
-          const { data } = await axios.post<Invoice>('/api/invoices', newCustomer);
+          const { data } = await api.post<Invoice>('/api/invoices', newCustomer);
           return data;
         },
         onSuccess: () => {
@@ -43,7 +43,7 @@ export const useInvoices = () => {
     update: (): UseMutationResult<Invoice, Error, Partial<Invoice> & { id: string }> =>
       useMutation({
         mutationFn: async ({ id, ...updates }) => {
-          const { data } = await axios.patch<Invoice>(`/api/invoices/${id}`, updates);
+          const { data } = await api.patch<Invoice>(`/api/invoices/${id}`, updates);
           return data;
         },
         onSuccess: (updatedCustomer) => {
@@ -58,7 +58,7 @@ export const useInvoices = () => {
     delete: (): UseMutationResult<void, Error, string> =>
       useMutation({
         mutationFn: async (id) => {
-          await axios.delete(`/api/invoices/${id}`);
+          await api.delete(`/api/invoices/${id}`);
         },
         onSuccess: () => {
           queryClient.invalidateQueries({ queryKey });

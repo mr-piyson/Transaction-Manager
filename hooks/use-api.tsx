@@ -9,9 +9,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
  */
 type BaseInput<T> = OptionalIfNullable<Omit<T, 'id' | 'createdAt' | 'updatedAt'>>;
 
-type ApiRoute = `/api/${string}`;
-
-export function useAPI<T>(endpoint: ApiRoute, Key: string) {
+export function useAPI<T>(endpoint: string, Key: string) {
   const base = {
     // 1. Fetch All
     useGetAll: () =>

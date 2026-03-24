@@ -1,8 +1,8 @@
 'use client';
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import axios from 'axios';
 import { Customer } from '@prisma/client';
+import api from '@/lib/api';
 
 type CustomerInput = Omit<Customer, 'id' | 'createdAt' | 'updatedAt'>;
 const CACHE_KEY = ['customers'];
@@ -15,14 +15,14 @@ export const useCustomers = () => {
     useGetAll: () =>
       useQuery<Customer[]>({
         queryKey: CACHE_KEY,
-        queryFn: async () => (await axios.get('/api/customers')).data,
+        queryFn: async () => (await api.get('/api/customers')).data,
       }),
 
     // 2. Fetch One
     useGetById: (id?: string) =>
       useQuery<Customer>({
         queryKey: [...CACHE_KEY, id],
-        queryFn: async () => (await axios.get(`/api/customers/${id}`)).data,
+        queryFn: async () => (await api.get(`/api/customers/${id}`)).data,
         enabled: !!id,
       }),
 
@@ -30,7 +30,7 @@ export const useCustomers = () => {
     useCreate: () =>
       useMutation({
         mutationFn: async (newCustomer: CustomerInput) =>
-          (await axios.post('/api/customers', newCustomer)).data,
+          (await api.post('/api/customers', newCustomer)).data,
         onSuccess: () => queryClient.invalidateQueries({ queryKey: CACHE_KEY }),
       }),
 
@@ -38,7 +38,7 @@ export const useCustomers = () => {
     useUpdate: () =>
       useMutation({
         mutationFn: async ({ id, ...updates }: Partial<Customer> & { id: string }) =>
-          (await axios.patch(`/api/customers/${id}`, updates)).data,
+          (await api.patch(`/api/customers/${id}`, updates)).data,
         onSuccess: (data) => {
           queryClient.invalidateQueries({ queryKey: CACHE_KEY });
           queryClient.invalidateQueries({ queryKey: [...CACHE_KEY, data.id] });
@@ -48,7 +48,7 @@ export const useCustomers = () => {
     // 5. Remove
     useRemove: () =>
       useMutation({
-        mutationFn: async (id: string) => axios.delete(`/api/customers/${id}`),
+        mutationFn: async (id: string) => api.delete(`/api/customers/${id}`),
         onSuccess: () => queryClient.invalidateQueries({ queryKey: CACHE_KEY }),
       }),
   };

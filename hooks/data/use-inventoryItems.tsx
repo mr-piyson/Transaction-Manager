@@ -1,29 +1,21 @@
 'use client';
 
+import api from '@/lib/api';
 import { InventoryItem } from '@prisma/client';
 import { useQuery } from '@tanstack/react-query';
-import axios from 'axios';
 
-export const useInventoryItems = (id?: string) => {
-  /**
-   * Get All inventory Items
-   */
-  const getAll = useQuery<InventoryItem[]>({
+export const getAllInventoryItems = () =>
+  useQuery<InventoryItem[]>({
     queryKey: ['Inventory'],
-    queryFn: async () => (await axios.get('/api/inventory')).data,
+    queryFn: async () => (await api.get('/api/inventory')).data,
   });
 
-  /**
-   * Get Inventory Item by ID
-   */
-  const getById = useQuery<InventoryItem>({
+/**
+ * Get Inventory Item by ID
+ */
+export const getInventoryItemById = (id: string) =>
+  useQuery<InventoryItem>({
     queryKey: ['Inventory', id],
-    queryFn: async () => (await axios.get(`/api/inventory/${id}`)).data,
+    queryFn: async () => (await api.get(`/api/inventory/${id}`)).data,
     enabled: !!id,
   });
-
-  return {
-    getAll,
-    getById,
-  };
-};
