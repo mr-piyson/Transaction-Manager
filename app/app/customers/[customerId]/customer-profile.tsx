@@ -1,25 +1,13 @@
 'use client';
 
-import { useQuery } from '@tanstack/react-query';
-import axios from 'axios';
-import {
-  Phone,
-  Mail,
-  MapPin,
-  FileText,
-  History,
-  CreditCard,
-  ArrowLeft,
-  Edit,
-  User2,
-} from 'lucide-react';
+import { Phone, Mail, MapPin, ArrowLeft, Edit, User2 } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Loader2 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { useGetCustomer } from '@/hooks/data/use-customers';
 
 interface CustomerProfileProps {
   customerId: string;
@@ -27,13 +15,7 @@ interface CustomerProfileProps {
 
 export function CustomerProfile({ customerId }: CustomerProfileProps) {
   // Fetch Customer Data (includes Invoices via Prisma relation)
-  const { data: customer, isLoading } = useQuery({
-    queryKey: ['customer', customerId],
-    queryFn: async () => {
-      const { data } = await axios.get(`/api/customers/${customerId}`);
-      return data;
-    },
-  });
+  const { data: customer, isLoading } = useGetCustomer(customerId);
 
   if (isLoading) {
     return (
@@ -117,7 +99,6 @@ export function CustomerProfile({ customerId }: CustomerProfileProps) {
                 <p className="text-xs text-muted-foreground uppercase font-semibold">
                   Total Orders
                 </p>
-                <p className="text-xl font-bold">{customer.invoices?.length || 0}</p>
               </CardContent>
             </Card>
             <Card>
@@ -127,69 +108,6 @@ export function CustomerProfile({ customerId }: CustomerProfileProps) {
               </CardContent>
             </Card>
           </div>
-        </div>
-
-        {/* Right Column: Activity & History */}
-        <div className="lg:col-span-2">
-          <Tabs defaultValue="invoices" orientation="horizontal">
-            <TabsList className="w-full justify-start border-b bg-transparent h-auto p-0 mb-4">
-              <TabsTrigger
-                value="invoices"
-                className=" border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent pb-2 px-4"
-              >
-                Invoices
-              </TabsTrigger>
-              <TabsTrigger
-                value="activity"
-                className=" border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent pb-2 px-4"
-              >
-                Activity Log
-              </TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="invoices" className="mt-0 space-y-4">
-              {customer.invoices?.length > 0 ? (
-                customer.invoices.map((invoice: any) => (
-                  <Card key={invoice.id} className="hover:border-primary/50 transition-colors">
-                    <Link href={`/app/invoices/${invoice.id}`}>
-                      <CardContent className="p-4 flex items-center justify-between">
-                        <div className="flex items-center gap-4">
-                          <div className="p-2 bg-slate-100 rounded-lg">
-                            <FileText className="h-5 w-5 text-slate-600" />
-                          </div>
-                          <div>
-                            <p className="font-semibold text-sm">Invoice #{invoice.id}</p>
-                            <p className="text-xs text-muted-foreground">
-                              {new Date(invoice.date).toLocaleDateString()}
-                            </p>
-                          </div>
-                        </div>
-                        <div className="text-right">
-                          <p className="font-bold text-sm">BHD {invoice.total?.toFixed(3)}</p>
-                          <Badge variant="outline" className="text-[10px]">
-                            View
-                          </Badge>
-                        </div>
-                      </CardContent>
-                    </Link>
-                  </Card>
-                ))
-              ) : (
-                <div className="text-center py-12 border-2 border-dashed rounded-lg">
-                  <History className="h-10 w-10 text-muted-foreground/30 mx-auto mb-3" />
-                  <p className="text-muted-foreground">No transaction history found.</p>
-                </div>
-              )}
-            </TabsContent>
-
-            <TabsContent value="activity">
-              <Card>
-                <CardContent className="p-6 text-sm text-muted-foreground text-center">
-                  Account created on {new Date(customer.createdAt).toLocaleDateString()}
-                </CardContent>
-              </Card>
-            </TabsContent>
-          </Tabs>
         </div>
       </div>
     </div>
