@@ -28,10 +28,7 @@ export type FormatKey = keyof typeof APP_DATE_FORMATS;
 /**
  * Universal formatter that accepts Prisma Dates, strings, or numbers.
  */
-export function Dates(
-  date: Date | string | number | null,
-  type: FormatKey = 'display',
-): string {
+export function Dates(date: Date | string | number | null, type: FormatKey = 'display'): string {
   if (!date) return 'N/A';
 
   const parsedDate = new Date(date);

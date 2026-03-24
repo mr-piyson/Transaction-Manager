@@ -31,9 +31,7 @@ export default async function RootLayout(props: any) {
   const { locale, direction, dict } = await getServerI18n('en');
   return (
     <html lang="en" dir={direction} suppressHydrationWarning>
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <ThemeProvider
           attribute={'class'}
           defaultTheme={'system'}

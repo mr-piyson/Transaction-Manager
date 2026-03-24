@@ -8,9 +8,7 @@ export function useCheckOrganization() {
   return useQuery({
     queryKey: ['organizationStatus'],
     queryFn: async () => {
-      const { data } = await axios.get<{ hasOrganization: boolean }>(
-        '/api/organizations/check',
-      );
+      const { data } = await axios.get<{ hasOrganization: boolean }>('/api/organizations/check');
       return data.hasOrganization;
     },
   });
@@ -18,11 +16,7 @@ export function useCheckOrganization() {
 
 export function useCreateOrganization() {
   return useMutation({
-    mutationFn: async (newOrg: {
-      name: string;
-      address?: string;
-      website?: string;
-    }) => {
+    mutationFn: async (newOrg: { name: string; address?: string; website?: string }) => {
       const { data } = await axios.post('/api/organizations', newOrg);
       return data;
     },

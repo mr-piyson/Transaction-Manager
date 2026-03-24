@@ -15,9 +15,5 @@ export function AbilityProvider({
   ability: AppAbility;
   children: React.ReactNode;
 }) {
-  return (
-    <AbilityContext.Provider value={ability}>
-      {children}
-    </AbilityContext.Provider>
-  );
+  return <AbilityContext.Provider value={ability}>{children}</AbilityContext.Provider>;
 }

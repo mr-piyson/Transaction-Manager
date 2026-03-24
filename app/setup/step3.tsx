@@ -13,31 +13,20 @@ export function Step3Admin() {
   return (
     <div className="space-y-4">
       <div className="space-y-2">
-        <Input
-          {...register('adminFirstName')}
-          placeholder="First Name"
-          autoFocus
-        />
+        <Input {...register('adminFirstName')} placeholder="First Name" autoFocus />
         {errors.adminFirstName && (
-          <p className="text-xs text-destructive">
-            {errors.adminFirstName.message}
-          </p>
+          <p className="text-xs text-destructive">{errors.adminFirstName.message}</p>
         )}
       </div>
 
       <div className="space-y-2">
-        <Input
-          {...register('adminLastName')}
-          placeholder="Last Name (optional)"
-        />
+        <Input {...register('adminLastName')} placeholder="Last Name (optional)" />
       </div>
 
       <div className="space-y-2">
         <Input {...register('adminEmail')} placeholder="Email" type="email" />
         {errors.adminEmail && (
-          <p className="text-xs text-destructive">
-            {errors.adminEmail.message}
-          </p>
+          <p className="text-xs text-destructive">{errors.adminEmail.message}</p>
         )}
       </div>
 
@@ -48,9 +37,7 @@ export function Step3Admin() {
           type="password"
         />
         {errors.adminPassword && (
-          <p className="text-xs text-destructive">
-            {errors.adminPassword.message}
-          </p>
+          <p className="text-xs text-destructive">{errors.adminPassword.message}</p>
         )}
       </div>
     </div>

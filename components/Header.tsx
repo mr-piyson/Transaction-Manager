@@ -2,12 +2,7 @@
 
 import { ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
-import {
-  ArrowLeft,
-  ChevronLeft,
-  LucideSidebarOpen,
-  Sidebar,
-} from 'lucide-react';
+import { ArrowLeft, ChevronLeft, LucideSidebarOpen, Sidebar } from 'lucide-react';
 import { Button } from './ui/button';
 import { cn } from '@/lib/utils';
 import { Separator } from './ui/separator';
@@ -73,9 +68,7 @@ export function Header({
                     {title && (
                       <>
                         <div className="hidden sm:block bg-primary w-1 h-6 rounded-full" />
-                        {icon && (
-                          <span className="text-muted-foreground">{icon}</span>
-                        )}
+                        {icon && <span className="text-muted-foreground">{icon}</span>}
                         <h1 className="text-xl sm:text-2xl font-semibold capitalize truncate">
                           {title}
                         </h1>
@@ -86,9 +79,7 @@ export function Header({
               </div>
 
               {/* Right Section */}
-              {rightContent && (
-                <div className="flex items-center gap-2">{rightContent}</div>
-              )}
+              {rightContent && <div className="flex items-center gap-2">{rightContent}</div>}
             </div>
           </div>
         </header>
@@ -109,17 +100,10 @@ export function Header({
           className,
         )}
       >
-        <Button
-          variant={'ghost'}
-          className="px-2 "
-          onClick={sidebar.toggleSidebar}
-        >
+        <Button variant={'ghost'} className="px-2 " onClick={sidebar.toggleSidebar}>
           <Sidebar />
         </Button>
-        <Separator
-          orientation="vertical"
-          className="bg-primary w-1 h-1/2 rounded-2xl"
-        />
+        <Separator orientation="vertical" className="bg-primary w-1 h-1/2 rounded-2xl" />
 
         {/* Left Section */}
         <div className="flex items-center gap-3 flex-1 min-w-0">
@@ -127,12 +111,8 @@ export function Header({
             <div className="flex items-center gap-2 truncate">
               {title && (
                 <>
-                  {icon && (
-                    <span className="text-muted-foreground">{icon}</span>
-                  )}
-                  <h1 className="text-xl font-semibold capitalize truncate">
-                    {title}
-                  </h1>
+                  {icon && <span className="text-muted-foreground">{icon}</span>}
+                  <h1 className="text-xl font-semibold capitalize truncate">{title}</h1>
                 </>
               )}
             </div>

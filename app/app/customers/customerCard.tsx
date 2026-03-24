@@ -36,9 +36,7 @@ export function CustomerCard({ data, className, ...props }: CustomerCardProps) {
           {/* Example Icon */}
           <span className="font-mono font-semibold">Cus-{id}</span>
         </p>
-        <p className="flex items-center justify-end gap-1 text-muted-foreground">
-          {address}
-        </p>
+        <p className="flex items-center justify-end gap-1 text-muted-foreground">{address}</p>
       </div>
     </div>
   );

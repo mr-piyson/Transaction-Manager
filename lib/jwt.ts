@@ -47,8 +47,8 @@ export async function issueSession(userId: string, email: string) {
 
   // 1. Persist Refresh Token
   const expiresAt = new Date(Date.now() + EXPIRY.REFRESH_TOKEN_EXPIRY * 1000);
-  await db.tokens.deleteMany({ where: { userId, type: 'refresh' } });
-  await db.tokens.create({
+  await db.token.deleteMany({ where: { userId, type: 'refresh' } });
+  await db.token.create({
     data: { userId, value: refreshToken, expiresAt, type: 'refresh' },
   });
 
@@ -81,7 +81,7 @@ export async function issueSession(userId: string, email: string) {
 export async function clearSession(refreshToken?: string) {
   const cookieStore = await cookies();
   if (refreshToken) {
-    await db.tokens.deleteMany({
+    await db.token.deleteMany({
       where: { value: refreshToken, type: 'refresh' },
     });
   }

@@ -1,90 +1,55 @@
 'use client';
 
-import {
-  useQuery,
-  useMutation,
-  UseQueryResult,
-  UseMutationResult,
-} from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import axios from 'axios';
 import { Customer } from '@prisma/client';
-import { queryClient } from '@/components/QueryProvider';
 
-// We define a type for creating a customer (usually excludes the ID and timestamps)
 type CustomerInput = Omit<Customer, 'id' | 'createdAt' | 'updatedAt'>;
+const CACHE_KEY = ['customers'];
 
 export const useCustomers = () => {
-  const queryKey = ['customers'];
+  const queryClient = useQueryClient();
 
   return {
-    // --- READ ALL ---
-    getAll: (): UseQueryResult<Customer[], Error> =>
-      useQuery({
-        queryKey,
-        queryFn: async () => {
-          const { data } = await axios.get<Customer[]>('/api/customers');
-          return data;
-        },
+    // 1. Fetch All
+    useGetAll: () =>
+      useQuery<Customer[]>({
+        queryKey: CACHE_KEY,
+        queryFn: async () => (await axios.get('/api/customers')).data,
       }),
 
-    // --- READ ONE ---
-    getById: (id?: string): UseQueryResult<Customer, Error> =>
-      useQuery({
-        queryKey: [...queryKey, id],
-        queryFn: async () => {
-          const { data } = await axios.get<Customer>(`/api/customers/${id}`);
-          return data;
-        },
+    // 2. Fetch One
+    useGetById: (id?: string) =>
+      useQuery<Customer>({
+        queryKey: [...CACHE_KEY, id],
+        queryFn: async () => (await axios.get(`/api/customers/${id}`)).data,
         enabled: !!id,
       }),
 
-    // --- CREATE ---
-    create: (): UseMutationResult<Customer, Error, CustomerInput> =>
+    // 3. Create
+    useCreate: () =>
       useMutation({
-        mutationFn: async (newCustomer) => {
-          const { data } = await axios.post<Customer>(
-            '/api/customers',
-            newCustomer,
-          );
-          return data;
-        },
-        onSuccess: () => {
-          queryClient.invalidateQueries({ queryKey });
+        mutationFn: async (newCustomer: CustomerInput) =>
+          (await axios.post('/api/customers', newCustomer)).data,
+        onSuccess: () => queryClient.invalidateQueries({ queryKey: CACHE_KEY }),
+      }),
+
+    // 4. Update
+    useUpdate: () =>
+      useMutation({
+        mutationFn: async ({ id, ...updates }: Partial<Customer> & { id: string }) =>
+          (await axios.patch(`/api/customers/${id}`, updates)).data,
+        onSuccess: (data) => {
+          queryClient.invalidateQueries({ queryKey: CACHE_KEY });
+          queryClient.invalidateQueries({ queryKey: [...CACHE_KEY, data.id] });
         },
       }),
 
-    // --- UPDATE ---
-    // We use Partial<Customer> so you can send only the fields that changed
-    update: (): UseMutationResult<
-      Customer,
-      Error,
-      Partial<Customer> & { id: string }
-    > =>
+    // 5. Remove
+    useRemove: () =>
       useMutation({
-        mutationFn: async ({ id, ...updates }) => {
-          const { data } = await axios.patch<Customer>(
-            `/api/customers/${id}`,
-            updates,
-          );
-          return data;
-        },
-        onSuccess: (updatedCustomer) => {
-          queryClient.invalidateQueries({ queryKey });
-          queryClient.invalidateQueries({
-            queryKey: [...queryKey, updatedCustomer.id],
-          });
-        },
-      }),
-
-    // Rename 'delete' to 'remove' here once
-    remove: (): UseMutationResult<void, Error, string> =>
-      useMutation({
-        mutationFn: async (id) => {
-          await axios.delete(`/api/customers/${id}`);
-        },
-        onSuccess: () => {
-          queryClient.invalidateQueries({ queryKey });
-        },
+        mutationFn: async (id: string) => axios.delete(`/api/customers/${id}`),
+        onSuccess: () => queryClient.invalidateQueries({ queryKey: CACHE_KEY }),
       }),
   };
 };

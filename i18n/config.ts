@@ -63,9 +63,7 @@ export function parseLocale(value: string | null | undefined): Locale {
 // Webpack/Turbopack will code-split each locale into its own chunk.
 // The client receives only the chunk for the active locale.
 
-export async function loadLocale(
-  locale: Locale,
-): Promise<Record<string, unknown>> {
+export async function loadLocale(locale: Locale): Promise<Record<string, unknown>> {
   switch (locale) {
     case 'en':
       return (await import('./locales/en')).en as Record<string, unknown>;
@@ -114,9 +112,6 @@ export function translate(
   return typeof value === 'string' ? value : (fallback ?? key);
 }
 
-export function keyExists(
-  dict: Record<string, unknown>,
-  key: TranslationKeys,
-): boolean {
+export function keyExists(dict: Record<string, unknown>, key: TranslationKeys): boolean {
   return typeof deepGet(dict, key.split('.')) === 'string';
 }

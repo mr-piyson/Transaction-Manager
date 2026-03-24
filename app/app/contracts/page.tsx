@@ -35,9 +35,7 @@ export default function ContractsPage(props: ContractsPageProps) {
                 <span className="text-muted-foreground">
                   <LucideFilePenLine />
                 </span>
-                <h1 className="text-xl sm:text-2xl font-semibold capitalize truncate">
-                  Contracts
-                </h1>
+                <h1 className="text-xl sm:text-2xl font-semibold capitalize truncate">Contracts</h1>
               </div>
             </div>
 

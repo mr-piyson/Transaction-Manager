@@ -1,7 +1,6 @@
 // format.ts
-import { Money } from './money';
+import { CurrencyCode, Money } from './money';
 import { Dates, DatesAgo, FormatKey } from './date';
-import { CurrencyCode } from './currency';
 
 export class Format {
   // ─── Money ────────────────────────────────────────────────────────────

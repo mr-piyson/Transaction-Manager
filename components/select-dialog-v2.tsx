@@ -19,11 +19,7 @@ import {
 import { Empty } from '@/components/ui/empty';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import {
   Select,
   SelectContent,
@@ -136,9 +132,7 @@ export function SelectionDialog<T extends Record<string, any>>({
   const resizeObserverRef = useRef<ResizeObserver | null>(null);
 
   // Internal selection state (mirrors controlled if provided)
-  const [selectedIds, setSelectedIds] = useState<Set<string>>(
-    new Set(controlledSelectedIds ?? []),
-  );
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set(controlledSelectedIds ?? []));
   const [searchTerm, setSearchTerm] = useState('');
   const [filterValues, setFilterValues] = useState<Record<string, string>>(
     Object.fromEntries(filters.map((f) => [f.key, 'all'])),
@@ -161,9 +155,7 @@ export function SelectionDialog<T extends Record<string, any>>({
     return filters.reduce(
       (acc, filter) => {
         const values = new Set<string>(
-          data
-            .map((item) => filter.getValue(item))
-            .filter((v): v is string => Boolean(v)),
+          data.map((item) => filter.getValue(item)).filter((v): v is string => Boolean(v)),
         );
         acc[filter.key] = Array.from(values).sort();
         return acc;
@@ -180,9 +172,7 @@ export function SelectionDialog<T extends Record<string, any>>({
         !searchTerm ||
         searchFields.some((field) => {
           const value =
-            typeof field === 'function'
-              ? field(item)
-              : String(item[field as keyof T] ?? '');
+            typeof field === 'function' ? field(item) : String(item[field as keyof T] ?? '');
           return value?.toLowerCase().includes(searchTerm.toLowerCase());
         });
 
@@ -232,12 +222,10 @@ export function SelectionDialog<T extends Record<string, any>>({
   }, []);
 
   const allFilteredSelected =
-    filteredData.length > 0 &&
-    filteredData.every((item) => selectedIds.has(getItemId(item)));
+    filteredData.length > 0 && filteredData.every((item) => selectedIds.has(getItemId(item)));
 
   const someFilteredSelected =
-    !allFilteredSelected &&
-    filteredData.some((item) => selectedIds.has(getItemId(item)));
+    !allFilteredSelected && filteredData.some((item) => selectedIds.has(getItemId(item)));
 
   // ─── Active Filters ───────────────────────────────────────────────────────
 
@@ -280,8 +268,7 @@ export function SelectionDialog<T extends Record<string, any>>({
   }, [cardHeight]);
 
   const calculatedRowHeight = useMemo(() => {
-    if (rowHeight === 'auto')
-      return cardHeight > 0 ? cardHeight : isMobile ? 400 : 250;
+    if (rowHeight === 'auto') return cardHeight > 0 ? cardHeight : isMobile ? 400 : 250;
     return rowHeight;
   }, [rowHeight, cardHeight, isMobile]);
 
@@ -301,9 +288,7 @@ export function SelectionDialog<T extends Record<string, any>>({
           className={cn(
             'cursor-pointer transition-colors w-full',
             'ring-inset',
-            isSelected
-              ? 'ring-2 ring-primary rounded-lg bg-primary/5'
-              : 'hover:bg-muted/50',
+            isSelected ? 'ring-2 ring-primary rounded-lg bg-primary/5' : 'hover:bg-muted/50',
           )}
         >
           {cardRenderer(item, isSelected)}
@@ -378,10 +363,7 @@ export function SelectionDialog<T extends Record<string, any>>({
               <Popover>
                 <PopoverTrigger
                   render={
-                    <Button
-                      variant="outline"
-                      className="gap-2 relative shrink-0"
-                    >
+                    <Button variant="outline" className="gap-2 relative shrink-0">
                       <Filter className="w-4 h-4" />
                       <span className="hidden sm:inline">Filters</span>
                       {activeFiltersCount > 0 && (
@@ -413,30 +395,18 @@ export function SelectionDialog<T extends Record<string, any>>({
                     <Separator />
                     {filters.map((filter) => (
                       <div key={filter.key} className="space-y-1.5">
-                        <Label
-                          htmlFor={`${filter.key}-filter`}
-                          className="text-sm"
-                        >
+                        <Label htmlFor={`${filter.key}-filter`} className="text-sm">
                           {filter.label}
                         </Label>
                         <Select
                           value={filterValues[filter.key]}
-                          onValueChange={(v) =>
-                            updateFilter(filter.key, v as string)
-                          }
+                          onValueChange={(v) => updateFilter(filter.key, v as string)}
                         >
-                          <SelectTrigger
-                            className="w-full"
-                            id={`${filter.key}-filter`}
-                          >
-                            <SelectValue
-                              placeholder={`All ${filter.label.toLowerCase()}`}
-                            />
+                          <SelectTrigger className="w-full" id={`${filter.key}-filter`}>
+                            <SelectValue placeholder={`All ${filter.label.toLowerCase()}`} />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="all">
-                              All {filter.label.toLowerCase()}
-                            </SelectItem>
+                            <SelectItem value="all">All {filter.label.toLowerCase()}</SelectItem>
                             {filterOptions[filter.key]?.map((opt) => (
                               <SelectItem key={opt} value={opt}>
                                 {opt}
@@ -480,10 +450,7 @@ export function SelectionDialog<T extends Record<string, any>>({
               {selectedIds.size > 0 && (
                 <>
                   {' '}
-                  ·{' '}
-                  <span className="text-foreground font-medium">
-                    {selectedIds.size} selected
-                  </span>
+                  · <span className="text-foreground font-medium">{selectedIds.size} selected</span>
                 </>
               )}
             </span>
@@ -501,13 +468,11 @@ export function SelectionDialog<T extends Record<string, any>>({
                   </>
                 ) : someFilteredSelected ? (
                   <>
-                    <Square className="w-3.5 h-3.5" /> Select all (
-                    {filteredData.length})
+                    <Square className="w-3.5 h-3.5" /> Select all ({filteredData.length})
                   </>
                 ) : (
                   <>
-                    <CheckSquare className="w-3.5 h-3.5" /> Select all (
-                    {filteredData.length})
+                    <CheckSquare className="w-3.5 h-3.5" /> Select all ({filteredData.length})
                   </>
                 )}
               </Button>
@@ -521,13 +486,9 @@ export function SelectionDialog<T extends Record<string, any>>({
         <div className="flex flex-col flex-1">
           {isError ? (
             <div className="flex flex-col items-center justify-center h-full gap-3 p-6 text-center">
-              <p className="text-destructive font-semibold">
-                Failed to load {itemName}
-              </p>
+              <p className="text-destructive font-semibold">Failed to load {itemName}</p>
               <p className="text-sm text-muted-foreground">
-                {error instanceof Error
-                  ? error.message
-                  : 'An unexpected error occurred'}
+                {error instanceof Error ? error.message : 'An unexpected error occurred'}
               </p>
               {onRefetch && (
                 <Button variant="destructive" size="sm" onClick={onRefetch}>
@@ -538,17 +499,13 @@ export function SelectionDialog<T extends Record<string, any>>({
           ) : isLoading ? (
             <div className="flex flex-col items-center justify-center h-full gap-3 p-6">
               <Spinner />
-              <p className="text-sm text-muted-foreground">
-                Loading {itemName}…
-              </p>
+              <p className="text-sm text-muted-foreground">Loading {itemName}…</p>
             </div>
           ) : filteredData.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full gap-2 p-6 text-center">
               {emptyIcon}
               <p className="font-semibold">{emptyTitle}</p>
-              <p className="text-sm text-muted-foreground">
-                {emptyDescription}
-              </p>
+              <p className="text-sm text-muted-foreground">{emptyDescription}</p>
               {(searchTerm || activeFiltersCount > 0) && (
                 <Button variant="outline" size="sm" onClick={clearAllFilters}>
                   Clear filters
@@ -582,11 +539,7 @@ export function SelectionDialog<T extends Record<string, any>>({
             <Button variant="outline" onClick={handleCancel}>
               {cancelLabel}
             </Button>
-            <Button
-              onClick={handleConfirm}
-              disabled={selectedIds.size === 0}
-              className="gap-2"
-            >
+            <Button onClick={handleConfirm} disabled={selectedIds.size === 0} className="gap-2">
               <Check className="w-4 h-4" />
               {confirmLabel}
               {selectedIds.size > 0 && (

@@ -38,13 +38,7 @@ type Invoice = {
   invoiceItems: InvoiceItem[];
 };
 
-function InvoiceItemRow({
-  item,
-  depth = 0,
-}: {
-  item: InvoiceItem;
-  depth?: number;
-}) {
+function InvoiceItemRow({ item, depth = 0 }: { item: InvoiceItem; depth?: number }) {
   return (
     <>
       <div
@@ -57,24 +51,14 @@ function InvoiceItemRow({
             <Package className="w-4 h-4" />
           </div>
           <div className="min-w-0">
-            <p className="text-sm font-medium truncate leading-none mb-1">
-              {item.description}
-            </p>
-            {item.code && (
-              <p className="text-xs text-muted-foreground font-mono">
-                {item.code}
-              </p>
-            )}
+            <p className="text-sm font-medium truncate leading-none mb-1">{item.description}</p>
+            {item.code && <p className="text-xs text-muted-foreground font-mono">{item.code}</p>}
           </div>
         </div>
 
         <div className="text-right shrink-0 ml-4">
-          <p className="text-sm font-semibold">
-            {Money.format(item.salesPrice)}
-          </p>
-          <p className="text-xs text-muted-foreground">
-            Cost: {Money.format(item.purchasePrice)}
-          </p>
+          <p className="text-sm font-semibold">{Money.format(item.salesPrice)}</p>
+          <p className="text-xs text-muted-foreground">Cost: {Money.format(item.purchasePrice)}</p>
         </div>
       </div>
 
@@ -87,10 +71,7 @@ function InvoiceItemRow({
 
 /* ---------- helpers ---------- */
 
-function sumTree(
-  items: InvoiceItem[],
-  selector: (i: InvoiceItem) => number,
-): number {
+function sumTree(items: InvoiceItem[], selector: (i: InvoiceItem) => number): number {
   let total = 0;
   for (const i of items) {
     total += selector(i);
@@ -143,8 +124,7 @@ export default function InvoiceDetailPage() {
       },
     ],
     customer: { id: 1, name: 'Muntadher' },
-    description:
-      'Initial deposit for the upcoming e-commerce website redesign.',
+    description: 'Initial deposit for the upcoming e-commerce website redesign.',
   });
 
   const [loading, setLoading] = useState(false);
@@ -188,23 +168,15 @@ export default function InvoiceDetailPage() {
   };
 
   const items = invoice?.invoiceItems ?? [];
-  const revenue = useMemo(
-    () => sumTree(items, (i) => i.salesPrice ?? 0),
-    [items],
-  );
-  const cost = useMemo(
-    () => sumTree(items, (i) => i.purchasePrice ?? 0),
-    [items],
-  );
+  const revenue = useMemo(() => sumTree(items, (i) => i.salesPrice ?? 0), [items]);
+  const cost = useMemo(() => sumTree(items, (i) => i.purchasePrice ?? 0), [items]);
   const grossProfit = revenue - cost;
 
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-100 space-y-4">
         <Loader2 className="w-8 h-8 animate-spin text-primary" />
-        <p className="text-sm text-muted-foreground animate-pulse">
-          Loading invoice...
-        </p>
+        <p className="text-sm text-muted-foreground animate-pulse">Loading invoice...</p>
       </div>
     );
   }
@@ -220,12 +192,8 @@ export default function InvoiceDetailPage() {
             <Receipt className="w-6 h-6" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold tracking-tight">
-              Invoice #{invoice.id}
-            </h1>
-            <p className="text-sm text-muted-foreground">
-              Manage details, items, and approvals.
-            </p>
+            <h1 className="text-2xl font-bold tracking-tight">Invoice #{invoice.id}</h1>
+            <p className="text-sm text-muted-foreground">Manage details, items, and approvals.</p>
           </div>
         </div>
       </div>
@@ -236,9 +204,7 @@ export default function InvoiceDetailPage() {
           {/* Metadata Card */}
           <Card>
             <CardHeader className="pb-4">
-              <CardTitle className="text-base font-semibold">
-                Invoice Information
-              </CardTitle>
+              <CardTitle className="text-base font-semibold">Invoice Information</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
@@ -279,9 +245,7 @@ export default function InvoiceDetailPage() {
           {/* Line Items Card */}
           <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-4">
-              <CardTitle className="text-base font-semibold">
-                Line Items
-              </CardTitle>
+              <CardTitle className="text-base font-semibold">Line Items</CardTitle>
               <div className="text-sm font-medium px-2.5 py-1 bg-muted rounded-full">
                 {items.length} {items.length === 1 ? 'Item' : 'Items'}
               </div>
@@ -292,25 +256,17 @@ export default function InvoiceDetailPage() {
                 {items.length === 0 ? (
                   <div className="py-12 text-center flex flex-col items-center">
                     <Package className="w-8 h-8 text-muted-foreground/50 mb-3" />
-                    <p className="text-sm text-muted-foreground">
-                      No items on this invoice.
-                    </p>
+                    <p className="text-sm text-muted-foreground">No items on this invoice.</p>
                   </div>
                 ) : (
-                  items.map((item) => (
-                    <InvoiceItemRow key={item.id} item={item} />
-                  ))
+                  items.map((item) => <InvoiceItemRow key={item.id} item={item} />)
                 )}
               </div>
 
               {items.length > 0 && (
                 <div className="flex justify-between items-center p-4 bg-muted/30 border-t rounded-b-xl">
-                  <span className="font-semibold text-muted-foreground">
-                    Total Revenue
-                  </span>
-                  <span className="text-lg font-bold">
-                    {Money.format(revenue)}
-                  </span>
+                  <span className="font-semibold text-muted-foreground">Total Revenue</span>
+                  <span className="text-lg font-bold">{Money.format(revenue)}</span>
                 </div>
               )}
             </CardContent>
@@ -322,9 +278,7 @@ export default function InvoiceDetailPage() {
           {/* Invoice Summary Card */}
           <Card className="shadow-sm">
             <CardHeader className="pb-4">
-              <CardTitle className="text-base font-semibold">
-                Financial Summary
-              </CardTitle>
+              <CardTitle className="text-base font-semibold">Financial Summary</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4 text-sm">
               <div className="flex justify-between items-center">
@@ -351,10 +305,7 @@ export default function InvoiceDetailPage() {
 
           {/* Action Buttons */}
           <div className="grid grid-cols-2 lg:grid-cols-1 gap-3">
-            <Button
-              variant="default"
-              className="w-full justify-start gap-2 shadow-sm"
-            >
+            <Button variant="default" className="w-full justify-start gap-2 shadow-sm">
               <Check className="h-4 w-4" />
               <span>Approve</span>
             </Button>

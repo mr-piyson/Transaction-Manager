@@ -1,12 +1,9 @@
-import { ApiResponse } from '@/lib/api';
+import { ApiResponse } from '@/lib/server';
 import { SignUpSchema } from '@/lib/validators/auth';
 import { signIn, signUp } from '@/server/auth';
 import { NextRequest } from 'next/server';
 
-export async function POST(
-  req: NextRequest,
-  ctx: RouteContext<'/api/auth/signout'>,
-) {
+export async function POST(req: NextRequest, ctx: RouteContext<'/api/auth/signout'>) {
   try {
     // Validate Input
     const result = SignUpSchema.safeParse(req.json());

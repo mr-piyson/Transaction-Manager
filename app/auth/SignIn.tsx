@@ -17,7 +17,7 @@ import { Spinner } from '@/components/ui/spinner';
 import { SignInInput, SignInSchema } from '@/lib/validators/auth';
 
 export default function SignInTab() {
-  const { signIn, isLoading: loading ,  } = useAuth();
+  const { signIn, isLoading: loading } = useAuth();
   const {
     register,
     handleSubmit,
@@ -55,9 +55,7 @@ export default function SignInTab() {
               className="border border-muted-foreground/50"
               {...register('email')}
             />
-            {errors.email && (
-              <p className="text-sm text-destructive">{errors.email.message}</p>
-            )}
+            {errors.email && <p className="text-sm text-destructive">{errors.email.message}</p>}
           </div>
           <div className="space-y-1">
             <label htmlFor="password" className="text-sm font-medium">
@@ -70,9 +68,7 @@ export default function SignInTab() {
               {...register('password')}
             />
             {errors.password && (
-              <p className="text-sm text-destructive">
-                {errors.password.message}
-              </p>
+              <p className="text-sm text-destructive">{errors.password.message}</p>
             )}
           </div>
         </CardContent>

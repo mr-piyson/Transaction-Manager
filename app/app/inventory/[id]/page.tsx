@@ -3,30 +3,17 @@
 import React from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
-import {  useMutation,  } from '@tanstack/react-query';
+import { useMutation } from '@tanstack/react-query';
 import axios from 'axios';
 import { z } from 'zod';
-import {
-  ChevronLeft,
-  Package,
-  Trash2,
-  Save,
-  TrendingUp,
-  Loader2,
-} from 'lucide-react';
+import { ChevronLeft, Package, Trash2, Save, TrendingUp, Loader2 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-} from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { toast } from 'sonner';
 import { useInventoryItems } from '@/hooks/data/use-inventoryItems';
@@ -113,16 +100,11 @@ export default function InventoryItemClientPage() {
   }
 
   if (isError || !item) {
-    return (
-      <div className="p-8 text-center">
-        Item not found or error loading data.
-      </div>
-    );
+    return <div className="p-8 text-center">Item not found or error loading data.</div>;
   }
 
   const profit = item.salesPrice - item.purchasePrice;
-  const margin =
-    item.salesPrice > 0 ? ((profit / item.salesPrice) * 100).toFixed(1) : '0';
+  const margin = item.salesPrice > 0 ? ((profit / item.salesPrice) * 100).toFixed(1) : '0';
 
   return (
     <div className="flex-col md:flex min-h-screen bg-background">
@@ -180,12 +162,7 @@ export default function InventoryItemClientPage() {
                   <div className="grid gap-4">
                     <div className="grid gap-2">
                       <Label htmlFor="name">Item Name</Label>
-                      <Input
-                        name="name"
-                        id="name"
-                        defaultValue={item.name}
-                        required
-                      />
+                      <Input name="name" id="name" defaultValue={item.name} required />
                     </div>
 
                     <div className="grid gap-2">
@@ -212,9 +189,7 @@ export default function InventoryItemClientPage() {
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4">
                     <div className="grid gap-2">
-                      <Label htmlFor="purchasePrice">
-                        Cost (Purchase Price)
-                      </Label>
+                      <Label htmlFor="purchasePrice">Cost (Purchase Price)</Label>
                       <div className="relative">
                         <span className="absolute left-3 top-2.5 text-muted-foreground text-sm">
                           $
@@ -312,9 +287,7 @@ export default function InventoryItemClientPage() {
                 <div className="flex justify-between items-end">
                   <div className="space-y-1">
                     <p className="text-xs text-muted-foreground">Net Profit</p>
-                    <p className="text-2xl font-bold">
-                      ${profit.toLocaleString()}
-                    </p>
+                    <p className="text-2xl font-bold">${profit.toLocaleString()}</p>
                   </div>
                   <Badge
                     className={
@@ -323,9 +296,7 @@ export default function InventoryItemClientPage() {
                         : ''
                     }
                   >
-                    {profit >= 0 ? (
-                      <TrendingUp className="h-3 w-3 mr-1" />
-                    ) : null}
+                    {profit >= 0 ? <TrendingUp className="h-3 w-3 mr-1" /> : null}
                     {margin}% Margin
                   </Badge>
                 </div>

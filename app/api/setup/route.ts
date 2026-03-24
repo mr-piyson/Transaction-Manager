@@ -19,10 +19,7 @@ export async function POST(req: Request) {
     // 1. Check if organization already exists to prevent double-setup
     const existingOrg = await db.organization.findFirst();
     if (existingOrg) {
-      return NextResponse.json(
-        { error: 'System already configured' },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: 'System already configured' }, { status: 400 });
     }
 
     // 2. Hash the password

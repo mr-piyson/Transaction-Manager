@@ -6,13 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardContent,
-  CardFooter,
-} from '@/components/ui/card';
+import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 
@@ -127,9 +121,7 @@ export default function SetupWizard() {
           {STEP_META.map((_, i) => (
             <div
               key={i}
-              className={`h-2 flex-1 rounded-full transition-colors ${
-                i <= step ? 'bg-primary' : 'bg-primary/20'
-              }`}
+              className={`h-2 flex-1 rounded-full transition-colors ${i <= step ? 'bg-primary' : 'bg-primary/20'}`}
             />
           ))}
         </div>
@@ -165,11 +157,7 @@ export default function SetupWizard() {
           </CardContent>
 
           <CardFooter className="flex justify-between border-t pt-4">
-            <Button
-              variant="outline"
-              onClick={prevStep}
-              disabled={step === 0 || isPending}
-            >
+            <Button variant="outline" onClick={prevStep} disabled={step === 0 || isPending}>
               <ArrowLeft className="w-4 h-4 mr-2" /> Back
             </Button>
 

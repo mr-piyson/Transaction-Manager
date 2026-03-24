@@ -26,11 +26,9 @@ const Toaster = ({ ...props }: ToasterProps) => {
       }}
       toastOptions={{
         classNames: {
-          success:
-            'bg-success! text-success-foreground! border-muted-foreground',
+          success: 'bg-success! text-success-foreground! border-muted-foreground',
 
-          warning:
-            'bg-warning! text-warning-foreground! border-muted-foreground',
+          warning: 'bg-warning! text-warning-foreground! border-muted-foreground',
           error: 'bg-destructive-foreground! text-white border-red-600',
           info: 'bg-primary text-white border-blue-600',
           loading: ' text-white border-gray-600',

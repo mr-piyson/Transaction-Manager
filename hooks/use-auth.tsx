@@ -69,9 +69,6 @@ export function useAuth() {
     signUp: signUpMutation.mutate,
     signOut: signOutMutation.mutate,
     // Combined loading state for any auth action
-    isLoading:
-      signInMutation.isPending ||
-      signUpMutation.isPending ||
-      signOutMutation.isPending,
+    isLoading: signInMutation.isPending || signUpMutation.isPending || signOutMutation.isPending,
   };
 }

@@ -1,13 +1,6 @@
 'use client';
 import { Button } from '@/components/ui/button';
-import {
-  ArrowLeft,
-  BoxIcon,
-  ChevronLeft,
-  DollarSign,
-  HandCoinsIcon,
-  Package,
-} from 'lucide-react';
+import { ArrowLeft, BoxIcon, ChevronLeft, DollarSign, HandCoinsIcon, Package } from 'lucide-react';
 import { PaymentDialog } from './payments-dialog';
 import InvoiceForm from './invoiceForm';
 import { cn } from '@/lib/utils';
@@ -37,11 +30,7 @@ export default function InvoiceEditor(props: InvoiceEditorProps) {
       >
         {/* ── Row 1: Back + Invoice ID + Status ── */}
         <div className="flex items-center gap-2 px-2 pt-2 pb-1">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="shrink-0 text-muted-foreground h-8 w-8"
-          >
+          <Button variant="ghost" size="icon" className="shrink-0 text-muted-foreground h-8 w-8">
             <ArrowLeft size={16} />
           </Button>
 
@@ -49,9 +38,7 @@ export default function InvoiceEditor(props: InvoiceEditorProps) {
             <span className="font-semibold leading-tight truncate">
               INV-{String(1).padStart(5, '0')}
             </span>
-            <span className="text-xs text-muted-foreground truncate">
-              {'Muntadher'}
-            </span>
+            <span className="text-xs text-muted-foreground truncate">{'Muntadher'}</span>
           </div>
 
           <div className="ml-auto shrink-0">
@@ -64,10 +51,7 @@ export default function InvoiceEditor(props: InvoiceEditorProps) {
                 Partial
               </Badge>
             ) : (
-              <Badge
-                variant="outline"
-                className="text-xs text-muted-foreground"
-              >
+              <Badge variant="outline" className="text-xs text-muted-foreground">
                 Unpaid
               </Badge>
             )}
@@ -79,23 +63,17 @@ export default function InvoiceEditor(props: InvoiceEditorProps) {
         {/* ── Row 2: Financial Summary ── */}
         <div className="grid grid-cols-3 divide-x divide-border bg-muted/40 text-center py-1 mx-2 mb-2 rounded-md ">
           <div className="flex flex-col px-2">
-            <span className="text-[10px] text-muted-foreground uppercase tracking-wide">
-              Total
-            </span>
+            <span className="text-[10px] text-muted-foreground uppercase tracking-wide">Total</span>
             <span className="text-sm font-semibold tabular-nums">{200}</span>
           </div>
           <div className="flex flex-col px-2">
-            <span className="text-[10px] text-muted-foreground uppercase tracking-wide">
-              Paid
-            </span>
+            <span className="text-[10px] text-muted-foreground uppercase tracking-wide">Paid</span>
             <span className="text-sm font-semibold tabular-nums text-success-foreground">
               {200}
             </span>
           </div>
           <div className="flex flex-col px-2">
-            <span className="text-[10px] text-muted-foreground uppercase tracking-wide">
-              Due
-            </span>
+            <span className="text-[10px] text-muted-foreground uppercase tracking-wide">Due</span>
             <span
               className={cn(
                 'text-sm font-semibold tabular-nums',
@@ -118,20 +96,13 @@ export default function InvoiceEditor(props: InvoiceEditorProps) {
             cardRenderer={InventoryItemCard}
             rowHeight={72}
           >
-            <Button
-              size="sm"
-              className="h-8 gap-1.5 text-xs flex-1 sm:flex-none"
-            >
+            <Button size="sm" className="h-8 gap-1.5 text-xs flex-1 sm:flex-none">
               <BoxIcon size={13} />
               <span>Add Item</span>
             </Button>
           </SelectDialog>
 
-          <Button
-            variant="secondary"
-            size="sm"
-            className="h-8 gap-1.5 text-xs flex-1 sm:flex-none"
-          >
+          <Button variant="secondary" size="sm" className="h-8 gap-1.5 text-xs flex-1 sm:flex-none">
             <Package size={13} />
             <span className="hidden xs:inline">Add </span>Package
           </Button>

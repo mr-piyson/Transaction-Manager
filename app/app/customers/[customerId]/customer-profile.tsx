@@ -90,21 +90,14 @@ export function CustomerProfile({ customerId }: CustomerProfileProps) {
               <div className="mt-6 space-y-4 text-left border-t pt-6">
                 <div className="flex items-center gap-3 text-sm">
                   <Phone className="h-4 w-4 text-muted-foreground" />
-                  <a
-                    href={`tel:${customer.phone}`}
-                    className="hover:underline"
-                    dir="ltr"
-                  >
+                  <a href={`tel:${customer.phone}`} className="hover:underline" dir="ltr">
                     {customer.phone}
                   </a>
                 </div>
                 {customer.email && (
                   <div className="flex items-center gap-3 text-sm">
                     <Mail className="h-4 w-4 text-muted-foreground" />
-                    <a
-                      href={`mailto:${customer.email}`}
-                      className="hover:underline"
-                    >
+                    <a href={`mailto:${customer.email}`} className="hover:underline">
                       {customer.email}
                     </a>
                   </div>
@@ -124,19 +117,13 @@ export function CustomerProfile({ customerId }: CustomerProfileProps) {
                 <p className="text-xs text-muted-foreground uppercase font-semibold">
                   Total Orders
                 </p>
-                <p className="text-xl font-bold">
-                  {customer.invoices?.length || 0}
-                </p>
+                <p className="text-xl font-bold">{customer.invoices?.length || 0}</p>
               </CardContent>
             </Card>
             <Card>
               <CardContent className="flex gap-4">
-                <p className="text-xs text-muted-foreground uppercase font-semibold">
-                  Status
-                </p>
-                <Badge className="bg-success-foreground text-success ">
-                  Active
-                </Badge>
+                <p className="text-xs text-muted-foreground uppercase font-semibold">Status</p>
+                <Badge className="bg-success-foreground text-success ">Active</Badge>
               </CardContent>
             </Card>
           </div>
@@ -163,10 +150,7 @@ export function CustomerProfile({ customerId }: CustomerProfileProps) {
             <TabsContent value="invoices" className="mt-0 space-y-4">
               {customer.invoices?.length > 0 ? (
                 customer.invoices.map((invoice: any) => (
-                  <Card
-                    key={invoice.id}
-                    className="hover:border-primary/50 transition-colors"
-                  >
+                  <Card key={invoice.id} className="hover:border-primary/50 transition-colors">
                     <Link href={`/app/invoices/${invoice.id}`}>
                       <CardContent className="p-4 flex items-center justify-between">
                         <div className="flex items-center gap-4">
@@ -174,18 +158,14 @@ export function CustomerProfile({ customerId }: CustomerProfileProps) {
                             <FileText className="h-5 w-5 text-slate-600" />
                           </div>
                           <div>
-                            <p className="font-semibold text-sm">
-                              Invoice #{invoice.id}
-                            </p>
+                            <p className="font-semibold text-sm">Invoice #{invoice.id}</p>
                             <p className="text-xs text-muted-foreground">
                               {new Date(invoice.date).toLocaleDateString()}
                             </p>
                           </div>
                         </div>
                         <div className="text-right">
-                          <p className="font-bold text-sm">
-                            BHD {invoice.total?.toFixed(3)}
-                          </p>
+                          <p className="font-bold text-sm">BHD {invoice.total?.toFixed(3)}</p>
                           <Badge variant="outline" className="text-[10px]">
                             View
                           </Badge>
@@ -197,9 +177,7 @@ export function CustomerProfile({ customerId }: CustomerProfileProps) {
               ) : (
                 <div className="text-center py-12 border-2 border-dashed rounded-lg">
                   <History className="h-10 w-10 text-muted-foreground/30 mx-auto mb-3" />
-                  <p className="text-muted-foreground">
-                    No transaction history found.
-                  </p>
+                  <p className="text-muted-foreground">No transaction history found.</p>
                 </div>
               )}
             </TabsContent>
@@ -207,8 +185,7 @@ export function CustomerProfile({ customerId }: CustomerProfileProps) {
             <TabsContent value="activity">
               <Card>
                 <CardContent className="p-6 text-sm text-muted-foreground text-center">
-                  Account created on{' '}
-                  {new Date(customer.createdAt).toLocaleDateString()}
+                  Account created on {new Date(customer.createdAt).toLocaleDateString()}
                 </CardContent>
               </Card>
             </TabsContent>

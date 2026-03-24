@@ -13,11 +13,7 @@ export function OrganizationGuard({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (!isLoading && hasOrganization === false && pathname !== '/setup') {
       router.push('/setup');
-    } else if (
-      !isLoading &&
-      hasOrganization === true &&
-      pathname === '/setup'
-    ) {
+    } else if (!isLoading && hasOrganization === true && pathname === '/setup') {
       // If they somehow navigate to setup but an org exists, send them to dashboard
       router.push('/auth');
     }

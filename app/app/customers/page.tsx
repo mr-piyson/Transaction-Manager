@@ -13,13 +13,14 @@ import { UniversalContextMenu } from '@/components/context-menu';
 import { alert } from '@/components/Alert-dialog';
 import { useCustomers } from '@/hooks/data/use-customers';
 import { useRouter } from 'next/navigation';
+import { CreateCustomerDialog } from './create-customer-dialog';
 
 export default function CustomersPage() {
   const { t } = useI18n();
 
-  const { getAll, remove } = useCustomers();
-  const { data: customers, isLoading, isError, refetch } = getAll();
-  const deleteMutation = remove();
+  const { useGetAll, useRemove } = useCustomers();
+  const { data: customers, isLoading, isError, refetch } = useGetAll();
+  const deleteMutation = useRemove();
   const router = useRouter();
 
   return (
@@ -29,10 +30,12 @@ export default function CustomersPage() {
         showBorder={true}
         title="Customers"
         rightContent={
-          <Button>
-            <Plus />
-            New
-          </Button>
+          <CreateCustomerDialog>
+            <Button>
+              <Plus />
+              New
+            </Button>
+          </CreateCustomerDialog>
         }
       />
       <ListView<Customer>
@@ -62,10 +65,7 @@ export default function CustomersPage() {
               },
             ]}
           >
-            <CustomerCard
-              data={data}
-              onClick={() => router.push(`/app/customers/${data.id}`)}
-            />
+            <CustomerCard data={data} onClick={() => router.push(`/app/customers/${data.id}`)} />
           </UniversalContextMenu>
         )}
         rowHeight={72}

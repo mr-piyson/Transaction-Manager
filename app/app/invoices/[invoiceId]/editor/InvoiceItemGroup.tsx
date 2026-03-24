@@ -31,17 +31,13 @@ export default function InvoiceItemCardGroup({
         </div>
 
         <div className="flex flex-col items-end">
-          <span className="text-xs font-medium text-muted-foreground uppercase">
-            Total Items
-          </span>
+          <span className="text-xs font-medium text-muted-foreground uppercase">Total Items</span>
           <p className="text-sm font-bold">{totalQty}</p>
         </div>
       </div>
 
       {/* List of Children (The InvoiceItemCards) */}
-      <div className="flex ps-8 flex-col divide-y divide-border/50">
-        {children}
-      </div>
+      <div className="flex ps-8 flex-col divide-y divide-border/50">{children}</div>
     </div>
   );
 }

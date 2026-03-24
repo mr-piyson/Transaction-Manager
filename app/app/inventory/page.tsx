@@ -23,12 +23,7 @@ export default function InventoryPage() {
   const { t } = useI18n();
   const router = useRouter();
 
-  const {
-    data: inventory,
-    isLoading,
-    isError,
-    refetch,
-  } = useInventoryItems().getAll;
+  const { data: inventory, isLoading, isError, refetch } = useInventoryItems().getAll;
 
   const handleDelete = (data: InventoryItem) => {
     alert.delete({

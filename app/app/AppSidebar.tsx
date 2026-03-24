@@ -53,8 +53,7 @@ export function AppSidebar({ ...props }: AppSidebarProps) {
     router.push(href as Route);
   };
 
-  const showSpinnerFor = (href: string) =>
-    loading === href && (!open || isMobile);
+  const showSpinnerFor = (href: string) => loading === href && (!open || isMobile);
 
   return (
     <Sidebar
@@ -139,15 +138,7 @@ function RouteGroup({
 // ─── Route Item (leaf or nested) ─────────────────────────────────────────────
 
 function RouteItem({ route, ...shared }: SharedProps & { route: RouteConfig }) {
-  const {
-    isActive,
-    loading,
-    open,
-    isMobile,
-    showSpinnerFor,
-    onNavigate,
-    i18n,
-  } = shared;
+  const { isActive, loading, open, isMobile, showSpinnerFor, onNavigate, i18n } = shared;
 
   const active = isActive(route.href);
   const href = route.href as string | undefined;
@@ -273,9 +264,7 @@ function AppLogo() {
             <Logo className="size-7!" />
           </div>
           <div className="grid flex-1 text-left text-sm leading-tight">
-            <span className="truncate font-semibold text-lg">
-              Transaction Manager
-            </span>
+            <span className="truncate font-semibold text-lg">Transaction Manager</span>
           </div>
         </SidebarMenuButton>
       </SidebarMenuItem>

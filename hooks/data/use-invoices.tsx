@@ -2,11 +2,7 @@
 
 import { queryClient } from '@/components/QueryProvider';
 import { Customer, Invoice } from '@prisma/client';
-import {
-  useMutation,
-  UseMutationResult,
-  useQuery,
-} from '@tanstack/react-query';
+import { useMutation, UseMutationResult, useQuery } from '@tanstack/react-query';
 import axios from 'axios';
 
 export interface InvoiceWithCustomer extends Invoice {
@@ -14,10 +10,7 @@ export interface InvoiceWithCustomer extends Invoice {
 }
 
 // Now Omit will respect those optional flags
-type InvoiceInput = Omit<
-  OptionalIfNullable<Invoice>,
-  'id' | 'createdAt' | 'updatedAt'
->;
+type InvoiceInput = Omit<OptionalIfNullable<Invoice>, 'id' | 'createdAt' | 'updatedAt'>;
 
 export const useInvoices = () => {
   const queryKey = ['invoices'];
@@ -38,10 +31,7 @@ export const useInvoices = () => {
     create: (): UseMutationResult<Invoice, Error, InvoiceInput> =>
       useMutation({
         mutationFn: async (newCustomer) => {
-          const { data } = await axios.post<Invoice>(
-            '/api/invoices',
-            newCustomer,
-          );
+          const { data } = await axios.post<Invoice>('/api/invoices', newCustomer);
           return data;
         },
         onSuccess: () => {
@@ -50,17 +40,10 @@ export const useInvoices = () => {
       }),
 
     // --- UPDATE ---
-    update: (): UseMutationResult<
-      Invoice,
-      Error,
-      Partial<Invoice> & { id: string }
-    > =>
+    update: (): UseMutationResult<Invoice, Error, Partial<Invoice> & { id: string }> =>
       useMutation({
         mutationFn: async ({ id, ...updates }) => {
-          const { data } = await axios.patch<Invoice>(
-            `/api/invoices/${id}`,
-            updates,
-          );
+          const { data } = await axios.patch<Invoice>(`/api/invoices/${id}`, updates);
           return data;
         },
         onSuccess: (updatedCustomer) => {

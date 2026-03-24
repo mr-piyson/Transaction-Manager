@@ -23,11 +23,7 @@ import {
   CommandItem,
   CommandList,
 } from '@/components/ui/command';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
@@ -37,6 +33,7 @@ import { Invoice } from '@prisma/client';
 import { useCustomers } from '@/hooks/data/use-customers';
 import { useInvoices } from '@/hooks/data/use-invoices';
 import { useAuth } from '@/hooks/use-auth';
+import { customersApi } from '@/lib/api';
 
 interface Customer {
   id: number;
@@ -45,21 +42,16 @@ interface Customer {
   address: string;
 }
 
-export function CreateInvoiceDialog(props: {
-  onSuccess?: (invoice: any) => void;
-}) {
+export function CreateInvoiceDialog(props: { onSuccess?: (invoice: any) => void }) {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [selectedCustomerId, setSelectedCustomerId] = useState<number | null>(
-    null,
-  );
+  const [selectedCustomerId, setSelectedCustomerId] = useState<number | null>(null);
   const [description, setDescription] = useState('');
   const [comboOpen, setComboOpen] = useState(false);
   const invoiceMutation = useInvoices().create();
 
   // Fetch customers for the dropdown
-  const { data: customers = [], refetch: refetchCustomers } =
-    useCustomers().getAll();
+  const { data: customers = [], refetch: refetchCustomers } = customersApi.useGetAll();
 
   const handleCreateInvoice = async () => {
     if (!selectedCustomerId) return toast.error('Please select a customer');
@@ -121,14 +113,8 @@ export function CreateInvoiceDialog(props: {
               <Popover open={comboOpen} onOpenChange={setComboOpen}>
                 <PopoverTrigger
                   render={
-                    <Button
-                      variant="outline"
-                      role="combobox"
-                      className="flex-1 justify-between"
-                    >
-                      {selectedCustomer
-                        ? selectedCustomer.name
-                        : 'Select customer...'}
+                    <Button variant="outline" role="combobox" className="flex-1 justify-between">
+                      {selectedCustomer ? selectedCustomer.name : 'Select customer...'}
                       <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                     </Button>
                   }
@@ -152,9 +138,7 @@ export function CreateInvoiceDialog(props: {
                             <Check
                               className={cn(
                                 'mr-2 h-4 w-4',
-                                selectedCustomerId === customer.id
-                                  ? 'opacity-100'
-                                  : 'opacity-0',
+                                selectedCustomerId === customer.id ? 'opacity-100' : 'opacity-0',
                               )}
                             />
                             <div className="flex flex-col">
@@ -189,9 +173,7 @@ export function CreateInvoiceDialog(props: {
                     type: 'text',
                   },
                 ]}
-                mutationFn={async (payload) =>
-                  (await axios.post('/api/customers', payload)).data
-                }
+                mutationFn={async (payload) => (await axios.post('/api/customers', payload)).data}
                 onSuccess={(newCustomer) => {
                   refetchCustomers();
                   // Automatically select the newly created customer
@@ -200,12 +182,7 @@ export function CreateInvoiceDialog(props: {
                   }
                 }}
               >
-                <Button
-                  variant="outline"
-                  size="icon"
-                  type="button"
-                  title="Add New Customer"
-                >
+                <Button variant="outline" size="icon" type="button" title="Add New Customer">
                   <UserPlus className="size-4" />
                 </Button>
               </UniversalDialog>
@@ -217,10 +194,7 @@ export function CreateInvoiceDialog(props: {
           <Button variant="outline" onClick={() => setOpen(false)}>
             Cancel
           </Button>
-          <Button
-            onClick={handleCreateInvoice}
-            disabled={loading || !selectedCustomerId}
-          >
+          <Button onClick={handleCreateInvoice} disabled={loading || !selectedCustomerId}>
             {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             Create Invoice
           </Button>

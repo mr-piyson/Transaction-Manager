@@ -1,4 +1,3 @@
-import { TranslationKeys } from '@/i18n/config';
 import { z } from 'zod';
 
 /**
@@ -107,11 +106,13 @@ export function validateEmail(
       })
   );
 }
-
-export function validateConfirmPassword(
-  passwordField: string,
-  confirmPasswordField: string,
-) {
+/**
+ * validations
+ * @param passwordField
+ * @param confirmPasswordField
+ * @returns
+ */
+export function validateConfirmPassword(passwordField: string, confirmPasswordField: string) {
   return z
     .object({
       [passwordField]: z.string(),
@@ -122,7 +123,9 @@ export function validateConfirmPassword(
       path: [confirmPasswordField], // Specify the field path for better error reporting
     });
 }
-
+/**
+ *
+ */
 export const SIGNUP_SCHEMA = z.object({
   name: z.string().min(3).max(30),
   email: validateEmail(),

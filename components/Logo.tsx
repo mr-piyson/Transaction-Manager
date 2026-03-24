@@ -68,60 +68,28 @@ export default function Logo({
       className={className}
     >
       {/* Top left section - darkest facet */}
-      <path
-        d="M99,0 L0,155.5 L65.5,101 Z"
-        fill="url(#paint0_linear)"
-        stroke="none"
-      />
+      <path d="M99,0 L0,155.5 L65.5,101 Z" fill="url(#paint0_linear)" stroke="none" />
 
       {/* Top middle section - brightest top facet */}
-      <path
-        d="M95,95.5 L65.5,101 L99,0 Z"
-        fill="url(#paint1_linear)"
-        stroke="none"
-      />
+      <path d="M95,95.5 L65.5,101 L99,0 Z" fill="url(#paint1_linear)" stroke="none" />
 
       {/* Middle left section - medium facet */}
-      <path
-        d="M95,95.5 L65.5,101 L0,155.5 Z"
-        fill={colors.base}
-        stroke="none"
-      />
+      <path d="M95,95.5 L65.5,101 L0,155.5 Z" fill={colors.base} stroke="none" />
 
       {/* Middle horizontal section - transitional facet */}
-      <path
-        d="M95,95.5 L0,155.5 L185.5,95.5 Z"
-        fill="url(#paint2_linear)"
-        stroke="none"
-      />
+      <path d="M95,95.5 L0,155.5 L185.5,95.5 Z" fill="url(#paint2_linear)" stroke="none" />
 
       {/* Bottom horizontal section - darker middle */}
-      <path
-        d="M91,155.5 L185.5,95.5 L0,155.5 Z"
-        fill={colors.darker}
-        stroke="none"
-      />
+      <path d="M91,155.5 L185.5,95.5 L0,155.5 Z" fill={colors.darker} stroke="none" />
 
       {/* Bottom right large section - main bright facet */}
-      <path
-        d="M87.5,249 L121,149.5 L185.5,95.5 Z"
-        fill="url(#paint3_linear)"
-        stroke="none"
-      />
+      <path d="M87.5,249 L121,149.5 L185.5,95.5 Z" fill="url(#paint3_linear)" stroke="none" />
 
       {/* Bottom middle section - bright highlight */}
-      <path
-        d="M91,155.5 L121,149.5 L87.5,249 Z"
-        fill={colors.lighter}
-        stroke="none"
-      />
+      <path d="M91,155.5 L121,149.5 L87.5,249 Z" fill={colors.lighter} stroke="none" />
 
       {/* Bottom left section - complementary facet */}
-      <path
-        d="M91,155.5 L121,149.5 L185.5,95.5 Z"
-        fill={colors.lighter}
-        stroke="none"
-      />
+      <path d="M91,155.5 L121,149.5 L185.5,95.5 Z" fill={colors.lighter} stroke="none" />
 
       <defs>
         {/* Top left - dark to light gradient for depth */}

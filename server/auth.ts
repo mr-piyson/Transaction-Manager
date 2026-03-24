@@ -1,30 +1,21 @@
 import db from '@/lib/database';
 import { env } from '@/lib/env';
 import jwt from 'jsonwebtoken';
-import {
-  AuthResult,
-  clearSession,
-  COOKIE_NAMES,
-  issueSession,
-  TokenPayload,
-} from '@/lib/jwt';
+import { AuthResult, clearSession, COOKIE_NAMES, issueSession, TokenPayload } from '@/lib/jwt';
 import { compare, hash } from 'bcryptjs';
 import { cookies } from 'next/headers';
 import { z } from 'zod';
-import { SIGNUP_SCHEMA } from '@/lib/schemas';
+import { SIGNUP_SCHEMA } from '@/lib/validations';
 
 /**
  * Registers a new user, hashes their password, and initializes a session.
  *  @param data - The signup data validated against SIGNUP_SCHEMA.
  * @returns An AuthResult containing the user's basic info or a descriptive error.
  */
-export async function signUp(
-  data: z.infer<typeof SIGNUP_SCHEMA>,
-): Promise<AuthResult> {
+export async function signUp(data: z.infer<typeof SIGNUP_SCHEMA>): Promise<AuthResult> {
   try {
     const validation = SIGNUP_SCHEMA.safeParse(data);
-    if (!validation.success)
-      return { success: false, error: validation.error.message };
+    if (!validation.success) return { success: false, error: validation.error.message };
 
     const existingUser = await db.user.findUnique({
       where: { email: data.email.toLowerCase() },

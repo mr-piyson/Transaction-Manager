@@ -80,8 +80,7 @@ export async function getServerI18n(pinnedLocale?: Locale) {
   const dict = await loadLocale(locale);
 
   return {
-    t: (key: TranslationKeys, fallback?: string) =>
-      translate(dict, key, fallback),
+    t: (key: TranslationKeys, fallback?: string) => translate(dict, key, fallback),
     exists: (key: TranslationKeys) => keyExists(dict, key),
     // ↓ Pass both of these to <I18nProvider initialLocale={locale} initialDict={dict}>
     locale,

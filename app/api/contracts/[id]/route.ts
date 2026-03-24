@@ -1,10 +1,7 @@
 import db from '@/lib/database';
 import { NextRequest, NextResponse } from 'next/server';
 
-export async function GET(
-  req: NextRequest,
-  ctx: RouteContext<'/api/contracts/[id]'>,
-) {
+export async function GET(req: NextRequest, ctx: RouteContext<'/api/contracts/[id]'>) {
   try {
     // GET logic here
     const contractId = (await ctx.params).id;
@@ -17,9 +14,6 @@ export async function GET(
     return NextResponse.json(contract);
   } catch (error) {
     console.error(error);
-    return NextResponse.json(
-      { error: 'Internal Server Error' },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }
