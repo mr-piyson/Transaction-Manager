@@ -4,21 +4,19 @@ import { Plus, User2 } from 'lucide-react';
 import { Customer } from '@prisma/client';
 import { ListView } from '@/components/list-view';
 import { Button } from '@/components/ui/button';
-import { UniversalDialog } from '@/components/dialog';
 import { useI18n } from '@/i18n/use-i18n';
 import { CustomerCard } from './customerCard';
-import axios from 'axios';
 import { Header } from '@/components/Header';
 import { UniversalContextMenu } from '@/components/context-menu';
 import { alert } from '@/components/Alert-dialog';
-import { useCustomers } from '@/hooks/data/use-customers';
 import { useRouter } from 'next/navigation';
 import { CreateCustomerDialog } from './create-customer-dialog';
+import { customersApi } from '@/lib/api';
 
 export default function CustomersPage() {
   const { t } = useI18n();
 
-  const { useGetAll, useRemove } = useCustomers();
+  const { useGetAll, useRemove } = customersApi;
   const { data: customers, isLoading, isError, refetch } = useGetAll();
   const deleteMutation = useRemove();
   const router = useRouter();

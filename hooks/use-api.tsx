@@ -1,8 +1,8 @@
-// @/lib/client.ts
+// @/hook/use-api.tsx
 'use client';
 
+import api from '@/lib/api';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import axios from 'axios';
 
 /**
  * Standard Omit for Prisma metadata, then apply the Nullable logic
@@ -11,20 +11,20 @@ type BaseInput<T> = OptionalIfNullable<Omit<T, 'id' | 'createdAt' | 'updatedAt'>
 
 type ApiRoute = `/api/${string}`;
 
-export function createApiHooks<T>(endpoint: ApiRoute, Key: string) {
+export function useAPI<T>(endpoint: ApiRoute, Key: string) {
   const base = {
     // 1. Fetch All
     useGetAll: () =>
       useQuery<T[]>({
         queryKey: [Key],
-        queryFn: async () => (await axios.get(endpoint)).data,
+        queryFn: async () => (await api.get(endpoint)).data,
       }),
 
     // 2. Fetch One
     useGetById: (id?: string) =>
       useQuery<T>({
         queryKey: [Key, id],
-        queryFn: async () => (await axios.get(`${endpoint}/${id}`)).data,
+        queryFn: async () => (await api.get(`${endpoint}/${id}`)).data,
         enabled: !!id,
       }),
 
@@ -32,7 +32,7 @@ export function createApiHooks<T>(endpoint: ApiRoute, Key: string) {
     useCreate: () => {
       const queryClient = useQueryClient();
       return useMutation({
-        mutationFn: async (newData: BaseInput<T>) => (await axios.post(endpoint, newData)).data,
+        mutationFn: async (newData: BaseInput<T>) => (await api.post(endpoint, newData)).data,
         onSuccess: () => queryClient.invalidateQueries({ queryKey: [Key] }),
       });
     },
@@ -42,7 +42,7 @@ export function createApiHooks<T>(endpoint: ApiRoute, Key: string) {
       const queryClient = useQueryClient();
       return useMutation({
         mutationFn: async ({ id, ...updates }: Partial<BaseInput<T>> & { id: string }) =>
-          (await axios.patch(`${endpoint}/${id}`, updates)).data,
+          (await api.patch(`${endpoint}/${id}`, updates)).data,
         onSuccess: (data: any) => {
           queryClient.invalidateQueries({ queryKey: [Key] });
           queryClient.invalidateQueries({ queryKey: [Key, data.id] });
@@ -54,7 +54,7 @@ export function createApiHooks<T>(endpoint: ApiRoute, Key: string) {
     useRemove: () => {
       const queryClient = useQueryClient();
       return useMutation({
-        mutationFn: async (id: string) => axios.delete(`${endpoint}/${id}`),
+        mutationFn: async (id: string) => api.delete(`${endpoint}/${id}`),
         onSuccess: () => queryClient.invalidateQueries({ queryKey: [Key] }),
       });
     },

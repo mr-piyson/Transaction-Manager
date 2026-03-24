@@ -4,7 +4,6 @@ import { createEnv } from '@t3-oss/env-core';
 export const env = createEnv({
   server: {
     DATABASE_URL: z.string(),
-    NEXT_PUBLIC_API_URL: z.string().optional(),
     JWT_SECRET_ACCESS: z.string(),
     JWT_SECRET_REFRESH: z.string(),
     NODE_ENV: z.enum(['development', 'production']).optional(),
