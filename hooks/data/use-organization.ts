@@ -1,8 +1,7 @@
 'use client';
 import { SetupData } from '@/app/setup/setup-types';
-import { queryClient } from '@/components/QueryProvider';
 import api from '@/lib/api';
-import { useQuery, useMutation } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
 export function useCheckOrganization() {
   return useQuery({
@@ -21,6 +20,7 @@ export function useCreateOrganization() {
       return data;
     },
     onSuccess: () => {
+      const queryClient = useQueryClient();
       // Invalidate the check query so the guard lets the user in
       queryClient.invalidateQueries({ queryKey: ['organizationStatus'] });
     },
@@ -35,6 +35,7 @@ export function useSetupApplication() {
       return data;
     },
     onSuccess: () => {
+      const queryClient = useQueryClient();
       queryClient.invalidateQueries({ queryKey: ['organizationStatus'] });
     },
   });

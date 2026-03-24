@@ -17,13 +17,13 @@ import { toast } from 'sonner';
 import { alert } from '@/components/Alert-dialog';
 import { UniversalContextMenu } from '@/components/context-menu';
 import { useRouter } from 'next/navigation';
-import { getAllInventoryItems } from '@/hooks/data/use-inventoryItems';
+import { useInventoryItems } from '@/hooks/data/use-inventoryItems';
 
 export default function InventoryPage() {
   const { t } = useI18n();
   const router = useRouter();
 
-  const { data: inventory, isLoading, isError, refetch } = getAllInventoryItems();
+  const { data: inventory, isLoading, isError, refetch } = useInventoryItems();
 
   const handleDelete = (data: InventoryItem) => {
     alert.delete({

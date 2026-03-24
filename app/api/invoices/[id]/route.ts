@@ -4,7 +4,7 @@ import { Prisma } from '@prisma/client';
 import { NextRequest } from 'next/server';
 
 // 1. Define the selection/inclusion criteria
-export const invoiceWithDetails = Prisma.validator<Prisma.InvoiceDefaultArgs>()({
+export const InvoiceWithDetails = Prisma.validator<Prisma.InvoiceDefaultArgs>()({
   include: {
     customer: true,
     invoiceLines: true,
@@ -13,7 +13,7 @@ export const invoiceWithDetails = Prisma.validator<Prisma.InvoiceDefaultArgs>()(
 });
 
 // 2. Export the Type based on that criteria
-export type InvoiceWithDetails = Prisma.InvoiceGetPayload<typeof invoiceWithDetails>;
+export type InvoiceWithDetails = Prisma.InvoiceGetPayload<typeof InvoiceWithDetails>;
 
 export async function GET(req: NextRequest, ctx: RouteContext<'/api/invoices/[id]'>) {
   try {

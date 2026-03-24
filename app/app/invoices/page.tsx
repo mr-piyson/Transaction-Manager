@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useMemo } from 'react';
-import { Box, FileText, CheckCircle2, Clock } from 'lucide-react';
+import { useState } from 'react';
+import { FileText, CheckCircle2, Clock } from 'lucide-react';
 
 import { ListView } from '@/components/list-view';
 import { useI18n } from '@/i18n/use-i18n';
@@ -9,11 +9,11 @@ import { Header } from '@/components/Header';
 import { CreateInvoiceDialog } from './create-invoice-dialog';
 import { InvoiceCard } from './invoiceCard';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { InvoiceWithCustomer, useInvoices } from '@/hooks/data/use-invoices';
+import { useInvoices } from '@/hooks/data/use-invoices';
 
 export default function InvoicesPage() {
   const { t } = useI18n();
-  const { data: invoices, isLoading, isError, refetch } = useInvoices().getAll();
+  const { data: invoices, isLoading, isError, refetch } = useInvoices();
 
   // State for filters
   const [paymentTab, setPaymentTab] = useState('all');
@@ -79,7 +79,7 @@ export default function InvoicesPage() {
         </div>
       )}
 
-      <ListView<InvoiceWithCustomer>
+      <ListView
         emptyTitle={t('invoices.empty_title', 'No invoices found')}
         emptyIcon={<FileText className="size-16 text-muted-foreground" />}
         emptyDescription={'No invoices to show'}
@@ -90,7 +90,7 @@ export default function InvoicesPage() {
         useTheme={true}
         cardRenderer={(data) => <InvoiceCard data={data} />}
         rowHeight={72}
-        searchFields={[]}
+        searchFields={['id']}
         onRefetch={refetch}
         externalFilter={(item) => (paymentTab === 'all' ? true : paymentTab === item.paymentStatus)}
       />

@@ -40,7 +40,7 @@ export default function InventoryItemClientPage() {
 
   /* ------------------------------ Queries ------------------------------ */
 
-  const { data, isLoading, isError } = useInventoryItems().getAll;
+  const { data, isLoading, isError } = useInventoryItems();
   const item = data as any;
 
   /* ------------------------------ Mutations ------------------------------ */

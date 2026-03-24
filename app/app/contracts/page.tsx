@@ -4,7 +4,7 @@ import { useContracts } from '@/hooks/data/use-contracts';
 import { Contract } from '@prisma/client';
 import { ContractCard } from './contractCard';
 import { Button } from '@/components/ui/button';
-import { ChevronLeft, LucideFilePenLine, Plus } from 'lucide-react';
+import { LucideFilePenLine, Plus } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
 
@@ -13,7 +13,7 @@ type ContractsPageProps = {
 };
 
 export default function ContractsPage(props: ContractsPageProps) {
-  const { data, error, isLoading } = useContracts().getAll();
+  const { data, error, isLoading } = useContracts();
   const router = useRouter();
   return (
     <>

@@ -11,14 +11,13 @@ import { UniversalContextMenu } from '@/components/context-menu';
 import { alert } from '@/components/Alert-dialog';
 import { useRouter } from 'next/navigation';
 import { CreateCustomerDialog } from './create-customer-dialog';
-import { customersApi } from '@/lib/api';
+import { useCustomers, useDeleteCustomer } from '@/hooks/data/use-customers';
 
 export default function CustomersPage() {
   const { t } = useI18n();
 
-  const { useGetAll, useRemove } = customersApi;
-  const { data: customers, isLoading, isError, refetch } = useGetAll();
-  const deleteMutation = useRemove();
+  const { data: customers, isLoading, isError, refetch } = useCustomers();
+  const deleteMutation = useDeleteCustomer();
   const router = useRouter();
 
   return (

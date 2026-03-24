@@ -25,15 +25,11 @@ import {
 } from '@/components/ui/command';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
 import { UniversalDialog } from '@/components/dialog';
-import { Invoice } from '@prisma/client';
 
+import { useCreateInvoice, useInvoices } from '@/hooks/data/use-invoices';
 import { useCustomers } from '@/hooks/data/use-customers';
-import { useInvoices } from '@/hooks/data/use-invoices';
-import { useAuth } from '@/hooks/use-auth';
-import { customersApi } from '@/lib/api';
 
 interface Customer {
   id: number;
@@ -44,42 +40,38 @@ interface Customer {
 
 export function CreateInvoiceDialog(props: { onSuccess?: (invoice: any) => void }) {
   const [open, setOpen] = useState(false);
-  const [loading, setLoading] = useState(false);
   const [selectedCustomerId, setSelectedCustomerId] = useState<number | null>(null);
   const [description, setDescription] = useState('');
   const [comboOpen, setComboOpen] = useState(false);
-  const invoiceMutation = useInvoices().create();
+  const invoiceMutation = useCreateInvoice();
 
   // Fetch customers for the dropdown
-  const { data: customers = [], refetch: refetchCustomers } = customersApi.useGetAll();
+  const { data: customers = [], refetch: refetchCustomers } = useCustomers();
 
   const handleCreateInvoice = async () => {
     if (!selectedCustomerId) return toast.error('Please select a customer');
 
-    setLoading(true);
-    try {
-      invoiceMutation.mutate({
-        customerId: selectedCustomerId,
-        date: new Date(),
-        description: '',
-        currency: 'BHD',
-        isCompleted: false,
-        userId: '',
-        organizationId: 1,
-        discountTotal: 10,
-        total: 0,
-        taxTotal: 0,
-        subtotal: 0,
-        paymentStatus: 'Unpaid',
-      });
-
+    invoiceMutation.mutate({
+      customerId: selectedCustomerId,
+      date: new Date(),
+      description: '',
+      currency: 'BHD',
+      isCompleted: false,
+      userId: '',
+      organizationId: 1,
+      discountTotal: 10,
+      total: 0,
+      subtotal: 0,
+      taxTotal: 0,
+      paymentStatus: 'Unpaid',
+    });
+    if (invoiceMutation.isSuccess) {
       toast.success('Invoice created successfully');
-      setOpen(false);
       resetForm();
-    } catch (error) {
+      setOpen(false);
+    }
+    if (invoiceMutation.isError) {
       toast.error('Failed to create invoice');
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -194,8 +186,11 @@ export function CreateInvoiceDialog(props: { onSuccess?: (invoice: any) => void 
           <Button variant="outline" onClick={() => setOpen(false)}>
             Cancel
           </Button>
-          <Button onClick={handleCreateInvoice} disabled={loading || !selectedCustomerId}>
-            {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+          <Button
+            onClick={handleCreateInvoice}
+            disabled={invoiceMutation.isPending || !selectedCustomerId}
+          >
+            {invoiceMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             Create Invoice
           </Button>
         </DialogFooter>

@@ -17,7 +17,7 @@ import {
 } from '@/components/ui/dialog';
 import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from '@/components/ui/field';
 import { Button } from '@/components/ui/button';
-import { useCustomers } from '@/hooks/data/use-customers';
+import { useCreateCustomer, useCustomers } from '@/hooks/data/use-customers';
 
 import * as z from 'zod';
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/input-group';
@@ -41,8 +41,7 @@ interface CreateCustomerDialogProps {
 
 export function CreateCustomerDialog({ onSuccess, onError, children }: CreateCustomerDialogProps) {
   const [open, setOpen] = useState(false);
-  const { useCreate } = useCustomers();
-  const createMutation = useCreate();
+  const createMutation = useCreateCustomer();
 
   const {
     register,

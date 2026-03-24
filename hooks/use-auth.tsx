@@ -7,7 +7,6 @@ import { toast } from 'sonner';
 import axios from 'axios';
 import { SignInSchema, SignUpSchema } from '@/lib/validators/auth';
 import { Route } from 'next';
-import { queryClient } from '@/components/QueryProvider';
 
 export function useAuth() {
   const router = useRouter();
@@ -16,7 +15,7 @@ export function useAuth() {
   const handleAuthSuccess = (message: string, redirectPath: Route) => {
     toast.success(message);
     // Invalidate any 'user' or 'session' queries you might have
-    queryClient.invalidateQueries({ queryKey: ['session'] });
+    // queryClient.invalidateQueries({ queryKey: ['session'] });
     router.push(redirectPath);
     router.refresh();
   };
@@ -53,7 +52,7 @@ export function useAuth() {
       await axios.delete('/api/auth');
     },
     onSuccess: () => {
-      queryClient.clear(); // Clear all cached data on logout
+      // queryClient.clear(); // Clear all cached data on logout
       toast.success('Signed out successfully!');
       router.push('/auth');
       router.refresh();

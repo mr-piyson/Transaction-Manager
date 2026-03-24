@@ -1,55 +1,142 @@
 'use client';
 
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Customer } from '@prisma/client';
 import api from '@/lib/api';
+import { Customer } from '@prisma/client';
+import { useMutation, useQuery, useQueryClient, UseQueryOptions } from '@tanstack/react-query';
 
-type CustomerInput = Omit<Customer, 'id' | 'createdAt' | 'updatedAt'>;
-const CACHE_KEY = ['customers'];
+const SCOPE = 'customers';
+const BASE_URL = `/api/${SCOPE}`;
 
-export const useCustomers = () => {
+// ---------------------------------------------------------------------------
+// Key factory
+// ---------------------------------------------------------------------------
+
+export const CustomersKeys = {
+  all: [SCOPE] as const,
+  lists: () => [SCOPE, 'list'] as const,
+  list: (filters?: object) => [SCOPE, 'list', { filters }] as const,
+  details: () => [SCOPE, 'detail'] as const,
+  detail: (id: string | undefined) => [SCOPE, 'detail', id] as const,
+};
+
+// ---------------------------------------------------------------------------
+// Types
+// ---------------------------------------------------------------------------
+
+export interface UpdateCustomerPayload {
+  id: string;
+  data: Partial<Omit<Customer, 'id'>>;
+}
+
+// ---------------------------------------------------------------------------
+// Hooks
+// ---------------------------------------------------------------------------
+
+export const useCustomers = (
+  options?: Omit<UseQueryOptions<Customer[]>, 'queryKey' | 'queryFn'>,
+) => {
+  return useQuery<Customer[]>({
+    queryKey: CustomersKeys.lists(),
+    queryFn: async () => {
+      const { data } = await api.get<Customer[]>(BASE_URL);
+      return data;
+    },
+    ...options,
+  });
+};
+
+export const useCreateCustomer = () => {
   const queryClient = useQueryClient();
 
-  return {
-    // 1. Fetch All
-    useGetAll: () =>
-      useQuery<Customer[]>({
-        queryKey: CACHE_KEY,
-        queryFn: async () => (await api.get('/api/customers')).data,
-      }),
+  return useMutation<Customer, Error, OptionalIfNullable<Omit<Customer, 'id'>>>({
+    mutationFn: async (payload) => {
+      const { data } = await api.post<Customer>(BASE_URL, payload);
+      return data;
+    },
+    onSuccess: (created) => {
+      // Seed the detail cache so navigating to the new Customer skips the loading state
+      queryClient.setQueryData<OptionalIfNullable<Customer>>(
+        CustomersKeys.detail(String(created.id)),
+        created,
+      );
+      queryClient.invalidateQueries({ queryKey: CustomersKeys.lists() });
+    },
+  });
+};
 
-    // 2. Fetch One
-    useGetById: (id?: string) =>
-      useQuery<Customer>({
-        queryKey: [...CACHE_KEY, id],
-        queryFn: async () => (await api.get(`/api/customers/${id}`)).data,
-        enabled: !!id,
-      }),
+export const useGetCustomer = (
+  id: string | undefined,
+  options?: Omit<UseQueryOptions<Customer>, 'queryKey' | 'queryFn' | 'enabled'>,
+) => {
+  return useQuery<Customer>({
+    queryKey: CustomersKeys.detail(id),
+    queryFn: async () => {
+      const { data } = await api.get<Customer>(`${BASE_URL}/${id}`);
+      return data;
+    },
+    enabled: !!id,
+    ...options,
+  });
+};
 
-    // 3. Create
-    useCreate: () =>
-      useMutation({
-        mutationFn: async (newCustomer: CustomerInput) =>
-          (await api.post('/api/customers', newCustomer)).data,
-        onSuccess: () => queryClient.invalidateQueries({ queryKey: CACHE_KEY }),
-      }),
+export const useUpdateCustomer = () => {
+  const queryClient = useQueryClient();
 
-    // 4. Update
-    useUpdate: () =>
-      useMutation({
-        mutationFn: async ({ id, ...updates }: Partial<Customer> & { id: string }) =>
-          (await api.patch(`/api/customers/${id}`, updates)).data,
-        onSuccess: (data) => {
-          queryClient.invalidateQueries({ queryKey: CACHE_KEY });
-          queryClient.invalidateQueries({ queryKey: [...CACHE_KEY, data.id] });
-        },
-      }),
+  return useMutation<
+    Customer,
+    Error,
+    UpdateCustomerPayload,
+    { previousCustomer: Customer | undefined }
+  >({
+    mutationFn: async ({ id, data }) => {
+      const { data: updated } = await api.patch<Customer>(`${BASE_URL}/${id}`, data);
+      return updated;
+    },
 
-    // 5. Remove
-    useRemove: () =>
-      useMutation({
-        mutationFn: async (id: string) => api.delete(`/api/customers/${id}`),
-        onSuccess: () => queryClient.invalidateQueries({ queryKey: CACHE_KEY }),
-      }),
-  };
+    onMutate: async (payload) => {
+      await queryClient.cancelQueries({ queryKey: CustomersKeys.detail(payload.id) });
+
+      const previousCustomer = queryClient.getQueryData<Customer>(CustomersKeys.detail(payload.id));
+
+      queryClient.setQueryData<Customer>(CustomersKeys.detail(payload.id), (old) => {
+        if (!old) return old;
+        return { ...old, ...payload.data };
+      });
+
+      return { previousCustomer };
+    },
+
+    onError: (_err, payload, context) => {
+      if (context?.previousCustomer) {
+        queryClient.setQueryData<Customer>(
+          CustomersKeys.detail(payload.id),
+          context.previousCustomer,
+        );
+      }
+    },
+
+    onSettled: (_data, _err, payload) => {
+      queryClient.invalidateQueries({ queryKey: CustomersKeys.detail(payload.id) });
+      queryClient.invalidateQueries({ queryKey: CustomersKeys.lists() });
+    },
+  });
+};
+
+export const useDeleteCustomer = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation<void, Error, string>({
+    mutationFn: async (id) => {
+      await api.delete(`${BASE_URL}/${id}`);
+    },
+    onSuccess: (_data, id) => {
+      // Remove rather than invalidate — the entity no longer exists
+      queryClient.removeQueries({ queryKey: CustomersKeys.detail(id) });
+      queryClient.invalidateQueries({ queryKey: CustomersKeys.lists() });
+    },
+    onError: () => {
+      // Refetch list so a silent server failure doesn't leave a ghost entry
+      queryClient.invalidateQueries({ queryKey: CustomersKeys.lists() });
+    },
+  });
 };

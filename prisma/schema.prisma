@@ -83,8 +83,8 @@ model Organization {
   cityId    Int?
   city      City?    @relation(fields: [cityId], references: [id])
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime? @default(now())
+  updatedAt DateTime? @updatedAt
 
   users          User[]
   contracts      Contract[]
@@ -119,8 +119,8 @@ model User {
   organizationId Int?
   organization   Organization? @relation(fields: [organizationId], references: [id])
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime? @default(now())
+  updatedAt DateTime? @updatedAt
 
   tokens   Token[]
   invoices Invoice[]
@@ -142,8 +142,8 @@ model Token {
   userId String
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime? @default(now())
+  updatedAt DateTime? @updatedAt
 
   @@index([userId])
   @@index([expiresAt])
@@ -171,8 +171,8 @@ model InventoryItem {
 
   invoiceLines InvoiceLine[]
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime? @default(now())
+  updatedAt DateTime? @updatedAt
 
   @@index([organizationId])
   @@index([code])
@@ -195,7 +195,7 @@ enum PaymentMethod {
 
 model Invoice {
   id            Int                  @id @default(autoincrement())
-  date          DateTime             @default(now())
+  date          DateTime?            @default(now())
   description   String?
   paymentStatus InvoicePaymentStatus @default(Unpaid)
   isCompleted   Boolean              @default(false)
@@ -216,8 +216,8 @@ model Invoice {
   organizationId Int?
   organization   Organization? @relation(fields: [organizationId], references: [id])
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime? @default(now())
+  updatedAt DateTime? @updatedAt
 
   payments     Payment[]
   invoiceLines InvoiceLine[]
@@ -247,8 +247,8 @@ model InvoiceLine {
   invoiceId Int?
   invoice   Invoice? @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime? @default(now())
+  updatedAt DateTime? @updatedAt
 
   @@index([invoiceId])
   @@index([inventoryItemId])
@@ -256,7 +256,7 @@ model InvoiceLine {
 
 model Payment {
   id        Int           @id @default(autoincrement())
-  date      DateTime      @default(now())
+  date      DateTime?     @default(now())
   method    PaymentMethod @default(CASH)
   /// Stored in smallest currency unit (e.g. fils)
   amount    Int
@@ -266,8 +266,8 @@ model Payment {
   invoiceId Int
   invoice   Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime? @default(now())
+  updatedAt DateTime? @updatedAt
 
   @@index([invoiceId])
 }
@@ -291,8 +291,8 @@ model Customer {
   organizationId Int?
   organization   Organization? @relation(fields: [organizationId], references: [id])
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime? @default(now())
+  updatedAt DateTime? @updatedAt
 
   invoices Invoice[]
 
@@ -324,8 +324,8 @@ model Contract {
   organizationId Int?
   organization   Organization? @relation(fields: [organizationId], references: [id])
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime? @default(now())
+  updatedAt DateTime? @updatedAt
 
   @@index([organizationId])
   @@index([active])

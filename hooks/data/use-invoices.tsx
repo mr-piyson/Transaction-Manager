@@ -1,68 +1,135 @@
 'use client';
 
-import { queryClient } from '@/components/QueryProvider';
+import { InvoiceWithDetails } from '@/app/api/invoices/[id]/route';
 import api from '@/lib/api';
-import { Customer, Invoice } from '@prisma/client';
-import { useMutation, UseMutationResult, useQuery } from '@tanstack/react-query';
+import { Invoice } from '@prisma/client';
+import { useMutation, useQuery, useQueryClient, UseQueryOptions } from '@tanstack/react-query';
 
-export interface InvoiceWithCustomer extends Invoice {
-  customer: Customer;
+const SCOPE = 'invoices';
+const BASE_URL = `/api/${SCOPE}`;
+
+// ---------------------------------------------------------------------------
+// Key factory
+// ---------------------------------------------------------------------------
+
+export const InvoicesKeys = {
+  all: [SCOPE] as const,
+  lists: () => [SCOPE, 'list'] as const,
+  list: (filters?: object) => [SCOPE, 'list', { filters }] as const,
+  details: () => [SCOPE, 'detail'] as const,
+  detail: (id: string | undefined) => [SCOPE, 'detail', id] as const,
+};
+
+// ---------------------------------------------------------------------------
+// Types
+// ---------------------------------------------------------------------------
+
+export interface UpdateInvoicePayload {
+  id: string;
+  data: Partial<Omit<Invoice, 'id'>>;
 }
 
-// Now Omit will respect those optional flags
-type InvoiceInput = Omit<OptionalIfNullable<Invoice>, 'id' | 'createdAt' | 'updatedAt'>;
+// ---------------------------------------------------------------------------
+// Hooks
+// ---------------------------------------------------------------------------
 
-export const useInvoices = () => {
-  const queryKey = ['invoices'];
+export const useInvoices = (options?: Omit<UseQueryOptions<Invoice[]>, 'queryKey' | 'queryFn'>) => {
+  return useQuery<Invoice[]>({
+    queryKey: InvoicesKeys.lists(),
+    queryFn: async () => {
+      const { data } = await api.get<Invoice[]>(BASE_URL);
+      return data;
+    },
+    ...options,
+  });
+};
 
-  return {
-    getAll: () =>
-      useQuery<InvoiceWithCustomer[]>({
-        queryKey,
-        queryFn: async () => (await api.get('/api/invoices')).data,
-      }),
-    getById: (id?: string) =>
-      useQuery<Invoice>({
-        queryKey: [...queryKey, id],
-        queryFn: async () => (await api.get(`/api/invoices/${id}`)).data,
-        enabled: !!id,
-      }),
-    // --- CREATE ---
-    create: (): UseMutationResult<Invoice, Error, InvoiceInput> =>
-      useMutation({
-        mutationFn: async (newCustomer) => {
-          const { data } = await api.post<Invoice>('/api/invoices', newCustomer);
-          return data;
-        },
-        onSuccess: () => {
-          queryClient.invalidateQueries({ queryKey });
-        },
-      }),
+export const useCreateInvoice = () => {
+  const queryClient = useQueryClient();
 
-    // --- UPDATE ---
-    update: (): UseMutationResult<Invoice, Error, Partial<Invoice> & { id: string }> =>
-      useMutation({
-        mutationFn: async ({ id, ...updates }) => {
-          const { data } = await api.patch<Invoice>(`/api/invoices/${id}`, updates);
-          return data;
-        },
-        onSuccess: (updatedCustomer) => {
-          queryClient.invalidateQueries({ queryKey });
-          queryClient.invalidateQueries({
-            queryKey: [...queryKey, updatedCustomer.id],
-          });
-        },
-      }),
+  return useMutation<Invoice, Error, Omit<OptionalIfNullable<Invoice>, 'id'>>({
+    mutationFn: async (payload) => {
+      const { data } = await api.post<Invoice>(BASE_URL, payload);
+      return data;
+    },
+    onSuccess: (created) => {
+      // Seed the detail cache so navigating to the new Invoice skips the loading state
+      queryClient.setQueryData<Invoice>(InvoicesKeys.detail(String(created.id)), created);
+      queryClient.invalidateQueries({ queryKey: InvoicesKeys.lists() });
+    },
+  });
+};
 
-    // --- DELETE ---
-    delete: (): UseMutationResult<void, Error, string> =>
-      useMutation({
-        mutationFn: async (id) => {
-          await api.delete(`/api/invoices/${id}`);
-        },
-        onSuccess: () => {
-          queryClient.invalidateQueries({ queryKey });
-        },
-      }),
-  };
+export const useGetInvoiceWithDetails = (
+  id: string | undefined,
+  options?: Omit<UseQueryOptions<Invoice>, 'queryKey' | 'queryFn' | 'enabled'>,
+) => {
+  return useQuery<Invoice>({
+    queryKey: InvoicesKeys.detail(id),
+    queryFn: async () => {
+      const { data } = await api.get<InvoiceWithDetails>(`${BASE_URL}/${id}`);
+      return data;
+    },
+    enabled: !!id,
+    ...options,
+  });
+};
+
+export const useUpdateInvoice = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation<
+    Invoice,
+    Error,
+    UpdateInvoicePayload,
+    { previousInvoice: Invoice | undefined }
+  >({
+    mutationFn: async ({ id, data }) => {
+      const { data: updated } = await api.patch<Invoice>(`${BASE_URL}/${id}`, data);
+      return updated;
+    },
+
+    onMutate: async (payload) => {
+      await queryClient.cancelQueries({ queryKey: InvoicesKeys.detail(payload.id) });
+
+      const previousInvoice = queryClient.getQueryData<Invoice>(InvoicesKeys.detail(payload.id));
+
+      queryClient.setQueryData<Invoice>(InvoicesKeys.detail(payload.id), (old) => {
+        if (!old) return old;
+        return { ...old, ...payload.data };
+      });
+
+      return { previousInvoice };
+    },
+
+    onError: (_err, payload, context) => {
+      if (context?.previousInvoice) {
+        queryClient.setQueryData<Invoice>(InvoicesKeys.detail(payload.id), context.previousInvoice);
+      }
+    },
+
+    onSettled: (_data, _err, payload) => {
+      queryClient.invalidateQueries({ queryKey: InvoicesKeys.detail(payload.id) });
+      queryClient.invalidateQueries({ queryKey: InvoicesKeys.lists() });
+    },
+  });
+};
+
+export const useDeleteInvoice = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation<void, Error, string>({
+    mutationFn: async (id) => {
+      await api.delete(`${BASE_URL}/${id}`);
+    },
+    onSuccess: (_data, id) => {
+      // Remove rather than invalidate — the entity no longer exists
+      queryClient.removeQueries({ queryKey: InvoicesKeys.detail(id) });
+      queryClient.invalidateQueries({ queryKey: InvoicesKeys.lists() });
+    },
+    onError: () => {
+      // Refetch list so a silent server failure doesn't leave a ghost entry
+      queryClient.invalidateQueries({ queryKey: InvoicesKeys.lists() });
+    },
+  });
 };
