@@ -3,7 +3,7 @@ import { AppSidebar } from './AppSidebar';
 import { AlertProvider } from '@/components/Alert-dialog';
 import { SidebarProvider } from '@/components/sidebar';
 import { redirect } from 'next/navigation';
-import { checkOrganization, getFirstOrganization, getOrganization } from '@/server/setup';
+import { checkOrganization } from '@/server/setup';
 import { getCurrentUser } from '@/server/auth';
 // import { OrganizationGuard } from '@/components/OrganizationGuard';
 
