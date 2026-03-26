@@ -30,12 +30,13 @@ export async function signUp(data: z.infer<typeof SIGNUP_SCHEMA>): Promise<AuthR
         lastName: data.name.split(' ').pop() || '',
         role: 'SUPER_ADMIN',
       },
+      include: { organization: true },
     });
 
-    await issueSession(user.id, user.email);
+    await issueSession(user.id, user.email, user.role, user.organization?.slug);
     return {
       success: true,
-      user: { userId: user.id, email: user.email, role: user.role },
+      user: { userId: user.id, email: user.email, role: user.role, slug: user.organization?.slug },
     };
   } catch (error) {
     return { success: false, error: 'Registration failed' };
@@ -55,16 +56,17 @@ export async function signIn(credentials: {
   try {
     const user = await db.user.findUnique({
       where: { email: credentials.email.toLowerCase() },
+      include: { organization: true },
     });
 
     if (!user || !(await compare(credentials.password, user.passwordHash))) {
       return { success: false, error: 'Invalid credentials' };
     }
 
-    await issueSession(user.id, user.email);
+    await issueSession(user.id, user.email, user.role, user.organization?.slug);
     return {
       success: true,
-      user: { userId: user.id, email: user.email, role: user.role },
+      user: { userId: user.id, email: user.email, role: user.role, slug: user.organization?.slug },
     };
   } catch (error) {
     return { success: false, error: 'Login failed' };
@@ -112,7 +114,11 @@ export async function getCurrentUser(): Promise<TokenPayload | null> {
         type: 'refresh',
         expiresAt: { gt: new Date() },
       },
-      include: { user: true },
+      include: {
+        user: {
+          include: { organization: true },
+        },
+      },
     });
 
     if (!storedToken || !storedToken.user) {
@@ -120,11 +126,17 @@ export async function getCurrentUser(): Promise<TokenPayload | null> {
       return null;
     }
 
-    await issueSession(storedToken.userId, storedToken.user.email);
+    await issueSession(
+      storedToken.userId,
+      storedToken.user.email,
+      storedToken.user.role,
+      storedToken.user.organization?.slug,
+    );
     return {
       userId: storedToken.userId,
       email: storedToken.user.email,
       role: storedToken.user.role,
+      slug: storedToken.user.organization?.slug,
     };
   } catch (error) {
     return null;

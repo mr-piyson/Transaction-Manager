@@ -52,6 +52,7 @@ export default function SetupWizard() {
       language: locale,
       currency: 'BHD',
       orgName: '',
+      slug: '',
       website: '',
       adminFirstName: '',
       adminLastName: '',

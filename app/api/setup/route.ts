@@ -4,9 +4,9 @@ import db from '@/lib/database';
 
 export async function POST(req: Request) {
   try {
-    const body = await req.json();
     const {
       orgName,
+      slug,
       website,
       adminFirstName,
       adminLastName,
@@ -14,7 +14,7 @@ export async function POST(req: Request) {
       adminPassword,
       currency,
       language,
-    } = body;
+    } = await req.json();
 
     // 1. Check if organization already exists to prevent double-setup
     const existingOrg = await db.organization.findFirst();
@@ -31,6 +31,7 @@ export async function POST(req: Request) {
       const organization = await tx.organization.create({
         data: {
           name: orgName,
+          slug: slug,
           website: website,
           currency: currency,
         },
@@ -56,6 +57,7 @@ export async function POST(req: Request) {
         success: true,
         message: 'System initialized successfully',
         orgId: result.organization.id,
+        slug: result.organization.slug,
       },
       { status: 201 },
     );

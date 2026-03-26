@@ -6,7 +6,7 @@ import { ListView } from '@/components/list-view';
 import { Button } from '@/components/ui/button';
 import { useI18n } from '@/i18n/use-i18n';
 import { CustomerCard } from './customerCard';
-import { Header } from '@/components/Header';
+import { Header } from '@/components/App-Header';
 import { UniversalContextMenu } from '@/components/context-menu';
 import { alert } from '@/components/Alert-dialog';
 import { useRouter } from 'next/navigation';

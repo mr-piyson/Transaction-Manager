@@ -11,6 +11,7 @@ export interface TokenPayload {
   iat?: number;
   exp?: number;
   role: Role;
+  slug?: string;
 }
 
 export interface AuthResult {
@@ -37,8 +38,8 @@ export const EXPIRY = {
  * @returns An object containing the generated `accessToken` and `refreshToken`.
  */
 
-export async function issueSession(userId: string, email: string) {
-  const accessToken = jwt.sign({ userId, email }, env.JWT_SECRET_ACCESS, {
+export async function issueSession(userId: string, email: string, role: Role, slug?: string) {
+  const accessToken = jwt.sign({ userId, email, role, slug }, env.JWT_SECRET_ACCESS, {
     expiresIn: EXPIRY.ACCESS_TOKEN_EXPIRY,
   });
   const refreshToken = jwt.sign({ userId }, env.JWT_SECRET_REFRESH, {

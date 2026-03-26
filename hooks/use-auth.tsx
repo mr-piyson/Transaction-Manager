@@ -12,21 +12,22 @@ export function useAuth() {
   const router = useRouter();
 
   // Helper to handle navigation and cache invalidation after success
-  const handleAuthSuccess = (message: string, redirectPath: Route) => {
+  const handleAuthSuccess = (message: string, slug?: string) => {
     toast.success(message);
     // Invalidate any 'user' or 'session' queries you might have
     // queryClient.invalidateQueries({ queryKey: ['session'] });
-    router.push(redirectPath);
+    const redirectPath = slug ? `/${slug}` : '/app';
+    router.push(redirectPath as Route);
     router.refresh();
   };
 
   // Sign In Mutation
   const signInMutation = useMutation({
     mutationFn: async (data: z.infer<typeof SignInSchema>) => {
-      const response = await axios.post('/api/auth', data);
+      const response = await axios.post('/api/auth/signin', data);
       return response.data;
     },
-    onSuccess: () => handleAuthSuccess('Signed in successfully!', '/app'),
+    onSuccess: (data) => handleAuthSuccess('Signed in successfully!', data.user?.slug),
     onError: (error: any) => {
       const message = error.response?.data?.error || 'Failed to sign in';
       toast.error(message);
@@ -36,10 +37,10 @@ export function useAuth() {
   // Sign Up Mutation
   const signUpMutation = useMutation({
     mutationFn: async (data: z.infer<typeof SignUpSchema>) => {
-      const response = await axios.put('/api/auth', data);
+      const response = await axios.put('/api/auth/signup', data);
       return response.data;
     },
-    onSuccess: () => handleAuthSuccess('Account created successfully!', '/app'),
+    onSuccess: (data) => handleAuthSuccess('Account created successfully!', data.user?.slug),
     onError: (error: any) => {
       const message = error.response?.data?.error || 'Failed to create account';
       toast.error(message);

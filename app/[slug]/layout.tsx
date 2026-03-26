@@ -3,13 +3,20 @@ import { AppSidebar } from './AppSidebar';
 import { AlertProvider } from '@/components/Alert-dialog';
 import { SidebarProvider } from '@/components/sidebar';
 import { redirect } from 'next/navigation';
-import { checkOrganization } from '@/server/setup';
+import { checkOrganization, getFirstOrganization, getOrganization } from '@/server/setup';
+import { getCurrentUser } from '@/server/auth';
 // import { OrganizationGuard } from '@/components/OrganizationGuard';
 
 export default async function App(props: any) {
   if (!checkOrganization()) {
     redirect('/setup');
   }
+  const user = await getCurrentUser();
+
+  if (!user) {
+    redirect(`/auth`);
+  }
+
   return (
     <SplashScreen>
       <AlertProvider>
