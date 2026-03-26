@@ -83,7 +83,6 @@ queryFn: () => api.get(`/api/customers/${id}`).then(res => res.data),
 - C. Mutation vs MutationAsync
   Use .mutate() for simple "fire and forget" actions where onSuccess in the hook handles the logic.
 
-
   Use .mutateAsync() when you need to await the result inside the component (e.g., closing a modal only after the server responds). 4. Summary Table: Hook Usage
   Hook
   Purpose

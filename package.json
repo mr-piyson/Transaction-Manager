@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "format": "bunx prettier --write .",
+    "format": "prettier --write .",
     "sync": "bunx prisma generate && bunx prisma db push"
   },
   "dependencies": {
@@ -60,6 +60,7 @@
     "@types/react-dom": "^19.2.3",
     "eslint": "^9.39.4",
     "eslint-config-next": "16.1.6",
+    "prettier": "^3.8.1",
     "prisma": "^7.5.0",
     "tailwindcss": "^4.2.2",
     "typescript": "^5.9.3"
