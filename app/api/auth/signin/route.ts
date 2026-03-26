@@ -1,7 +1,7 @@
 import { ApiResponse } from '@/lib/server';
 import { SignInSchema } from '@/lib/validators/auth';
 import { signIn } from '@/server/auth';
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
 
 export async function POST(req: NextRequest, ctx: RouteContext<'/api/auth/signin'>) {
   try {
