@@ -4,8 +4,7 @@ import { createEnv } from '@t3-oss/env-core';
 export const env = createEnv({
   server: {
     DATABASE_URL: z.string(),
-    JWT_SECRET_ACCESS: z.string(),
-    JWT_SECRET_REFRESH: z.string(),
+    BETTER_AUTH_SECRET: z.string(),
     NODE_ENV: z.enum(['development', 'production']).optional(),
   },
   runtimeEnv: process.env,

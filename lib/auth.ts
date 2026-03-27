@@ -5,12 +5,6 @@ import db from './database';
 
 export const auth = betterAuth({
   trustedProxyHeaders: true,
-  trustedOrigins: [
-    'http://localhost:3005',
-    'http://192.168.3.35:3005', // Allow your local network
-    'https://*.ngrok-free.app', // Example: Allow all ngrok tunnels
-    'https://*.trycloudflare.com', // Example: Allow Cloudflare tunnels
-  ],
   advanced: {
     disableOriginCheck: true,
   },
