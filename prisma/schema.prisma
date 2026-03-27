@@ -54,48 +54,92 @@ enum Role {
 }
 
 model User {
-  id           String  @id @default(cuid())
-  email        String  @unique
-  passwordHash String
-  firstName    String
-  lastName     String?
-  role         Role    @default(USER)
-  isActive     Boolean @default(true)
-  locale       String  @default("en")
+  id            String    @id
+  name          String
+  email         String    @unique
+  emailVerified Boolean   @default(false)
+  image         String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // Custom Fields
+  firstName String?
+  lastName  String?
+  role      Role     @default(USER)
+  isActive  Boolean  @default(true)
+  locale    String   @default("en")
 
   organizationId Int?
   organization   Organization? @relation(fields: [organizationId], references: [id])
 
-  createdAt DateTime? @default(now())
-  updatedAt DateTime? @updatedAt
-
-  tokens   Token[]
-  invoices Invoice[]
+  accounts      Account[]
+  sessions      Session[]
+  invoices      Invoice[]
 
   @@index([email])
-  @@index([role])
   @@index([organizationId])
+  @@map("user")
 }
 
-// Renamed from "Tokens" -> "Token" (Prisma convention: singular model names)
-model Token {
-  id         Int       @id @default(autoincrement())
-  type       String?
-  value      String?   @unique
-  expiresAt  DateTime?
-  deviceInfo String?
-  ipAddress  String?
+model Session {
+  id        String   @id
+  expiresAt DateTime
+  token     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  ipAddress String?
+  userAgent String?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  userId String
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@unique([token])
+  @@index([userId])
+  @@map("session")
+}
 
-  createdAt DateTime? @default(now())
-  updatedAt DateTime? @updatedAt
+model Account {
+  id                    String    @id
+  accountId             String
+  providerId            String
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
 
   @@index([userId])
-  @@index([expiresAt])
-  @@map("tokens")
+  @@map("account")
 }
+
+model Verification {
+  id         String   @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([identifier])
+  @@map("verification")
+}
+
+model Jwks {
+  id         String    @id
+  publicKey  String
+  privateKey String
+  createdAt  DateTime
+  expiresAt  DateTime?
+
+  @@map("jwks")
+}
+
+
 
 // ====================================================
 // Inventory

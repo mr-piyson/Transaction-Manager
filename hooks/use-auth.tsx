@@ -4,63 +4,68 @@ import { useRouter } from 'next/navigation';
 import { useMutation } from '@tanstack/react-query';
 import type { z } from 'zod';
 import { toast } from 'sonner';
-import axios from 'axios';
 import { SignInSchema, SignUpSchema } from '@/lib/validators/auth';
 import { Route } from 'next';
+import { signIn, signUp, signOut, useSession } from '@/lib/auth-client';
 
 export function useAuth() {
   const router = useRouter();
+  const { data: session, isPending: isSessionLoading } = useSession();
 
   // Helper to handle navigation and cache invalidation after success
-  const handleAuthSuccess = (message: string, slug?: string) => {
+  const handleAuthSuccess = (message: string) => {
     toast.success(message);
-    // Invalidate any 'user' or 'session' queries you might have
-    // queryClient.invalidateQueries({ queryKey: ['session'] });
-    const redirectPath = slug ? `/app` : '/app';
-    router.push(redirectPath as Route);
+    router.push('/app' as Route);
     router.refresh();
   };
 
   // Sign In Mutation
   const signInMutation = useMutation({
     mutationFn: async (data: z.infer<typeof SignInSchema>) => {
-      const response = await axios.post('/api/auth/signin', data);
-      return response.data;
+      const { data: result, error } = await signIn.email({
+        email: data.email,
+          password: data.password,
+          callbackURL: "/app"
+      });
+      if (error) throw new Error(error.message || 'Failed to sign in');
+      return result;
     },
-    onSuccess: (data) => handleAuthSuccess('Signed in successfully!', data.user?.slug),
+    onSuccess: () => handleAuthSuccess('Signed in successfully!'),
     onError: (error: any) => {
-      const message = error.response?.data?.error || 'Failed to sign in';
-      toast.error(message);
+      toast.error(error.message);
     },
   });
 
   // Sign Up Mutation
   const signUpMutation = useMutation({
     mutationFn: async (data: z.infer<typeof SignUpSchema>) => {
-      const response = await axios.put('/api/auth/signup', data);
-      return response.data;
+      const { data: result, error } = await signUp.email({
+        email: data.email,
+        password: data.password,
+        name: data.name,
+        callbackURL: "/app"
+      });
+      if (error) throw new Error(error.message || 'Failed to create account');
+      return result;
     },
-    onSuccess: (data) => handleAuthSuccess('Account created successfully!', data.user?.slug),
+    onSuccess: () => handleAuthSuccess('Account created successfully!'),
     onError: (error: any) => {
-      const message = error.response?.data?.error || 'Failed to create account';
-      toast.error(message);
+        toast.error(error.message);
     },
   });
 
   // Sign Out Mutation
   const signOutMutation = useMutation({
     mutationFn: async () => {
-      await axios.delete('/api/auth');
+      await signOut();
     },
     onSuccess: () => {
-      // queryClient.clear(); // Clear all cached data on logout
       toast.success('Signed out successfully!');
-      router.push('/auth');
+      router.push('/auth' as Route);
       router.refresh();
     },
     onError: (error: any) => {
-      const message = error.response?.data?.error || 'Failed to sign out';
-      toast.error(message);
+      toast.error(error.message || 'Failed to sign out');
     },
   });
 
@@ -68,7 +73,8 @@ export function useAuth() {
     signIn: signInMutation.mutate,
     signUp: signUpMutation.mutate,
     signOut: signOutMutation.mutate,
-    // Combined loading state for any auth action
-    isLoading: signInMutation.isPending || signUpMutation.isPending || signOutMutation.isPending,
+    session,
+    isLoading: signInMutation.isPending || signUpMutation.isPending || signOutMutation.isPending || isSessionLoading,
   };
 }
+
