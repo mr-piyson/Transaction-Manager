@@ -26,12 +26,16 @@ const Toaster = ({ ...props }: ToasterProps) => {
       }}
       toastOptions={{
         classNames: {
-          success: 'bg-success! text-success-foreground! border-muted-foreground',
+          success:
+            'backdrop-blur-md! supports-backdrop-filter:bg-success/60! bg-success/95! text-success-foreground!',
 
-          warning: 'bg-warning! text-warning-foreground! border-muted-foreground',
-          error: 'bg-destructive-foreground! text-white border-red-600',
-          info: 'bg-primary text-white border-blue-600',
-          loading: ' text-white border-gray-600',
+          warning:
+            'backdrop-blur-md! supports-backdrop-filter:bg-warning/60! bg-warning/95! text-warning-foreground!',
+          error:
+            'backdrop-blur-md! supports-backdrop-filter:bg-destructive-foreground/60! bg-destructive-foreground/95! text-white border-red-600!',
+          info: 'backdrop-blur-md! supports-backdrop-filter:bg-primary/60! bg-primary/95! text-white border-blue-600!',
+          loading:
+            'backdrop-blur-md supports-backdrop-filter:bg-gray-600/60 bg-gray-600/95! text-white border-gray-600',
         },
       }}
       style={

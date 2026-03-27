@@ -16,6 +16,7 @@ import {
   SidebarContent,
   SidebarRail,
   useSidebar,
+  SidebarFooter,
 } from '@/components/sidebar';
 import Logo from '@/components/Logo';
 import { useI18n } from '@/i18n/use-i18n';
@@ -23,6 +24,8 @@ import { ROUTES, RouteConfig } from '@/lib/routes';
 import { useEffect, useState } from 'react';
 import { Spinner } from '@/components/ui/spinner';
 import { Route } from 'next';
+import { NavUser } from './UserOptions';
+import { useAuth } from '@/hooks/use-auth';
 
 interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {}
 
@@ -32,6 +35,7 @@ export function AppSidebar({ ...props }: AppSidebarProps) {
   const router = useRouter();
   const [loading, setLoading] = useState('');
   const i18n = useI18n();
+  const { session } = useAuth();
 
   useEffect(() => {
     if (loading === currentPath) {
@@ -99,6 +103,10 @@ export function AppSidebar({ ...props }: AppSidebarProps) {
           ),
         )}
       </SidebarContent>
+
+      <SidebarFooter>
+        <NavUser user={session?.user as any} />
+      </SidebarFooter>
 
       <SidebarRail />
     </Sidebar>
