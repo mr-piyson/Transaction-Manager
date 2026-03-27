@@ -132,7 +132,7 @@ export default function InvoiceEditor(props: InvoiceEditorProps) {
         </div>
 
         {/* ── Row 3: Actions ── */}
-        <div className="flex items-center gap-1.5 px-2 pb-2">
+        <div className="max-sm:hidden flex items-center gap-1.5 px-2 pb-2">
           <SelectDialog<InventoryItem>
             onSelect={handleSelectItem}
             data={inventoryItems}
@@ -154,7 +154,7 @@ export default function InvoiceEditor(props: InvoiceEditorProps) {
           <PaymentDialog>
             <Button
               size="sm"
-              className="h-8 gap-1.5 text-xs bg-success/10 text-success-foreground hover:bg-success/20 ml-auto border border-success/20"
+              className="h-8 gap-1.5 text-xs bg-success/10 text-success-foreground hover:bg-success/20 ml-auto border-2 border-success-foreground/50"
               disabled={false}
             >
               <HandCoinsIcon size={13} />
@@ -166,7 +166,39 @@ export default function InvoiceEditor(props: InvoiceEditorProps) {
       <main className="flex-1 overflow-auto">
         <InvoiceForm invoice={invoice as any} />
       </main>
-      <footer></footer>
+      <footer>
+        {/* ── Row 3: Actions ── */}
+        <div className="sm:hidden flex items-center gap-1.5 px-2 pb-2">
+          <SelectDialog<InventoryItem>
+            onSelect={handleSelectItem}
+            data={inventoryItems}
+            searchFields={['code', 'name', 'description']}
+            cardRenderer={InventoryItemCard}
+            rowHeight={72}
+          >
+            <Button size="sm" className="h-8 gap-1.5 text-xs flex-1 sm:flex-none">
+              <BoxIcon size={13} />
+              <span>Add Item</span>
+            </Button>
+          </SelectDialog>
+
+          <Button variant="secondary" size="sm" className="h-8 gap-1.5 text-xs flex-1 sm:flex-none">
+            <Package size={13} />
+            <span className="hidden xs:inline">Add </span>Package
+          </Button>
+
+          <PaymentDialog>
+            <Button
+              size="sm"
+              className="h-8 gap-1.5 text-xs bg-success/10 text-success-foreground hover:bg-success/20 ml-auto border-2 border-success-foreground/50"
+              disabled={false}
+            >
+              <HandCoinsIcon size={13} />
+              <span>Pay</span>
+            </Button>
+          </PaymentDialog>
+        </div>
+      </footer>
     </>
   );
 }

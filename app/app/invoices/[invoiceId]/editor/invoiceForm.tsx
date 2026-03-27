@@ -43,8 +43,11 @@ export default function InvoiceForm({ invoice }: InvoiceFormProps) {
 
   // Group lines by some criteria if needed, or just show them in a default group
   return (
-    <div className="flex flex-col gap-4 p-2">
-      <InvoiceItemCardGroup title="Invoice Items" totalQty={lines.reduce((acc, l) => acc + l.quantity, 0)}>
+    <div className="flex flex-col gap-4">
+      <InvoiceItemCardGroup
+        title="Invoice Items"
+        totalQty={lines.reduce((acc, l) => acc + l.quantity, 0)}
+      >
         {lines.map((line) => (
           <InvoiceItemCard key={line.id} line={line as any} />
         ))}

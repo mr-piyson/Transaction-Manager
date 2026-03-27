@@ -27,10 +27,13 @@ export default function InvoiceItemCard({ line }: { line: InvoiceLine }) {
 
   const handleDelete = () => {
     if (!line.invoiceId) return;
-    deleteLine({ id: line.id, invoiceId: line.invoiceId }, {
-      onSuccess: () => toast.success('Item removed'),
-      onError: (err) => toast.error('Failed to remove item: ' + err.message)
-    });
+    deleteLine(
+      { id: line.id, invoiceId: line.invoiceId },
+      {
+        onSuccess: () => toast.success('Item removed'),
+        onError: (err) => toast.error('Failed to remove item: ' + err.message),
+      },
+    );
   };
 
   return (
@@ -41,7 +44,7 @@ export default function InvoiceItemCard({ line }: { line: InvoiceLine }) {
           label: 'Delete',
           icon: Trash2,
           destructive: true,
-          onClick: handleDelete
+          onClick: handleDelete,
         },
       ]}
     >
@@ -58,7 +61,10 @@ export default function InvoiceItemCard({ line }: { line: InvoiceLine }) {
             <div className="flex items-center gap-2">
               <h3 className="font-medium leading-none truncate">{line.description}</h3>
               {itemRef?.code && (
-                <Badge variant="outline" className="text-[9px] uppercase h-4 px-1 leading-none text-muted-foreground border-muted-foreground/30">
+                <Badge
+                  variant="outline"
+                  className="text-[9px] uppercase h-4 px-1 leading-none text-muted-foreground border-muted-foreground/30"
+                >
                   {itemRef.code}
                 </Badge>
               )}
@@ -99,11 +105,11 @@ export default function InvoiceItemCard({ line }: { line: InvoiceLine }) {
           <div className="text-sm font-semibold tabular-nums text-right min-w-[60px]">
             {Money.format(line.total)}
           </div>
-          
+
           <Button
             variant="ghost"
             size="icon"
-            className="h-8 w-8 text-muted-foreground opacity-0 group-hover:opacity-100 hover:text-destructive transition-opacity"
+            className="h-8 w-8 max-sm:hidden text-muted-foreground opacity-0 group-hover:opacity-100 hover:text-destructive transition-opacity"
             onClick={handleDelete}
           >
             <Trash2 size={14} />
