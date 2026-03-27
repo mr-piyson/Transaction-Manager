@@ -7,7 +7,11 @@ import { NextRequest } from 'next/server';
 export const InvoiceWithDetails = Prisma.validator<Prisma.InvoiceDefaultArgs>()({
   include: {
     customer: true,
-    invoiceLines: true,
+    invoiceLines: {
+      include: {
+        itemRef: true,
+      },
+    },
     payments: true,
   },
 });
@@ -24,7 +28,11 @@ export async function GET(req: NextRequest, ctx: RouteContext<'/api/invoices/[id
       },
       include: {
         customer: true,
-        invoiceLines: true,
+        invoiceLines: {
+          include: {
+            itemRef: true,
+          },
+        },
         payments: true,
       },
     });

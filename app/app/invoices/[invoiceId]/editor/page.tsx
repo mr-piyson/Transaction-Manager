@@ -11,12 +11,50 @@ import { InventoryItemCard } from '../../../inventory/inventoryCard';
 import { InventoryItem } from '@prisma/client';
 import { toast } from 'sonner';
 import { useInventoryItems } from '@/hooks/data/use-inventoryItems';
+import { useParams, useRouter } from 'next/navigation';
+import { useGetInvoiceWithDetails } from '@/hooks/data/use-invoices';
+import { useCreateInvoiceLine } from '@/hooks/data/use-invoiceLines';
+
 type InvoiceEditorProps = {
   children?: React.ReactNode;
 };
 
 export default function InvoiceEditor(props: InvoiceEditorProps) {
-  const { data } = useInventoryItems();
+  const params = useParams();
+  const router = useRouter();
+  const slug = params?.slug as string;
+  const invoiceId = params?.invoiceId as string;
+
+  const { data: inventoryItems } = useInventoryItems();
+  const { data: invoice, isLoading } = useGetInvoiceWithDetails(invoiceId);
+  const { mutate: createLine } = useCreateInvoiceLine();
+
+  if (isLoading) return <div className="p-4">Loading...</div>;
+  if (!invoice) return <div className="p-4">Invoice not found</div>;
+
+  const handleSelectItem = (item: InventoryItem) => {
+    createLine(
+      {
+        invoiceId: Number(invoiceId),
+        inventoryItemId: item.id,
+        quantity: 1,
+      },
+      {
+        onSuccess: () => {
+          toast.success('Item added to invoice');
+        },
+        onError: (error) => {
+          toast.error('Failed to add item: ' + error.message);
+        },
+      },
+    );
+  };
+
+  const amountPaid =
+    (invoice as any).payments?.reduce((acc: number, p: any) => acc + p.amount, 0) || 0;
+  const balanceDue = (invoice.total || 0) - amountPaid;
+  const progressPercent = invoice.total ? (amountPaid / invoice.total) * 100 : 0;
+
   return (
     <>
       {/* Header */}
@@ -30,23 +68,30 @@ export default function InvoiceEditor(props: InvoiceEditorProps) {
       >
         {/* ── Row 1: Back + Invoice ID + Status ── */}
         <div className="flex items-center gap-2 px-2 pt-2 pb-1">
-          <Button variant="ghost" size="icon" className="shrink-0 text-muted-foreground h-8 w-8">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="shrink-0 text-muted-foreground h-8 w-8"
+            onClick={() => router.push(`/app/invoices`)}
+          >
             <ArrowLeft size={16} />
           </Button>
 
           <div className="flex flex-col min-w-0">
             <span className="font-semibold leading-tight truncate">
-              INV-{String(1).padStart(5, '0')}
+              INV-{String(invoice.id).padStart(5, '0')}
             </span>
-            <span className="text-xs text-muted-foreground truncate">{'Muntadher'}</span>
+            <span className="text-xs text-muted-foreground truncate">
+              {(invoice as any).customer?.name || 'Walk-in Customer'}
+            </span>
           </div>
 
           <div className="ml-auto shrink-0">
-            {true ? (
+            {invoice.paymentStatus === 'Paid' ? (
               <Badge className="bg-success/15 text-success-foreground border-success/30 text-xs">
                 Paid
               </Badge>
-            ) : 100 > 0 ? (
+            ) : amountPaid > 0 ? (
               <Badge variant="secondary" className="text-xs">
                 Partial
               </Badge>
@@ -57,19 +102,20 @@ export default function InvoiceEditor(props: InvoiceEditorProps) {
             )}
           </div>
         </div>
+
         {/* ── Progress bar ── */}
-        <Progress value={100} className="bg- w-full px-2 py-2" />
+        <Progress value={progressPercent} className="h-1 w-full" />
 
         {/* ── Row 2: Financial Summary ── */}
-        <div className="grid grid-cols-3 divide-x divide-border bg-muted/40 text-center py-1 mx-2 mb-2 rounded-md ">
+        <div className="grid grid-cols-3 divide-x divide-border bg-muted/40 text-center py-1 mx-2 mt-2 mb-2 rounded-md ">
           <div className="flex flex-col px-2">
             <span className="text-[10px] text-muted-foreground uppercase tracking-wide">Total</span>
-            <span className="text-sm font-semibold tabular-nums">{200}</span>
+            <span className="text-sm font-semibold tabular-nums">{invoice.total}</span>
           </div>
           <div className="flex flex-col px-2">
             <span className="text-[10px] text-muted-foreground uppercase tracking-wide">Paid</span>
             <span className="text-sm font-semibold tabular-nums text-success-foreground">
-              {200}
+              {amountPaid}
             </span>
           </div>
           <div className="flex flex-col px-2">
@@ -77,10 +123,10 @@ export default function InvoiceEditor(props: InvoiceEditorProps) {
             <span
               className={cn(
                 'text-sm font-semibold tabular-nums',
-                100 > 0 ? 'text-destructive' : 'text-success-foreground',
+                balanceDue > 0 ? 'text-destructive' : 'text-success-foreground',
               )}
             >
-              {200}
+              {balanceDue}
             </span>
           </div>
         </div>
@@ -88,11 +134,9 @@ export default function InvoiceEditor(props: InvoiceEditorProps) {
         {/* ── Row 3: Actions ── */}
         <div className="flex items-center gap-1.5 px-2 pb-2">
           <SelectDialog<InventoryItem>
-            onSelect={() => {
-              toast.success('fdgdfg');
-            }}
-            data={data}
-            searchFields={['code', 'description']}
+            onSelect={handleSelectItem}
+            data={inventoryItems}
+            searchFields={['code', 'name', 'description']}
             cardRenderer={InventoryItemCard}
             rowHeight={72}
           >
@@ -110,7 +154,7 @@ export default function InvoiceEditor(props: InvoiceEditorProps) {
           <PaymentDialog>
             <Button
               size="sm"
-              className="h-8 gap-1.5 text-xs bg-success-foreground/50 hover:bg-success-foreground/30 ml-auto"
+              className="h-8 gap-1.5 text-xs bg-success/10 text-success-foreground hover:bg-success/20 ml-auto border border-success/20"
               disabled={false}
             >
               <HandCoinsIcon size={13} />
@@ -119,8 +163,8 @@ export default function InvoiceEditor(props: InvoiceEditorProps) {
           </PaymentDialog>
         </div>
       </header>
-      <main className="flex-1 ">
-        <InvoiceForm />
+      <main className="flex-1 overflow-auto">
+        <InvoiceForm invoice={invoice as any} />
       </main>
       <footer></footer>
     </>

@@ -6,7 +6,7 @@ export async function GET(req: NextRequest, ctx: RouteContext<'/api/auth/me'>) {
     const user = await getCurrentUser();
 
     if (user === null) {
-      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+      return NextResponse.json({ error: 'User not found' }, { status: 400 });
     }
 
     return NextResponse.json(user);

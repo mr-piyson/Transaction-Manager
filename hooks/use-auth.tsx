@@ -16,7 +16,7 @@ export function useAuth() {
     toast.success(message);
     // Invalidate any 'user' or 'session' queries you might have
     // queryClient.invalidateQueries({ queryKey: ['session'] });
-    const redirectPath = slug ? `/${slug}` : '/app';
+    const redirectPath = slug ? `/app` : '/app';
     router.push(redirectPath as Route);
     router.refresh();
   };
