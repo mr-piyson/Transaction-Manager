@@ -4,10 +4,10 @@ export async function checkOrganization() {
   return (await db.organization.count({})) > 0;
 }
 
-export async function getOrganization(slug: string) {
+export async function getOrganization(id: string) {
   return await db.organization.findUnique({
     where: {
-      slug: slug,
+      id: Number(id),
     },
   });
 }

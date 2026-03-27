@@ -199,8 +199,6 @@ UI Component
    ↓
 /app/api (REST endpoint)
    ↓
-@/server (business logic)
-   ↓
 Database / External API
 ```
 
@@ -213,8 +211,7 @@ Database / External API
 1. `SignIn.tsx` (inside `/app/auth`)
 2. calls → `useAuth()` from `@/hooks/data`
 3. calls → `/api/auth/login`
-4. calls → `auth.service.ts` in `@/server`
-5. returns response
+4. returns response
 
 ---
 
@@ -225,8 +222,12 @@ Database / External API
 - ✅ Page-specific components stay in `/app/...`
 - ✅ Shared components go to `/components`
 - ✅ API logic in `/hooks/data`
-- ✅ Business logic in `/server`
+- ✅ Business logic in `/app/api/...`
 - ✅ Shared utilities in `/lib`
+- ✅ Authentication in `/lib/auth.ts`
+- ✅ Database in `/lib/database.ts`
+- ✅ Environment variables in `/lib/env.ts`
+- ✅ Server utilities in `/server/`
 
 ---
 

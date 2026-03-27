@@ -1,7 +1,7 @@
 import { ApiResponse } from '@/lib/server';
 import db from '@/lib/database';
 import { NextRequest, NextResponse } from 'next/server';
-import { getCurrentUser } from '@/server/auth';
+import { getCurrentUser } from '@/lib/auth';
 
 export async function GET(req: NextRequest, ctx: RouteContext<'/api/invoices'>) {
   try {

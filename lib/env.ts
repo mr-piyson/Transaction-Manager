@@ -4,6 +4,7 @@ import { createEnv } from '@t3-oss/env-core';
 export const env = createEnv({
   server: {
     DATABASE_URL: z.string(),
+    DATABASE_PROVIDER: z.enum(['sqlite', 'postgresql', 'mysql']),
     BETTER_AUTH_SECRET: z.string(),
     NODE_ENV: z.enum(['development', 'production']).optional(),
   },
