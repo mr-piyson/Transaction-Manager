@@ -51,28 +51,32 @@ export function CreateInvoiceDialog(props: { onSuccess?: (invoice: any) => void 
   const handleCreateInvoice = async () => {
     if (!selectedCustomerId) return toast.error('Please select a customer');
 
-    invoiceMutation.mutate({
-      customerId: selectedCustomerId,
-      date: new Date(),
-      description: '',
-      currency: 'BHD',
-      isCompleted: false,
-      userId: '',
-      organizationId: 1,
-      discountTotal: 10,
-      total: 0,
-      subtotal: 0,
-      taxTotal: 0,
-      paymentStatus: 'Unpaid',
-    });
-    if (invoiceMutation.isSuccess) {
-      toast.success('Invoice created successfully');
-      resetForm();
-      setOpen(false);
-    }
-    if (invoiceMutation.isError) {
-      toast.error('Failed to create invoice');
-    }
+    invoiceMutation.mutate(
+      {
+        customerId: selectedCustomerId,
+        date: new Date(),
+        description: '',
+        currency: 'BHD',
+        isCompleted: false,
+        userId: '',
+        organizationId: 1,
+        discountTotal: 10,
+        total: 0,
+        subtotal: 0,
+        taxTotal: 0,
+        paymentStatus: 'Unpaid',
+      },
+      {
+        onSuccess: () => {
+          toast.success('Invoice created successfully');
+          resetForm();
+          setOpen(false);
+        },
+        onError: () => {
+          toast.error('Failed to create invoice');
+        },
+      },
+    );
   };
 
   const resetForm = () => {
