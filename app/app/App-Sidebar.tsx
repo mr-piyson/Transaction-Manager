@@ -104,9 +104,7 @@ export function AppSidebar({ ...props }: AppSidebarProps) {
         )}
       </SidebarContent>
 
-      <SidebarFooter>
-        <NavUser user={session?.user as any} />
-      </SidebarFooter>
+      <SidebarFooter>{!isMobile && <NavUser />}</SidebarFooter>
 
       <SidebarRail />
     </Sidebar>

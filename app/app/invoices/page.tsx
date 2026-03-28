@@ -5,7 +5,7 @@ import { FileText, CheckCircle2, Clock } from 'lucide-react';
 
 import { ListView } from '@/components/list-view';
 import { useI18n } from '@/i18n/use-i18n';
-import { Header } from '@/components/App-Header';
+import { Header } from '@/app/app/App-Header';
 import { CreateInvoiceDialog } from './create-invoice-dialog';
 import { InvoiceCard } from './invoiceCard';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';

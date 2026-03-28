@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { LucideFilePenLine, Plus } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
-import { Header } from '@/components/App-Header';
+import { Header } from '@/app/app/App-Header';
 
 type ContractsPageProps = {
   children?: React.ReactNode;

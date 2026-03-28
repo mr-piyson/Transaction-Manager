@@ -11,7 +11,7 @@ import { useI18n } from '@/i18n/use-i18n';
 
 // Optional: If you want to drop axios entirely, use Eden for the mutation.
 import axios from 'axios';
-import { Header } from '@/components/App-Header';
+import { Header } from '@/app/app/App-Header';
 import { InventoryItemCard } from './inventoryCard';
 import { toast } from 'sonner';
 import { alert } from '@/components/Alert-dialog';

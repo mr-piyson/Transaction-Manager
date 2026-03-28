@@ -1,10 +1,11 @@
 import { SplashScreen } from '@/components/Splash-Screen';
-import { AppSidebar } from './AppSidebar';
+import { AppSidebar } from './App-Sidebar';
 import { AlertProvider } from '@/components/Alert-dialog';
 import { SidebarProvider } from '@/components/sidebar';
 import { redirect } from 'next/navigation';
 import { checkOrganization } from '@/server/setup';
 import { getCurrentUser } from '@/lib/auth';
+import { AppFooter } from './App-Footer';
 
 export default async function App(props: any) {
   if (!checkOrganization()) {
@@ -19,13 +20,11 @@ export default async function App(props: any) {
   return (
     <SplashScreen>
       <AlertProvider>
-        <SidebarProvider className="flex h-screen overflow-hidden">
+        <SidebarProvider className="flex min-h-dvh overflow-hidden">
           <AppSidebar />
           <div className="relative flex flex-col flex-1 min-h-full">
-            {/* Toolbar fixed at top */}
-            {/* Scrollable main area */}
             <div className="flex flex-col flex-1 overflow-auto relative">{props.children}</div>
-            {/* Bottom Navigation */}
+            <AppFooter />
           </div>
         </SidebarProvider>
       </AlertProvider>
