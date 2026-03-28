@@ -26,6 +26,8 @@ import { Spinner } from '@/components/ui/spinner';
 import { Route } from 'next';
 import { NavUser } from './User-Options';
 import { useAuth } from '@/hooks/use-auth';
+import { Button } from '@/components/ui/button';
+import { SidebarIcon } from 'lucide-react';
 
 interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {}
 
@@ -271,11 +273,26 @@ function AppLogo() {
             <Logo className="size-7!" />
           </div>
 
-          <div className="grid flex-1 text-left text-sm leading-tight ml-2">
+          <div className="grid flex-1 text-left text-sm leading-tight ">
             <span className="truncate font-semibold text-lg">Transaction Manager</span>
           </div>
         </SidebarMenuButton>
       </SidebarMenuItem>
     </SidebarMenu>
+  );
+}
+
+export function SidebarToggleButton(props: React.ComponentProps<typeof Button>) {
+  const { toggleSidebar } = useSidebar();
+  return (
+    <Button
+      variant="ghost"
+      size="icon"
+      onClick={toggleSidebar}
+      aria-label="Toggle Sidebar"
+      {...props}
+    >
+      <SidebarIcon className="size-5" />
+    </Button>
   );
 }

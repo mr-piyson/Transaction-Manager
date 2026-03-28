@@ -7,6 +7,7 @@ import { Button } from '../../components/ui/button';
 import { cn } from '@/lib/utils';
 import { Separator } from '../../components/ui/separator';
 import { useSidebar } from '../../components/sidebar';
+import { SidebarToggleButton } from './App-Sidebar';
 
 interface HeaderProps {
   title?: ReactNode;
@@ -44,6 +45,7 @@ export function Header({
           className,
         )}
       >
+        <SidebarToggleButton className="hidden md:flex" />
         <Separator orientation="vertical" className="bg-primary w-1 h-1/2 rounded-2xl" />
 
         {/* Left Section */}

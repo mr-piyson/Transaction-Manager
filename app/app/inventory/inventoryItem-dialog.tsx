@@ -50,7 +50,6 @@ export function CreateInventoryItemDialog({
   const createMutation = useCreateInventoryItem();
 
   const methods = useForm<InventoryItemValues>({
-    resolver: zodResolver(inventoryItemSchema),
     defaultValues: {
       name: '',
       code: '',

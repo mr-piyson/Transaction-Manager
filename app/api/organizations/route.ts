@@ -1,5 +1,4 @@
 import { NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
 import db from '@/lib/database';
 
 export async function POST(req: Request) {
@@ -8,7 +7,7 @@ export async function POST(req: Request) {
     const { name, address, website } = body;
 
     const organization = await db.organization.create({
-      data: { name, address, website },
+      data: { name, address, website, slug: name.toLowerCase().replace(/\s/g, '-') },
     });
 
     return NextResponse.json(organization, { status: 201 });
