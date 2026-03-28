@@ -4,15 +4,18 @@ import { Dates, DatesAgo, FormatKey } from './date';
 
 export class Format {
   // ─── Money ────────────────────────────────────────────────────────────
-  static money(amount: number, curr: CurrencyCode = 'BHD'): string {
+  static currency(amount: number, curr: CurrencyCode = 'BHD'): string {
     return Money.format(amount, curr);
   }
 
   // ─── Dates ────────────────────────────────────────────────────────────
-  static date(date: Date | string | number | null, type: FormatKey): string {
+  static date(date: Date | string | number | null, type: FormatKey = 'iso'): string {
     return Dates(date, type);
   }
 
+  /**
+   * Relative time formatter (e.g., "about 2 hours ago")
+   */
   static dateAgo(date: Date | string | null): string {
     return DatesAgo(date);
   }
@@ -25,23 +28,15 @@ export class Format {
     return `${prefix}-${String(num).padStart(pad, '0')}`;
   }
 
-  static invoice(num: number): string {
-    return Format.id('INV', num);
-  }
-
-  static order(num: number): string {
-    return Format.id('ORD', num);
-  }
-
-  static receipt(num: number): string {
-    return Format.id('REC', num);
-  }
-
   // ─── Text ─────────────────────────────────────────────────────────────
   static truncate(str: string, max = 50): string {
     return str.length > max ? `${str.slice(0, max)}…` : str;
   }
 
+  // ─── Initials ─────────────────────────────────────────────────────────
+  /**
+   * Get initials from a name. Format.initials('John Doe') → "JD"
+   */
   static initials(name: string): string {
     return name
       .split(' ')
@@ -49,6 +44,9 @@ export class Format {
       .join('');
   }
 
+  /**
+   * Convert a string to a slug. Format.slug('John Doe') → "john-doe"
+   */
   static slug(str: string): string {
     return str
       .toLowerCase()

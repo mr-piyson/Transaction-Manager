@@ -42,12 +42,13 @@ export function Dates(date: Date | string | number | null, type: FormatKey = 'di
 }
 
 /**
- * Relative time formatter (e.g., "2 hours ago")
+ * Relative time formatter (e.g., "about 2 hours ago")
+ * remove the "about"
  */
 export function DatesAgo(date: Date | string | null): string {
   if (!date) return '';
   const parsedDate = new Date(date);
   if (!isValid(parsedDate)) return '';
-
-  return formatDistanceToNow(parsedDate, { addSuffix: true });
+  const distance = formatDistanceToNow(parsedDate, { addSuffix: true });
+  return distance.replace('about ', '');
 }
