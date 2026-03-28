@@ -263,13 +263,15 @@ function AppLogo() {
       <SidebarMenuItem>
         <SidebarMenuButton
           size="lg"
-          className="opacity-100! data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+          dir="ltr"
+          className="flex flex-row opacity-100! data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
           disabled
         >
           <div className="flex aspect-square size-8 items-center justify-center rounded-lg text-sidebar-primary-foreground">
             <Logo className="size-7!" />
           </div>
-          <div className="grid flex-1 text-left text-sm leading-tight">
+
+          <div className="grid flex-1 text-left text-sm leading-tight ml-2">
             <span className="truncate font-semibold text-lg">Transaction Manager</span>
           </div>
         </SidebarMenuButton>

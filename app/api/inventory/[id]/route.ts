@@ -1,6 +1,8 @@
 import { ApiResponse } from '@/lib/server';
 import db from '@/lib/database';
 import { NextRequest } from 'next/server';
+import path from 'path';
+import fs from 'fs/promises';
 
 export async function GET(req: NextRequest, ctx: RouteContext<'/api/inventory/[id]'>) {
   try {
@@ -24,6 +26,9 @@ export async function DELETE(req: NextRequest, ctx: RouteContext<'/api/inventory
         id,
       },
     });
+    if (items.image) {
+      await fs.unlink(path.join(process.cwd(), 'public', 'uploads', items.image));
+    }
     return ApiResponse.success(items);
   } catch (error) {
     return ApiResponse.serverError(error);

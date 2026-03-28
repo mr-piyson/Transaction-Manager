@@ -59,8 +59,6 @@ export function CreateCustomerDialog({ onSuccess, onError, children }: CreateCus
         name: values.name,
         address: values.address,
         phone: values.phone,
-        cityId: 0,
-        countryId: 0,
         email: '',
         organizationId: 0,
       },

@@ -18,6 +18,7 @@ import { alert } from '@/components/Alert-dialog';
 import { UniversalContextMenu } from '@/components/context-menu';
 import { useRouter } from 'next/navigation';
 import { useInventoryItems } from '@/hooks/data/use-inventoryItems';
+import { CreateInventoryItemDialog } from './inventoryItem-dialog';
 
 export default function InventoryPage() {
   const { t } = useI18n();
@@ -47,54 +48,7 @@ export default function InventoryPage() {
         showBorder={true}
         title={t('common.inventory')}
         icon={<Box />}
-        rightContent={
-          <UniversalDialog<InventoryItem>
-            title={'Create new Inventory item'}
-            fields={[
-              {
-                label: 'Name',
-                name: 'name',
-                type: 'text',
-                required: true,
-                width: 'full',
-              },
-              {
-                label: 'Description',
-                name: 'description',
-                type: 'textarea',
-                required: true,
-                width: 'full',
-              },
-              {
-                label: 'Purchase Price',
-                name: 'purchasePrice',
-                type: 'number',
-                required: true,
-              },
-              {
-                label: 'Sales Price',
-                name: 'salesPrice',
-                type: 'number',
-                required: true,
-              },
-              {
-                label: 'Bar/QR Code',
-                name: 'code',
-                type: 'text',
-                required: false,
-              },
-            ]}
-            mutationFn={async function (variables: Partial<any>): Promise<any> {
-              return await axios.post('/api/inventory', variables);
-            }}
-            onSuccess={() => refetch()}
-          >
-            <Button>
-              <Plus />
-              New
-            </Button>
-          </UniversalDialog>
-        }
+        rightContent={<CreateInventoryItemDialog />}
       />
       <ListView<InventoryItem>
         emptyTitle={t('inventory.empty_title', 'No inventory items Found')}

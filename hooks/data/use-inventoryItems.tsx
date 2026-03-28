@@ -50,7 +50,24 @@ export const useCreateInventoryItem = () => {
 
   return useMutation<InventoryItem, Error, OptionalIfNullable<Omit<InventoryItem, 'id'>>>({
     mutationFn: async (payload) => {
-      const { data } = await api.post<InventoryItem>(BASE_URL, payload);
+      const formData = new FormData();
+
+      // Standard fields
+      formData.append('name', payload.name);
+      formData.append('code', payload?.code || '');
+      formData.append('purchasePrice', String(payload.purchasePrice || 0));
+      formData.append('salesPrice', String(payload.salesPrice || 0));
+      formData.append('description', payload.description || '');
+
+      // File field - ensure payload.image is a File object
+      if (payload.image) {
+        formData.append('image', payload.image);
+      }
+      const { data } = await api.post<InventoryItem>(BASE_URL, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
       return data;
     },
     onSuccess: (created) => {

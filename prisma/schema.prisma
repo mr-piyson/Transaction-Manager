@@ -155,7 +155,7 @@ model InventoryItem {
   /// Stored in smallest currency unit (e.g. fils)
   salesPrice    Int
   filePath      String?
-  imageUrl      String?
+  image      String?
 
   organizationId Int?
   organization   Organization? @relation(fields: [organizationId], references: [id])
