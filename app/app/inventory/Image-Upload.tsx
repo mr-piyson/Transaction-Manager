@@ -6,8 +6,8 @@ import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 
 interface ImageUploadProps {
-  value?: File | string | null;
-  onChange: (file: File | null) => void;
+  value?: File | string | undefined;
+  onChange: (file: File | undefined) => void;
   error?: boolean;
 }
 
@@ -71,7 +71,7 @@ export function ImageUpload({ value, onChange, error }: ImageUploadProps) {
             className="absolute top-1 right-1 size-6 rounded-full"
             onClick={(e) => {
               e.stopPropagation();
-              onChange(null);
+              onChange(undefined);
             }}
           >
             <X className="size-3" />

@@ -1,22 +1,9 @@
 'use client';
+
 import * as z from 'zod';
-
-export const inventoryItemSchema = z.object({
-  name: z.string().min(2, 'Item name is required'),
-  code: z.string().min(3, 'SKU must be at least 3 characters'),
-  purchasePrice: z.coerce.number().min(0, 'Purchase price must be a positive number'),
-  salesPrice: z.coerce.number().min(0, 'Sale price must be a positive number'),
-  description: z.string().optional().or(z.literal('')),
-  categoryId: z.number().optional(),
-  image: z.file().optional(),
-});
-
-export type InventoryItemValues = z.infer<typeof inventoryItemSchema>;
-
-import React, { JSX, useState } from 'react';
-import { Controller, useForm, FormProvider } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { Loader2, Plus, Box, Hash, BarChart3, Banknote, FileText, HandCoins } from 'lucide-react';
+import { type JSX, useState } from 'react';
+import { Loader2, Plus, Box, Banknote, FileText, HandCoins, QrCode } from 'lucide-react';
+import { toast } from 'sonner';
 
 import {
   Dialog,
@@ -27,20 +14,53 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
-import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from '@/components/ui/field';
+import { FieldGroup } from '@/components/ui/field';
 import { Button } from '@/components/ui/button';
-import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/input-group';
 import { useCreateInventoryItem } from '@/hooks/data/use-inventoryItems';
 import { ImageUpload } from './Image-Upload';
-import { toast } from 'sonner';
-import { CodeGeneratorField } from './code-generator';
 
+import { AppForm, FormInput, FormCustomField, FormGroup } from '@/components/Form';
+
+// ---------------------------------------------------------------------------
+// Schema
+// ---------------------------------------------------------------------------
+export const inventoryItemSchema = z.object({
+  name: z.string().min(2, 'Item name is required'),
+  code: z.string().min(3, 'SKU must be at least 3 characters'),
+  purchasePrice: z.coerce.number().min(0, 'Purchase price must be a positive number'),
+  salesPrice: z.coerce.number().min(0, 'Sale price must be a positive number'),
+  description: z.string().optional().or(z.literal('')),
+  categoryId: z.number().optional(),
+  image: z.instanceof(File).optional(),
+});
+
+export type InventoryItemValues = z.infer<typeof inventoryItemSchema>;
+
+// ---------------------------------------------------------------------------
+// Default values — must satisfy the full schema shape
+// ---------------------------------------------------------------------------
+const DEFAULT_VALUES: InventoryItemValues = {
+  name: '',
+  code: '',
+  purchasePrice: 0,
+  salesPrice: 0,
+  description: '',
+  categoryId: undefined,
+  image: undefined,
+};
+
+// ---------------------------------------------------------------------------
+// Props
+// ---------------------------------------------------------------------------
 interface CreateInventoryItemDialogProps {
-  onSuccess?: (data: any) => void;
-  onError?: (error: any) => void;
+  onSuccess?: (data: InventoryItemValues) => void;
+  onError?: (error: Error) => void;
   children?: JSX.Element;
 }
 
+// ---------------------------------------------------------------------------
+// Component
+// ---------------------------------------------------------------------------
 export function CreateInventoryItemDialog({
   onSuccess,
   onError,
@@ -49,38 +69,11 @@ export function CreateInventoryItemDialog({
   const [open, setOpen] = useState(false);
   const createMutation = useCreateInventoryItem();
 
-  const methods = useForm<InventoryItemValues>({
-    defaultValues: {
-      name: '',
-      code: '',
-      purchasePrice: undefined,
-      salesPrice: undefined,
-      description: '',
-      image: undefined,
-    },
-  });
-
-  const {
-    register,
-    handleSubmit,
-    reset,
-    control,
-    formState: { errors },
-  } = methods;
-
-  const onInvalid = (errors: any) => {
-    console.log('Validation errors:', errors);
-  };
-
-  const onSubmit = async (values: InventoryItemValues) => {
+  function handleSubmit(values: InventoryItemValues) {
     createMutation.mutate(
-      {
-        ...values,
-        image: values.image as undefined,
-      },
+      { ...values, image: undefined },
       {
         onSuccess: () => {
-          reset();
           setOpen(false);
           onSuccess?.(values);
         },
@@ -90,7 +83,7 @@ export function CreateInventoryItemDialog({
         },
       },
     );
-  };
+  }
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -114,94 +107,103 @@ export function CreateInventoryItemDialog({
           <DialogDescription>Enter the details to add a new item to your stock.</DialogDescription>
         </DialogHeader>
 
-        <FormProvider {...methods}>
-          <form onSubmit={handleSubmit(onSubmit, onInvalid)} className="space-y-6">
-            {/* Image Upload Field */}
-            <Field data-invalid={!!errors.image}>
-              <FieldLabel>Item Image</FieldLabel>
-              <Controller
-                control={control}
+        <AppForm
+          schema={inventoryItemSchema}
+          defaultValues={DEFAULT_VALUES}
+          onSubmit={handleSubmit}
+          className="space-y-6"
+        >
+          {(form) => (
+            <>
+              {/* ── Image ──────────────────────────────────────────────── */}
+              <FormCustomField<File | undefined>
                 name="image"
-                render={({ field }) => (
-                  <ImageUpload
-                    value={field.value}
-                    onChange={field.onChange}
-                    error={!!errors.image}
-                  />
+                label="Item Image"
+                render={({ value, onChange, isInvalid }) => (
+                  <ImageUpload value={value} onChange={onChange} error={isInvalid} />
                 )}
               />
-              <FieldError>{errors.image?.message}</FieldError>
-            </Field>
-            <FieldGroup className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              {/* Name Field */}
-              <Field data-invalid={!!errors.name}>
-                <FieldLabel>Item Name</FieldLabel>
-                <InputGroup>
-                  <InputGroupInput {...register('name')} placeholder="e.g. Aluminum Profile" />
-                  <InputGroupAddon>
-                    <Box className="size-4" />
-                  </InputGroupAddon>
-                </InputGroup>
-                <FieldError>{errors.name?.message}</FieldError>
-              </Field>
 
-              {/* Code Field */}
-              <CodeGeneratorField name="code" label="Item Code" prefix="ITM" />
-            </FieldGroup>
+              {/* ── Name + Code ────────────────────────────────────────── */}
+              <FieldGroup>
+                <FormGroup columns={2}>
+                  <FormInput
+                    name="name"
+                    label="Item Name"
+                    placeholder="e.g. Aluminum Profile"
+                    icon={<Box className="size-4" />}
+                  />
 
-            <FieldGroup className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              {/* Quantity Field */}
-              <Field data-invalid={!!errors.purchasePrice}>
-                <FieldLabel>Purchase Price</FieldLabel>
-                <InputGroup>
-                  <InputGroupInput {...register('purchasePrice')} type="number" placeholder="0" />
-                  <InputGroupAddon>
-                    <Banknote className="size-4" />
-                  </InputGroupAddon>
-                </InputGroup>
-                <FieldError>{errors.purchasePrice?.message}</FieldError>
-              </Field>
+                  {/*
+                   * CodeGeneratorField manages its own internal state and
+                   * writes back via FormCustomField so TanStack Form owns
+                   * the value — no RHF Controller needed.
+                   */}
 
-              {/* Price Field */}
-              <Field data-invalid={!!errors.salesPrice}>
-                <FieldLabel>Sale Price</FieldLabel>
-                <InputGroup>
-                  <InputGroupInput {...register('salesPrice')} type="number" placeholder="0.000" />
-                  <InputGroupAddon>
-                    <HandCoins className="size-4" />
-                  </InputGroupAddon>
-                </InputGroup>
-                <FieldError>{errors.salesPrice?.message}</FieldError>
-              </Field>
-            </FieldGroup>
+                  <FormInput
+                    name="code"
+                    label="Item Code"
+                    placeholder="e.g. ITM-001"
+                    icon={<QrCode className="size-4" />}
+                  />
+                </FormGroup>
+              </FieldGroup>
 
-            {/* Description Field */}
-            <Field data-invalid={!!errors.description}>
-              <FieldLabel>Description</FieldLabel>
-              <InputGroup>
-                <InputGroupInput {...register('description')} placeholder="Optional details..." />
-                <InputGroupAddon>
-                  <FileText className="size-4" />
-                </InputGroupAddon>
-              </InputGroup>
-              <FieldDescription>Brief details about the item specifications.</FieldDescription>
-              <FieldError>{errors.description?.message}</FieldError>
-            </Field>
+              {/* ── Prices ─────────────────────────────────────────────── */}
+              <FieldGroup>
+                <FormGroup columns={2}>
+                  <FormInput
+                    name="purchasePrice"
+                    label="Purchase Price"
+                    type="number"
+                    placeholder="0"
+                    icon={<Banknote className="size-4" />}
+                  />
+                  <FormInput
+                    name="salesPrice"
+                    label="Sale Price"
+                    type="number"
+                    placeholder="0.000"
+                    icon={<HandCoins className="size-4" />}
+                  />
+                </FormGroup>
+              </FieldGroup>
 
-            <DialogFooter>
-              <Button type="button" variant="ghost" onClick={() => setOpen(false)}>
-                Cancel
-              </Button>
-              <Button type="submit" disabled={createMutation.isPending} className="min-w-[120px]">
-                {createMutation.isPending ? (
-                  <Loader2 className="size-4 animate-spin" />
-                ) : (
-                  'Save Item'
-                )}
-              </Button>
-            </DialogFooter>
-          </form>
-        </FormProvider>
+              {/* ── Description ────────────────────────────────────────── */}
+              <FormInput
+                name="description"
+                label="Description"
+                placeholder="Optional details..."
+                icon={<FileText className="size-4" />}
+                description="Brief details about the item specifications."
+              />
+
+              {/* ── Footer ─────────────────────────────────────────────── */}
+              <DialogFooter>
+                <Button type="button" variant="ghost" onClick={() => setOpen(false)}>
+                  Cancel
+                </Button>
+
+                {/* Subscribe keeps the button reactive to submission state */}
+                <form.Subscribe selector={(s: any) => s.isSubmitting}>
+                  {(isSubmitting: boolean) => (
+                    <Button
+                      type="submit"
+                      disabled={createMutation.isPending || isSubmitting}
+                      className="min-w-[120px]"
+                    >
+                      {createMutation.isPending || isSubmitting ? (
+                        <Loader2 className="size-4 animate-spin" />
+                      ) : (
+                        'Save Item'
+                      )}
+                    </Button>
+                  )}
+                </form.Subscribe>
+              </DialogFooter>
+            </>
+          )}
+        </AppForm>
       </DialogContent>
     </Dialog>
   );
