@@ -24,7 +24,7 @@ import { ROUTES, RouteConfig } from '@/lib/routes';
 import { useEffect, useState } from 'react';
 import { Spinner } from '@/components/ui/spinner';
 import { Route } from 'next';
-import { NavUser } from './UserOptions';
+import { NavUser } from './User-Options';
 import { useAuth } from '@/hooks/use-auth';
 
 interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {}

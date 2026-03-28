@@ -3,7 +3,7 @@
 import { Menu, Sidebar } from 'lucide-react';
 import { useSidebar } from '@/components/sidebar';
 import { Button } from '@/components/ui/button';
-import { NavUser } from './UserOptions';
+import { NavUser } from './User-Options';
 
 export function AppFooter() {
   const { toggleSidebar } = useSidebar();

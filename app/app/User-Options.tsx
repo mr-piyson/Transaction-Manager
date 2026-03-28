@@ -3,8 +3,11 @@
 import {
   BadgeCheck,
   Bell,
+  Check,
   ChevronsUpDown,
   CreditCard,
+  Globe,
+  Languages,
   LogOut,
   Monitor,
   Moon,
@@ -20,8 +23,12 @@ import {
   DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
+  DropdownMenuPortal,
   DropdownMenuSeparator,
   DropdownMenuShortcut,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar } from '@/components/sidebar';
@@ -29,12 +36,15 @@ import { useAuth } from '@/hooks/use-auth';
 import { Switch } from '@/components/ui/switch';
 import { useTheme } from 'next-themes';
 import { useSession } from '@/lib/auth-client';
+import { useI18n } from '@/i18n/use-i18n';
+import { LANGUAGE_CONFIG } from '@/i18n/config';
 
 export function NavUser() {
   const { data } = useSession();
   const { isMobile } = useSidebar();
   const { signOut } = useAuth();
   const { theme, setTheme } = useTheme();
+  const { availableLocales, setLocale, locale } = useI18n();
   const user = data?.user;
 
   const toggleTheme = (e: React.MouseEvent | React.BaseSyntheticEvent) => {
@@ -92,6 +102,33 @@ export function NavUser() {
                 </DropdownMenuShortcut>
               </DropdownMenuItem>
             </DropdownMenuGroup>
+            {/* internlization */}
+            <DropdownMenuGroup>
+              <DropdownMenuLabel className="px-2 py-1.5 text-sm">Internlization</DropdownMenuLabel>
+              <DropdownMenuSub>
+                <DropdownMenuSubTrigger>
+                  <Languages className="mr-2 h-4 w-4" />
+                  <span>Language</span>
+                </DropdownMenuSubTrigger>
+                <DropdownMenuPortal>
+                  <DropdownMenuSubContent>
+                    {availableLocales.map((lang) => (
+                      <DropdownMenuItem key={lang} onClick={() => setLocale(lang)}>
+                        <span>{LANGUAGE_CONFIG[lang].nativeName}</span>
+                        {locale === lang && (
+                          <Check className="ml-auto h-4 w-4 text-muted-foreground" />
+                        )}
+                      </DropdownMenuItem>
+                    ))}
+                  </DropdownMenuSubContent>
+                </DropdownMenuPortal>
+              </DropdownMenuSub>
+            </DropdownMenuGroup>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem>
+              <Settings className="size-4" />
+              <span>Settings</span>
+            </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem variant="destructive" onClick={() => signOut()}>
               <LogOut />
