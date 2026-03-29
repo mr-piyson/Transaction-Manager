@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { SelectDialog } from '@/components/select-dialog';
 import { InventoryItemCard } from '../../../inventory/inventoryCard';
+import { CreateGroupDialog } from './create-group-dialog';
 import { InventoryItem } from '@prisma/client';
 import { toast } from 'sonner';
 import { useInventoryItems } from '@/hooks/data/use-inventoryItems';
@@ -149,13 +150,15 @@ export default function InvoiceEditor(props: InvoiceEditorProps) {
             </Button>
           </SelectDialog>
 
-          <Button
-            size="sm"
-            className="h-8 justify-start hover:bg-warning/50  bg-warning/20 text-warning-foreground/80 border-2 border-warning-foreground/50 gap-1.5 text-xs flex-1 sm:flex-none"
-          >
-            <Package size={13} />
-            Package
-          </Button>
+          <CreateGroupDialog invoiceId={invoiceId}>
+            <Button
+              size="sm"
+              className="h-8 justify-start hover:bg-warning/50  bg-warning/20 text-warning-foreground/80 border-2 border-warning-foreground/50 gap-1.5 text-xs flex-1 sm:flex-none"
+            >
+              <Package size={13} />
+              Package
+            </Button>
+          </CreateGroupDialog>
 
           <PaymentDialog>
             <Button

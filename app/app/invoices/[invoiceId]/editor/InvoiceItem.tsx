@@ -48,7 +48,7 @@ export default function InvoiceItemCard({ line }: { line: InvoiceLine }) {
         },
       ]}
     >
-      <div className="flex flex-row justify-between items-center p-3 px-3 w-full bg-popover overflow-hidden hover:bg-muted/50 transition-colors group">
+      <div className="outline flex flex-row justify-between items-center p-3 px-3 w-full bg-popover overflow-hidden hover:bg-muted/50 transition-colors group">
         <div className="flex flex-row items-center gap-3">
           <Avatar className="border-0 h-10 w-10 rounded-lg shrink-0">
             <AvatarImage src={itemRef?.imageUrl || ''} alt={line.description || 'Item'} />

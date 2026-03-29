@@ -238,11 +238,17 @@ model InvoiceLine {
   invoiceId Int?
   invoice   Invoice? @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
 
+  isGroup      Boolean       @default(false)
+  parentId     Int?
+  parentLine   InvoiceLine?  @relation("GroupedLines", fields: [parentId], references: [id], onDelete: Cascade)
+  childLines   InvoiceLine[] @relation("GroupedLines")
+
   createdAt DateTime? @default(now())
   updatedAt DateTime? @updatedAt
 
   @@index([invoiceId])
   @@index([inventoryItemId])
+  @@index([parentId])
 }
 
 model Payment {

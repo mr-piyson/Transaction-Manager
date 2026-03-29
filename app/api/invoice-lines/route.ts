@@ -4,10 +4,29 @@ import { NextRequest } from 'next/server';
 
 export async function POST(req: NextRequest) {
   try {
-    const { invoiceId, inventoryItemId, quantity = 1 } = await req.json();
+    const { invoiceId, inventoryItemId, quantity = 1, isGroup, description, parentId } = await req.json();
 
-    if (!invoiceId || !inventoryItemId) {
-      return ApiResponse.serverError('Missing required fields: invoiceId or inventoryItemId', 400);
+    if (!invoiceId) {
+      return ApiResponse.serverError('Missing required field: invoiceId', 400);
+    }
+
+    if (isGroup) {
+      const groupLine = await db.invoiceLine.create({
+        data: {
+          invoiceId,
+          description: description || 'Group',
+          isGroup: true,
+          purchasePrice: 0,
+          salesPrice: 0,
+          quantity: 1,
+          total: 0,
+        },
+      });
+      return ApiResponse.success(groupLine);
+    }
+
+    if (!inventoryItemId) {
+      return ApiResponse.serverError('Missing required field: inventoryItemId', 400);
     }
 
     // Get the inventory item to get the prices
@@ -30,6 +49,7 @@ export async function POST(req: NextRequest) {
         salesPrice: item.salesPrice,
         quantity,
         total,
+        parentId,
       },
     });
 

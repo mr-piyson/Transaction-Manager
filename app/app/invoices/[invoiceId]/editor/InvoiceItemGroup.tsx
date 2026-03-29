@@ -7,12 +7,14 @@ import { Format } from '@/lib/format';
 interface InvoiceItemCardGroupProps {
   title: string;
   totalQty: number;
+  actionSlot?: React.ReactNode;
   children: React.ReactNode;
 }
 
 export default function InvoiceItemCardGroup({
   title,
   totalQty,
+  actionSlot,
   children,
 }: InvoiceItemCardGroupProps) {
   return (
@@ -34,10 +36,12 @@ export default function InvoiceItemCardGroup({
 
         <div className="flex flex-row items-center gap-2">
           <span className="text-xs font-medium text-muted-foreground uppercase">
-            <Button size="sm" className="h-8 gap-1.5 text-xs flex-1 sm:flex-none">
-              <Box size={13} />
-              Add Item
-            </Button>
+            {actionSlot || (
+              <Button size="sm" className="h-8 gap-1.5 text-xs flex-1 sm:flex-none">
+                <Box size={13} />
+                Add Item
+              </Button>
+            )}
           </span>
           <p className="text-sm font-bold">{Format.currency(totalQty)}</p>
         </div>

@@ -14,7 +14,7 @@ export const useCreateInvoiceLine = () => {
   return useMutation<
     InvoiceLine,
     Error,
-    { invoiceId: number; inventoryItemId: number; quantity?: number }
+    { invoiceId: number; inventoryItemId?: number; quantity?: number; isGroup?: boolean; description?: string; parentId?: number }
   >({
     mutationFn: async (payload) => {
       const { data } = await api.post<InvoiceLine>(BASE_URL, payload);
