@@ -1,6 +1,8 @@
 import React from 'react';
-import { Package } from 'lucide-react';
+import { Box, Package } from 'lucide-react';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Button } from '@/components/ui/button';
+import { Format } from '@/lib/format';
 
 interface InvoiceItemCardGroupProps {
   title: string;
@@ -16,7 +18,7 @@ export default function InvoiceItemCardGroup({
   return (
     <div className="flex flex-col w-full outline  overflow-hidden bg-background pb-4 mb-1">
       {/* Group Header - Matches InvoiceItemCard style */}
-      <div className="flex flex-row justify-between items-center p-3 px-4 w-full bg-muted/30 border-b">
+      <div className="flex flex-row justify-between items-center p-3 px-3 w-full bg-muted/30 border-b">
         <div className="flex flex-row items-center gap-3">
           <Avatar className="h-10 w-10 rounded-lg after:border-0 border-0 shadow-sm">
             <AvatarFallback className="rounded-lg bg-primary/20 text-primary">
@@ -30,9 +32,14 @@ export default function InvoiceItemCardGroup({
           </div>
         </div>
 
-        <div className="flex flex-col items-end">
-          <span className="text-xs font-medium text-muted-foreground uppercase">Total Items</span>
-          <p className="text-sm font-bold">{totalQty}</p>
+        <div className="flex flex-row items-center gap-2">
+          <span className="text-xs font-medium text-muted-foreground uppercase">
+            <Button size="sm" className="h-8 gap-1.5 text-xs flex-1 sm:flex-none">
+              <Box size={13} />
+              Add Item
+            </Button>
+          </span>
+          <p className="text-sm font-bold">{Format.currency(totalQty)}</p>
         </div>
       </div>
 

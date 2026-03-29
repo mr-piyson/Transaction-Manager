@@ -21,6 +21,7 @@ import { useCreateCustomer, useCustomers } from '@/hooks/data/use-customers';
 
 import * as z from 'zod';
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/input-group';
+import { CityCombobox } from '@/components/cities/combobox-cities';
 
 export const customerSchema = z.object({
   name: z.string().min(2, 'Name is required'),
@@ -126,7 +127,7 @@ export function CreateCustomerDialog({ onSuccess, onError, children }: CreateCus
             </Field>
           </FieldGroup>
           {/* Email Field */}
-          <Field data-invalid={!!errors.email}>
+          {/* <Field data-invalid={!!errors.email}>
             <FieldLabel>Email Address</FieldLabel>
             <InputGroup>
               <InputGroupInput {...register('email')} type="email" placeholder="(optional)" />
@@ -136,12 +137,12 @@ export function CreateCustomerDialog({ onSuccess, onError, children }: CreateCus
             </InputGroup>
             <FieldDescription>Optional: Used for sending invoices.</FieldDescription>
             <FieldError>{errors.email?.message}</FieldError>
-          </Field>
+          </Field> */}
           {/* Address Field */}
-          {/* <Field data-invalid={!!errors.address}>
+          <Field data-invalid={!!errors.address}>
             <FieldLabel>Address</FieldLabel>
             <CityCombobox />
-          </Field> */}
+          </Field>
           {/* Dialog Footer */}
           <DialogFooter>
             <Button type="button" variant="ghost" onClick={() => setOpen(false)}>

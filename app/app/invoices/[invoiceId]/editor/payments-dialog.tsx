@@ -15,13 +15,38 @@ import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Money } from '@/lib/money'; // Ensure this handles your currency logic
 import { cn } from '@/lib/utils';
-import { Clock, CreditCard, HandCoinsIcon, Plus } from 'lucide-react';
+import { Banknote, Clock, CreditCard, HandCoinsIcon, Plus } from 'lucide-react';
+import { useForm } from 'react-hook-form';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Label } from '@/components/ui/label';
+
+type FormValues = {
+  paymentType: 'cash' | 'bank';
+};
 
 interface PaymentDialogProps {
   children: React.ReactNode;
 }
 
 export function PaymentDialog({ children }: PaymentDialogProps) {
+  const {
+    register,
+    setValue,
+    watch,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<FormValues>({
+    defaultValues: {
+      paymentType: 'cash',
+    },
+  });
+
+  const value = watch('paymentType');
+
+  function onSubmit(data: FormValues) {
+    console.log(data);
+  }
+
   return (
     <Drawer>
       <DrawerTrigger asChild>{children}</DrawerTrigger>
@@ -70,7 +95,7 @@ export function PaymentDialog({ children }: PaymentDialogProps) {
           </TabsContent>
 
           <TabsContent value="add" className="flex flex-col flex-1 overflow-y-auto pt-4 space-y-6">
-            <div className="space-y-3">
+            {/* <div className="space-y-3">
               <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                 Method
               </p>
@@ -99,7 +124,56 @@ export function PaymentDialog({ children }: PaymentDialogProps) {
 
             <Button className="w-full h-12 text-base font-semibold" disabled>
               Record Payment
-            </Button>
+            </Button> */}
+            <form onSubmit={handleSubmit((data) => console.log(data))} className="space-y-6">
+              <div>
+                <p className="text-sm font-medium mb-3">Payment Method</p>
+
+                <RadioGroup
+                  value={value}
+                  onValueChange={(val) => setValue('paymentType', val as FormValues['paymentType'])}
+                  className="grid grid-cols-2 gap-4"
+                >
+                  {/* CASH */}
+                  <label
+                    className={`relative rounded-xl border p-4 cursor-pointer transition
+              ${
+                value === 'cash' ? 'border-success bg-success/10' : 'border-muted hover:bg-muted/50'
+              }
+            `}
+                  >
+                    <RadioGroupItem value="cash" className="sr-only" />
+
+                    {/* Icon (top-right, faded) */}
+                    <Banknote className="absolute top-3 right-3 h-10 w-10 text-success-foreground opacity-50" />
+
+                    <div className="space-y-1">
+                      <div className="font-semibold text-success-foreground">Cash</div>
+                      <div className="text-xs text-muted-foreground">Physical money</div>
+                    </div>
+                  </label>
+
+                  {/* BANK */}
+                  <label
+                    className={`relative rounded-xl border p-4 cursor-pointer transition
+              ${value === 'bank' ? 'border-primary bg-primary/10' : 'border-muted hover:bg-muted/50'}
+            `}
+                  >
+                    <RadioGroupItem value="bank" className="sr-only" />
+
+                    {/* Icon */}
+                    <CreditCard className="absolute top-3 right-3 h-10 w-10 text-primary opacity-50" />
+
+                    <div className="space-y-1">
+                      <div className="font-semibold text-primary">Bank</div>
+                      <div className="text-xs text-muted-foreground">Card, transfer</div>
+                    </div>
+                  </label>
+                </RadioGroup>
+              </div>
+
+              <Button type="submit">Continue</Button>
+            </form>
           </TabsContent>
         </Tabs>
       </DrawerContent>
