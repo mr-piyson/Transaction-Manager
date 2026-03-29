@@ -65,7 +65,7 @@ export default function InvoiceForm({ invoice }: InvoiceFormProps) {
       {/* Render Groups */}
       {groups.map((g: any) => {
         const childLines = lines.filter((l: any) => l.parentId === g.id);
-        const totalQty = childLines.reduce((acc: number, l: any) => acc + l.quantity, 0);
+        const groupTotal = childLines.reduce((acc: number, l: any) => acc + l.total, 0);
         console.log(g);
         return (
           <UniversalContextMenu
@@ -92,7 +92,7 @@ export default function InvoiceForm({ invoice }: InvoiceFormProps) {
             <InvoiceItemCardGroup
               key={g.id}
               title={g.description || 'Group'}
-              totalQty={totalQty}
+              totalQty={groupTotal}
               actionSlot={
                 <SelectDialog<InventoryItem>
                   onSelect={(item) => handleSelectItem(item, g.id)}

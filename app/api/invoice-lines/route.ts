@@ -74,7 +74,27 @@ async function updateInvoiceTotals(invoiceId: number) {
     where: { invoiceId },
   });
 
-  const subtotal = lines.reduce((acc, line) => acc + line.total, 0);
+  // 1) Update group totals
+  const groups = lines.filter((l) => l.isGroup);
+  for (const group of groups) {
+    const children = lines.filter((l) => l.parentId === group.id);
+    const groupPurchase = children.reduce((acc, l) => acc + (l.purchasePrice * l.quantity), 0);
+    const groupSales = children.reduce((acc, l) => acc + (l.salesPrice * l.quantity), 0);
+    const groupTotal = children.reduce((acc, l) => acc + l.total, 0);
+    await db.invoiceLine.update({
+      where: { id: group.id },
+      data: {
+        purchasePrice: groupPurchase,
+        salesPrice: groupSales,
+        total: groupTotal,
+      },
+    });
+  }
+
+  // 2) Update Invoice Total (summing only non-group lines to avoid double-counting)
+  const nonGroupLines = lines.filter((l) => !l.isGroup);
+  const subtotal = nonGroupLines.reduce((acc, line) => acc + line.total, 0);
+  
   // For now, let's assume discountTotal and taxTotal are 0 or handled elsewhere
   const total = subtotal;
 
