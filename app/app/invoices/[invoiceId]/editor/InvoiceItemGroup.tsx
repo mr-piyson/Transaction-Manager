@@ -43,7 +43,6 @@ export default function InvoiceItemCardGroup({
               </Button>
             )}
           </span>
-          <p className="text-sm font-bold">{Format.currency(totalQty)}</p>
         </div>
       </div>
 
@@ -51,7 +50,11 @@ export default function InvoiceItemCardGroup({
       <div className="flex flex-col divide-y divide-border/50">
         <div className="bg-muted/30 ps-4">{children}</div>
       </div>
-      <div className="p-3 px-3 w-full bg-muted/30 "></div>
+      <div className="p-3 px-3 w-full bg-muted/30 ">
+        <p className="flex text-sm font-bold justify-end">
+          <span>Total : {Format.currency(totalQty)}</span>
+        </p>
+      </div>
     </div>
   );
 }

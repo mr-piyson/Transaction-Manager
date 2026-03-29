@@ -7,6 +7,7 @@ import { UniversalContextMenu } from '@/components/context-menu';
 import { InvoiceLine } from '@prisma/client';
 import { useDeleteInvoiceLine, useUpdateInvoiceLine } from '@/hooks/data/use-invoiceLines';
 import { toast } from 'sonner';
+import { Format } from '@/lib/format';
 
 export default function InvoiceItemCard({ line }: { line: InvoiceLine }) {
   const { mutate: updateLine } = useUpdateInvoiceLine();
@@ -62,7 +63,7 @@ export default function InvoiceItemCard({ line }: { line: InvoiceLine }) {
               <h3 className="font-medium leading-none truncate">{line.description}</h3>
             </div>
             <div className="flex items-center gap-2 text-xs text-muted-foreground mt-1">
-              <span>{Money.format(line.salesPrice)}</span>
+              <span>{Format.currency(line.salesPrice)}</span>
               {line.quantity > 1 && (
                 <span className="text-muted-foreground/60">× {line.quantity}</span>
               )}
@@ -95,17 +96,17 @@ export default function InvoiceItemCard({ line }: { line: InvoiceLine }) {
           </div>
 
           <div className="text-sm font-semibold tabular-nums text-right min-w-[60px]">
-            {Money.format(line.total)}
+            {Format.currency(line.total)}
           </div>
 
-          <Button
+          {/* <Button
             variant="ghost"
             size="icon"
             className="h-8 w-8 max-sm:hidden text-muted-foreground opacity-0 group-hover:opacity-100 hover:text-destructive transition-opacity"
             onClick={handleDelete}
           >
             <Trash2 size={14} />
-          </Button>
+          </Button> */}
         </div>
       </div>
     </UniversalContextMenu>
