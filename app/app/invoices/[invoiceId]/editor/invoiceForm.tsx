@@ -3,13 +3,15 @@ import InvoiceItemCard from './InvoiceItem';
 import InvoiceItemCardGroup from './InvoiceItemGroup';
 import { Button } from '@/components/ui/button';
 import { InvoiceWithDetails } from '@/app/api/invoices/[id]/route';
-import { FileText, Box } from 'lucide-react';
+import { FileText, Box, Trash2 } from 'lucide-react';
 import { SelectDialog } from '@/components/select-dialog';
 import { InventoryItemCard } from '../../../inventory/inventoryCard';
 import { InventoryItem } from '@prisma/client';
 import { useInventoryItems } from '@/hooks/data/use-inventoryItems';
-import { useCreateInvoiceLine } from '@/hooks/data/use-invoiceLines';
+import { useCreateInvoiceLine, useDeleteInvoiceLine } from '@/hooks/data/use-invoiceLines';
 import { toast } from 'sonner';
+import { UniversalContextMenu } from '@/components/context-menu';
+import { alert } from '@/components/Alert-dialog';
 
 type InvoiceFormProps = {
   invoice: InvoiceWithDetails;
@@ -18,6 +20,7 @@ type InvoiceFormProps = {
 export default function InvoiceForm({ invoice }: InvoiceFormProps) {
   const { data: inventoryItems } = useInventoryItems();
   const { mutate: createLine } = useCreateInvoiceLine();
+  const deleteLine = useDeleteInvoiceLine();
 
   const handleSelectItem = (item: InventoryItem, parentId?: number) => {
     createLine(
@@ -59,60 +62,67 @@ export default function InvoiceForm({ invoice }: InvoiceFormProps) {
 
   return (
     <div className="flex flex-col gap-4">
+      {/* Render Groups */}
       {groups.map((g: any) => {
         const childLines = lines.filter((l: any) => l.parentId === g.id);
         const totalQty = childLines.reduce((acc: number, l: any) => acc + l.quantity, 0);
+        console.log(g);
         return (
-          <InvoiceItemCardGroup
+          <UniversalContextMenu
             key={g.id}
-            title={g.description || 'Group'}
-            totalQty={totalQty}
-            actionSlot={
-              <SelectDialog<InventoryItem>
-                onSelect={(item) => handleSelectItem(item, g.id)}
-                data={inventoryItems}
-                searchFields={['code', 'name', 'description']}
-                cardRenderer={InventoryItemCard}
-                rowHeight={72}
-              >
-                <Button size="sm" className="h-8 gap-1.5 text-xs flex-1 sm:flex-none">
-                  <Box size={13} />
-                  Add Item
-                </Button>
-              </SelectDialog>
-            }
+            items={[
+              {
+                id: 'delete',
+                label: 'Delete',
+                icon: Trash2,
+                onClick: async () => {
+                  const confirmed = await alert.delete({
+                    title: 'Delete Group',
+                    description: 'Are you sure you want to delete this group? ' + g.id,
+                    onConfirm: () => {
+                      deleteLine.mutate(g);
+                    },
+                  });
+                },
+                destructive: true,
+                type: 'item',
+              },
+            ]}
           >
-            {childLines.length === 0 ? (
-              <div className="p-3 text-sm text-muted-foreground text-center">
-                No items in this group
-              </div>
-            ) : (
-              childLines.map((line: any) => <InvoiceItemCard key={line.id} line={line as any} />)
-            )}
-          </InvoiceItemCardGroup>
+            <InvoiceItemCardGroup
+              key={g.id}
+              title={g.description || 'Group'}
+              totalQty={totalQty}
+              actionSlot={
+                <SelectDialog<InventoryItem>
+                  onSelect={(item) => handleSelectItem(item, g.id)}
+                  data={inventoryItems}
+                  searchFields={['code', 'name', 'description']}
+                  cardRenderer={InventoryItemCard}
+                  rowHeight={72}
+                >
+                  <Button size="sm" className="h-8 gap-1.5 text-xs flex-1 sm:flex-none">
+                    <Box size={13} />
+                    Add Item
+                  </Button>
+                </SelectDialog>
+              }
+            >
+              {childLines.length === 0 ? (
+                <div className="p-3 text-sm text-muted-foreground text-center">
+                  No items in this group
+                </div>
+              ) : (
+                childLines.map((line: any) => <InvoiceItemCard key={line.id} line={line as any} />)
+              )}
+            </InvoiceItemCardGroup>
+          </UniversalContextMenu>
         );
       })}
-
-      {(regularLines.length > 0 || groups.length === 0) && (
-        <>
-          {groups.length > 0 ? (
-            <>
-              {regularLines.map((line: any) => (
-                <InvoiceItemCard key={line.id} line={line as any} />
-              ))}
-            </>
-          ) : (
-            <InvoiceItemCardGroup
-              title={'Invoice Items'}
-              totalQty={regularLines.reduce((acc: number, l: any) => acc + l.quantity, 0)}
-            >
-              {regularLines.map((line: any) => (
-                <InvoiceItemCard key={line.id} line={line as any} />
-              ))}
-            </InvoiceItemCardGroup>
-          )}
-        </>
-      )}
+      {/* Render Rigular Lines */}
+      {regularLines.map((line: any) => (
+        <InvoiceItemCard key={line.id} line={line as any} />
+      ))}
     </div>
   );
 }

@@ -5,7 +5,7 @@ import { Dates, DatesAgo, FormatKey } from './date';
 export class Format {
   // ─── Money ────────────────────────────────────────────────────────────
   static currency(amount: number, curr: CurrencyCode = 'BHD'): string {
-    return Money.format(amount, curr);
+    return Money.format(Money.fromInt(amount, curr), curr);
   }
 
   // ─── Dates ────────────────────────────────────────────────────────────

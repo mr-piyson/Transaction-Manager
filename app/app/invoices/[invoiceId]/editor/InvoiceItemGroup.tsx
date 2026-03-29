@@ -18,7 +18,7 @@ export default function InvoiceItemCardGroup({
   children,
 }: InvoiceItemCardGroupProps) {
   return (
-    <div className="flex flex-col w-full outline  overflow-hidden bg-background pb-4 mb-1">
+    <div className="flex flex-col w-full outline  overflow-hidden bg-background mb-1">
       {/* Group Header - Matches InvoiceItemCard style */}
       <div className="flex flex-row justify-between items-center p-3 px-3 w-full bg-muted/30 border-b">
         <div className="flex flex-row items-center gap-3">
@@ -48,7 +48,10 @@ export default function InvoiceItemCardGroup({
       </div>
 
       {/* List of Children (The InvoiceItemCards) */}
-      <div className="flex ps-4 flex-col divide-y divide-border/50">{children}</div>
+      <div className="flex flex-col divide-y divide-border/50">
+        <div className="bg-muted/30 ps-4">{children}</div>
+      </div>
+      <div className="p-3 px-3 w-full bg-muted/30 "></div>
     </div>
   );
 }

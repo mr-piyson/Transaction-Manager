@@ -2,7 +2,7 @@ import { ApiResponse } from '@/lib/server';
 import db from '@/lib/database';
 import { NextRequest } from 'next/server';
 
-export async function PATCH(req: NextRequest, ctx: any) {
+export async function PATCH(req: NextRequest, ctx: RouteContext<'/api/invoice-lines/[id]'>) {
   try {
     const id = Number((await ctx.params).id);
     const body = await req.json();
@@ -25,15 +25,20 @@ export async function PATCH(req: NextRequest, ctx: any) {
   }
 }
 
-export async function DELETE(req: NextRequest, ctx: any) {
+export async function DELETE(req: NextRequest, ctx: RouteContext<'/api/invoice-lines/[id]'>) {
   try {
     const id = Number((await ctx.params).id);
-    const line = await db.invoiceLine.findUnique({ where: { id } });
+    console.log(id);
+    const line = await db.invoiceLine.findUnique({ where: { id: id } });
 
     if (!line) {
       return ApiResponse.serverError('Line not found', 404);
     }
-
+    if (line.isGroup) {
+      await db.invoiceLine.deleteMany({
+        where: { parentId: id },
+      });
+    }
     await db.invoiceLine.delete({
       where: { id },
     });

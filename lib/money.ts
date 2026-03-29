@@ -84,6 +84,11 @@ export class Money {
     return Math.round(amount * divisor);
   }
 
+  static fromInt(amount: number, curr: CurrencyCode = 'BHD'): number {
+    const divisor = this.getDivisor(curr);
+    return amount / divisor;
+  }
+
   static format(amount: number, curr: CurrencyCode = 'BHD'): string {
     const divisor = this.getDivisor(curr);
     // amount is the integer from DB (e.g., 1500)

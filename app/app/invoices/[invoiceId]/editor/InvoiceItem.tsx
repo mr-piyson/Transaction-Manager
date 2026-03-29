@@ -1,6 +1,6 @@
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Package, Trash2, Edit, Plus, Minus } from 'lucide-react';
+import { Package, Trash2, Edit, Plus, Minus, Box } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Money } from '@/lib/money';
 import { UniversalContextMenu } from '@/components/context-menu';
@@ -53,21 +53,13 @@ export default function InvoiceItemCard({ line }: { line: InvoiceLine }) {
           <Avatar className="border-0 h-10 w-10 rounded-lg shrink-0">
             <AvatarImage src={itemRef?.imageUrl || ''} alt={line.description || 'Item'} />
             <AvatarFallback className="rounded-lg bg-foreground/5">
-              <Package className="h-5 w-5 text-muted-foreground" />
+              <Box className="h-5 w-5 text-muted-foreground" />
             </AvatarFallback>
           </Avatar>
 
           <div className="flex flex-col min-w-0">
             <div className="flex items-center gap-2">
               <h3 className="font-medium leading-none truncate">{line.description}</h3>
-              {itemRef?.code && (
-                <Badge
-                  variant="outline"
-                  className="text-[9px] uppercase h-4 px-1 leading-none text-muted-foreground border-muted-foreground/30"
-                >
-                  {itemRef.code}
-                </Badge>
-              )}
             </div>
             <div className="flex items-center gap-2 text-xs text-muted-foreground mt-1">
               <span>{Money.format(line.salesPrice)}</span>

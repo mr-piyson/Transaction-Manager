@@ -4,7 +4,14 @@ import { NextRequest } from 'next/server';
 
 export async function POST(req: NextRequest) {
   try {
-    const { invoiceId, inventoryItemId, quantity = 1, isGroup, description, parentId } = await req.json();
+    const {
+      invoiceId,
+      inventoryItemId,
+      quantity = 1,
+      isGroup,
+      description,
+      parentId,
+    } = await req.json();
 
     if (!invoiceId) {
       return ApiResponse.serverError('Missing required field: invoiceId', 400);
