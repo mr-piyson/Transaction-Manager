@@ -60,8 +60,6 @@ const handleSubmit = async (values: Partial<Customer>) => {
       id: customerId,
       data: values,
     });
-
-    toast.success('Customer updated successfully!');
   } catch (error) {
     toast.error('Failed to update customer.');
   }

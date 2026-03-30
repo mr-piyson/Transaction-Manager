@@ -49,9 +49,6 @@ export default function InventoryItemClientPage() {
     mutationFn: async (payload: UpdateFormData) => {
       return axios.patch(`/api/inventory/${id}`, payload);
     },
-    onSuccess: () => {
-      toast.success('Item updated');
-    },
   });
 
   const deleteMutation = useMutation({

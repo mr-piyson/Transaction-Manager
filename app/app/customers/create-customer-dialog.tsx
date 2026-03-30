@@ -65,7 +65,6 @@ export function CreateCustomerDialog({ onSuccess, onError, children }: CreateCus
       },
       {
         onSuccess: (data) => {
-          toast.success('Customer created successfully');
           reset();
           setOpen(false);
           onSuccess?.(data);

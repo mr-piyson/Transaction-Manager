@@ -42,28 +42,28 @@ export default function InvoicesPage() {
           <Tabs defaultValue="overview" onValueChange={setPaymentTab} className="w-full">
             <TabsList className="w-full">
               <TabsTrigger
-                className="group-data-[variant=default]/tabs-list:data-active:bg-primary!"
+                className="group-data-[variant=default]/tabs-list:data-active:bg-primary/75! group-data-[variant=default]/tabs-list:data-active:text-white! "
                 value="all"
               >
                 All
               </TabsTrigger>
 
               <TabsTrigger
-                className="group-data-[variant=default]/tabs-list:data-active:bg-destructive-foreground!"
+                className="group-data-[variant=default]/tabs-list:data-active:bg-destructive/75! group-data-[variant=default]/tabs-list:data-active:text-white! "
                 value="Unpaid"
               >
                 Unpaid
               </TabsTrigger>
 
               <TabsTrigger
-                className="group-data-[variant=default]/tabs-list:data-active:bg-warning!"
+                className="group-data-[variant=default]/tabs-list:data-active:bg-warning/75! group-data-[variant=default]/tabs-list:data-active:text-white! "
                 value="Partial"
               >
                 Partial
               </TabsTrigger>
 
               <TabsTrigger
-                className="group-data-[variant=default]/tabs-list:data-active:bg-success!"
+                className="group-data-[variant=default]/tabs-list:data-active:bg-success/75! group-data-[variant=default]/tabs-list:data-active:text-white! "
                 value="Paid"
               >
                 Paid

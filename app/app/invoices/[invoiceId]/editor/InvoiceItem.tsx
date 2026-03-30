@@ -30,7 +30,6 @@ export default function InvoiceItemCard({ line }: { line: InvoiceLine }) {
     deleteLine(
       { id: line.id, invoiceId: line.invoiceId },
       {
-        onSuccess: () => toast.success('Item removed'),
         onError: (err) => toast.error('Failed to remove item: ' + err.message),
       },
     );

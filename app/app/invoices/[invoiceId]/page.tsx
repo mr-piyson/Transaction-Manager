@@ -19,6 +19,12 @@ import {
   Check,
   Receipt,
   ChevronLeft,
+  UserCheck,
+  Banknote,
+  CreditCard,
+  CheckCircle,
+  Clock,
+  CheckCircle2,
 } from 'lucide-react';
 import {
   useGetInvoiceWithDetails,
@@ -30,6 +36,7 @@ import { cn } from '@/lib/utils';
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
 import { Format } from '@/lib/format';
+import { Badge } from '@/components/ui/badge';
 
 function InvoiceLineRow({ line, lines, depth = 0 }: { line: any; lines: any[]; depth?: number }) {
   const childLines = lines.filter((l) => l.parentId === line.id);
@@ -81,27 +88,12 @@ export default function InvoiceDetailPage() {
     if (!invoice) return;
     deleteMutation.mutate(String(invoice.id), {
       onSuccess: () => {
-        toast.success('Invoice deleted');
         router.push('/app/invoices');
       },
       onError: (e) => {
         toast.error(e.message ?? 'Delete failed');
       },
     });
-  };
-
-  const handleApprove = () => {
-    if (!invoice) return;
-    updateMutation.mutate(
-      {
-        id: String(invoice.id),
-        data: { isCompleted: true },
-      },
-      {
-        onSuccess: () => toast.success('Invoice approved'),
-        onError: (e) => toast.error(e.message ?? 'Approval failed'),
-      },
-    );
   };
 
   if (isLoading) {
@@ -124,15 +116,8 @@ export default function InvoiceDetailPage() {
   const rootLines = lines.filter((l: any) => !l.parentId);
 
   const revenue = invoice.total || 0;
-  // Estimate cost from lines
-  const cost = lines.reduce(
-    (acc: number, l: any) => acc + (l.purchasePrice || 0) * (l.quantity || 1),
-    0,
-  );
-  const grossProfit = revenue - cost;
-
   return (
-    <div className="flex flex-col min-h-screen bg-background">
+    <div className="flex flex-col bg-background">
       <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
         {/* Header Section */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -149,7 +134,7 @@ export default function InvoiceDetailPage() {
               <div className="bg-primary/10 p-2 rounded-lg">
                 <Receipt className="h-6 w-6 text-primary" />
               </div>
-              Invoice #{invoice.id}
+              {Format.id.invoice(invoice.id)}
             </h2>
           </div>
 
@@ -157,7 +142,7 @@ export default function InvoiceDetailPage() {
             {/* make a modren switch button for invoice completed or still */}
             <Label
               className={cn(
-                'w-[120px] h-[35px] rounded-lg flex items-center justify-between px-3 border',
+                'drop-shadow-sm w-[120px] h-[35px] rounded-lg flex items-center justify-between px-3 border',
                 invoice.isCompleted ? 'bg-default border-primary' : 'bg-muted',
               )}
             >
@@ -174,6 +159,7 @@ export default function InvoiceDetailPage() {
               <Switch
                 disabled={updateMutation.isPending}
                 size="default"
+                className={'border-muted-foreground/50'}
                 checked={invoice.isCompleted}
                 onCheckedChange={(checked) => {
                   updateMutation.mutate(
@@ -247,33 +233,68 @@ export default function InvoiceDetailPage() {
             <Card>
               <CardHeader className="pb-4">
                 <CardTitle className="text-base font-semibold">Invoice Information</CardTitle>
-                <CardDescription>
-                  Customer and date details associated with this receipt.
-                </CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="flex flex-col sm:flex-row flex-wrap gap-8 text-sm">
+                  {/* Existing Date Field */}
                   <div className="flex flex-col space-y-1">
                     <span className="text-muted-foreground flex items-center gap-2">
                       <Calendar className="w-4 h-4" /> Date
                     </span>
-                    <span className="font-medium">
-                      {invoice.date ? new Date(invoice.date).toLocaleDateString() : 'N/A'}
-                    </span>
+                    <span className="font-medium">{Format.date.any(invoice.date)}</span>
                   </div>
 
+                  {/* Existing Customer Field */}
                   {(invoice as any).customer && (
                     <div className="flex flex-col space-y-1">
                       <span className="text-muted-foreground flex items-center gap-2">
                         <User className="w-4 h-4" /> Customer
                       </span>
-                      <Link className="font-medium text-primary hover:underline" href={'/'}>
-                        {(invoice as any).customer.name}
+                      <Link
+                        className="font-medium text-primary hover:underline"
+                        href={`/app/customers/${invoice.customerId}`}
+                      >
+                        {(invoice as any)?.customer?.name}
                       </Link>
+                    </div>
+                  )}
+
+                  {/* NEW: Payment Status  */}
+                  <div className="flex flex-col space-y-1">
+                    <span className="text-muted-foreground flex items-center gap-2">
+                      <CreditCard className="w-4 h-4" /> Status
+                    </span>
+                    <span
+                      className={`font-medium ${invoice.paymentStatus === 'Paid' ? 'text-green-600' : 'text-amber-600'}`}
+                    >
+                      {invoice.paymentStatus}
+                    </span>
+                  </div>
+
+                  {/* NEW: Total Amount [cite: 2, 25] */}
+                  {/* Note: Values are stored in smallest units like fils or cents  */}
+                  <div className="flex flex-col space-y-1">
+                    <span className="text-muted-foreground flex items-center gap-2">
+                      <Banknote className="w-4 h-4" /> Total
+                    </span>
+                    <span className="font-bold">
+                      {invoice.currency}{' '}
+                      {(invoice.total / (invoice.currency === 'BHD' ? 1000 : 100)).toFixed(3)}
+                    </span>
+                  </div>
+
+                  {/* NEW: Created By  */}
+                  {invoice?.createdAt && (
+                    <div className="flex flex-col  space-y-1">
+                      <span className="text-muted-foreground flex items-center gap-2">
+                        <UserCheck className="w-4 h-4" /> Created By
+                      </span>
+                      <span className="font-medium">{'Me'}</span>
                     </div>
                   )}
                 </div>
 
+                {/* Existing Description */}
                 {invoice.description && (
                   <div className="flex flex-col space-y-1 pt-6 text-sm">
                     <span className="text-muted-foreground flex items-center gap-2">
@@ -284,6 +305,31 @@ export default function InvoiceDetailPage() {
                     </span>
                   </div>
                 )}
+
+                {/* NEW: Completion Badge  */}
+                <div className="flex flex-col pt-2">
+                  <span className="text-muted-foreground flex items-center gap-2">
+                    {invoice.isCompleted ? (
+                      <CheckCircle2 className="w-4 h-4" />
+                    ) : (
+                      <Clock className="w-4 h-4" />
+                    )}{' '}
+                    Status
+                  </span>
+                  <div className="p-2 text-xs inline-block">
+                    {invoice.isCompleted ? (
+                      <Badge variant="default">
+                        <CheckCircle2 className="w-4 h-4" />
+                        Completed
+                      </Badge>
+                    ) : (
+                      <Badge className="bg-background border-2">
+                        <Clock className="w-4 h-4" />
+                        Draft
+                      </Badge>
+                    )}
+                  </div>
+                </div>
               </CardContent>
             </Card>
 
@@ -324,33 +370,21 @@ export default function InvoiceDetailPage() {
 
           {/* Sidebar Column */}
           <div className="w-full lg:w-[350px] shrink-0 flex flex-col space-y-6">
-            <Card className="shadow-sm border-dashed">
-              <CardHeader className="pb-4 bg-muted/10 rounded-t-xl">
-                <CardTitle className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-                  Financial Summary
-                </CardTitle>
+            {/* Payments */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Payments</CardTitle>
               </CardHeader>
-              <CardContent className="flex flex-col py-6 space-y-4 text-sm">
-                <div className="flex justify-between items-center">
-                  <span className="text-muted-foreground">Revenue</span>
-                  <span className="font-medium">{Format.money.amount(revenue)}</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-muted-foreground">Total Cost</span>
-                  <span className="font-medium">{Format.money.amount(cost)}</span>
-                </div>
-
-                <Separator />
-
-                <div className="flex justify-between items-end pt-2">
-                  <span className="font-semibold text-muted-foreground">Gross Profit</span>
-                  <div className="flex flex-col items-end">
-                    <span
-                      className={`font-bold text-2xl leading-none ${grossProfit >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-destructive'}`}
-                    >
-                      {Format.money.amount(grossProfit)}
-                    </span>
-                  </div>
+              <CardContent>
+                <div className="flex flex-col space-y-1">
+                  <span className="text-muted-foreground flex items-center gap-2">
+                    <CreditCard className="w-4 h-4" /> Status
+                  </span>
+                  <span
+                    className={`font-medium ${invoice.paymentStatus === 'Paid' ? 'text-green-600' : 'text-amber-600'}`}
+                  >
+                    {invoice.paymentStatus}
+                  </span>
                 </div>
               </CardContent>
             </Card>

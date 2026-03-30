@@ -26,7 +26,6 @@ import {
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
-import { UniversalDialog } from '@/components/dialog';
 
 import { useCreateInvoice, useInvoices } from '@/hooks/data/use-invoices';
 import { useCustomers } from '@/hooks/data/use-customers';
@@ -68,7 +67,6 @@ export function CreateInvoiceDialog(props: { onSuccess?: (invoice: any) => void 
       },
       {
         onSuccess: () => {
-          toast.success('Invoice created successfully');
           resetForm();
           setOpen(false);
         },
@@ -152,36 +150,9 @@ export function CreateInvoiceDialog(props: { onSuccess?: (invoice: any) => void 
               </Popover>
 
               {/* Your existing UniversalDialog for New Customer */}
-              <UniversalDialog<Customer>
-                title="Create new Customer"
-                fields={[
-                  { name: 'name', label: 'Name', required: true, type: 'text' },
-                  {
-                    name: 'phone',
-                    label: 'Phone',
-                    required: true,
-                    type: 'text',
-                  },
-                  {
-                    name: 'address',
-                    label: 'Address',
-                    required: true,
-                    type: 'text',
-                  },
-                ]}
-                mutationFn={async (payload) => (await axios.post('/api/customers', payload)).data}
-                onSuccess={(newCustomer) => {
-                  refetchCustomers();
-                  // Automatically select the newly created customer
-                  if (newCustomer?.id) {
-                    setSelectedCustomerId(newCustomer.id);
-                  }
-                }}
-              >
-                <Button variant="outline" size="icon" type="button" title="Add New Customer">
-                  <UserPlus className="size-4" />
-                </Button>
-              </UniversalDialog>
+              <Button variant="outline" size="icon" type="button" title="Add New Customer">
+                <UserPlus className="size-4" />
+              </Button>
             </div>
           </div>
         </div>

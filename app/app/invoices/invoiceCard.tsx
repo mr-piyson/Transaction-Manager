@@ -24,10 +24,12 @@ export function InvoiceCard({ data }: { data: any }) {
       <Avatar className="size-11 rounded-lg shrink-0 after:border-0">
         <AvatarFallback
           className={cn(
-            'rounded-lg transition-colors',
-            data.isCompleted
-              ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-400'
-              : 'bg-muted text-muted-foreground',
+            'rounded-lg transition-colors bg-muted text-muted-foreground',
+            data.paymentStatus === 'Paid'
+              ? 'bg-success/20 text-success'
+              : data.paymentStatus === 'Partial'
+                ? 'bg-warning/20 text-warning '
+                : 'bg-destructive/20 text-destructive',
           )}
         >
           <FileText className="size-5" />
@@ -51,7 +53,7 @@ export function InvoiceCard({ data }: { data: any }) {
         {data.date && (
           <span className="flex items-center gap-1">
             <Calendar className="size-3" />
-            {Format.date.relative(data.date)} 
+            {Format.date.relative(data.date)}
           </span>
         )}
       </div>

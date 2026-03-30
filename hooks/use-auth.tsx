@@ -24,8 +24,8 @@ export function useAuth() {
     mutationFn: async (data: z.infer<typeof SignInSchema>) => {
       const { data: result, error } = await signIn.email({
         email: data.email,
-          password: data.password,
-          callbackURL: "/app"
+        password: data.password,
+        callbackURL: '/app',
       });
       if (error) throw new Error(error.message || 'Failed to sign in');
       return result;
@@ -43,14 +43,14 @@ export function useAuth() {
         email: data.email,
         password: data.password,
         name: data.name,
-        callbackURL: "/app"
+        callbackURL: '/app',
       });
       if (error) throw new Error(error.message || 'Failed to create account');
       return result;
     },
     onSuccess: () => handleAuthSuccess('Account created successfully!'),
     onError: (error: any) => {
-        toast.error(error.message);
+      toast.error(error.message);
     },
   });
 
@@ -60,7 +60,6 @@ export function useAuth() {
       await signOut();
     },
     onSuccess: () => {
-      toast.success('Signed out successfully!');
       router.push('/auth' as Route);
       router.refresh();
     },
@@ -74,7 +73,10 @@ export function useAuth() {
     signUp: signUpMutation.mutate,
     signOut: signOutMutation.mutate,
     session,
-    isLoading: signInMutation.isPending || signUpMutation.isPending || signOutMutation.isPending || isSessionLoading,
+    isLoading:
+      signInMutation.isPending ||
+      signUpMutation.isPending ||
+      signOutMutation.isPending ||
+      isSessionLoading,
   };
 }
-

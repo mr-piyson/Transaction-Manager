@@ -32,7 +32,7 @@ const Toaster = ({ ...props }: ToasterProps) => {
           warning:
             'backdrop-blur-md! supports-backdrop-filter:bg-warning/60! bg-warning/95! text-warning-foreground!',
           error:
-            'backdrop-blur-md! supports-backdrop-filter:bg-destructive-foreground/60! bg-destructive-foreground/95! text-white border-red-600!',
+            'backdrop-blur-md! supports-backdrop-filter:bg-destructive/50! bg-destructive/95! text-white border-red-600!',
           info: 'backdrop-blur-md! supports-backdrop-filter:bg-primary/60! bg-primary/95! text-white border-blue-600!',
           loading:
             'backdrop-blur-md supports-backdrop-filter:bg-gray-600/60 bg-gray-600/95! text-white border-gray-600',
