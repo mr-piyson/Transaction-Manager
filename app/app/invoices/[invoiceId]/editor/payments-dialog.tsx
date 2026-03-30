@@ -146,37 +146,10 @@ export function PaymentDialog({ children, invoice }: PaymentDialogProps) {
             </div>
           </TabsContent>
 
-          <TabsContent value="add" className="flex flex-col flex-1 overflow-y-auto pt-4 space-y-6">
-            {/* <div className="space-y-3">
-              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                Method
-              </p>
-              <div className="flex flex-wrap gap-2">
-                <Tabs defaultValue={'cash'} className={'w-full'}>
-                  <TabsList className={'w-full'}>
-                    <TabsTrigger value={'cash'}>
-                      <HandCoinsIcon /> Cash
-                    </TabsTrigger>
-                    <TabsTrigger value={'Transfer'}>
-                      <CreditCard /> Transfer
-                    </TabsTrigger>
-                  </TabsList>
-                </Tabs>
-              </div>
-            </div>
-
-            <div className="flex-1 grid grid-cols-1 gap-4">
-              <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-muted-foreground uppercase">
-                  Amount
-                </label>
-                <Input type="number" className="h-10 border-primary border-2" />
-              </div>
-            </div>
-
-            <Button className="w-full h-12 text-base font-semibold" disabled>
-              Record Payment
-            </Button> */}
+          <TabsContent
+            value="add"
+            className="flex flex-col h-full flex-1 overflow-y-auto pt-4 space-y-6"
+          >
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
               <div className="space-y-1.5">
                 <label className="text-xs font-semibold text-muted-foreground uppercase">
@@ -196,12 +169,12 @@ export function PaymentDialog({ children, invoice }: PaymentDialogProps) {
               </div>
 
               <div>
-                <p className="text-sm font-medium mb-3">Payment Method</p>
+                <p className=" text-sm font-medium mb-3">Payment Method</p>
 
                 <RadioGroup
                   value={value}
                   onValueChange={(val) => setValue('paymentType', val as FormValues['paymentType'])}
-                  className="grid grid-cols-2 gap-4"
+                  className=" grid grid-cols-2 gap-4"
                 >
                   {/* CASH */}
                   <label
@@ -214,10 +187,10 @@ export function PaymentDialog({ children, invoice }: PaymentDialogProps) {
                     <RadioGroupItem value="CASH" className="sr-only" />
 
                     {/* Icon (top-right, faded) */}
-                    <Banknote className="absolute top-3 right-3 h-10 w-10 text-success-foreground opacity-50" />
+                    <Banknote className="absolute top-3 right-3 h-10 w-10 text-success opacity-50" />
 
                     <div className="space-y-1">
-                      <div className="font-semibold text-success-foreground">Cash</div>
+                      <div className="font-semibold text-success">Cash</div>
                       <div className="text-xs text-muted-foreground">Physical money</div>
                     </div>
                   </label>
