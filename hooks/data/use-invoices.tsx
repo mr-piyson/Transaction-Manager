@@ -33,11 +33,24 @@ export interface UpdateInvoicePayload {
 // Hooks
 // ---------------------------------------------------------------------------
 
-export const useInvoices = (options?: Omit<UseQueryOptions<Invoice[]>, 'queryKey' | 'queryFn'>) => {
+export interface UseInvoicesOptions extends Omit<
+  UseQueryOptions<Invoice[]>,
+  'queryKey' | 'queryFn'
+> {
+  include?: {
+    customer?: boolean;
+    invoiceLines?: boolean;
+    payments?: boolean;
+  };
+}
+
+export const useInvoices = (options?: UseInvoicesOptions) => {
   return useQuery<Invoice[]>({
     queryKey: InvoicesKeys.lists(),
     queryFn: async () => {
-      const { data } = await api.get<Invoice[]>(BASE_URL);
+      const { data } = await api.get<Invoice[]>(BASE_URL, {
+        params: options?.include,
+      });
       return data;
     },
     ...options,

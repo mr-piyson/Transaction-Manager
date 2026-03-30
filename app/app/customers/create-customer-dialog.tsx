@@ -141,7 +141,14 @@ export function CreateCustomerDialog({ onSuccess, onError, children }: CreateCus
           {/* Address Field */}
           <Field data-invalid={!!errors.address}>
             <FieldLabel>Address</FieldLabel>
-            <CityCombobox />
+            {/* <CityCombobox /> */}
+            <InputGroup>
+              <InputGroupInput {...register('address')} placeholder="Address ..." />
+              <InputGroupAddon>
+                <MapPin />
+              </InputGroupAddon>
+            </InputGroup>
+            <FieldError>{errors.address?.message}</FieldError>
           </Field>
           {/* Dialog Footer */}
           <DialogFooter>

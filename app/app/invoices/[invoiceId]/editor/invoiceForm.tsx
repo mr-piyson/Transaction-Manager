@@ -66,7 +66,6 @@ export default function InvoiceForm({ invoice }: InvoiceFormProps) {
       {groups.map((g: any) => {
         const childLines = lines.filter((l: any) => l.parentId === g.id);
         const groupTotal = childLines.reduce((acc: number, l: any) => acc + l.total, 0);
-        console.log(g);
         return (
           <UniversalContextMenu
             key={g.id}

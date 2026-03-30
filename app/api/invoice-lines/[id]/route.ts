@@ -28,7 +28,6 @@ export async function PATCH(req: NextRequest, ctx: RouteContext<'/api/invoice-li
 export async function DELETE(req: NextRequest, ctx: RouteContext<'/api/invoice-lines/[id]'>) {
   try {
     const id = Number((await ctx.params).id);
-    console.log(id);
     const line = await db.invoiceLine.findUnique({ where: { id: id } });
 
     if (!line) {

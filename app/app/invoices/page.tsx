@@ -13,7 +13,16 @@ import { useInvoices } from '@/hooks/data/use-invoices';
 
 export default function InvoicesPage() {
   const { t } = useI18n();
-  const { data: invoices, isLoading, isError, refetch } = useInvoices();
+  const {
+    data: invoices,
+    isLoading,
+    isError,
+    refetch,
+  } = useInvoices({
+    include: {
+      customer: true,
+    },
+  });
 
   // State for filters
   const [paymentTab, setPaymentTab] = useState('all');

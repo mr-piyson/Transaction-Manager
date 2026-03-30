@@ -43,9 +43,7 @@ export function PaymentDialog({ children }: PaymentDialogProps) {
 
   const value = watch('paymentType');
 
-  function onSubmit(data: FormValues) {
-    console.log(data);
-  }
+  function onSubmit(data: FormValues) {}
 
   return (
     <Drawer>
