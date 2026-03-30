@@ -36,7 +36,7 @@ export function InvoiceCard({ data }: { data: any }) {
 
       {/* Invoice Details */}
       <div className="flex-1 min-w-0">
-        <p className="font-semibold truncate text-sm sm:text-base">{Format.id('INV', data.id)}</p>
+        <p className="font-semibold truncate text-sm sm:text-base">{Format.id.invoice(data.id)}</p>
         <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
           <span className="flex items-center gap-1">
             <User className="size-3" />
@@ -47,11 +47,11 @@ export function InvoiceCard({ data }: { data: any }) {
 
       {/* Amount */}
       <div className="text-right shrink-0 text-muted-foreground">
-        <span>{Format.currency(data.total)}</span>
+        <span>{Format.money.amount(data.total)}</span>
         {data.date && (
           <span className="flex items-center gap-1">
             <Calendar className="size-3" />
-            {Format.date(data.date)}
+            {Format.date.relative(data.date)} 
           </span>
         )}
       </div>

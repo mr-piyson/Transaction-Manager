@@ -52,7 +52,7 @@ export default function InvoiceItemCardGroup({
       </div>
       <div className="p-3 px-3 w-full bg-muted/30 ">
         <p className="flex text-sm font-bold justify-end">
-          <span>Total : {Format.currency(totalQty)}</span>
+          <span>Total : {Format.money.amount(totalQty)}</span>
         </p>
       </div>
     </div>

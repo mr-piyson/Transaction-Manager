@@ -2,12 +2,11 @@ import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Package, Trash2, Edit, Plus, Minus, Box } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Money } from '@/lib/money';
+import { Format } from '@/lib/format';
 import { UniversalContextMenu } from '@/components/context-menu';
 import { InvoiceLine } from '@prisma/client';
 import { useDeleteInvoiceLine, useUpdateInvoiceLine } from '@/hooks/data/use-invoiceLines';
 import { toast } from 'sonner';
-import { Format } from '@/lib/format';
 
 export default function InvoiceItemCard({ line }: { line: InvoiceLine }) {
   const { mutate: updateLine } = useUpdateInvoiceLine();
@@ -63,7 +62,7 @@ export default function InvoiceItemCard({ line }: { line: InvoiceLine }) {
               <h3 className="font-medium leading-none truncate">{line.description}</h3>
             </div>
             <div className="flex items-center gap-2 text-xs text-muted-foreground mt-1">
-              <span>{Format.currency(line.salesPrice)}</span>
+              <span>{Format.money.amount(line.salesPrice)}</span>
               {line.quantity > 1 && (
                 <span className="text-muted-foreground/60">× {line.quantity}</span>
               )}
@@ -96,7 +95,7 @@ export default function InvoiceItemCard({ line }: { line: InvoiceLine }) {
           </div>
 
           <div className="text-sm font-semibold tabular-nums text-right min-w-[60px]">
-            {Format.currency(line.total)}
+            {Format.money.amount(line.total)}
           </div>
 
           {/* <Button

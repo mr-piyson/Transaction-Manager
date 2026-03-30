@@ -1,56 +1,68 @@
 // format.ts
-import { CurrencyCode, Money } from './money';
-import { Dates, DatesAgo, FormatKey } from './date';
+// import { CurrencyCode, Money } from './money';
+// import { Dates, DatesAgo, FormatKey } from './date';
 
-export class Format {
-  // ─── Money ────────────────────────────────────────────────────────────
-  static currency(amount: number, curr: CurrencyCode = 'BHD'): string {
-    return Money.format(Money.toInt(amount, curr), curr);
-  }
+import { Dates, DatesAgo } from './date';
+import { CurrencyCode } from './money';
 
-  // ─── Dates ────────────────────────────────────────────────────────────
-  static date(date: Date | string | number | null, type: FormatKey = 'iso'): string {
-    return Dates(date, type);
-  }
+// Proposed unified structure
+import { FormatKey } from '@/lib/date';
+import { CURRENCIES, fromCents } from '@/lib/money';
+import currency from 'currency.js';
+
+export const Format = {
+  /**
+   * Money & Finance
+   * All methods expect the raw number (decimal) OR the integer from DB
+   */
+  money: {
+    // Standard display: 15.75 -> "15.750 BD"
+    amount: (val: number, code: CurrencyCode = 'BHD') => currency(val, CURRENCIES[code]).format(),
+
+    // Use this for DB integers: 15750 -> "15.750 BD"
+    fromDb: (val: number, code: CurrencyCode = 'BHD') =>
+      currency(fromCents(val, code), CURRENCIES[code]).format(),
+
+    // Math engine (Returns a currency object for chaining)
+    calc: (val: number, code: CurrencyCode = 'BHD') => currency(val, CURRENCIES[code]),
+
+    // Quick Tax helper: Format.money.vat(100) -> 10.000
+    vat: (val: number, rate = 0.1, code: CurrencyCode = 'BHD') =>
+      currency(val, CURRENCIES[code]).multiply(rate),
+  },
 
   /**
-   * Relative time formatter (e.g., "about 2 hours ago")
+   * Dates (Wraps your date-fns logic)
    */
-  static dateAgo(date: Date | string | null): string {
-    return DatesAgo(date);
-  }
-
-  // ─── IDs ──────────────────────────────────────────────────────────────
-  /**
-   * Generic padded ID. Format.id('INV', 1) → "INV-00001"
-   */
-  static id(prefix: string, num: number, pad = 5): string {
-    return `${prefix}-${String(num).padStart(pad, '0')}`;
-  }
-
-  // ─── Text ─────────────────────────────────────────────────────────────
-  static truncate(str: string, max = 50): string {
-    return str.length > max ? `${str.slice(0, max)}…` : str;
-  }
-
-  // ─── Initials ─────────────────────────────────────────────────────────
-  /**
-   * Get initials from a name. Format.initials('John Doe') → "JD"
-   */
-  static initials(name: string): string {
-    return name
-      .split(' ')
-      .map((n) => n[0]?.toUpperCase() ?? '')
-      .join('');
-  }
+  date: {
+    any: (d: Date | string | number | null, type: FormatKey = 'display') => Dates(d, type),
+    relative: (d: Date | string | null) => DatesAgo(d),
+    slot: (d: Date) => Dates(d, 'time12'), // Quick time format
+  },
 
   /**
-   * Convert a string to a slug. Format.slug('John Doe') → "john-doe"
+   * Document & System IDs
    */
-  static slug(str: string): string {
-    return str
-      .toLowerCase()
-      .replace(/\s+/g, '-')
-      .replace(/[^a-z0-9-]/g, '');
-  }
-}
+  id: {
+    invoice: (n: number) => `INV-${String(n).padStart(5, '0')}`,
+    receipt: (n: number) => `RCP-${String(n).padStart(6, '0')}`,
+    slug: (s: string) =>
+      s
+        .toLowerCase()
+        .replace(/\s+/g, '-')
+        .replace(/[^a-z0-9-]/g, ''),
+  },
+
+  /**
+   * Text Manipulation
+   */
+  text: {
+    truncate: (s: string, len = 50) => (s.length > len ? `${s.slice(0, len)}…` : s),
+    initials: (name: string) =>
+      name
+        .split(' ')
+        .map((n) => n[0])
+        .join('')
+        .toUpperCase(),
+  },
+} as const;

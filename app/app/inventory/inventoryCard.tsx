@@ -2,7 +2,7 @@
 import { TrendingUp, TrendingDown, DollarSign, Package } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { cn } from '@/lib/utils';
-import { Money } from '@/lib/money';
+import { Format } from '@/lib/format';
 import { InventoryItem } from '@prisma/client';
 
 function PriceRow({
@@ -70,19 +70,19 @@ export function InventoryItemCard(props: {
       <div className="shrink-0 flex flex-col gap-0.5 text-right min-w-22.5">
         <PriceRow
           icon={TrendingDown}
-          value={Money.format(props.data.purchasePrice)}
+          value={Format.money.amount(props.data.purchasePrice)}
           className="text-destructive"
           iconClass="text-destructive"
         />
         <PriceRow
           icon={DollarSign}
-          value={Money.format(props.data.salesPrice)}
+          value={Format.money.amount(props.data.salesPrice)}
           className="text-foreground font-medium"
           iconClass="text-muted-foreground"
         />
         <PriceRow
           icon={TrendingUp}
-          value={Money.format(profit)}
+          value={Format.money.amount(profit)}
           className="text-success-foreground dark:text-success-foreground"
           iconClass="text-emerald-600 dark:text-emerald-400"
         />

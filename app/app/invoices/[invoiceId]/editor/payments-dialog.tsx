@@ -22,8 +22,8 @@ import PaymentCard from './payment-card';
 import { toast } from 'sonner';
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
-import { Money } from '@/lib/money';
 import { Banknote, Clock, CreditCard, HandCoinsIcon, Plus } from 'lucide-react';
+import { Format } from '@/lib/format';
 
 type FormValues = {
   paymentType: 'CASH' | 'TRANSFER';
@@ -81,7 +81,7 @@ export function PaymentDialog({ children, invoice }: PaymentDialogProps) {
         onError: (err) => {
           toast.error(err.message);
         },
-      }
+      },
     );
   }
 
@@ -92,11 +92,16 @@ export function PaymentDialog({ children, invoice }: PaymentDialogProps) {
         <DrawerHeader className="px-5 pb-3 border-b border-border shrink-0">
           <DrawerTitle className="text-base">Payments</DrawerTitle>
           <DrawerDescription className="text-xs">
-            Balance: <span className={cn('font-bold tabular-nums')}>{Money.format(balanceDue)}</span>
+            Balance:{' '}
+            <span className={cn('font-bold tabular-nums')}>{Format.money.amount(balanceDue)}</span>
           </DrawerDescription>
         </DrawerHeader>
 
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="flex flex-col w-full p-4 flex-1 overflow-hidden">
+        <Tabs
+          value={activeTab}
+          onValueChange={setActiveTab}
+          className="flex flex-col w-full p-4 flex-1 overflow-hidden"
+        >
           <TabsList className="w-full shrink-0">
             <TabsTrigger value="list" className="flex-1 gap-2">
               <Clock className="w-4 h-4" /> History
@@ -126,16 +131,18 @@ export function PaymentDialog({ children, invoice }: PaymentDialogProps) {
             <div className="shrink-0 px-2 py-4 bg-card border-t border-border space-y-2">
               <div className="flex justify-between text-xs text-muted-foreground">
                 <span>Invoice Total</span>
-                <span className="tabular-nums">{Money.format(invoice.total || 0)}</span>
+                <span className="tabular-nums">{Format.money.amount(invoice.total || 0)}</span>
               </div>
               <div className="flex justify-between text-xs">
                 <span className="text-success-foreground">Total Paid</span>
-                <span className="font-semibold text-success-foreground tabular-nums">{Money.format(amountPaid)}</span>
+                <span className="font-semibold text-success-foreground tabular-nums">
+                  {Format.money.amount(amountPaid)}
+                </span>
               </div>
               <Separator />
               <div className="flex justify-between text-sm font-bold">
                 <span>Balance Due</span>
-                <span className="tabular-nums">{Money.format(balanceDue)}</span>
+                <span className="tabular-nums">{Format.money.amount(balanceDue)}</span>
               </div>
             </div>
           </TabsContent>
@@ -180,11 +187,11 @@ export function PaymentDialog({ children, invoice }: PaymentDialogProps) {
                   <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
                     $
                   </span>
-                  <Input 
-                    type="number" 
+                  <Input
+                    type="number"
                     step="0.01"
-                    className="h-10 border-primary border-2 pl-8 font-semibold text-lg" 
-                    {...register('amount', { valueAsNumber: true })} 
+                    className="h-10 border-primary border-2 pl-8 font-semibold text-lg"
+                    {...register('amount', { valueAsNumber: true })}
                   />
                 </div>
               </div>
@@ -235,7 +242,11 @@ export function PaymentDialog({ children, invoice }: PaymentDialogProps) {
                 </RadioGroup>
               </div>
 
-              <Button type="submit" className="w-full h-12 text-base font-semibold" disabled={createPayment.isPending}>
+              <Button
+                type="submit"
+                className="w-full h-12 text-base font-semibold"
+                disabled={createPayment.isPending}
+              >
                 {createPayment.isPending ? 'Recording...' : 'Record Payment'}
               </Button>
             </form>

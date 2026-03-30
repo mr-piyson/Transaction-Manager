@@ -55,3 +55,19 @@ export async function DELETE(req: NextRequest, ctx: RouteContext<'/api/invoices/
     return ApiResponse.serverError(error);
   }
 }
+
+export async function PATCH(req: NextRequest, ctx: RouteContext<'/api/invoices/[id]'>) {
+  try {
+    const id = Number((await ctx.params).id);
+    const body = await req.json();
+    const items = await db.invoice.update({
+      where: {
+        id,
+      },
+      data: body,
+    });
+    return ApiResponse.success(items);
+  } catch (error) {
+    return ApiResponse.serverError(error);
+  }
+}

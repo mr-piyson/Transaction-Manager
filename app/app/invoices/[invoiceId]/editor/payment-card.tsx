@@ -1,10 +1,10 @@
 import { Button } from '@/components/button';
 import { Dates } from '@/lib/date';
-import { Money } from '@/lib/money';
 import { Payment } from '@prisma/client';
 import { Banknote, CreditCard, Trash2, Wallet } from 'lucide-react';
 import { useDeletePayment } from '@/hooks/data/use-payments';
 import { toast } from 'sonner';
+import { Format } from '@/lib/format';
 
 // Helper to get the correct icon/style based on method
 const getMethodConfig = (method: string) => {
@@ -32,7 +32,7 @@ export default function PaymentCard({ payment }: { payment: Payment }) {
         onError: (err) => {
           toast.error(err.message);
         },
-      }
+      },
     );
   };
 
@@ -46,12 +46,12 @@ export default function PaymentCard({ payment }: { payment: Payment }) {
       {/* Info Section */}
       <div className="flex-1 min-w-0">
         <p className="text-sm font-medium truncate">{payment.method}</p>
-        <p className="text-xs text-muted-foreground">{Dates(payment.date)}</p>
+        <p className="text-xs text-muted-foreground">{Format.date.relative(payment.date)}</p>
       </div>
 
       {/* Amount Section */}
       <span className="text-sm font-bold text-success-foreground tabular-nums">
-        {Money.format(payment.amount)}
+        {Format.money.amount(payment.amount)}
       </span>
 
       {/* Actions */}
