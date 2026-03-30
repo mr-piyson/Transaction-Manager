@@ -160,7 +160,7 @@ export default function InvoiceEditor(props: InvoiceEditorProps) {
             </Button>
           </CreateGroupDialog>
 
-          <PaymentDialog>
+          <PaymentDialog invoice={invoice as any}>
             <Button
               size="sm"
               className="h-8 gap-1.5 text-xs bg-success/10 text-success-foreground hover:bg-success/20 ml-auto border-2 border-success-foreground/50"

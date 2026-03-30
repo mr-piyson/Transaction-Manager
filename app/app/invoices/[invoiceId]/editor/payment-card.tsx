@@ -3,6 +3,8 @@ import { Dates } from '@/lib/date';
 import { Money } from '@/lib/money';
 import { Payment } from '@prisma/client';
 import { Banknote, CreditCard, Trash2, Wallet } from 'lucide-react';
+import { useDeletePayment } from '@/hooks/data/use-payments';
+import { toast } from 'sonner';
 
 // Helper to get the correct icon/style based on method
 const getMethodConfig = (method: string) => {
@@ -18,6 +20,21 @@ const getMethodConfig = (method: string) => {
 
 export default function PaymentCard({ payment }: { payment: Payment }) {
   const { icon } = getMethodConfig(payment.method);
+  const deletePayment = useDeletePayment();
+
+  const handleDelete = () => {
+    deletePayment.mutate(
+      { id: payment.id, invoiceId: payment.invoiceId },
+      {
+        onSuccess: () => {
+          toast.success('Payment deleted successfully');
+        },
+        onError: (err) => {
+          toast.error(err.message);
+        },
+      }
+    );
+  };
 
   return (
     <div className="flex items-center gap-3 px-2 py-3 border-b border-border/40 group">
@@ -41,6 +58,8 @@ export default function PaymentCard({ payment }: { payment: Payment }) {
       <Button
         variant="ghost"
         size="icon"
+        onClick={handleDelete}
+        disabled={deletePayment.isPending}
         className="w-7 h-7 text-muted-foreground hover:text-destructive opacity-0 group-hover:opacity-100 transition-opacity"
       >
         <Trash2 className="w-3.5 h-3.5" />
