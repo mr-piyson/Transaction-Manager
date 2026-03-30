@@ -5,6 +5,7 @@ export const en = {
   common: {
     selectLanguage: 'Select Language',
     greeting: 'Hello, World!',
+    dashboard: 'Dashboard',
     changeLanguage: 'Change Language',
     loading: 'Loading...',
     error: 'An error occurred',

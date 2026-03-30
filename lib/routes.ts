@@ -2,6 +2,7 @@ import { TranslationKeys } from '@/i18n/config';
 import {
   FilePenLine,
   FileText,
+  LayoutDashboard,
   LucideIcon,
   Package,
   Settings,
@@ -65,6 +66,13 @@ export const ROUTES = [
         key: 'common.contracts',
         href: '/app/contracts',
         icon: FilePenLine,
+      },
+      {
+        type: 'item',
+        label: 'Dashboard',
+        key: 'common.dashboard',
+        href: '/app/dashboard',
+        icon: LayoutDashboard,
       },
     ],
   },

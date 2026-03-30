@@ -8,10 +8,14 @@ export async function GET(req: NextRequest, ctx: RouteContext<'/api/invoices'>) 
     // Get search params
     const searchParams = req.nextUrl.searchParams;
     const customer = searchParams.get('customer') === 'true';
+    const invoiceLines = searchParams.get('invoiceLines') === 'true';
+    const payments = searchParams.get('payments') === 'true';
     // GET logic here
     const items = await db.invoice.findMany({
       include: {
-        customer,
+        customer: customer || undefined,
+        invoiceLines: invoiceLines || undefined,
+        payments: payments || undefined,
       },
     });
     return ApiResponse.success(items);
