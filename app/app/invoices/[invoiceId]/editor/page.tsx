@@ -41,9 +41,6 @@ export default function InvoiceEditor(props: InvoiceEditorProps) {
         quantity: 1,
       },
       {
-        onSuccess: () => {
-          toast.success('Item added to invoice');
-        },
         onError: (error) => {
           toast.error('Failed to add item: ' + error.message);
         },
@@ -153,7 +150,7 @@ export default function InvoiceEditor(props: InvoiceEditorProps) {
           <CreateGroupDialog invoiceId={invoiceId}>
             <Button
               size="sm"
-              className="h-8 justify-start hover:bg-warning/50  bg-warning/20 text-warning-foreground/80 border-2 border-warning-foreground/50 gap-1.5 text-xs flex-1 sm:flex-none"
+              className="h-8 justify-start hover:bg-warning/50  bg-warning/20 text-warning/80 border-2 border-warning/50 gap-1.5 text-xs flex-1 sm:flex-none"
             >
               <Package size={13} />
               Package
@@ -163,7 +160,7 @@ export default function InvoiceEditor(props: InvoiceEditorProps) {
           <PaymentDialog invoice={invoice as any}>
             <Button
               size="sm"
-              className="h-8 gap-1.5 text-xs bg-success/10 text-success-foreground hover:bg-success/20 ml-auto border-2 border-success-foreground/50"
+              className="h-8 gap-1.5 text-xs bg-success/10 text-success hover:bg-success/20 ml-auto border-2 border-success/50"
               disabled={false}
             >
               <HandCoinsIcon size={13} />

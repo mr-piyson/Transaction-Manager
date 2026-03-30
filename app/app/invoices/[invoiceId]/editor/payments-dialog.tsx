@@ -74,7 +74,6 @@ export function PaymentDialog({ children, invoice }: PaymentDialogProps) {
       },
       {
         onSuccess: () => {
-          toast.success('Payment recorded successfully');
           reset();
           setActiveTab('list');
         },

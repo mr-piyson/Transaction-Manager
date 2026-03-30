@@ -26,9 +26,6 @@ export default function PaymentCard({ payment }: { payment: Payment }) {
     deletePayment.mutate(
       { id: payment.id, invoiceId: payment.invoiceId },
       {
-        onSuccess: () => {
-          toast.success('Payment deleted successfully');
-        },
         onError: (err) => {
           toast.error(err.message);
         },

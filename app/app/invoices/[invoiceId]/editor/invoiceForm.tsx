@@ -31,9 +31,6 @@ export default function InvoiceForm({ invoice }: InvoiceFormProps) {
         parentId,
       },
       {
-        onSuccess: () => {
-          toast.success(parentId ? 'Item added to group' : 'Item added to invoice');
-        },
         onError: (error) => {
           toast.error('Failed to add item: ' + error.message);
         },
