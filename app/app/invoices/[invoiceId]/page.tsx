@@ -386,7 +386,7 @@ export default function InvoiceDetailPage() {
                   )}
                 </div>
 
-                <CardFooter>
+                <CardFooter className='bg-muted/20'>
                   {lines.length > 0 && (
                     <div className="w-full flex justify-between">
                       <span className="font-semibold text-muted-foreground">Total Revenue</span>

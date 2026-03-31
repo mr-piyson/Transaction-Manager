@@ -16,12 +16,13 @@ export const InvoicesKeys = {
 
   lists: () => [SCOPE, 'list'] as const,
 
-  list: (filters?: object) => [SCOPE, 'list', { filters }] as const,
+  list: (filters?: object) =>
+    filters ? ([SCOPE, 'list', { filters }] as const) : ([SCOPE, 'list'] as const),
 
   details: () => [SCOPE, 'detail'] as const,
 
   detail: <TInclude extends Prisma.InvoiceInclude>(id: string | undefined, include?: TInclude) =>
-    [SCOPE, 'detail', id, { include }] as const,
+    include ? ([SCOPE, 'detail', id, { include }] as const) : ([SCOPE, 'detail', id] as const),
 };
 
 // ---------------------------------------------------------------------------
@@ -136,7 +137,7 @@ export const useUpdateInvoice = () => {
 
     onSettled: (_data, _err, payload) => {
       queryClient.invalidateQueries({
-        queryKey: [SCOPE, 'detail', payload.id],
+        queryKey: InvoicesKeys.detail(payload.id),
       });
 
       queryClient.invalidateQueries({
