@@ -19,10 +19,10 @@ Transaction Manager is a web application that allows users to create Records and
 
 ## Features
 
-- [ ] Customers.
-- [ ] Inventory Items.
-- [ ] Invoices.
-- [ ] Payments. ( paid + partial + not paid )
+- [x] Customers.
+- [x] Inventory Items.
+- [x] Invoices.
+- [x] Payments. ( paid + partial + not paid )
 - [ ] Quotation.
 
 ---
