@@ -1,56 +1,33 @@
 import { ApiResponse } from '@/lib/server';
 import db from '@/lib/database';
 import { NextRequest } from 'next/server';
+import { updateInvoiceStatus } from '@/server/invoices';
 
 export async function POST(req: NextRequest) {
-  try {
+  return await db.$transaction(async (tx) => {
     const data = await req.json();
 
-    // 1. Create the new payment
-    const createdPayment = await db.payment.create({
-      data: {
-        method: data.method,
-        amount: data.amount,
-        reference: data.reference,
-        notes: data.notes,
-        invoiceId: data.invoiceId,
-        date: data.date ? new Date(data.date) : new Date(),
-      },
-    });
+    // 1. Create payment
+    const newPayment = await tx.payment.create({ data: { ...data } });
 
-    // 2. Get the invoice and all its payments to calculate status
-    const invoice = await db.invoice.findUnique({
-      where: { id: data.invoiceId },
-      include: {
-        payments: true, // Ensure relation is defined in your schema
-      },
-    });
+    // 2. Optimized calculation (The performance part)
+    const [invoice, agg] = await Promise.all([
+      tx.invoice.findUnique({ where: { id: data.invoiceId }, select: { total: true } }),
+      tx.payment.aggregate({
+        where: { invoiceId: data.invoiceId },
+        _sum: { amount: true },
+      }),
+    ]);
 
-    if (invoice) {
-      // Calculate total paid so far
-      const totalPaid = invoice.payments.reduce((sum, p) => sum + p.amount, 0);
+    const totalPaid = agg._sum.amount || 0;
 
-      let newStatus: 'Unpaid' | 'Partial' | 'Paid';
+    // 3. Call the helper (The clean code part)
+    // No extra DB fetches happen inside here now!
+    if (!invoice) return ApiResponse.notFound();
+    await updateInvoiceStatus(data.invoiceId, tx, totalPaid, invoice.total);
 
-      if (totalPaid >= invoice.total) {
-        newStatus = 'Paid';
-      } else if (totalPaid > 0) {
-        newStatus = 'Partial';
-      } else {
-        newStatus = 'Unpaid';
-      }
-
-      // 3. Update the invoice status
-      await db.invoice.update({
-        where: { id: data.invoiceId },
-        data: { paymentStatus: newStatus },
-      });
-    }
-
-    return ApiResponse.success(createdPayment);
-  } catch (error) {
-    return ApiResponse.serverError(error);
-  }
+    return ApiResponse.success(newPayment);
+  });
 }
 
 export async function GET(req: NextRequest) {

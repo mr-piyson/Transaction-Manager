@@ -94,7 +94,6 @@ export const useUpdateContract = () => {
 
       const previousContract = queryClient.getQueryData<Contract>(ContractsKeys.detail(payload.id));
 
-      // ✅ Typed — no `any`, updater receives `Contract | undefined`
       queryClient.setQueryData<Contract>(ContractsKeys.detail(payload.id), (old) => {
         if (!old) return old;
         return { ...old, ...payload.data };
