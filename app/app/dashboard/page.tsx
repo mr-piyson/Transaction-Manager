@@ -36,29 +36,27 @@ import { ChartAreaInteractive } from './AreaChart';
 
 export default function Dashboard() {
   return (
-    <>
+    <div className="flex flex-col h-dvh">
       <Header
         title="Financial Dashboard"
         icon={<LayoutDashboard className="w-4 h-4" />}
         sticky={true}
       />
-      <div className="flex flex-1 flex-col">
-        <div className="@container/main flex flex-1 flex-col gap-2">
-          <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
-            <CardsSection />
-            <div className="flex flex-col md:flex-row gap-4 px-4">
-              <ChartAreaInteractive />
-            </div>
-            <div className="flex flex-col md:flex-row gap-4 px-4">
-              <CountCarts />
-              <CountCarts />
-              <ContractExpirationChart />
-              {/* <ChartAreaInteractive /> */}
-            </div>
-            {/* <DataTable data={data} /> */}
+      <div className="flex-1 overflow-auto">
+        <div className="flex flex-1 flex-col overflow-hidden p-2">
+          <CardsSection />
+          <div className="flex flex-col md:flex-row gap-4 p-2">
+            <ChartAreaInteractive />
           </div>
+          <div className="flex flex-col md:flex-row gap-4 p-2">
+            <CountCarts />
+            <CountCarts />
+            <ContractExpirationChart />
+            {/* <ChartAreaInteractive /> */}
+          </div>
+          {/* <DataTable data={data} /> */}
         </div>
       </div>
-    </>
+    </div>
   );
 }

@@ -82,6 +82,7 @@ export function ContractExpirationChart() {
                 dataKey="days"
                 position="right"
                 offset={10}
+                // @ts-ignore
                 formatter={(value: number) => `${value} d`}
                 className="fill-foreground font-bold"
                 fontSize={12}
