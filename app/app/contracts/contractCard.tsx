@@ -1,12 +1,32 @@
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { cn } from '@/lib/utils';
 import { Contract } from '@prisma/client';
-import { Calendar, Banknote, FilePenLine } from 'lucide-react';
-import { Progress } from '@/components/ui/progress'; // Ensure this component is installed
+import {
+  Calendar,
+  Banknote,
+  FilePenLine,
+  MoreVertical,
+  Pencil,
+  Trash2,
+  Loader2,
+} from 'lucide-react';
+import { Progress } from '@/components/ui/progress';
+import { Button } from '@/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { useDeleteContract } from '@/hooks/data/use-contracts';
+import { useState } from 'react';
+import { ContractDialog } from './create-contract-dialog';
 
 export function ContractCard(props: { data: Contract }) {
-  if (!props.data) return null;
+  const [editOpen, setEditOpen] = useState(false);
+  const deleteMutation = useDeleteContract();
 
+  if (!props.data) return null;
   const { data } = props;
 
   // Calculate Progress Percentage
@@ -52,9 +72,6 @@ export function ContractCard(props: { data: Contract }) {
           <p className="font-semibold truncate text-sm text-foreground uppercase tracking-tight leading-none">
             {data.title}
           </p>
-          <span className="text-[10px] font-medium px-1.5 py-0.5 rounded bg-secondary text-secondary-foreground border border-border">
-            v{data.version}
-          </span>
         </div>
 
         {/* Progress Bar with Date Labels */}
@@ -99,6 +116,46 @@ export function ContractCard(props: { data: Contract }) {
           {data.active ? 'Active' : 'Inactive'}
         </div>
       </div>
+
+      <div className="flex items-center gap-1">
+        <DropdownMenu>
+          <DropdownMenuTrigger
+            render={
+              <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground">
+                <MoreVertical className="h-4 w-4" />
+              </Button>
+            }
+          />
+          <DropdownMenuContent align="end" className="w-[160px]">
+            <DropdownMenuItem
+              onClick={(e) => {
+                e.stopPropagation();
+                setEditOpen(true);
+              }}
+            >
+              <Pencil className="mr-2 h-4 w-4" />
+              <span>Edit</span>
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={(e) => {
+                e.stopPropagation();
+                deleteMutation.mutate(data.id);
+              }}
+              className="text-destructive focus:text-destructive"
+              disabled={deleteMutation.isPending}
+            >
+              {deleteMutation.isPending ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <Trash2 className="mr-2 h-4 w-4" />
+              )}
+              <span>Delete</span>
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+
+      {/* <ContractDialog open={editOpen} onOpenChange={setEditOpen} contract={data} /> */}
     </div>
   );
 }

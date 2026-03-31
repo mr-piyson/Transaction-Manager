@@ -16,9 +16,10 @@ export async function POST(req: NextRequest, ctx: RouteContext<'/api/contracts'>
   try {
     // POST logic here
     const data = await req.json();
-    const contract = db.contract.create({
+    const contract = await db.contract.create({
       data,
     });
+    console.log(contract);
     return NextResponse.json(contract);
   } catch (error) {
     console.error(error);

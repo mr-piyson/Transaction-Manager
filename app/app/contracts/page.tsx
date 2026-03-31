@@ -5,38 +5,33 @@ import { Contract } from '@prisma/client';
 import { ContractCard } from './contractCard';
 import { Button } from '@/components/ui/button';
 import { LucideFilePenLine, Plus } from 'lucide-react';
-import { useRouter } from 'next/navigation';
-import { cn } from '@/lib/utils';
 import { Header } from '@/app/app/App-Header';
+import { ContractDialog } from './create-contract-dialog';
 
-type ContractsPageProps = {
-  children?: React.ReactNode;
-};
-
-export default function ContractsPage(props: ContractsPageProps) {
+export default function ContractsPage() {
   const { data, error, isLoading } = useContracts();
-  const router = useRouter();
+  
   return (
     <>
       <Header
         title="Contracts"
         icon={<LucideFilePenLine />}
         rightContent={
-          <Button>
-            <Plus />
-            New Contract
-          </Button>
+          <ContractDialog>
+            <Button>
+              <Plus className="mr-2 h-4 w-4" />
+              New Contract
+            </Button>
+          </ContractDialog>
         }
       />
       <ListView<Contract>
         data={data}
-        searchFields={[]}
+        searchFields={['title']}
         cardRenderer={(contract) => (
-          <>
-            <ContractCard data={contract} />;
-          </>
+          <ContractCard data={contract} />
         )}
-        rowHeight={72}
+        rowHeight={80}
         useTheme
       ></ListView>
     </>
