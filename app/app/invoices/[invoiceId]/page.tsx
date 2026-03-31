@@ -2,7 +2,14 @@
 
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardFooter,
+} from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Switch } from '@/components/ui/switch';
 import { toast } from 'sonner';
@@ -25,18 +32,20 @@ import {
   CheckCircle,
   Clock,
   CheckCircle2,
+  Phone,
+  Mail,
+  HandCoinsIcon,
 } from 'lucide-react';
-import {
-  useGetInvoiceWithDetails,
-  useDeleteInvoice,
-  useUpdateInvoice,
-} from '@/hooks/data/use-invoices';
+import { useGetInvoice, useDeleteInvoice, useUpdateInvoice } from '@/hooks/data/use-invoices';
 import { alert } from '@/components/Alert-dialog';
 import { cn } from '@/lib/utils';
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
 import { Format } from '@/lib/format';
 import { Badge } from '@/components/ui/badge';
+import PaymentCard from './editor/payment-card';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { PaymentDialog } from './editor/payments-dialog';
 
 function InvoiceLineRow({ line, lines, depth = 0 }: { line: any; lines: any[]; depth?: number }) {
   const childLines = lines.filter((l) => l.parentId === line.id);
@@ -80,7 +89,16 @@ export default function InvoiceDetailPage() {
   const params = useParams();
   const invoiceId = params?.invoiceId as string;
 
-  const { data: invoice, isLoading, isError } = useGetInvoiceWithDetails(invoiceId);
+  const {
+    data: invoice,
+    isLoading,
+    isError,
+  } = useGetInvoice(invoiceId, {
+    customer: true,
+    invoiceLines: true,
+    payments: true,
+  });
+  console.log(invoice);
   const deleteMutation = useDeleteInvoice();
   const updateMutation = useUpdateInvoice();
 
@@ -186,7 +204,7 @@ export default function InvoiceDetailPage() {
                 router.push(`/app/invoices/${params.invoiceId}/editor`);
               }}
               variant="secondary"
-              className="shadow-sm"
+              className="shadow-sm border-secondary/50"
             >
               <PenBoxIcon className="w-4 h-4 md:mr-2" />
               <span className="hidden md:inline">Edit</span>
@@ -199,10 +217,23 @@ export default function InvoiceDetailPage() {
                 invoice.isCompleted ? 'justify-start text-white' : 'justify-end text-gray-700',
               )}
             ></span>
+            {/* Payment Button */}
+            <PaymentDialog invoice={invoice}>
+              <Button
+                size="sm"
+                className="h-8 gap-1.5 text-xs bg-success/10 text-success hover:bg-success/20 ml-auto border-2 border-success/50"
+                disabled={false}
+              >
+                <HandCoinsIcon size={13} />
+                <span>Pay</span>
+              </Button>
+            </PaymentDialog>
 
+            {/* Delete Button */}
             <Button
               size="lg"
               variant="destructive"
+              className={'shadow-sm border-destructive'}
               onClick={() => {
                 alert.delete({
                   title: 'Are you sure you want to delete this invoice?',
@@ -277,10 +308,7 @@ export default function InvoiceDetailPage() {
                     <span className="text-muted-foreground flex items-center gap-2">
                       <Banknote className="w-4 h-4" /> Total
                     </span>
-                    <span className="font-bold">
-                      {invoice.currency}{' '}
-                      {(invoice.total / (invoice.currency === 'BHD' ? 1000 : 100)).toFixed(3)}
-                    </span>
+                    <span className="font-bold">{Format.money.amount(invoice.total || 0)}</span>
                   </div>
 
                   {/* NEW: Created By  */}
@@ -316,14 +344,14 @@ export default function InvoiceDetailPage() {
                     )}{' '}
                     Status
                   </span>
-                  <div className="p-2 text-xs inline-block">
+                  <div className="py-2 text-xs inline-block">
                     {invoice.isCompleted ? (
                       <Badge variant="default">
                         <CheckCircle2 className="w-4 h-4" />
                         Completed
                       </Badge>
                     ) : (
-                      <Badge className="bg-background border-2">
+                      <Badge variant={'secondary'}>
                         <Clock className="w-4 h-4" />
                         Draft
                       </Badge>
@@ -358,18 +386,72 @@ export default function InvoiceDetailPage() {
                   )}
                 </div>
 
-                {lines.length > 0 && (
-                  <div className="flex justify-between items-center p-4 bg-muted/30 border-t rounded-b-xl">
-                    <span className="font-semibold text-muted-foreground">Total Revenue</span>
-                    <span className="text-lg font-bold">{Format.money.amount(revenue)}</span>
-                  </div>
-                )}
+                <CardFooter>
+                  {lines.length > 0 && (
+                    <div className="w-full flex justify-between">
+                      <span className="font-semibold text-muted-foreground">Total Revenue</span>
+                      <span className="text-lg font-bold">{Format.money.amount(revenue)}</span>
+                    </div>
+                  )}
+                </CardFooter>
               </CardContent>
             </Card>
           </div>
 
           {/* Sidebar Column */}
           <div className="w-full lg:w-[350px] shrink-0 flex flex-col space-y-6">
+            {/* Customer Card */}
+            <Card className="rounded-xl border shadow-sm">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base font-semibold">Customer</CardTitle>
+              </CardHeader>
+
+              <CardContent className="space-y-5">
+                {/* Top Section */}
+                <div className="flex items-center gap-4">
+                  <Avatar className="h-12 w-12">
+                    <AvatarImage src={(invoice as any)?.customer?.image} />
+                    <AvatarFallback>
+                      <User className="h-5 w-5" />
+                    </AvatarFallback>
+                  </Avatar>
+
+                  <div className="flex flex-col">
+                    <span className="text-sm text-muted-foreground">Customer Name</span>
+                    <span className="font-semibold text-base">
+                      {(invoice as any)?.customer?.name || 'Unknown'}
+                    </span>
+                  </div>
+                </div>
+
+                <Separator />
+
+                {/* Info Section */}
+                <div className="space-y-4">
+                  {/* Phone */}
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2 text-muted-foreground text-sm">
+                      <Phone className="h-4 w-4" />
+                      Phone
+                    </div>
+                    <span className="font-medium text-sm">
+                      {(invoice as any)?.customer?.phone || 'N/A'}
+                    </span>
+                  </div>
+
+                  {/* Email */}
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2 text-muted-foreground text-sm">
+                      <Mail className="h-4 w-4" />
+                      Email
+                    </div>
+                    <span className="font-medium text-sm truncate max-w-[180px] text-right">
+                      {(invoice as any)?.customer?.email || 'N/A'}
+                    </span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
             {/* Payments */}
             <Card>
               <CardHeader>
@@ -380,11 +462,9 @@ export default function InvoiceDetailPage() {
                   <span className="text-muted-foreground flex items-center gap-2">
                     <CreditCard className="w-4 h-4" /> Status
                   </span>
-                  <span
-                    className={`font-medium ${invoice.paymentStatus === 'Paid' ? 'text-green-600' : 'text-amber-600'}`}
-                  >
-                    {invoice.paymentStatus}
-                  </span>
+                  {invoice.payments.map((payment) => (
+                    <PaymentCard key={payment.id} payment={payment} />
+                  ))}
                 </div>
               </CardContent>
             </Card>

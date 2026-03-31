@@ -1,8 +1,7 @@
 'use client';
 
-import { InvoiceWithDetails } from '@/app/api/invoices/[id]/route';
 import api from '@/lib/api';
-import { Invoice } from '@prisma/client';
+import { Invoice, Prisma } from '@prisma/client';
 import { useMutation, useQuery, useQueryClient, UseQueryOptions } from '@tanstack/react-query';
 
 const SCOPE = 'invoices';
@@ -14,10 +13,15 @@ const BASE_URL = `/api/${SCOPE}`;
 
 export const InvoicesKeys = {
   all: [SCOPE] as const,
+
   lists: () => [SCOPE, 'list'] as const,
+
   list: (filters?: object) => [SCOPE, 'list', { filters }] as const,
+
   details: () => [SCOPE, 'detail'] as const,
-  detail: (id: string | undefined) => [SCOPE, 'detail', id] as const,
+
+  detail: <TInclude extends Prisma.InvoiceInclude>(id: string | undefined, include?: TInclude) =>
+    [SCOPE, 'detail', id, { include }] as const,
 };
 
 // ---------------------------------------------------------------------------
@@ -73,14 +77,23 @@ export const useCreateInvoice = () => {
   });
 };
 
-export const useGetInvoiceWithDetails = (
+type InvoicePayload<TInclude extends Prisma.InvoiceInclude> = Prisma.InvoiceGetPayload<{
+  include: TInclude;
+}>;
+
+export const useGetInvoice = <TInclude extends Prisma.InvoiceInclude>(
   id: string | undefined,
-  options?: Omit<UseQueryOptions<Invoice>, 'queryKey' | 'queryFn' | 'enabled'>,
+  include?: TInclude,
+  options?: Omit<UseQueryOptions<InvoicePayload<TInclude>>, 'queryKey' | 'queryFn' | 'enabled'>,
 ) => {
-  return useQuery<Invoice>({
-    queryKey: InvoicesKeys.detail(id),
+  return useQuery<InvoicePayload<TInclude>>({
+    queryKey: InvoicesKeys.detail(id, include),
     queryFn: async () => {
-      const { data } = await api.get<InvoiceWithDetails>(`${BASE_URL}/${id}`);
+      const { data } = await api.get<InvoicePayload<TInclude>>(`${BASE_URL}/${id}`, {
+        params: {
+          include: JSON.stringify(include),
+        },
+      });
       return data;
     },
     enabled: !!id,
@@ -122,8 +135,13 @@ export const useUpdateInvoice = () => {
     },
 
     onSettled: (_data, _err, payload) => {
-      queryClient.invalidateQueries({ queryKey: InvoicesKeys.detail(payload.id) });
-      queryClient.invalidateQueries({ queryKey: InvoicesKeys.lists() });
+      queryClient.invalidateQueries({
+        queryKey: [SCOPE, 'detail', payload.id],
+      });
+
+      queryClient.invalidateQueries({
+        queryKey: InvoicesKeys.lists(),
+      });
     },
   });
 };

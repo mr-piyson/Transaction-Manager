@@ -13,7 +13,7 @@ import { InventoryItem } from '@prisma/client';
 import { toast } from 'sonner';
 import { useInventoryItems } from '@/hooks/data/use-inventoryItems';
 import { useParams, useRouter } from 'next/navigation';
-import { useGetInvoiceWithDetails } from '@/hooks/data/use-invoices';
+import { useGetInvoice } from '@/hooks/data/use-invoices';
 import { useCreateInvoiceLine } from '@/hooks/data/use-invoiceLines';
 
 type InvoiceEditorProps = {
@@ -27,7 +27,15 @@ export default function InvoiceEditor(props: InvoiceEditorProps) {
   const invoiceId = params?.invoiceId as string;
 
   const { data: inventoryItems } = useInventoryItems();
-  const { data: invoice, isLoading } = useGetInvoiceWithDetails(invoiceId);
+  const { data: invoice, isLoading } = useGetInvoice(invoiceId, {
+    customer: true,
+    invoiceLines: {
+      include: {
+        itemRef: true,
+      },
+    },
+    payments: true,
+  });
   const { mutate: createLine } = useCreateInvoiceLine();
 
   if (isLoading) return <div className="p-4">Loading...</div>;
