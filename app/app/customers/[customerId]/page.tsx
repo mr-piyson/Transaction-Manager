@@ -1,5 +1,10 @@
 import { CustomerProfile } from './customer-profile';
 
-export default async function Page({ params }: { params: { customerId: string } }) {
-  return <CustomerProfile customerId={(await params).customerId} />;
+type CustomerPageProps = {
+  children?: React.ReactNode;
+  params: Promise<{ customerId: string }>;
+};
+
+export default async function CustomerPage(props: CustomerPageProps) {
+  return <CustomerProfile customerId={(await props.params).customerId} />;
 }

@@ -5,12 +5,16 @@ import { NextRequest } from 'next/server';
 export async function GET(req: NextRequest, ctx: RouteContext<'/api/customers/[id]'>) {
   try {
     const id = Number((await ctx.params).id);
-    const items = await db.customer.findUnique({
+    const customer = await db.customer.findUnique({
       where: {
         id,
       },
+      include: {
+        organization: true,
+        invoices: true,
+      },
     });
-    return ApiResponse.success(items);
+    return ApiResponse.success(customer);
   } catch (error) {
     return ApiResponse.serverError(error);
   }

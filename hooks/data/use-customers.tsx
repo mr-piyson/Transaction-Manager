@@ -66,12 +66,12 @@ export const useCreateCustomer = () => {
 
 export const useGetCustomer = (
   id: string | undefined,
-  options?: Omit<UseQueryOptions<Customer>, 'queryKey' | 'queryFn' | 'enabled'>,
+  options?: Omit<UseQueryOptions<any>, 'queryKey' | 'queryFn' | 'enabled'>,
 ) => {
-  return useQuery<Customer>({
+  return useQuery({
     queryKey: CustomersKeys.detail(id),
     queryFn: async () => {
-      const { data } = await api.get<Customer>(`${BASE_URL}/${id}`);
+      const { data } = await api.get(`${BASE_URL}/${id}`);
       return data;
     },
     enabled: !!id,
