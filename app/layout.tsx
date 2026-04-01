@@ -6,6 +6,7 @@ import { I18nProvider } from '@/i18n/use-i18n';
 import { Toaster } from '@/components/sonner';
 import { getServerI18n } from '@/i18n/i18n.action';
 import QueryProvider from '@/components/QueryProvider';
+import TrpcProvider from '@/lib/trpc/Provider';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -39,7 +40,9 @@ export default async function RootLayout(props: any) {
           storageKey={'theme'}
         >
           <I18nProvider initialLocale={locale} initialDict={dict}>
-            <QueryProvider>{props.children}</QueryProvider>
+            <TrpcProvider>
+              <QueryProvider>{props.children}</QueryProvider>
+            </TrpcProvider>
           </I18nProvider>
         </ThemeProvider>
         <Toaster position="top-center" />
