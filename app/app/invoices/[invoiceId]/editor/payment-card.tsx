@@ -18,7 +18,13 @@ const getMethodConfig = (method: string) => {
   }
 };
 
-export default function PaymentCard({ payment }: { payment: Payment }) {
+export default function PaymentCard({
+  payment,
+  editable,
+}: {
+  payment: Payment;
+  editable?: boolean;
+}) {
   const { icon } = getMethodConfig(payment.method);
   const deletePayment = useDeletePayment();
 

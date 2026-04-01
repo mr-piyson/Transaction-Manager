@@ -1,4 +1,4 @@
-import db from '@/lib/database';
+import db from '@/lib/db';
 
 // export async function updateInvoiceStatus(id: number) {
 //   // Wrap in a transaction to ensure we have a consistent snapshot

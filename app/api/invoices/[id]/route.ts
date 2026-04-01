@@ -1,5 +1,5 @@
 import { ApiResponse } from '@/lib/server';
-import db from '@/lib/database';
+import db from '@/lib/db';
 import { Prisma } from '@prisma/client';
 import { NextRequest } from 'next/server';
 

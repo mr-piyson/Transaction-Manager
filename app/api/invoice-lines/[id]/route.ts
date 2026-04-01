@@ -1,5 +1,5 @@
 import { ApiResponse } from '@/lib/server';
-import db from '@/lib/database';
+import db from '@/lib/db';
 import { NextRequest } from 'next/server';
 
 export async function PATCH(req: NextRequest, ctx: RouteContext<'/api/invoice-lines/[id]'>) {
@@ -61,8 +61,8 @@ async function updateInvoiceTotals(invoiceId: number) {
   const groups = lines.filter((l) => l.isGroup);
   for (const group of groups) {
     const children = lines.filter((l) => l.parentId === group.id);
-    const groupPurchase = children.reduce((acc, l) => acc + (l.purchasePrice * l.quantity), 0);
-    const groupSales = children.reduce((acc, l) => acc + (l.salesPrice * l.quantity), 0);
+    const groupPurchase = children.reduce((acc, l) => acc + l.purchasePrice * l.quantity, 0);
+    const groupSales = children.reduce((acc, l) => acc + l.salesPrice * l.quantity, 0);
     const groupTotal = children.reduce((acc, l) => acc + l.total, 0);
     await db.invoiceLine.update({
       where: { id: group.id },
@@ -77,7 +77,7 @@ async function updateInvoiceTotals(invoiceId: number) {
   // 2) Update Invoice Total (summing only non-group lines to avoid double-counting)
   const nonGroupLines = lines.filter((l) => !l.isGroup);
   const subtotal = nonGroupLines.reduce((acc, line) => acc + line.total, 0);
-  
+
   // For now, let's assume discountTotal and taxTotal are 0 or handled elsewhere
   const total = subtotal;
 

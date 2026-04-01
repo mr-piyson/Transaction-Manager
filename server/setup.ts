@@ -1,4 +1,4 @@
-import db from '@/lib/database';
+import db from '@/lib/db';
 
 export async function checkOrganization() {
   return (await db.organization.count({})) > 0;

@@ -1,4 +1,4 @@
-import db from '@/lib/database';
+import db from '@/lib/db';
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET(req: NextRequest, ctx: RouteContext<'/api/contracts/[id]'>) {

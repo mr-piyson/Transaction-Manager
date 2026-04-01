@@ -1,5 +1,5 @@
 import { ApiResponse } from '@/lib/server';
-import db from '@/lib/database';
+import db from '@/lib/db';
 import { NextRequest } from 'next/server';
 
 export async function POST(req: NextRequest) {

@@ -1,7 +1,7 @@
 import { betterAuth } from 'better-auth';
 import { prismaAdapter } from 'better-auth/adapters/prisma';
 import { jwt } from 'better-auth/plugins';
-import db from './database';
+import db from './db';
 import { env } from './env';
 import { headers } from 'next/headers';
 

@@ -1,5 +1,5 @@
 import { ApiResponse } from '@/lib/server';
-import db from '@/lib/database';
+import db from '@/lib/db';
 import { NextRequest, NextResponse } from 'next/server';
 
 import { getFileExtension, saveImage } from '@/lib/files';

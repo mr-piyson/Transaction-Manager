@@ -386,7 +386,7 @@ export default function InvoiceDetailPage() {
                   )}
                 </div>
 
-                <CardFooter className='bg-muted/20'>
+                <CardFooter className="bg-muted/20">
                   {lines.length > 0 && (
                     <div className="w-full flex justify-between">
                       <span className="font-semibold text-muted-foreground">Total Revenue</span>
@@ -401,7 +401,7 @@ export default function InvoiceDetailPage() {
           {/* Sidebar Column */}
           <div className="w-full lg:w-[350px] shrink-0 flex flex-col space-y-6">
             {/* Customer Card */}
-            <Card className="rounded-xl border shadow-sm">
+            <Card className="rounded-xl shadow-sm">
               <CardHeader className="pb-3">
                 <CardTitle className="text-base font-semibold">Customer</CardTitle>
               </CardHeader>

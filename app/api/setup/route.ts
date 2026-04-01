@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import db from '@/lib/database';
+import db from '@/lib/db';
 import { auth } from '@/lib/auth';
 
 export async function POST(req: Request) {
@@ -45,7 +45,7 @@ export async function POST(req: Request) {
     });
 
     if (!userResult) {
-       return NextResponse.json({ error: 'Failed to create admin user' }, { status: 500 });
+      return NextResponse.json({ error: 'Failed to create admin user' }, { status: 500 });
     }
 
     return NextResponse.json(
@@ -68,4 +68,3 @@ export async function POST(req: Request) {
     );
   }
 }
-
