@@ -9,7 +9,7 @@ import { Header } from '@/app/app/App-Header';
 import { CreateInvoiceDialog } from './create-invoice-dialog';
 import { InvoiceCard } from './invoiceCard';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useInvoices } from '@/hooks/data/use-invoices';
+import { trpc } from '@/lib/trpc/client';
 
 export default function InvoicesPage() {
   const { t } = useI18n();
@@ -18,10 +18,8 @@ export default function InvoicesPage() {
     isLoading,
     isError,
     refetch,
-  } = useInvoices({
-    include: {
-      customer: true,
-    },
+  } = trpc.invoices.getInvoices.useQuery({
+    customer: true,
   });
 
   // State for filters
@@ -88,7 +86,7 @@ export default function InvoicesPage() {
         </div>
       )}
 
-      <ListView
+      <ListView<any>
         emptyTitle={t('invoices.empty_title', 'No invoices found')}
         emptyIcon={<FileText className="size-16 text-muted-foreground" />}
         emptyDescription={'No invoices to show'}

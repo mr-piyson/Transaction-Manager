@@ -43,7 +43,14 @@ export const customerRouter = t.router({
     }),
 
   createCustomer: authed
-    .input(z.any())
+    .input(
+      z.object({
+        name: z.string(),
+        phone: z.string(),
+        address: z.string(),
+        email: z.string().email().optional().nullable(),
+      }),
+    )
     .mutation(async ({ input, ctx }) => {
       try {
         return await db.customer.create({
@@ -56,6 +63,32 @@ export const customerRouter = t.router({
         throw new TRPCError({
           code: 'INTERNAL_SERVER_ERROR',
           message: 'Failed to create customer',
+        });
+      }
+    }),
+
+  updateCustomer: authed
+    .input(
+      z.object({
+        id: z.number(),
+        data: z.object({
+          name: z.string().optional(),
+          phone: z.string().optional(),
+          address: z.string().optional(),
+          email: z.string().email().optional().nullable(),
+        }),
+      }),
+    )
+    .mutation(async ({ input }) => {
+      try {
+        return await db.customer.update({
+          where: { id: input.id },
+          data: input.data,
+        });
+      } catch (error) {
+        throw new TRPCError({
+          code: 'INTERNAL_SERVER_ERROR',
+          message: 'Failed to update customer',
         });
       }
     }),

@@ -10,7 +10,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Package } from 'lucide-react';
-import { useCreateInvoiceLine } from '@/hooks/data/use-invoiceLines';
+import { trpc } from '@/lib/trpc/client';
 import { toast } from 'sonner';
 
 interface CreateGroupDialogProps {
@@ -21,11 +21,17 @@ interface CreateGroupDialogProps {
 export function CreateGroupDialog({ invoiceId, children }: CreateGroupDialogProps) {
   const [open, setOpen] = useState(false);
   const [title, setTitle] = useState('');
-  const { mutate: createLine, isPending } = useCreateInvoiceLine();
+  const utils = trpc.useUtils();
+  const createMutation = trpc.invoiceLines.createInvoiceLine.useMutation({
+    onSuccess: () => {
+      utils.invoices.getInvoiceById.invalidate({ id: Number(invoiceId) });
+    },
+  });
+  const isPending = createMutation.isPending;
 
   const handleCreate = () => {
     if (!title.trim()) return;
-    createLine(
+    createMutation.mutate(
       {
         invoiceId: Number(invoiceId),
         isGroup: true,
@@ -37,7 +43,7 @@ export function CreateGroupDialog({ invoiceId, children }: CreateGroupDialogProp
           setTitle('');
         },
         onError: (error) => {
-          toast.error('Failed to create group: ' + error.message);
+          toast.error('Failed to create group');
         },
       },
     );

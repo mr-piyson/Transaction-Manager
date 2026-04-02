@@ -27,8 +27,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
 
-import { useCreateInvoice, useInvoices } from '@/hooks/data/use-invoices';
-import { useCustomers } from '@/hooks/data/use-customers';
+import { trpc } from '@/lib/trpc/client';
 
 interface Customer {
   id: number;
@@ -42,10 +41,11 @@ export function CreateInvoiceDialog(props: { onSuccess?: (invoice: any) => void 
   const [selectedCustomerId, setSelectedCustomerId] = useState<number | null>(null);
   const [description, setDescription] = useState('');
   const [comboOpen, setComboOpen] = useState(false);
-  const invoiceMutation = useCreateInvoice();
+  const utils = trpc.useUtils();
+  const invoiceMutation = trpc.invoices.createInvoice.useMutation();
 
   // Fetch customers for the dropdown
-  const { data: customers = [], refetch: refetchCustomers } = useCustomers();
+  const { data: customers = [], refetch: refetchCustomers } = trpc.customers.getCustomers.useQuery();
 
   const handleCreateInvoice = async () => {
     if (!selectedCustomerId) return toast.error('Please select a customer');
@@ -53,20 +53,10 @@ export function CreateInvoiceDialog(props: { onSuccess?: (invoice: any) => void 
     invoiceMutation.mutate(
       {
         customerId: selectedCustomerId,
-        date: new Date(),
-        description: '',
-        currency: 'BHD',
-        isCompleted: false,
-        userId: '',
-        organizationId: 1,
-        discountTotal: 10,
-        total: 0,
-        subtotal: 0,
-        taxTotal: 0,
-        paymentStatus: 'Unpaid',
       },
       {
         onSuccess: () => {
+          utils.invoices.getInvoices.invalidate();
           resetForm();
           setOpen(false);
         },

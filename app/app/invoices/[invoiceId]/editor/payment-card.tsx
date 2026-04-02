@@ -2,7 +2,7 @@ import { Button } from '@/components/button';
 import { Dates } from '@/lib/date';
 import { Payment } from '@prisma/client';
 import { Banknote, CreditCard, Trash2, Wallet } from 'lucide-react';
-import { useDeletePayment } from '@/hooks/data/use-payments';
+import { trpc } from '@/lib/trpc/client';
 import { toast } from 'sonner';
 import { Format } from '@/lib/format';
 
@@ -26,14 +26,19 @@ export default function PaymentCard({
   editable?: boolean;
 }) {
   const { icon } = getMethodConfig(payment.method);
-  const deletePayment = useDeletePayment();
+  const utils = trpc.useUtils();
+  const deletePayment = trpc.payments.deletePayment.useMutation({
+    onSuccess: () => {
+      utils.invoices.getInvoiceById.invalidate({ id: Number(payment.invoiceId) });
+    },
+  });
 
   const handleDelete = () => {
     deletePayment.mutate(
-      { id: payment.id, invoiceId: payment.invoiceId },
+      { id: payment.id },
       {
         onError: (err) => {
-          toast.error(err.message);
+          toast.error('Delete failed');
         },
       },
     );

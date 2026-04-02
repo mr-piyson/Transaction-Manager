@@ -2,28 +2,36 @@ import { Card } from '@/components/ui/card';
 import InvoiceItemCard from './InvoiceItem';
 import InvoiceItemCardGroup from './InvoiceItemGroup';
 import { Button } from '@/components/ui/button';
-import { InvoiceWithDetails } from '@/app/api/invoices/[id]/route';
+// Using any for type compatibility
 import { FileText, Box, Trash2 } from 'lucide-react';
 import { SelectDialog } from '@/components/select-dialog';
 import { InventoryItemCard } from '../../../inventory/inventoryCard';
 import { InventoryItem } from '@prisma/client';
-import { useInventoryItems } from '@/hooks/data/use-inventoryItems';
-import { useCreateInvoiceLine, useDeleteInvoiceLine } from '@/hooks/data/use-invoiceLines';
+import { trpc } from '@/lib/trpc/client';
 import { toast } from 'sonner';
 import { UniversalContextMenu } from '@/components/context-menu';
 import { alert } from '@/components/Alert-dialog';
 
 type InvoiceFormProps = {
-  invoice: InvoiceWithDetails;
+  invoice: any;
 };
 
 export default function InvoiceForm({ invoice }: InvoiceFormProps) {
-  const { data: inventoryItems } = useInventoryItems();
-  const { mutate: createLine } = useCreateInvoiceLine();
-  const deleteLine = useDeleteInvoiceLine();
+  const utils = trpc.useUtils();
+  const { data: inventoryItems } = trpc.inventory.getInventory.useQuery();
+  const createMutation = trpc.invoiceLines.createInvoiceLine.useMutation({
+    onSuccess: () => {
+      utils.invoices.getInvoiceById.invalidate({ id: Number(invoice.id) });
+    },
+  });
+  const deleteMutation = trpc.invoiceLines.deleteInvoiceLine.useMutation({
+    onSuccess: () => {
+      utils.invoices.getInvoiceById.invalidate({ id: Number(invoice.id) });
+    },
+  });
 
   const handleSelectItem = (item: InventoryItem, parentId?: number) => {
-    createLine(
+    createMutation.mutate(
       {
         invoiceId: Number(invoice.id),
         inventoryItemId: item.id,
@@ -32,7 +40,7 @@ export default function InvoiceForm({ invoice }: InvoiceFormProps) {
       },
       {
         onError: (error) => {
-          toast.error('Failed to add item: ' + error.message);
+          toast.error('Failed to add item');
         },
       },
     );
@@ -76,7 +84,7 @@ export default function InvoiceForm({ invoice }: InvoiceFormProps) {
                     title: 'Delete Group',
                     description: 'Are you sure you want to delete this group? ' + g.id,
                     onConfirm: () => {
-                      deleteLine.mutate(g);
+                      deleteMutation.mutate({ id: g.id });
                     },
                   });
                 },
@@ -90,11 +98,11 @@ export default function InvoiceForm({ invoice }: InvoiceFormProps) {
               title={g.description || 'Group'}
               totalQty={groupTotal}
               actionSlot={
-                <SelectDialog<InventoryItem>
+                <SelectDialog<any>
                   onSelect={(item) => handleSelectItem(item, g.id)}
-                  data={inventoryItems}
+                  data={inventoryItems as any}
                   searchFields={['code', 'name', 'description']}
-                  cardRenderer={InventoryItemCard}
+                  cardRenderer={InventoryItemCard as any}
                   rowHeight={72}
                 >
                   <Button size="sm" className="h-8 gap-1.5 text-xs flex-1 sm:flex-none">

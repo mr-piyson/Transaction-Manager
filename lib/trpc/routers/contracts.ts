@@ -39,11 +39,25 @@ export const contractRouter = t.router({
     }),
 
   createContract: authed
-    .input(z.any())
-    .mutation(async ({ input }) => {
+    .input(
+      z.object({
+        title: z.string(),
+        description: z.string().optional(),
+        contractValue: z.number().optional(),
+        currency: z.string().optional(),
+        startDate: z.coerce.date(),
+        endDate: z.coerce.date(),
+        renewalDate: z.coerce.date().optional().nullable(),
+        active: z.boolean().optional(),
+      }),
+    )
+    .mutation(async ({ input, ctx }) => {
       try {
         return await db.contract.create({
-          data: input,
+          data: {
+            ...input,
+            organizationId: ctx.user.organizationId,
+          },
         });
       } catch (error) {
         throw new TRPCError({
@@ -52,4 +66,47 @@ export const contractRouter = t.router({
         });
       }
     }),
+
+  updateContract: authed
+    .input(
+      z.object({
+        id: z.string(),
+        data: z.object({
+          title: z.string().optional(),
+          description: z.string().optional(),
+          contractValue: z.number().optional(),
+          currency: z.string().optional(),
+          startDate: z.coerce.date().optional(),
+          endDate: z.coerce.date().optional(),
+          renewalDate: z.coerce.date().optional().nullable(),
+          active: z.boolean().optional(),
+        }),
+      }),
+    )
+    .mutation(async ({ input }) => {
+      try {
+        return await db.contract.update({
+          where: { id: input.id },
+          data: input.data,
+        });
+      } catch (error) {
+        throw new TRPCError({
+          code: 'INTERNAL_SERVER_ERROR',
+          message: 'Failed to update contract',
+        });
+      }
+    }),
+
+  deleteContract: authed.input(z.object({ id: z.string() })).mutation(async ({ input }) => {
+    try {
+      return await db.contract.delete({
+        where: { id: input.id },
+      });
+    } catch (error) {
+      throw new TRPCError({
+        code: 'INTERNAL_SERVER_ERROR',
+        message: 'Failed to delete contract',
+      });
+    }
+  }),
 });

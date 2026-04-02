@@ -16,8 +16,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useForm, Controller } from 'react-hook-form';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
-import { InvoiceWithDetails } from '@/app/api/invoices/[id]/route';
-import { useCreatePayment, useDeletePayment } from '@/hooks/data/use-payments';
+import { trpc } from '@/lib/trpc/client';
 import PaymentCard from './payment-card';
 import { toast } from 'sonner';
 import { useState } from 'react';
@@ -32,13 +31,18 @@ type FormValues = {
 
 interface PaymentDialogProps {
   children: React.ReactNode;
-  invoice: InvoiceWithDetails;
+  invoice: any;
 }
 
 export function PaymentDialog({ children, invoice }: PaymentDialogProps) {
   const [open, setOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('list');
-  const createPayment = useCreatePayment();
+  const utils = trpc.useUtils();
+  const createPayment = trpc.payments.createPayment.useMutation({
+    onSuccess: () => {
+      utils.invoices.getInvoiceById.invalidate({ id: Number(invoice.id) });
+    },
+  });
 
   const amountPaid = invoice.payments?.reduce((acc: number, p: any) => acc + p.amount, 0) || 0;
   const balanceDue = (invoice.total || 0) - amountPaid;
@@ -70,7 +74,6 @@ export function PaymentDialog({ children, invoice }: PaymentDialogProps) {
         invoiceId: invoice.id,
         method: data.paymentType,
         amount: Number(data.amount),
-        date: new Date(),
       },
       {
         onSuccess: () => {
@@ -78,7 +81,7 @@ export function PaymentDialog({ children, invoice }: PaymentDialogProps) {
           setActiveTab('list');
         },
         onError: (err) => {
-          toast.error(err.message);
+          toast.error('Payment failed');
         },
       },
     );

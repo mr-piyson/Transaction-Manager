@@ -5,32 +5,41 @@ import { Button } from '@/components/ui/button';
 import { Format } from '@/lib/format';
 import { UniversalContextMenu } from '@/components/context-menu';
 import { InvoiceLine } from '@prisma/client';
-import { useDeleteInvoiceLine, useUpdateInvoiceLine } from '@/hooks/data/use-invoiceLines';
+import { trpc } from '@/lib/trpc/client';
 import { toast } from 'sonner';
 
 export default function InvoiceItemCard({ line }: { line: InvoiceLine }) {
-  const { mutate: updateLine } = useUpdateInvoiceLine();
-  const { mutate: deleteLine } = useDeleteInvoiceLine();
+  const utils = trpc.useUtils();
+  const updateMutation = trpc.invoiceLines.updateInvoiceLine.useMutation({
+    onSuccess: () => {
+      if (line.invoiceId) utils.invoices.getInvoiceById.invalidate({ id: Number(line.invoiceId) });
+    },
+  });
+  const deleteMutation = trpc.invoiceLines.deleteInvoiceLine.useMutation({
+    onSuccess: () => {
+      if (line.invoiceId) utils.invoices.getInvoiceById.invalidate({ id: Number(line.invoiceId) });
+    },
+  });
 
   const itemRef = (line as any).itemRef;
 
   const handleUpdateQuantity = (newQty: number) => {
     if (newQty < 1) return;
-    updateLine({
+    updateMutation.mutate({
       id: line.id,
       data: {
         quantity: newQty,
         total: line.salesPrice * newQty,
-      },
+      } as any,
     });
   };
 
   const handleDelete = () => {
     if (!line.invoiceId) return;
-    deleteLine(
-      { id: line.id, invoiceId: line.invoiceId },
+    deleteMutation.mutate(
+      { id: line.id },
       {
-        onError: (err) => toast.error('Failed to remove item: ' + err.message),
+        onError: (err) => toast.error('Failed to remove item'),
       },
     );
   };

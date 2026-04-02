@@ -36,7 +36,7 @@ import {
   Mail,
   HandCoinsIcon,
 } from 'lucide-react';
-import { useGetInvoice, useDeleteInvoice, useUpdateInvoice } from '@/hooks/data/use-invoices';
+import { trpc } from '@/lib/trpc/client';
 import { alert } from '@/components/Alert-dialog';
 import { cn } from '@/lib/utils';
 import { Label } from '@/components/ui/label';
@@ -89,29 +89,40 @@ export default function InvoiceDetailPage() {
   const params = useParams();
   const invoiceId = params?.invoiceId as string;
 
+  const utils = trpc.useUtils();
   const {
     data: invoice,
     isLoading,
     isError,
-  } = useGetInvoice(invoiceId, {
-    customer: true,
-    invoiceLines: true,
-    payments: true,
+  } = trpc.invoices.getInvoiceById.useQuery({
+    id: Number(invoiceId),
+    include: {
+      customer: true,
+      invoiceLines: true,
+      payments: true,
+    },
   });
-  console.log(invoice);
-  const deleteMutation = useDeleteInvoice();
-  const updateMutation = useUpdateInvoice();
+
+  const deleteMutation = trpc.invoices.deleteInvoice.useMutation();
+  const updateMutation = trpc.invoices.updateInvoice.useMutation({
+    onSuccess: () => {
+      utils.invoices.getInvoiceById.invalidate({ id: Number(invoiceId) });
+    },
+  });
 
   const handleDelete = () => {
     if (!invoice) return;
-    deleteMutation.mutate(String(invoice.id), {
-      onSuccess: () => {
-        router.push('/app/invoices');
+    deleteMutation.mutate(
+      { id: Number(invoice.id) },
+      {
+        onSuccess: () => {
+          router.push('/app/invoices');
+        },
+        onError: (e) => {
+          toast.error('Delete failed');
+        },
       },
-      onError: (e) => {
-        toast.error(e.message ?? 'Delete failed');
-      },
-    });
+    );
   };
 
   if (isLoading) {
@@ -182,11 +193,11 @@ export default function InvoiceDetailPage() {
                 onCheckedChange={(checked) => {
                   updateMutation.mutate(
                     {
-                      id: String(invoice.id),
-                      data: { isCompleted: checked },
+                      id: Number(invoice.id),
+                      data: { isCompleted: checked } as any,
                     },
                     {
-                      onError: (e) => toast.error(e.message ?? 'Update failed'),
+                      onError: (e) => toast.error('Update failed'),
                     },
                   );
                 }}
@@ -462,7 +473,7 @@ export default function InvoiceDetailPage() {
                   <span className="text-muted-foreground flex items-center gap-2">
                     <CreditCard className="w-4 h-4" /> Status
                   </span>
-                  {invoice.payments.map((payment) => (
+                  {(invoice as any).payments.map((payment: any) => (
                     <PaymentCard key={payment.id} payment={payment} />
                   ))}
                 </div>

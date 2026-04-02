@@ -17,7 +17,7 @@ import {
 } from '@/components/ui/dialog';
 import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from '@/components/ui/field';
 import { Button } from '@/components/ui/button';
-import { useCreateCustomer, useCustomers } from '@/hooks/data/use-customers';
+import { trpc } from '@/lib/trpc/client';
 
 import * as z from 'zod';
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/input-group';
@@ -42,7 +42,8 @@ interface CreateCustomerDialogProps {
 
 export function CreateCustomerDialog({ onSuccess, onError, children }: CreateCustomerDialogProps) {
   const [open, setOpen] = useState(false);
-  const createMutation = useCreateCustomer();
+  const utils = trpc.useUtils();
+  const createMutation = trpc.customers.createCustomer.useMutation();
 
   const {
     register,
@@ -60,11 +61,11 @@ export function CreateCustomerDialog({ onSuccess, onError, children }: CreateCus
         name: values.name,
         address: values.address,
         phone: values.phone,
-        email: '',
-        organizationId: 0,
+        email: values.email || null,
       },
       {
         onSuccess: (data) => {
+          utils.customers.getCustomers.invalidate();
           reset();
           setOpen(false);
           onSuccess?.(data);

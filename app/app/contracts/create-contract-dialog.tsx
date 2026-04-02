@@ -17,7 +17,7 @@ import {
 } from '@/components/ui/dialog';
 import { Field, FieldError, FieldGroup, FieldLabel } from '@/components/ui/field';
 import { Button } from '@/components/ui/button';
-import { useCreateContract, useUpdateContract } from '@/hooks/data/use-contracts';
+import { trpc } from '@/lib/trpc/client';
 
 import * as z from 'zod';
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/input-group';
@@ -62,8 +62,9 @@ export function ContractDialog({
     }
   };
 
-  const createMutation = useCreateContract();
-  const updateMutation = useUpdateContract();
+  const utils = trpc.useUtils();
+  const createMutation = trpc.contracts.createContract.useMutation();
+  const updateMutation = trpc.contracts.updateContract.useMutation();
   const isPending = createMutation.isPending || updateMutation.isPending;
   const isEdit = !!contract;
 
@@ -134,9 +135,10 @@ export function ContractDialog({
 
     if (isEdit) {
       updateMutation.mutate(
-        { id: String(contract.id), data: payload },
+        { id: String(contract.id), data: payload as any },
         {
           onSuccess: (data) => {
+            utils.contracts.getContracts.invalidate();
             setOpen(false);
             onSuccess?.(data);
           },
@@ -148,9 +150,10 @@ export function ContractDialog({
       );
     } else {
       createMutation.mutate(
-        { ...payload, active: true, version: 1 },
+        { ...payload, active: true },
         {
           onSuccess: (data) => {
+            utils.contracts.getContracts.invalidate();
             reset();
             setOpen(false);
             onSuccess?.(data);

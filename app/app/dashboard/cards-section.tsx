@@ -9,8 +9,7 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Carousel, CarouselContent, CarouselItem } from '@/components/ui/carousel';
-import { useCustomers } from '@/hooks/data/use-customers';
-import { useInvoices } from '@/hooks/data/use-invoices';
+import { trpc } from '@/lib/trpc/client';
 import { Format } from '@/lib/format';
 import { TrendingDown, TrendingUp, Users, Wallet } from 'lucide-react';
 import { useMemo } from 'react';
@@ -37,11 +36,12 @@ export function CardsSection() {
     data: invoices,
     isLoading: invoicesLoading,
     isError: invoicesError,
-  } = useInvoices({
-    include: { payments: true, customer: true },
+  } = trpc.invoices.getInvoices.useQuery({
+    payments: true,
+    customer: true,
   });
 
-  const { data: customers, isLoading: customersLoading } = useCustomers();
+  const { data: customers, isLoading: customersLoading } = trpc.customers.getCustomers.useQuery();
 
   // Computations
   const stats = useMemo(() => {

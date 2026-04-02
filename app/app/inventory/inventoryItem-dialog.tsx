@@ -16,7 +16,7 @@ import {
 } from '@/components/ui/dialog';
 import { FieldGroup } from '@/components/ui/field';
 import { Button } from '@/components/ui/button';
-import { useCreateInventoryItem } from '@/hooks/data/use-inventoryItems';
+import { trpc } from '@/lib/trpc/client';
 import { ImageUpload } from './Image-Upload';
 
 import { AppForm, FormInput, FormCustomField, FormGroup } from '@/components/Form';
@@ -67,19 +67,26 @@ export function CreateInventoryItemDialog({
   children,
 }: CreateInventoryItemDialogProps) {
   const [open, setOpen] = useState(false);
-  const createMutation = useCreateInventoryItem();
+  const utils = trpc.useUtils();
+  const createMutation = trpc.inventory.createInventoryItem.useMutation();
 
   function handleSubmit(values: InventoryItemValues) {
     createMutation.mutate(
-      { ...values, image: undefined },
+      {
+        name: values.name,
+        code: values.code,
+        purchasePrice: values.purchasePrice,
+        salesPrice: values.salesPrice,
+        description: values.description,
+      },
       {
         onSuccess: () => {
+          utils.inventory.getInventory.invalidate();
           setOpen(false);
           onSuccess?.(values);
         },
         onError: (error) => {
           toast.error(error.message);
-          onError?.(error);
         },
       },
     );

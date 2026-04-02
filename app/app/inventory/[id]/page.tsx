@@ -3,11 +3,9 @@
 import React from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
-import { useMutation } from '@tanstack/react-query';
-import axios from 'axios';
+import { trpc } from '@/lib/trpc/client';
 import { z } from 'zod';
 import { ChevronLeft, Package, Trash2, Save, TrendingUp, Loader2 } from 'lucide-react';
-
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -16,7 +14,6 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { toast } from 'sonner';
-import { useInventoryItems } from '@/hooks/data/use-inventoryItems';
 
 /* ------------------------------ Validation ------------------------------ */
 
@@ -38,26 +35,30 @@ export default function InventoryItemClientPage() {
   const params = useParams();
   const id = params.id as string;
 
+  const utils = trpc.useUtils();
   /* ------------------------------ Queries ------------------------------ */
 
-  const { data, isLoading, isError } = useInventoryItems();
-  const item = data as any;
+  const { data: item, isLoading, isError } = trpc.inventory.getInventoryById.useQuery({ id: Number(id) });
 
   /* ------------------------------ Mutations ------------------------------ */
 
-  const updateMutation = useMutation({
-    mutationFn: async (payload: UpdateFormData) => {
-      return axios.patch(`/api/inventory/${id}`, payload);
+  const updateMutation = trpc.inventory.updateInventoryItem.useMutation({
+    onSuccess: () => {
+      utils.inventory.getInventoryById.invalidate({ id: Number(id) });
+      toast.success('Item updated successfully');
+    },
+    onError: () => {
+      toast.error('Failed to update item');
     },
   });
 
-  const deleteMutation = useMutation({
-    mutationFn: async () => {
-      return axios.delete(`/api/inventory/${id}`);
-    },
+  const deleteMutation = trpc.inventory.deleteInventoryItem.useMutation({
     onSuccess: () => {
       router.push('/app/inventory');
-      router.refresh();
+      toast.success('Item deleted successfully');
+    },
+    onError: () => {
+      toast.error('Failed to delete item');
     },
   });
 
@@ -82,7 +83,10 @@ export default function InventoryItemClientPage() {
       return;
     }
 
-    updateMutation.mutate(parsed.data);
+    updateMutation.mutate({
+      id: Number(id),
+      data: parsed.data as any,
+    });
   };
 
   /* ------------------------------ Loading/Error States ------------------------------ */
@@ -128,7 +132,7 @@ export default function InventoryItemClientPage() {
             <Button
               variant="ghost"
               disabled={deleteMutation.isPending}
-              onClick={() => deleteMutation.mutate()}
+              onClick={() => deleteMutation.mutate({ id: Number(id) })}
               className="text-destructive hover:bg-destructive/10 hover:text-destructive"
             >
               {deleteMutation.isPending ? (

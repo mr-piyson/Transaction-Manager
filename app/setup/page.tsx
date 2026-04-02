@@ -10,7 +10,7 @@ import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/componen
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 
-import { useSetupApplication } from '@/hooks/data/use-organization';
+import { trpc } from '@/lib/trpc/client';
 import { useI18n } from '@/i18n/use-i18n';
 
 import { setupSchema, SetupData, STEP_FIELDS, STEP_META } from './setup-types';
@@ -39,7 +39,8 @@ const STEP_COMPONENTS = [Step1Language, Step2Organization, Step3Admin];
 export default function SetupWizard() {
   const router = useRouter();
   const { locale } = useI18n();
-  const { mutateAsync: submitSetup, isPending } = useSetupApplication();
+  const setupMutation = trpc.organizations.setup.useMutation();
+  const isPending = setupMutation.isPending;
 
   const [step, setStep] = useState(0);
   const [direction, setDirection] = useState(0);
@@ -102,7 +103,7 @@ export default function SetupWizard() {
 
   const onFinalSubmit = async (data: SetupData) => {
     try {
-      await submitSetup(data);
+      await setupMutation.mutateAsync(data as any);
       router.push('/auth');
     } catch (error) {
       console.error('Setup failed', error);

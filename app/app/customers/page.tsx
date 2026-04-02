@@ -11,13 +11,13 @@ import { UniversalContextMenu } from '@/components/context-menu';
 import { alert } from '@/components/Alert-dialog';
 import { useRouter } from 'next/navigation';
 import { CreateCustomerDialog } from './create-customer-dialog';
-import { useCustomers, useDeleteCustomer } from '@/hooks/data/use-customers';
+import { trpc } from '@/lib/trpc/client';
 
 export default function CustomersPage() {
   const { t } = useI18n();
 
-  const { data: customers, isLoading, isError, refetch } = useCustomers();
-  const deleteMutation = useDeleteCustomer();
+  const { data: customers, isLoading, isError, refetch } = trpc.customers.getCustomers.useQuery();
+  const deleteMutation = trpc.customers.deleteCustomer.useMutation();
   const router = useRouter();
 
   return (
@@ -35,7 +35,7 @@ export default function CustomersPage() {
           </CreateCustomerDialog>
         }
       />
-      <ListView<Customer>
+      <ListView<any>
         emptyTitle={t('customers.empty_title', 'No Customers Found')}
         emptyIcon={<User2 className="size-16 text-muted-foreground" />}
         emptyDescription={'Create a new customer to get started'}
@@ -55,7 +55,9 @@ export default function CustomersPage() {
                   alert.delete({
                     title: 'Are you sure',
                     onConfirm: async () => {
-                      deleteMutation.mutate(String(data.id));
+                      // revalidate cusomters with optimisitic update
+                      await deleteMutation.mutateAsync({ id: data.id });
+                      refetch();
                     },
                   });
                 },

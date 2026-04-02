@@ -11,10 +11,8 @@ import { InventoryItemCard } from '../../../inventory/inventoryCard';
 import { CreateGroupDialog } from './create-group-dialog';
 import { InventoryItem } from '@prisma/client';
 import { toast } from 'sonner';
-import { useInventoryItems } from '@/hooks/data/use-inventoryItems';
+import { trpc } from '@/lib/trpc/client';
 import { useParams, useRouter } from 'next/navigation';
-import { useGetInvoice } from '@/hooks/data/use-invoices';
-import { useCreateInvoiceLine } from '@/hooks/data/use-invoiceLines';
 
 type InvoiceEditorProps = {
   children?: React.ReactNode;
@@ -26,23 +24,27 @@ export default function InvoiceEditor(props: InvoiceEditorProps) {
   const slug = params?.slug as string;
   const invoiceId = params?.invoiceId as string;
 
-  const { data: inventoryItems } = useInventoryItems();
-  const { data: invoice, isLoading } = useGetInvoice(invoiceId, {
-    customer: true,
-    invoiceLines: {
-      include: {
-        itemRef: true,
-      },
+  const utils = trpc.useUtils();
+  const { data: inventoryItems } = trpc.inventory.getInventory.useQuery();
+  const { data: invoice, isLoading } = trpc.invoices.getInvoiceById.useQuery({
+    id: Number(invoiceId),
+    include: {
+      customer: true,
+      invoiceLines: true,
+      payments: true,
     },
-    payments: true,
   });
-  const { mutate: createLine } = useCreateInvoiceLine();
+  const createLineMutation = trpc.invoiceLines.createInvoiceLine.useMutation({
+    onSuccess: () => {
+      utils.invoices.getInvoiceById.invalidate({ id: Number(invoiceId) });
+    },
+  });
 
   if (isLoading) return <div className="p-4">Loading...</div>;
   if (!invoice) return <div className="p-4">Invoice not found</div>;
 
   const handleSelectItem = (item: InventoryItem) => {
-    createLine(
+    createLineMutation.mutate(
       {
         invoiceId: Number(invoiceId),
         inventoryItemId: item.id,
@@ -50,7 +52,7 @@ export default function InvoiceEditor(props: InvoiceEditorProps) {
       },
       {
         onError: (error) => {
-          toast.error('Failed to add item: ' + error.message);
+          toast.error('Failed to add item');
         },
       },
     );
@@ -139,9 +141,9 @@ export default function InvoiceEditor(props: InvoiceEditorProps) {
 
         {/* ── Row 3: Actions ── */}
         <div className=" flex items-center gap-1.5 px-2 pb-2">
-          <SelectDialog<InventoryItem>
+          <SelectDialog<any>
             onSelect={handleSelectItem}
-            data={inventoryItems}
+            data={inventoryItems as any}
             searchFields={['code', 'name', 'description']}
             cardRenderer={InventoryItemCard}
             rowHeight={72}

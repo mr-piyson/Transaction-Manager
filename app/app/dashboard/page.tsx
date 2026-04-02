@@ -14,8 +14,7 @@ import { Area, AreaChart, XAxis, YAxis, ResponsiveContainer, CartesianGrid } fro
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 
-import { useInvoices } from '@/hooks/data/use-invoices';
-import { useCustomers } from '@/hooks/data/use-customers';
+// These were unused or migrated to sub-components
 import {
   Wallet,
   TrendingDown,

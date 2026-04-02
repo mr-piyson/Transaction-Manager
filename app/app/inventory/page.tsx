@@ -9,21 +9,20 @@ import { Button } from '@/components/ui/button';
 import { useI18n } from '@/i18n/use-i18n';
 
 // Optional: If you want to drop axios entirely, use Eden for the mutation.
-import axios from 'axios';
+import { trpc } from '@/lib/trpc/client';
+import { CreateInventoryItemDialog } from './inventoryItem-dialog';
 import { Header } from '@/app/app/App-Header';
 import { InventoryItemCard } from './inventoryCard';
-import { toast } from 'sonner';
 import { alert } from '@/components/Alert-dialog';
 import { UniversalContextMenu } from '@/components/context-menu';
 import { useRouter } from 'next/navigation';
-import { useInventoryItems } from '@/hooks/data/use-inventoryItems';
-import { CreateInventoryItemDialog } from './inventoryItem-dialog';
 
 export default function InventoryPage() {
   const { t } = useI18n();
   const router = useRouter();
 
-  const { data: inventory, isLoading, isError, refetch } = useInventoryItems();
+  const { data: inventory, isLoading, isError, refetch } = trpc.inventory.getInventory.useQuery();
+  const deleteMutation = trpc.inventory.deleteInventoryItem.useMutation();
 
   const handleDelete = (data: InventoryItem) => {
     alert.delete({
@@ -32,10 +31,14 @@ export default function InventoryPage() {
       confirmText: 'Delete',
       destructive: true,
       onConfirm: async () => {
-        const res = await axios.delete(`/api/inventory/${data.id}`);
-        if (res.status == 200) {
-          refetch();
-        }
+        deleteMutation.mutate(
+          { id: data.id },
+          {
+            onSuccess: () => {
+              refetch();
+            },
+          },
+        );
       },
     });
   };
@@ -48,7 +51,7 @@ export default function InventoryPage() {
         icon={<Box />}
         rightContent={<CreateInventoryItemDialog />}
       />
-      <ListView<InventoryItem>
+      <ListView<any>
         emptyTitle={t('inventory.empty_title', 'No inventory items Found')}
         emptyIcon={<Box className="size-16 text-muted-foreground" />}
         emptyDescription={'Create a new inventory item to get started'}

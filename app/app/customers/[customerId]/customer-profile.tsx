@@ -7,15 +7,15 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Loader2 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { useGetCustomer } from '@/hooks/data/use-customers';
+import { trpc } from '@/lib/trpc/client';
 
 interface CustomerProfileProps {
   customerId: string;
 }
 
 export function CustomerProfile({ customerId }: CustomerProfileProps) {
-  // Fetch Customer Data (includes Invoices via Prisma relation)
-  const { data: customer, isLoading } = useGetCustomer(customerId);
+  // Fetch Customer Data
+  const { data: customer, isLoading } = trpc.customers.getCustomerById.useQuery({ id: Number(customerId) });
 
   if (isLoading) {
     return (

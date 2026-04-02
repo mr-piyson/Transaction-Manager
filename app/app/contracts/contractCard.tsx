@@ -18,13 +18,17 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { useDeleteContract } from '@/hooks/data/use-contracts';
+import { trpc } from '@/lib/trpc/client';
 import { useState } from 'react';
-import { ContractDialog } from './create-contract-dialog';
 
 export function ContractCard(props: { data: Contract }) {
   const [editOpen, setEditOpen] = useState(false);
-  const deleteMutation = useDeleteContract();
+  const utils = trpc.useUtils();
+  const deleteMutation = trpc.contracts.deleteContract.useMutation({
+    onSuccess: () => {
+      utils.contracts.getContracts.invalidate();
+    },
+  });
 
   if (!props.data) return null;
   const { data } = props;
@@ -139,7 +143,7 @@ export function ContractCard(props: { data: Contract }) {
             <DropdownMenuItem
               onClick={(e) => {
                 e.stopPropagation();
-                deleteMutation.mutate(data.id);
+                deleteMutation.mutate({ id: data.id });
               }}
               className="text-destructive focus:text-destructive"
               disabled={deleteMutation.isPending}
