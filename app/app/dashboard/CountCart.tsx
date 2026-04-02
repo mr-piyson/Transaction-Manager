@@ -44,10 +44,7 @@ export default function CountCarts() {
         <CardDescription>Total Invoices</CardDescription>
       </CardHeader>
       <CardContent className="flex flex-1 items-center pb-0">
-        <ChartContainer
-          config={chartConfig}
-          className="mx-auto aspect-square w-full max-w-[250px] mb-[-90px]"
-        >
+        <ChartContainer config={chartConfig} className="h-full w-full aspect-square">
           {/* Note: innerRadius and outerRadius adjusted for better fit */}
           <RadialBarChart data={chartData} endAngle={180} innerRadius={80} outerRadius={130}>
             <ChartTooltip cursor={false} content={<ChartTooltipContent hideLabel />} />

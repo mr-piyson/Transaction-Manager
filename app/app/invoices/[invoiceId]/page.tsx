@@ -53,7 +53,7 @@ function InvoiceLineRow({ line, lines, depth = 0 }: { line: any; lines: any[]; d
   return (
     <>
       <div
-        className={`flex items-center justify-between py-3 px-4 transition-colors hover:bg-muted/50 ${depth > 0 ? 'pl-10 border-l-2 border-muted/50 ml-4' : ''}`}
+        className={`flex items-center justify-between py-3 px-4 transition-colors hover:bg-muted/50 ${depth > 0 ? ' border-l-2 border-muted/50 ms-4' : ''}`}
       >
         <div className="flex items-center gap-3 flex-1 min-w-0">
           <div

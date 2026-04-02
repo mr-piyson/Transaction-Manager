@@ -66,7 +66,7 @@ export function ContractExpirationChart() {
             <ChartTooltip cursor={false} content={<ChartTooltipContent indicator="dashed" />} />
             <Bar
               dataKey="days"
-              fill="var(--color-secondary)"
+              fill="var(--color-chart-2)"
               radius={[0, 4, 4, 0]} // Rounded corners on the right side only
             >
               {/* Inside Label: Contract Name */}

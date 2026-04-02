@@ -1,7 +1,7 @@
 import { ApiResponse } from '@/lib/server';
 import db from '@/lib/db';
 import { NextRequest } from 'next/server';
-import { updateInvoiceStatus } from '@/server/invoices';
+import { updateInvoiceStatus } from '@/lib/trpc/routers/invoices';
 
 export async function POST(req: NextRequest) {
   return await db.$transaction(async (tx) => {

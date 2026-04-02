@@ -49,8 +49,6 @@ export default function Dashboard() {
             <ChartAreaInteractive />
           </div>
           <div className="flex flex-col md:flex-row gap-4 p-2">
-            <CountCarts />
-            <CountCarts />
             <ContractExpirationChart />
             {/* <ChartAreaInteractive /> */}
           </div>
