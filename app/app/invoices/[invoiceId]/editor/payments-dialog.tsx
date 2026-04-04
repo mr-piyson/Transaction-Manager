@@ -23,6 +23,7 @@ import { useState } from 'react';
 import { cn } from '@/lib/utils';
 import { Banknote, Clock, CreditCard, HandCoinsIcon, Plus } from 'lucide-react';
 import { Format } from '@/lib/format';
+import { Payment } from '@prisma/client';
 
 type FormValues = {
   paymentType: 'CASH' | 'TRANSFER';
@@ -122,8 +123,8 @@ export function PaymentDialog({ children, invoice }: PaymentDialogProps) {
                 </div>
               ) : (
                 <div className="flex flex-col">
-                  {invoice.payments.map((p) => (
-                    <PaymentCard key={p.id} payment={p as any} />
+                  {invoice.payments.map((p: Payment) => (
+                    <PaymentCard key={p.id} payment={p} />
                   ))}
                 </div>
               )}

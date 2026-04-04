@@ -149,22 +149,19 @@ export function ContractDialog({
         },
       );
     } else {
-      createMutation.mutate(
-        { ...payload, active: true },
-        {
-          onSuccess: (data) => {
-            utils.contracts.getContracts.invalidate();
-            reset();
-            setOpen(false);
-            onSuccess?.(data);
-            toast.success('Contract created successfully');
-          },
-          onError: (err) => {
-            toast.error('Failed to create contract');
-            onError?.(err);
-          },
+      createMutation.mutate({ ...payload, active: true } as any, {
+        onSuccess: (data) => {
+          utils.contracts.getContracts.invalidate();
+          reset();
+          setOpen(false);
+          onSuccess?.(data);
+          toast.success('Contract created successfully');
         },
-      );
+        onError: (err) => {
+          toast.error('Failed to create contract');
+          onError?.(err);
+        },
+      });
     }
   };
 
