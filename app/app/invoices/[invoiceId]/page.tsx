@@ -94,6 +94,7 @@ export default function InvoiceDetailPage() {
     data: invoice,
     isLoading,
     isError,
+    refetch,
   } = trpc.invoices.getInvoiceById.useQuery({
     id: Number(invoiceId),
     include: {
@@ -106,7 +107,7 @@ export default function InvoiceDetailPage() {
   const deleteMutation = trpc.invoices.deleteInvoice.useMutation();
   const updateMutation = trpc.invoices.updateInvoice.useMutation({
     onSuccess: () => {
-      utils.invoices.getInvoiceById.invalidate({ id: Number(invoiceId) });
+      refetch();
     },
   });
 
@@ -191,10 +192,11 @@ export default function InvoiceDetailPage() {
                 className={'border-muted-foreground/50'}
                 checked={invoice.isCompleted}
                 onCheckedChange={(checked) => {
+                  console.log(checked);
                   updateMutation.mutate(
                     {
                       id: Number(invoice.id),
-                      data: { isCompleted: checked } as any,
+                      data: { isCompleted: checked },
                     },
                     {
                       onError: (e) => toast.error('Update failed'),

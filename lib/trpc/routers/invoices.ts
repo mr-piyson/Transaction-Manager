@@ -133,12 +133,14 @@ export const invoiceRouter = t.router({
           status: z.string().optional(),
           amount: z.number().optional(),
           dueDate: z.date().optional(),
+          isCompleted: z.boolean().optional(),
           customerId: z.number().optional(),
         }),
       }),
     )
     .mutation(async ({ input }) => {
       try {
+        console.log(input);
         return await db.invoice.update({
           where: { id: input.id },
           data: input.data,
