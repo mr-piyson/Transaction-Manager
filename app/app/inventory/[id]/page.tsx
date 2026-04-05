@@ -3,7 +3,7 @@
 import React from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
-import { trpc } from '@/lib/trpc/client';
+import { trpc } from '@/trpc/client';
 import { z } from 'zod';
 import { ChevronLeft, Package, Trash2, Save, TrendingUp, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -38,7 +38,11 @@ export default function InventoryItemClientPage() {
   const utils = trpc.useUtils();
   /* ------------------------------ Queries ------------------------------ */
 
-  const { data: item, isLoading, isError } = trpc.inventory.getInventoryById.useQuery({ id: Number(id) });
+  const {
+    data: item,
+    isLoading,
+    isError,
+  } = trpc.inventory.getInventoryById.useQuery({ id: Number(id) });
 
   /* ------------------------------ Mutations ------------------------------ */
 

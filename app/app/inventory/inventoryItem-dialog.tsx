@@ -16,7 +16,7 @@ import {
 } from '@/components/ui/dialog';
 import { FieldGroup } from '@/components/ui/field';
 import { Button } from '@/components/ui/button';
-import { trpc } from '@/lib/trpc/client';
+import { trpc } from '@/trpc/client';
 import { ImageUpload } from './Image-Upload';
 
 import { AppForm, FormInput, FormCustomField, FormGroup } from '@/components/Form';

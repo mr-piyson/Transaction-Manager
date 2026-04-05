@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { authed, t } from '@/lib/trpc/server';
+import { authed, t } from '@/trpc/server';
 import { TRPCError } from '@trpc/server';
 import db from '@/lib/db';
 
@@ -38,7 +38,9 @@ export const invoiceLinesRouter = t.router({
             if (!inventoryItemId) throw new Error('Missing inventoryItemId');
             const [item, parentGroup] = await Promise.all([
               tx.inventoryItem.findUnique({ where: { id: inventoryItemId } }),
-              parentId ? tx.invoiceLine.findUnique({ where: { id: parentId } }) : Promise.resolve(null),
+              parentId
+                ? tx.invoiceLine.findUnique({ where: { id: parentId } })
+                : Promise.resolve(null),
             ]);
 
             if (!item) throw new Error('Inventory item not found');
@@ -118,40 +120,38 @@ export const invoiceLinesRouter = t.router({
       }
     }),
 
-  deleteInvoiceLine: authed
-    .input(z.object({ id: z.number() }))
-    .mutation(async ({ input }) => {
-      try {
-        const line = await db.invoiceLine.findUnique({ where: { id: input.id } });
+  deleteInvoiceLine: authed.input(z.object({ id: z.number() })).mutation(async ({ input }) => {
+    try {
+      const line = await db.invoiceLine.findUnique({ where: { id: input.id } });
 
-        if (!line) {
-          throw new TRPCError({
-            code: 'NOT_FOUND',
-            message: 'Line not found',
-          });
-        }
-        if (line.isGroup) {
-          await db.invoiceLine.deleteMany({
-            where: { parentId: input.id },
-          });
-        }
-        await db.invoiceLine.delete({
-          where: { id: input.id },
-        });
-
-        if (line.invoiceId) {
-          await updateInvoiceTotals(line.invoiceId);
-        }
-
-        return { id: input.id };
-      } catch (error) {
-        if (error instanceof TRPCError) throw error;
+      if (!line) {
         throw new TRPCError({
-          code: 'INTERNAL_SERVER_ERROR',
-          message: 'Failed to delete invoice line',
+          code: 'NOT_FOUND',
+          message: 'Line not found',
         });
       }
-    }),
+      if (line.isGroup) {
+        await db.invoiceLine.deleteMany({
+          where: { parentId: input.id },
+        });
+      }
+      await db.invoiceLine.delete({
+        where: { id: input.id },
+      });
+
+      if (line.invoiceId) {
+        await updateInvoiceTotals(line.invoiceId);
+      }
+
+      return { id: input.id };
+    } catch (error) {
+      if (error instanceof TRPCError) throw error;
+      throw new TRPCError({
+        code: 'INTERNAL_SERVER_ERROR',
+        message: 'Failed to delete invoice line',
+      });
+    }
+  }),
 });
 
 async function updateInvoiceTotals(invoiceId: number) {

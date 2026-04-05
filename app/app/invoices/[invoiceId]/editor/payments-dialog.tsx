@@ -16,7 +16,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useForm, Controller } from 'react-hook-form';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
-import { trpc } from '@/lib/trpc/client';
+import { trpc } from '@/trpc/client';
 import PaymentCard from './payment-card';
 import { toast } from 'sonner';
 import { useState } from 'react';

@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { authed, t } from '@/lib/trpc/server';
+import { authed, t } from '@/trpc/server';
 import { TRPCError } from '@trpc/server';
 import db from '@/lib/db';
 

@@ -36,7 +36,7 @@ import {
   Mail,
   HandCoinsIcon,
 } from 'lucide-react';
-import { trpc } from '@/lib/trpc/client';
+import { trpc } from '@/trpc/client';
 import { alert } from '@/components/Alert-dialog';
 import { cn } from '@/lib/utils';
 import { Label } from '@/components/ui/label';

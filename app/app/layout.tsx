@@ -3,7 +3,7 @@ import { AppSidebar } from './App-Sidebar';
 import { AlertProvider } from '@/components/Alert-dialog';
 import { SidebarProvider } from '@/components/sidebar';
 import { redirect } from 'next/navigation';
-import { checkOrganization } from '@/server/setup';
+import { checkOrganization } from '@/api/organizations';
 import { getCurrentUser } from '@/lib/auth';
 import { AppFooter } from './App-Footer';
 

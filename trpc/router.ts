@@ -1,12 +1,12 @@
 import z from 'zod';
-import { base, router } from '@/lib/trpc/server';
-import { invoiceRouter } from '@/lib/trpc/routers/invoices';
-import { contractRouter } from './routers/contracts';
-import { customerRouter } from './routers/customers';
-import { inventoryRouter } from './routers/inventory';
-import { invoiceLinesRouter } from './routers/invoice-lines';
-import { paymentRouter } from './routers/payments';
-import { organizationRouter } from './routers/organizations';
+import { base, router } from '@/trpc/server';
+import { invoiceRouter } from '@/api/invoices';
+import { contractRouter } from '../api/contracts';
+import { customerRouter } from '../api/customers';
+import { inventoryRouter } from '../api/inventory';
+import { invoiceLinesRouter } from '../api/invoice-lines';
+import { paymentRouter } from '../api/payments';
+import { organizationRouter } from '../api/organizations';
 
 export const appRouter = router({
   hello: base.input(z.object({ name: z.string().optional() })).query(({ input }) => {

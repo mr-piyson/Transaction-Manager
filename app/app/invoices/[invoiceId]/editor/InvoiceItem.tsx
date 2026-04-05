@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Format } from '@/lib/format';
 import { UniversalContextMenu } from '@/components/context-menu';
 import { InvoiceLine } from '@prisma/client';
-import { trpc } from '@/lib/trpc/client';
+import { trpc } from '@/trpc/client';
 import { toast } from 'sonner';
 
 export default function InvoiceItemCard({ line }: { line: InvoiceLine }) {

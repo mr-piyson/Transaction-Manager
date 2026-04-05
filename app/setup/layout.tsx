@@ -1,4 +1,4 @@
-import { checkOrganization } from '@/server/setup';
+import { checkOrganization } from '@/api/organizations';
 import { redirect } from 'next/navigation';
 
 type SetupLayoutProps = {

@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Loader2 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { trpc } from '@/lib/trpc/client';
+import { trpc } from '@/trpc/client';
 
 interface CustomerProfileProps {
   customerId: string;
@@ -15,7 +15,9 @@ interface CustomerProfileProps {
 
 export function CustomerProfile({ customerId }: CustomerProfileProps) {
   // Fetch Customer Data
-  const { data: customer, isLoading } = trpc.customers.getCustomerById.useQuery({ id: Number(customerId) });
+  const { data: customer, isLoading } = trpc.customers.getCustomerById.useQuery({
+    id: Number(customerId),
+  });
 
   if (isLoading) {
     return (

@@ -10,7 +10,7 @@ import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/componen
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 
-import { trpc } from '@/lib/trpc/client';
+import { trpc } from '@/trpc/client';
 import { useI18n } from '@/i18n/use-i18n';
 
 import { setupSchema, SetupData, STEP_FIELDS, STEP_META } from './setup-types';

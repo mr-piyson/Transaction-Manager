@@ -1,7 +1,7 @@
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 import db from '@/lib/db';
-import { authed, base, t } from '@/lib/trpc/server';
+import { authed, base, t } from '@/trpc/server';
 
 // A reusable, high-performance version of your logic
 export async function updateInvoiceStatus(

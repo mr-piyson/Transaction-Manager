@@ -18,7 +18,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { trpc } from '@/lib/trpc/client';
+import { trpc } from '@/trpc/client';
 import { useState } from 'react';
 
 export function ContractCard(props: { data: Contract }) {

@@ -27,7 +27,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
 
-import { trpc } from '@/lib/trpc/client';
+import { trpc } from '@/trpc/client';
 
 interface Customer {
   id: number;
@@ -45,7 +45,8 @@ export function CreateInvoiceDialog(props: { onSuccess?: (invoice: any) => void 
   const invoiceMutation = trpc.invoices.createInvoice.useMutation();
 
   // Fetch customers for the dropdown
-  const { data: customers = [], refetch: refetchCustomers } = trpc.customers.getCustomers.useQuery();
+  const { data: customers = [], refetch: refetchCustomers } =
+    trpc.customers.getCustomers.useQuery();
 
   const handleCreateInvoice = async () => {
     if (!selectedCustomerId) return toast.error('Please select a customer');

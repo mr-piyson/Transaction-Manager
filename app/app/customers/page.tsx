@@ -11,7 +11,7 @@ import { UniversalContextMenu } from '@/components/context-menu';
 import { alert } from '@/components/Alert-dialog';
 import { useRouter } from 'next/navigation';
 import { CreateCustomerDialog } from './create-customer-dialog';
-import { trpc } from '@/lib/trpc/client';
+import { trpc } from '@/trpc/client';
 
 export default function CustomersPage() {
   const { t } = useI18n();

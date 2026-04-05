@@ -1,8 +1,20 @@
 import { z } from 'zod';
-import { base, authed, t } from '@/lib/trpc/server';
+import { base, authed, t } from '@/trpc/server';
 import { TRPCError } from '@trpc/server';
 import db from '@/lib/db';
 import { auth } from '@/lib/auth';
+
+export async function checkOrganization() {
+  return (await db.organization.count({})) > 0;
+}
+
+export async function getOrganization(id: string) {
+  return await db.organization.findUnique({
+    where: {
+      id: Number(id),
+    },
+  });
+}
 
 export const organizationRouter = t.router({
   checkOrganization: base.query(async () => {

@@ -1,6 +1,6 @@
 'use client';
 import { ListView } from '@/components/list-view';
-import { trpc } from '@/lib/trpc/client';
+import { trpc } from '@/trpc/client';
 import { Contract } from '@prisma/client';
 import { ContractCard } from './contractCard';
 import { Button } from '@/components/ui/button';
@@ -10,7 +10,7 @@ import { ContractDialog } from './create-contract-dialog';
 
 export default function ContractsPage() {
   const { data, error, isLoading } = trpc.contracts.getContracts.useQuery();
-  
+
   return (
     <>
       <Header
@@ -28,9 +28,7 @@ export default function ContractsPage() {
       <ListView<any>
         data={data}
         searchFields={['title']}
-        cardRenderer={(contract) => (
-          <ContractCard data={contract} />
-        )}
+        cardRenderer={(contract) => <ContractCard data={contract} />}
         rowHeight={80}
         useTheme
       ></ListView>

@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { useI18n } from '@/i18n/use-i18n';
 
 // Optional: If you want to drop axios entirely, use Eden for the mutation.
-import { trpc } from '@/lib/trpc/client';
+import { trpc } from '@/trpc/client';
 import { CreateInventoryItemDialog } from './inventoryItem-dialog';
 import { Header } from '@/app/app/App-Header';
 import { InventoryItemCard } from './inventoryCard';

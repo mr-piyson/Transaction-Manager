@@ -11,7 +11,7 @@ import { InventoryItemCard } from '../../../inventory/inventoryCard';
 import { CreateGroupDialog } from './create-group-dialog';
 import { InventoryItem } from '@prisma/client';
 import { toast } from 'sonner';
-import { trpc } from '@/lib/trpc/client';
+import { trpc } from '@/trpc/client';
 import { useParams, useRouter } from 'next/navigation';
 
 type InvoiceEditorProps = {
