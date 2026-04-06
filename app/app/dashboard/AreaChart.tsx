@@ -12,42 +12,36 @@ import {
   ChartTooltipContent,
   type ChartConfig,
 } from '@/components/ui/chart';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+
 import { Skeleton } from '@/components/ui/skeleton';
+import { Format } from '@/lib/format';
 
 const chartConfig = {
   income: {
     label: 'Income (Margin)',
-    color: 'var(--chart-1)', // green-ish
+    color: 'var(--chart-2)', // green-ish
   },
   expense: {
     label: 'Expense (Cost)',
-    color: 'var(--chart-2)', // red-ish
+    color: 'var(--chart-1)', // red-ish
   },
 } satisfies ChartConfig;
 
 function formatBHD(value: number) {
-  return (value / 1000).toLocaleString('en-BH', {
-    style: 'currency',
-    currency: 'BHD',
-    minimumFractionDigits: 3,
-  });
+  return Format.money.amount(value);
 }
 
-const rangeLabel = {
-  '90d': 'Last 3 months',
-  '30d': 'Last 30 days',
-  '7d': 'Last 7 days',
-};
+// const rangeLabel = {
+//   '90d': 'Last 3 months',
+//   '30d': 'Last 30 days',
+//   '7d': 'Last 7 days',
+// };
+
+// ── Types ──────────────────────────────────────────────────────────────────
+type Range = '7d' | '30d' | '90d';
 
 export function ChartAreaInteractive() {
-  const [timeRange, setTimeRange] = React.useState<'7d' | '30d' | '90d'>('90d');
+  const [timeRange, setTimeRange] = React.useState<Range>('90d');
 
   const { data, isLoading, isError } = trpc.analytics.invoiceAreaChart.useQuery(
     { range: timeRange },
@@ -59,26 +53,26 @@ export function ChartAreaInteractive() {
       <CardHeader className="flex items-center gap-2 space-y-0 border-b py-5 sm:flex-row">
         <div className="grid flex-1 gap-1">
           <CardTitle>Income vs Expenses</CardTitle>
-          <CardDescription>
-            Income = margin per line · Expense = purchase cost · {rangeLabel[timeRange]}
-          </CardDescription>
+          <CardDescription>Income = margin per line · Expense = purchase cost</CardDescription>
         </div>
-        <Select value={timeRange} onValueChange={(v) => setTimeRange(v as typeof timeRange)}>
-          <SelectTrigger className="w-[160px] rounded-lg sm:ml-auto" aria-label="Select time range">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent className="rounded-xl">
-            <SelectItem value="90d" className="rounded-lg">
-              Last 3 months
-            </SelectItem>
-            <SelectItem value="30d" className="rounded-lg">
-              Last 30 days
-            </SelectItem>
-            <SelectItem value="7d" className="rounded-lg">
-              Last 7 days
-            </SelectItem>
-          </SelectContent>
-        </Select>
+
+        {/* Range selector */}
+        <div className="flex gap-1 rounded-md border p-1 text-sm">
+          {(['7d', '30d', '90d'] as Range[]).map((r) => (
+            <button
+              key={r}
+              onClick={() => setTimeRange(r)}
+              className={[
+                'rounded px-3 py-1 transition-colors',
+                timeRange === r
+                  ? 'bg-primary text-primary-foreground font-medium'
+                  : 'text-muted-foreground hover:bg-muted',
+              ].join(' ')}
+            >
+              {r === '7d' ? '7 days' : r === '30d' ? '30 days' : '90 days'}
+            </button>
+          ))}
+        </div>
       </CardHeader>
 
       <CardContent className="px-2 pt-4 sm:px-6 sm:pt-6">

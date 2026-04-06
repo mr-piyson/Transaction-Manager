@@ -32,6 +32,7 @@ import { CardsSection } from './cards-section';
 import CountCarts from './CountCart';
 import { ContractExpirationChart } from './countDownCart';
 import { ChartAreaInteractive } from './AreaChart';
+import { AnalyticsDashboard, ContractPipelineChart } from './Charts';
 
 export default function Dashboard() {
   return (
@@ -47,11 +48,12 @@ export default function Dashboard() {
           <div className="flex flex-col md:flex-row gap-4 p-2">
             <ChartAreaInteractive />
           </div>
-          <div className="flex flex-col md:flex-row gap-4 p-2">
+          <div className="flex flex-row gap-4 p-2">
+            <ContractPipelineChart />
             <ContractExpirationChart />
-            {/* <ChartAreaInteractive /> */}
           </div>
           {/* <DataTable data={data} /> */}
+          <AnalyticsDashboard />
         </div>
       </div>
     </div>
