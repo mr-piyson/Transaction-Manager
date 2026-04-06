@@ -172,7 +172,7 @@ export default function InvoiceDetailPage() {
             {/* make a modren switch button for invoice completed or still */}
             <Label
               className={cn(
-                'drop-shadow-sm w-[120px] h-[35px] rounded-lg flex items-center justify-between px-3 border',
+                'drop-shadow-sm w-30 h-8.75 rounded-lg flex items-center justify-between px-3 border',
                 invoice.isCompleted ? 'bg-default border-primary' : 'bg-muted',
               )}
             >
@@ -231,7 +231,7 @@ export default function InvoiceDetailPage() {
               )}
             ></span>
             {/* Payment Button */}
-            <PaymentDialog invoice={invoice}>
+            {/* <PaymentDialog invoice={invoice}>
               <Button
                 size="sm"
                 className="h-8 gap-1.5 text-xs bg-success/10 text-success hover:bg-success/20 ml-auto border-2 border-success/50"
@@ -240,10 +240,10 @@ export default function InvoiceDetailPage() {
                 <HandCoinsIcon size={13} />
                 <span>Pay</span>
               </Button>
-            </PaymentDialog>
+            </PaymentDialog> */}
 
             {/* Delete Button */}
-            <Button
+            {/* <Button
               size="lg"
               variant="destructive"
               className={'shadow-sm border-destructive'}
@@ -264,7 +264,7 @@ export default function InvoiceDetailPage() {
                 <Trash2 className="h-4 w-4 md:mr-2" />
               )}
               <span className="hidden md:inline">Delete</span>
-            </Button>
+            </Button> */}
           </div>
         </div>
 
