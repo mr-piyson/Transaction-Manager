@@ -28,9 +28,9 @@ type Range = '7d' | '30d' | '90d';
 const bhd = (fils: number) => Format.money.amount(fils);
 const bhdShort = (fils: number) =>
   fils >= 1_000_000
-    ? `${(fils / 1_000_000).toFixed(1)}K BD`
+    ? `${(fils / 1_000_000).toFixed(1)}M BD`
     : fils >= 1000
-      ? `${(fils / 1000).toFixed(2)} BD`
+      ? `${(fils / 1000).toFixed(2)}K BD`
       : `${fils} f`;
 
 // ── Palette (recharts doesn't read CSS vars, so hardcode for both themes)
@@ -146,7 +146,7 @@ export function PaymentMethodChart() {
                 ))}
               </Pie>
               <Tooltip
-                formatter={(v: number) => [bhd(v), '']}
+                formatter={(v: any) => [bhd(v), '']}
                 contentStyle={{
                   fontSize: 12,
                   borderRadius: 8,
@@ -240,7 +240,7 @@ export function TopCustomersChart() {
               width={110}
             />
             <Tooltip
-              formatter={(v: number) => [bhd(v), 'Revenue']}
+              formatter={(v: any) => [bhd(v), 'Revenue']}
               contentStyle={{ fontSize: 12, borderRadius: 8, border: '0.5px solid var(--border)' }}
             />
             <Bar dataKey="revenue" radius={[0, 4, 4, 0]} fill={COLORS.active} maxBarSize={24} />
@@ -309,7 +309,7 @@ export function InventoryMarginChart() {
               width={56}
             />
             <Tooltip
-              formatter={(v: number, name: string) => [bhd(v), name === 'cost' ? 'Cost' : 'Margin']}
+              formatter={(v: any, name: any) => [bhd(v), name === 'cost' ? 'Cost' : 'Margin']}
               contentStyle={{ fontSize: 12, borderRadius: 8, border: '0.5px solid var(--border)' }}
             />
             <Bar
@@ -380,7 +380,7 @@ export function ContractPipelineChart() {
                 ))}
               </Pie>
               <Tooltip
-                formatter={(v: number, name: string) => [`${v} contracts`, name]}
+                formatter={(v: any, name: any) => [`${v} contracts`, name]}
                 contentStyle={{
                   fontSize: 12,
                   borderRadius: 8,
@@ -459,9 +459,7 @@ export function InvoiceCompletionRateChart() {
               width={38}
             />
             <Tooltip
-              formatter={(v: number | null) =>
-                v == null ? ['—', 'Rate'] : [`${v}%`, 'Completion rate']
-              }
+              formatter={(v: any) => (v == null ? ['—', 'Rate'] : [`${v}%`, 'Completion rate'])}
               labelFormatter={(l) => format(parseISO(l as string), 'MMM d, yyyy')}
               contentStyle={{ fontSize: 12, borderRadius: 8, border: '0.5px solid var(--border)' }}
             />
