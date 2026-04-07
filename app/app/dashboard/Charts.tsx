@@ -120,7 +120,7 @@ export function PaymentMethodChart() {
 
   return (
     <Card>
-      <CardHeader className="flex flex-row items-start justify-between pb-2">
+      <CardHeader className="flex flex-col md:flex-row max-sm:items-start! items-center  justify-between pb-2">
         <div>
           <CardTitle>Payment methods</CardTitle>
           <CardDescription>Collected by method — {bhd(total)} total</CardDescription>
@@ -128,7 +128,7 @@ export function PaymentMethodChart() {
         <RangeToggle value={range} onChange={setRange} />
       </CardHeader>
       <CardContent>
-        <div className="flex items-center gap-4">
+        <div className="flex flex-col md:flex-row items-center  gap-4">
           <ResponsiveContainer width="50%" height={200}>
             <PieChart>
               <Pie
@@ -362,7 +362,7 @@ export function ContractPipelineChart() {
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="flex items-center gap-4">
+        <div className="flex flex-col md:flex-row items-center gap-4">
           <ResponsiveContainer width="50%" height={200}>
             <PieChart>
               <Pie

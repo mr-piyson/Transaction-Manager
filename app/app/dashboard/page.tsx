@@ -5,7 +5,7 @@ import { LayoutDashboard } from 'lucide-react';
 import { Header } from '../App-Header';
 import { CardsSection } from './cards-section';
 import { ChartAreaInteractive } from './AreaChart';
-import { AnalyticsDashboard, ContractPipelineChart } from './Charts';
+import { AnalyticsDashboard } from './Charts';
 
 export default function Dashboard() {
   return (
@@ -18,14 +18,10 @@ export default function Dashboard() {
       <div className="flex-1 overflow-auto">
         <div className="flex flex-1 flex-col overflow-hidden p-2">
           <CardsSection />
-          <div className="flex flex-col md:flex-row gap-4 p-2">
+          <div className="flex flex-col gap-4">
             <ChartAreaInteractive />
+            <AnalyticsDashboard />
           </div>
-          {/* <div className="flex flex-row gap-4 p-2">
-            <ContractExpirationChart />
-          </div> */}
-          {/* <DataTable data={data} /> */}
-          <AnalyticsDashboard />
         </div>
       </div>
     </div>

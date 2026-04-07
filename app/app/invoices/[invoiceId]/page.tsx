@@ -421,7 +421,7 @@ export default function InvoiceDetailPage() {
 
               <CardContent className="space-y-5">
                 {/* Top Section */}
-                <div className="flex items-center gap-4">
+                <div className="flex flex-col md:flex-row items-center gap-4">
                   <Avatar className="h-12 w-12">
                     <AvatarImage src={(invoice as any)?.customer?.image} />
                     <AvatarFallback>

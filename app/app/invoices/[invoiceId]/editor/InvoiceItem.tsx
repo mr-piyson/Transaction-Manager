@@ -78,7 +78,7 @@ export default function InvoiceItemCard({ line }: { line: InvoiceLine }) {
           </div>
         </div>
 
-        <div className="flex items-center gap-4 shrink-0">
+        <div className="flex flex-col md:flex-row items-center gap-4 shrink-0">
           <div className="flex items-center bg-muted/30 rounded-md p-0.5 border border-border/50">
             <Button
               variant="ghost"

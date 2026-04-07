@@ -98,12 +98,12 @@ export function CardsSection() {
     },
   ];
   return (
-    <Carousel className="max-sm:w-full p-1">
+    <Carousel className="max-sm:w-full">
       <CarouselContent className="px-2 py-1">
         {kpis.map((kpi, idx) => (
           <CarouselItem
             key={idx}
-            className=" basis-[25%] max-[1150px]:basis-[45%] max-sm:basis-[80%]"
+            className="basis-[25%] max-[1150px]:basis-[45%] max-sm:basis-[80%]"
           >
             <KpiCard {...kpi} />
           </CarouselItem>
