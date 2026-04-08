@@ -4,6 +4,7 @@ import React, { useState, useRef } from 'react';
 import { Upload, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
+import { trpc } from '@/trpc/client';
 
 interface ImageUploadProps {
   value?: File | string | undefined;

@@ -30,8 +30,7 @@ export const inventoryItemSchema = z.object({
   purchasePrice: z.coerce.number().min(0, 'Purchase price must be a positive number'),
   salesPrice: z.coerce.number().min(0, 'Sale price must be a positive number'),
   description: z.string().optional().or(z.literal('')),
-  categoryId: z.number().optional(),
-  image: z.instanceof(File).optional(),
+  image: z.any().optional(),
 });
 
 export type InventoryItemValues = z.infer<typeof inventoryItemSchema>;
@@ -45,7 +44,6 @@ const DEFAULT_VALUES: InventoryItemValues = {
   purchasePrice: 0,
   salesPrice: 0,
   description: '',
-  categoryId: undefined,
   image: undefined,
 };
 
@@ -70,7 +68,31 @@ export function CreateInventoryItemDialog({
   const utils = trpc.useUtils();
   const createMutation = trpc.inventory.createInventoryItem.useMutation();
 
-  function handleSubmit(values: InventoryItemValues) {
+  async function handleSubmit(values: InventoryItemValues) {
+    let uploadedImagePath: string | undefined = undefined;
+    let uploadedFileName: string | undefined = undefined;
+
+    // 1. Upload the image if one was selected
+    if (values.image instanceof File) {
+      const formData = new FormData();
+      formData.append('file', values.image);
+
+      const res = await fetch('/api/uploads', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!res.ok) {
+        toast.error('Failed to upload image');
+        return;
+      }
+
+      const uploadData = await res.json();
+      uploadedImagePath = uploadData.path;
+      uploadedFileName = uploadData.name;
+    }
+
+    // 2. Create the inventory item with the uploaded image path
     createMutation.mutate(
       {
         name: values.name,
@@ -78,15 +100,25 @@ export function CreateInventoryItemDialog({
         purchasePrice: values.purchasePrice,
         salesPrice: values.salesPrice,
         description: values.description,
+        image: uploadedImagePath,
       },
       {
-        onSuccess: () => {
+        onSuccess: async () => {
           utils.inventory.getInventory.invalidate();
           setOpen(false);
           onSuccess?.(values);
+          toast.success('Inventory item created successfully');
         },
-        onError: (error) => {
-          toast.error(error.message);
+        onError: async () => {
+          toast.error('Failed to create inventory item');
+          // 3. Clean up uploaded image if the database creation fails
+          if (uploadedFileName) {
+            await fetch('/api/uploads', {
+              method: 'DELETE',
+              body: JSON.stringify({ fileName: uploadedFileName }),
+              headers: { 'Content-Type': 'application/json' },
+            });
+          }
         },
       },
     );
@@ -197,7 +229,7 @@ export function CreateInventoryItemDialog({
                     <Button
                       type="submit"
                       disabled={createMutation.isPending || isSubmitting}
-                      className="min-w-[120px]"
+                      className="min-w-30"
                     >
                       {createMutation.isPending || isSubmitting ? (
                         <Loader2 className="size-4 animate-spin" />

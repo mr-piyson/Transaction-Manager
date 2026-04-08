@@ -1,12 +1,12 @@
 import { router } from '@/trpc/server';
-import { invoiceRouter } from '@/api/invoices';
-import { contractRouter } from '@/api/contracts';
-import { customerRouter } from '@/api/customers';
-import { inventoryRouter } from '@/api/inventory';
-import { invoiceLinesRouter } from '@/api/invoice-lines';
-import { paymentRouter } from '@/api/payments';
-import { organizationRouter } from '@/api/organizations';
-import { analyticsRouter } from '@/api/analytics';
+import { invoiceRouter } from '@/server/invoices';
+import { contractRouter } from '@/server/contracts';
+import { customerRouter } from '@/server/customers';
+import { inventoryRouter } from '@/server/inventory';
+import { invoiceLinesRouter } from '@/server/invoice-lines';
+import { paymentRouter } from '@/server/payments';
+import { organizationRouter } from '@/server/organizations';
+import { analyticsRouter } from '@/server/analytics';
 
 export const appRouter = router({
   invoices: invoiceRouter,

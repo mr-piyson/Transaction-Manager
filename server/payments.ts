@@ -2,7 +2,7 @@ import { z } from 'zod';
 import { authed, base, t } from '@/trpc/server';
 import { TRPCError } from '@trpc/server';
 import db from '@/lib/db';
-import { updateInvoiceStatus } from '@/api/invoices';
+import { updateInvoiceStatus } from '@/server/invoices';
 
 export const paymentRouter = t.router({
   getPayments: authed.query(async () => {
