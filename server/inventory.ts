@@ -50,8 +50,6 @@ export const inventoryRouter = t.router({
     )
     .mutation(async ({ input, ctx }) => {
       try {
-        console.log('Creating inventory item with data:', input);
-
         if (!ctx.user.organizationId) {
           throw new TRPCError({
             code: 'BAD_REQUEST',

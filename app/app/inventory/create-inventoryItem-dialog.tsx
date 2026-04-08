@@ -20,6 +20,7 @@ import { trpc } from '@/trpc/client';
 import { ImageUpload } from './Image-Upload';
 
 import { AppForm, FormInput, FormCustomField, FormGroup } from '@/components/Form';
+import { uploadImage } from '@/lib/upload';
 
 // ---------------------------------------------------------------------------
 // Schema
@@ -69,59 +70,23 @@ export function CreateInventoryItemDialog({
   const createMutation = trpc.inventory.createInventoryItem.useMutation();
 
   async function handleSubmit(values: InventoryItemValues) {
-    let uploadedImagePath: string | undefined = undefined;
-    let uploadedFileName: string | undefined = undefined;
-
-    // 1. Upload the image if one was selected
-    if (values.image instanceof File) {
-      const formData = new FormData();
-      formData.append('file', values.image);
-
-      const res = await fetch('/api/uploads', {
-        method: 'POST',
-        body: formData,
-      });
-
-      if (!res.ok) {
-        toast.error('Failed to upload image');
-        return;
-      }
-
-      const uploadData = await res.json();
-      uploadedImagePath = uploadData.path;
-      uploadedFileName = uploadData.name;
-    }
-
-    // 2. Create the inventory item with the uploaded image path
-    createMutation.mutate(
-      {
-        name: values.name,
-        code: values.code,
-        purchasePrice: values.purchasePrice,
-        salesPrice: values.salesPrice,
-        description: values.description,
-        image: uploadedImagePath,
+    await uploadImage({
+      file: values.image,
+      toast,
+      onMutation: async (imagePath) => {
+        // Return the mutation as a promise so the utility can 'await' it
+        return createMutation.mutateAsync({
+          ...values,
+          image: imagePath,
+        });
       },
-      {
-        onSuccess: async () => {
-          utils.inventory.getInventory.invalidate();
-          setOpen(false);
-          onSuccess?.(values);
-          toast.success('Inventory item created successfully');
-        },
-        onError: async () => {
-          toast.error('Failed to create inventory item');
-          // 3. Clean up uploaded image if the database creation fails
-          if (uploadedFileName) {
-            await fetch('/api/uploads', {
-              method: 'DELETE',
-              body: JSON.stringify({ fileName: uploadedFileName }),
-              headers: { 'Content-Type': 'application/json' },
-            });
-          }
-        },
+      onSuccess: () => {
+        utils.inventory.getInventory.invalidate();
+        setOpen(false);
+        onSuccess?.(values);
+        toast.success('Inventory item created successfully');
       },
-    );
+    });
   }
 
   return (
