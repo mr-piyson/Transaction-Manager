@@ -14,6 +14,7 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { toast } from 'sonner';
+import { Format } from '@/lib/format';
 
 /* ------------------------------ Validation ------------------------------ */
 
@@ -203,7 +204,7 @@ export default function InventoryItemClientPage() {
                           name="purchasePrice"
                           id="purchasePrice"
                           type="number"
-                          defaultValue={item.purchasePrice}
+                          defaultValue={Format.money.dbToDecimal(item.purchasePrice)}
                           required
                         />
                       </div>
@@ -220,7 +221,8 @@ export default function InventoryItemClientPage() {
                           name="salesPrice"
                           id="salesPrice"
                           type="number"
-                          defaultValue={item.salesPrice}
+                          // TODO: format the number
+                          defaultValue={Format.money.dbToDecimal(item.salesPrice)}
                           required
                         />
                       </div>

@@ -20,6 +20,12 @@ const formatConfigs = Object.keys(CURRENCIES).reduce(
 
 export const Format = {
   money: {
+    // (e.g., 5100 -> "5.1")
+    dbToDecimal: (intVal: number, code: CurrencyCode = 'BHD') => {
+      const decimalVal = fromDatabase(intVal, code);
+      return currency(decimalVal, formatConfigs[code]).value;
+    },
+
     /**
      * Use this for values already in decimal format (e.g., 5.1)
      */
