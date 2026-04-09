@@ -3,7 +3,7 @@
 import React from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
-import { trpc } from '@/trpc/client';
+import { trpc } from '@/lib/trpc/client';
 import { z } from 'zod';
 import { ChevronLeft, Package, Trash2, Save, TrendingUp, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';

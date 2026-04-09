@@ -70,19 +70,19 @@ export function InventoryItemCard(props: {
       <div className="shrink-0 flex flex-col gap-0.5 text-right min-w-22.5">
         <PriceRow
           icon={TrendingDown}
-          value={Format.money.amount(props.data.purchasePrice)}
+          value={Format.money.db(props.data.purchasePrice)}
           className="text-destructive"
           iconClass="text-destructive"
         />
         <PriceRow
           icon={DollarSign}
-          value={Format.money.amount(props.data.salesPrice)}
+          value={Format.money.db(props.data.salesPrice)}
           className="text-foreground font-medium"
           iconClass="text-muted-foreground"
         />
         <PriceRow
           icon={TrendingUp}
-          value={Format.money.amount(profit)}
+          value={Format.money.db(profit)}
           className="text-success-foreground dark:text-success-foreground"
           iconClass="text-emerald-600 dark:text-emerald-400"
         />

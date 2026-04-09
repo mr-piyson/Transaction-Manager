@@ -2,7 +2,7 @@ import { Button } from '@/components/button';
 import { Dates } from '@/lib/date';
 import { Payment } from '@prisma/client';
 import { Banknote, CreditCard, Trash2, Wallet } from 'lucide-react';
-import { trpc } from '@/trpc/client';
+import { trpc } from '@/lib/trpc/client';
 import { toast } from 'sonner';
 import { Format } from '@/lib/format';
 
@@ -59,7 +59,7 @@ export default function PaymentCard({
 
       {/* Amount Section */}
       <span className="text-sm font-bold text-success-foreground tabular-nums">
-        {Format.money.amount(payment.amount)}
+        {Format.money.db(payment.amount)}
       </span>
 
       {/* Actions */}

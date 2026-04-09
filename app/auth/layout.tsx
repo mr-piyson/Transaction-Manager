@@ -1,5 +1,4 @@
-import { auth, getSession } from '@/lib/auth';
-import { headers } from 'next/headers';
+import { getSession } from '@/auth/auth-server';
 import { redirect } from 'next/navigation';
 
 type AuthLayoutProps = {

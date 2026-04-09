@@ -25,7 +25,6 @@ import { useEffect, useState } from 'react';
 import { Spinner } from '@/components/ui/spinner';
 import { Route } from 'next';
 import { NavUser } from './User-Options';
-import { useAuth } from '@/hooks/use-auth';
 import { Button } from '@/components/ui/button';
 import { SidebarIcon } from 'lucide-react';
 
@@ -37,7 +36,6 @@ export function AppSidebar({ ...props }: AppSidebarProps) {
   const router = useRouter();
   const [loading, setLoading] = useState('');
   const i18n = useI18n();
-  const { session } = useAuth();
 
   useEffect(() => {
     if (loading === currentPath) {

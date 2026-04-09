@@ -6,7 +6,7 @@ import { I18nProvider } from '@/i18n/use-i18n';
 import { Toaster } from '@/components/sonner';
 import { getServerI18n } from '@/i18n/i18n.action';
 import QueryProvider from '@/components/QueryProvider';
-import TrpcProvider from '@/trpc/Provider';
+import TrpcProvider from '@/lib/trpc/Provider';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',

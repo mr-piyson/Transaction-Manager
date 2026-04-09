@@ -1,10 +1,10 @@
 import { z } from 'zod';
-import { authed, t } from '@/trpc/server';
+import { protactedProcedure, t } from '@/lib/trpc/server';
 import { TRPCError } from '@trpc/server';
 import db from '@/lib/db';
 
 export const invoiceLinesRouter = t.router({
-  createInvoiceLine: authed
+  createInvoiceLine: protactedProcedure
     .input(
       z.object({
         invoiceId: z.number(),
@@ -90,7 +90,7 @@ export const invoiceLinesRouter = t.router({
       }
     }),
 
-  updateInvoiceLine: authed
+  updateInvoiceLine: protactedProcedure
     .input(
       z.object({
         id: z.number(),
@@ -120,38 +120,40 @@ export const invoiceLinesRouter = t.router({
       }
     }),
 
-  deleteInvoiceLine: authed.input(z.object({ id: z.number() })).mutation(async ({ input }) => {
-    try {
-      const line = await db.invoiceLine.findUnique({ where: { id: input.id } });
+  deleteInvoiceLine: protactedProcedure
+    .input(z.object({ id: z.number() }))
+    .mutation(async ({ input }) => {
+      try {
+        const line = await db.invoiceLine.findUnique({ where: { id: input.id } });
 
-      if (!line) {
+        if (!line) {
+          throw new TRPCError({
+            code: 'NOT_FOUND',
+            message: 'Line not found',
+          });
+        }
+        if (line.isGroup) {
+          await db.invoiceLine.deleteMany({
+            where: { parentId: input.id },
+          });
+        }
+        await db.invoiceLine.delete({
+          where: { id: input.id },
+        });
+
+        if (line.invoiceId) {
+          await updateInvoiceTotals(line.invoiceId);
+        }
+
+        return { id: input.id };
+      } catch (error) {
+        if (error instanceof TRPCError) throw error;
         throw new TRPCError({
-          code: 'NOT_FOUND',
-          message: 'Line not found',
+          code: 'INTERNAL_SERVER_ERROR',
+          message: 'Failed to delete invoice line',
         });
       }
-      if (line.isGroup) {
-        await db.invoiceLine.deleteMany({
-          where: { parentId: input.id },
-        });
-      }
-      await db.invoiceLine.delete({
-        where: { id: input.id },
-      });
-
-      if (line.invoiceId) {
-        await updateInvoiceTotals(line.invoiceId);
-      }
-
-      return { id: input.id };
-    } catch (error) {
-      if (error instanceof TRPCError) throw error;
-      throw new TRPCError({
-        code: 'INTERNAL_SERVER_ERROR',
-        message: 'Failed to delete invoice line',
-      });
-    }
-  }),
+    }),
 });
 
 async function updateInvoiceTotals(invoiceId: number) {

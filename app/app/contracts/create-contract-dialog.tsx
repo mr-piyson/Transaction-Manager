@@ -17,7 +17,7 @@ import {
 } from '@/components/ui/dialog';
 import { Field, FieldError, FieldGroup, FieldLabel } from '@/components/ui/field';
 import { Button } from '@/components/ui/button';
-import { trpc } from '@/trpc/client';
+import { trpc } from '@/lib/trpc/client';
 
 import * as z from 'zod';
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/input-group';

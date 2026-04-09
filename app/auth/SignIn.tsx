@@ -12,12 +12,37 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { useAuth } from '@/hooks/use-auth';
 import { Spinner } from '@/components/ui/spinner';
-import { SignInInput, SignInSchema } from '@/lib/validators/auth';
+import { trpc } from '@/lib/trpc/client';
+import { useRouter } from 'next/navigation';
+import { authClient, signIn } from '@/auth/auth-client';
+import { useState } from 'react';
+
+export const SignInSchema = z.object({
+  email: z.email(),
+  password: z.string().min(6),
+});
 
 export default function SignInTab() {
-  const { signIn, isLoading: loading } = useAuth();
+  const router = useRouter();
+
+  const [isPending, setIsLoading] = useState(false);
+
+  const login = async (email: string, password: string) => {
+    setIsLoading(true);
+    const { data, error } = await authClient.signIn.email({
+      email,
+      password,
+    });
+    setIsLoading(false);
+
+    if (data) {
+      router.push('/app');
+    }
+
+    if (error) console.error(error.message);
+  };
+
   const {
     register,
     handleSubmit,
@@ -30,8 +55,8 @@ export default function SignInTab() {
     },
   });
 
-  async function onSubmit(data: SignInInput) {
-    await signIn(data);
+  async function onSubmit(data: z.infer<typeof SignInSchema>) {
+    await login(data.email, data.password);
   }
 
   return (
@@ -73,9 +98,9 @@ export default function SignInTab() {
           </div>
         </CardContent>
         <CardFooter className="mt-5">
-          <Button disabled={loading} type="submit" className="w-full font-bold">
-            {loading && <Spinner />}
-            {!loading && 'Sign In'}
+          <Button disabled={isPending} type="submit" className="w-full font-bold">
+            {isPending && <Spinner />}
+            {!isPending && 'Sign In'}
           </Button>
         </CardFooter>
       </form>

@@ -1,10 +1,10 @@
 import { z } from 'zod';
-import { authed, t } from '@/trpc/server';
+import { protactedProcedure, t } from '@/lib/trpc/server';
 import { TRPCError } from '@trpc/server';
 import db from '@/lib/db';
 
 export const contractRouter = t.router({
-  getContracts: authed.query(async () => {
+  getContracts: protactedProcedure.query(async () => {
     try {
       return await db.contract.findMany({});
     } catch (error) {
@@ -15,7 +15,7 @@ export const contractRouter = t.router({
     }
   }),
 
-  getContractById: authed
+  getContractById: protactedProcedure
     .input(z.object({ id: z.union([z.string(), z.number()]) }))
     .query(async ({ input }) => {
       try {
@@ -38,7 +38,7 @@ export const contractRouter = t.router({
       }
     }),
 
-  createContract: authed
+  createContract: protactedProcedure
     .input(
       z.object({
         title: z.string(),
@@ -67,7 +67,7 @@ export const contractRouter = t.router({
       }
     }),
 
-  updateContract: authed
+  updateContract: protactedProcedure
     .input(
       z.object({
         id: z.string(),
@@ -97,16 +97,18 @@ export const contractRouter = t.router({
       }
     }),
 
-  deleteContract: authed.input(z.object({ id: z.string() })).mutation(async ({ input }) => {
-    try {
-      return await db.contract.delete({
-        where: { id: input.id },
-      });
-    } catch (error) {
-      throw new TRPCError({
-        code: 'INTERNAL_SERVER_ERROR',
-        message: 'Failed to delete contract',
-      });
-    }
-  }),
+  deleteContract: protactedProcedure
+    .input(z.object({ id: z.string() }))
+    .mutation(async ({ input }) => {
+      try {
+        return await db.contract.delete({
+          where: { id: input.id },
+        });
+      } catch (error) {
+        throw new TRPCError({
+          code: 'INTERNAL_SERVER_ERROR',
+          message: 'Failed to delete contract',
+        });
+      }
+    }),
 });

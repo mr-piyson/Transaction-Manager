@@ -1,8 +1,8 @@
 import { betterAuth } from 'better-auth';
 import { prismaAdapter } from 'better-auth/adapters/prisma';
 import { jwt } from 'better-auth/plugins';
-import db from './db';
-import { env } from './env';
+import db from '@/lib/db';
+import { env } from '@/lib/env';
 import { headers } from 'next/headers';
 
 export const auth = betterAuth({

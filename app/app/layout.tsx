@@ -4,8 +4,8 @@ import { AlertProvider } from '@/components/Alert-dialog';
 import { SidebarProvider } from '@/components/sidebar';
 import { redirect } from 'next/navigation';
 import { checkOrganization } from '@/server/organizations';
-import { getCurrentUser } from '@/lib/auth';
 import { AppFooter } from './App-Footer';
+import { getCurrentUser } from '@/auth/auth-server';
 
 export default async function App(props: any) {
   if (!checkOrganization()) {

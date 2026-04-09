@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 import { Area, AreaChart, CartesianGrid, XAxis } from 'recharts';
-import { trpc } from '@/trpc/client';
+import { trpc } from '@/lib/trpc/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   ChartContainer,
@@ -28,7 +28,7 @@ const chartConfig = {
 } satisfies ChartConfig;
 
 function formatBHD(value: number) {
-  return Format.money.amount(value);
+  return Format.money.db(value);
 }
 
 // const rangeLabel = {

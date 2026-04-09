@@ -16,7 +16,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useForm, Controller } from 'react-hook-form';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
-import { trpc } from '@/trpc/client';
+import { trpc } from '@/lib/trpc/client';
 import PaymentCard from './payment-card';
 import { toast } from 'sonner';
 import { useState } from 'react';
@@ -96,7 +96,7 @@ export function PaymentDialog({ children, invoice }: PaymentDialogProps) {
           <DrawerTitle className="text-base">Payments</DrawerTitle>
           <DrawerDescription className="text-xs">
             Balance:{' '}
-            <span className={cn('font-bold tabular-nums')}>{Format.money.amount(balanceDue)}</span>
+            <span className={cn('font-bold tabular-nums')}>{Format.money.db(balanceDue)}</span>
           </DrawerDescription>
         </DrawerHeader>
 
@@ -134,18 +134,18 @@ export function PaymentDialog({ children, invoice }: PaymentDialogProps) {
             <div className="shrink-0 px-2 py-4 bg-card border-t border-border space-y-2">
               <div className="flex justify-between text-xs text-muted-foreground">
                 <span>Invoice Total</span>
-                <span className="tabular-nums">{Format.money.amount(invoice.total || 0)}</span>
+                <span className="tabular-nums">{Format.money.db(invoice.total || 0)}</span>
               </div>
               <div className="flex justify-between text-xs">
                 <span className="text-success-foreground">Total Paid</span>
                 <span className="font-semibold text-success-foreground tabular-nums">
-                  {Format.money.amount(amountPaid)}
+                  {Format.money.db(amountPaid)}
                 </span>
               </div>
               <Separator />
               <div className="flex justify-between text-sm font-bold">
                 <span>Balance Due</span>
-                <span className="tabular-nums">{Format.money.amount(balanceDue)}</span>
+                <span className="tabular-nums">{Format.money.db(balanceDue)}</span>
               </div>
             </div>
           </TabsContent>

@@ -1,8 +1,8 @@
 import { z } from 'zod';
-import { base, authed, t } from '@/trpc/server';
+import { publicProcedure, protactedProcedure, t } from '@/lib/trpc/server';
 import { TRPCError } from '@trpc/server';
 import db from '@/lib/db';
-import { auth } from '@/lib/auth';
+import { auth } from '@/auth/auth-server';
 
 export async function checkOrganization() {
   return (await db.organization.count({})) > 0;
@@ -17,7 +17,7 @@ export async function getOrganization(id: string) {
 }
 
 export const organizationRouter = t.router({
-  checkOrganization: base.query(async () => {
+  checkOrganization: publicProcedure.query(async () => {
     try {
       const orgCount = await db.organization.count();
       return { hasOrganization: orgCount > 0 };
@@ -29,7 +29,7 @@ export const organizationRouter = t.router({
     }
   }),
 
-  createOrganization: authed
+  createOrganization: protactedProcedure
     .input(
       z.object({
         name: z.string(),
@@ -54,7 +54,7 @@ export const organizationRouter = t.router({
       }
     }),
 
-  setup: base
+  setup: publicProcedure
     .input(
       z.object({
         orgName: z.string(),

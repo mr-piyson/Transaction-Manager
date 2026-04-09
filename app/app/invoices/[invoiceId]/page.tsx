@@ -36,7 +36,7 @@ import {
   Mail,
   HandCoinsIcon,
 } from 'lucide-react';
-import { trpc } from '@/trpc/client';
+import { trpc } from '@/lib/trpc/client';
 import { alert } from '@/components/Alert-dialog';
 import { cn } from '@/lib/utils';
 import { Label } from '@/components/ui/label';
@@ -72,7 +72,7 @@ function InvoiceLineRow({ line, lines, depth = 0 }: { line: any; lines: any[]; d
         </div>
 
         <div className="text-right shrink-0 ml-4">
-          <p className="text-sm font-semibold">{Format.money.amount(line.total || 0)}</p>
+          <p className="text-sm font-semibold">{Format.money.db(line.total || 0)}</p>
           <p className="text-xs text-muted-foreground">Qty: {line.quantity || 1}</p>
         </div>
       </div>
@@ -321,7 +321,7 @@ export default function InvoiceDetailPage() {
                     <span className="text-muted-foreground flex items-center gap-2">
                       <Banknote className="w-4 h-4" /> Total
                     </span>
-                    <span className="font-bold">{Format.money.amount(invoice.total || 0)}</span>
+                    <span className="font-bold">{Format.money.db(invoice.total || 0)}</span>
                   </div>
 
                   {/* NEW: Created By  */}
@@ -403,7 +403,7 @@ export default function InvoiceDetailPage() {
                   {lines.length > 0 && (
                     <div className="w-full flex justify-between">
                       <span className="font-semibold text-muted-foreground">Total Revenue</span>
-                      <span className="text-lg font-bold">{Format.money.amount(revenue)}</span>
+                      <span className="text-lg font-bold">{Format.money.db(revenue)}</span>
                     </div>
                   )}
                 </CardFooter>

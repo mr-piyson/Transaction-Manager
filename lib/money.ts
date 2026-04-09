@@ -43,8 +43,8 @@ export const CURRENCIES = {
 } as const;
 
 // This handles the "Integer to Decimal" logic for ERP storage
-export const toCents = (num: number, code: CurrencyCode) =>
+export const toDatabase = (num: number, code: CurrencyCode) =>
   Math.round(num * Math.pow(10, CURRENCIES[code].precision));
 
-export const fromCents = (num: number, code: CurrencyCode) =>
+export const fromDatabase = (num: number, code: CurrencyCode) =>
   num / Math.pow(10, CURRENCIES[code].precision);

@@ -1,6 +1,6 @@
 'use client';
 import { ListView } from '@/components/list-view';
-import { trpc } from '@/trpc/client';
+import { trpc } from '@/lib/trpc/client';
 import { Contract } from '@prisma/client';
 import { ContractCard } from './contractCard';
 import { Button } from '@/components/ui/button';

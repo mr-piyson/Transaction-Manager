@@ -9,7 +9,7 @@ import { Header } from '@/app/app/App-Header';
 import { CreateInvoiceDialog } from './create-invoice-dialog';
 import { InvoiceCard } from './invoiceCard';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { trpc } from '@/trpc/client';
+import { trpc } from '@/lib/trpc/client';
 
 export default function InvoicesPage() {
   const { t } = useI18n();

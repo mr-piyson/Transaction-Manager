@@ -10,24 +10,36 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { useAuth } from '@/hooks/use-auth';
 import { Spinner } from '@/components/ui/spinner';
-import { SignUpInput, SignUpSchema } from '@/lib/validators/auth';
+import { trpc } from '@/lib/trpc/client';
+import z from 'zod';
 
 // SIGN UP SCHEMA
+export const SignUpSchema = z
+  .object({
+    name: z.string().min(1, 'Name is required'),
+    email: z.email('Please enter a valid email address'),
+    password: z.string().min(6, 'Password must be at least 6 characters'),
+    confirmPassword: z.string().min(6, 'Password must be at least 6 characters'),
+    image: z.string().optional(),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: 'Passwords do not match',
+    path: ['confirmPassword'],
+  });
 
 export default function SignUpTab() {
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   // const [loading, setLoading] = useState(false);
-  const { signUp, isLoading: loading } = useAuth();
+  const { mutateAsync: signUp, isPending: loading } = trpc.auth.signUp.useMutation();
 
   const {
     register,
     handleSubmit,
     setValue,
     formState: { errors },
-  } = useForm<SignUpInput>({
+  } = useForm<z.infer<typeof SignUpSchema>>({
     resolver: zodResolver(SignUpSchema),
     defaultValues: {
       name: '',
@@ -68,7 +80,7 @@ export default function SignUpTab() {
     reader.readAsDataURL(file);
   };
 
-  const onSubmit = async (data: SignUpInput) => {
+  const onSubmit = async (data: z.infer<typeof SignUpSchema>) => {
     await signUp(data);
   };
 

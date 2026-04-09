@@ -1,11 +1,11 @@
 import { z } from 'zod';
-import { authed, base, t } from '@/trpc/server';
+import { protactedProcedure, publicProcedure, t } from '@/lib/trpc/server';
 import { TRPCError } from '@trpc/server';
 import db from '@/lib/db';
 import { updateInvoiceStatus } from '@/server/invoices';
 
 export const paymentRouter = t.router({
-  getPayments: authed.query(async () => {
+  getPayments: protactedProcedure.query(async () => {
     try {
       return await db.payment.findMany();
     } catch (error) {
@@ -16,7 +16,7 @@ export const paymentRouter = t.router({
     }
   }),
 
-  createPayment: authed.input(z.any()).mutation(async ({ input }) => {
+  createPayment: protactedProcedure.input(z.any()).mutation(async ({ input }) => {
     try {
       return await db.$transaction(async (tx) => {
         const newPayment = await tx.payment.create({ data: { ...input } });
@@ -50,51 +50,53 @@ export const paymentRouter = t.router({
     }
   }),
 
-  deletePayment: authed.input(z.object({ id: z.number() })).mutation(async ({ input }) => {
-    try {
-      return await db.$transaction(async (tx) => {
-        const deletedPayment = await tx.payment.delete({
-          where: { id: input.id },
-          select: { invoiceId: true },
-        });
+  deletePayment: protactedProcedure
+    .input(z.object({ id: z.number() }))
+    .mutation(async ({ input }) => {
+      try {
+        return await db.$transaction(async (tx) => {
+          const deletedPayment = await tx.payment.delete({
+            where: { id: input.id },
+            select: { invoiceId: true },
+          });
 
-        const invoiceId = deletedPayment.invoiceId;
+          const invoiceId = deletedPayment.invoiceId;
 
-        const [invoiceData, aggregation] = await Promise.all([
-          tx.invoice.findUnique({
+          const [invoiceData, aggregation] = await Promise.all([
+            tx.invoice.findUnique({
+              where: { id: invoiceId },
+              select: { total: true },
+            }),
+            tx.payment.aggregate({
+              where: { invoiceId },
+              _sum: { amount: true },
+            }),
+          ]);
+
+          if (!invoiceData) throw new Error('Invoice not found');
+
+          const totalRemainingPaid = aggregation._sum.amount || 0;
+          const invoiceTotal = invoiceData.total;
+
+          let newStatus: 'Unpaid' | 'Partial' | 'Paid' = 'Unpaid';
+          if (totalRemainingPaid >= invoiceTotal && invoiceTotal > 0) {
+            newStatus = 'Paid';
+          } else if (totalRemainingPaid > 0) {
+            newStatus = 'Partial';
+          }
+
+          await tx.invoice.update({
             where: { id: invoiceId },
-            select: { total: true },
-          }),
-          tx.payment.aggregate({
-            where: { invoiceId },
-            _sum: { amount: true },
-          }),
-        ]);
+            data: { paymentStatus: newStatus },
+          });
 
-        if (!invoiceData) throw new Error('Invoice not found');
-
-        const totalRemainingPaid = aggregation._sum.amount || 0;
-        const invoiceTotal = invoiceData.total;
-
-        let newStatus: 'Unpaid' | 'Partial' | 'Paid' = 'Unpaid';
-        if (totalRemainingPaid >= invoiceTotal && invoiceTotal > 0) {
-          newStatus = 'Paid';
-        } else if (totalRemainingPaid > 0) {
-          newStatus = 'Partial';
-        }
-
-        await tx.invoice.update({
-          where: { id: invoiceId },
-          data: { paymentStatus: newStatus },
+          return deletedPayment;
         });
-
-        return deletedPayment;
-      });
-    } catch (error: any) {
-      throw new TRPCError({
-        code: 'INTERNAL_SERVER_ERROR',
-        message: error.message || 'Failed to delete payment',
-      });
-    }
-  }),
+      } catch (error: any) {
+        throw new TRPCError({
+          code: 'INTERNAL_SERVER_ERROR',
+          message: error.message || 'Failed to delete payment',
+        });
+      }
+    }),
 });

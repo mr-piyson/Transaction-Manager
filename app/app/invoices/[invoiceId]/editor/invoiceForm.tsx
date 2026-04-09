@@ -7,7 +7,7 @@ import { FileText, Box, Trash2 } from 'lucide-react';
 import { SelectDialog } from '@/components/select-dialog';
 import { InventoryItemCard } from '../../../inventory/inventoryCard';
 import { InventoryItem } from '@prisma/client';
-import { trpc } from '@/trpc/client';
+import { trpc } from '@/lib/trpc/client';
 import { toast } from 'sonner';
 import { UniversalContextMenu } from '@/components/context-menu';
 import { alert } from '@/components/Alert-dialog';

@@ -30,9 +30,6 @@ description: Handles everything related to the project file stracture and pettre
 /hooks
   use-mobile.ts
   ***.tsx
-  /data
-    use-customers.ts
-    ***.ts
 
 /lib
   utils.ts
@@ -120,33 +117,8 @@ description: Handles everything related to the project file stracture and pettre
 
 - General-purpose React hooks
 
-#### Examples:
-
-```
-/hooks/useDebounce.ts
-/hooks/useToggle.ts
-```
-
 ✔ UI behavior
 ✔ No API calls here (unless generic)
-
----
-
-### 6. `@/hooks/data/...` → API Data Hooks
-
-- Handles fetching & mutating API data
-
-#### Examples:
-
-```
-/hooks/data/useUser.ts
-/hooks/data/usePosts.ts
-```
-
-✔ Calls REST APIs (`/app/api`)
-✔ Manages loading, error, caching
-
-> Think: your frontend data layer (React Query / SWR style)
 
 ---
 
@@ -195,9 +167,7 @@ description: Handles everything related to the project file stracture and pettre
 ```
 UI Component
    ↓
-@/hooks/data (fetch/mutate)
-   ↓
-/app/api (REST endpoint)
+  trpc 
    ↓
 Database / External API
 ```

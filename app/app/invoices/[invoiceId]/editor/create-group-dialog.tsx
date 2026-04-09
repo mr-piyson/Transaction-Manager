@@ -10,7 +10,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Package } from 'lucide-react';
-import { trpc } from '@/trpc/client';
+import { trpc } from '@/lib/trpc/client';
 import { toast } from 'sonner';
 
 interface CreateGroupDialogProps {

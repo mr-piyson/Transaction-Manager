@@ -1,7 +1,7 @@
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 import db from '@/lib/db';
-import { authed, base, t } from '@/trpc/server';
+import { protactedProcedure, publicProcedure, t } from '@/lib/trpc/server';
 
 // A reusable, high-performance version of your logic
 export async function updateInvoiceStatus(
@@ -26,7 +26,7 @@ export const invoiceRouter = t.router({
   /**
    * Get all invoices
    */
-  getInvoices: authed
+  getInvoices: protactedProcedure
     .input(
       z.object({
         customer: z.boolean().optional(),
@@ -42,6 +42,9 @@ export const invoiceRouter = t.router({
             invoiceLines: input.invoiceLines || undefined,
             payments: input.payments || undefined,
           },
+          orderBy: {
+            createdAt: 'desc',
+          },
         });
       } catch (error) {
         throw new TRPCError({
@@ -54,7 +57,7 @@ export const invoiceRouter = t.router({
   /**
    * Create invoice
    */
-  createInvoice: authed
+  createInvoice: protactedProcedure
     .input(
       z.object({
         customerId: z.union([z.string(), z.number()]),
@@ -83,7 +86,7 @@ export const invoiceRouter = t.router({
   /**
    * Get invoice by id
    */
-  getInvoiceById: base
+  getInvoiceById: publicProcedure
     .input(
       z.object({
         id: z.number(),
@@ -124,7 +127,7 @@ export const invoiceRouter = t.router({
   /**
    * Update invoice by id
    */
-  updateInvoice: authed
+  updateInvoice: protactedProcedure
     .input(
       z.object({
         id: z.number(),
@@ -155,16 +158,18 @@ export const invoiceRouter = t.router({
   /**
    * Delete invoice by id
    */
-  deleteInvoice: authed.input(z.object({ id: z.number() })).mutation(async ({ input }) => {
-    try {
-      return await db.invoice.delete({
-        where: { id: input.id },
-      });
-    } catch (error) {
-      throw new TRPCError({
-        code: 'INTERNAL_SERVER_ERROR',
-        message: 'Failed to delete invoice',
-      });
-    }
-  }),
+  deleteInvoice: protactedProcedure
+    .input(z.object({ id: z.number() }))
+    .mutation(async ({ input }) => {
+      try {
+        return await db.invoice.delete({
+          where: { id: input.id },
+        });
+      } catch (error) {
+        throw new TRPCError({
+          code: 'INTERNAL_SERVER_ERROR',
+          message: 'Failed to delete invoice',
+        });
+      }
+    }),
 });

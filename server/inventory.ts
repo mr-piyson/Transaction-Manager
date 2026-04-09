@@ -1,11 +1,11 @@
 import { z } from 'zod';
-import { authed, t } from '@/trpc/server';
+import { protactedProcedure, t } from '@/lib/trpc/server';
 import { TRPCError } from '@trpc/server';
 import db from '@/lib/db';
-import { toCents, type CurrencyCode } from '@/lib/money';
+import { toDatabase, type CurrencyCode } from '@/lib/money';
 
 export const inventoryRouter = t.router({
-  getInventory: authed.query(async () => {
+  getInventory: protactedProcedure.query(async () => {
     try {
       return await db.inventoryItem.findMany({});
     } catch (error) {
@@ -16,28 +16,30 @@ export const inventoryRouter = t.router({
     }
   }),
 
-  getInventoryById: authed.input(z.object({ id: z.number() })).query(async ({ input }) => {
-    try {
-      const item = await db.inventoryItem.findUnique({
-        where: { id: input.id },
-      });
-      if (!item) {
+  getInventoryById: protactedProcedure
+    .input(z.object({ id: z.number() }))
+    .query(async ({ input }) => {
+      try {
+        const item = await db.inventoryItem.findUnique({
+          where: { id: input.id },
+        });
+        if (!item) {
+          throw new TRPCError({
+            code: 'NOT_FOUND',
+            message: 'Inventory item not found',
+          });
+        }
+        return item;
+      } catch (error) {
+        if (error instanceof TRPCError) throw error;
         throw new TRPCError({
-          code: 'NOT_FOUND',
-          message: 'Inventory item not found',
+          code: 'INTERNAL_SERVER_ERROR',
+          message: 'Failed to fetch inventory item',
         });
       }
-      return item;
-    } catch (error) {
-      if (error instanceof TRPCError) throw error;
-      throw new TRPCError({
-        code: 'INTERNAL_SERVER_ERROR',
-        message: 'Failed to fetch inventory item',
-      });
-    }
-  }),
+    }),
 
-  createInventoryItem: authed
+  createInventoryItem: protactedProcedure
     .input(
       z.object({
         name: z.string().min(2),
@@ -69,8 +71,8 @@ export const inventoryRouter = t.router({
           data: {
             name: input.name,
             code: input.code,
-            purchasePrice: toCents(input.purchasePrice, currency),
-            salesPrice: toCents(input.salesPrice, currency),
+            purchasePrice: toDatabase(input.purchasePrice, currency),
+            salesPrice: toDatabase(input.salesPrice, currency),
             description: input.description,
             image: input.image,
             organizationId: ctx.user.organizationId,
@@ -87,7 +89,7 @@ export const inventoryRouter = t.router({
       }
     }),
 
-  updateInventoryItem: authed
+  updateInventoryItem: protactedProcedure
     .input(
       z.object({
         id: z.number(),
@@ -121,10 +123,10 @@ export const inventoryRouter = t.router({
           const currency = (org?.currency || 'BHD') as CurrencyCode;
 
           if (input.data.purchasePrice !== undefined) {
-            updateData.purchasePrice = toCents(input.data.purchasePrice, currency);
+            updateData.purchasePrice = toDatabase(input.data.purchasePrice, currency);
           }
           if (input.data.salesPrice !== undefined) {
-            updateData.salesPrice = toCents(input.data.salesPrice, currency);
+            updateData.salesPrice = toDatabase(input.data.salesPrice, currency);
           }
         }
 
@@ -143,18 +145,20 @@ export const inventoryRouter = t.router({
       }
     }),
 
-  deleteInventoryItem: authed.input(z.object({ id: z.number() })).mutation(async ({ input }) => {
-    try {
-      return await db.inventoryItem.delete({
-        where: { id: input.id },
-      });
-    } catch (error) {
-      throw new TRPCError({
-        code: 'INTERNAL_SERVER_ERROR',
-        message: 'Failed to delete inventory item',
-      });
-    }
-  }),
+  deleteInventoryItem: protactedProcedure
+    .input(z.object({ id: z.number() }))
+    .mutation(async ({ input }) => {
+      try {
+        return await db.inventoryItem.delete({
+          where: { id: input.id },
+        });
+      } catch (error) {
+        throw new TRPCError({
+          code: 'INTERNAL_SERVER_ERROR',
+          message: 'Failed to delete inventory item',
+        });
+      }
+    }),
   uploadImage: t.procedure.input(z.instanceof(FormData)).mutation(async ({ input }) => {
     try {
       const file = input.get('file') as File;
@@ -184,17 +188,19 @@ export const inventoryRouter = t.router({
     }
   }),
 
-  deleteImage: authed.input(z.object({ id: z.number() })).mutation(async ({ input }) => {
-    try {
-      return await db.inventoryItem.update({
-        where: { id: input.id },
-        data: { image: null },
-      });
-    } catch (error) {
-      throw new TRPCError({
-        code: 'INTERNAL_SERVER_ERROR',
-        message: 'Failed to delete image',
-      });
-    }
-  }),
+  deleteImage: protactedProcedure
+    .input(z.object({ id: z.number() }))
+    .mutation(async ({ input }) => {
+      try {
+        return await db.inventoryItem.update({
+          where: { id: input.id },
+          data: { image: null },
+        });
+      } catch (error) {
+        throw new TRPCError({
+          code: 'INTERNAL_SERVER_ERROR',
+          message: 'Failed to delete image',
+        });
+      }
+    }),
 });

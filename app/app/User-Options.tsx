@@ -1,20 +1,6 @@
 'use client';
 
-import {
-  BadgeCheck,
-  Bell,
-  Check,
-  ChevronsUpDown,
-  CreditCard,
-  Globe,
-  Languages,
-  LogOut,
-  Monitor,
-  Moon,
-  Settings,
-  Sparkles,
-  Sun,
-} from 'lucide-react';
+import { Check, ChevronsUpDown, Languages, LogOut, Moon, Settings, Sun } from 'lucide-react';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
@@ -32,20 +18,16 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar } from '@/components/sidebar';
-import { useAuth } from '@/hooks/use-auth';
 import { Switch } from '@/components/ui/switch';
 import { useTheme } from 'next-themes';
-import { useSession } from '@/lib/auth-client';
 import { useI18n } from '@/i18n/use-i18n';
 import { LANGUAGE_CONFIG } from '@/i18n/config';
+import { signOut, useSession } from '@/auth/auth-client';
 
 export function NavUser() {
-  const { data } = useSession();
-  const { isMobile } = useSidebar();
-  const { signOut } = useAuth();
   const { theme, setTheme } = useTheme();
   const { availableLocales, setLocale, locale } = useI18n();
-  const user = data?.user;
+  const user = useSession().data?.user;
 
   const toggleTheme = (e: React.MouseEvent | React.BaseSyntheticEvent) => {
     setTheme(theme === 'dark' ? 'light' : 'dark');

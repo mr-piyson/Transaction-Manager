@@ -16,7 +16,7 @@ import {
 } from '@/components/ui/dialog';
 import { FieldGroup } from '@/components/ui/field';
 import { Button } from '@/components/ui/button';
-import { trpc } from '@/trpc/client';
+import { trpc } from '@/lib/trpc/client';
 import { ImageUpload } from './Image-Upload';
 
 import { AppForm, FormInput, FormCustomField, FormGroup } from '@/components/Form';
@@ -72,11 +72,14 @@ export function CreateInventoryItemDialog({
   async function handleSubmit(values: InventoryItemValues) {
     await uploadImage({
       file: values.image,
-      toast,
       onMutation: async (imagePath) => {
         // Return the mutation as a promise so the utility can 'await' it
         return createMutation.mutateAsync({
-          ...values,
+          name: values.name,
+          code: values.code,
+          purchasePrice: values.purchasePrice,
+          salesPrice: values.salesPrice,
+          description: values.description,
           image: imagePath,
         });
       },

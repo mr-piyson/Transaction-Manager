@@ -49,7 +49,7 @@ export function InvoiceCard({ data }: { data: any }) {
 
       {/* Amount */}
       <div className="text-right shrink-0 text-muted-foreground">
-        <span>{Format.money.amount(data.total)}</span>
+        <span>{Format.money.db(data.total)}</span>
         {data.date && (
           <span className="flex items-center gap-1">
             <Calendar className="size-3" />

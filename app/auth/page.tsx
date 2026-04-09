@@ -2,8 +2,14 @@
 import SignInTab from '@/app/auth/SignIn';
 import Logo from '@/components/Logo';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { getSession } from '@/auth/auth-server';
+import { redirect } from 'next/navigation';
 
 export default async function Auth() {
+  const session = await getSession();
+  if (session) {
+    redirect('/app');
+  }
   return (
     <div className="relative items-center p-4 ">
       <div className=" relative flex items-center max-sm:justify-center max-[375]:justify-start! text-3xl font-medium gap-2">

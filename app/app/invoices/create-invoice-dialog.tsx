@@ -27,7 +27,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
 
-import { trpc } from '@/trpc/client';
+import { trpc } from '@/lib/trpc/client';
 
 interface Customer {
   id: number;

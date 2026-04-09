@@ -9,7 +9,7 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Carousel, CarouselContent, CarouselItem } from '@/components/ui/carousel';
-import { trpc } from '@/trpc/client';
+import { trpc } from '@/lib/trpc/client';
 import { Format } from '@/lib/format';
 import { TrendingDown, TrendingUp, Users, Wallet } from 'lucide-react';
 import { useMemo } from 'react';
@@ -70,21 +70,21 @@ export function CardsSection() {
   const kpis = [
     {
       title: 'Total Revenue',
-      value: Format.money.amount(stats.revenue),
+      value: Format.money.db(stats.revenue),
       icon: <Wallet className="w-4 h-4" />,
       description: 'Lifetime billed revenue',
       trend: 'up',
     },
     {
       title: 'Collected Revenue',
-      value: Format.money.amount(stats.paid),
+      value: Format.money.db(stats.paid),
       icon: <TrendingUp className="w-4 h-4" />,
       description: 'Total actual received',
       trend: 'up',
     },
     {
       title: 'Outstanding Balance',
-      value: Format.money.amount(stats.outstanding),
+      value: Format.money.db(stats.outstanding),
       icon: <TrendingDown className="w-4 h-4" />,
       description: 'Pending collections',
       trend: stats.outstanding > 0 ? 'down' : 'up',

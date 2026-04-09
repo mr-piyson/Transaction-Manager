@@ -1,4 +1,4 @@
-import { getSession } from '@/lib/auth';
+import { getSession } from '@/auth/auth-server';
 import { initTRPC, TRPCError } from '@trpc/server';
 import db from '@/lib/db';
 
@@ -46,6 +46,6 @@ const authMiddleware = t.middleware(({ ctx, next }) => {
 // Base router
 export const router = t.router;
 // Base procedure
-export const base = t.procedure;
+export const publicProcedure = t.procedure;
 // Authed procedure
-export const authed = t.procedure.use(authMiddleware);
+export const protactedProcedure = t.procedure.use(authMiddleware);
