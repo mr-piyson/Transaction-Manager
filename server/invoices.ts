@@ -1,7 +1,7 @@
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 import db from '@/lib/db';
-import { protactedProcedure, publicProcedure, t } from '@/lib/trpc/server';
+import { protectedProcedure, publicProcedure, t } from '@/lib/trpc/server';
 
 // A reusable, high-performance version of your logic
 export async function updateInvoiceStatus(
@@ -26,7 +26,7 @@ export const invoiceRouter = t.router({
   /**
    * Get all invoices
    */
-  getInvoices: protactedProcedure
+  getInvoices: protectedProcedure
     .input(
       z.object({
         customer: z.boolean().optional(),
@@ -57,7 +57,7 @@ export const invoiceRouter = t.router({
   /**
    * Create invoice
    */
-  createInvoice: protactedProcedure
+  createInvoice: protectedProcedure
     .input(
       z.object({
         customerId: z.union([z.string(), z.number()]),
@@ -127,7 +127,7 @@ export const invoiceRouter = t.router({
   /**
    * Update invoice by id
    */
-  updateInvoice: protactedProcedure
+  updateInvoice: protectedProcedure
     .input(
       z.object({
         id: z.number(),
@@ -158,7 +158,7 @@ export const invoiceRouter = t.router({
   /**
    * Delete invoice by id
    */
-  deleteInvoice: protactedProcedure
+  deleteInvoice: protectedProcedure
     .input(z.object({ id: z.number() }))
     .mutation(async ({ input }) => {
       try {

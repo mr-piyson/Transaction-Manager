@@ -1,11 +1,11 @@
 import { z } from 'zod';
-import { protactedProcedure, publicProcedure, t } from '@/lib/trpc/server';
+import { protectedProcedure, publicProcedure, t } from '@/lib/trpc/server';
 import { TRPCError } from '@trpc/server';
 import db from '@/lib/db';
 import { updateInvoiceStatus } from '@/server/invoices';
 
 export const paymentRouter = t.router({
-  getPayments: protactedProcedure.query(async () => {
+  getPayments: protectedProcedure.query(async () => {
     try {
       return await db.payment.findMany();
     } catch (error) {
@@ -16,7 +16,7 @@ export const paymentRouter = t.router({
     }
   }),
 
-  createPayment: protactedProcedure.input(z.any()).mutation(async ({ input }) => {
+  createPayment: protectedProcedure.input(z.any()).mutation(async ({ input }) => {
     try {
       return await db.$transaction(async (tx) => {
         const newPayment = await tx.payment.create({ data: { ...input } });
@@ -50,7 +50,7 @@ export const paymentRouter = t.router({
     }
   }),
 
-  deletePayment: protactedProcedure
+  deletePayment: protectedProcedure
     .input(z.object({ id: z.number() }))
     .mutation(async ({ input }) => {
       try {

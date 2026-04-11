@@ -8,6 +8,9 @@ import { paymentRouter } from '@/server/payments';
 import { organizationRouter } from '@/server/organizations';
 import { analyticsRouter } from '@/server/analytics';
 import { authRouter } from '@/server/auth';
+import { supplierRouter } from '@/server/suppliers';
+import { purchaseRouter } from '@/server/purchases';
+import { stockRouter } from '@/server/stock';
 
 export const appRouter = router({
   auth: authRouter,
@@ -19,6 +22,9 @@ export const appRouter = router({
   payments: paymentRouter,
   organizations: organizationRouter,
   analytics: analyticsRouter,
+  suppliers: supplierRouter,
+  purchases: purchaseRouter,
+  stock: stockRouter,
 });
 
 export type AppRouter = typeof appRouter;

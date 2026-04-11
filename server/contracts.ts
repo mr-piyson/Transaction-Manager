@@ -1,10 +1,10 @@
 import { z } from 'zod';
-import { protactedProcedure, t } from '@/lib/trpc/server';
+import { protectedProcedure, t } from '@/lib/trpc/server';
 import { TRPCError } from '@trpc/server';
 import db from '@/lib/db';
 
 export const contractRouter = t.router({
-  getContracts: protactedProcedure.query(async () => {
+  getContracts: protectedProcedure.query(async () => {
     try {
       return await db.contract.findMany({});
     } catch (error) {
@@ -15,7 +15,7 @@ export const contractRouter = t.router({
     }
   }),
 
-  getContractById: protactedProcedure
+  getContractById: protectedProcedure
     .input(z.object({ id: z.union([z.string(), z.number()]) }))
     .query(async ({ input }) => {
       try {
@@ -38,7 +38,7 @@ export const contractRouter = t.router({
       }
     }),
 
-  createContract: protactedProcedure
+  createContract: protectedProcedure
     .input(
       z.object({
         title: z.string(),
@@ -67,7 +67,7 @@ export const contractRouter = t.router({
       }
     }),
 
-  updateContract: protactedProcedure
+  updateContract: protectedProcedure
     .input(
       z.object({
         id: z.string(),
@@ -97,7 +97,7 @@ export const contractRouter = t.router({
       }
     }),
 
-  deleteContract: protactedProcedure
+  deleteContract: protectedProcedure
     .input(z.object({ id: z.string() }))
     .mutation(async ({ input }) => {
       try {

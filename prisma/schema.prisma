@@ -41,6 +41,13 @@ model Organization {
   invoices       Invoice[]
   customers      Customer[]
   inventoryItems InventoryItem[]
+  stocks         Stock[]
+  suppliers      Supplier[]
+  warehouses     Warehouse[]
+  stockItems     StockItem[]
+  categories     Category[]
+  purchaseOrders PurchaseOrder[]
+  stockMovements StockMovement[]
 }
 
 // ====================================================
@@ -54,27 +61,28 @@ enum Role {
 }
 
 model User {
-  id            String    @id
+  id            String   @id
   name          String
-  email         String    @unique
-  emailVerified Boolean   @default(false)
+  email         String   @unique
+  emailVerified Boolean  @default(false)
   image         String?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 
   // Custom Fields
   firstName String?
   lastName  String?
-  role      Role     @default(USER)
-  isActive  Boolean  @default(true)
-  locale    String   @default("en")
+  role      Role    @default(USER)
+  isActive  Boolean @default(true)
+  locale    String  @default("en")
 
   organizationId Int?
   organization   Organization? @relation(fields: [organizationId], references: [id])
 
-  accounts      Account[]
-  sessions      Session[]
-  invoices      Invoice[]
+  accounts       Account[]
+  sessions       Session[]
+  invoices       Invoice[]
+  stockMovements StockMovement[]
 
   @@index([email])
   @@index([organizationId])
@@ -137,36 +145,6 @@ model Jwks {
   expiresAt  DateTime?
 
   @@map("jwks")
-}
-
-
-
-// ====================================================
-// Inventory
-// ====================================================
-
-model InventoryItem {
-  id            Int     @id @default(autoincrement())
-  code          String?
-  name          String
-  description   String?
-  /// Stored in smallest currency unit (e.g. fils)
-  purchasePrice Int
-  /// Stored in smallest currency unit (e.g. fils)
-  salesPrice    Int
-  filePath      String?
-  image      String?
-
-  organizationId Int?
-  organization   Organization? @relation(fields: [organizationId], references: [id])
-
-  invoiceLines InvoiceLine[]
-
-  createdAt DateTime? @default(now())
-  updatedAt DateTime? @updatedAt
-
-  @@index([organizationId])
-  @@index([code])
 }
 
 // ====================================================
@@ -238,10 +216,10 @@ model InvoiceLine {
   invoiceId Int?
   invoice   Invoice? @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
 
-  isGroup      Boolean       @default(false)
-  parentId     Int?
-  parentLine   InvoiceLine?  @relation("GroupedLines", fields: [parentId], references: [id], onDelete: Cascade)
-  childLines   InvoiceLine[] @relation("GroupedLines")
+  isGroup    Boolean       @default(false)
+  parentId   Int?
+  parentLine InvoiceLine?  @relation("GroupedLines", fields: [parentId], references: [id], onDelete: Cascade)
+  childLines InvoiceLine[] @relation("GroupedLines")
 
   createdAt DateTime? @default(now())
   updatedAt DateTime? @updatedAt
@@ -289,6 +267,231 @@ model Customer {
   invoices Invoice[]
 
   @@index([organizationId])
+}
+
+// ====================================================
+// Suppliers Items + Inventory
+// ====================================================
+
+model Supplier {
+  id          Int     @id @default(autoincrement())
+  name        String
+  phone       String
+  address     String
+  email       String?
+  contactName String?
+  website     String?
+  taxId       String?
+  notes       String?
+
+  inventoryItems InventoryItem[]
+
+  organizationId Int?
+  organization   Organization? @relation(fields: [organizationId], references: [id])
+
+  createdAt      DateTime?       @default(now())
+  updatedAt      DateTime?       @updatedAt
+  purchaseOrders PurchaseOrder[]
+
+  @@map("supplier")
+}
+
+model InventoryItem {
+  id            Int     @id @default(autoincrement())
+  code          String?
+  name          String
+  description   String?
+  /// Stored in smallest currency unit (e.g. fils)
+  purchasePrice Int
+  /// Stored in smallest currency unit (e.g. fils)
+  salesPrice    Int
+  filePath      String?
+  image         String?
+
+  stockItemId Int?
+  stockItem   StockItem? @relation(fields: [stockItemId], references: [id])
+
+  organizationId Int?
+  organization   Organization? @relation(fields: [organizationId], references: [id])
+
+  invoiceLines InvoiceLine[]
+
+  createdAt  DateTime? @default(now())
+  updatedAt  DateTime? @updatedAt
+  supplier   Supplier? @relation(fields: [supplierId], references: [id])
+  supplierId Int?
+
+  @@index([organizationId])
+  @@index([code])
+  @@map("InventoryItem")
+}
+
+model Category {
+  id    Int     @id @default(autoincrement())
+  name  String
+  color String?
+
+  stockItems StockItem[]
+
+  organizationId Int?
+  organization   Organization? @relation(fields: [organizationId], references: [id])
+
+  createdAt DateTime? @default(now())
+  updatedAt DateTime? @updatedAt
+
+  @@unique([name, organizationId])
+}
+
+// ====================================================
+// Stock 
+// ====================================================
+
+model Warehouse {
+  id      Int     @id @default(autoincrement())
+  name    String  @unique
+  address String?
+
+  inventory Stock[]
+
+  organization   Organization? @relation(fields: [organizationId], references: [id])
+  organizationId Int?
+}
+
+enum ItemType {
+  PRODUCT
+  SERVICE
+}
+
+model StockItem {
+  id          Int      @id @default(autoincrement())
+  type        ItemType @default(PRODUCT)
+  sku         String   @unique
+  name        String
+  description String?
+  image       String?
+  barcode     String?
+  unit        String   @default("pcs")
+
+  // Prices usually live here as the "Default" price
+  purchasePrice Int
+  salesPrice    Int
+
+  minStock Int @default(0)
+
+  createdAt DateTime? @default(now())
+  updatedAt DateTime? @updatedAt
+
+  categoryId Int?
+  category   Category? @relation(fields: [categoryId], references: [id])
+
+  // Relations
+  stockEntries   Stock[]
+  organization   Organization?   @relation(fields: [organizationId], references: [id])
+  organizationId Int?
+  purchaseLines  PurchaseLine[]
+  stockMovements StockMovement[]
+  inventoryItems InventoryItem[]
+}
+
+model Stock {
+  id       Int     @id @default(autoincrement())
+  // Physical properties of this specific batch/location
+  quantity Int     @default(0)
+  location String? // Specific bin or shelf number
+
+  // Relations - Fixed types to match 'Int' from parent models
+  stockItemId Int
+  stockItem   StockItem @relation(fields: [stockItemId], references: [id])
+
+  warehouseId Int
+  warehouse   Warehouse @relation(fields: [warehouseId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Multi-tenancy
+  organization   Organization? @relation(fields: [organizationId], references: [id])
+  organizationId Int?
+
+  // Ensures we only have one entry per item per warehouse
+  @@unique([stockItemId, warehouseId])
+}
+
+enum MovementType {
+  INBOUND // From Supplier (Purchase)
+  OUTBOUND // To Customer (Sale)
+  TRANSFER // Between Warehouses
+  ADJUSTMENT // Manual Correction
+  WASTAGE // Damaged/Expired
+}
+
+model StockMovement {
+  id       Int          @id @default(autoincrement())
+  type     MovementType
+  quantity Int // Positive for additions, negative for deductions
+
+  // The Item being moved
+  stockItemId Int
+  stockItem   StockItem @relation(fields: [stockItemId], references: [id])
+
+  // Source/Destination tracking
+  fromWarehouseId Int?
+  toWarehouseId   Int?
+
+  // Reference to business documents
+  invoiceId  Int?
+  purchaseId Int?
+
+  // Multi-tenancy & Audit
+  organizationId Int
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  userId         String
+  user           User         @relation(fields: [userId], references: [id])
+
+  createdAt DateTime @default(now())
+  notes     String?
+
+  @@index([stockItemId])
+  @@index([organizationId])
+}
+
+model PurchaseOrder {
+  id             Int                  @id @default(autoincrement())
+  date           DateTime             @default(now())
+  status         InvoicePaymentStatus @default(Unpaid)
+  supplierId     Int
+  supplier       Supplier             @relation(fields: [supplierId], references: [id])
+  organizationId Int
+  organization   Organization         @relation(fields: [organizationId], references: [id])
+
+  total      Int     @default(0) // Total in fils
+  isReceived Boolean @default(false) // Trigger for stock increment
+
+  lines    PurchaseLine[]
+  payments PurchasePayment[]
+
+  @@index([supplierId])
+}
+
+model PurchaseLine {
+  id              Int           @id @default(autoincrement())
+  purchaseOrderId Int
+  purchaseOrder   PurchaseOrder @relation(fields: [purchaseOrderId], references: [id], onDelete: Cascade)
+
+  stockItemId Int
+  stockItem   StockItem @relation(fields: [stockItemId], references: [id])
+
+  quantity      Int
+  purchasePrice Int // Cost at time of purchase
+  total         Int
+}
+
+model PurchasePayment {
+  id              Int           @id @default(autoincrement())
+  amount          Int
+  date            DateTime      @default(now())
+  purchaseOrderId Int
+  purchaseOrder   PurchaseOrder @relation(fields: [purchaseOrderId], references: [id])
 }
 
 // ====================================================

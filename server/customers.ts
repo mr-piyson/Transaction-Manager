@@ -1,10 +1,10 @@
 import { z } from 'zod';
-import { protactedProcedure, t } from '@/lib/trpc/server';
+import { protectedProcedure, t } from '@/lib/trpc/server';
 import { TRPCError } from '@trpc/server';
 import db from '@/lib/db';
 
 export const customerRouter = t.router({
-  getCustomers: protactedProcedure.query(async () => {
+  getCustomers: protectedProcedure.query(async () => {
     try {
       return await db.customer.findMany({});
     } catch (error) {
@@ -15,7 +15,7 @@ export const customerRouter = t.router({
     }
   }),
 
-  getCustomerById: protactedProcedure
+  getCustomerById: protectedProcedure
     .input(z.object({ id: z.number() }))
     .query(async ({ input }) => {
       try {
@@ -42,7 +42,7 @@ export const customerRouter = t.router({
       }
     }),
 
-  createCustomer: protactedProcedure
+  createCustomer: protectedProcedure
     .input(
       z.object({
         name: z.string(),
@@ -67,7 +67,7 @@ export const customerRouter = t.router({
       }
     }),
 
-  updateCustomer: protactedProcedure
+  updateCustomer: protectedProcedure
     .input(
       z.object({
         id: z.number(),
@@ -93,7 +93,7 @@ export const customerRouter = t.router({
       }
     }),
 
-  deleteCustomer: protactedProcedure
+  deleteCustomer: protectedProcedure
     .input(z.object({ id: z.number() }))
     .mutation(async ({ input }) => {
       try {

@@ -1,11 +1,11 @@
 import { z } from 'zod';
-import { protactedProcedure, t } from '@/lib/trpc/server';
+import { protectedProcedure, t } from '@/lib/trpc/server';
 import { TRPCError } from '@trpc/server';
 import db from '@/lib/db';
 import { toDatabase, type CurrencyCode } from '@/lib/money';
 
 export const inventoryRouter = t.router({
-  getInventory: protactedProcedure.query(async () => {
+  getInventory: protectedProcedure.query(async () => {
     try {
       return await db.inventoryItem.findMany({});
     } catch (error) {
@@ -16,7 +16,7 @@ export const inventoryRouter = t.router({
     }
   }),
 
-  getInventoryById: protactedProcedure
+  getInventoryById: protectedProcedure
     .input(z.object({ id: z.number() }))
     .query(async ({ input }) => {
       try {
@@ -39,7 +39,7 @@ export const inventoryRouter = t.router({
       }
     }),
 
-  createInventoryItem: protactedProcedure
+  createInventoryItem: protectedProcedure
     .input(
       z.object({
         name: z.string().min(2),
@@ -48,6 +48,9 @@ export const inventoryRouter = t.router({
         salesPrice: z.coerce.number().min(0),
         description: z.string().nullish(),
         image: z.string().nullish(),
+        unit: z.string().optional(),
+        categoryId: z.number().optional(),
+        stockItemId: z.number().optional(),
       }),
     )
     .mutation(async ({ input, ctx }) => {
@@ -75,6 +78,9 @@ export const inventoryRouter = t.router({
             salesPrice: toDatabase(input.salesPrice, currency),
             description: input.description,
             image: input.image,
+            unit: input.unit || 'pcs',
+            categoryId: input.categoryId,
+            stockItemId: input.stockItemId,
             organizationId: ctx.user.organizationId,
           },
         });
@@ -89,7 +95,7 @@ export const inventoryRouter = t.router({
       }
     }),
 
-  updateInventoryItem: protactedProcedure
+  updateInventoryItem: protectedProcedure
     .input(
       z.object({
         id: z.number(),
@@ -100,6 +106,9 @@ export const inventoryRouter = t.router({
           salesPrice: z.coerce.number().optional(),
           description: z.string().nullish(),
           image: z.string().nullish(),
+          unit: z.string().optional(),
+          categoryId: z.number().optional(),
+          stockItemId: z.number().optional(),
         }),
       }),
     )
@@ -145,7 +154,7 @@ export const inventoryRouter = t.router({
       }
     }),
 
-  deleteInventoryItem: protactedProcedure
+  deleteInventoryItem: protectedProcedure
     .input(z.object({ id: z.number() }))
     .mutation(async ({ input }) => {
       try {
@@ -188,7 +197,7 @@ export const inventoryRouter = t.router({
     }
   }),
 
-  deleteImage: protactedProcedure
+  deleteImage: protectedProcedure
     .input(z.object({ id: z.number() }))
     .mutation(async ({ input }) => {
       try {

@@ -48,4 +48,4 @@ export const router = t.router;
 // Base procedure
 export const publicProcedure = t.procedure;
 // Authed procedure
-export const protactedProcedure = t.procedure.use(authMiddleware);
+export const protectedProcedure = t.procedure.use(authMiddleware);

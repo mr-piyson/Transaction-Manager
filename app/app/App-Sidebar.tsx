@@ -26,7 +26,7 @@ import { Spinner } from '@/components/ui/spinner';
 import { Route } from 'next';
 import { NavUser } from './User-Options';
 import { Button } from '@/components/ui/button';
-import { SidebarIcon } from 'lucide-react';
+import { ChevronDown, SidebarIcon } from 'lucide-react';
 
 interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {}
 
@@ -128,15 +128,43 @@ function RouteGroup({
   ...shared
 }: SharedProps & { route: RouteConfig & { type: 'group' } }) {
   const { i18n } = shared;
+  const router = useRouter();
+  const [open, setOpen] = useState(true);
 
   return (
     <SidebarGroup>
-      <SidebarGroupLabel>{i18n.t(route.key)}</SidebarGroupLabel>
-      <SidebarMenu>
-        {route.children?.map((child) => (
-          <RouteItem key={child.key} route={child} {...shared} />
-        ))}
-      </SidebarMenu>
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+        }}
+      >
+        {/* LABEL = navigation */}
+        <SidebarGroupLabel style={{ flex: 1 }}>{i18n.t(route.key)}</SidebarGroupLabel>
+
+        {/* ARROW = toggle */}
+        <ChevronDown
+          size={16}
+          onClick={(e) => {
+            e.stopPropagation();
+            setOpen((prev) => !prev);
+          }}
+          style={{
+            transition: 'transform 0.2s',
+            transform: open ? 'rotate(0deg)' : 'rotate(-90deg)',
+          }}
+        />
+      </div>
+
+      {/* COLLAPSIBLE CONTENT */}
+      {open && (
+        <SidebarMenu>
+          {route.children?.map((child) => (
+            <RouteItem key={child.key} route={child} {...shared} />
+          ))}
+        </SidebarMenu>
+      )}
     </SidebarGroup>
   );
 }

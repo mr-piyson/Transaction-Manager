@@ -1,13 +1,17 @@
 import { TranslationKeys } from '@/i18n/config';
 import {
+  Box,
+  Boxes,
   FilePenLine,
   FileText,
   LayoutDashboard,
   LucideIcon,
   Package,
   Settings,
+  Store,
   User,
   UserCircle,
+  Warehouse,
 } from 'lucide-react';
 import { Route } from 'next';
 import { AppActions, AppSubjects } from './permissions';
@@ -47,6 +51,13 @@ export const ROUTES = [
       },
       {
         type: 'item',
+        label: 'Suppliers',
+        key: 'common.suppliers',
+        href: '/app/suppliers',
+        icon: Store,
+      },
+      {
+        type: 'item',
         label: 'Inventory Items',
         key: 'common.inventoryItems',
         href: '/app/inventory',
@@ -73,6 +84,35 @@ export const ROUTES = [
         key: 'common.dashboard',
         href: '/app/dashboard',
         icon: LayoutDashboard,
+      },
+    ],
+  },
+  {
+    type: 'group',
+    label: 'Inventory',
+    key: 'common.inventory',
+    icon: Package,
+    children: [
+      {
+        type: 'item',
+        label: 'Warehouses',
+        key: 'common.warehouses',
+        href: '/app/warehouses',
+        icon: Warehouse,
+      },
+      {
+        type: 'item',
+        label: 'Stock Items',
+        key: 'common.stockItems',
+        href: '/app/stock-items',
+        icon: Boxes,
+      },
+      {
+        type: 'item',
+        label: 'Stock',
+        key: 'common.stock',
+        href: '/app/stock',
+        icon: Box,
       },
     ],
   },

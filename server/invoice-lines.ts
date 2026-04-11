@@ -1,10 +1,10 @@
 import { z } from 'zod';
-import { protactedProcedure, t } from '@/lib/trpc/server';
+import { protectedProcedure, t } from '@/lib/trpc/server';
 import { TRPCError } from '@trpc/server';
 import db from '@/lib/db';
 
 export const invoiceLinesRouter = t.router({
-  createInvoiceLine: protactedProcedure
+  createInvoiceLine: protectedProcedure
     .input(
       z.object({
         invoiceId: z.number(),
@@ -90,7 +90,7 @@ export const invoiceLinesRouter = t.router({
       }
     }),
 
-  updateInvoiceLine: protactedProcedure
+  updateInvoiceLine: protectedProcedure
     .input(
       z.object({
         id: z.number(),
@@ -120,7 +120,7 @@ export const invoiceLinesRouter = t.router({
       }
     }),
 
-  deleteInvoiceLine: protactedProcedure
+  deleteInvoiceLine: protectedProcedure
     .input(z.object({ id: z.number() }))
     .mutation(async ({ input }) => {
       try {

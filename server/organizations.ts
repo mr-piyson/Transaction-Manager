@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { publicProcedure, protactedProcedure, t } from '@/lib/trpc/server';
+import { publicProcedure, protectedProcedure, t } from '@/lib/trpc/server';
 import { TRPCError } from '@trpc/server';
 import db from '@/lib/db';
 import { auth } from '@/auth/auth-server';
@@ -29,7 +29,7 @@ export const organizationRouter = t.router({
     }
   }),
 
-  createOrganization: protactedProcedure
+  createOrganization: protectedProcedure
     .input(
       z.object({
         name: z.string(),

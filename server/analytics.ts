@@ -1,11 +1,11 @@
 // server/routers/analytics.ts  (or wherever your router lives)
 import { z } from 'zod';
-import { protactedProcedure, router } from '@/lib/trpc/server';
+import { protectedProcedure, router } from '@/lib/trpc/server';
 import { eachDayOfInterval, startOfDay, subDays, format } from 'date-fns';
 import { getCurrentUser } from '@/auth/auth-server';
 
 export const analyticsRouter = router({
-  invoiceAreaChart: protactedProcedure
+  invoiceAreaChart: protectedProcedure
     .input(z.object({ range: z.enum(['7d', '30d', '90d']) }))
     .query(async ({ ctx, input }) => {
       // 1. Always read organizationId from session — never trust the client
@@ -80,7 +80,7 @@ export const analyticsRouter = router({
     }),
 
   // ── 1. Payment method breakdown (pie / donut) ─────────────────────────
-  paymentMethodChart: protactedProcedure
+  paymentMethodChart: protectedProcedure
     .input(z.object({ range: z.enum(['7d', '30d', '90d']) }))
     .query(async ({ ctx, input }) => {
       const organizationId = (await getCurrentUser())?.organizationId;
@@ -100,7 +100,7 @@ export const analyticsRouter = router({
     }),
 
   // ── 2. Top customers by total revenue ─────────────────────────────────
-  topCustomersChart: protactedProcedure
+  topCustomersChart: protectedProcedure
     .input(
       z.object({
         range: z.enum(['7d', '30d', '90d']),
@@ -134,7 +134,7 @@ export const analyticsRouter = router({
     }),
 
   // ── 3. Inventory margin analysis (top items by volume) ────────────────
-  inventoryMarginChart: protactedProcedure
+  inventoryMarginChart: protectedProcedure
     .input(z.object({ limit: z.number().min(1).max(20).default(10) }))
     .query(async ({ ctx, input }) => {
       const organizationId = (await getCurrentUser())?.organizationId;
@@ -177,7 +177,7 @@ export const analyticsRouter = router({
     }),
 
   // ── 4. Contract pipeline ───────────────────────────────────────────────
-  contractPipelineChart: protactedProcedure.query(async ({ ctx }) => {
+  contractPipelineChart: protectedProcedure.query(async ({ ctx }) => {
     const organizationId = (await getCurrentUser())?.organizationId;
     const now = new Date();
     const in30 = new Date(now.getTime() + 30 * 86400_000);
@@ -234,7 +234,7 @@ export const analyticsRouter = router({
   }),
 
   // ── 5. Invoice completion rate by day ─────────────────────────────────
-  invoiceCompletionRateChart: protactedProcedure
+  invoiceCompletionRateChart: protectedProcedure
     .input(z.object({ range: z.enum(['7d', '30d', '90d']) }))
     .query(async ({ ctx, input }) => {
       const { eachDayOfInterval } = await import('date-fns');
