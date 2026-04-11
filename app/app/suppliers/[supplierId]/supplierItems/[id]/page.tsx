@@ -59,7 +59,7 @@ export default function InventoryItemClientPage() {
 
   const deleteMutation = trpc.inventory.deleteInventoryItem.useMutation({
     onSuccess: () => {
-      router.push('/app/inventory');
+      router.push('/app/suppliers');
       toast.success('Item deleted successfully');
     },
     onError: () => {
@@ -108,9 +108,6 @@ export default function InventoryItemClientPage() {
     return <div className="p-8 text-center">Item not found or error loading data.</div>;
   }
 
-  const profit = item.salesPrice - item.purchasePrice;
-  const margin = item.salesPrice > 0 ? ((profit / item.salesPrice) * 100).toFixed(1) : '0';
-
   return (
     <div className="flex-col md:flex min-h-screen bg-background">
       <div className="flex-1 space-y-4 p-8 pt-6">
@@ -119,7 +116,7 @@ export default function InventoryItemClientPage() {
           <div>
             <nav className="flex items-center text-sm text-muted-foreground mb-2">
               <Link
-                href="/app/inventory"
+                href="/app/suppliers"
                 className="hover:text-primary transition-colors flex items-center"
               >
                 <ChevronLeft className="mr-1 h-4 w-4" /> Back to Inventory
@@ -204,7 +201,7 @@ export default function InventoryItemClientPage() {
                           name="purchasePrice"
                           id="purchasePrice"
                           type="number"
-                          defaultValue={Format.money.dbToDecimal(item.purchasePrice)}
+                          defaultValue={Format.money.dbToDecimal(item.basePrice)}
                           required
                         />
                       </div>
@@ -222,7 +219,7 @@ export default function InventoryItemClientPage() {
                           id="salesPrice"
                           type="number"
                           // TODO: format the number
-                          defaultValue={Format.money.dbToDecimal(item.salesPrice)}
+                          defaultValue={Format.money.dbToDecimal(item.basePrice)}
                           required
                         />
                       </div>
@@ -280,43 +277,6 @@ export default function InventoryItemClientPage() {
                     <p className="text-sm italic">No image available</p>
                   </div>
                 )}
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground">
-                  Financial Summary
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex justify-between items-end">
-                  <div className="space-y-1">
-                    <p className="text-xs text-muted-foreground">Net Profit</p>
-                    <p className="text-2xl font-bold">${profit.toLocaleString()}</p>
-                  </div>
-                  <Badge
-                    className={
-                      profit >= 0
-                        ? 'bg-emerald-500/15 text-emerald-600 hover:bg-emerald-500/15'
-                        : ''
-                    }
-                  >
-                    {profit >= 0 ? <TrendingUp className="h-3 w-3 mr-1" /> : null}
-                    {margin}% Margin
-                  </Badge>
-                </div>
-
-                <div className="space-y-2 pt-2 border-t">
-                  <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">Unit Cost:</span>
-                    <span className="font-medium">${item.purchasePrice}</span>
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">Unit Revenue:</span>
-                    <span className="font-medium">${item.salesPrice}</span>
-                  </div>
-                </div>
               </CardContent>
             </Card>
           </div>

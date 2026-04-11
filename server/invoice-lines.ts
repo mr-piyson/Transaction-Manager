@@ -37,7 +37,7 @@ export const invoiceLinesRouter = t.router({
           } else {
             if (!inventoryItemId) throw new Error('Missing inventoryItemId');
             const [item, parentGroup] = await Promise.all([
-              tx.inventoryItem.findUnique({ where: { id: inventoryItemId } }),
+              tx.supplierItem.findUnique({ where: { id: inventoryItemId } }),
               parentId
                 ? tx.invoiceLine.findUnique({ where: { id: parentId } })
                 : Promise.resolve(null),
@@ -45,15 +45,15 @@ export const invoiceLinesRouter = t.router({
 
             if (!item) throw new Error('Inventory item not found');
 
-            const lineTotal = item.salesPrice * quantity;
+            const lineTotal = item.basePrice * quantity;
 
             newLine = await tx.invoiceLine.create({
               data: {
                 invoiceId,
                 inventoryItemId,
                 description: item.name,
-                purchasePrice: item.purchasePrice,
-                salesPrice: item.salesPrice,
+                purchasePrice: item.basePrice,
+                salesPrice: item.basePrice,
                 quantity,
                 total: lineTotal,
                 parentId,
@@ -64,8 +64,8 @@ export const invoiceLinesRouter = t.router({
               await tx.invoiceLine.update({
                 where: { id: parentId },
                 data: {
-                  purchasePrice: { increment: item.purchasePrice * quantity },
-                  salesPrice: { increment: item.salesPrice * quantity },
+                  purchasePrice: { increment: item.basePrice * quantity },
+                  salesPrice: { increment: item.basePrice * quantity },
                   total: { increment: lineTotal },
                 },
               });

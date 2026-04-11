@@ -1,5 +1,5 @@
 // lib/auth/permissions.ts
-import { User, Invoice, Customer, InventoryItem, Contract } from '@prisma/client';
+import { User, Invoice, Customer, Contract } from '@prisma/client';
 import { AbilityBuilder, PureAbility } from '@casl/ability';
 import { createPrismaAbility, PrismaQuery, Subjects } from '@casl/prisma';
 
@@ -12,7 +12,6 @@ export type AppSubjects =
       User: User;
       Invoice: Invoice;
       Customer: Customer;
-      inventoryItems: InventoryItem;
       Contracts: Contract;
     }>
   | 'all';

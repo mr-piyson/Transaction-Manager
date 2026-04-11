@@ -7,7 +7,7 @@ import { toDatabase, type CurrencyCode } from '@/lib/money';
 export const inventoryRouter = t.router({
   getInventory: protectedProcedure.query(async () => {
     try {
-      return await db.inventoryItem.findMany({});
+      return await db.supplierItem.findMany({});
     } catch (error) {
       throw new TRPCError({
         code: 'INTERNAL_SERVER_ERROR',
@@ -20,7 +20,7 @@ export const inventoryRouter = t.router({
     .input(z.object({ id: z.number() }))
     .query(async ({ input }) => {
       try {
-        const item = await db.inventoryItem.findUnique({
+        const item = await db.supplierItem.findUnique({
           where: { id: input.id },
         });
         if (!item) {
@@ -70,16 +70,13 @@ export const inventoryRouter = t.router({
 
         const currency = (org?.currency || 'BHD') as CurrencyCode;
 
-        return await db.inventoryItem.create({
+        return await db.supplierItem.create({
           data: {
             name: input.name,
             code: input.code,
-            purchasePrice: toDatabase(input.purchasePrice, currency),
-            salesPrice: toDatabase(input.salesPrice, currency),
+            basePrice: toDatabase(input.purchasePrice, currency),
             description: input.description,
             image: input.image,
-            unit: input.unit || 'pcs',
-            categoryId: input.categoryId,
             stockItemId: input.stockItemId,
             organizationId: ctx.user.organizationId,
           },
@@ -139,7 +136,7 @@ export const inventoryRouter = t.router({
           }
         }
 
-        return await db.inventoryItem.update({
+        return await db.supplierItem.update({
           where: { id: input.id },
           data: updateData,
         });
@@ -158,7 +155,7 @@ export const inventoryRouter = t.router({
     .input(z.object({ id: z.number() }))
     .mutation(async ({ input }) => {
       try {
-        return await db.inventoryItem.delete({
+        return await db.supplierItem.delete({
           where: { id: input.id },
         });
       } catch (error) {
@@ -201,7 +198,7 @@ export const inventoryRouter = t.router({
     .input(z.object({ id: z.number() }))
     .mutation(async ({ input }) => {
       try {
-        return await db.inventoryItem.update({
+        return await db.supplierItem.update({
           where: { id: input.id },
           data: { image: null },
         });

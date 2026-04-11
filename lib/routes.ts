@@ -58,13 +58,6 @@ export const ROUTES = [
       },
       {
         type: 'item',
-        label: 'Inventory Items',
-        key: 'common.inventoryItems',
-        href: '/app/inventory',
-        icon: Package,
-      },
-      {
-        type: 'item',
         label: 'Invoices',
         key: 'common.invoices',
         href: '/app/invoices',

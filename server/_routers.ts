@@ -2,7 +2,7 @@ import { router } from '@/lib/trpc/server';
 import { invoiceRouter } from '@/server/invoices';
 import { contractRouter } from '@/server/contracts';
 import { customerRouter } from '@/server/customers';
-import { inventoryRouter } from '@/server/inventory';
+import { inventoryRouter } from '@/server/supplierItems';
 import { invoiceLinesRouter } from '@/server/invoice-lines';
 import { paymentRouter } from '@/server/payments';
 import { organizationRouter } from '@/server/organizations';
@@ -10,7 +10,7 @@ import { analyticsRouter } from '@/server/analytics';
 import { authRouter } from '@/server/auth';
 import { supplierRouter } from '@/server/suppliers';
 import { purchaseRouter } from '@/server/purchases';
-import { stockRouter } from '@/server/stock';
+import { stockRouter } from '@/server/stocks';
 
 export const appRouter = router({
   auth: authRouter,

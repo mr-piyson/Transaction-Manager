@@ -7,9 +7,8 @@ import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { SelectDialog } from '@/components/select-dialog';
-import { InventoryItemCard } from '../../../inventory/inventoryCard';
+import { InventoryItemCard } from '../../../suppliers/[supplierId]/supplierItems/SupplierItemCard';
 import { CreateGroupDialog } from './create-group-dialog';
-import { InventoryItem } from '@prisma/client';
 import { toast } from 'sonner';
 import { trpc } from '@/lib/trpc/client';
 import { useParams, useRouter } from 'next/navigation';
@@ -43,7 +42,7 @@ export default function InvoiceEditor(props: InvoiceEditorProps) {
   if (isLoading) return <div className="p-4">Loading...</div>;
   if (!invoice) return <div className="p-4">Invoice not found</div>;
 
-  const handleSelectItem = (item: InventoryItem) => {
+  const handleSelectItem = (item: any) => {
     createLineMutation.mutate(
       {
         invoiceId: Number(invoiceId),

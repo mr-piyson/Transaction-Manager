@@ -2,7 +2,7 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { Box, Plus, Trash } from 'lucide-react';
-import { InventoryItem } from '@prisma/client';
+import { SupplierItem } from '@prisma/client';
 
 import { ListView } from '@/components/list-view';
 import { Button } from '@/components/ui/button';
@@ -10,9 +10,9 @@ import { useI18n } from '@/i18n/use-i18n';
 
 // Optional: If you want to drop axios entirely, use Eden for the mutation.
 import { trpc } from '@/lib/trpc/client';
-import { CreateInventoryItemDialog } from './create-inventoryItem-dialog';
+import { CreateInventoryItemDialog } from './create-supplierItem-dialog';
 import { Header } from '@/app/app/App-Header';
-import { InventoryItemCard } from './inventoryCard';
+import { InventoryItemCard } from './SupplierItemCard';
 import { alert } from '@/components/Alert-dialog';
 import { UniversalContextMenu } from '@/components/context-menu';
 import { useRouter } from 'next/navigation';
@@ -24,7 +24,7 @@ export default function InventoryPage() {
   const { data: inventory, isLoading, isError, refetch } = trpc.inventory.getInventory.useQuery();
   const deleteMutation = trpc.inventory.deleteInventoryItem.useMutation();
 
-  const handleDelete = (data: InventoryItem) => {
+  const handleDelete = (data: SupplierItem) => {
     alert.delete({
       title: 'Delete item?',
       description: data.name,
@@ -77,7 +77,7 @@ export default function InventoryPage() {
             >
               <InventoryItemCard
                 data={data}
-                onClick={() => router.push(`/app/inventory/${data.id}`)}
+                onClick={() => router.push(`/app/suppliers/${data.id}`)}
               />
             </UniversalContextMenu>
           </div>

@@ -5,8 +5,7 @@ import { Button } from '@/components/ui/button';
 // Using any for type compatibility
 import { FileText, Box, Trash2 } from 'lucide-react';
 import { SelectDialog } from '@/components/select-dialog';
-import { InventoryItemCard } from '../../../inventory/inventoryCard';
-import { InventoryItem } from '@prisma/client';
+import { InventoryItemCard } from '../../../suppliers/[supplierId]/supplierItems/SupplierItemCard';
 import { trpc } from '@/lib/trpc/client';
 import { toast } from 'sonner';
 import { UniversalContextMenu } from '@/components/context-menu';
@@ -30,7 +29,7 @@ export default function InvoiceForm({ invoice }: InvoiceFormProps) {
     },
   });
 
-  const handleSelectItem = (item: InventoryItem, parentId?: number) => {
+  const handleSelectItem = (item: any, parentId?: number) => {
     createMutation.mutate(
       {
         invoiceId: Number(invoice.id),

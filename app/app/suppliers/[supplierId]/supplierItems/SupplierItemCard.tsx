@@ -3,7 +3,7 @@ import { TrendingUp, TrendingDown, DollarSign, Package } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { cn } from '@/lib/utils';
 import { Format } from '@/lib/format';
-import { InventoryItem } from '@prisma/client';
+import { SupplierItem } from '@prisma/client';
 
 function PriceRow({
   icon: Icon,
@@ -25,18 +25,10 @@ function PriceRow({
 }
 
 export function InventoryItemCard(props: {
-  data: InventoryItem;
-  onClick?: (data: InventoryItem) => void;
+  data: SupplierItem;
+  onClick?: (data: SupplierItem) => void;
 }) {
   if (!props.data) return null;
-
-  const profit = props.data.salesPrice - props.data.purchasePrice;
-  const initials = props.data.name
-    .split(' ')
-    .slice(0, 2)
-    .map((w) => w[0]?.toUpperCase() ?? '')
-    .join('');
-
   return (
     <div
       onClick={() => props.onClick?.(props.data)}
@@ -69,22 +61,10 @@ export function InventoryItemCard(props: {
       {/* Prices */}
       <div className="shrink-0 flex flex-col gap-0.5 text-right min-w-22.5">
         <PriceRow
-          icon={TrendingDown}
-          value={Format.money.db(props.data.purchasePrice)}
-          className="text-destructive"
-          iconClass="text-destructive"
-        />
-        <PriceRow
           icon={DollarSign}
-          value={Format.money.db(props.data.salesPrice)}
+          value={Format.money.db(props.data.basePrice)}
           className="text-foreground font-medium"
           iconClass="text-muted-foreground"
-        />
-        <PriceRow
-          icon={TrendingUp}
-          value={Format.money.db(profit)}
-          className="text-success-foreground dark:text-success-foreground"
-          iconClass="text-emerald-600 dark:text-emerald-400"
         />
       </div>
     </div>

@@ -9,9 +9,8 @@ export const supplierRouter = t.router({
       return await db.supplier.findMany({
         where: { organizationId: ctx.user.organizationId },
         include: {
-          inventoryItems: true,
           _count: {
-            select: { inventoryItems: true, purchaseOrders: true },
+            select: { supplierItems: true, purchaseOrders: true },
           },
         },
       });
@@ -30,7 +29,7 @@ export const supplierRouter = t.router({
         const supplier = await db.supplier.findUnique({
           where: { id: input.id },
           include: {
-            inventoryItems: true,
+            supplierItems: true,
             purchaseOrders: {
               take: 10,
               orderBy: { date: 'desc' },
@@ -133,7 +132,7 @@ export const supplierRouter = t.router({
     .input(z.object({ supplierId: z.number() }))
     .query(async ({ input }) => {
       try {
-        return await db.inventoryItem.findMany({
+        return await db.supplierItem.findMany({
           where: { supplierId: input.supplierId },
           include: { stockItem: true },
         });

@@ -80,9 +80,7 @@ export default function SignUpTab() {
     reader.readAsDataURL(file);
   };
 
-  const onSubmit = async (data: z.infer<typeof SignUpSchema>) => {
-    await signUp(data);
-  };
+  const onSubmit = async (data: z.infer<typeof SignUpSchema>) => {};
 
   return (
     <Card className="gap-0">

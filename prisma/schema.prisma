@@ -40,7 +40,7 @@ model Organization {
   contracts      Contract[]
   invoices       Invoice[]
   customers      Customer[]
-  inventoryItems InventoryItem[]
+  supplierItems SupplierItem[]
   stocks         Stock[]
   suppliers      Supplier[]
   warehouses     Warehouse[]
@@ -211,7 +211,7 @@ model InvoiceLine {
   total         Int
 
   inventoryItemId Int?
-  itemRef         InventoryItem? @relation(fields: [inventoryItemId], references: [id])
+  itemRef         SupplierItem? @relation(fields: [inventoryItemId], references: [id])
 
   invoiceId Int?
   invoice   Invoice? @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
@@ -284,7 +284,7 @@ model Supplier {
   taxId       String?
   notes       String?
 
-  inventoryItems InventoryItem[]
+  supplierItems SupplierItem[]
 
   organizationId Int?
   organization   Organization? @relation(fields: [organizationId], references: [id])
@@ -292,21 +292,16 @@ model Supplier {
   createdAt      DateTime?       @default(now())
   updatedAt      DateTime?       @updatedAt
   purchaseOrders PurchaseOrder[]
-
-  @@map("supplier")
 }
 
-model InventoryItem {
-  id            Int     @id @default(autoincrement())
-  code          String?
-  name          String
-  description   String?
-  /// Stored in smallest currency unit (e.g. fils)
-  purchasePrice Int
-  /// Stored in smallest currency unit (e.g. fils)
-  salesPrice    Int
-  filePath      String?
-  image         String?
+model SupplierItem {
+  id          Int     @id @default(autoincrement())
+  code        String?
+  name        String
+  description String?
+  // Stored in smallest currency unit (e.g. fils)
+  basePrice   Int
+  image       String?
 
   stockItemId Int?
   stockItem   StockItem? @relation(fields: [stockItemId], references: [id])
@@ -323,7 +318,6 @@ model InventoryItem {
 
   @@index([organizationId])
   @@index([code])
-  @@map("InventoryItem")
 }
 
 model Category {
@@ -390,7 +384,7 @@ model StockItem {
   organizationId Int?
   purchaseLines  PurchaseLine[]
   stockMovements StockMovement[]
-  inventoryItems InventoryItem[]
+  supplierItems SupplierItem[]
 }
 
 model Stock {
