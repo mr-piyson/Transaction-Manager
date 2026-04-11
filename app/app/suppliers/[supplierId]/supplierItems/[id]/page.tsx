@@ -22,8 +22,7 @@ const UpdateSchema = z.object({
   name: z.string().min(1, 'Name is required'),
   code: z.string().nullable(),
   description: z.string().nullable(),
-  purchasePrice: z.coerce.number().int().nonnegative(),
-  salesPrice: z.coerce.number().int().nonnegative(),
+  basePrice: z.coerce.number().int().nonnegative(),
   image: z.string().url().nullable().or(z.literal('')),
 });
 
@@ -77,8 +76,7 @@ export default function InventoryItemClientPage() {
       name: formData.get('name'),
       code: formData.get('code') || null,
       description: formData.get('description') || null,
-      purchasePrice: formData.get('purchasePrice'),
-      salesPrice: formData.get('salesPrice'),
+      basePrice: formData.get('basePrice'),
       image: formData.get('image') || null,
     };
 
@@ -119,7 +117,7 @@ export default function InventoryItemClientPage() {
                 href="/app/suppliers"
                 className="hover:text-primary transition-colors flex items-center"
               >
-                <ChevronLeft className="mr-1 h-4 w-4" /> Back to Inventory
+                <ChevronLeft className="mr-1 h-4 w-4" /> Back to Supplier
               </Link>
             </nav>
             <h2 className="text-3xl font-bold tracking-tight flex items-center gap-3">
@@ -189,40 +187,20 @@ export default function InventoryItemClientPage() {
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4">
-                    <div className="grid gap-2">
-                      <Label htmlFor="purchasePrice">Cost (Purchase Price)</Label>
-                      <div className="relative">
-                        <span className="absolute left-3 top-2.5 text-muted-foreground text-sm">
-                          $
-                        </span>
-                        <Input
-                          className="pl-7"
-                          name="purchasePrice"
-                          id="purchasePrice"
-                          type="number"
-                          defaultValue={Format.money.dbToDecimal(item.basePrice)}
-                          required
-                        />
-                      </div>
-                    </div>
-
-                    <div className="grid gap-2">
-                      <Label htmlFor="salesPrice">Retail (Sales Price)</Label>
-                      <div className="relative">
-                        <span className="absolute left-3 top-2.5 text-muted-foreground text-sm">
-                          $
-                        </span>
-                        <Input
-                          className="pl-7"
-                          name="salesPrice"
-                          id="salesPrice"
-                          type="number"
-                          // TODO: format the number
-                          defaultValue={Format.money.dbToDecimal(item.basePrice)}
-                          required
-                        />
-                      </div>
+                  <div className="grid gap-2 pt-4">
+                    <Label htmlFor="basePrice">Base Price</Label>
+                    <div className="relative">
+                      <span className="absolute left-3 top-2.5 text-muted-foreground text-sm">
+                        $
+                      </span>
+                      <Input
+                        className="pl-7"
+                        name="basePrice"
+                        id="basePrice"
+                        type="number"
+                        defaultValue={Format.money.dbToDecimal(item.basePrice)}
+                        required
+                      />
                     </div>
                   </div>
 

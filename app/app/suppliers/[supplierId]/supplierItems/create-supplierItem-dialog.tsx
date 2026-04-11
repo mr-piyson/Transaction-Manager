@@ -28,8 +28,7 @@ import { uploadImage } from '@/lib/upload';
 export const inventoryItemSchema = z.object({
   name: z.string().min(2, 'Item name is required'),
   code: z.string().min(3, 'SKU must be at least 3 characters'),
-  purchasePrice: z.coerce.number().min(0, 'Purchase price must be a positive number'),
-  salesPrice: z.coerce.number().min(0, 'Sale price must be a positive number'),
+  basePrice: z.coerce.number().min(0, 'Price must be a positive number'),
   description: z.string().optional().or(z.literal('')),
   image: z.any().optional(),
 });
@@ -42,8 +41,7 @@ export type InventoryItemValues = z.infer<typeof inventoryItemSchema>;
 const DEFAULT_VALUES: InventoryItemValues = {
   name: '',
   code: '',
-  purchasePrice: 0,
-  salesPrice: 0,
+  basePrice: 0,
   description: '',
   image: undefined,
 };
@@ -77,8 +75,7 @@ export function CreateInventoryItemDialog({
         return createMutation.mutateAsync({
           name: values.name,
           code: values.code,
-          purchasePrice: values.purchasePrice,
-          salesPrice: values.salesPrice,
+          basePrice: values.basePrice,
           description: values.description,
           image: imagePath,
         });
@@ -109,7 +106,7 @@ export function CreateInventoryItemDialog({
         <DialogHeader>
           <DialogTitle className="flex flex-row gap-2 text-primary text-2xl items-center">
             <Box />
-            <span>New Inventory Item</span>
+            <span>New Supplier Item</span>
           </DialogTitle>
           <DialogDescription>Enter the details to add a new item to your stock.</DialogDescription>
         </DialogHeader>
@@ -156,24 +153,14 @@ export function CreateInventoryItemDialog({
                 </FormGroup>
               </FieldGroup>
 
-              {/* ── Prices ─────────────────────────────────────────────── */}
               <FieldGroup>
-                <FormGroup columns={2}>
-                  <FormInput
-                    name="purchasePrice"
-                    label="Purchase Price"
-                    type="number"
-                    placeholder="0"
-                    icon={<Banknote className="size-4" />}
-                  />
-                  <FormInput
-                    name="salesPrice"
-                    label="Sale Price"
-                    type="number"
-                    placeholder="0.000"
-                    icon={<HandCoins className="size-4" />}
-                  />
-                </FormGroup>
+                <FormInput
+                  name="basePrice"
+                  label="Base Price"
+                  type="number"
+                  placeholder="0.000"
+                  icon={<Banknote className="size-4" />}
+                />
               </FieldGroup>
 
               {/* ── Description ────────────────────────────────────────── */}

@@ -44,12 +44,9 @@ export const inventoryRouter = t.router({
       z.object({
         name: z.string().min(2),
         code: z.string().min(3),
-        purchasePrice: z.coerce.number().min(0),
-        salesPrice: z.coerce.number().min(0),
+        basePrice: z.coerce.number().min(0),
         description: z.string().nullish(),
         image: z.string().nullish(),
-        unit: z.string().optional(),
-        categoryId: z.number().optional(),
         stockItemId: z.number().optional(),
       }),
     )
@@ -74,7 +71,7 @@ export const inventoryRouter = t.router({
           data: {
             name: input.name,
             code: input.code,
-            basePrice: toDatabase(input.purchasePrice, currency),
+            basePrice: toDatabase(input.basePrice, currency),
             description: input.description,
             image: input.image,
             stockItemId: input.stockItemId,
@@ -99,12 +96,9 @@ export const inventoryRouter = t.router({
         data: z.object({
           name: z.string().optional(),
           code: z.string().optional().nullable(),
-          purchasePrice: z.coerce.number().optional(),
-          salesPrice: z.coerce.number().optional(),
+          basePrice: z.coerce.number().optional(),
           description: z.string().nullish(),
           image: z.string().nullish(),
-          unit: z.string().optional(),
-          categoryId: z.number().optional(),
           stockItemId: z.number().optional(),
         }),
       }),
@@ -114,7 +108,7 @@ export const inventoryRouter = t.router({
         const updateData: any = { ...input.data };
 
         // Convert prices to cents if they are being updated
-        if (input.data.purchasePrice !== undefined || input.data.salesPrice !== undefined) {
+        if (input.data.basePrice !== undefined) {
           if (!ctx.user.organizationId) {
             throw new TRPCError({
               code: 'BAD_REQUEST',
@@ -128,12 +122,7 @@ export const inventoryRouter = t.router({
           });
           const currency = (org?.currency || 'BHD') as CurrencyCode;
 
-          if (input.data.purchasePrice !== undefined) {
-            updateData.purchasePrice = toDatabase(input.data.purchasePrice, currency);
-          }
-          if (input.data.salesPrice !== undefined) {
-            updateData.salesPrice = toDatabase(input.data.salesPrice, currency);
-          }
+          updateData.basePrice = toDatabase(input.data.basePrice, currency);
         }
 
         return await db.supplierItem.update({
