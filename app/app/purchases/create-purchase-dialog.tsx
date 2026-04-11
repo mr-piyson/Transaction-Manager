@@ -28,7 +28,13 @@ interface ItemLine {
   purchasePrice: number;
 }
 
-export function CreatePurchaseDialog({ onSuccess }: { onSuccess?: () => void }) {
+export function CreatePurchaseDialog({ 
+  onSuccess,
+  children
+}: { 
+  onSuccess?: () => void,
+  children?: React.ReactNode
+}) {
   const [open, setOpen] = useState(false);
   const [supplierId, setSupplierId] = useState<string>('');
   const [lines, setLines] = useState<ItemLine[]>([]);
@@ -78,12 +84,16 @@ export function CreatePurchaseDialog({ onSuccess }: { onSuccess?: () => void }) 
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button variant="default" className="gap-2 shadow-lg shadow-primary/20">
-          <Plus className="size-4" />
-          New Purchase
-        </Button>
-      </DialogTrigger>
+      <DialogTrigger
+        render={
+          children || (
+            <Button variant="default" className="gap-2 shadow-lg shadow-primary/20">
+              <Plus className="size-4" />
+              New Purchase
+            </Button>
+          )
+        }
+      />
 
       <DialogContent className="sm:max-w-2xl max-h-[90vh] flex flex-col p-0 overflow-hidden">
         <DialogHeader className="p-6 pb-2">

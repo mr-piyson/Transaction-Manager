@@ -26,7 +26,7 @@ import {
 } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 
-export function StockAdjustmentDialog() {
+export function StockAdjustmentDialog({ children }: { children?: React.ReactNode }) {
   const [open, setOpen] = useState(false);
   const [stockItemId, setStockItemId] = useState<string>('');
   const [warehouseId, setWarehouseId] = useState<string>('');
@@ -75,16 +75,18 @@ export function StockAdjustmentDialog() {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger
         render={
-          <Button
-            variant="outline"
-            size="sm"
-            className="gap-2 h-8 text-[10px] uppercase tracking-wider font-bold"
-          >
-            <PenTool className="size-3" />
-            Manual Adjustment
-          </Button>
+          children || (
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-2 h-8 text-[10px] uppercase tracking-wider font-bold"
+            >
+              <PenTool className="size-3" />
+              Manual Adjustment
+            </Button>
+          )
         }
-      ></DialogTrigger>
+      />
 
       <DialogContent className="sm:max-w-md">
         <DialogHeader>

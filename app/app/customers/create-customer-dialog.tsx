@@ -37,7 +37,7 @@ export type CustomerFormValues = z.infer<typeof customerSchema>;
 interface CreateCustomerDialogProps {
   onSuccess?: (data: any) => void;
   onError?: (error: any) => void;
-  children?: JSX.Element;
+  children?: React.ReactNode;
 }
 
 export function CreateCustomerDialog({ onSuccess, onError, children }: CreateCustomerDialogProps) {

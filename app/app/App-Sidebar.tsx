@@ -27,6 +27,7 @@ import { Route } from 'next';
 import { NavUser } from './User-Options';
 import { Button } from '@/components/ui/button';
 import { ChevronDown, SidebarIcon } from 'lucide-react';
+import Link from 'next/link';
 
 interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {}
 
@@ -289,20 +290,21 @@ function AppLogo() {
   return (
     <SidebarMenu>
       <SidebarMenuItem>
-        <SidebarMenuButton
-          size="lg"
-          dir="ltr"
-          className="flex flex-row opacity-100! data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
-          disabled
-        >
-          <div className="flex aspect-square size-8 items-center justify-center rounded-lg text-sidebar-primary-foreground">
-            <Logo className="size-7!" />
-          </div>
+        <Link href={'/app'}>
+          <SidebarMenuButton
+            size="lg"
+            dir="ltr"
+            className="flex flex-row opacity-100! data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+          >
+            <div className="flex aspect-square size-8 items-center justify-center rounded-lg text-sidebar-primary-foreground">
+              <Logo className="size-7!" />
+            </div>
 
-          <div className="grid flex-1 text-left text-sm leading-tight ">
-            <span className="truncate font-semibold text-lg">Transaction Manager</span>
-          </div>
-        </SidebarMenuButton>
+            <div className="grid flex-1 text-left text-sm leading-tight ">
+              <span className="truncate font-semibold text-lg">Transaction Manager</span>
+            </div>
+          </SidebarMenuButton>
+        </Link>
       </SidebarMenuItem>
     </SidebarMenu>
   );
