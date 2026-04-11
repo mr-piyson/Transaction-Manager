@@ -230,4 +230,115 @@ export const invoiceRouter = t.router({
         });
       }
     }),
+  /**
+   * Create a full invoice with lines
+   */
+  createFullInvoice: protectedProcedure
+    .input(
+      z.object({
+        customerId: z.number(),
+        date: z.date().optional(),
+        warehouseId: z.number().optional(),
+        lines: z.array(z.object({
+          stockItemId: z.number().optional(),
+          inventoryItemId: z.number().optional(),
+          description: z.string(),
+          quantity: z.number(),
+          salesPrice: z.number(),
+          purchasePrice: z.number(),
+          tax: z.number().optional().default(0),
+        })),
+        isCompleted: z.boolean().optional().default(false),
+      }),
+    )
+    .mutation(async ({ input, ctx }) => {
+      try {
+        return await db.$transaction(async (tx) => {
+          // 1. Calculate totals
+          let subtotal = 0;
+          for (const line of input.lines) {
+            subtotal += line.salesPrice * line.quantity;
+          }
+          const total = subtotal; // Simplified for now (no discount/tax total logic yet)
+
+          // 2. Create invoice
+          const invoice = await tx.invoice.create({
+            data: {
+              organizationId: ctx.user.organizationId,
+              userId: ctx.user.id,
+              customerId: input.customerId,
+              date: input.date || new Date(),
+              warehouseId: input.warehouseId,
+              subtotal,
+              total,
+              isCompleted: input.isCompleted,
+            },
+          });
+
+          // 3. Create lines
+          for (const line of input.lines) {
+            await tx.invoiceLine.create({
+              data: {
+                invoiceId: invoice.id,
+                stockItemId: line.stockItemId,
+                inventoryItemId: line.inventoryItemId,
+                description: line.description,
+                quantity: line.quantity,
+                salesPrice: line.salesPrice,
+                purchasePrice: line.purchasePrice,
+                tax: line.tax,
+                total: line.salesPrice * line.quantity,
+              },
+            });
+
+            // 4. Stock management if completed
+            if (input.isCompleted && line.stockItemId && (input.warehouseId || invoice.warehouseId)) {
+              const warehouseId = input.warehouseId || invoice.warehouseId;
+              const masterItem = await tx.stockItem.findUnique({
+                where: { id: line.stockItemId },
+              });
+
+              if (masterItem?.type === 'PRODUCT' && warehouseId) {
+                await tx.stock.upsert({
+                  where: {
+                    stockItemId_warehouseId: {
+                      stockItemId: line.stockItemId,
+                      warehouseId: warehouseId,
+                    },
+                  },
+                  update: { quantity: { decrement: line.quantity } },
+                  create: {
+                    stockItemId: line.stockItemId,
+                    warehouseId: warehouseId,
+                    quantity: -line.quantity,
+                    organizationId: ctx.user.organizationId,
+                  },
+                });
+
+                await tx.stockMovement.create({
+                  data: {
+                    type: 'OUTBOUND',
+                    quantity: -line.quantity,
+                    stockItemId: line.stockItemId,
+                    fromWarehouseId: warehouseId,
+                    invoiceId: invoice.id,
+                    organizationId: ctx.user.organizationId as number,
+                    userId: ctx.user.id,
+                    notes: `Sale from New Invoice #${invoice.id}`,
+                  },
+                });
+              }
+            }
+          }
+
+          return invoice;
+        });
+      } catch (error) {
+        throw new TRPCError({
+          code: 'INTERNAL_SERVER_ERROR',
+          message: 'Failed to create full invoice',
+          cause: error,
+        });
+      }
+    }),
 });

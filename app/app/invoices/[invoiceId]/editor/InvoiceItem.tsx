@@ -7,6 +7,7 @@ import { UniversalContextMenu } from '@/components/context-menu';
 import { InvoiceLine } from '@prisma/client';
 import { trpc } from '@/lib/trpc/client';
 import { toast } from 'sonner';
+import { formatAmount } from '@/lib/utils';
 
 export default function InvoiceItemCard({ line }: { line: InvoiceLine }) {
   const utils = trpc.useUtils();
@@ -70,7 +71,7 @@ export default function InvoiceItemCard({ line }: { line: InvoiceLine }) {
               <h3 className="font-medium leading-none truncate">{line.description}</h3>
             </div>
             <div className="flex items-center gap-2 text-xs text-muted-foreground mt-1">
-              <span>{Format.money.db(line.salesPrice)}</span>
+              <span>{formatAmount(line.salesPrice)}</span>
               {line.quantity > 1 && (
                 <span className="text-muted-foreground/60">× {line.quantity}</span>
               )}
@@ -103,7 +104,7 @@ export default function InvoiceItemCard({ line }: { line: InvoiceLine }) {
           </div>
 
           <div className="text-sm font-semibold tabular-nums text-right min-w-[60px]">
-            {Format.money.db(line.total)}
+            {formatAmount(line.total)}
           </div>
 
           {/* <Button

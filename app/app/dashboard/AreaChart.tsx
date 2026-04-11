@@ -14,7 +14,7 @@ import {
 } from '@/components/ui/chart';
 
 import { Skeleton } from '@/components/ui/skeleton';
-import { Format } from '@/lib/format';
+import { formatAmount } from '@/lib/utils';
 
 const chartConfig = {
   income: {
@@ -28,7 +28,7 @@ const chartConfig = {
 } satisfies ChartConfig;
 
 function formatBHD(value: number) {
-  return Format.money.db(value);
+  return formatAmount(value);
 }
 
 // const rangeLabel = {

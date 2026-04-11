@@ -3,6 +3,7 @@ import { Box, Package } from 'lucide-react';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Format } from '@/lib/format';
+import { formatAmount } from '@/lib/utils';
 
 interface InvoiceItemCardGroupProps {
   title: string;
@@ -52,7 +53,7 @@ export default function InvoiceItemCardGroup({
       </div>
       <div className="p-3 px-3 w-full bg-muted/30 ">
         <p className="flex text-sm font-bold justify-end">
-          <span>Total : {Format.money.db(totalQty)}</span>
+          <span>Total : {formatAmount(totalQty)}</span>
         </p>
       </div>
     </div>

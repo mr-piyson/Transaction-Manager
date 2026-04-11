@@ -59,7 +59,7 @@ export default function PaymentCard({
 
       {/* Amount Section */}
       <span className="text-sm font-bold text-success-foreground tabular-nums">
-        {Format.money.db(payment.amount)}
+        {formatAmount(payment.amount)}
       </span>
 
       {/* Actions */}

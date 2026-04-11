@@ -20,7 +20,7 @@ import { trpc } from '@/lib/trpc/client';
 import PaymentCard from './payment-card';
 import { toast } from 'sonner';
 import { useState } from 'react';
-import { cn } from '@/lib/utils';
+import { cn, formatAmount } from '@/lib/utils';
 import { Banknote, Clock, CreditCard, HandCoinsIcon, Plus } from 'lucide-react';
 import { Format } from '@/lib/format';
 import { Payment } from '@prisma/client';
@@ -96,7 +96,7 @@ export function PaymentDialog({ children, invoice }: PaymentDialogProps) {
           <DrawerTitle className="text-base">Payments</DrawerTitle>
           <DrawerDescription className="text-xs">
             Balance:{' '}
-            <span className={cn('font-bold tabular-nums')}>{Format.money.db(balanceDue)}</span>
+            <span className={cn('font-bold tabular-nums')}>{formatAmount(balanceDue)}</span>
           </DrawerDescription>
         </DrawerHeader>
 
@@ -134,18 +134,18 @@ export function PaymentDialog({ children, invoice }: PaymentDialogProps) {
             <div className="shrink-0 px-2 py-4 bg-card border-t border-border space-y-2">
               <div className="flex justify-between text-xs text-muted-foreground">
                 <span>Invoice Total</span>
-                <span className="tabular-nums">{Format.money.db(invoice.total || 0)}</span>
+                <span className="tabular-nums">{formatAmount(invoice.total || 0)}</span>
               </div>
               <div className="flex justify-between text-xs">
                 <span className="text-success-foreground">Total Paid</span>
                 <span className="font-semibold text-success-foreground tabular-nums">
-                  {Format.money.db(amountPaid)}
+                  {formatAmount(amountPaid)}
                 </span>
               </div>
               <Separator />
               <div className="flex justify-between text-sm font-bold">
                 <span>Balance Due</span>
-                <span className="tabular-nums">{Format.money.db(balanceDue)}</span>
+                <span className="tabular-nums">{formatAmount(balanceDue)}</span>
               </div>
             </div>
           </TabsContent>

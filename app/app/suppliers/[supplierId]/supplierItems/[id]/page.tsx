@@ -13,7 +13,13 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { toast } from 'sonner';
 import { Format } from '@/lib/format';
 
@@ -203,7 +209,7 @@ export default function InventoryItemClientPage() {
                         name="basePrice"
                         id="basePrice"
                         type="number"
-                        defaultValue={Format.money.dbToDecimal(item.basePrice)}
+                        defaultValue={formatAmountToDecimal(item.basePrice)}
                         required
                       />
                     </div>
@@ -217,8 +223,10 @@ export default function InventoryItemClientPage() {
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="null">None (Not Stocked)</SelectItem>
-                        {stockItems?.map(sItem => (
-                          <SelectItem key={sItem.id} value={sItem.id.toString()}>{sItem.name} ({sItem.sku})</SelectItem>
+                        {stockItems?.map((sItem) => (
+                          <SelectItem key={sItem.id} value={sItem.id.toString()}>
+                            {sItem.name} ({sItem.sku})
+                          </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>

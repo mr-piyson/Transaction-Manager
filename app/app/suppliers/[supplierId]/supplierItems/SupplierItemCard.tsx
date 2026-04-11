@@ -2,6 +2,7 @@
 import { Package } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Format } from '@/lib/format';
+import { formatAmount } from '@/lib/utils';
 
 export function InventoryItemCard(props: {
   data: any; // Using any to support included relations
@@ -67,7 +68,7 @@ export function InventoryItemCard(props: {
       {/* Prices */}
       <div className="shrink-0 flex flex-col gap-0.5 text-right">
         <div className="text-sm font-black text-foreground tabular-nums">
-          {Format.money.db(props.data.basePrice)}
+          {formatAmount(props.data.basePrice)}
         </div>
         <div className="text-[10px] text-muted-foreground uppercase tracking-wider font-bold">
           Base Price

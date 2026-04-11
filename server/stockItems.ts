@@ -69,10 +69,10 @@ export const stockItemRouter = t.router({
         description: z.string().optional(),
         barcode: z.string().optional(),
         unit: z.string().default('pcs'),
-        purchasePrice: z.number().int().default(0),
-        salesPrice: z.number().int().default(0),
-        minStock: z.number().int().default(0),
-        categoryId: z.number().optional(),
+        purchasePrice: z.coerce.number().default(0),
+        salesPrice: z.coerce.number().default(0),
+        minStock: z.coerce.number().default(0),
+        categoryId: z.coerce.number().optional(),
         image: z.string().optional(),
       }),
     )
@@ -95,7 +95,7 @@ export const stockItemRouter = t.router({
   updateStockItem: protectedProcedure
     .input(
       z.object({
-        id: z.number(),
+        id: z.coerce.number(),
         data: z.object({
           name: z.string().optional(),
           sku: z.string().optional(),
@@ -103,10 +103,10 @@ export const stockItemRouter = t.router({
           description: z.string().optional(),
           barcode: z.string().optional(),
           unit: z.string().optional(),
-          purchasePrice: z.number().int().optional(),
-          salesPrice: z.number().int().optional(),
-          minStock: z.number().int().optional(),
-          categoryId: z.number().optional(),
+          purchasePrice: z.coerce.number().optional(),
+          salesPrice: z.coerce.number().optional(),
+          minStock: z.coerce.number().optional(),
+          categoryId: z.coerce.number().optional(),
           image: z.string().optional(),
         }),
       }),

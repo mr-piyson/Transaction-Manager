@@ -7,6 +7,7 @@ import { z } from 'zod';
 import { Field, FieldLabel, FieldError, FieldDescription } from '@/components/ui/field';
 import { InputGroup, InputGroupInput, InputGroupAddon } from '@/components/ui/input-group';
 import { cn } from '@/lib/utils';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 
 // ---------------------------------------------------------------------------
 // 1. Inferred form value type helper
@@ -94,6 +95,7 @@ interface FormInputProps {
   type?: React.HTMLInputTypeAttribute;
   icon?: ReactNode;
   description?: string;
+  options?: { label: string; value: string }[];
 }
 
 export function FormInput({
@@ -103,6 +105,7 @@ export function FormInput({
   type = 'text',
   icon,
   description,
+  options,
 }: FormInputProps) {
   // `useAppFormContext` is called without a schema generic here because we
   // only need the field API — the concrete generic is resolved at the call site.
@@ -116,6 +119,30 @@ export function FormInput({
         // Only flag invalid once the user has interacted with the field.
         const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid;
 
+        if (type === 'select') {
+          return (
+            <Field data-invalid={isInvalid}>
+              <FieldLabel htmlFor={field.name}>{label}</FieldLabel>
+              <Select
+                value={field.state.value?.toString()}
+                onValueChange={(val) => field.handleChange(val)}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder={placeholder} />
+                </SelectTrigger>
+                <SelectContent>
+                  {options?.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <FieldError>{field.state.meta.errors[0]}</FieldError>
+            </Field>
+          );
+        }
+
         return (
           <Field data-invalid={isInvalid}>
             <FieldLabel htmlFor={field.name}>{label}</FieldLabel>
@@ -125,9 +152,14 @@ export function FormInput({
                 name={field.name}
                 value={field.state.value as string}
                 onBlur={field.handleBlur}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                  field.handleChange(e.target.value)
-                }
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                  const val = e.target.value;
+                  if (type === 'number') {
+                    field.handleChange(val === '' ? undefined : Number(val) as any);
+                  } else {
+                    field.handleChange(val as any);
+                  }
+                }}
                 type={type}
                 placeholder={placeholder}
                 aria-invalid={isInvalid}

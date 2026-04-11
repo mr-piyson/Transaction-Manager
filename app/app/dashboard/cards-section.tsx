@@ -13,6 +13,7 @@ import { trpc } from '@/lib/trpc/client';
 import { Format } from '@/lib/format';
 import { TrendingDown, TrendingUp, Users, Wallet } from 'lucide-react';
 import { useMemo } from 'react';
+import { formatAmount } from '@/lib/utils';
 
 const KpiCard = ({ title, value, icon, description, trend }: any) => (
   <Card className="drop-shadow-sm flex flex-col relative overflow-hidden h-full">
@@ -70,21 +71,21 @@ export function CardsSection() {
   const kpis = [
     {
       title: 'Total Revenue',
-      value: Format.money.db(stats.revenue),
+      value: formatAmount(stats.revenue),
       icon: <Wallet className="w-4 h-4" />,
       description: 'Lifetime billed revenue',
       trend: 'up',
     },
     {
       title: 'Collected Revenue',
-      value: Format.money.db(stats.paid),
+      value: formatAmount(stats.paid),
       icon: <TrendingUp className="w-4 h-4" />,
       description: 'Total actual received',
       trend: 'up',
     },
     {
       title: 'Outstanding Balance',
-      value: Format.money.db(stats.outstanding),
+      value: formatAmount(stats.outstanding),
       icon: <TrendingDown className="w-4 h-4" />,
       description: 'Pending collections',
       trend: stats.outstanding > 0 ? 'down' : 'up',

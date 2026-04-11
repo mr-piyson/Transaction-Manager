@@ -26,6 +26,7 @@ import {
 import { Label } from '@/components/ui/label';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Format } from '@/lib/format';
+import { formatAmount } from '@/lib/utils';
 
 interface ItemLine {
   stockItemId: number;
@@ -223,7 +224,7 @@ export function CreatePurchaseDialog({
             </span>
             <span className="text-xl font-black text-primary flex items-center gap-1">
               <Banknote className="size-5" />
-              {Format.money.db(total)}
+              {formatAmount(total)}
             </span>
           </div>
           <div className="flex gap-2 p-2">

@@ -2,7 +2,7 @@ import { z } from 'zod';
 import { protectedProcedure, t } from '@/lib/trpc/server';
 import { TRPCError } from '@trpc/server';
 import db from '@/lib/db';
-import { toDatabase, type CurrencyCode } from '@/lib/money';
+import { toSmallestUnit, type CurrencyCode } from '@/lib/utils';
 
 export const inventoryRouter = t.router({
   getInventory: protectedProcedure.query(async () => {
@@ -90,7 +90,7 @@ export const inventoryRouter = t.router({
           data: {
             name: input.name,
             code: input.code,
-            basePrice: toDatabase(input.basePrice, currency),
+            basePrice: toSmallestUnit(input.basePrice, currency),
             description: input.description,
             image: input.image,
             stockItemId: input.stockItemId,
@@ -142,7 +142,7 @@ export const inventoryRouter = t.router({
           });
           const currency = (org?.currency || 'BHD') as CurrencyCode;
 
-          updateData.basePrice = toDatabase(input.data.basePrice, currency);
+          updateData.basePrice = toSmallestUnit(input.data.basePrice, currency);
         }
 
         return await db.supplierItem.update({

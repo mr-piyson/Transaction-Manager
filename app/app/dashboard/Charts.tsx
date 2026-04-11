@@ -21,11 +21,11 @@ import { trpc } from '@/lib/trpc/client';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { format, parseISO } from 'date-fns';
-import { Format } from '@/lib/format';
+import { formatAmount } from '@/lib/utils';
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 type Range = '7d' | '30d' | '90d';
-const bhd = (fils: number) => Format.money.db(fils);
+const bhd = (fils: number) => formatAmount(fils, 'BHD');
 const bhdShort = (fils: number) =>
   fils >= 1_000_000
     ? `${(fils / 1_000_000).toFixed(1)}M BD`

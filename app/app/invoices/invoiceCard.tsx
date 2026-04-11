@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation';
 import { User, Calendar, Hash, FileText } from 'lucide-react';
 
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { cn } from '@/lib/utils';
+import { cn, formatAmount } from '@/lib/utils';
 import { Format } from '@/lib/format';
 
 export function InvoiceCard({ data }: { data: any }) {
@@ -49,7 +49,7 @@ export function InvoiceCard({ data }: { data: any }) {
 
       {/* Amount */}
       <div className="text-right shrink-0 text-muted-foreground">
-        <span>{Format.money.db(data.total)}</span>
+        <span>{formatAmount(data.total, 'BHD')}</span>
         {data.date && (
           <span className="flex items-center gap-1">
             <Calendar className="size-3" />

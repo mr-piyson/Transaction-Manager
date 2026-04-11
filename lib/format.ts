@@ -1,6 +1,6 @@
 import { Dates, DatesAgo, FormatKey } from './date';
-import { CurrencyCode, CURRENCIES, fromDatabase } from './money';
 import currency from 'currency.js';
+import { CURRENCIES, CurrencyCode, toSmallestUnit } from './utils';
 
 // Pre-compute currency.js options for O(1) access
 const formatConfigs = Object.keys(CURRENCIES).reduce(
@@ -22,7 +22,7 @@ export const Format = {
   money: {
     // (e.g., 5100 -> "5.1")
     dbToDecimal: (intVal: number, code: CurrencyCode = 'BHD') => {
-      const decimalVal = fromDatabase(intVal, code);
+      const decimalVal = toSmallestUnit(intVal, code) / Math.pow(10, CURRENCIES[code].precision);
       return currency(decimalVal, formatConfigs[code]).value;
     },
 
@@ -38,7 +38,7 @@ export const Format = {
      * This is the "Smooth Conversion" path.
      */
     db: (intVal: number, code: CurrencyCode = 'BHD') => {
-      const decimalVal = fromDatabase(intVal, code);
+      const decimalVal = toSmallestUnit(intVal, code);
       return currency(decimalVal, formatConfigs[code]).format();
     },
   },
