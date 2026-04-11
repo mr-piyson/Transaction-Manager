@@ -66,9 +66,7 @@ function QuickActionCard({
   if (children) {
     return (
       <div className="aspect-square">
-        {React.cloneElement(children as React.ReactElement, {
-          children: content,
-        })}
+        {React.cloneElement(children as React.ReactElement, {}, content)}
       </div>
     );
   }
@@ -110,6 +108,11 @@ export default function App_Page() {
             Create New Invoice
           </Button>
         </div>
+
+        {/* Stats Overview */}
+        <section className="relative overflow-hidden">
+          <CardsSection />
+        </section>
 
         {/* Quick Actions Grid */}
         <section className="space-y-6">

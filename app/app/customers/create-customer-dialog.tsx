@@ -1,9 +1,9 @@
 'use client';
 
-import React, { JSX, ReactNode, useState } from 'react';
+import { JSX, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Loader2, Plus, User, Phone, MapPin, Mail, SearchIcon } from 'lucide-react';
+import { Loader2, Plus, User, Phone, MapPin } from 'lucide-react';
 import { toast } from 'sonner';
 
 import {
@@ -15,13 +15,12 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
-import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from '@/components/ui/field';
+import { Field, FieldError, FieldGroup, FieldLabel } from '@/components/ui/field';
 import { Button } from '@/components/ui/button';
 import { trpc } from '@/lib/trpc/client';
 
 import * as z from 'zod';
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/input-group';
-import { CityCombobox } from '@/components/cities/combobox-cities';
 
 export const customerSchema = z.object({
   name: z.string().min(2, 'Name is required'),
@@ -37,7 +36,7 @@ export type CustomerFormValues = z.infer<typeof customerSchema>;
 interface CreateCustomerDialogProps {
   onSuccess?: (data: any) => void;
   onError?: (error: any) => void;
-  children?: React.ReactNode;
+  children?: JSX.Element;
 }
 
 export function CreateCustomerDialog({ onSuccess, onError, children }: CreateCustomerDialogProps) {
