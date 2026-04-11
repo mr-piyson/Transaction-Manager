@@ -1,7 +1,6 @@
 'use client';
 
-import * as z from 'zod';
-import { useState } from 'react';
+import { useState, JSX } from 'react';
 import { Loader2, Plus, ShoppingCart, User, Package, Trash2, Banknote } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -17,7 +16,13 @@ import {
 import { Button } from '@/components/ui/button';
 import { trpc } from '@/lib/trpc/client';
 import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Format } from '@/lib/format';
@@ -28,18 +33,17 @@ interface ItemLine {
   purchasePrice: number;
 }
 
-export function CreatePurchaseDialog({ 
+export function CreatePurchaseDialog({
   onSuccess,
-  children
-}: { 
-  onSuccess?: () => void,
-  children?: React.ReactNode
+  children,
+}: {
+  onSuccess?: () => void;
+  children?: JSX.Element;
 }) {
   const [open, setOpen] = useState(false);
-  const [supplierId, setSupplierId] = useState<string>('');
+  const [supplierId, setSupplierId] = useState<string | null>(null);
   const [lines, setLines] = useState<ItemLine[]>([]);
 
-  
   const { data: suppliers } = trpc.suppliers.getSuppliers.useQuery();
   const { data: stockItems } = trpc.stockItems.getStockItems.useQuery();
 
@@ -68,14 +72,13 @@ export function CreatePurchaseDialog({
   };
 
   const handleSubmit = () => {
-    if (!supplierId || lines.length === 0 || lines.some(l => l.stockItemId === 0)) {
+    if (!supplierId || lines.length === 0 || lines.some((l) => l.stockItemId === 0)) {
       toast.error('Please select a supplier and add at least one valid item');
       return;
     }
 
     createMutation.mutate({
       supplierId: Number(supplierId),
-      organizationId: 1, // Will be handled on server via ctx but router requires it in input for now
       lines,
     });
   };
@@ -112,13 +115,15 @@ export function CreatePurchaseDialog({
               <Label className="text-xs font-bold uppercase text-muted-foreground flex items-center gap-2">
                 <User className="size-3" /> Supplier
               </Label>
-              <Select value={supplierId} onValueChange={setSupplierId}>
+              <Select value={supplierId} onValueChange={(val) => setSupplierId(val)}>
                 <SelectTrigger className="h-11">
                   <SelectValue placeholder="Select a supplier..." />
                 </SelectTrigger>
                 <SelectContent>
-                  {suppliers?.map(s => (
-                    <SelectItem key={s.id} value={s.id.toString()}>{s.name}</SelectItem>
+                  {suppliers?.map((s) => (
+                    <SelectItem key={s.id} value={s.id.toString()}>
+                      {s.name}
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -130,7 +135,13 @@ export function CreatePurchaseDialog({
               <Label className="text-xs font-bold uppercase text-muted-foreground flex items-center gap-2">
                 <Package className="size-3" /> Purchase Lines
               </Label>
-              <Button type="button" variant="outline" size="sm" onClick={addLine} className="h-7 text-[10px] uppercase">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={addLine}
+                className="h-7 text-[10px] uppercase"
+              >
                 <Plus className="size-3 mr-1" /> Add Line
               </Button>
             </div>
@@ -138,13 +149,16 @@ export function CreatePurchaseDialog({
             <ScrollArea className="h-[250px] border rounded-xl bg-muted/20 p-4">
               <div className="space-y-3">
                 {lines.map((line, index) => (
-                  <div key={index} className="flex gap-3 items-end group bg-background p-3 rounded-lg border shadow-sm">
+                  <div
+                    key={index}
+                    className="flex gap-3 items-end group bg-background p-3 rounded-lg border shadow-sm"
+                  >
                     <div className="flex-1 space-y-1.5">
                       <Label className="text-[10px] text-muted-foreground">Product/Service</Label>
-                      <Select 
-                        value={line.stockItemId.toString()} 
+                      <Select
+                        value={line.stockItemId.toString()}
                         onValueChange={(val) => {
-                          const item = stockItems?.find(s => s.id === Number(val));
+                          const item = stockItems?.find((s) => s.id === Number(val));
                           updateLine(index, 'stockItemId', Number(val));
                           if (item) updateLine(index, 'purchasePrice', item.purchasePrice);
                         }}
@@ -153,18 +167,20 @@ export function CreatePurchaseDialog({
                           <SelectValue placeholder="Select item..." />
                         </SelectTrigger>
                         <SelectContent>
-                          {stockItems?.map(s => (
-                            <SelectItem key={s.id} value={s.id.toString()}>{s.name}</SelectItem>
+                          {stockItems?.map((s) => (
+                            <SelectItem key={s.id} value={s.id.toString()}>
+                              {s.name}
+                            </SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
                     </div>
-                    
+
                     <div className="w-24 space-y-1.5">
                       <Label className="text-[10px] text-muted-foreground">Qty</Label>
-                      <Input 
-                        type="number" 
-                        value={line.quantity} 
+                      <Input
+                        type="number"
+                        value={line.quantity}
                         onChange={(e) => updateLine(index, 'quantity', Number(e.target.value))}
                         className="h-9"
                       />
@@ -172,17 +188,17 @@ export function CreatePurchaseDialog({
 
                     <div className="w-32 space-y-1.5">
                       <Label className="text-[10px] text-muted-foreground">Unit Cost</Label>
-                      <Input 
-                        type="number" 
-                        value={line.purchasePrice} 
+                      <Input
+                        type="number"
+                        value={line.purchasePrice}
                         onChange={(e) => updateLine(index, 'purchasePrice', Number(e.target.value))}
                         className="h-9"
                       />
                     </div>
 
-                    <Button 
-                      variant="ghost" 
-                      size="icon" 
+                    <Button
+                      variant="ghost"
+                      size="icon"
                       onClick={() => removeLine(index)}
                       className="h-9 w-9 text-destructive hover:bg-destructive/10"
                     >
@@ -200,23 +216,30 @@ export function CreatePurchaseDialog({
             </ScrollArea>
           </div>
         </div>
-
-        <DialogFooter className="p-6 bg-muted/30 border-t flex items-center justify-between sm:justify-between">
-          <div className="text-left">
-            <span className="text-[10px] font-bold uppercase text-muted-foreground block leading-none mb-1 text-nowrap">Total Obligation</span>
+        <DialogFooter className="relative flex p-4 sm:flex-nowrap sm:justify-between sm:flex-row">
+          <div className="text-left p-2">
+            <span className="text-[10px] font-bold uppercase text-muted-foreground block leading-none mb-1 text-nowrap">
+              Total
+            </span>
             <span className="text-xl font-black text-primary flex items-center gap-1">
               <Banknote className="size-5" />
               {Format.money.db(total)}
             </span>
           </div>
-          <div className="flex gap-2">
-            <Button variant="ghost" onClick={() => setOpen(false)}>Cancel</Button>
-            <Button 
-              onClick={handleSubmit} 
+          <div className="flex gap-2 p-2">
+            <Button variant="ghost" onClick={() => setOpen(false)}>
+              Cancel
+            </Button>
+            <Button
+              onClick={handleSubmit}
               disabled={createMutation.isPending || lines.length === 0}
               className="min-w-32"
             >
-              {createMutation.isPending ? <Loader2 className="size-4 animate-spin mr-2" /> : <ShoppingCart className="size-4 mr-2" />}
+              {createMutation.isPending ? (
+                <Loader2 className="size-4 animate-spin mr-2" />
+              ) : (
+                <ShoppingCart className="size-4 mr-2" />
+              )}
               Create Order
             </Button>
           </div>

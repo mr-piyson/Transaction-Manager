@@ -57,7 +57,7 @@ export function Header({
               {title && (
                 <>
                   {icon && <span className="text-muted-foreground">{icon}</span>}
-                  <h1 className="text-xl font-semibold capitalize truncate">{title}</h1>
+                  <h1 className="text-2xl font-semibold capitalize truncate">{title}</h1>
                 </>
               )}
             </div>

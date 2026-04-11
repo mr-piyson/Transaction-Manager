@@ -56,7 +56,7 @@ function QuickActionCard({
       <div className="p-4 rounded-2xl bg-current/10 transition-transform group-hover:scale-110">
         {icon}
       </div>
-      <span className="text-xs font-black uppercase tracking-widest text-foreground/80 group-hover:text-primary">
+      <span className="text-md font-black uppercase tracking-widest text-foreground/80 group-hover:text-primary">
         {label}
       </span>
       <ArrowRight className="size-3 opacity-0 -translate-x-2 transition-all group-hover:opacity-40 group-hover:translate-x-0" />
@@ -109,11 +109,6 @@ export default function App_Page() {
           </Button>
         </div>
 
-        {/* Stats Overview */}
-        <section className="relative overflow-hidden">
-          <CardsSection />
-        </section>
-
         {/* Quick Actions Grid */}
         <section className="space-y-6">
           <div className="flex items-center gap-2">
@@ -128,13 +123,13 @@ export default function App_Page() {
               label="New Invoice"
               icon={<FileText className="size-6" />}
               onClick={() => router.push('/app/invoices/new')}
-              className="text-primary border-primary/50"
+              className="border-3  text-primary border-primary/50"
             />
 
             <QuickActionCard
               label="Purchase"
               icon={<ShoppingCart className="size-6" />}
-              className="text-warning border-warning/50"
+              className="border-3  text-warning border-warning/50"
             >
               <CreatePurchaseDialog />
             </QuickActionCard>
@@ -142,7 +137,7 @@ export default function App_Page() {
             <QuickActionCard
               label="Supplier"
               icon={<Store className="size-6" />}
-              className="text-success border-success/50"
+              className="border-3  text-success border-success/50"
             >
               <CreateSupplierDialog />
             </QuickActionCard>
@@ -150,7 +145,7 @@ export default function App_Page() {
             <QuickActionCard
               label="Customer"
               icon={<Users className="size-6" />}
-              className="text-info border-info/50"
+              className="border-3  text-info border-info/50"
             >
               <CreateCustomerDialog />
             </QuickActionCard>
@@ -158,7 +153,7 @@ export default function App_Page() {
             <QuickActionCard
               label="Stock"
               icon={<Box className="size-6" />}
-              className="text-destructive border-destructive/50"
+              className="border-3  text-destructive border-destructive/50"
             >
               <StockAdjustmentDialog />
             </QuickActionCard>
@@ -167,7 +162,7 @@ export default function App_Page() {
               label="Analytics"
               icon={<LayoutDashboard className="size-6" />}
               onClick={() => router.push('/app/dashboard')}
-              className="text-foreground border-foreground/50"
+              className="border-3  text-foreground border-foreground/50"
             />
           </div>
         </section>
