@@ -44,6 +44,7 @@ import { Format } from '@/lib/format';
 import { Badge } from '@/components/ui/badge';
 import PaymentCard from './editor/payment-card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { useDateFormat } from '@/hooks/use-date-format';
 
 function InvoiceLineRow({ line, lines, depth = 0 }: { line: any; lines: any[]; depth?: number }) {
   const childLines = lines.filter((l) => l.parentId === line.id);
@@ -86,6 +87,7 @@ export default function InvoiceDetailPage() {
   const router = useRouter();
   const params = useParams();
   const invoiceId = params?.invoiceId as string;
+  const { formatDate } = useDateFormat();
 
   const utils = trpc.useUtils();
   const {
@@ -283,7 +285,7 @@ export default function InvoiceDetailPage() {
                     <span className="text-muted-foreground flex items-center gap-2">
                       <Calendar className="w-4 h-4" /> Date
                     </span>
-                    <span className="font-medium">{Format.date.any(invoice.date)}</span>
+                    <span className="font-medium">{formatDate(invoice.date)}</span>
                   </div>
 
                   {/* Existing Customer Field */}

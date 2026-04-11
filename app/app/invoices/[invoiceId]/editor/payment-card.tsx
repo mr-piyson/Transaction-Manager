@@ -1,10 +1,11 @@
 import { Button } from '@/components/button';
-import { Dates } from '@/lib/date';
 import { Payment } from '@prisma/client';
 import { Banknote, CreditCard, Trash2, Wallet } from 'lucide-react';
 import { trpc } from '@/lib/trpc/client';
 import { toast } from 'sonner';
 import { Format } from '@/lib/format';
+import { formatAmount } from '@/lib/utils';
+import { useDateFormat } from '@/hooks/use-date-format';
 
 // Helper to get the correct icon/style based on method
 const getMethodConfig = (method: string) => {
@@ -27,6 +28,7 @@ export default function PaymentCard({
 }) {
   const { icon } = getMethodConfig(payment.method);
   const utils = trpc.useUtils();
+  const { formatDateAgo } = useDateFormat();
   const deletePayment = trpc.payments.deletePayment.useMutation({
     onSuccess: () => {
       utils.invoices.getInvoiceById.invalidate({ id: Number(payment.invoiceId) });
@@ -54,7 +56,7 @@ export default function PaymentCard({
       {/* Info Section */}
       <div className="flex-1 min-w-0">
         <p className="text-sm font-medium truncate">{payment.method}</p>
-        <p className="text-xs text-muted-foreground">{Format.date.relative(payment.date)}</p>
+        <p className="text-xs text-muted-foreground">{formatDateAgo(payment.date)}</p>
       </div>
 
       {/* Amount Section */}

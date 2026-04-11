@@ -6,9 +6,11 @@ import { User, Calendar, Hash, FileText } from 'lucide-react';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { cn, formatAmount } from '@/lib/utils';
 import { Format } from '@/lib/format';
+import { useDateFormat } from '@/hooks/use-date-format';
 
 export function InvoiceCard({ data }: { data: any }) {
   const router = useRouter();
+  const { formatDateAgo } = useDateFormat();
 
   if (!data) return null;
 
@@ -53,7 +55,7 @@ export function InvoiceCard({ data }: { data: any }) {
         {data.date && (
           <span className="flex items-center gap-1">
             <Calendar className="size-3" />
-            {Format.date.relative(data.date)}
+            {formatDateAgo(data.date)}
           </span>
         )}
       </div>

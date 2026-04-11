@@ -9,9 +9,9 @@ type DateFormatContextType = {
   format: DateFormatType;
   setFormat: (format: DateFormatType) => void;
 
-  formatDate: (date: Date) => string;
-  formatDateTime: (date: Date) => string;
-  formatDateAgo: (date: Date) => string;
+  formatDate: (date: Date | string | number | null) => string;
+  formatDateTime: (date: Date | string | number | null) => string;
+  formatDateAgo: (date: Date | string | number | null) => string;
 };
 
 const DateFormatContext = createContext<DateFormatContextType | undefined>(undefined);
@@ -25,7 +25,11 @@ export const DateFormatProvider = ({
 }) => {
   const [format, setFormat] = useState<DateFormatType>(defaultFormat);
 
-  const formatDate = (date: Date): string => {
+  const formatDate = (date: Date | string | number | null): string => {
+    if (!date) return 'N/A';
+    if (typeof date !== 'string' || typeof date !== 'number') {
+      date = new Date(date);
+    }
     const day = date.getDate().toString().padStart(2, '0');
     const month = (date.getMonth() + 1).toString().padStart(2, '0');
     const year = date.getFullYear();
@@ -35,7 +39,11 @@ export const DateFormatProvider = ({
     return date.toDateString();
   };
 
-  const formatDateTime = (date: Date): string => {
+  const formatDateTime = (date: Date | string | number | null): string => {
+    if (!date) return 'N/A';
+    if (typeof date !== 'string' || typeof date !== 'number') {
+      date = new Date(date);
+    }
     const base = formatDate(date);
     const hours = date.getHours().toString().padStart(2, '0');
     const minutes = date.getMinutes().toString().padStart(2, '0');
@@ -44,7 +52,11 @@ export const DateFormatProvider = ({
     return `${base} ${hours}:${minutes}:${seconds}`;
   };
 
-  const formatDateAgo = (date: Date): string => {
+  const formatDateAgo = (date: Date | string | number | null): string => {
+    if (!date) return 'N/A';
+    if (typeof date !== 'string' || typeof date !== 'number') {
+      date = new Date(date);
+    }
     const now = new Date();
     const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
 
