@@ -11,6 +11,8 @@ import { authRouter } from '@/server/auth';
 import { supplierRouter } from '@/server/suppliers';
 import { purchaseRouter } from '@/server/purchases';
 import { stockRouter } from '@/server/stocks';
+import { stockItemRouter } from '@/server/stockItems';
+import { warehouseRouter } from '@/server/warehouses';
 
 export const appRouter = router({
   auth: authRouter,
@@ -25,6 +27,8 @@ export const appRouter = router({
   suppliers: supplierRouter,
   purchases: purchaseRouter,
   stock: stockRouter,
+  stockItems: stockItemRouter,
+  warehouses: warehouseRouter,
 });
 
 export type AppRouter = typeof appRouter;

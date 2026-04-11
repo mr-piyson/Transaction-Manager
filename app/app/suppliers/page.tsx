@@ -2,36 +2,34 @@
 import { ListView } from '@/components/list-view';
 import { Header } from '../App-Header';
 import { SupplierCard } from './supplier-card';
-import { Store } from 'lucide-react';
+import { Store, Loader2 } from 'lucide-react';
+import { trpc } from '@/lib/trpc/client';
+import { CreateSupplierDialog } from './create-supplier-dialog';
+import { useRouter } from 'next/navigation';
 
-type SuppliersPageProps = {
-  children?: React.ReactNode;
-};
+export default function SuppliersPage() {
+  const router = useRouter();
+  const { data: suppliers, isLoading } = trpc.suppliers.getSuppliers.useQuery();
 
-export default function SuppliersPage(props: SuppliersPageProps) {
   return (
     <>
-      <Header title="Suppliers" />
+      <Header title="Suppliers">
+        <CreateSupplierDialog />
+      </Header>
       <ListView
-        data={[
-          {
-            id: '1',
-            name: 'Supplier 1',
-            description: 'Supplier 1 description',
-          },
-          {
-            id: '2',
-            name: 'Supplier 2',
-            description: 'Supplier 2 description',
-          },
-        ]}
-        emptyDescription="No suppliers found"
-        emptyTitle="No suppliers found"
-        emptyIcon={<Store />}
-        searchFields={[]}
+        data={suppliers || []}
+        isLoading={isLoading}
+        searchFields={['name', 'phone', 'contactName']}
+        emptyDescription="No suppliers registered yet."
+        emptyTitle="Start by adding your first supplier"
+        emptyIcon={<Store className="size-12 opacity-20" />}
         cardRenderer={(data) => (
           <div className="w-full" key={data.id}>
-            <SupplierCard data={data} />
+            <SupplierCard 
+              data={data} 
+              onClick={(d) => router.push(`/app/suppliers/${d.id}`)}
+              className="border-b border-border/50 hover:bg-accent/50 cursor-pointer"
+            />
           </div>
         )}
       />

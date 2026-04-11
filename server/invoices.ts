@@ -124,9 +124,6 @@ export const invoiceRouter = t.router({
       }
     }),
 
-  /**
-   * Update invoice by id
-   */
   updateInvoice: protectedProcedure
     .input(
       z.object({
@@ -138,20 +135,81 @@ export const invoiceRouter = t.router({
           dueDate: z.date().optional(),
           isCompleted: z.boolean().optional(),
           customerId: z.number().optional(),
+          warehouseId: z.number().optional(),
         }),
       }),
     )
-    .mutation(async ({ input }) => {
+    .mutation(async ({ input, ctx }) => {
       try {
-        console.log(input);
-        return await db.invoice.update({
-          where: { id: input.id },
-          data: input.data,
+        return await db.$transaction(async (tx) => {
+          const currentInvoice = await tx.invoice.findUnique({
+            where: { id: input.id },
+            include: { invoiceLines: { include: { stockItem: true } } },
+          });
+
+          if (!currentInvoice) throw new Error('Invoice not found');
+
+          // Trigger stock deduction if completing for the first time
+          if (input.data.isCompleted === true && !currentInvoice.isCompleted) {
+            const warehouseId = input.data.warehouseId || currentInvoice.warehouseId;
+            if (!warehouseId) {
+              // Only strictly require warehouse if there are PRODUCT lines
+              const hasProducts = currentInvoice.invoiceLines.some((l) => l.stockItem?.type === 'PRODUCT');
+              if (hasProducts) {
+                throw new TRPCError({
+                  code: 'BAD_REQUEST',
+                  message: 'A warehouse must be selected to complete an invoice containing products.',
+                });
+              }
+            }
+
+            for (const line of currentInvoice.invoiceLines) {
+              if (line.stockItem?.type === 'PRODUCT' && warehouseId) {
+                // Deduct from stock
+                await tx.stock.upsert({
+                  where: {
+                    stockItemId_warehouseId: {
+                      stockItemId: line.stockItemId as number,
+                      warehouseId: warehouseId,
+                    },
+                  },
+                  update: { quantity: { decrement: line.quantity } },
+                  create: {
+                    stockItemId: line.stockItemId as number,
+                    warehouseId: warehouseId,
+                    quantity: -line.quantity,
+                    organizationId: currentInvoice.organizationId,
+                  },
+                });
+
+                // Audit Log
+                await tx.stockMovement.create({
+                  data: {
+                    type: 'OUTBOUND',
+                    quantity: -line.quantity,
+                    stockItemId: line.stockItemId as number,
+                    fromWarehouseId: warehouseId,
+                    invoiceId: currentInvoice.id,
+                    organizationId: currentInvoice.organizationId as number,
+                    userId: ctx.user.id,
+                    notes: `Sale from Invoice #${currentInvoice.id}`,
+                  },
+                });
+              }
+            }
+          }
+
+          return await tx.invoice.update({
+            where: { id: input.id },
+            data: input.data,
+          });
         });
       } catch (error) {
+        if (error instanceof TRPCError) throw error;
         throw new TRPCError({
           code: 'INTERNAL_SERVER_ERROR',
           message: 'Failed to update invoice',
+          cause: error,
         });
       }
     }),

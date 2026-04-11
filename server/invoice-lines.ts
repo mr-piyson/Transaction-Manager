@@ -9,6 +9,7 @@ export const invoiceLinesRouter = t.router({
       z.object({
         invoiceId: z.number(),
         inventoryItemId: z.number().optional(),
+        stockItemId: z.number().optional(),
         quantity: z.number().optional().default(1),
         isGroup: z.boolean().optional(),
         parentId: z.number().optional(),
@@ -35,25 +36,52 @@ export const invoiceLinesRouter = t.router({
               },
             });
           } else {
-            if (!inventoryItemId) throw new Error('Missing inventoryItemId');
-            const [item, parentGroup] = await Promise.all([
-              tx.supplierItem.findUnique({ where: { id: inventoryItemId } }),
-              parentId
-                ? tx.invoiceLine.findUnique({ where: { id: parentId } })
-                : Promise.resolve(null),
-            ]);
+            if (!inventoryItemId && !input.stockItemId) {
+              throw new Error('Missing inventoryItemId or stockItemId');
+            }
 
-            if (!item) throw new Error('Inventory item not found');
+            let name = description || '';
+            let purchasePrice = 0;
+            let salesPrice = 0;
+            let finalStockItemId = input.stockItemId;
 
-            const lineTotal = item.basePrice * quantity;
+            if (inventoryItemId) {
+              const supplierItem = await tx.supplierItem.findUnique({
+                where: { id: inventoryItemId },
+                include: { stockItem: true },
+              });
+              if (!supplierItem) throw new Error('Supplier item not found');
+              name = name || supplierItem.name;
+              purchasePrice = supplierItem.basePrice;
+              // If it's linked to a master item, use that for stock deduction later
+              finalStockItemId = finalStockItemId || supplierItem.stockItemId || undefined;
+              
+              if (supplierItem.stockItem) {
+                salesPrice = supplierItem.stockItem.salesPrice;
+              } else {
+                salesPrice = supplierItem.basePrice; // Fallback
+              }
+            } else if (input.stockItemId) {
+              const masterItem = await tx.stockItem.findUnique({
+                where: { id: input.stockItemId },
+              });
+              if (!masterItem) throw new Error('Master stock item not found');
+              name = name || masterItem.name;
+              purchasePrice = masterItem.purchasePrice;
+              salesPrice = masterItem.salesPrice;
+              finalStockItemId = masterItem.id;
+            }
+
+            const lineTotal = salesPrice * quantity;
 
             newLine = await tx.invoiceLine.create({
               data: {
                 invoiceId,
                 inventoryItemId,
-                description: item.name,
-                purchasePrice: item.basePrice,
-                salesPrice: item.basePrice,
+                stockItemId: finalStockItemId,
+                description: name,
+                purchasePrice,
+                salesPrice,
                 quantity,
                 total: lineTotal,
                 parentId,
@@ -64,8 +92,8 @@ export const invoiceLinesRouter = t.router({
               await tx.invoiceLine.update({
                 where: { id: parentId },
                 data: {
-                  purchasePrice: { increment: item.basePrice * quantity },
-                  salesPrice: { increment: item.basePrice * quantity },
+                  purchasePrice: { increment: purchasePrice * quantity },
+                  salesPrice: { increment: salesPrice * quantity },
                   total: { increment: lineTotal },
                 },
               });

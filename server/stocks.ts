@@ -1,7 +1,82 @@
+import db from '@/lib/db';
 import { protectedProcedure, router } from '@/lib/trpc/server';
 import z from 'zod';
 
 export const stockRouter = router({
+  getStocks: protectedProcedure.query(async ({ ctx }) => {
+    try {
+      return await db.stock.findMany({
+        where: { organizationId: ctx.user.organizationId },
+        include: {
+          stockItem: true,
+          warehouse: true,
+        },
+      });
+    } catch (error) {
+      throw new Error('Failed to fetch stock levels');
+    }
+  }),
+
+  getStockMovements: protectedProcedure.query(async ({ ctx }) => {
+    try {
+      return await db.stockMovement.findMany({
+        where: { organizationId: ctx.user.organizationId },
+        include: {
+          stockItem: true,
+          user: true,
+        },
+        orderBy: { createdAt: 'desc' },
+      });
+    } catch (error) {
+      throw new Error('Failed to fetch stock movements');
+    }
+  }),
+
+  adjustStock: protectedProcedure
+    .input(
+      z.object({
+        stockItemId: z.number(),
+        warehouseId: z.number(),
+        quantity: z.number(), // Offset (+/-)
+        type: z.enum(['ADJUSTMENT', 'WASTAGE']),
+        notes: z.string().optional(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      return await ctx.db.$transaction(async (tx) => {
+        const stock = await tx.stock.upsert({
+          where: {
+            stockItemId_warehouseId: {
+              stockItemId: input.stockItemId,
+              warehouseId: input.warehouseId,
+            },
+          },
+          update: { quantity: { increment: input.quantity } },
+          create: {
+            stockItemId: input.stockItemId,
+            warehouseId: input.warehouseId,
+            quantity: input.quantity,
+            organizationId: ctx.user.organizationId,
+          },
+        });
+
+        await tx.stockMovement.create({
+          data: {
+            type: input.type,
+            quantity: input.quantity,
+            stockItemId: input.stockItemId,
+            toWarehouseId: input.quantity > 0 ? input.warehouseId : null,
+            fromWarehouseId: input.quantity < 0 ? input.warehouseId : null,
+            organizationId: ctx.user.organizationId as number,
+            userId: ctx.user.id,
+            notes: input.notes || `Manual ${input.type}`,
+          },
+        });
+
+        return stock;
+      });
+    }),
+
   transfer: protectedProcedure
     .input(
       z.object({

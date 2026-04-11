@@ -185,6 +185,9 @@ model Invoice {
   organizationId Int?
   organization   Organization? @relation(fields: [organizationId], references: [id])
 
+  warehouseId Int?
+  warehouse   Warehouse? @relation(fields: [warehouseId], references: [id])
+
   createdAt DateTime? @default(now())
   updatedAt DateTime? @updatedAt
 
@@ -208,10 +211,15 @@ model InvoiceLine {
   salesPrice    Int
   quantity      Int     @default(1)
   /// Stored in smallest currency unit (e.g. fils)
+  tax           Int     @default(0)
   total         Int
 
+  // Relations
   inventoryItemId Int?
   itemRef         SupplierItem? @relation(fields: [inventoryItemId], references: [id])
+  
+  stockItemId Int?
+  stockItem   StockItem? @relation(fields: [stockItemId], references: [id])
 
   invoiceId Int?
   invoice   Invoice? @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
@@ -346,6 +354,7 @@ model Warehouse {
   address String?
 
   inventory Stock[]
+  invoices  Invoice[]
 
   organization   Organization? @relation(fields: [organizationId], references: [id])
   organizationId Int?
@@ -364,7 +373,6 @@ model StockItem {
   description String?
   image       String?
   barcode     String?
-  unit        String   @default("pcs")
 
   // Prices usually live here as the "Default" price
   purchasePrice Int
@@ -384,7 +392,8 @@ model StockItem {
   organizationId Int?
   purchaseLines  PurchaseLine[]
   stockMovements StockMovement[]
-  supplierItems SupplierItem[]
+  supplierItems  SupplierItem[]
+  invoiceLines   InvoiceLine[]
 }
 
 model Stock {

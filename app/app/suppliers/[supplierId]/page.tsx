@@ -1,46 +1,53 @@
 'use client';
 import { ListView } from '@/components/list-view';
-import { ArrowLeftIcon, Store } from 'lucide-react';
-import { SupplierItemCard } from './supplier-card';
-import { Button } from '@/components/ui/button';
-import { SupplierCard } from '../supplier-card';
+import { Store, Loader2, Package } from 'lucide-react';
+import { InventoryItemCard } from './supplierItems/SupplierItemCard';
+import { trpc } from '@/lib/trpc/client';
+import { useParams } from 'next/navigation';
+import { CreateInventoryItemDialog } from './supplierItems/create-supplierItem-dialog';
+import { Header } from '../../App-Header';
 
-type SuppliersItemsPageProps = {
-  children?: React.ReactNode;
-};
+export default function SuppliersItemsPage() {
+  const params = useParams();
+  const supplierId = Number(params?.supplierId);
 
-export default function SuppliersItemsPage(props: SuppliersItemsPageProps) {
+  const { data: supplier, isLoading: loadingSupplier } = trpc.supplier.getSupplierById.useQuery({
+    id: supplierId,
+  });
+
+  const {
+    data: items,
+    isLoading: loadingItems,
+    refetch,
+  } = trpc.inventory.getInventoryBySupplier.useQuery({
+    supplierId: supplierId,
+  });
+
+  if (loadingSupplier)
+    return (
+      <div className="p-8 flex justify-center">
+        <Loader2 className="animate-spin" />
+      </div>
+    );
+  if (!supplier)
+    return <div className="p-8 text-center text-muted-foreground">Supplier not found</div>;
+
   return (
     <>
-      <header className="flex p-2 items-center">
-        <Button variant={'ghost'}>
-          <ArrowLeftIcon />
-        </Button>
-        <SupplierCard
-          className="p-0 h-12 hover:bg-transparent"
-          data={{ name: 'Supplier 1', description: 'Supplier 1 description' }}
-        />
-      </header>
+      <Header title={supplier.name} icon={<Store />}>
+        <CreateInventoryItemDialog onSuccess={() => refetch()} />
+      </Header>
+
       <ListView
-        data={[
-          {
-            id: '1',
-            name: 'Supplier 1',
-            description: 'Supplier 1 description',
-          },
-          {
-            id: '2',
-            name: 'Supplier 2',
-            description: 'Supplier 2 description',
-          },
-        ]}
-        emptyDescription="No suppliers found"
-        emptyTitle="No suppliers found"
-        emptyIcon={<Store />}
-        searchFields={[]}
+        data={items || []}
+        isLoading={loadingItems}
+        emptyDescription="This supplier doesn't have any items registered yet."
+        emptyTitle="Add items from this supplier"
+        emptyIcon={<Package className="size-16 opacity-20" />}
+        searchFields={['name', 'code']}
         cardRenderer={(data) => (
           <div className="w-full" key={data.id}>
-            <SupplierItemCard data={data} />
+            <InventoryItemCard data={data} />
           </div>
         )}
       />

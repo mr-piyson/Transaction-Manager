@@ -14,9 +14,17 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { FieldGroup } from '@/components/ui/field';
 import { Button } from '@/components/ui/button';
 import { trpc } from '@/lib/trpc/client';
+import { useParams } from 'next/navigation';
 import { ImageUpload } from './Image-Upload';
 
 import { AppForm, FormInput, FormCustomField, FormGroup } from '@/components/Form';
@@ -31,6 +39,7 @@ export const inventoryItemSchema = z.object({
   basePrice: z.coerce.number().min(0, 'Price must be a positive number'),
   description: z.string().optional().or(z.literal('')),
   image: z.any().optional(),
+  stockItemId: z.number().optional(),
 });
 
 export type InventoryItemValues = z.infer<typeof inventoryItemSchema>;
@@ -44,6 +53,7 @@ const DEFAULT_VALUES: InventoryItemValues = {
   basePrice: 0,
   description: '',
   image: undefined,
+  stockItemId: undefined,
 };
 
 // ---------------------------------------------------------------------------
@@ -64,8 +74,11 @@ export function CreateInventoryItemDialog({
   children,
 }: CreateInventoryItemDialogProps) {
   const [open, setOpen] = useState(false);
+  const params = useParams();
+  const supplierId = Number(params?.supplierId);
   const utils = trpc.useUtils();
   const createMutation = trpc.inventory.createInventoryItem.useMutation();
+  const { data: stockItems } = trpc.stockItems.getStockItems.useQuery();
 
   async function handleSubmit(values: InventoryItemValues) {
     await uploadImage({
@@ -78,10 +91,15 @@ export function CreateInventoryItemDialog({
           basePrice: values.basePrice,
           description: values.description,
           image: imagePath,
+          stockItemId: values.stockItemId,
+          supplierId: supplierId || undefined,
         });
       },
       onSuccess: () => {
         utils.inventory.getInventory.invalidate();
+        if (supplierId) {
+          utils.inventory.getInventoryBySupplier.invalidate({ supplierId });
+        }
         setOpen(false);
         onSuccess?.(values);
         toast.success('Inventory item created successfully');
@@ -168,8 +186,24 @@ export function CreateInventoryItemDialog({
                 name="description"
                 label="Description"
                 placeholder="Optional details..."
-                icon={<FileText className="size-4" />}
                 description="Brief details about the item specifications."
+              />
+
+              <FormCustomField<number | undefined>
+                name="stockItemId"
+                label="Link to Master Catalog Item"
+                render={({ value, onChange }) => (
+                  <Select value={value?.toString() || ''} onValueChange={(val) => onChange(Number(val))}>
+                    <SelectTrigger className="h-10">
+                      <SelectValue placeholder="Select master item (Product/Service)..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {stockItems?.map(item => (
+                        <SelectItem key={item.id} value={item.id.toString()}>{item.name} ({item.sku})</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
               />
 
               {/* ── Footer ─────────────────────────────────────────────── */}

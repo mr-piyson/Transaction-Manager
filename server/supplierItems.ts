@@ -7,7 +7,9 @@ import { toDatabase, type CurrencyCode } from '@/lib/money';
 export const inventoryRouter = t.router({
   getInventory: protectedProcedure.query(async () => {
     try {
-      return await db.supplierItem.findMany({});
+      return await db.supplierItem.findMany({
+        include: { stockItem: true, supplier: true },
+      });
     } catch (error) {
       throw new TRPCError({
         code: 'INTERNAL_SERVER_ERROR',
@@ -15,6 +17,22 @@ export const inventoryRouter = t.router({
       });
     }
   }),
+
+  getInventoryBySupplier: protectedProcedure
+    .input(z.object({ supplierId: z.number() }))
+    .query(async ({ input }) => {
+      try {
+        return await db.supplierItem.findMany({
+          where: { supplierId: input.supplierId },
+          include: { stockItem: true },
+        });
+      } catch (error) {
+        throw new TRPCError({
+          code: 'INTERNAL_SERVER_ERROR',
+          message: 'Failed to fetch supplier items',
+        });
+      }
+    }),
 
   getInventoryById: protectedProcedure
     .input(z.object({ id: z.number() }))
@@ -48,6 +66,7 @@ export const inventoryRouter = t.router({
         description: z.string().nullish(),
         image: z.string().nullish(),
         stockItemId: z.number().optional(),
+        supplierId: z.number().optional(),
       }),
     )
     .mutation(async ({ input, ctx }) => {
@@ -75,6 +94,7 @@ export const inventoryRouter = t.router({
             description: input.description,
             image: input.image,
             stockItemId: input.stockItemId,
+            supplierId: input.supplierId,
             organizationId: ctx.user.organizationId,
           },
         });

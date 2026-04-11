@@ -13,6 +13,7 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
 import { Format } from '@/lib/format';
 
@@ -24,6 +25,7 @@ const UpdateSchema = z.object({
   description: z.string().nullable(),
   basePrice: z.coerce.number().int().nonnegative(),
   image: z.string().url().nullable().or(z.literal('')),
+  stockItemId: z.number().optional().nullable(),
 });
 
 type UpdateFormData = z.infer<typeof UpdateSchema>;
@@ -43,6 +45,8 @@ export default function InventoryItemClientPage() {
     isLoading,
     isError,
   } = trpc.inventory.getInventoryById.useQuery({ id: Number(id) });
+
+  const { data: stockItems } = trpc.stockItems.getStockItems.useQuery();
 
   /* ------------------------------ Mutations ------------------------------ */
 
@@ -78,6 +82,7 @@ export default function InventoryItemClientPage() {
       description: formData.get('description') || null,
       basePrice: formData.get('basePrice'),
       image: formData.get('image') || null,
+      stockItemId: formData.get('stockItemId') ? Number(formData.get('stockItemId')) : null,
     };
 
     const parsed = UpdateSchema.safeParse(rawData);
@@ -205,12 +210,28 @@ export default function InventoryItemClientPage() {
                   </div>
 
                   <div className="grid gap-2">
+                    <Label htmlFor="stockItemId">Link Access to Master Item</Label>
+                    <Select name="stockItemId" defaultValue={item.stockItemId?.toString() || ''}>
+                      <SelectTrigger className="h-10">
+                        <SelectValue placeholder="Select Master Item..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="null">None (Not Stocked)</SelectItem>
+                        {stockItems?.map(sItem => (
+                          <SelectItem key={sItem.id} value={sItem.id.toString()}>{sItem.name} ({sItem.sku})</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="grid gap-2 text-left">
                     <Label htmlFor="image">External Image URL</Label>
                     <Input
                       name="image"
                       id="image"
                       defaultValue={item.image ?? ''}
                       placeholder="https://example.com/image.jpg"
+                      className="h-10 text-xs"
                     />
                   </div>
 

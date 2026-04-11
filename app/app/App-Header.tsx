@@ -19,6 +19,7 @@ interface HeaderProps {
   transparent?: boolean;
   showBackButton?: boolean;
   className?: string;
+  children?: ReactNode;
 }
 
 export function Header({
@@ -31,6 +32,7 @@ export function Header({
   transparent = false,
   showBackButton = false,
   className,
+  children,
 }: HeaderProps) {
   return (
     <>
@@ -62,6 +64,7 @@ export function Header({
           )}
         </div>
         {rightContent}
+        {children}
       </header>
     </>
   );

@@ -7,7 +7,6 @@ export const purchaseRouter = router({
     .input(
       z.object({
         supplierId: z.number(),
-        organizationId: z.number(),
         lines: z.array(
           z.object({
             stockItemId: z.number(),
@@ -18,12 +17,14 @@ export const purchaseRouter = router({
       }),
     )
     .mutation(async ({ ctx, input }) => {
+      if (!ctx.user.organizationId) throw new Error('Unauthorized: No organization');
+
       const total = input.lines.reduce((acc, line) => acc + line.purchasePrice * line.quantity, 0);
 
       return await ctx.db.purchaseOrder.create({
         data: {
           supplierId: input.supplierId,
-          organizationId: input.organizationId,
+          organizationId: ctx.user.organizationId,
           total,
           lines: {
             create: input.lines.map((line) => ({
@@ -36,6 +37,22 @@ export const purchaseRouter = router({
         },
       });
     }),
+
+  // Get list of Purchase Orders
+  getPurchases: protectedProcedure.query(async ({ ctx }) => {
+    try {
+      return await ctx.db.purchaseOrder.findMany({
+        where: { organizationId: ctx.user.organizationId },
+        include: {
+          supplier: true,
+          _count: { select: { lines: true } },
+        },
+        orderBy: { date: 'desc' },
+      });
+    } catch (error) {
+      throw new Error('Failed to fetch purchase orders');
+    }
+  }),
 
   // Receive items and update Stock
   receiveOrder: protectedProcedure
@@ -72,6 +89,20 @@ export const purchaseRouter = router({
                 organizationId: po.organizationId,
               },
             });
+
+            // Create StockMovement Log
+            await tx.stockMovement.create({
+              data: {
+                type: 'INBOUND',
+                quantity: line.quantity,
+                stockItemId: line.stockItemId,
+                toWarehouseId: input.warehouseId,
+                purchaseId: po.id,
+                organizationId: po.organizationId,
+                userId: ctx.user.id,
+                notes: `Received from PO #${po.id}`,
+              },
+            });
           }
         }
 
@@ -79,6 +110,15 @@ export const purchaseRouter = router({
           where: { id: input.purchaseOrderId },
           data: { isReceived: true },
         });
+      });
+    }),
+
+  updateStatus: protectedProcedure
+    .input(z.object({ id: z.number(), status: z.enum(['Paid', 'Unpaid', 'Partial']) }))
+    .mutation(async ({ ctx, input }) => {
+      return await ctx.db.purchaseOrder.update({
+        where: { id: input.id },
+        data: { status: input.status },
       });
     }),
 });
