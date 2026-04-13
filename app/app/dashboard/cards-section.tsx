@@ -10,7 +10,6 @@ import {
 } from '@/components/ui/card';
 import { Carousel, CarouselContent, CarouselItem } from '@/components/ui/carousel';
 import { trpc } from '@/lib/trpc/client';
-import { Format } from '@/lib/format';
 import { TrendingDown, TrendingUp, Users, Wallet } from 'lucide-react';
 import { useMemo } from 'react';
 import { formatAmount } from '@/lib/utils';

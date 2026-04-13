@@ -40,7 +40,6 @@ import { trpc } from '@/lib/trpc/client';
 import { cn, formatAmount } from '@/lib/utils';
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
-import { Format } from '@/lib/format';
 import { Badge } from '@/components/ui/badge';
 import PaymentCard from './editor/payment-card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';

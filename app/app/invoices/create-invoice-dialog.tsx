@@ -2,8 +2,6 @@
 
 import { useState } from 'react';
 import { Plus, UserPlus, Check, ChevronsUpDown, Loader2 } from 'lucide-react';
-import { useQuery } from '@tanstack/react-query';
-import axios from 'axios';
 import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';

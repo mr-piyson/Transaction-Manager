@@ -42,9 +42,8 @@ enum InvoiceStatus {
   SENT
   PAID
   PARTIAL
-  OVERDUE
-  VOID
   CANCELLED
+  DELETED
 }
 
 enum PaymentMethod {
@@ -61,15 +60,6 @@ enum PurchaseStatus {
   PARTIAL_RECEIVED
   RECEIVED
   CANCELLED
-}
-
-enum MovementType {
-  INBOUND // From supplier (purchase received)
-  OUTBOUND // To customer (invoice completed)
-  TRANSFER // Between warehouses
-  ADJUSTMENT // Manual correction
-  WASTAGE // Damaged / expired
-  RETURN // Customer return → back into stock
 }
 
 // ============================================================
@@ -97,10 +87,9 @@ model Organization {
   users          User[]
   customers      Customer[]
   suppliers      Supplier[]
-  stockItems     StockItem[]
+  Items          Item[]
   warehouses     Warehouse[]
   stocks         Stock[]
-  stockMovements StockMovement[]
   categories     Category[]
   invoices       Invoice[]
   purchaseOrders PurchaseOrder[]
@@ -132,10 +121,9 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  accounts       Account[]
-  sessions       Session[]
-  invoices       Invoice[]       @relation("InvoiceCreatedBy")
-  stockMovements StockMovement[]
+  accounts Account[]
+  sessions Session[]
+  invoices Invoice[] @relation("InvoiceCreatedBy")
 
   @@index([email])
   @@index([organizationId])
@@ -218,7 +206,7 @@ model TaxRate {
   organizationId Int
   organization   Organization @relation(fields: [organizationId], references: [id])
 
-  stockItems   StockItem[]
+  Items        Item[]
   invoiceLines InvoiceLine[]
 
   @@unique([name, organizationId])
@@ -280,7 +268,7 @@ model Supplier {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  // Supplier-specific catalog (optional — maps their SKU/price to your StockItem)
+  // Supplier-specific catalog (optional — maps their SKU/price to your Item)
   supplierItems  SupplierItem[]
   purchaseOrders PurchaseOrder[]
 
@@ -289,7 +277,7 @@ model Supplier {
 }
 
 // Supplier's own SKU / price for an item you stock.
-// Optional layer — only needed when the same StockItem has
+// Optional layer — only needed when the same Item has
 // different supplier codes or prices across suppliers.
 model SupplierItem {
   id          Int     @id @default(autoincrement())
@@ -303,8 +291,8 @@ model SupplierItem {
   supplier   Supplier @relation(fields: [supplierId], references: [id])
 
   // Maps to your internal catalog item
-  stockItemId Int
-  stockItem   StockItem @relation(fields: [stockItemId], references: [id])
+  ItemId Int
+  Item   Item @relation(fields: [ItemId], references: [id])
 
   organizationId Int?
   organization   Organization? @relation(fields: [organizationId], references: [id])
@@ -313,7 +301,7 @@ model SupplierItem {
   updatedAt DateTime @updatedAt
 
   @@unique([supplierId, supplierSku])
-  @@index([stockItemId])
+  @@index([ItemId])
   @@index([organizationId])
 }
 
@@ -332,17 +320,17 @@ model Category {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  stockItems StockItem[]
+  Items Item[]
 
   @@unique([name, organizationId])
   @@index([organizationId])
 }
 
 // ============================================================
-// Stock Items  (unified catalog — products AND services)
+// Items  (unified catalog — products AND services)
 // ============================================================
 
-model StockItem {
+model Item {
   id          Int       @id @default(autoincrement())
   type        ItemType  @default(PRODUCT)
   sku         String
@@ -355,13 +343,6 @@ model StockItem {
   // Default prices in smallest currency unit
   purchasePrice Int @default(0)
   salesPrice    Int @default(0)
-
-  // For PRODUCT: unit of measure (e.g. "pcs", "kg", "box")
-  // For SERVICE: billing unit (e.g. "hr", "month", "project")
-  unit String @default("pcs")
-
-  // Reorder threshold — only meaningful for PRODUCT type
-  reorderPoint Int @default(0)
 
   categoryId Int?
   category   Category? @relation(fields: [categoryId], references: [id])
@@ -377,11 +358,10 @@ model StockItem {
   updatedAt DateTime @updatedAt
 
   // Relations
-  stockEntries   Stock[]
-  stockMovements StockMovement[]
-  supplierItems  SupplierItem[]
-  invoiceLines   InvoiceLine[]
-  purchaseLines  PurchaseLine[]
+  stockEntries  Stock[]
+  supplierItems SupplierItem[]
+  invoiceLines  InvoiceLine[]
+  purchaseLines PurchaseLine[]
 
   @@unique([sku, organizationId])
   @@index([organizationId])
@@ -405,10 +385,8 @@ model Warehouse {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  inventory     Stock[]
-  invoices      Invoice[]
-  movementsFrom StockMovement[] @relation("MovementsFrom")
-  movementsTo   StockMovement[] @relation("MovementsTo")
+  stock    Stock[]
+  invoices Invoice[]
 
   @@unique([name, organizationId])
   @@index([organizationId])
@@ -420,8 +398,8 @@ model Stock {
   quantity Int     @default(0)
   location String? // Bin / shelf reference
 
-  stockItemId Int
-  stockItem   StockItem @relation(fields: [stockItemId], references: [id])
+  ItemId Int
+  Item   Item @relation(fields: [ItemId], references: [id])
 
   warehouseId Int
   warehouse   Warehouse @relation(fields: [warehouseId], references: [id])
@@ -433,44 +411,8 @@ model Stock {
   updatedAt DateTime @updatedAt
 
   // One row per item per warehouse
-  @@unique([stockItemId, warehouseId])
+  @@unique([ItemId, warehouseId])
   @@index([organizationId])
-}
-
-// Immutable ledger of every stock change
-model StockMovement {
-  id       Int          @id @default(autoincrement())
-  type     MovementType
-  // Positive = added, negative = removed
-  quantity Int
-  notes    String?
-
-  stockItemId Int
-  stockItem   StockItem @relation(fields: [stockItemId], references: [id])
-
-  fromWarehouseId Int?
-  fromWarehouse   Warehouse? @relation("MovementsFrom", fields: [fromWarehouseId], references: [id])
-
-  toWarehouseId Int?
-  toWarehouse   Warehouse? @relation("MovementsTo", fields: [toWarehouseId], references: [id])
-
-  // Business document references
-  invoiceId  Int?
-  purchaseId Int?
-
-  // Audit
-  organizationId Int
-  organization   Organization @relation(fields: [organizationId], references: [id])
-
-  userId String
-  user   User   @relation(fields: [userId], references: [id])
-
-  createdAt DateTime @default(now())
-
-  @@index([stockItemId])
-  @@index([organizationId])
-  @@index([invoiceId])
-  @@index([purchaseId])
 }
 
 // ============================================================
@@ -478,9 +420,7 @@ model StockMovement {
 // ============================================================
 
 model Invoice {
-  id            Int    @id @default(autoincrement())
-  // Human-readable number scoped per org: INV-2024-0001
-  invoiceNumber String
+  id Int @id @default(autoincrement())
 
   type   InvoiceType   @default(INVOICE)
   status InvoiceStatus @default(DRAFT)
@@ -523,7 +463,7 @@ model Invoice {
   lines    InvoiceLine[]
   payments Payment[]
 
-  @@unique([invoiceNumber, organizationId])
+  @@unique([id, organizationId])
   @@index([organizationId])
   @@index([customerId])
   @@index([status])
@@ -544,9 +484,9 @@ model InvoiceLine {
   taxAmt        Int @default(0) // Calculated tax amount
   total         Int // (unitPrice × qty) - discountAmt + taxAmt
 
-  // The item being sold — single FK to StockItem
-  stockItemId Int?
-  stockItem   StockItem? @relation(fields: [stockItemId], references: [id])
+  // The item being sold — single FK to Item
+  ItemId Int?
+  Item   Item? @relation(fields: [ItemId], references: [id])
 
   // Which tax rate was applied (snapshot reference)
   taxRateId Int?
@@ -567,7 +507,7 @@ model InvoiceLine {
   updatedAt DateTime @updatedAt
 
   @@index([invoiceId])
-  @@index([stockItemId])
+  @@index([ItemId])
   @@index([parentId])
 }
 
@@ -593,9 +533,7 @@ model Payment {
 // ============================================================
 
 model PurchaseOrder {
-  id       Int    @id @default(autoincrement())
-  // Human-readable: PO-2024-0001
-  poNumber String
+  id Int @id @default(autoincrement())
 
   status       PurchaseStatus @default(DRAFT)
   date         DateTime       @default(now())
@@ -624,7 +562,7 @@ model PurchaseOrder {
   lines    PurchaseLine[]
   payments PurchasePayment[]
 
-  @@unique([poNumber, organizationId])
+  @@unique([id, organizationId])
   @@index([supplierId])
   @@index([organizationId])
   @@index([status])
@@ -641,14 +579,14 @@ model PurchaseLine {
   purchaseOrderId Int
   purchaseOrder   PurchaseOrder @relation(fields: [purchaseOrderId], references: [id], onDelete: Cascade)
 
-  stockItemId Int
-  stockItem   StockItem @relation(fields: [stockItemId], references: [id])
+  ItemId Int
+  Item   Item @relation(fields: [ItemId], references: [id])
 
   // Quantity actually received (for partial receipts)
   receivedQty Int @default(0)
 
   @@index([purchaseOrderId])
-  @@index([stockItemId])
+  @@index([ItemId])
 }
 
 model PurchasePayment {
@@ -666,6 +604,12 @@ model PurchasePayment {
   updatedAt DateTime @updatedAt
 
   @@index([purchaseOrderId])
+}
+
+enum JobStatus {
+  NOT_STARTED
+  IN_PROGRESS
+  COMPLETED
 }
 
 // ============================================================

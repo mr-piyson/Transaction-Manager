@@ -64,33 +64,9 @@ export function toSmallestUnit(display: number, currency: CurrencyCode): number 
   return Math.round(display * Math.pow(10, config.precision));
 }
 
-// Generate INV-2024-0001 style numbers
 // Must be called inside a $transaction
-export async function generateDocNumber(
-  tx: any, // PrismaTransactionClient type is not available here, using any
-  organizationId: number,
-  prefix: 'INV' | 'PO' | 'CN',
-): Promise<string> {
-  const last = await tx.invoice.findFirst({
-    where: {
-      organizationId,
-      number: {
-        startsWith: `${prefix}-`,
-      },
-    },
-    orderBy: { number: 'desc' },
-  });
-
-  let nextSeq = 1;
-  if (last) {
-    const parts = last.number.split('-');
-    const lastSeq = parseInt(parts[parts.length - 1], 10);
-    if (!isNaN(lastSeq)) {
-      nextSeq = lastSeq + 1;
-    }
-  }
-
-  return `${prefix}-${nextSeq.toString().padStart(5, '0')}`;
+export function generateID(prefix: 'INV' | 'PO' | 'CN', number: string | number): string {
+  return `${prefix}-${number.toString().padStart(5, '0')}`;
 }
 
 // Calculate tax amount in integer
