@@ -93,7 +93,6 @@ model Organization {
   categories     Category[]
   invoices       Invoice[]
   purchaseOrders PurchaseOrder[]
-  taxRates       TaxRate[]
   contracts      Contract[]
   supplierItems  SupplierItem[]
 }
@@ -190,27 +189,6 @@ model Jwks {
   expiresAt  DateTime?
 
   @@map("jwks")
-}
-
-// ============================================================
-// Tax Rates  (reusable — attach to lines or items)
-// ============================================================
-
-model TaxRate {
-  id        Int     @id @default(autoincrement())
-  name      String // e.g. "VAT 10%", "Zero Rated"
-  rate      Int // Stored as basis points: 1000 = 10.00%
-  isDefault Boolean @default(false)
-  isActive  Boolean @default(true)
-
-  organizationId Int
-  organization   Organization @relation(fields: [organizationId], references: [id])
-
-  Items        Item[]
-  invoiceLines InvoiceLine[]
-
-  @@unique([name, organizationId])
-  @@index([organizationId])
 }
 
 // ============================================================
@@ -349,7 +327,6 @@ model Item {
 
   // Default tax rate (can be overridden per invoice line)
   taxRateId Int?
-  taxRate   TaxRate? @relation(fields: [taxRateId], references: [id])
 
   organizationId Int
   organization   Organization @relation(fields: [organizationId], references: [id])
@@ -489,8 +466,7 @@ model InvoiceLine {
   Item   Item? @relation(fields: [ItemId], references: [id])
 
   // Which tax rate was applied (snapshot reference)
-  taxRateId Int?
-  taxRate   TaxRate? @relation(fields: [taxRateId], references: [id])
+  taxRate Int @default(0)
 
   invoiceId Int
   invoice   Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)

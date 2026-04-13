@@ -78,7 +78,7 @@ export function CreateInventoryItemDialog({
   const supplierId = Number(params?.supplierId);
   const utils = trpc.useUtils();
   const createMutation = trpc.inventory.createInventoryItem.useMutation();
-  const { data: stockItems } = trpc.stockItems.getStockItems.useQuery();
+  const { data: stockItems } = trpc.items.getItems.useQuery();
 
   async function handleSubmit(values: InventoryItemValues) {
     await uploadImage({
@@ -193,13 +193,18 @@ export function CreateInventoryItemDialog({
                 name="stockItemId"
                 label="Link to Master Catalog Item"
                 render={({ value, onChange }) => (
-                  <Select value={value?.toString() || ''} onValueChange={(val) => onChange(Number(val))}>
+                  <Select
+                    value={value?.toString() || ''}
+                    onValueChange={(val) => onChange(Number(val))}
+                  >
                     <SelectTrigger className="h-10">
                       <SelectValue placeholder="Select master item (Product/Service)..." />
                     </SelectTrigger>
                     <SelectContent>
-                      {stockItems?.map(item => (
-                        <SelectItem key={item.id} value={item.id.toString()}>{item.name} ({item.sku})</SelectItem>
+                      {stockItems?.map((item) => (
+                        <SelectItem key={item.id} value={item.id.toString()}>
+                          {item.name} ({item.sku})
+                        </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>

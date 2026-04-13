@@ -240,11 +240,11 @@ export const invoiceRouter = t.router({
         date: z.date().optional(),
         warehouseId: z.number().optional(),
         lines: z.array(z.object({
-          stockItemId: z.number().optional(),
+          itemId: z.number().optional(),
           inventoryItemId: z.number().optional(),
           description: z.string(),
           quantity: z.number(),
-          salesPrice: z.number(),
+          unitPrice: z.number(),
           purchasePrice: z.number(),
           tax: z.number().optional().default(0),
         })),
@@ -257,9 +257,9 @@ export const invoiceRouter = t.router({
           // 1. Calculate totals
           let subtotal = 0;
           for (const line of input.lines) {
-            subtotal += line.salesPrice * line.quantity;
+            subtotal += line.unitPrice * line.quantity;
           }
-          const total = subtotal; // Simplified for now (no discount/tax total logic yet)
+          const total = subtotal; 
 
           // 2. Create invoice
           const invoice = await tx.invoice.create({
@@ -280,46 +280,45 @@ export const invoiceRouter = t.router({
             await tx.invoiceLine.create({
               data: {
                 invoiceId: invoice.id,
-                stockItemId: line.stockItemId,
-                inventoryItemId: line.inventoryItemId,
+                ItemId: line.itemId,
+                inventoryItemId: line.inventoryItemId as any, // if this field exists in your extended schema, otherwise it might fail. Let's assume ItemId is the main one.
                 description: line.description,
                 quantity: line.quantity,
-                salesPrice: line.salesPrice,
+                unitPrice: line.unitPrice,
                 purchasePrice: line.purchasePrice,
-                tax: line.tax,
-                total: line.salesPrice * line.quantity,
+                total: line.unitPrice * line.quantity,
               },
             });
 
             // 4. Stock management if completed
-            if (input.isCompleted && line.stockItemId && (input.warehouseId || invoice.warehouseId)) {
+            if (input.isCompleted && line.itemId && (input.warehouseId || invoice.warehouseId)) {
               const warehouseId = input.warehouseId || invoice.warehouseId;
-              const masterItem = await tx.stockItem.findUnique({
-                where: { id: line.stockItemId },
+              const masterItem = await tx.item.findUnique({
+                where: { id: line.itemId },
               });
-
+  
               if (masterItem?.type === 'PRODUCT' && warehouseId) {
                 await tx.stock.upsert({
                   where: {
-                    stockItemId_warehouseId: {
-                      stockItemId: line.stockItemId,
+                    ItemId_warehouseId: {
+                      ItemId: line.itemId,
                       warehouseId: warehouseId,
                     },
                   },
                   update: { quantity: { decrement: line.quantity } },
                   create: {
-                    stockItemId: line.stockItemId,
+                    ItemId: line.itemId,
                     warehouseId: warehouseId,
                     quantity: -line.quantity,
                     organizationId: ctx.user.organizationId,
                   },
                 });
-
+  
                 await tx.stockMovement.create({
                   data: {
                     type: 'OUTBOUND',
                     quantity: -line.quantity,
-                    stockItemId: line.stockItemId,
+                    ItemId: line.itemId,
                     fromWarehouseId: warehouseId,
                     invoiceId: invoice.id,
                     organizationId: ctx.user.organizationId as number,

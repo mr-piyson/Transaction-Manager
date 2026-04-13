@@ -1,7 +1,6 @@
 'use client';
 
-import * as z from 'zod';
-import { useState } from 'react';
+import { JSX, useState } from 'react';
 import { Loader2, Plus, PenTool, Hash, AlertTriangle, Box, Warehouse } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -26,7 +25,7 @@ import {
 } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 
-export function StockAdjustmentDialog({ children }: { children?: React.ReactNode }) {
+export function StockAdjustmentDialog({ children }: { children?: JSX.Element }) {
   const [open, setOpen] = useState(false);
   const [stockItemId, setStockItemId] = useState<string>('');
   const [warehouseId, setWarehouseId] = useState<string>('');
@@ -35,7 +34,7 @@ export function StockAdjustmentDialog({ children }: { children?: React.ReactNode
   const [notes, setNotes] = useState<string>('');
 
   const utils = trpc.useUtils();
-  const { data: items } = trpc.stockItems.getStockItems.useQuery();
+  const { data: items } = trpc.items.getItems.useQuery();
   const { data: warehouses } = trpc.warehouses.getWarehouses.useQuery();
 
   const adjustMutation = trpc.stock.adjustStock.useMutation({

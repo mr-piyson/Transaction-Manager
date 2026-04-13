@@ -52,7 +52,7 @@ export function CreateStockItemDialog({ onSuccess }: { onSuccess?: (item: any) =
   const [open, setOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<'PRODUCT' | 'SERVICE'>('PRODUCT');
   const utils = trpc.useUtils();
-  const createMutation = trpc.stockItems.createStockItem.useMutation();
+  const createMutation = trpc.items.createItem.useMutation();
 
   const generateSKU = (form: any) => {
     const name = form.getFieldValue('name') || '';
@@ -78,9 +78,9 @@ export function CreateStockItemDialog({ onSuccess }: { onSuccess?: (item: any) =
         purchasePrice: toSmallestUnit(values.purchasePrice, 'BHD'),
         salesPrice: toSmallestUnit(values.salesPrice, 'BHD'),
       };
-
-      const newItem = await createMutation.mutateAsync(data as any);
-      utils.stockItems.getStockItems.invalidate();
+      console.log(data);
+      const newItem = await createMutation.mutateAsync(data);
+      utils.items.getItems.invalidate();
       setOpen(false);
       onSuccess?.(newItem);
       toast.success('Stock item created successfully');

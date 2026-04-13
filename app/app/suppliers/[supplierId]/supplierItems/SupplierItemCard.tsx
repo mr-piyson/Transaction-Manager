@@ -1,7 +1,6 @@
 'use client';
 import { Package } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Format } from '@/lib/format';
 import { formatAmount } from '@/lib/utils';
 
 export function InventoryItemCard(props: {

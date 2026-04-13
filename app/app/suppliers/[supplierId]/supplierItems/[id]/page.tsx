@@ -52,7 +52,7 @@ export default function InventoryItemClientPage() {
     isError,
   } = trpc.inventory.getInventoryById.useQuery({ id: Number(id) });
 
-  const { data: stockItems } = trpc.stockItems.getStockItems.useQuery();
+  const { data: stockItems } = trpc.items.getItems.useQuery();
 
   /* ------------------------------ Mutations ------------------------------ */
 

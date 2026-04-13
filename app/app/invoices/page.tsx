@@ -1,7 +1,9 @@
 'use client';
 
 import { useState } from 'react';
-import { FileText, CheckCircle2, Clock } from 'lucide-react';
+import { FileText, CheckCircle2, Clock, Plus } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { Button } from '@/components/ui/button';
 
 import { ListView } from '@/components/list-view';
 import { useI18n } from '@/i18n/use-i18n';
@@ -12,6 +14,7 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { trpc } from '@/lib/trpc/client';
 
 export default function InvoicesPage() {
+  const router = useRouter();
   const { t } = useI18n();
   const {
     data: invoices,
@@ -31,7 +34,11 @@ export default function InvoicesPage() {
       <Header
         title={t('common.invoices', 'Invoices')}
         icon={<FileText className="inline" />}
-        rightContent={<CreateInvoiceDialog />}
+        rightContent={
+          <Button size="sm" className="gap-2" onClick={() => router.push('/app/invoices/new')}>
+            <Plus className="size-4" /> New
+          </Button>
+        }
       />
 
       {!isLoading && (

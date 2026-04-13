@@ -25,7 +25,6 @@ import {
 } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Format } from '@/lib/format';
 import { formatAmount } from '@/lib/utils';
 
 interface ItemLine {
@@ -46,7 +45,7 @@ export function CreatePurchaseDialog({
   const [lines, setLines] = useState<ItemLine[]>([]);
 
   const { data: suppliers } = trpc.suppliers.getSuppliers.useQuery();
-  const { data: stockItems } = trpc.stockItems.getStockItems.useQuery();
+  const { data: stockItems } = trpc.items.getItems.useQuery();
 
   const createMutation = trpc.purchases.create.useMutation({
     onSuccess: () => {
@@ -147,7 +146,7 @@ export function CreatePurchaseDialog({
               </Button>
             </div>
 
-            <ScrollArea className="h-[250px] border rounded-xl bg-muted/20 p-4">
+            <ScrollArea className="h-62.5 border rounded-xl bg-muted/20 p-4">
               <div className="space-y-3">
                 {lines.map((line, index) => (
                   <div

@@ -3,10 +3,10 @@ import { protectedProcedure, t } from '@/lib/trpc/server';
 import { TRPCError } from '@trpc/server';
 import db from '@/lib/db';
 
-export const stockItemRouter = t.router({
-  getStockItems: protectedProcedure.query(async ({ ctx }) => {
+export const itemRouter = t.router({
+  getItems: protectedProcedure.query(async ({ ctx }) => {
     try {
-      return await db.stockItem.findMany({
+      return await db.item.findMany({
         where: { organizationId: ctx.user.organizationId },
         include: {
           category: true,
@@ -26,11 +26,11 @@ export const stockItemRouter = t.router({
     }
   }),
 
-  getStockItemById: protectedProcedure
+  getItemById: protectedProcedure
     .input(z.object({ id: z.number() }))
     .query(async ({ input, ctx }) => {
       try {
-        const item = await db.stockItem.findUnique({
+        const item = await db.item.findUnique({
           where: { id: input.id },
           include: {
             category: true,
@@ -60,39 +60,47 @@ export const stockItemRouter = t.router({
       }
     }),
 
-  createStockItem: protectedProcedure
+  createItem: protectedProcedure
     .input(
       z.object({
-        name: z.string().min(2),
-        sku: z.string().min(3),
-        type: z.enum(['PRODUCT', 'SERVICE']),
         description: z.string().optional(),
-        barcode: z.string().optional(),
-        unit: z.string().default('pcs'),
+        minStock: z.coerce.number().default(0).optional(),
+        name: z.string().min(2),
         purchasePrice: z.coerce.number().default(0),
         salesPrice: z.coerce.number().default(0),
-        minStock: z.coerce.number().default(0),
+        type: z.enum(['PRODUCT', 'SERVICE']),
+        sku: z.string().min(3),
+        unit: z.string().default('pcs').optional(),
         categoryId: z.coerce.number().optional(),
         image: z.string().optional(),
       }),
     )
     .mutation(async ({ input, ctx }) => {
       try {
-        return await db.stockItem.create({
+        console.log('Creating item with data:', input);
+        return await db.item.create({
           data: {
-            ...input,
+            name: input.name,
+            sku: input.sku,
+            type: input.type,
+            description: input.description,
+            purchasePrice: input.purchasePrice,
+            salesPrice: input.salesPrice,
+            categoryId: input.categoryId,
+            image: input.image,
             organizationId: ctx.user.organizationId,
           },
         });
       } catch (error) {
+        console.error('Error creating item:', error);
         throw new TRPCError({
           code: 'INTERNAL_SERVER_ERROR',
-          message: 'Failed to create stock item',
+          message: 'Failed to create item',
         });
       }
     }),
 
-  updateStockItem: protectedProcedure
+  updateItem: protectedProcedure
     .input(
       z.object({
         id: z.coerce.number(),
@@ -113,7 +121,7 @@ export const stockItemRouter = t.router({
     )
     .mutation(async ({ input, ctx }) => {
       try {
-        return await db.stockItem.update({
+        return await db.item.update({
           where: { id: input.id },
           data: input.data,
         });
@@ -125,18 +133,16 @@ export const stockItemRouter = t.router({
       }
     }),
 
-  deleteStockItem: protectedProcedure
-    .input(z.object({ id: z.number() }))
-    .mutation(async ({ input }) => {
-      try {
-        return await db.stockItem.delete({
-          where: { id: input.id },
-        });
-      } catch (error) {
-        throw new TRPCError({
-          code: 'INTERNAL_SERVER_ERROR',
-          message: 'Failed to delete stock item',
-        });
-      }
-    }),
+  deleteItem: protectedProcedure.input(z.object({ id: z.number() })).mutation(async ({ input }) => {
+    try {
+      return await db.item.delete({
+        where: { id: input.id },
+      });
+    } catch (error) {
+      throw new TRPCError({
+        code: 'INTERNAL_SERVER_ERROR',
+        message: 'Failed to delete stock item',
+      });
+    }
+  }),
 });

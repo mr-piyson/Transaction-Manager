@@ -8,7 +8,7 @@ import { CreateStockItemDialog } from './create-stockItem-dialog';
 import { Badge } from '@/components/ui/badge';
 
 export default function StockItemsPage() {
-  const { data: items, isLoading, isError } = trpc.stockItems.getStockItems.useQuery();
+  const { data: items, isLoading, isError } = trpc.items.getItems.useQuery();
 
   return (
     <>

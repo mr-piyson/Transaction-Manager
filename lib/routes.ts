@@ -4,10 +4,12 @@ import {
   Boxes,
   FilePenLine,
   FileText,
+  HandCoinsIcon,
   LayoutDashboard,
   LucideIcon,
   Package,
   Settings,
+  ShoppingCart,
   Store,
   User,
   UserCircle,
@@ -37,6 +39,27 @@ export type Routes = typeof ROUTES;
 
 // Define the routes as a const to get literal types
 export const ROUTES = [
+  {
+    type: 'group',
+    label: 'Actions',
+    key: 'common.actions',
+    children: [
+      {
+        type: 'item',
+        label: 'Purchase',
+        key: 'common.purchase',
+        href: '/app/purchases',
+        icon: ShoppingCart,
+      },
+      {
+        type: 'item',
+        label: 'New Item',
+        key: 'common.items',
+        href: '/app/items',
+        icon: UserCircle,
+      },
+    ],
+  },
   {
     type: 'group',
     label: 'Navigation',
@@ -95,8 +118,8 @@ export const ROUTES = [
       },
       {
         type: 'item',
-        label: 'Stock Items',
-        key: 'common.stockItems',
+        label: 'Items Master',
+        key: 'common.items',
         href: '/app/stock-items',
         icon: Boxes,
       },

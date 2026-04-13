@@ -37,11 +37,10 @@ import {
   HandCoinsIcon,
 } from 'lucide-react';
 import { trpc } from '@/lib/trpc/client';
-import { cn, formatAmount } from '@/lib/utils';
+import { cn, formatAmount, generateID } from '@/lib/utils';
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
 import { Badge } from '@/components/ui/badge';
-import PaymentCard from './editor/payment-card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useDateFormat } from '@/hooks/use-date-format';
 
@@ -163,7 +162,7 @@ export default function InvoiceDetailPage() {
               <div className="bg-primary/10 p-2 rounded-lg">
                 <Receipt className="h-6 w-6 text-primary" />
               </div>
-              {Format.id.invoice(invoice.id)}
+              {generateID('INV', invoice.id)}
             </h2>
           </div>
 
@@ -172,24 +171,24 @@ export default function InvoiceDetailPage() {
             <Label
               className={cn(
                 'drop-shadow-sm w-30 h-8.75 rounded-lg flex items-center justify-between px-3 border',
-                invoice.isCompleted ? 'bg-default border-primary' : 'bg-muted',
+                invoice.status === 'PAID' ? 'bg-default border-primary' : 'bg-muted',
               )}
             >
               {/* Left placeholder (OFF state) */}
               <span
                 className={`text-sm transition-opacity ${
-                  invoice.isCompleted ? 'opacity-30' : 'opacity-100'
+                  invoice.status === 'PAID' ? 'opacity-30' : 'opacity-100'
                 }`}
               >
                 {/* show loading */}
-                {updateMutation.isPending ? <Spinner /> : invoice.isCompleted ? 'Done' : 'Pending'}
+                {updateMutation.isPending ? <Spinner /> : invoice.status === 'PAID' ? 'Done' : 'Pending'}
               </span>
 
               <Switch
                 disabled={updateMutation.isPending}
                 size="default"
                 className={'border-muted-foreground/50'}
-                checked={invoice.isCompleted}
+                checked={invoice.status === 'PAID'}
                 onCheckedChange={(checked) => {
                   console.log(checked);
                   updateMutation.mutate(
@@ -226,7 +225,7 @@ export default function InvoiceDetailPage() {
             <span
               className={cn(
                 'absolute inset-0 flex items-center text-xs font-semibold px-2 pointer-events-none transition-all duration-300',
-                invoice.isCompleted ? 'justify-start text-white' : 'justify-end text-gray-700',
+                invoice.status === 'PAID' ? 'justify-start text-white' : 'justify-end text-gray-700',
               )}
             ></span>
             {/* Payment Button */}
@@ -308,9 +307,9 @@ export default function InvoiceDetailPage() {
                       <CreditCard className="w-4 h-4" /> Status
                     </span>
                     <span
-                      className={`font-medium ${invoice.paymentStatus === 'Paid' ? 'text-green-600' : 'text-amber-600'}`}
+                      className={`font-medium ${invoice.status === 'PAID' ? 'text-green-600' : 'text-amber-600'}`}
                     >
-                      {invoice.paymentStatus}
+                      {invoice.status}
                     </span>
                   </div>
 
@@ -349,7 +348,7 @@ export default function InvoiceDetailPage() {
                 {/* NEW: Completion Badge  */}
                 <div className="flex flex-col pt-2">
                   <span className="text-muted-foreground flex items-center gap-2">
-                    {invoice.isCompleted ? (
+                    {invoice.status === 'PAID' ? (
                       <CheckCircle2 className="w-4 h-4" />
                     ) : (
                       <Clock className="w-4 h-4" />
@@ -357,7 +356,7 @@ export default function InvoiceDetailPage() {
                     Status
                   </span>
                   <div className="py-2 text-xs inline-block">
-                    {invoice.isCompleted ? (
+                    {invoice.status === 'PAID' ? (
                       <Badge variant="default">
                         <CheckCircle2 className="w-4 h-4" />
                         Completed
