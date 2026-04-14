@@ -32,6 +32,7 @@ export const en = {
     units: 'Units',
     categories: 'Categories',
     items: 'Items',
+    itemsMaster: 'Items Master',
     purchaseOrders: 'Purchase Orders',
     salesOrders: 'Sales Orders',
     purchaseReturns: 'Purchase Returns',

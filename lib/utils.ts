@@ -56,17 +56,37 @@ export function formatAmount(amount: number, currency: CurrencyCode = 'BHD'): st
   return `${config.symbol} ${displayAmount.toFixed(config.precision)}`;
 }
 
+/**
+ * Convert stored integer back to a plain decimal string for input fields.
+ * 1500 + "BHD" → "1.500"
+ */
+export function deformatMoney(amount: number, currency: CurrencyCode): string {
+  const { precision } = CURRENCIES[currency] ?? { precision: 2 };
+  const value = amount / Math.pow(10, precision);
+  return value.toFixed(precision); // always returns correct decimal places
+}
+
 // Convert display input to integer
 // toSmallestUnit(1.5, 'BHD') → 1500
-// toSmallestUnit(15.00, 'USD') → 1500
+// toSmallestUnit(15, 'USD') → 1500
 export function toSmallestUnit(display: number, currency: CurrencyCode): number {
   const config = CURRENCIES[currency];
   return Math.round(display * Math.pow(10, config.precision));
 }
 
-// Must be called inside a $transaction
-export function generateID(prefix: 'INV' | 'PO' | 'CN', number: string | number): string {
-  return `${prefix}-${number.toString().padStart(5, '0')}`;
+// Divide a money amount by a factor
+export function divideMoney(amount: number, divisor: number) {
+  return Math.round(amount / divisor);
+}
+
+// Calculate percentage of a money amount
+export function percentageOf(amount: number, percentage: number) {
+  return Math.round((amount * percentage) / 100);
+}
+
+// multiply a money amount by a factor
+export function multiplyMoney(amount: number, factor: number) {
+  return Math.round(amount * factor);
 }
 
 // Calculate tax amount in integer
@@ -86,4 +106,9 @@ export function calcLineTotal(
   const subtotal = unitPrice * quantity;
   const discounted = subtotal - discount;
   return discounted + tax;
+}
+
+// Must be called inside a $transaction
+export function generateID(prefix: 'INV' | 'PO' | 'CN', number: string | number): string {
+  return `${prefix}-${number.toString().padStart(5, '0')}`;
 }

@@ -191,7 +191,7 @@ export function CreateInventoryItemDialog({
 
               <FormCustomField<number | undefined>
                 name="stockItemId"
-                label="Link to Master Catalog Item"
+                label="Link to Item Master Data"
                 render={({ value, onChange }) => (
                   <Select
                     value={value?.toString() || ''}

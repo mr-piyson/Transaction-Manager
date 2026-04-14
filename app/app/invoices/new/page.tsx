@@ -291,6 +291,7 @@ export default function NewInvoicePage() {
                       </div>
                     </div>
                   )}
+                  rowHeight={0}
                 >
                   <Button
                     size="sm"

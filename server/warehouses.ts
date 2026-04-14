@@ -10,7 +10,7 @@ export const warehouseRouter = t.router({
         where: { organizationId: ctx.user.organizationId },
         include: {
           _count: {
-            select: { inventory: true },
+            select: { stock: true },
           },
         },
       });
@@ -28,11 +28,6 @@ export const warehouseRouter = t.router({
       try {
         const warehouse = await db.warehouse.findUnique({
           where: { id: input.id },
-          include: {
-            inventory: {
-              include: { stockItem: true },
-            },
-          },
         });
 
         if (!warehouse || warehouse.organizationId !== ctx.user.organizationId) {

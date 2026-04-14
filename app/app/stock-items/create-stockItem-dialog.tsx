@@ -107,7 +107,7 @@ export function CreateStockItemDialog({ onSuccess }: { onSuccess?: (item: any) =
             New Master Item
           </DialogTitle>
           <DialogDescription>
-            Register a new product or service in the master catalog.
+            Register a new product or service in the item master.
           </DialogDescription>
         </DialogHeader>
 

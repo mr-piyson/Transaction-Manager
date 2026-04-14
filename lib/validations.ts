@@ -124,7 +124,8 @@ export function validateConfirmPassword(passwordField: string, confirmPasswordFi
     });
 }
 /**
- *
+ * Combined schema for user signup with all validations and transformations applied.
+ * This can be used directly in API routes or form handlers to validate incoming data.
  */
 export const SIGNUP_SCHEMA = z.object({
   name: z.string().min(3).max(30),

@@ -1,7 +1,7 @@
 'use client';
 
 import { JSX, useState } from 'react';
-import { Loader2, Plus, PenTool, Hash, AlertTriangle, Box, Warehouse } from 'lucide-react';
+import { Loader2, PenTool, Hash, AlertTriangle, Box } from 'lucide-react';
 import { toast } from 'sonner';
 
 import {
@@ -192,7 +192,7 @@ export function StockAdjustmentDialog({ children }: { children?: JSX.Element }) 
             variant="default"
             onClick={handleSubmit}
             disabled={adjustMutation.isPending}
-            className="min-w-[120px]"
+            className="min-w-30"
           >
             {adjustMutation.isPending ? (
               <Loader2 className="size-4 animate-spin mr-2" />

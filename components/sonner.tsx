@@ -27,10 +27,10 @@ const Toaster = ({ ...props }: ToasterProps) => {
       toastOptions={{
         classNames: {
           success:
-            'backdrop-blur-md! supports-backdrop-filter:bg-success/60! bg-success/95! text-success-foreground!',
+            'backdrop-blur-md! supports-backdrop-filter:bg-success/60! bg-success/95! text-white!',
 
           warning:
-            'backdrop-blur-md! supports-backdrop-filter:bg-warning/60! bg-warning/95! text-warning-foreground!',
+            'backdrop-blur-md! supports-backdrop-filter:bg-warning/60! bg-warning/95! text-white!',
           error:
             'backdrop-blur-md! supports-backdrop-filter:bg-destructive/50! bg-destructive/95! text-white border-red-600!',
           info: 'backdrop-blur-md! supports-backdrop-filter:bg-primary/60! bg-primary/95! text-white border-blue-600!',
