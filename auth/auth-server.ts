@@ -24,7 +24,7 @@ export const auth = betterAuth({
         defaultValue: 'USER',
       },
       organizationId: {
-        type: 'number',
+        type: 'string',
       },
       firstName: {
         type: 'string',

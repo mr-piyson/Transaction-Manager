@@ -55,7 +55,13 @@ export const contractRouter = t.router({
       try {
         return await db.contract.create({
           data: {
-            ...input,
+            endDate: input.endDate,
+            startDate: input.startDate,
+            title: input.title,
+            description: input.description,
+            contractValue: input.contractValue,
+            renewalDate: input.renewalDate,
+            active: input.active ?? true,
             organizationId: ctx.user.organizationId,
           },
         });
@@ -87,7 +93,15 @@ export const contractRouter = t.router({
       try {
         return await db.contract.update({
           where: { id: input.id },
-          data: input.data,
+          data: {
+            endDate: input.data.endDate,
+            startDate: input.data.startDate,
+            title: input.data.title,
+            description: input.data.description,
+            contractValue: input.data.contractValue,
+            renewalDate: input.data.renewalDate,
+            active: input.data.active,
+          },
         });
       } catch (error) {
         throw new TRPCError({

@@ -2,6 +2,7 @@ import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 import db from '@/lib/db';
 import { protectedProcedure, publicProcedure, t } from '@/lib/trpc/server';
+import { InvoiceStatus, Prisma } from '@prisma/client';
 
 // A reusable, high-performance version of your logic
 export async function updateInvoiceStatus(
@@ -60,7 +61,7 @@ export const invoiceRouter = t.router({
   createInvoice: protectedProcedure
     .input(
       z.object({
-        customerId: z.union([z.string(), z.number()]),
+        customerId: z.union([z.string()]),
         // You can add more schema fields here to validate the 'body'
       }),
     )
@@ -70,7 +71,7 @@ export const invoiceRouter = t.router({
         const item = await db.invoice.create({
           data: {
             organizationId: ctx.user.organizationId,
-            customerId: Number(input.customerId),
+            customerId: input.customerId,
             userId: ctx.user.id,
           },
         });
@@ -89,7 +90,7 @@ export const invoiceRouter = t.router({
   getInvoiceById: publicProcedure
     .input(
       z.object({
-        id: z.number(),
+        id: z.string(),
         // Instead of raw JSON.parse, we define expected relations
         include: z
           .object({
@@ -127,15 +128,14 @@ export const invoiceRouter = t.router({
   updateInvoice: protectedProcedure
     .input(
       z.object({
-        id: z.number(),
+        id: z.string(),
         data: z.object({
           // Define the fields you want to allow updating
-          status: z.string().optional(),
+          status: z.enum(InvoiceStatus).optional(),
           amount: z.number().optional(),
           dueDate: z.date().optional(),
-          isCompleted: z.boolean().optional(),
-          customerId: z.number().optional(),
-          warehouseId: z.number().optional(),
+          customerId: z.string().optional(),
+          warehouseId: z.string().optional(),
         }),
       }),
     )
@@ -144,55 +144,30 @@ export const invoiceRouter = t.router({
         return await db.$transaction(async (tx) => {
           const currentInvoice = await tx.invoice.findUnique({
             where: { id: input.id },
-            include: { invoiceLines: { include: { stockItem: true } } },
+            include: { lines: { include: { item: true } } },
           });
 
           if (!currentInvoice) throw new Error('Invoice not found');
 
           // Trigger stock deduction if completing for the first time
-          if (input.data.isCompleted === true && !currentInvoice.isCompleted) {
-            const warehouseId = input.data.warehouseId || currentInvoice.warehouseId;
-            if (!warehouseId) {
-              // Only strictly require warehouse if there are PRODUCT lines
-              const hasProducts = currentInvoice.invoiceLines.some((l) => l.stockItem?.type === 'PRODUCT');
-              if (hasProducts) {
-                throw new TRPCError({
-                  code: 'BAD_REQUEST',
-                  message: 'A warehouse must be selected to complete an invoice containing products.',
-                });
-              }
-            }
-
-            for (const line of currentInvoice.invoiceLines) {
-              if (line.stockItem?.type === 'PRODUCT' && warehouseId) {
-                // Deduct from stock
-                await tx.stock.upsert({
-                  where: {
-                    stockItemId_warehouseId: {
-                      stockItemId: line.stockItemId as number,
-                      warehouseId: warehouseId,
-                    },
-                  },
-                  update: { quantity: { decrement: line.quantity } },
-                  create: {
-                    stockItemId: line.stockItemId as number,
-                    warehouseId: warehouseId,
-                    quantity: -line.quantity,
-                    organizationId: currentInvoice.organizationId,
-                  },
+          if (input.data.status === 'SENT' && currentInvoice.status !== 'SENT') {
+            for (const line of currentInvoice.lines) {
+              if (line.item?.type === 'PRODUCT' && currentInvoice.warehouseId) {
+                await tx.stock.update({
+                  where: { id: line.item.id },
+                  data: { quantity: { decrement: Number(line.quantity) } },
                 });
 
-                // Audit Log
                 await tx.stockMovement.create({
                   data: {
-                    type: 'OUTBOUND',
+                    type: 'SALE_OUTBOUND',
                     quantity: -line.quantity,
-                    stockItemId: line.stockItemId as number,
-                    fromWarehouseId: warehouseId,
+                    itemId: line.item.id,
+                    fromWarehouseId: currentInvoice.warehouseId,
                     invoiceId: currentInvoice.id,
-                    organizationId: currentInvoice.organizationId as number,
+                    organizationId: ctx.user.organizationId,
                     userId: ctx.user.id,
-                    notes: `Sale from Invoice #${currentInvoice.id}`,
+                    notes: `Sale from Invoice Update #${currentInvoice.id}`,
                   },
                 });
               }
@@ -217,7 +192,7 @@ export const invoiceRouter = t.router({
    * Delete invoice by id
    */
   deleteInvoice: protectedProcedure
-    .input(z.object({ id: z.number() }))
+    .input(z.object({ id: z.string() }))
     .mutation(async ({ input }) => {
       try {
         return await db.invoice.delete({
@@ -236,18 +211,20 @@ export const invoiceRouter = t.router({
   createFullInvoice: protectedProcedure
     .input(
       z.object({
-        customerId: z.number(),
+        customerId: z.string(),
         date: z.date().optional(),
-        warehouseId: z.number().optional(),
-        lines: z.array(z.object({
-          itemId: z.number().optional(),
-          inventoryItemId: z.number().optional(),
-          description: z.string(),
-          quantity: z.number(),
-          unitPrice: z.number(),
-          purchasePrice: z.number(),
-          tax: z.number().optional().default(0),
-        })),
+        warehouseId: z.string().optional(),
+        lines: z.array(
+          z.object({
+            itemId: z.string().optional(),
+            inventoryItemId: z.string().optional(),
+            description: z.string(),
+            quantity: z.number(),
+            unitPrice: z.number(),
+            purchasePrice: z.number(),
+            tax: z.number().optional().default(0),
+          }),
+        ),
         isCompleted: z.boolean().optional().default(false),
       }),
     )
@@ -259,7 +236,7 @@ export const invoiceRouter = t.router({
           for (const line of input.lines) {
             subtotal += line.unitPrice * line.quantity;
           }
-          const total = subtotal; 
+          const total = subtotal;
 
           // 2. Create invoice
           const invoice = await tx.invoice.create({
@@ -296,32 +273,32 @@ export const invoiceRouter = t.router({
               const masterItem = await tx.item.findUnique({
                 where: { id: line.itemId },
               });
-  
+
               if (masterItem?.type === 'PRODUCT' && warehouseId) {
                 await tx.stock.upsert({
                   where: {
-                    ItemId_warehouseId: {
-                      ItemId: line.itemId,
+                    itemId_warehouseId: {
+                      itemId: line.itemId,
                       warehouseId: warehouseId,
                     },
                   },
                   update: { quantity: { decrement: line.quantity } },
                   create: {
-                    ItemId: line.itemId,
+                    itemId: line.itemId,
                     warehouseId: warehouseId,
                     quantity: -line.quantity,
                     organizationId: ctx.user.organizationId,
                   },
                 });
-  
+
                 await tx.stockMovement.create({
                   data: {
-                    type: 'OUTBOUND',
+                    type: 'SALE_OUTBOUND',
                     quantity: -line.quantity,
-                    ItemId: line.itemId,
+                    itemId: line.itemId,
                     fromWarehouseId: warehouseId,
                     invoiceId: invoice.id,
-                    organizationId: ctx.user.organizationId as number,
+                    organizationId: ctx.user.organizationId,
                     userId: ctx.user.id,
                     notes: `Sale from New Invoice #${invoice.id}`,
                   },

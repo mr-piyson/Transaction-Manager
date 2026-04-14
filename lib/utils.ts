@@ -112,3 +112,7 @@ export function calcLineTotal(
 export function generateID(prefix: 'INV' | 'PO' | 'CN', number: string | number): string {
   return `${prefix}-${number.toString().padStart(5, '0')}`;
 }
+// helper to convert BigInt to JSON
+(BigInt.prototype as any).toJSON = function () {
+  return Number(this); // Use Number if you aren't dealing with trillions
+};

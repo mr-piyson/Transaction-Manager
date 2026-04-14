@@ -1,6 +1,7 @@
 import { getSession } from '@/auth/auth-server';
 import { initTRPC, TRPCError } from '@trpc/server';
 import db from '@/lib/db';
+import superjson from 'superjson';
 
 // Define the context
 export const createContext = async () => {
@@ -15,7 +16,9 @@ export const createContext = async () => {
 };
 
 // Initialize tRPC with the context type
-export const t = initTRPC.context<typeof createContext>().create();
+export const t = initTRPC.context<typeof createContext>().create({
+  transformer: superjson,
+});
 
 /**
  * ================================

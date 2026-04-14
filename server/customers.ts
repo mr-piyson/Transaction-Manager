@@ -16,7 +16,7 @@ export const customerRouter = t.router({
   }),
 
   getCustomerById: protectedProcedure
-    .input(z.object({ id: z.number() }))
+    .input(z.object({ id: z.string() }))
     .query(async ({ input }) => {
       try {
         const customer = await db.customer.findUnique({
