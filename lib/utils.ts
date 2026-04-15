@@ -49,9 +49,12 @@ export const CURRENCIES = {
 // Convert integer fils/cents to display string
 // formatAmount(1500, 'BHD') → 'BD 1.500'
 // formatAmount(1500, 'USD') → '$15.00'
-export function formatAmount(amount: number, currency: CurrencyCode = 'BHD'): string {
+export function formatAmount(
+  amount: number | BigInt | string,
+  currency: CurrencyCode = 'BHD',
+): string {
   const config = CURRENCIES[currency];
-  const displayAmount = amount / Math.pow(10, config.precision);
+  const displayAmount = Number(amount) / Math.pow(10, config.precision);
 
   return `${config.symbol} ${displayAmount.toFixed(config.precision)}`;
 }
