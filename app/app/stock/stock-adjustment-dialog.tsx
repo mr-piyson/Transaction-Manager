@@ -62,7 +62,7 @@ export function StockAdjustmentDialog({ children }: { children?: JSX.Element }) 
     }
 
     adjustMutation.mutate({
-      stockItemId: Number(stockItemId),
+      itemId: Number(stockItemId),
       warehouseId: Number(warehouseId),
       quantity: Number(quantity),
       type,

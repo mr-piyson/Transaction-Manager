@@ -3,6 +3,7 @@ import { publicProcedure, protectedProcedure, t } from '@/lib/trpc/server';
 import { TRPCError } from '@trpc/server';
 import db from '@/lib/db';
 import { auth } from '@/auth/auth-server';
+import { CurrencyCode } from '@prisma/client';
 
 export async function checkOrganization() {
   return (await db.organization.count({})) > 0;
@@ -11,7 +12,7 @@ export async function checkOrganization() {
 export async function getOrganization(id: string) {
   return await db.organization.findUnique({
     where: {
-      id: Number(id),
+      id: id,
     },
   });
 }
@@ -64,7 +65,7 @@ export const organizationRouter = t.router({
         adminLastName: z.string(),
         adminEmail: z.string().email(),
         adminPassword: z.string(),
-        currency: z.string(),
+        currency: z.enum(CurrencyCode).default('BHD'),
       }),
     )
     .mutation(async ({ input }) => {

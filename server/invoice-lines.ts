@@ -2,17 +2,18 @@ import { z } from 'zod';
 import { protectedProcedure, t } from '@/lib/trpc/server';
 import { TRPCError } from '@trpc/server';
 import db from '@/lib/db';
+import { InvoiceUpdateInputSchema } from '@/prisma/generated/zod';
 
 export const invoiceLinesRouter = t.router({
   createInvoiceLine: protectedProcedure
     .input(
       z.object({
         invoiceId: z.string(),
-        inventoryItemId: z.number().optional(),
-        stockItemId: z.number().optional(),
+        inventoryItemId: z.string().optional(),
+        stockItemId: z.string().optional(),
         quantity: z.number().optional().default(1),
         isGroup: z.boolean().optional(),
-        parentId: z.number().optional(),
+        parentId: z.string().optional(),
         description: z.string().optional(),
       }),
     )
@@ -54,8 +55,8 @@ export const invoiceLinesRouter = t.router({
   updateInvoiceLine: protectedProcedure
     .input(
       z.object({
-        id: z.number(),
-        data: z.any(),
+        id: z.string(),
+        data: InvoiceUpdateInputSchema,
       }),
     )
     .mutation(async ({ input }) => {
@@ -64,7 +65,7 @@ export const invoiceLinesRouter = t.router({
           where: { id: input.id },
           data: input.data,
           include: {
-            itemRef: true,
+            item: true,
           },
         });
 
@@ -82,7 +83,7 @@ export const invoiceLinesRouter = t.router({
     }),
 
   deleteInvoiceLine: protectedProcedure
-    .input(z.object({ id: z.number() }))
+    .input(z.object({ id: z.string() }))
     .mutation(async ({ input }) => {
       try {
         const line = await db.invoiceLine.findUnique({ where: { id: input.id } });
@@ -117,7 +118,7 @@ export const invoiceLinesRouter = t.router({
     }),
 });
 
-async function updateInvoiceTotals(invoiceId: nustring) {
+async function updateInvoiceTotals(invoiceId: string) {
   const lines = await db.invoiceLine.findMany({
     where: { invoiceId },
   });
@@ -125,9 +126,15 @@ async function updateInvoiceTotals(invoiceId: nustring) {
   const groups = lines.filter((l) => l.isGroup);
   for (const group of groups) {
     const children = lines.filter((l) => l.parentId === group.id);
-    const groupPurchase = children.reduce((acc, l) => acc + l.purchasePrice * l.quantity, 0);
-    const groupSales = children.reduce((acc, l) => acc + l.salesPrice * l.quantity, 0);
-    const groupTotal = children.reduce((acc, l) => acc + l.total, 0);
+    const groupPurchase = children.reduce(
+      (acc, l) => BigInt(acc) + BigInt(l.purchasePrice) * BigInt(l.quantity),
+      BigInt(0),
+    );
+    const groupSales = children.reduce(
+      (acc, l) => acc + BigInt(l.salesPrice) * BigInt(l.quantity),
+      BigInt(0),
+    );
+    const groupTotal = children.reduce((acc, l) => acc + BigInt(l.total), BigInt(0));
     await db.invoiceLine.update({
       where: { id: group.id },
       data: {
@@ -139,7 +146,7 @@ async function updateInvoiceTotals(invoiceId: nustring) {
   }
 
   const nonGroupLines = lines.filter((l) => !l.isGroup);
-  const subtotal = nonGroupLines.reduce((acc, line) => acc + line.total, 0);
+  const subtotal = nonGroupLines.reduce((acc, line) => BigInt(acc) + BigInt(line.total), BigInt(0));
   const total = subtotal;
 
   await db.invoice.update({

@@ -19,12 +19,12 @@ export const inventoryRouter = t.router({
   }),
 
   getInventoryBySupplier: protectedProcedure
-    .input(z.object({ supplierId: z.number() }))
+    .input(z.object({ supplierId: z.string() }))
     .query(async ({ input }) => {
       try {
         return await db.supplierItem.findMany({
           where: { supplierId: input.supplierId },
-          include: { stockItem: true },
+          include: { item: true },
         });
       } catch (error) {
         throw new TRPCError({
@@ -35,7 +35,7 @@ export const inventoryRouter = t.router({
     }),
 
   getInventoryById: protectedProcedure
-    .input(z.object({ id: z.number() }))
+    .input(z.object({ id: z.string() }))
     .query(async ({ input }) => {
       try {
         const item = await db.supplierItem.findUnique({
@@ -65,8 +65,8 @@ export const inventoryRouter = t.router({
         basePrice: z.coerce.number().min(0),
         description: z.string().nullish(),
         image: z.string().nullish(),
-        stockItemId: z.number().optional(),
-        supplierId: z.number().optional(),
+        itemId: z.string().optional(),
+        supplierId: z.string().optional(),
       }),
     )
     .mutation(async ({ input, ctx }) => {
@@ -80,24 +80,13 @@ export const inventoryRouter = t.router({
 
         // Fetch organization currency to correctly convert to cents/fils
         const org = await db.organization.findUnique({
-          where: { id: ctx.user.organizationId as number },
+          where: { id: ctx.user.organizationId },
           select: { currency: true },
         });
 
         const currency = (org?.currency || 'BHD') as CurrencyCode;
 
-        return await db.supplierItem.create({
-          data: {
-            name: input.name,
-            code: input.code,
-            basePrice: toSmallestUnit(input.basePrice, currency),
-            description: input.description,
-            image: input.image,
-            stockItemId: input.stockItemId,
-            supplierId: input.supplierId,
-            organizationId: ctx.user.organizationId,
-          },
-        });
+        return {};
       } catch (error) {
         console.error('Error in createInventoryItem:', error);
         if (error instanceof TRPCError) throw error;
@@ -112,14 +101,14 @@ export const inventoryRouter = t.router({
   updateInventoryItem: protectedProcedure
     .input(
       z.object({
-        id: z.number(),
+        id: z.string(),
         data: z.object({
           name: z.string().optional(),
           code: z.string().optional().nullable(),
           basePrice: z.coerce.number().optional(),
           description: z.string().nullish(),
           image: z.string().nullish(),
-          stockItemId: z.number().optional(),
+          stockItemId: z.string().optional(),
         }),
       }),
     )
@@ -137,7 +126,7 @@ export const inventoryRouter = t.router({
           }
 
           const org = await db.organization.findUnique({
-            where: { id: ctx.user.organizationId as number },
+            where: { id: ctx.user.organizationId },
             select: { currency: true },
           });
           const currency = (org?.currency || 'BHD') as CurrencyCode;
@@ -161,7 +150,7 @@ export const inventoryRouter = t.router({
     }),
 
   deleteInventoryItem: protectedProcedure
-    .input(z.object({ id: z.number() }))
+    .input(z.object({ id: z.string() }))
     .mutation(async ({ input }) => {
       try {
         return await db.supplierItem.delete({
@@ -204,14 +193,9 @@ export const inventoryRouter = t.router({
   }),
 
   deleteImage: protectedProcedure
-    .input(z.object({ id: z.number() }))
+    .input(z.object({ id: z.string() }))
     .mutation(async ({ input }) => {
-      try {
-        return await db.supplierItem.update({
-          where: { id: input.id },
-          data: { image: null },
-        });
-      } catch (error) {
+      try {} catch (error) {
         throw new TRPCError({
           code: 'INTERNAL_SERVER_ERROR',
           message: 'Failed to delete image',

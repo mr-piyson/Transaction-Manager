@@ -23,7 +23,7 @@ export const warehouseRouter = t.router({
   }),
 
   getWarehouseById: protectedProcedure
-    .input(z.object({ id: z.number() }))
+    .input(z.object({ id: z.string() }))
     .query(async ({ input, ctx }) => {
       try {
         const warehouse = await db.warehouse.findUnique({
@@ -73,7 +73,7 @@ export const warehouseRouter = t.router({
   updateWarehouse: protectedProcedure
     .input(
       z.object({
-        id: z.number(),
+        id: z.string(),
         data: z.object({
           name: z.string().optional(),
           address: z.string().optional(),
@@ -95,7 +95,7 @@ export const warehouseRouter = t.router({
     }),
 
   deleteWarehouse: protectedProcedure
-    .input(z.object({ id: z.number() }))
+    .input(z.object({ id: z.string() }))
     .mutation(async ({ input }) => {
       try {
         return await db.warehouse.delete({

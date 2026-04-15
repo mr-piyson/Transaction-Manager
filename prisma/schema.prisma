@@ -8,6 +8,12 @@ generator client {
   provider = "prisma-client-js"
 }
 
+generator zod {
+  provider     = "zod-prisma-types"
+  output       = "./generated/zod" // Where the schemas will live
+  useDecimalJs = true // Crucial for ERP precision
+}
+
 datasource db {
   provider = "sqlite" // Switch to "sqlite" for local dev
 }
@@ -29,6 +35,14 @@ enum CurrencyCode {
   OMR
   QAR
   EGP
+}
+
+enum PaymentStatus {
+  PENDING
+  PARTIAL
+  PAID
+  OVERDUE
+  CANCELLED
 }
 
 enum Role {
@@ -597,8 +611,9 @@ model Invoice {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  lines    InvoiceLine[]
-  payments Payment[]
+  lines             InvoiceLine[]
+  payments          Payment[]
+  invoiceLineGroups InvoiceLineGroup[]
 
   @@index([organizationId])
   @@index([customerId])
@@ -642,22 +657,39 @@ model InvoiceLine {
   invoiceId String
   invoice   Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
 
-  isGroup    Boolean       @default(false)
-  parentId   String?
-  parentLine InvoiceLine?  @relation("GroupedLines", fields: [parentId], references: [id], onDelete: Cascade)
-  childLines InvoiceLine[] @relation("GroupedLines")
-
   sortOrder Int @default(0)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   // [CHANGE 5] Back-reference for StockMovement audit trail
-  stockMovements StockMovement[]
+  stockMovements     StockMovement[]
+  invoiceLineGroup   InvoiceLineGroup? @relation(fields: [invoiceLineGroupId], references: [id])
+  invoiceLineGroupId String?
 
   @@index([invoiceId])
   @@index([itemId])
-  @@index([parentId])
+}
+
+model InvoiceLineGroup {
+  id        String   @id @default(cuid())
+  title     String
+  invoiceId String
+  invoice   Invoice  @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // ADD: The toggle for the frontend / PDF generator
+  showAsSingleLine Boolean @default(true)
+
+  // ADD: Group-level snapshot totals (matching your BigInt pattern)
+  subtotal BigInt @default(0)
+  taxTotal BigInt @default(0)
+  total    BigInt @default(0)
+
+  lines InvoiceLine[]
+
+  @@index([invoiceId])
 }
 
 model Payment {

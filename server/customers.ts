@@ -70,7 +70,7 @@ export const customerRouter = t.router({
   updateCustomer: protectedProcedure
     .input(
       z.object({
-        id: z.number(),
+        id: z.string(),
         data: z.object({
           name: z.string().optional(),
           phone: z.string().optional(),
@@ -94,7 +94,7 @@ export const customerRouter = t.router({
     }),
 
   deleteCustomer: protectedProcedure
-    .input(z.object({ id: z.number() }))
+    .input(z.object({ id: z.string() }))
     .mutation(async ({ input }) => {
       try {
         return await db.customer.delete({

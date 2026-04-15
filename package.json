@@ -67,7 +67,8 @@
     "prettier": "^3.8.2",
     "prisma": "^7.7.0",
     "tailwindcss": "^4.2.2",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "zod-prisma-types": "^3.3.11"
   },
   "ignoreScripts": [
     "sharp",

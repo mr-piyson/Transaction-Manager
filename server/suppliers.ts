@@ -23,7 +23,7 @@ export const supplierRouter = t.router({
   }),
 
   getSupplierById: protectedProcedure
-    .input(z.object({ id: z.number() }))
+    .input(z.object({ id: z.string() }))
     .query(async ({ input, ctx }) => {
       try {
         const supplier = await db.supplier.findUnique({
@@ -86,7 +86,7 @@ export const supplierRouter = t.router({
   updateSupplier: protectedProcedure
     .input(
       z.object({
-        id: z.number(),
+        id: z.string(),
         data: z.object({
           name: z.string().optional(),
           phone: z.string().optional(),
@@ -114,7 +114,7 @@ export const supplierRouter = t.router({
     }),
 
   deleteSupplier: protectedProcedure
-    .input(z.object({ id: z.number() }))
+    .input(z.object({ id: z.string() }))
     .mutation(async ({ input }) => {
       try {
         return await db.supplier.delete({
@@ -129,12 +129,12 @@ export const supplierRouter = t.router({
     }),
 
   getProvidedItems: protectedProcedure
-    .input(z.object({ supplierId: z.number() }))
+    .input(z.object({ supplierId: z.string() }))
     .query(async ({ input }) => {
       try {
         return await db.supplierItem.findMany({
           where: { supplierId: input.supplierId },
-          include: { stockItem: true },
+          include: { item: true },
         });
       } catch (error) {
         throw new TRPCError({

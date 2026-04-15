@@ -1,5 +1,6 @@
 import db from '@/lib/db';
 import { protectedProcedure, router } from '@/lib/trpc/server';
+import { StockMovementType } from '@prisma/client';
 import z from 'zod';
 
 export const stockRouter = router({
@@ -22,7 +23,7 @@ export const stockRouter = router({
       return await db.stockMovement.findMany({
         where: { organizationId: ctx.user.organizationId },
         include: {
-          stockItem: true,
+          item: true,
           user: true,
         },
         orderBy: { createdAt: 'desc' },
@@ -35,10 +36,10 @@ export const stockRouter = router({
   adjustStock: protectedProcedure
     .input(
       z.object({
-        stockItemId: z.number(),
-        warehouseId: z.number(),
+        itemId: z.string(),
+        warehouseId: z.string(),
         quantity: z.number(), // Offset (+/-)
-        type: z.enum(['ADJUSTMENT', 'WASTAGE']),
+        type: z.enum(StockMovementType),
         notes: z.string().optional(),
       }),
     )
@@ -46,14 +47,14 @@ export const stockRouter = router({
       return await ctx.db.$transaction(async (tx) => {
         const stock = await tx.stock.upsert({
           where: {
-            stockItemId_warehouseId: {
-              stockItemId: input.stockItemId,
+            itemId_warehouseId: {
+              itemId: input.itemId,
               warehouseId: input.warehouseId,
             },
           },
           update: { quantity: { increment: input.quantity } },
           create: {
-            stockItemId: input.stockItemId,
+            itemId: input.itemId,
             warehouseId: input.warehouseId,
             quantity: input.quantity,
             organizationId: ctx.user.organizationId,
@@ -64,10 +65,10 @@ export const stockRouter = router({
           data: {
             type: input.type,
             quantity: input.quantity,
-            stockItemId: input.stockItemId,
+            itemId: input.itemId,
             toWarehouseId: input.quantity > 0 ? input.warehouseId : null,
             fromWarehouseId: input.quantity < 0 ? input.warehouseId : null,
-            organizationId: ctx.user.organizationId as number,
+            organizationId: ctx.user.organizationId,
             userId: ctx.user.id,
             notes: input.notes || `Manual ${input.type}`,
           },
@@ -80,11 +81,11 @@ export const stockRouter = router({
   transfer: protectedProcedure
     .input(
       z.object({
-        stockItemId: z.number(),
-        fromWarehouseId: z.number(),
-        toWarehouseId: z.number(),
+        itemId: z.string(),
+        fromWarehouseId: z.string(),
+        toWarehouseId: z.string(),
         quantity: z.number().positive(),
-        organizationId: z.number(),
+        organizationId: z.string(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
@@ -92,8 +93,8 @@ export const stockRouter = router({
         // 1. Check source stock
         const source = await tx.stock.findUnique({
           where: {
-            stockItemId_warehouseId: {
-              stockItemId: input.stockItemId,
+            itemId_warehouseId: {
+              itemId: input.itemId,
               warehouseId: input.fromWarehouseId,
             },
           },
@@ -112,14 +113,14 @@ export const stockRouter = router({
         // 3. Add to destination
         await tx.stock.upsert({
           where: {
-            stockItemId_warehouseId: {
-              stockItemId: input.stockItemId,
+            itemId_warehouseId: {
+              itemId: input.itemId,
               warehouseId: input.toWarehouseId,
             },
           },
           update: { quantity: { increment: input.quantity } },
           create: {
-            stockItemId: input.stockItemId,
+            itemId: input.itemId,
             warehouseId: input.toWarehouseId,
             quantity: input.quantity,
             organizationId: input.organizationId,
@@ -131,7 +132,7 @@ export const stockRouter = router({
           data: {
             type: 'TRANSFER',
             quantity: input.quantity,
-            stockItemId: input.stockItemId,
+            itemId: input.itemId,
             fromWarehouseId: input.fromWarehouseId,
             toWarehouseId: input.toWarehouseId,
             organizationId: input.organizationId,

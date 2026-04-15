@@ -5,12 +5,12 @@ export const invoiceRouter = router({
   createInvoice: protectedProcedure
     .input(
       z.object({
-        customerId: z.number(),
-        organizationId: z.number(),
-        warehouseId: z.number().optional(), // Required if selling products
+        customerId: z.string(),
+        organizationId: z.string(),
+        warehouseId: z.string().optional(), // Required if selling products
         items: z.array(
           z.object({
-            stockItemId: z.number(),
+            stockItemId: z.string(),
             quantity: z.number(),
             salesPrice: z.number(),
           }),
@@ -47,14 +47,14 @@ export const invoiceRouter = router({
 
         // 3. Stock Outbound Logic
         for (const item of input.items) {
-          const stockItem = await tx.stockItem.findUnique({ where: { id: item.stockItemId } });
+          const stockItem = await tx.item.findUnique({ where: { id: item.stockItemId } });
 
           if (stockItem?.type === 'PRODUCT' && input.warehouseId) {
             // Deduct from stock [cite: 48, 49]
             await tx.stock.update({
               where: {
-                stockItemId_warehouseId: {
-                  stockItemId: item.stockItemId,
+                itemId_warehouseId: {
+                  itemId: item.stockItemId,
                   warehouseId: input.warehouseId,
                 },
               },

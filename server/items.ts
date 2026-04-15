@@ -27,7 +27,7 @@ export const itemRouter = t.router({
   }),
 
   getItemById: protectedProcedure
-    .input(z.object({ id: z.number() }))
+    .input(z.object({ id: z.string() }))
     .query(async ({ input, ctx }) => {
       try {
         const item = await db.item.findUnique({
@@ -71,7 +71,7 @@ export const itemRouter = t.router({
         type: z.enum(['PRODUCT', 'SERVICE']),
         sku: z.string().min(3),
         unit: z.string().default('pcs').optional(),
-        categoryId: z.coerce.number().optional(),
+        categoryId: z.string().optional(),
         image: z.string().optional(),
       }),
     )
@@ -103,7 +103,7 @@ export const itemRouter = t.router({
   updateItem: protectedProcedure
     .input(
       z.object({
-        id: z.coerce.number(),
+        id: z.string(),
         data: z.object({
           name: z.string().optional(),
           sku: z.string().optional(),
@@ -114,7 +114,7 @@ export const itemRouter = t.router({
           purchasePrice: z.coerce.number().optional(),
           salesPrice: z.coerce.number().optional(),
           minStock: z.coerce.number().optional(),
-          categoryId: z.coerce.number().optional(),
+          categoryId: z.coerce.string().optional(),
           image: z.string().optional(),
         }),
       }),
@@ -123,7 +123,18 @@ export const itemRouter = t.router({
       try {
         return await db.item.update({
           where: { id: input.id },
-          data: input.data,
+          data: {
+            categoryId: input.data.categoryId,
+            description: input.data.description,
+            image: input.data.image,
+            minStock: input.data.minStock,
+            name: input.data.name,
+            purchasePrice: input.data.purchasePrice,
+            salesPrice: input.data.salesPrice,
+            sku: input.data.sku,
+            type: input.data.type,
+            unit: input.data.unit,
+          },
         });
       } catch (error) {
         throw new TRPCError({
@@ -133,7 +144,7 @@ export const itemRouter = t.router({
       }
     }),
 
-  deleteItem: protectedProcedure.input(z.object({ id: z.number() })).mutation(async ({ input }) => {
+  deleteItem: protectedProcedure.input(z.object({ id: z.string() })).mutation(async ({ input }) => {
     try {
       return await db.item.delete({
         where: { id: input.id },

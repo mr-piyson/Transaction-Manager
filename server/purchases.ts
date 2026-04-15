@@ -1,4 +1,5 @@
 import { protectedProcedure, router } from '@/lib/trpc/server';
+import { InvoiceStatus, PaymentStatus, PurchaseStatus } from '@prisma/client';
 import { z } from 'zod';
 
 export const purchaseRouter = router({
@@ -6,10 +7,10 @@ export const purchaseRouter = router({
   create: protectedProcedure
     .input(
       z.object({
-        supplierId: z.number(),
+        supplierId: z.string(),
         lines: z.array(
           z.object({
-            stockItemId: z.number(),
+            stockItemId: z.string(),
             quantity: z.number(),
             purchasePrice: z.number(),
           }),
@@ -26,14 +27,6 @@ export const purchaseRouter = router({
           supplierId: input.supplierId,
           organizationId: ctx.user.organizationId,
           total,
-          lines: {
-            create: input.lines.map((line) => ({
-              stockItemId: line.stockItemId,
-              quantity: line.quantity,
-              purchasePrice: line.purchasePrice,
-              total: line.purchasePrice * line.quantity,
-            })),
-          },
         },
       });
     }),
@@ -58,32 +51,32 @@ export const purchaseRouter = router({
   receiveOrder: protectedProcedure
     .input(
       z.object({
-        purchaseOrderId: z.number(),
-        warehouseId: z.number(),
+        purchaseOrderId: z.string(),
+        warehouseId: z.string(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
       return await ctx.db.$transaction(async (tx) => {
         const po = await tx.purchaseOrder.findUnique({
           where: { id: input.purchaseOrderId },
-          include: { lines: { include: { stockItem: true } } },
+          include: { lines: { include: { item: true } } },
         });
 
         if (!po || po.isReceived) throw new Error('Order not found or already received');
 
         // Increment stock for each PRODUCT in the PO
         for (const line of po.lines) {
-          if (line.stockItem.type === 'PRODUCT') {
+          if (line.item.type === 'PRODUCT') {
             await tx.stock.upsert({
               where: {
-                stockItemId_warehouseId: {
-                  stockItemId: line.stockItemId,
+                itemId_warehouseId: {
+                  itemId: line.itemId,
                   warehouseId: input.warehouseId,
                 },
               },
               update: { quantity: { increment: line.quantity } },
               create: {
-                stockItemId: line.stockItemId,
+                itemId: line.itemId,
                 warehouseId: input.warehouseId,
                 quantity: line.quantity,
                 organizationId: po.organizationId,
@@ -93,9 +86,9 @@ export const purchaseRouter = router({
             // Create StockMovement Log
             await tx.stockMovement.create({
               data: {
-                type: 'INBOUND',
+                type: 'PURCHASE_INBOUND',
                 quantity: line.quantity,
-                stockItemId: line.stockItemId,
+                itemId: line.itemId,
                 toWarehouseId: input.warehouseId,
                 purchaseId: po.id,
                 organizationId: po.organizationId,
@@ -114,7 +107,7 @@ export const purchaseRouter = router({
     }),
 
   updateStatus: protectedProcedure
-    .input(z.object({ id: z.number(), status: z.enum(['Paid', 'Unpaid', 'Partial']) }))
+    .input(z.object({ id: z.string(), status: z.enum(PurchaseStatus) }))
     .mutation(async ({ ctx, input }) => {
       return await ctx.db.purchaseOrder.update({
         where: { id: input.id },
