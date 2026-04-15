@@ -17,6 +17,7 @@ import { Progress } from '@/components/ui/progress';
 import { SelectDialog } from '@/components/select-dialog';
 import { useParams, useRouter } from 'next/navigation';
 import { trpc } from '@/lib/trpc/client';
+import { CreateInvoiceLineDialog } from './invoice-line-dialog';
 
 type InvoiceEditorProps = {
   children?: React.ReactNode;
@@ -111,21 +112,7 @@ export default function InvoiceEditor(props: InvoiceEditorProps) {
 
         {/* ── Row 3: Actions ── */}
         <div className=" flex items-center gap-1.5 px-2 pb-2">
-          <SelectDialog<any>
-            onSelect={handleSelectItem}
-            data={[]}
-            searchFields={['code', 'name', 'description']}
-            cardRenderer={() => <div />} // InventoryItemCard as any
-            rowHeight={72}
-          >
-            <Button
-              size="sm"
-              className="h-8 justify-start hover:bg-primary/50 bg-primary/10 text-primary border-2 border-primary/50 gap-1.5 text-xs flex-1 sm:flex-none"
-            >
-              <BoxIcon size={13} />
-              <span>Item</span>
-            </Button>
-          </SelectDialog>
+          <CreateInvoiceLineDialog />
 
           <Button
             size="sm"

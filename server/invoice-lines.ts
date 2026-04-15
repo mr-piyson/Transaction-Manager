@@ -2,11 +2,10 @@ import { z } from 'zod';
 import { protectedProcedure, t } from '@/lib/trpc/server';
 import { TRPCError } from '@trpc/server';
 import db from '@/lib/db';
-import { InvoiceLineCreateInputSchema, InvoiceUpdateInputSchema } from '@/prisma/generated/zod';
 
 export const invoiceLinesRouter = t.router({
   createInvoiceLine: protectedProcedure
-    .input(z.object({ data: InvoiceLineCreateInputSchema }))
+    .input(z.object({ data: z.any() }))
     .mutation(async ({ input }) => {
       const { data } = input;
       try {
@@ -29,14 +28,24 @@ export const invoiceLinesRouter = t.router({
     .input(
       z.object({
         id: z.string(),
-        data: InvoiceUpdateInputSchema,
+        description: z.string(),
+        quantity: z.string(),
+        purchasePrice: z.bigint(),
+        unitPrice: z.bigint(),
+        discountAmt: z.bigint(),
       }),
     )
     .mutation(async ({ input }) => {
       try {
         const line = await db.invoiceLine.update({
           where: { id: input.id },
-          data: input.data,
+          data: {
+            description: input.description,
+            quantity: input.quantity,
+            purchasePrice: input.purchasePrice,
+            unitPrice: input.unitPrice,
+            discountAmt: input.discountAmt,
+          },
           include: {
             item: true,
           },
