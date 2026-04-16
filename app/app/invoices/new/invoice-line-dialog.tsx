@@ -21,17 +21,13 @@ import { trpc } from '@/lib/trpc/client';
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/input-group';
 import z from 'zod';
 
-interface CreateCustomerDialogProps {
+interface InvoiceLineDialogProps {
   onSuccess?: (data: any) => void;
   onError?: (error: any) => void;
   children?: JSX.Element;
 }
 
-export function CreateInvoiceLineDialog({
-  onSuccess,
-  onError,
-  children,
-}: CreateCustomerDialogProps) {
+export function CreateInvoiceLineDialog({ onSuccess, onError, children }: InvoiceLineDialogProps) {
   const [open, setOpen] = useState(false);
   const utils = trpc.useUtils();
 
@@ -40,9 +36,26 @@ export function CreateInvoiceLineDialog({
     handleSubmit,
     reset,
     formState: { errors },
-  } = useForm({});
+  } = useForm({
+    resolver: zodResolver(
+      z.object({
+        description: z.string(),
+        quantity: z.coerce.string(),
+        purchasePrice: z.coerce.bigint(),
+        unitPrice: z.coerce.bigint(),
+        discountAmt: z.coerce.bigint(),
+      }),
+    ),
+    defaultValues: {
+      description: '',
+      quantity: '',
+      purchasePrice: BigInt(0),
+      unitPrice: BigInt(0),
+      discountAmt: BigInt(0),
+    },
+  });
 
-  const onSubmit = async (values: Prisma.InvoiceLineCreateInput) => {};
+  const onSubmit = async (values: any) => {};
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -66,59 +79,7 @@ export function CreateInvoiceLineDialog({
           <DialogDescription>Enter the details to create a new invoice line.</DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-          <FieldGroup className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            {/* Name Field */}
-            <Field data-invalid={!!errors.name}>
-              <FieldLabel>Full Name</FieldLabel>
-              <InputGroup>
-                <InputGroupInput {...register('name')} placeholder="Name ..." />
-                <InputGroupAddon>
-                  <User />
-                </InputGroupAddon>
-              </InputGroup>
-              <FieldError>{errors.name?.message}</FieldError>
-            </Field>
-
-            {/* Phone Field */}
-            <Field data-invalid={!!errors.phone}>
-              <FieldLabel>Phone Number</FieldLabel>
-              <InputGroup>
-                <InputGroupInput {...register('phone')} placeholder="+973 ..." />
-                <InputGroupAddon>
-                  <Phone />
-                </InputGroupAddon>
-              </InputGroup>
-              <FieldError>{errors.phone?.message}</FieldError>
-            </Field>
-          </FieldGroup>
-
-          {/* Address Field */}
-          <Field data-invalid={!!errors.address}>
-            <FieldLabel>Address</FieldLabel>
-            {/* <CityCombobox /> */}
-            <InputGroup>
-              <InputGroupInput {...register('address')} placeholder="Address ..." />
-              <InputGroupAddon>
-                <MapPin />
-              </InputGroupAddon>
-            </InputGroup>
-            <FieldError>{errors.address?.message}</FieldError>
-          </Field>
-          {/* Dialog Footer */}
-          <DialogFooter>
-            <Button type="button" variant="ghost" onClick={() => setOpen(false)}>
-              Cancel
-            </Button>
-            <Button type="submit" disabled={createMutation.isPending} className="min-w-30">
-              {createMutation.isPending ? (
-                <Loader2 className="size-4 animate-spin" />
-              ) : (
-                'Save Customer'
-              )}
-            </Button>
-          </DialogFooter>
-        </form>
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6"></form>
       </DialogContent>
     </Dialog>
   );

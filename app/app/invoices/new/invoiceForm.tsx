@@ -12,13 +12,31 @@ import InvoiceItemCard from './invoiceItem';
 import { InventoryItemCard } from '../../suppliers/[supplierId]/supplierItems/SupplierItemCard';
 import { useState } from 'react';
 
-export default function InvoiceForm() {
+export default function InvoiceForm({
+  lines,
+  setLines,
+}: {
+  lines: any[];
+  setLines: React.Dispatch<React.SetStateAction<any[]>>;
+}) {
   const utils = trpc.useUtils();
   const { data: inventoryItems } = trpc.inventory.getInventory.useQuery();
 
-  const handleSelectItem = (item: Item, parentId?: number) => {};
-
-  const [lines, setLines] = useState([]);
+  const handleSelectItem = (item: any, parentId?: string) => {
+    const newLine = {
+      id: Math.random().toString(36).substr(2, 9),
+      itemId: item.id,
+      inventoryItemId: item.id,
+      description: item.name,
+      quantity: 1,
+      unitPrice: Number(item.basePrice),
+      purchasePrice: Number(item.basePrice),
+      total: Number(item.basePrice),
+      parentId: parentId,
+      itemRef: item,
+    };
+    setLines((prev) => [...prev, newLine]);
+  };
 
   if (lines.length === 0) {
     return (
@@ -38,7 +56,7 @@ export default function InvoiceForm() {
   const groups = lines.filter((l: any) => l.isGroup);
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-4 p-4">
       {/* Render Groups */}
       {groups.map((g: any) => {
         const childLines = lines.filter((l: any) => l.parentId === g.id);
@@ -56,12 +74,14 @@ export default function InvoiceForm() {
                     title: 'Delete Group',
                     description: 'Are you sure you want to delete this group? ' + g.id,
                   });
+                  if (confirmed) {
+                    setLines((prev) => prev.filter((l) => l.id !== g.id && l.parentId !== g.id));
+                  }
                 },
                 destructive: true,
                 type: 'item',
               },
             ]}
-            children={undefined}
           >
             {/* <InvoiceItemCardGroup
               key={g.id}
@@ -95,7 +115,14 @@ export default function InvoiceForm() {
       })}
       {/* Render Rigular Lines */}
       {regularLines.map((line: any) => (
-        <InvoiceItemCard key={line.id} line={line as any} />
+        <InvoiceItemCard
+          key={line.id}
+          line={line as any}
+          onDelete={() => setLines((prev) => prev.filter((l) => l.id !== line.id))}
+          onUpdate={(updatedLine) =>
+            setLines((prev) => prev.map((l) => (l.id === line.id ? updatedLine : l)))
+          }
+        />
       ))}
     </div>
   );

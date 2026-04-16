@@ -1,4 +1,11 @@
-export default function InvoiceItemCard({
+import { Badge } from '@/components/ui/badge';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Trash2, Box } from 'lucide-react';
+import { UniversalContextMenu } from '@/components/context-menu';
+import { trpc } from '@/lib/trpc/client';
+import { formatAmount } from '@/lib/utils';
+
+export default function PurchaseItemCard({
   line,
   onDelete,
   onUpdate,
@@ -7,8 +14,7 @@ export default function InvoiceItemCard({
   onDelete?: () => void;
   onUpdate?: (updated: any) => void;
 }) {
-  const utils = trpc.useUtils();
-  const itemRef = (line as any).itemRef;
+  const itemRef = line.itemRef;
 
   const handleDelete = () => {
     onDelete?.();
@@ -29,7 +35,7 @@ export default function InvoiceItemCard({
       <div className="flex flex-row justify-between items-center p-3 px-3 w-full bg-popover overflow-hidden hover:bg-muted/50 transition-colors group border-b last:border-0 border-border/50">
         <div className="flex flex-row items-center gap-3">
           <Avatar className="border-0 h-10 w-10 rounded-lg shrink-0">
-            <AvatarImage src={itemRef?.imageUrl || ''} alt={line.description || 'Item'} />
+            <AvatarImage src={itemRef?.image || ''} alt={line.description || 'Item'} />
             <AvatarFallback className="rounded-lg bg-foreground/5">
               <Box className="h-5 w-5 text-muted-foreground" />
             </AvatarFallback>
@@ -38,10 +44,10 @@ export default function InvoiceItemCard({
           <div className="flex flex-col min-w-0">
             <div className="flex items-center gap-2">
               <h3 className="font-medium leading-none truncate">{line.description}</h3>
-              {itemRef?.code && <Badge variant="secondary" className="px-1 text-[10px] h-4">{itemRef.code}</Badge>}
+              {itemRef?.sku && <Badge variant="secondary" className="px-1 text-[10px] h-4">{itemRef.sku}</Badge>}
             </div>
             <div className="flex items-center gap-2 text-xs text-muted-foreground mt-1">
-              <span>{formatAmount(line.unitPrice)}</span>
+              <span>{formatAmount(line.unitCost)}</span>
               <span className="text-muted-foreground/60">× {Number(line.quantity)}</span>
             </div>
           </div>
@@ -57,7 +63,7 @@ export default function InvoiceItemCard({
                   onUpdate?.({
                     ...line,
                     quantity: newQty,
-                    total: newQty * Number(line.unitPrice),
+                    total: newQty * Number(line.unitCost),
                   });
                 }
               }}
@@ -75,7 +81,7 @@ export default function InvoiceItemCard({
                 onUpdate?.({
                   ...line,
                   quantity: newQty,
-                  total: newQty * Number(line.unitPrice),
+                  total: newQty * Number(line.unitCost),
                 });
               }}
               className="h-6 w-6 flex items-center justify-center hover:bg-background rounded-sm transition-colors"

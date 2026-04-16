@@ -5,14 +5,22 @@ import db from '@/lib/db';
 
 export const invoiceLinesRouter = t.router({
   createInvoiceLine: protectedProcedure
-    .input(z.object({ data: z.any() }))
+    .input(
+      z.object({
+        data: z.object({
+          description: z.string(),
+          quantity: z.coerce.string(),
+          purchasePrice: z.coerce.bigint(),
+          unitPrice: z.coerce.bigint(),
+          discountAmt: z.coerce.bigint(),
+        }),
+      }),
+    )
     .mutation(async ({ input }) => {
       const { data } = input;
       try {
         return await db.$transaction(async (tx) => {
-          let newLine = await tx.invoiceLine.create({
-            data: data,
-          });
+          let newLine = {};
 
           return newLine;
         });

@@ -1,34 +1,102 @@
+import { TRPCError } from '@trpc/server';
 import { protectedProcedure, router } from '@/lib/trpc/server';
 import { InvoiceStatus, PaymentStatus, PurchaseStatus } from '@prisma/client';
 import { z } from 'zod';
 
 export const purchaseRouter = router({
-  // Create a new Purchase Order
-  create: protectedProcedure
+  // Create a full Purchase Order with lines
+  createFullPurchase: protectedProcedure
     .input(
       z.object({
         supplierId: z.string(),
+        isReceived: z.boolean().default(false),
+        warehouseId: z.string().optional(),
         lines: z.array(
           z.object({
-            stockItemId: z.string(),
+            itemId: z.string(),
             quantity: z.number(),
-            purchasePrice: z.number(),
+            unitCost: z.number(),
           }),
         ),
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      if (!ctx.user.organizationId) throw new Error('Unauthorized: No organization');
+      try {
+        return await ctx.db.$transaction(async (tx) => {
+          // 1. Calculate total
+          let subtotal = 0;
+          for (const line of input.lines) {
+            subtotal += line.unitCost * line.quantity;
+          }
+          const total = subtotal;
 
-      const total = input.lines.reduce((acc, line) => acc + line.purchasePrice * line.quantity, 0);
+          // 2. Create purchase order
+          const po = await tx.purchaseOrder.create({
+            data: {
+              organizationId: ctx.user.organizationId,
+              supplierId: input.supplierId,
+              subtotal: BigInt(subtotal),
+              total: BigInt(total),
+              status: input.isReceived ? 'RECEIVED' : 'DRAFT',
+              isReceived: input.isReceived,
+              receivedAt: input.isReceived ? new Date() : null,
+            },
+          });
 
-      return await ctx.db.purchaseOrder.create({
-        data: {
-          supplierId: input.supplierId,
-          organizationId: ctx.user.organizationId,
-          total,
-        },
-      });
+          // 3. Create lines
+          for (const line of input.lines) {
+            const pl = await tx.purchaseLine.create({
+              data: {
+                purchaseOrderId: po.id,
+                itemId: line.itemId,
+                quantity: line.quantity,
+                unitCost: BigInt(line.unitCost),
+                total: BigInt(line.unitCost * line.quantity),
+              },
+            });
+
+            // 4. Update stock if received
+            if (input.isReceived && input.warehouseId) {
+              await tx.stock.upsert({
+                where: {
+                  itemId_warehouseId: {
+                    itemId: line.itemId,
+                    warehouseId: input.warehouseId,
+                  },
+                },
+                update: { quantity: { increment: line.quantity } },
+                create: {
+                  itemId: line.itemId,
+                  warehouseId: input.warehouseId,
+                  quantity: line.quantity,
+                  organizationId: ctx.user.organizationId,
+                },
+              });
+
+              await tx.stockMovement.create({
+                data: {
+                  type: 'PURCHASE_INBOUND',
+                  quantity: line.quantity,
+                  itemId: line.itemId,
+                  toWarehouseId: input.warehouseId,
+                  purchaseLineId: pl.id,
+                  organizationId: ctx.user.organizationId,
+                  userId: ctx.user.id,
+                  notes: `Received from Purchase #${po.id}`,
+                },
+              });
+            }
+          }
+
+          return po;
+        });
+      } catch (error) {
+        throw new TRPCError({
+          code: 'INTERNAL_SERVER_ERROR',
+          message: 'Failed to create purchase',
+          cause: error,
+        });
+      }
     }),
 
   // Get list of Purchase Orders
