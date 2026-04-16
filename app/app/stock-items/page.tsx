@@ -2,7 +2,7 @@
 
 import { ListView } from '@/components/list-view';
 import { Header } from '../App-Header';
-import { Box, Layers } from 'lucide-react';
+import { Box, HelpingHand, Layers } from 'lucide-react';
 import { trpc } from '@/lib/trpc/client';
 import { CreateStockItemDialog } from './create-stockItem-dialog';
 import { Badge } from '@/components/ui/badge';
@@ -25,9 +25,15 @@ export default function StockItemsPage() {
         emptyDescription="Define products and services here to use them across suppliers and warehouses."
         cardRenderer={(item) => (
           <div className="flex items-center gap-4 px-4 py-3 hover:bg-accent/50 transition-colors cursor-pointer border-b last:border-0 border-border/50">
-            <div className="bg-primary/10 p-2.5 rounded-xl shrink-0">
-              <Box className="size-6 text-primary" />
-            </div>
+            {item.type === 'PRODUCT' ? (
+              <div className="bg-primary/10 p-2.5 rounded-xl shrink-0">
+                <Box className="size-6 text-primary" />
+              </div>
+            ) : (
+              <div className="bg-warning/10 p-2.5 rounded-xl shrink-0">
+                <HelpingHand className="size-6 text-warning" />
+              </div>
+            )}
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2">
                 <span className="font-semibold truncate">{item.name}</span>

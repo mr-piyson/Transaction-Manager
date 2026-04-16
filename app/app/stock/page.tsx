@@ -2,21 +2,24 @@
 
 import { ListView } from '@/components/list-view';
 import { Header } from '../App-Header';
-import { Package, Warehouse, Info, AlertTriangle, TrendingUp, History } from 'lucide-react';
+import { Package, Warehouse, AlertTriangle, TrendingUp, History } from 'lucide-react';
 import { trpc } from '@/lib/trpc/client';
 import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Loader2 } from 'lucide-react';
 import { StockAdjustmentDialog } from './stock-adjustment-dialog';
+import { cn } from '@/lib/utils';
+import { useRouter } from 'next/navigation';
 
 export default function StockDashboardPage() {
+  const router = useRouter();
   const { data: stockLevels, isLoading: loadingStocks } = trpc.stock.getStocks.useQuery();
   const { data: movements, isLoading: loadingHistory } = trpc.stock.getStockMovements.useQuery();
 
   // Aggregate stats
   const totalItems = stockLevels?.reduce((acc, s) => acc + s.quantity, 0) || 0;
-  const lowStockCount = stockLevels?.filter((s) => s.quantity <= s.stockItem.minStock).length || 0;
+  const lowStockCount = stockLevels?.filter((s) => s.quantity <= s.item.minStock).length || 0;
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -26,7 +29,7 @@ export default function StockDashboardPage() {
 
       {/* KPI Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 p-4 md:px-8 pb-0">
-        <Card className="bg-primary/5 border-primary/10">
+        <Card className="bg-primary/5 border-primary/10 transition-all hover:shadow-md cursor-pointer">
           <CardHeader className="pb-2">
             <CardTitle className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
               Total Units
@@ -37,11 +40,18 @@ export default function StockDashboardPage() {
               <Package className="size-5 text-primary" />
               {totalItems}
             </div>
-            <p className="text-[10px] text-muted-foreground mt-1">Across all storage locations</p>
+            <p className="text-[10px] text-muted-foreground mt-1 text-nowrap">
+              Across all locations
+            </p>
           </CardContent>
         </Card>
 
-        <Card className={lowStockCount > 0 ? 'bg-amber-500/5 border-amber-500/10' : ''}>
+        <Card
+          className={cn(
+            'transition-all hover:shadow-md cursor-pointer',
+            lowStockCount > 0 ? 'bg-amber-500/5 border-amber-500/10' : '',
+          )}
+        >
           <CardHeader className="pb-2">
             <CardTitle className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
               Low Stock Alerts
@@ -75,18 +85,21 @@ export default function StockDashboardPage() {
           <ListView
             data={stockLevels || []}
             isLoading={loadingStocks}
-            searchFields={['stockItem.name', 'warehouse.name']}
+            searchFields={[]}
             emptyTitle="No Physical Stock"
             emptyDescription="Incoming purchases will auto-populate this view."
             cardRenderer={(stock) => {
               const stockPercentage = Math.min(
-                (stock.quantity / (stock.stockItem.minStock * 2 || 100)) * 100,
+                (stock.quantity / (stock.item.minStock * 2 || 100)) * 100,
                 100,
               );
-              const isLow = stock.quantity <= stock.stockItem.minStock;
+              const isLow = stock.quantity <= stock.item.minStock;
 
               return (
-                <div className="flex flex-col gap-3 px-4 py-4 hover:bg-accent/50 transition-colors cursor-pointer border-b border-border/50">
+                <div
+                  onClick={() => router.push(`/app/stock/${stock.item.id}`)}
+                  className="flex flex-col gap-3 px-4 py-4 hover:bg-accent/50 transition-colors cursor-pointer border-b border-border/50"
+                >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       <div className="bg-muted p-2 rounded-lg">
@@ -94,7 +107,7 @@ export default function StockDashboardPage() {
                       </div>
                       <div>
                         <div className="font-semibold text-sm leading-none mb-1">
-                          {stock.stockItem.name}
+                          {stock.item.name}
                         </div>
                         <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground bg-muted/30 px-1.5 py-0.5 rounded border border-border/50 w-fit">
                           <Warehouse className="size-3" />
@@ -108,7 +121,7 @@ export default function StockDashboardPage() {
                       >
                         {stock.quantity}{' '}
                         <span className="text-[10px] font-normal text-muted-foreground">
-                          {stock.stockItem.unit}
+                          {stock.item.unit}
                         </span>
                       </div>
                       {isLow && (
@@ -122,7 +135,7 @@ export default function StockDashboardPage() {
                   <div className="space-y-1.5">
                     <div className="flex justify-between text-[10px] text-muted-foreground uppercase tracking-widest font-medium">
                       <span>Threshold Progress</span>
-                      <span>Target: {stock.stockItem.minStock * 2}</span>
+                      <span>Target: {stock.item.minStock * 2}</span>
                     </div>
                     <Progress
                       value={stockPercentage}
@@ -156,15 +169,15 @@ export default function StockDashboardPage() {
                   <div className="flex items-center justify-between mb-1">
                     <Badge
                       variant={
-                        mv.type === 'INBOUND'
+                        mv.type.includes('INBOUND') || mv.type.includes('UP')
                           ? 'default'
-                          : mv.type === 'OUTBOUND'
+                          : mv.type.includes('OUTBOUND') || mv.type.includes('DOWN')
                             ? 'destructive'
                             : 'secondary'
                       }
                       className="text-[9px] px-1.5 h-4 uppercase tracking-tighter"
                     >
-                      {mv.type}
+                      {mv.type.replace('_', ' ')}
                     </Badge>
                     <span className="text-[10px] text-muted-foreground">
                       {new Date(mv.createdAt).toLocaleTimeString([], {
@@ -173,7 +186,7 @@ export default function StockDashboardPage() {
                       })}
                     </span>
                   </div>
-                  <div className="font-medium text-foreground/90 truncate">{mv.stockItem.name}</div>
+                  <div className="font-medium text-foreground/90 truncate">{mv.item.name}</div>
                   <div className="text-[10px] text-muted-foreground mt-0.5">
                     {mv.quantity > 0 ? '+' : ''}
                     {mv.quantity} units {mv.notes ? `• ${mv.notes}` : ''}

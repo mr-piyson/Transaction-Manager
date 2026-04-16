@@ -88,6 +88,8 @@ export const itemRouter = t.router({
             salesPrice: input.salesPrice,
             categoryId: input.categoryId,
             image: input.image,
+            unit: input.unit,
+            minStock: input.minStock,
             organizationId: ctx.user.organizationId,
           },
         });

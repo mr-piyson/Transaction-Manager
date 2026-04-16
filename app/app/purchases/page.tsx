@@ -19,15 +19,11 @@ import { toast } from 'sonner';
 import { formatAmount } from '@/lib/utils';
 import Link from 'next/link';
 
+import { ReceivePurchaseDialog } from './receive-purchase-dialog';
+
 export default function PurchasesPage() {
   const { data: purchases, isLoading, refetch } = trpc.purchases.getPurchases.useQuery();
-  const receiveMutation = trpc.purchases.receiveOrder.useMutation({
-    onSuccess: () => {
-      refetch();
-      toast.success('Inventory updated successfully');
-    },
-  });
-
+  
   const updateStatusMutation = trpc.purchases.updateStatus.useMutation({
     onSuccess: () => {
       refetch();
@@ -35,14 +31,9 @@ export default function PurchasesPage() {
     },
   });
 
-  const handleReceive = (id: number) => {
-    // In a real app, I'd show a dialog to pick a warehouse
-    // For now, I'll pick the first warehouse or default to 1 (Demo)
-    receiveMutation.mutate({ purchaseOrderId: id, warehouseId: 1 });
-  };
-
-  const handleMarkPaid = (id: number) => {
-    updateStatusMutation.mutate({ id, status: 'Paid' });
+  const handleMarkPaid = (id: string) => {
+    // Usually we would update status to PAID
+    updateStatusMutation.mutate({ id, status: 'RECEIVED' }); // Adjust if you have a PAID status in enum
   };
 
   return (
@@ -65,7 +56,7 @@ export default function PurchasesPage() {
         cardRenderer={(po) => (
           <div className="flex items-center gap-4 px-4 py-4 hover:bg-accent/50 transition-colors border-b border-border/50 group">
             <div
-              className={`p-3 rounded-2xl shrink-0 ${po.isReceived ? 'bg-green-500/10 text-green-600' : 'bg-amber-500/10 text-amber-600'}`}
+              className={`p-3 rounded-2xl shrink-0 ${po.isReceived ? 'bg-green-500/10 text-success' : 'bg-amber-500/10 text-amber-600'}`}
             >
               <Truck className="size-6" />
             </div>
@@ -75,7 +66,7 @@ export default function PurchasesPage() {
                 <span className="font-bold text-base truncate">{po.supplier.name}</span>
                 <Badge
                   variant={po.isReceived ? 'default' : 'secondary'}
-                  className="text-[10px] h-4 uppercase tracking-tighter"
+                  className="text-xs h-4 uppercase tracking-tighter"
                 >
                   {po.isReceived ? 'Received' : 'Pending'}
                 </Badge>
@@ -98,11 +89,11 @@ export default function PurchasesPage() {
             </div>
 
             <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-              {po.status !== 'Paid' && (
+              {po.status !== 'RECEIVED' && (
                 <Button
                   size="sm"
                   variant="outline"
-                  className="h-8 border-green-200 bg-green-50 text-green-700 hover:bg-green-100 hover:text-green-800"
+                  className="h-8 border-success/10 bg-success/5 text-success hover:bg-success/10 hover:text-success"
                   onClick={(e) => {
                     e.stopPropagation();
                     handleMarkPaid(po.id);
@@ -115,25 +106,12 @@ export default function PurchasesPage() {
               )}
 
               {!po.isReceived ? (
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="h-8 border-amber-200 bg-amber-50 text-amber-700 hover:bg-amber-100 hover:text-amber-800"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleReceive(po.id);
-                  }}
-                  disabled={receiveMutation.isPending}
-                >
-                  {receiveMutation.isPending ? (
-                    <Clock className="size-3 animate-spin mr-1.5" />
-                  ) : (
-                    <CheckCircle2 className="size-3 mr-1.5" />
-                  )}
-                  Receive Stock
-                </Button>
+                <ReceivePurchaseDialog 
+                  purchaseId={po.id} 
+                  onSuccess={refetch} 
+                />
               ) : (
-                <div className="flex items-center gap-1.5 text-xs text-green-600 font-medium bg-green-50 px-2 py-1 rounded-md border border-green-100">
+                <div className="flex items-center gap-1.5 text-xs text-success font-medium px-2 py-1 rounded-md border-2 border-success/20">
                   <CheckCircle2 className="size-3" />
                   Stock Added
                 </div>

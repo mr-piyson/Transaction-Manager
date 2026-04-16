@@ -56,16 +56,20 @@ export function StockAdjustmentDialog({ children }: { children?: JSX.Element }) 
   };
 
   const handleSubmit = () => {
-    if (!stockItemId || !warehouseId || Number(quantity) === 0) {
+    const qtyNum = Number(quantity);
+    if (!stockItemId || !warehouseId || qtyNum === 0) {
       toast.error('Please fill in all required fields');
       return;
     }
 
+    // Map to backend enums
+    const finalType = qtyNum > 0 ? 'ADJUSTMENT_UP' : 'ADJUSTMENT_DOWN';
+
     adjustMutation.mutate({
-      itemId: Number(stockItemId),
-      warehouseId: Number(warehouseId),
-      quantity: Number(quantity),
-      type,
+      itemId: stockItemId,
+      warehouseId: warehouseId,
+      quantity: qtyNum,
+      type: finalType as any,
       notes,
     });
   };

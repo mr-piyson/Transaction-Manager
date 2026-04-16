@@ -9,7 +9,7 @@ export const stockRouter = router({
       return await db.stock.findMany({
         where: { organizationId: ctx.user.organizationId },
         include: {
-          stockItem: true,
+          item: true,
           warehouse: true,
         },
       });
@@ -17,6 +17,38 @@ export const stockRouter = router({
       throw new Error('Failed to fetch stock levels');
     }
   }),
+
+  getItemStockDetails: protectedProcedure
+    .input(z.object({ itemId: z.string() }))
+    .query(async ({ input, ctx }) => {
+      try {
+        const item = await db.item.findUnique({
+          where: { id: input.itemId },
+          include: {
+            stockEntries: {
+              include: { warehouse: true },
+            },
+            stockMovements: {
+              include: { 
+                user: true,
+                fromWarehouse: true,
+                toWarehouse: true
+              },
+              orderBy: { createdAt: 'desc' },
+              take: 20,
+            },
+          },
+        });
+
+        if (!item || item.organizationId !== ctx.user.organizationId) {
+          throw new Error('Item not found');
+        }
+
+        return item;
+      } catch (error) {
+        throw new Error('Failed to fetch item stock details');
+      }
+    }),
 
   getStockMovements: protectedProcedure.query(async ({ ctx }) => {
     try {
@@ -85,7 +117,6 @@ export const stockRouter = router({
         fromWarehouseId: z.string(),
         toWarehouseId: z.string(),
         quantity: z.number().positive(),
-        organizationId: z.string(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
@@ -123,7 +154,7 @@ export const stockRouter = router({
             itemId: input.itemId,
             warehouseId: input.toWarehouseId,
             quantity: input.quantity,
-            organizationId: input.organizationId,
+            organizationId: ctx.user.organizationId,
           },
         });
 
@@ -135,7 +166,7 @@ export const stockRouter = router({
             itemId: input.itemId,
             fromWarehouseId: input.fromWarehouseId,
             toWarehouseId: input.toWarehouseId,
-            organizationId: input.organizationId,
+            organizationId: ctx.user.organizationId,
             userId: ctx.user.id,
             notes: `Transfer from WH ${input.fromWarehouseId} to WH ${input.toWarehouseId}`,
           },

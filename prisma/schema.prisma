@@ -8,12 +8,6 @@ generator client {
   provider = "prisma-client-js"
 }
 
-generator zod {
-  provider     = "zod-prisma-types"
-  output       = "./generated/zod" // Where the schemas will live
-  useDecimalJs = true // Crucial for ERP precision
-}
-
 datasource db {
   provider = "sqlite" // Switch to "sqlite" for local dev
 }
@@ -205,6 +199,7 @@ model User {
   sessions              Session[]
   invoices              Invoice[]              @relation("InvoiceCreatedBy")
   userOrganizationRoles UserOrganizationRole[]
+  stockMovements        StockMovement[]
 
   @@index([email])
   @@index([organizationId])
@@ -442,7 +437,8 @@ model Item {
   taxRate   TaxRate? @relation(fields: [taxRateId], references: [id])
 
   organizationId String
-  organization   Organization @relation(fields: [organizationId], references: [id])
+  unit           String @default("units")
+  minStock       Int    @default(0)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -452,6 +448,7 @@ model Item {
   invoiceLines   InvoiceLine[]
   purchaseLines  PurchaseLine[]
   stockMovements StockMovement[]
+  organization   Organization    @relation(fields: [organizationId], references: [id])
 
   @@unique([sku, organizationId])
   @@index([organizationId])
@@ -547,6 +544,9 @@ model StockMovement {
 
   organizationId String
   organization   Organization @relation(fields: [organizationId], references: [id])
+
+  userId String?
+  user   User?   @relation(fields: [userId], references: [id])
 
   createdAt DateTime @default(now())
 
