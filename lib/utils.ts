@@ -50,9 +50,10 @@ export const CURRENCIES = {
 // formatAmount(1500, 'BHD') → 'BD 1.500'
 // formatAmount(1500, 'USD') → '$15.00'
 export function formatAmount(
-  amount: number | BigInt | string,
+  amount: number | BigInt | string | null | undefined,
   currency: CurrencyCode = 'BHD',
 ): string {
+  if (!amount) amount = 0;
   const config = CURRENCIES[currency];
   const displayAmount = Number(amount) / Math.pow(10, config.precision);
 

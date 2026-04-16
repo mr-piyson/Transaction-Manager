@@ -1,5 +1,5 @@
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { cn } from '@/lib/utils';
+import { cn, formatAmount } from '@/lib/utils';
 import { Contract } from '@prisma/client';
 import {
   Calendar,
@@ -49,20 +49,13 @@ export function ContractCard(props: { data: Contract }) {
 
   const progressValue = calculateProgress();
 
-  const formattedValue = data.contractValue
-    ? (data.contractValue / 1000).toLocaleString('en-BH', {
-        minimumFractionDigits: 3,
-        maximumFractionDigits: 3,
-      })
-    : '0.000';
-
   return (
     <div className="flex items-center hover:bg-accent/50 gap-3 p-3 h-20 w-full bg-transparent group transition-colors">
       <Avatar className="size-11 rounded-lg shrink-0 after:border-0">
         <AvatarFallback
           className={cn(
             'rounded-lg transition-colors',
-            data.active
+            data.isActive
               ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-400'
               : 'bg-muted text-muted-foreground',
           )}
@@ -100,13 +93,13 @@ export function ContractCard(props: { data: Contract }) {
           <span className="text-[10px] font-normal text-muted-foreground mr-0.5">
             {data.currency}
           </span>
-          {formattedValue}
+          {formatAmount(data.contractValue)}
         </div>
 
         <div
           className={cn(
             'text-[10px] font-bold uppercase tracking-widest flex items-center gap-1.5 px-2 py-0.5 rounded-full border',
-            data.active
+            data.isActive
               ? 'text-emerald-600 bg-emerald-50/50 border-emerald-200 dark:bg-emerald-950/20 dark:border-emerald-800'
               : 'text-muted-foreground bg-muted/50 border-transparent',
           )}
@@ -114,10 +107,10 @@ export function ContractCard(props: { data: Contract }) {
           <span
             className={cn(
               'size-1.5 rounded-full animate-pulse',
-              data.active ? 'bg-emerald-500' : 'bg-slate-400',
+              data.isActive ? 'bg-emerald-500' : 'bg-slate-400',
             )}
           />
-          {data.active ? 'Active' : 'Inactive'}
+          {data.isActive ? 'Active' : 'Inactive'}
         </div>
       </div>
 

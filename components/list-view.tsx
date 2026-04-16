@@ -24,6 +24,7 @@ import { Separator } from '@/components/ui/separator';
 import { Spinner } from '@/components/ui/spinner';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useTableTheme } from '@/hooks/use-table-theme';
+import { cn } from '@/lib/utils';
 
 ModuleRegistry.registerModules([AllCommunityModule]);
 
@@ -67,6 +68,7 @@ export interface UniversalListViewProps<T = any> {
   itemName?: string; // e.g., "assets", "printers"
   // external filter
   externalFilter?: (item: T) => boolean;
+  className?: string;
 }
 
 export function ListView<T extends Record<string, any>>({
@@ -86,6 +88,7 @@ export function ListView<T extends Record<string, any>>({
   useTheme = true,
   containerClassName = '',
   itemName = 'items',
+  className,
   externalFilter,
 }: UniversalListViewProps<T>) {
   const isMobile = useIsMobile();
@@ -293,7 +296,7 @@ export function ListView<T extends Record<string, any>>({
   }
 
   return (
-    <>
+    <div className={cn('flex flex-col h-full', containerClassName, className)}>
       {/* Search and Filter Section */}
       <div>
         {/* Search Bar with Optional Filters */}
@@ -445,6 +448,6 @@ export function ListView<T extends Record<string, any>>({
           />
         )}
       </div>
-    </>
+    </div>
   );
 }

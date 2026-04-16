@@ -191,78 +191,9 @@ export default function App_Page() {
               <Package className="size-5 text-amber-500" />
               Critical Inventory
             </h3>
-            <RecentStockItems />
           </div>
         </div>
       </main>
-    </div>
-  );
-}
-
-// ---------------------------------------------------------------------------
-// Sub-components
-// ---------------------------------------------------------------------------
-function RecentStockItems() {
-  const { data: stocks, isLoading } = trpc.stock.getStocks.useQuery();
-
-  if (isLoading)
-    return (
-      <div className="space-y-4">
-        {[1, 2, 3, 4].map((i) => (
-          <div key={i} className="h-20 bg-muted/20 animate-pulse rounded-2xl" />
-        ))}
-      </div>
-    );
-
-  return (
-    <div className="space-y-4">
-      <div className="rounded-3xl border bg-background overflow-hidden shadow-sm divide-y">
-        {stocks?.slice(0, 6).map((stock: any) => (
-          <div
-            key={stock.id}
-            className="p-5 flex items-center gap-4 hover:bg-muted/30 transition-colors group"
-          >
-            <div className="size-12 rounded-2xl bg-slate-100 text-slate-600 flex items-center justify-center transition-colors group-hover:bg-primary/10 group-hover:text-primary">
-              <Package className="size-6" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <div className="font-bold text-sm text-foreground truncate">
-                {stock.stockItem.name}
-              </div>
-              <div className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider flex items-center gap-1.5 mt-0.5">
-                <Truck className="size-3" />
-                {stock.warehouse.name}
-              </div>
-            </div>
-            <div className="text-right">
-              <div
-                className={`text-base font-black ${stock.quantity <= (stock.stockItem.minStock || 5) ? 'text-destructive' : 'text-foreground'}`}
-              >
-                {stock.quantity}
-              </div>
-              <div className="text-[9px] uppercase font-black text-muted-foreground/60 tracking-tighter">
-                In Stock
-              </div>
-            </div>
-          </div>
-        ))}
-        {(!stocks || stocks.length === 0) && (
-          <div className="p-12 text-center space-y-2 bg-muted/5">
-            <Box className="size-10 mx-auto opacity-10" />
-            <p className="text-sm text-muted-foreground font-medium italic">
-              No stock entries found.
-            </p>
-          </div>
-        )}
-      </div>
-
-      <Button
-        variant="ghost"
-        className="w-full rounded-2xl border-2 border-dashed border-slate-200 text-slate-400 hover:border-primary/30 hover:text-primary hover:bg-primary/5 transition-all text-sm font-bold h-14"
-        onClick={() => {}} // Could link to full stock list
-      >
-        View Full Inventory
-      </Button>
     </div>
   );
 }

@@ -61,7 +61,7 @@ export const contractRouter = t.router({
             description: input.description,
             contractValue: input.contractValue,
             renewalDate: input.renewalDate,
-            active: input.active ?? true,
+            isActive: input.active ?? true,
             organizationId: ctx.user.organizationId,
           },
         });
@@ -100,7 +100,7 @@ export const contractRouter = t.router({
             description: input.data.description,
             contractValue: input.data.contractValue,
             renewalDate: input.data.renewalDate,
-            active: input.data.active,
+            isActive: input.data.active,
           },
         });
       } catch (error) {

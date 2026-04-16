@@ -84,6 +84,8 @@ export default function StockDashboardPage() {
 
           <ListView
             data={stockLevels || []}
+            className="h-140"
+            rowHeight={100}
             isLoading={loadingStocks}
             searchFields={[]}
             emptyTitle="No Physical Stock"

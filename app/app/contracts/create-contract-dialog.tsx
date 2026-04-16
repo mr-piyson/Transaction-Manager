@@ -26,7 +26,7 @@ import { Contract } from '@prisma/client';
 export const contractSchema = z.object({
   title: z.string().min(2, 'Title is required'),
   description: z.string().optional().or(z.literal('')),
-  contractValue: z.coerce.number().min(0).optional(),
+  contractValue: z.coerce.bigint().optional(),
   currency: z.string().default('BHD'),
   startDate: z.string().min(10, 'Start date is required'),
   endDate: z.string().min(10, 'End date is required'),
@@ -78,7 +78,7 @@ export function ContractDialog({
     defaultValues: {
       title: contract?.title || '',
       description: contract?.description || '',
-      contractValue: contract?.contractValue ? contract?.contractValue / 1000 : 0,
+      contractValue: contract?.contractValue,
       currency: contract?.currency || 'BHD',
       startDate: contract?.startDate
         ? new Date(contract.startDate).toISOString().split('T')[0]
@@ -97,7 +97,7 @@ export function ContractDialog({
         reset({
           title: contract.title || '',
           description: contract.description || '',
-          contractValue: contract.contractValue ? contract.contractValue / 1000 : 0,
+          contractValue: BigInt(contract.contractValue),
           currency: contract.currency || 'BHD',
           startDate: contract.startDate
             ? new Date(contract.startDate).toISOString().split('T')[0]
@@ -112,7 +112,7 @@ export function ContractDialog({
         reset({
           title: '',
           description: '',
-          contractValue: 0,
+          contractValue: BigInt(0),
           currency: 'BHD',
           startDate: new Date().toISOString().split('T')[0],
           endDate: new Date(new Date().setFullYear(new Date().getFullYear() + 1))
@@ -127,7 +127,7 @@ export function ContractDialog({
     const payload = {
       title: values.title,
       description: values.description || null,
-      contractValue: values.contractValue ? Math.round(values.contractValue * 1000) : null,
+      contractValue: values.contractValue,
       currency: values.currency,
       startDate: new Date(values.startDate),
       endDate: new Date(values.endDate),
