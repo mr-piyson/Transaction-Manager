@@ -25,7 +25,7 @@ import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/in
 export const customerSchema = z.object({
   name: z.string().min(2, 'Name is required'),
   phone: z.string().min(5, 'Phone number is required'),
-  address: z.string().min(5, 'Address is required'),
+  address: z.string().min(3, 'Address is required'),
   email: z.email('Invalid email').optional().or(z.literal('')),
   countryId: z.number().optional(),
   cityId: z.number().optional(),
@@ -125,22 +125,9 @@ export function CreateCustomerDialog({ onSuccess, onError, children }: CreateCus
               <FieldError>{errors.phone?.message}</FieldError>
             </Field>
           </FieldGroup>
-          {/* Email Field */}
-          {/* <Field data-invalid={!!errors.email}>
-            <FieldLabel>Email Address</FieldLabel>
-            <InputGroup>
-              <InputGroupInput {...register('email')} type="email" placeholder="(optional)" />
-              <InputGroupAddon>
-                <Mail />
-              </InputGroupAddon>
-            </InputGroup>
-            <FieldDescription>Optional: Used for sending invoices.</FieldDescription>
-            <FieldError>{errors.email?.message}</FieldError>
-          </Field> */}
           {/* Address Field */}
           <Field data-invalid={!!errors.address}>
             <FieldLabel>Address</FieldLabel>
-            {/* <CityCombobox /> */}
             <InputGroup>
               <InputGroupInput {...register('address')} placeholder="Address ..." />
               <InputGroupAddon>

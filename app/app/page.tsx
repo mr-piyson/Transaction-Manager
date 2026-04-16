@@ -20,13 +20,13 @@ import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
 import { CreateSupplierDialog } from '@/app/app/suppliers/create-supplier-dialog';
 import { CreateCustomerDialog } from '@/app/app/customers/create-customer-dialog';
-import { CreatePurchaseDialog } from '@/app/app/purchases/create-purchase-dialog';
 import { StockAdjustmentDialog } from '@/app/app/stock/stock-adjustment-dialog';
 import { CardsSection } from '@/app/app/dashboard/cards-section';
 import { ChartAreaInteractive } from '@/app/app/dashboard/AreaChart';
 import { trpc } from '@/lib/trpc/client';
 import { cn } from '@/lib/utils';
 import React from 'react';
+import Link from 'next/link';
 
 // ---------------------------------------------------------------------------
 // Quick Action Card Component
@@ -131,7 +131,9 @@ export default function App_Page() {
               icon={<ShoppingCart className="size-6" />}
               className="border-3  text-warning border-warning/50"
             >
-              <CreatePurchaseDialog />
+              <Link href="/app/purchases/new">
+                <Button>New Purchase</Button>
+              </Link>
             </QuickActionCard>
 
             <QuickActionCard

@@ -10,11 +10,10 @@ import {
   Package,
   CheckCircle2,
   Clock,
+  Plus,
 } from 'lucide-react';
 import { trpc } from '@/lib/trpc/client';
 import { Badge } from '@/components/ui/badge';
-import { Format } from '@/lib/format';
-import { CreatePurchaseDialog } from './create-purchase-dialog';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { formatAmount } from '@/lib/utils';
@@ -48,13 +47,15 @@ export default function PurchasesPage() {
   return (
     <div className="flex flex-col min-h-screen">
       <Header title="Accounts Payable" transparent sticky>
-        <CreatePurchaseDialog onSuccess={refetch} />
+        <Button className="bg-primary">
+          <Plus /> Add Purchase
+        </Button>
       </Header>
 
       <ListView
         data={purchases || []}
         isLoading={isLoading}
-        searchFields={['supplier.name']}
+        searchFields={[]}
         emptyTitle="No Purchase Orders"
         emptyDescription="Keep track of your supplier purchases and inventory restocking here."
         emptyIcon={<ShoppingCart className="size-12 opacity-10" />}
