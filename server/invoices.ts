@@ -4,10 +4,9 @@ import db from '@/lib/db';
 import { protectedProcedure, publicProcedure, t } from '@/lib/trpc/server';
 import { InvoiceStatus, Prisma } from '@prisma/client';
 
-// A reusable, high-performance version of your logic
 export async function updateInvoiceStatus(
   invoiceId: number,
-  tx: any, // Accepts the Prisma transaction client
+  tx: any,
   totalPaid: number,
   invoiceTotal: number,
 ) {
@@ -22,11 +21,56 @@ export async function updateInvoiceStatus(
   });
 }
 
-// 4. The Router
+// ✅ Moved OUTSIDE the router object
+async function deductStockForInvoice(
+  tx: Prisma.TransactionClient,
+  invoice: any,
+  lines: any[],
+  ctx: any,
+  sourceLabel: string,
+) {
+  for (const line of lines) {
+    const itemId = line.itemId || line.inventoryItemId;
+    if (!itemId) continue;
+
+    const masterItem = await tx.item.findUnique({
+      where: { id: itemId },
+    });
+
+    if (masterItem?.type === 'PRODUCT' && invoice.warehouseId) {
+      await tx.stock.upsert({
+        where: {
+          itemId_warehouseId: {
+            itemId: itemId,
+            warehouseId: invoice.warehouseId,
+          },
+        },
+        update: { quantity: { decrement: Number(line.quantity) } },
+        create: {
+          itemId: itemId,
+          warehouseId: invoice.warehouseId,
+          quantity: -Number(line.quantity),
+          organizationId: ctx.user.organizationId,
+        },
+      });
+
+      await tx.stockMovement.create({
+        data: {
+          type: 'SALE_OUTBOUND',
+          quantity: -Number(line.quantity),
+          itemId: itemId,
+          fromWarehouseId: invoice.warehouseId,
+          invoiceLineId: line.id,
+          organizationId: ctx.user.organizationId,
+          userId: ctx.user.id,
+          notes: `Sale from ${sourceLabel} #${invoice.id}`,
+        },
+      });
+    }
+  }
+}
+
 export const invoiceRouter = t.router({
-  /**
-   * Get all invoices
-   */
   getInvoices: protectedProcedure
     .input(
       z.object({
@@ -55,27 +99,21 @@ export const invoiceRouter = t.router({
       }
     }),
 
-  /**
-   * Create invoice
-   */
   createInvoice: protectedProcedure
     .input(
       z.object({
-        customerId: z.union([z.string()]),
-        // You can add more schema fields here to validate the 'body'
+        customerId: z.string(),
       }),
     )
     .mutation(async ({ input, ctx }) => {
       try {
-        // Because of authMiddleware, ctx.user is guaranteed to exist here
-        const item = await db.invoice.create({
+        return await db.invoice.create({
           data: {
             organizationId: ctx.user.organizationId,
             customerId: input.customerId,
             userId: ctx.user.id,
           },
         });
-        return item;
       } catch (error) {
         throw new TRPCError({
           code: 'INTERNAL_SERVER_ERROR',
@@ -84,18 +122,16 @@ export const invoiceRouter = t.router({
         });
       }
     }),
-  /**
-   * Get invoice by id
-   */
+
   getInvoiceById: publicProcedure
     .input(
       z.object({
         id: z.string(),
-        // Instead of raw JSON.parse, we define expected relations
         include: z
           .object({
             customer: z.boolean().optional(),
-            invoiceLines: z.boolean().optional(),
+            // ✅ Renamed to match Prisma relation field name
+            lines: z.boolean().optional(),
             payments: z.boolean().optional(),
           })
           .optional(),
@@ -130,7 +166,8 @@ export const invoiceRouter = t.router({
       z.object({
         id: z.string(),
         data: z.object({
-          status: z.enum(InvoiceStatus).optional(),
+          // ✅ Fixed: z.nativeEnum for Prisma enums
+          status: z.nativeEnum(InvoiceStatus).optional(),
           amount: z.number().optional(),
           dueDate: z.date().optional(),
           customerId: z.string().optional(),
@@ -143,47 +180,24 @@ export const invoiceRouter = t.router({
         return await db.$transaction(async (tx) => {
           const currentInvoice = await tx.invoice.findUnique({
             where: { id: input.id },
-            include: { lines: { include: { item: true } } },
+            include: { lines: true },
           });
 
           if (!currentInvoice) throw new Error('Invoice not found');
 
-          // Trigger stock deduction if completing for the first time
           if (input.data.status === 'SENT' && currentInvoice.status !== 'SENT') {
-            for (const line of currentInvoice.lines) {
-              if (line.item?.type === 'PRODUCT' && currentInvoice.warehouseId) {
-                await tx.stock.update({
-                  where: {
-                    itemId_warehouseId: {
-                      itemId: line.id,
-                      warehouseId: currentInvoice.warehouseId,
-                    },
-                  },
-                  data: { quantity: { decrement: Number(line.quantity) } },
-                });
-
-                await tx.stockMovement.create({
-                  data: {
-                    type: 'SALE_OUTBOUND',
-                    quantity: -line.quantity,
-                    itemId: line.id,
-                    fromWarehouseId: currentInvoice.warehouseId,
-                    organizationId: ctx.user.organizationId,
-                    userId: ctx.user.id,
-                    notes: `Sale from Invoice Update #${currentInvoice.id}`,
-                  },
-                });
-              }
-            }
+            await deductStockForInvoice(
+              tx,
+              currentInvoice,
+              currentInvoice.lines,
+              ctx,
+              'Invoice Update',
+            );
           }
 
           return await tx.invoice.update({
             where: { id: input.id },
-            data: {
-              ...input.data,
-              // Convert to BigInt if schema needs it (Invoice subtotal/total)
-              // But here input.data doesn't have subtotal/total directly
-            },
+            data: { ...input.data },
           });
         });
       } catch (error) {
@@ -196,9 +210,6 @@ export const invoiceRouter = t.router({
       }
     }),
 
-  /**
-   * Delete invoice by id
-   */
   deleteInvoice: protectedProcedure
     .input(z.object({ id: z.string() }))
     .mutation(async ({ input }) => {
@@ -214,9 +225,6 @@ export const invoiceRouter = t.router({
       }
     }),
 
-  /**
-   * Create a full invoice with lines
-   */
   createFullInvoice: protectedProcedure
     .input(
       z.object({
@@ -240,14 +248,12 @@ export const invoiceRouter = t.router({
     .mutation(async ({ input, ctx }) => {
       try {
         return await db.$transaction(async (tx) => {
-          // 1. Calculate totals
           let subtotal = 0;
           for (const line of input.lines) {
             subtotal += line.unitPrice * line.quantity;
           }
           const total = subtotal;
 
-          // 2. Create invoice
           const invoice = await tx.invoice.create({
             data: {
               organizationId: ctx.user.organizationId,
@@ -261,12 +267,12 @@ export const invoiceRouter = t.router({
             },
           });
 
-          // 3. Create lines and handle stock
+          const createdLines = [];
           for (const line of input.lines) {
             const invoiceLine = await tx.invoiceLine.create({
               data: {
                 invoiceId: invoice.id,
-                itemId: line.itemId,
+                itemId: line.itemId || line.inventoryItemId,
                 description: line.description,
                 quantity: line.quantity,
                 unitPrice: line.unitPrice,
@@ -274,45 +280,11 @@ export const invoiceRouter = t.router({
                 total: line.unitPrice * line.quantity,
               },
             });
+            createdLines.push(invoiceLine);
+          }
 
-            // 4. Stock management if completed
-            if (input.isCompleted && line.itemId && (input.warehouseId || invoice.warehouseId)) {
-              const warehouseId = input.warehouseId || invoice.warehouseId;
-              const masterItem = await tx.item.findUnique({
-                where: { id: line.itemId },
-              });
-
-              if (masterItem?.type === 'PRODUCT' && warehouseId) {
-                await tx.stock.upsert({
-                  where: {
-                    itemId_warehouseId: {
-                      itemId: line.itemId,
-                      warehouseId: warehouseId,
-                    },
-                  },
-                  update: { quantity: { decrement: line.quantity } },
-                  create: {
-                    itemId: line.itemId,
-                    warehouseId: warehouseId,
-                    quantity: -line.quantity,
-                    organizationId: ctx.user.organizationId,
-                  },
-                });
-
-                await tx.stockMovement.create({
-                  data: {
-                    type: 'SALE_OUTBOUND',
-                    quantity: -line.quantity,
-                    itemId: line.itemId,
-                    fromWarehouseId: warehouseId,
-                    invoiceLineId: invoiceLine.id, // Correct ID
-                    organizationId: ctx.user.organizationId,
-                    userId: ctx.user.id,
-                    notes: `Sale from New Invoice #${invoice.id}`,
-                  },
-                });
-              }
-            }
+          if (input.isCompleted && (input.warehouseId || invoice.warehouseId)) {
+            await deductStockForInvoice(tx, invoice, createdLines, ctx, 'New Invoice');
           }
 
           return invoice;

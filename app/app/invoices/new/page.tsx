@@ -23,7 +23,7 @@ import { CreateInvoiceLineDialog } from './invoice-line-dialog';
 import { useState } from 'react';
 import { CustomerCard } from '../../customers/customerCard';
 import { toast } from 'sonner';
-import { SupplierItemCard } from '../../suppliers/[supplierId]/supplierItems/SupplierItemCard';
+import { SimpleItemCard } from '@/components/item-card';
 
 export default function InvoiceEditor() {
   const router = useRouter();
@@ -31,7 +31,16 @@ export default function InvoiceEditor() {
   const [lines, setLines] = useState<any[]>([]);
 
   const { data: customers } = trpc.customers.getCustomers.useQuery();
-  const { data: inventoryItems } = trpc.inventory.getInventory.useQuery();
+  const { data: allItems } = trpc.items.getItems.useQuery();
+
+  // Filter items to only show services or products with stock
+  // But maybe we want to show all and disable? The user said "view only available stock"
+  // Let's filter out products with 0 stock if they are products.
+  const availableItems = allItems?.filter((item) => {
+    if (item.type === 'SERVICE') return true;
+    const totalStock = item.stockEntries?.reduce((acc: number, s: any) => acc + s.quantity, 0) || 0;
+    return totalStock > 0;
+  });
 
   const createInvoice = trpc.invoices.createFullInvoice.useMutation({
     onSuccess: (data) => {
@@ -43,7 +52,7 @@ export default function InvoiceEditor() {
     },
   });
 
-  const handleSave = () => {
+  const handleSave = (isCompleted: boolean = false) => {
     if (!selectedCustomer) {
       toast.error('Please select a customer');
       return;
@@ -55,7 +64,7 @@ export default function InvoiceEditor() {
 
     createInvoice.mutate({
       customerId: selectedCustomer.id,
-      isCompleted: false, // Create as draft
+      isCompleted,
       lines: lines.map((l) => ({
         itemId: l.itemId,
         inventoryItemId: l.inventoryItemId,
@@ -67,7 +76,7 @@ export default function InvoiceEditor() {
     });
   };
 
-  const total = lines.reduce((acc, l) => acc + l.total, 0);
+  const total = lines.reduce((acc, l) => acc + (l.total || 0), 0);
   const amountPaid = 0;
   const balanceDue = total;
   const progressPercent = 0;
@@ -79,9 +88,9 @@ export default function InvoiceEditor() {
       inventoryItemId: item.id,
       description: item.name,
       quantity: 1,
-      unitPrice: Number(item.basePrice),
-      purchasePrice: Number(item.basePrice),
-      total: Number(item.basePrice),
+      unitPrice: Number(item.salesPrice),
+      purchasePrice: Number(item.purchasePrice),
+      total: Number(item.salesPrice),
       itemRef: item,
     };
     setLines((prev) => [...prev, newLine]);
@@ -114,13 +123,24 @@ export default function InvoiceEditor() {
             <span className="text-xs text-muted-foreground truncate">Draft</span>
           </div>
 
-          <div className="ml-auto shrink-0">
-            <Button onClick={handleSave} disabled={createInvoice.isPending}>
+          <div className="ml-auto shrink-0 flex gap-2">
+            <Button
+              variant="outline"
+              onClick={() => handleSave(false)}
+              disabled={createInvoice.isPending}
+            >
+              {createInvoice.isPending ? 'Saving...' : 'Save Draft'}
+            </Button>
+            <Button
+              onClick={() => handleSave(true)}
+              disabled={createInvoice.isPending}
+              className="bg-primary text-primary-foreground hover:bg-primary/90"
+            >
               {createInvoice.isPending ? (
-                'Saving...'
+                'Processing...'
               ) : (
                 <>
-                  <Save className="mr-2 h-4 w-4" /> Save Draft
+                  <Save className="mr-2 h-4 w-4" /> Finalize & Send
                 </>
               )}
             </Button>
@@ -194,14 +214,15 @@ export default function InvoiceEditor() {
         <div className=" flex items-center gap-1.5 px-2 pb-2">
           <SelectDialog<any>
             onSelect={handleSelectItem}
-            data={inventoryItems as any}
-            searchFields={['code', 'name', 'description']}
-            cardRenderer={SupplierItemCard as any}
+            data={availableItems as any}
+            searchFields={['sku', 'name', 'description']}
+            cardRenderer={SimpleItemCard as any}
             rowHeight={72}
+            itemName="Items"
           >
             <Button size="sm" className="h-8 gap-1.5 text-xs flex-1 sm:flex-none">
               <Plus size={13} />
-              Add Item
+              Add Product/Service
             </Button>
           </SelectDialog>
 

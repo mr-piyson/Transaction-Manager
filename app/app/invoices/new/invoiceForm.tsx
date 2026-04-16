@@ -9,9 +9,6 @@ import { alert } from '@/components/Alert-dialog';
 import { Item } from '@prisma/client';
 // import InvoiceItemCardGroup from './invoiceItemGroup';
 import InvoiceItemCard from './invoiceItem';
-import { SupplierItemCard } from '../../suppliers/[supplierId]/supplierItems/SupplierItemCard';
-import { useState } from 'react';
-
 export default function InvoiceForm({
   lines,
   setLines,
@@ -20,7 +17,6 @@ export default function InvoiceForm({
   setLines: React.Dispatch<React.SetStateAction<any[]>>;
 }) {
   const utils = trpc.useUtils();
-  const { data: inventoryItems } = trpc.inventory.getInventory.useQuery();
 
   const handleSelectItem = (item: any, parentId?: string) => {
     const newLine = {
@@ -29,9 +25,9 @@ export default function InvoiceForm({
       inventoryItemId: item.id,
       description: item.name,
       quantity: 1,
-      unitPrice: Number(item.basePrice),
-      purchasePrice: Number(item.basePrice),
-      total: Number(item.basePrice),
+      unitPrice: Number(item.salesPrice),
+      purchasePrice: Number(item.purchasePrice),
+      total: Number(item.salesPrice),
       parentId: parentId,
       itemRef: item,
     };
@@ -83,6 +79,7 @@ export default function InvoiceForm({
               },
             ]}
           >
+            <></>
             {/* <InvoiceItemCardGroup
               key={g.id}
               title={g.description || 'Group'}

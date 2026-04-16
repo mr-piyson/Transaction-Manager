@@ -4,7 +4,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { trpc } from '@/lib/trpc/client';
-import { formatAmount } from '@/lib/utils';
+import { formatAmount, cn } from '@/lib/utils';
 import { Box, EllipsisVertical, Trash2 } from 'lucide-react';
 
 export default function InvoiceItemCard({
@@ -47,15 +47,23 @@ export default function InvoiceItemCard({
           <div className="flex flex-col min-w-0">
             <div className="flex items-center gap-2">
               <h3 className="font-medium leading-none truncate">{line.description}</h3>
-              {itemRef?.code && (
-                <Badge variant="secondary" className="px-1 text-[10px] h-4">
-                  {itemRef.code}
-                </Badge>
-              )}
+              <Badge variant="outline" className="px-1 text-[9px] h-3.5 opacity-70">
+                {itemRef?.type || 'ITEM'}
+              </Badge>
             </div>
             <div className="flex items-center gap-2 text-xs text-muted-foreground mt-1">
               <span>{formatAmount(line.unitPrice)}</span>
               <span className="text-muted-foreground/60">× {Number(line.quantity)}</span>
+              {itemRef?.type === 'PRODUCT' && (
+                <span className={cn(
+                  "ml-2 px-1.5 py-0.5 rounded-full text-[10px] bg-muted/50 font-medium",
+                  (itemRef?.stockEntries?.reduce((acc: any, s: any) => acc + s.quantity, 0) || 0) < Number(line.quantity) 
+                    ? "text-destructive bg-destructive/10" 
+                    : "text-muted-foreground"
+                )}>
+                  Stock: {itemRef?.stockEntries?.reduce((acc: any, s: any) => acc + s.quantity, 0) || 0}
+                </span>
+              )}
             </div>
           </div>
         </div>
