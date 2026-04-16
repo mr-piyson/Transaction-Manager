@@ -44,7 +44,7 @@ export default function SuppliersItemsPage() {
         emptyDescription="This supplier doesn't have any items registered yet."
         emptyTitle="Add items from this supplier"
         emptyIcon={<Package className="size-16 opacity-20" />}
-        searchFields={['name', 'code']}
+        searchFields={['name']}
         cardRenderer={(data) => (
           <div className="w-full" key={data.id}>
             <SupplierItemCard data={data} />

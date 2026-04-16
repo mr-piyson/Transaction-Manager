@@ -1,3 +1,11 @@
+'use client';
+import { UniversalContextMenu } from '@/components/context-menu';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
+import { trpc } from '@/lib/trpc/client';
+import { formatAmount } from '@/lib/utils';
+import { Box, Trash2 } from 'lucide-react';
+
 export default function InvoiceItemCard({
   line,
   onDelete,
@@ -38,7 +46,11 @@ export default function InvoiceItemCard({
           <div className="flex flex-col min-w-0">
             <div className="flex items-center gap-2">
               <h3 className="font-medium leading-none truncate">{line.description}</h3>
-              {itemRef?.code && <Badge variant="secondary" className="px-1 text-[10px] h-4">{itemRef.code}</Badge>}
+              {itemRef?.code && (
+                <Badge variant="secondary" className="px-1 text-[10px] h-4">
+                  {itemRef.code}
+                </Badge>
+              )}
             </div>
             <div className="flex items-center gap-2 text-xs text-muted-foreground mt-1">
               <span>{formatAmount(line.unitPrice)}</span>

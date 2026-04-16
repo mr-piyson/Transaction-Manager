@@ -40,7 +40,7 @@ export const invoiceRouter = t.router({
         return await db.invoice.findMany({
           include: {
             customer: input.customer || undefined,
-            invoiceLines: input.invoiceLines || undefined,
+            lines: input.invoiceLines || undefined,
             payments: input.payments || undefined,
           },
           orderBy: {
@@ -164,9 +164,7 @@ export const invoiceRouter = t.router({
                     quantity: -line.quantity,
                     itemId: line.item.id,
                     fromWarehouseId: currentInvoice.warehouseId,
-                    invoiceId: currentInvoice.id,
                     organizationId: ctx.user.organizationId,
-                    userId: ctx.user.id,
                     notes: `Sale from Invoice Update #${currentInvoice.id}`,
                   },
                 });
@@ -248,7 +246,6 @@ export const invoiceRouter = t.router({
               warehouseId: input.warehouseId,
               subtotal,
               total,
-              isCompleted: input.isCompleted,
             },
           });
 
@@ -257,8 +254,7 @@ export const invoiceRouter = t.router({
             await tx.invoiceLine.create({
               data: {
                 invoiceId: invoice.id,
-                ItemId: line.itemId,
-                inventoryItemId: line.inventoryItemId as any, // if this field exists in your extended schema, otherwise it might fail. Let's assume ItemId is the main one.
+                itemId: line.itemId,
                 description: line.description,
                 quantity: line.quantity,
                 unitPrice: line.unitPrice,
@@ -297,9 +293,8 @@ export const invoiceRouter = t.router({
                     quantity: -line.quantity,
                     itemId: line.itemId,
                     fromWarehouseId: warehouseId,
-                    invoiceId: invoice.id,
+                    invoiceLineId: line.itemId,
                     organizationId: ctx.user.organizationId,
-                    userId: ctx.user.id,
                     notes: `Sale from New Invoice #${invoice.id}`,
                   },
                 });

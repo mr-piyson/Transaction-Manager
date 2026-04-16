@@ -22,15 +22,30 @@ export const purchaseRouter = router({
     )
     .mutation(async ({ ctx, input }) => {
       try {
+        if (!ctx.user.organizationId) {
+          throw new TRPCError({
+            code: 'BAD_REQUEST',
+            message: 'Organization ID is missing',
+          });
+        }
+
         return await ctx.db.$transaction(async (tx) => {
-          // 1. Calculate total
+          // 1. Fetch item types to differentiate Product vs Service
+          const itemIds = input.lines.map((l) => l.itemId);
+          const items = await tx.item.findMany({
+            where: { id: { in: itemIds } },
+            select: { id: true, type: true },
+          });
+          const itemTypeMap = new Map(items.map((i) => [i.id, i.type]));
+
+          // 2. Calculate total
           let subtotal = 0;
           for (const line of input.lines) {
             subtotal += line.unitCost * line.quantity;
           }
           const total = subtotal;
 
-          // 2. Create purchase order
+          // 3. Create purchase order
           const po = await tx.purchaseOrder.create({
             data: {
               organizationId: ctx.user.organizationId,
@@ -43,8 +58,10 @@ export const purchaseRouter = router({
             },
           });
 
-          // 3. Create lines
+          // 4. Create lines and update stock
           for (const line of input.lines) {
+            const itemType = itemTypeMap.get(line.itemId);
+
             const pl = await tx.purchaseLine.create({
               data: {
                 purchaseOrderId: po.id,
@@ -52,11 +69,12 @@ export const purchaseRouter = router({
                 quantity: line.quantity,
                 unitCost: BigInt(line.unitCost),
                 total: BigInt(line.unitCost * line.quantity),
+                receivedQty: input.isReceived && itemType === 'PRODUCT' ? line.quantity : 0,
               },
             });
 
-            // 4. Update stock if received
-            if (input.isReceived && input.warehouseId) {
+            // Update stock only for PRODUCTS if received
+            if (input.isReceived && input.warehouseId && itemType === 'PRODUCT') {
               await tx.stock.upsert({
                 where: {
                   itemId_warehouseId: {
@@ -90,6 +108,8 @@ export const purchaseRouter = router({
           return po;
         });
       } catch (error) {
+        console.error('[PURCHASE_CREATE_ERROR]', error);
+        if (error instanceof TRPCError) throw error;
         throw new TRPCError({
           code: 'INTERNAL_SERVER_ERROR',
           message: 'Failed to create purchase',
