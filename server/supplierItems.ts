@@ -5,10 +5,16 @@ import db from '@/lib/db';
 import { toSmallestUnit, type CurrencyCode } from '@/lib/utils';
 
 export const inventoryRouter = t.router({
-  getInventory: protectedProcedure.query(async () => {
+  getInventory: protectedProcedure.query(async ({ ctx }) => {
     try {
       return await db.supplierItem.findMany({
-        include: { stockItem: true, supplier: true },
+        include: {
+          item: {
+            include: { stockEntries: true },
+          },
+          supplier: true,
+        },
+        where: { organizationId: ctx.user.organizationId },
       });
     } catch (error) {
       throw new TRPCError({
@@ -24,7 +30,11 @@ export const inventoryRouter = t.router({
       try {
         return await db.supplierItem.findMany({
           where: { supplierId: input.supplierId },
-          include: { item: true },
+          include: {
+            item: {
+              include: { stockEntries: true },
+            },
+          },
         });
       } catch (error) {
         throw new TRPCError({
@@ -85,8 +95,33 @@ export const inventoryRouter = t.router({
         });
 
         const currency = (org?.currency || 'BHD') as CurrencyCode;
+        const priceInSmallestUnit = BigInt(toSmallestUnit(input.basePrice, currency));
 
-        return {};
+        if (!input.itemId) {
+            throw new TRPCError({
+                code: 'BAD_REQUEST',
+                message: 'Linking to a Stock Item is required',
+            });
+        }
+
+        if (!input.supplierId) {
+            throw new TRPCError({
+                code: 'BAD_REQUEST',
+                message: 'Supplier ID is required',
+            });
+        }
+
+        return await db.supplierItem.create({
+          data: {
+            name: input.name,
+            supplierSku: input.code,
+            basePrice: priceInSmallestUnit,
+            notes: input.description,
+            itemId: input.itemId,
+            supplierId: input.supplierId,
+            organizationId: ctx.user.organizationId,
+          },
+        });
       } catch (error) {
         console.error('Error in createInventoryItem:', error);
         if (error instanceof TRPCError) throw error;
@@ -195,7 +230,8 @@ export const inventoryRouter = t.router({
   deleteImage: protectedProcedure
     .input(z.object({ id: z.string() }))
     .mutation(async ({ input }) => {
-      try {} catch (error) {
+      try {
+      } catch (error) {
         throw new TRPCError({
           code: 'INTERNAL_SERVER_ERROR',
           message: 'Failed to delete image',

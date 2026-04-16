@@ -3,13 +3,13 @@ import { Package } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { formatAmount } from '@/lib/utils';
 
-export function InventoryItemCard(props: {
+export function SupplierItemCard(props: {
   data: any; // Using any to support included relations
   onClick?: (data: any) => void;
 }) {
   if (!props.data) return null;
 
-  const stockItem = props.data.stockItem;
+  const item = props.data.item;
 
   return (
     <div
@@ -34,15 +34,15 @@ export function InventoryItemCard(props: {
           <p className="text-sm font-bold leading-tight truncate text-foreground">
             {props.data.name}
           </p>
-          {stockItem && (
+          {item && (
             <span className="text-[9px] px-1.5 py-0.5 bg-primary/10 text-primary rounded font-mono border border-primary/20">
-              {stockItem.sku}
+              {item.sku}
             </span>
           )}
         </div>
         <div className="flex items-center gap-2 mt-0.5">
           <p className="text-xs text-muted-foreground truncate leading-tight">
-            {props.data.code || 'No Code'}
+            {props.data.supplierSku || 'No Code'}
           </p>
           {props.data.supplier && (
             <p className="text-[10px] text-muted-foreground/70 truncate">
@@ -53,10 +53,10 @@ export function InventoryItemCard(props: {
       </div>
 
       {/* Stock info if available */}
-      {stockItem?.stockEntries && (
+      {item?.stockEntries && (
         <div className="shrink-0 text-right px-3 border-r border-border/50">
           <div className="text-xs font-bold text-foreground tabular-nums">
-            {stockItem.stockEntries.reduce((acc: number, s: any) => acc + s.quantity, 0)}
+            {item.stockEntries.reduce((acc: number, s: any) => acc + s.quantity, 0)}
           </div>
           <div className="text-[9px] text-muted-foreground uppercase font-black tracking-tighter">
             Stock

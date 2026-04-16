@@ -1,12 +1,6 @@
 'use client';
 import { Button } from '@/components/ui/button';
-import {
-  ArrowLeft,
-  Plus,
-  Save,
-  Store,
-  Warehouse as WarehouseIcon,
-} from 'lucide-react';
+import { ArrowLeft, Plus, Save, Store, Warehouse as WarehouseIcon } from 'lucide-react';
 import PurchaseForm from './purchaseForm';
 import { cn, formatAmount } from '@/lib/utils';
 import { Progress } from '@/components/ui/progress';
@@ -16,7 +10,7 @@ import { trpc } from '@/lib/trpc/client';
 import { useState } from 'react';
 import { SupplierCard } from '../../suppliers/supplier-card';
 import { WarehouseCard } from '../../warehouses/WarehouseCard';
-import { InventoryItemCard } from '../../suppliers/[supplierId]/supplierItems/SupplierItemCard';
+import { SupplierItemCard } from '../../suppliers/[supplierId]/supplierItems/SupplierItemCard';
 import { toast } from 'sonner';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
@@ -74,7 +68,7 @@ export default function NewPurchasePage() {
   const handleSelectItem = (item: any) => {
     const newLine = {
       id: Math.random().toString(36).substr(2, 9),
-      itemId: item.id,
+      itemId: item.itemId, // item here is a SupplierItem, we need its base Item ID
       description: item.name,
       quantity: 1,
       unitCost: Number(item.basePrice),
@@ -115,9 +109,11 @@ export default function NewPurchasePage() {
 
           <div className="ml-auto shrink-0">
             <Button onClick={handleSave} disabled={createPurchase.isPending}>
-              {createPurchase.isPending ? 'Processing...' : (
+              {createPurchase.isPending ? (
+                'Processing...'
+              ) : (
                 <>
-                  <Save className="mr-2 h-4 w-4" /> 
+                  <Save className="mr-2 h-4 w-4" />
                   {isReceived ? 'Complete Purchase' : 'Save Draft'}
                 </>
               )}
@@ -166,12 +162,8 @@ export default function NewPurchasePage() {
             </div>
 
             <div className="flex flex-col justify-center px-4 border rounded-md bg-muted/20">
-               <div className="flex items-center space-x-2">
-                <Switch
-                  id="receive-mode"
-                  checked={isReceived}
-                  onCheckedChange={setIsReceived}
-                />
+              <div className="flex items-center space-x-2">
+                <Switch id="receive-mode" checked={isReceived} onCheckedChange={setIsReceived} />
                 <Label htmlFor="receive-mode" className="text-xs font-medium cursor-pointer">
                   Received
                 </Label>
@@ -195,14 +187,16 @@ export default function NewPurchasePage() {
                   className={cn(
                     'w-full justify-start text-left font-normal h-12 border-dashed',
                     !selectedWarehouse && 'text-muted-foreground',
-                    'bg-warning/5 border-warning/30 hover:bg-warning/10'
+                    'bg-warning/5 border-warning/30 hover:bg-warning/10',
                   )}
                 >
                   <WarehouseIcon className="mr-2 h-4 w-4 shrink-0 text-warning" />
                   <div className="flex flex-col items-start overflow-hidden">
                     {selectedWarehouse ? (
                       <>
-                        <span className="font-medium truncate text-warning">{selectedWarehouse.name}</span>
+                        <span className="font-medium truncate text-warning">
+                          {selectedWarehouse.name}
+                        </span>
                         <span className="text-[10px] text-muted-foreground truncate">
                           Items will be added to this stock
                         </span>
@@ -219,17 +213,19 @@ export default function NewPurchasePage() {
 
         {/* ── Row 3: Summary ── */}
         <div className="flex items-center justify-between bg-muted/40 px-4 py-2 mx-2 mt-2 mb-2 rounded-md ">
-            <span className="text-xs text-muted-foreground uppercase tracking-wide font-semibold">Total Cost</span>
-            <span className="text-lg font-bold tabular-nums text-primary">{formatAmount(total)}</span>
+          <span className="text-xs text-muted-foreground uppercase tracking-wide font-semibold">
+            Total Cost
+          </span>
+          <span className="text-lg font-bold tabular-nums text-primary">{formatAmount(total)}</span>
         </div>
 
         {/* ── Row 4: Actions ── */}
         <div className=" flex items-center gap-1.5 px-2 pb-2">
           <SelectDialog<any>
             onSelect={handleSelectItem}
-            data={inventoryItems as any}
+            data={inventoryItems}
             searchFields={['code', 'name', 'description']}
-            cardRenderer={InventoryItemCard as any}
+            cardRenderer={SupplierItemCard}
             rowHeight={72}
           >
             <Button size="sm" className="h-8 gap-1.5 text-xs flex-1 sm:flex-none">

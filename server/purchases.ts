@@ -81,7 +81,6 @@ export const purchaseRouter = router({
                   toWarehouseId: input.warehouseId,
                   purchaseLineId: pl.id,
                   organizationId: ctx.user.organizationId,
-                  userId: ctx.user.id,
                   notes: `Received from Purchase #${po.id}`,
                 },
               });
@@ -158,9 +157,8 @@ export const purchaseRouter = router({
                 quantity: line.quantity,
                 itemId: line.itemId,
                 toWarehouseId: input.warehouseId,
-                purchaseId: po.id,
+                purchaseLineId: line.id,
                 organizationId: po.organizationId,
-                userId: ctx.user.id,
                 notes: `Received from PO #${po.id}`,
               },
             });

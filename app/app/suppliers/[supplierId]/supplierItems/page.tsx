@@ -12,7 +12,7 @@ import { useI18n } from '@/i18n/use-i18n';
 import { trpc } from '@/lib/trpc/client';
 import { CreateInventoryItemDialog } from './create-supplierItem-dialog';
 import { Header } from '@/app/app/App-Header';
-import { InventoryItemCard } from './SupplierItemCard';
+import { SupplierItemCard } from './SupplierItemCard';
 import { alert } from '@/components/Alert-dialog';
 import { UniversalContextMenu } from '@/components/context-menu';
 import { useRouter } from 'next/navigation';
@@ -75,7 +75,7 @@ export default function InventoryPage() {
                 },
               ]}
             >
-              <InventoryItemCard
+              <SupplierItemCard
                 data={data}
                 onClick={() => router.push(`/app/suppliers/${data.id}`)}
               />

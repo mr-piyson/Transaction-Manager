@@ -1,7 +1,7 @@
 'use client';
 import { ListView } from '@/components/list-view';
 import { Store, Loader2, Package } from 'lucide-react';
-import { InventoryItemCard } from './supplierItems/SupplierItemCard';
+import { SupplierItemCard } from './supplierItems/SupplierItemCard';
 import { trpc } from '@/lib/trpc/client';
 import { useParams } from 'next/navigation';
 import { CreateInventoryItemDialog } from './supplierItems/create-supplierItem-dialog';
@@ -9,9 +9,9 @@ import { Header } from '../../App-Header';
 
 export default function SuppliersItemsPage() {
   const params = useParams();
-  const supplierId = Number(params?.supplierId);
+  const supplierId = params?.supplierId as string;
 
-  const { data: supplier, isLoading: loadingSupplier } = trpc.supplier.getSupplierById.useQuery({
+  const { data: supplier, isLoading: loadingSupplier } = trpc.suppliers.getSupplierById.useQuery({
     id: supplierId,
   });
 
@@ -47,7 +47,7 @@ export default function SuppliersItemsPage() {
         searchFields={['name', 'code']}
         cardRenderer={(data) => (
           <div className="w-full" key={data.id}>
-            <InventoryItemCard data={data} />
+            <SupplierItemCard data={data} />
           </div>
         )}
       />

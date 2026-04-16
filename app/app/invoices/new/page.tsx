@@ -23,7 +23,7 @@ import { CreateInvoiceLineDialog } from './invoice-line-dialog';
 import { useState } from 'react';
 import { CustomerCard } from '../../customers/customerCard';
 import { toast } from 'sonner';
-import { InventoryItemCard } from '../../suppliers/[supplierId]/supplierItems/SupplierItemCard';
+import { SupplierItemCard } from '../../suppliers/[supplierId]/supplierItems/SupplierItemCard';
 
 export default function InvoiceEditor() {
   const router = useRouter();
@@ -116,7 +116,9 @@ export default function InvoiceEditor() {
 
           <div className="ml-auto shrink-0">
             <Button onClick={handleSave} disabled={createInvoice.isPending}>
-              {createInvoice.isPending ? 'Saving...' : (
+              {createInvoice.isPending ? (
+                'Saving...'
+              ) : (
                 <>
                   <Save className="mr-2 h-4 w-4" /> Save Draft
                 </>
@@ -194,7 +196,7 @@ export default function InvoiceEditor() {
             onSelect={handleSelectItem}
             data={inventoryItems as any}
             searchFields={['code', 'name', 'description']}
-            cardRenderer={InventoryItemCard as any}
+            cardRenderer={SupplierItemCard as any}
             rowHeight={72}
           >
             <Button size="sm" className="h-8 gap-1.5 text-xs flex-1 sm:flex-none">

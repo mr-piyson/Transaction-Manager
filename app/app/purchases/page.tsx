@@ -17,6 +17,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { formatAmount } from '@/lib/utils';
+import Link from 'next/link';
 
 export default function PurchasesPage() {
   const { data: purchases, isLoading, refetch } = trpc.purchases.getPurchases.useQuery();
@@ -47,9 +48,11 @@ export default function PurchasesPage() {
   return (
     <div className="flex flex-col min-h-screen">
       <Header title="Accounts Payable" transparent sticky>
-        <Button className="bg-primary">
-          <Plus /> Add Purchase
-        </Button>
+        <Link href="/app/purchases/new">
+          <Button className="bg-primary">
+            <Plus /> Add Purchase
+          </Button>
+        </Link>
       </Header>
 
       <ListView

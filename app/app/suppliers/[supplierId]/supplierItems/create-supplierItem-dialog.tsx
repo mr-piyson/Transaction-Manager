@@ -39,7 +39,7 @@ export const inventoryItemSchema = z.object({
   basePrice: z.coerce.number().min(0, 'Price must be a positive number'),
   description: z.string().optional().or(z.literal('')),
   image: z.any().optional(),
-  stockItemId: z.number().optional(),
+  stockItemId: z.string().optional(),
 });
 
 export type InventoryItemValues = z.infer<typeof inventoryItemSchema>;
@@ -75,7 +75,7 @@ export function CreateInventoryItemDialog({
 }: CreateInventoryItemDialogProps) {
   const [open, setOpen] = useState(false);
   const params = useParams();
-  const supplierId = Number(params?.supplierId);
+  const supplierId = params?.supplierId as string;
   const utils = trpc.useUtils();
   const createMutation = trpc.inventory.createInventoryItem.useMutation();
   const { data: stockItems } = trpc.items.getItems.useQuery();
@@ -91,7 +91,7 @@ export function CreateInventoryItemDialog({
           basePrice: values.basePrice,
           description: values.description,
           image: imagePath,
-          stockItemId: values.stockItemId,
+          itemId: values.stockItemId,
           supplierId: supplierId || undefined,
         });
       },
@@ -189,13 +189,13 @@ export function CreateInventoryItemDialog({
                 description="Brief details about the item specifications."
               />
 
-              <FormCustomField<number | undefined>
+              <FormCustomField<string | undefined>
                 name="stockItemId"
                 label="Link to Item Master Data"
                 render={({ value, onChange }) => (
                   <Select
-                    value={value?.toString() || ''}
-                    onValueChange={(val) => onChange(Number(val))}
+                    value={value || ''}
+                    onValueChange={(val) => onChange(val)}
                   >
                     <SelectTrigger className="h-10">
                       <SelectValue placeholder="Select master item (Product/Service)..." />

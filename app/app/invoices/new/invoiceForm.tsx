@@ -9,7 +9,7 @@ import { alert } from '@/components/Alert-dialog';
 import { Item } from '@prisma/client';
 // import InvoiceItemCardGroup from './invoiceItemGroup';
 import InvoiceItemCard from './invoiceItem';
-import { InventoryItemCard } from '../../suppliers/[supplierId]/supplierItems/SupplierItemCard';
+import { SupplierItemCard } from '../../suppliers/[supplierId]/supplierItems/SupplierItemCard';
 import { useState } from 'react';
 
 export default function InvoiceForm({
