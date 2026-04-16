@@ -130,7 +130,6 @@ export const invoiceRouter = t.router({
       z.object({
         id: z.string(),
         data: z.object({
-          // Define the fields you want to allow updating
           status: z.enum(InvoiceStatus).optional(),
           amount: z.number().optional(),
           dueDate: z.date().optional(),
@@ -154,7 +153,12 @@ export const invoiceRouter = t.router({
             for (const line of currentInvoice.lines) {
               if (line.item?.type === 'PRODUCT' && currentInvoice.warehouseId) {
                 await tx.stock.update({
-                  where: { id: line.item.id },
+                  where: {
+                    itemId_warehouseId: {
+                      itemId: line.id,
+                      warehouseId: currentInvoice.warehouseId,
+                    },
+                  },
                   data: { quantity: { decrement: Number(line.quantity) } },
                 });
 
@@ -162,9 +166,10 @@ export const invoiceRouter = t.router({
                   data: {
                     type: 'SALE_OUTBOUND',
                     quantity: -line.quantity,
-                    itemId: line.item.id,
+                    itemId: line.id,
                     fromWarehouseId: currentInvoice.warehouseId,
                     organizationId: ctx.user.organizationId,
+                    userId: ctx.user.id,
                     notes: `Sale from Invoice Update #${currentInvoice.id}`,
                   },
                 });
@@ -174,7 +179,11 @@ export const invoiceRouter = t.router({
 
           return await tx.invoice.update({
             where: { id: input.id },
-            data: input.data,
+            data: {
+              ...input.data,
+              // Convert to BigInt if schema needs it (Invoice subtotal/total)
+              // But here input.data doesn't have subtotal/total directly
+            },
           });
         });
       } catch (error) {
@@ -186,6 +195,7 @@ export const invoiceRouter = t.router({
         });
       }
     }),
+
   /**
    * Delete invoice by id
    */
@@ -203,6 +213,7 @@ export const invoiceRouter = t.router({
         });
       }
     }),
+
   /**
    * Create a full invoice with lines
    */
@@ -246,12 +257,13 @@ export const invoiceRouter = t.router({
               warehouseId: input.warehouseId,
               subtotal,
               total,
+              status: input.isCompleted ? 'SENT' : 'DRAFT',
             },
           });
 
-          // 3. Create lines
+          // 3. Create lines and handle stock
           for (const line of input.lines) {
-            await tx.invoiceLine.create({
+            const invoiceLine = await tx.invoiceLine.create({
               data: {
                 invoiceId: invoice.id,
                 itemId: line.itemId,
@@ -293,8 +305,9 @@ export const invoiceRouter = t.router({
                     quantity: -line.quantity,
                     itemId: line.itemId,
                     fromWarehouseId: warehouseId,
-                    invoiceLineId: line.itemId,
+                    invoiceLineId: invoiceLine.id, // Correct ID
                     organizationId: ctx.user.organizationId,
+                    userId: ctx.user.id,
                     notes: `Sale from New Invoice #${invoice.id}`,
                   },
                 });
@@ -305,6 +318,7 @@ export const invoiceRouter = t.router({
           return invoice;
         });
       } catch (error) {
+        console.error('[INVOICE_CREATE_ERROR]', error);
         throw new TRPCError({
           code: 'INTERNAL_SERVER_ERROR',
           message: 'Failed to create full invoice',

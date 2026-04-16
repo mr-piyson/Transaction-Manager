@@ -2,9 +2,10 @@
 import { UniversalContextMenu } from '@/components/context-menu';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { trpc } from '@/lib/trpc/client';
 import { formatAmount } from '@/lib/utils';
-import { Box, Trash2 } from 'lucide-react';
+import { Box, EllipsisVertical, Trash2 } from 'lucide-react';
 
 export default function InvoiceItemCard({
   line,
@@ -61,44 +62,17 @@ export default function InvoiceItemCard({
 
         <div className="flex items-center gap-4 shrink-0">
           <div className="flex items-center bg-muted/30 rounded-md p-0.5 border border-border/50">
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                if (Number(line.quantity) > 1) {
-                  const newQty = Number(line.quantity) - 1;
-                  onUpdate?.({
-                    ...line,
-                    quantity: newQty,
-                    total: newQty * Number(line.unitPrice),
-                  });
-                }
-              }}
-              className="h-6 w-6 flex items-center justify-center hover:bg-background rounded-sm transition-colors"
-            >
-              -
-            </button>
             <span className="w-8 text-center text-xs font-semibold tabular-nums">
               {Number(line.quantity)}
             </span>
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                const newQty = Number(line.quantity) + 1;
-                onUpdate?.({
-                  ...line,
-                  quantity: newQty,
-                  total: newQty * Number(line.unitPrice),
-                });
-              }}
-              className="h-6 w-6 flex items-center justify-center hover:bg-background rounded-sm transition-colors"
-            >
-              +
-            </button>
           </div>
 
           <div className="text-sm font-semibold tabular-nums text-right min-w-20">
             {formatAmount(line.total)}
           </div>
+          <Button size={'sm'} variant={'ghost'}>
+            <EllipsisVertical />
+          </Button>
         </div>
       </div>
     </UniversalContextMenu>
