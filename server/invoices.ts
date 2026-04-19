@@ -36,37 +36,6 @@ async function deductStockForInvoice(
     const masterItem = await tx.item.findUnique({
       where: { id: itemId },
     });
-
-    if (masterItem?.type === 'PRODUCT' && invoice.warehouseId) {
-      await tx.stock.upsert({
-        where: {
-          itemId_warehouseId: {
-            itemId: itemId,
-            warehouseId: invoice.warehouseId,
-          },
-        },
-        update: { quantity: { decrement: Number(line.quantity) } },
-        create: {
-          itemId: itemId,
-          warehouseId: invoice.warehouseId,
-          quantity: -Number(line.quantity),
-          organizationId: ctx.user.organizationId,
-        },
-      });
-
-      await tx.stockMovement.create({
-        data: {
-          type: 'SALE_OUTBOUND',
-          quantity: -Number(line.quantity),
-          itemId: itemId,
-          fromWarehouseId: invoice.warehouseId,
-          invoiceLineId: line.id,
-          organizationId: ctx.user.organizationId,
-          userId: ctx.user.id,
-          notes: `Sale from ${sourceLabel} #${invoice.id}`,
-        },
-      });
-    }
   }
 }
 
@@ -111,7 +80,7 @@ export const invoiceRouter = t.router({
           data: {
             organizationId: ctx.user.organizationId,
             customerId: input.customerId,
-            userId: ctx.user.id,
+            createdBy: ctx.user.id,
           },
         });
       } catch (error) {

@@ -5,7 +5,6 @@ import { ThemeProvider } from '@/components/Theme-Provider';
 import { I18nProvider } from '@/i18n/use-i18n';
 import { Toaster } from '@/components/sonner';
 import { getServerI18n } from '@/i18n/i18n.action';
-import QueryProvider from '@/components/QueryProvider';
 import TrpcProvider from '@/lib/trpc/Provider';
 import { DateFormatProvider } from '@/hooks/use-date-format';
 
@@ -42,9 +41,7 @@ export default async function RootLayout(props: any) {
         >
           <I18nProvider initialLocale={locale} initialDict={dict}>
             <DateFormatProvider defaultFormat={'date'}>
-              <TrpcProvider>
-                <QueryProvider>{props.children}</QueryProvider>
-              </TrpcProvider>
+              <TrpcProvider>{props.children}</TrpcProvider>
             </DateFormatProvider>
           </I18nProvider>
         </ThemeProvider>

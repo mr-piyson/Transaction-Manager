@@ -23,8 +23,8 @@ export default async function App(props: any) {
         <SidebarProvider className="flex ">
           <AppSidebar />
           <div className="relative flex flex-col flex-1 min-h-full">
-            <div className="flex flex-col flex-1 overflow-auto relative">{props.children}</div>
-            <AppFooter />
+            <main className="flex flex-col flex-1 relative">{props.children}</main>
+            {/* <AppFooter /> */}
           </div>
         </SidebarProvider>
       </AlertProvider>

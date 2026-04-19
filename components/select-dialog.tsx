@@ -206,7 +206,7 @@ export function SelectDialog<T extends Record<string, any>>({
   // NOTE: no highlightedIndex dependency — hover is handled purely via CSS on
   // the wrapper div, so this callback never changes and AG Grid never
   // re-renders rows unnecessarily.
-  const FullWidthCellRenderer = useCallback(
+  const FullWidthCellRenderer = useCallback<React.FC<{ data: T }>>(
     (props: { data: T }) => (
       <div
         onClick={() => handleSelect(props.data)}

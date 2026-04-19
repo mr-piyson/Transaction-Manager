@@ -2,27 +2,16 @@
 
 import { Header } from '@/app/app/App-Header';
 import {
-  Plus,
   ShoppingCart,
   Users,
   Store,
-  Package,
   FileText,
-  Wallet,
-  TrendingUp,
-  TrendingDown,
   LayoutDashboard,
   Box,
-  Truck,
   ArrowRight,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
-import { CreateSupplierDialog } from '@/app/app/suppliers/create-supplier-dialog';
-import { CreateCustomerDialog } from '@/app/app/customers/create-customer-dialog';
-import { StockAdjustmentDialog } from '@/app/app/stock/stock-adjustment-dialog';
-import { CardsSection } from '@/app/app/dashboard/cards-section';
-import { ChartAreaInteractive } from '@/app/app/dashboard/AreaChart';
 import { trpc } from '@/lib/trpc/client';
 import { cn } from '@/lib/utils';
 import React from 'react';
@@ -48,15 +37,15 @@ function QuickActionCard({
     <div
       className={cn(
         'group flex flex-col items-center justify-center gap-3 p-6 h-full w-full',
-        'rounded-3xl border bg-background shadow-sm transition-all duration-300',
-        'hover:shadow-xl hover:shadow-primary/5 hover:-translate-y-1.5 cursor-pointer',
+        'rounded-3xl border border-muted bg-background shadow-sm transition-all duration-300',
+        'hover:shadow-xl  hover:shadow-primary/30 hover:-translate-y-1.5 cursor-pointer',
         className,
       )}
     >
       <div className="p-4 rounded-2xl bg-current/10 transition-transform group-hover:scale-110">
         {icon}
       </div>
-      <span className="text-md font-black uppercase tracking-widest text-foreground/80 group-hover:text-primary">
+      <span className="text-sm font-black uppercase tracking-widest text-foreground/80 ">
         {label}
       </span>
       <ArrowRight className="size-3 opacity-0 -translate-x-2 transition-all group-hover:opacity-40 group-hover:translate-x-0" />
@@ -87,113 +76,9 @@ export default function App_Page() {
 
   return (
     <div className="flex flex-col min-h-screen pb-20">
-      <Header title={`Welcome, ${user?.user?.name?.split(' ')[0] || 'User'}`} sticky />
+      <Header title="Dashboard" />
 
-      <main className="flex-1 p-6 lg:p-10 space-y-12 max-w-[1600px] mx-auto w-full">
-        {/* Welcome Section / Stats Heading */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
-          <div>
-            <h2 className="text-3xl font-black tracking-tight text-foreground">
-              Dashboard Overview
-            </h2>
-            <p className="text-muted-foreground font-medium">
-              Real-time summary of your organization performance.
-            </p>
-          </div>
-          <Button
-            className="rounded-full px-6 shadow-lg shadow-primary/20 bg-primary hover:scale-105 transition-transform"
-            onClick={() => router.push('/app/invoices/new')}
-          >
-            <Plus className="size-4 mr-2" />
-            Create New Invoice
-          </Button>
-        </div>
-
-        {/* Quick Actions Grid */}
-        <section className="space-y-6">
-          <div className="flex items-center gap-2">
-            <div className="h-4 w-1 bg-primary rounded-full" />
-            <h2 className="text-sm font-bold uppercase tracking-[0.2em] text-muted-foreground/70">
-              Operational Shortcuts
-            </h2>
-          </div>
-
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
-            <QuickActionCard
-              label="New Invoice"
-              icon={<FileText className="size-6" />}
-              onClick={() => router.push('/app/invoices/new')}
-              className="border-3  text-primary border-primary/50"
-            />
-
-            <QuickActionCard
-              label="Purchase"
-              icon={<ShoppingCart className="size-6" />}
-              className="border-3  text-warning border-warning/50"
-            >
-              <Link href="/app/purchases/new">
-                <Button>New Purchase</Button>
-              </Link>
-            </QuickActionCard>
-
-            <QuickActionCard
-              label="Supplier"
-              icon={<Store className="size-6" />}
-              className="border-3  text-success border-success/50"
-            >
-              <CreateSupplierDialog />
-            </QuickActionCard>
-
-            <QuickActionCard
-              label="Customer"
-              icon={<Users className="size-6" />}
-              className="border-3  text-info border-info/50"
-            >
-              <CreateCustomerDialog />
-            </QuickActionCard>
-
-            <QuickActionCard
-              label="Stock"
-              icon={<Box className="size-6" />}
-              className="border-3  text-destructive border-destructive/50"
-            >
-              <StockAdjustmentDialog />
-            </QuickActionCard>
-
-            <QuickActionCard
-              label="Analytics"
-              icon={<LayoutDashboard className="size-6" />}
-              onClick={() => router.push('/app/dashboard')}
-              className="border-3  text-foreground border-foreground/50"
-            />
-          </div>
-        </section>
-
-        {/* Analytics & Activity Row */}
-        <div className="grid grid-cols-1 xl:grid-cols-3 gap-10">
-          <div className="xl:col-span-2 space-y-6">
-            <div className="flex items-center justify-between">
-              <h3 className="font-bold text-lg flex items-center gap-2">
-                <TrendingUp className="size-5 text-emerald-500" />
-                Revenue Analysis
-              </h3>
-              <Button variant="outline" size="sm" onClick={() => router.push('/app/dashboard')}>
-                Detailed Report
-              </Button>
-            </div>
-            <div className="bg-background rounded-3xl border shadow-sm overflow-hidden p-2">
-              <ChartAreaInteractive />
-            </div>
-          </div>
-
-          <div className="space-y-6">
-            <h3 className="font-bold text-lg flex items-center gap-2 text-foreground">
-              <Package className="size-5 text-amber-500" />
-              Critical Inventory
-            </h3>
-          </div>
-        </div>
-      </main>
+      <main className="flex-1 p-6 lg:p-10 space-y-12 max-w-400 mx-auto w-full"></main>
     </div>
   );
 }

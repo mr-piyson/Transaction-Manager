@@ -7,6 +7,7 @@ export const en = {
     greeting: 'Hello, World!',
     dashboard: 'Dashboard',
     changeLanguage: 'Change Language',
+    jobs: 'Jobs',
     loading: 'Loading...',
     error: 'An error occurred',
     save: 'Save',

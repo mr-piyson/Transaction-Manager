@@ -12,7 +12,7 @@ import {
 import { Locale } from '@/i18n/config';
 import { useI18n } from '@/i18n/use-i18n';
 import { SetupData } from './setup-types';
-import { CurrencyCode } from '@/lib/money';
+import { CurrencyCode } from '@/lib/utils';
 
 export function Step1Language() {
   const { setValue, watch } = useFormContext<SetupData>();

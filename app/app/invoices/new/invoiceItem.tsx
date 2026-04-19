@@ -8,6 +8,7 @@ import { formatAmount, cn } from '@/lib/utils';
 import { Box, EllipsisVertical, Trash2 } from 'lucide-react';
 
 export default function InvoiceItemCard({
+  key,
   line,
   onDelete,
   onUpdate,
@@ -15,6 +16,7 @@ export default function InvoiceItemCard({
   line: any;
   onDelete?: () => void;
   onUpdate?: (updated: any) => void;
+  key: string;
 }) {
   const utils = trpc.useUtils();
   const itemRef = (line as any).itemRef;
@@ -35,7 +37,10 @@ export default function InvoiceItemCard({
         },
       ]}
     >
-      <div className="flex flex-row justify-between items-center p-3 px-3 w-full bg-popover overflow-hidden hover:bg-muted/50 transition-colors group border-b last:border-0 border-border/50">
+      <div
+        key={key}
+        className="flex flex-row justify-between items-center p-3 px-3 w-full bg-background overflow-hidden hover:bg-muted/50 transition-colors group border-b last:border-0 border-border/50"
+      >
         <div className="flex flex-row items-center gap-3">
           <Avatar className="border-0 h-10 w-10 rounded-lg shrink-0">
             <AvatarImage src={itemRef?.imageUrl || ''} alt={line.description || 'Item'} />
@@ -55,13 +60,17 @@ export default function InvoiceItemCard({
               <span>{formatAmount(line.unitPrice)}</span>
               <span className="text-muted-foreground/60">× {Number(line.quantity)}</span>
               {itemRef?.type === 'PRODUCT' && (
-                <span className={cn(
-                  "ml-2 px-1.5 py-0.5 rounded-full text-[10px] bg-muted/50 font-medium",
-                  (itemRef?.stockEntries?.reduce((acc: any, s: any) => acc + s.quantity, 0) || 0) < Number(line.quantity) 
-                    ? "text-destructive bg-destructive/10" 
-                    : "text-muted-foreground"
-                )}>
-                  Stock: {itemRef?.stockEntries?.reduce((acc: any, s: any) => acc + s.quantity, 0) || 0}
+                <span
+                  className={cn(
+                    'ml-2 px-1.5 py-0.5 rounded-full text-[10px] bg-muted/50 font-medium',
+                    (itemRef?.stockEntries?.reduce((acc: any, s: any) => acc + s.quantity, 0) ||
+                      0) < Number(line.quantity)
+                      ? 'text-destructive bg-destructive/10'
+                      : 'text-muted-foreground',
+                  )}
+                >
+                  Stock:{' '}
+                  {itemRef?.stockEntries?.reduce((acc: any, s: any) => acc + s.quantity, 0) || 0}
                 </span>
               )}
             </div>
@@ -69,18 +78,9 @@ export default function InvoiceItemCard({
         </div>
 
         <div className="flex items-center gap-4 shrink-0">
-          <div className="flex items-center bg-muted/30 rounded-md p-0.5 border border-border/50">
-            <span className="w-8 text-center text-xs font-semibold tabular-nums">
-              {Number(line.quantity)}
-            </span>
-          </div>
-
           <div className="text-sm font-semibold tabular-nums text-right min-w-20">
             {formatAmount(line.total)}
           </div>
-          <Button size={'sm'} variant={'ghost'}>
-            <EllipsisVertical />
-          </Button>
         </div>
       </div>
     </UniversalContextMenu>

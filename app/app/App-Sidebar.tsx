@@ -20,7 +20,7 @@ import {
 } from '@/components/sidebar';
 import Logo from '@/components/Logo';
 import { useI18n } from '@/i18n/use-i18n';
-import { ROUTES, RouteConfig } from '@/lib/routes';
+import { ROUTES, RouteConfig } from '@/lib/nav';
 import { useEffect, useState } from 'react';
 import { Spinner } from '@/components/ui/spinner';
 import { Route } from 'next';

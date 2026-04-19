@@ -7,6 +7,7 @@ import {
   DollarSign,
   Group,
   HandCoinsIcon,
+  MapPinIcon,
   Package,
   Plus,
   Save,
@@ -21,9 +22,10 @@ import { useParams, useRouter } from 'next/navigation';
 import { trpc } from '@/lib/trpc/client';
 import { CreateInvoiceLineDialog } from './invoice-line-dialog';
 import { useState } from 'react';
-import { CustomerCard } from '../../customers/customerCard';
 import { toast } from 'sonner';
-import { SimpleItemCard } from '@/components/item-card';
+import { Customer_List_Item } from '../../customers/customer-item-list';
+import { ButtonGroup } from '@/components/ui/button-group';
+import { CreateCustomerDialog } from '../../customers/create-customer-dialog';
 
 export default function InvoiceEditor() {
   const router = useRouter();
@@ -31,26 +33,6 @@ export default function InvoiceEditor() {
   const [lines, setLines] = useState<any[]>([]);
 
   const { data: customers } = trpc.customers.getCustomers.useQuery();
-  const { data: allItems } = trpc.items.getItems.useQuery();
-
-  // Filter items to only show services or products with stock
-  // But maybe we want to show all and disable? The user said "view only available stock"
-  // Let's filter out products with 0 stock if they are products.
-  const availableItems = allItems?.filter((item) => {
-    if (item.type === 'SERVICE') return true;
-    const totalStock = item.stockEntries?.reduce((acc: number, s: any) => acc + s.quantity, 0) || 0;
-    return totalStock > 0;
-  });
-
-  const createInvoice = trpc.invoices.createFullInvoice.useMutation({
-    onSuccess: (data) => {
-      toast.success('Invoice created successfully');
-      router.push(`/app/invoices/${data.id}`);
-    },
-    onError: (error) => {
-      toast.error(error.message || 'Failed to create invoice');
-    },
-  });
 
   const handleSave = (isCompleted: boolean = false) => {
     if (!selectedCustomer) {
@@ -61,19 +43,6 @@ export default function InvoiceEditor() {
       toast.error('Please add at least one item');
       return;
     }
-
-    createInvoice.mutate({
-      customerId: selectedCustomer.id,
-      isCompleted,
-      lines: lines.map((l) => ({
-        itemId: l.itemId,
-        inventoryItemId: l.inventoryItemId,
-        description: l.description,
-        quantity: Number(l.quantity),
-        unitPrice: Number(l.unitPrice),
-        purchasePrice: Number(l.purchasePrice),
-      })),
-    });
   };
 
   const total = lines.reduce((acc, l) => acc + (l.total || 0), 0);
@@ -122,67 +91,61 @@ export default function InvoiceEditor() {
             <span className="font-semibold leading-tight truncate">New Invoice</span>
             <span className="text-xs text-muted-foreground truncate">Draft</span>
           </div>
-
-          <div className="ml-auto shrink-0 flex gap-2">
-            <Button
-              variant="outline"
-              onClick={() => handleSave(false)}
-              disabled={createInvoice.isPending}
-            >
-              {createInvoice.isPending ? 'Saving...' : 'Save Draft'}
-            </Button>
-            <Button
-              onClick={() => handleSave(true)}
-              disabled={createInvoice.isPending}
-              className="bg-primary text-primary-foreground hover:bg-primary/90"
-            >
-              {createInvoice.isPending ? (
-                'Processing...'
-              ) : (
-                <>
-                  <Save className="mr-2 h-4 w-4" /> Finalize & Send
-                </>
-              )}
-            </Button>
-          </div>
         </div>
 
         {/* ── Progress bar ── */}
         <Progress value={progressPercent} className="h-1 w-full" />
 
         {/* ── Row 2: Customer Selection ── */}
-        <div className="px-2 py-2 border-b border-border/50">
-          <SelectDialog<any>
-            title="Select Customer"
-            data={customers}
-            onSelect={setSelectedCustomer}
-            searchFields={['name', 'phone', 'address']}
-            cardRenderer={CustomerCard}
-            rowHeight={72}
-            itemName="Customers"
-          >
-            <Button
-              variant="outline"
-              className={cn(
-                'w-full justify-start text-left font-normal h-12',
-                !selectedCustomer && 'text-muted-foreground',
-              )}
+        <div className="flex flex-row px-2 py-2 border-b border-border/50 overflow-hidden">
+          <ButtonGroup className="w-full">
+            <SelectDialog<any>
+              title="Select Customer"
+              data={customers}
+              onSelect={setSelectedCustomer}
+              searchFields={['name', 'phone', 'address']}
+              cardRenderer={Customer_List_Item}
+              rowHeight={72}
+              itemName="Customers"
             >
-              <User className="mr-2 h-4 w-4 shrink-0" />
-              <div className="flex flex-col items-start overflow-hidden">
-                {selectedCustomer ? (
-                  <>
-                    <span className="font-medium truncate">{selectedCustomer.name}</span>
-                    <span className="text-xs text-muted-foreground truncate">
-                      {selectedCustomer.phone || 'No phone'}
-                    </span>
-                  </>
-                ) : (
-                  <span>Select a customer</span>
+              <Button
+                variant="outline"
+                className={cn(
+                  'flex-1 justify-start text-left font-normal h-12',
+                  !selectedCustomer && 'text-muted-foreground',
                 )}
-              </div>
-            </Button>
-          </SelectDialog>
+              >
+                <User className="mr-2 size-6 text-muted-foreground shrink-0" />
+
+                <div className="flex flex-col items-start overflow-hidden">
+                  {selectedCustomer ? (
+                    <>
+                      <span className="font-medium truncate">{selectedCustomer.name}</span>
+                      <span className="text-xs text-muted-foreground truncate">
+                        {selectedCustomer.phone || 'No phone'}
+                      </span>
+                    </>
+                  ) : (
+                    <span>Select a customer</span>
+                  )}
+                </div>
+                {selectedCustomer && (
+                  <span className="flex items-center justify-end gap-1 flex-1 text-xs text-muted-foreground truncate">
+                    <MapPinIcon size={12} /> {selectedCustomer.address || 'No address'}
+                  </span>
+                )}
+              </Button>
+            </SelectDialog>
+            <CreateCustomerDialog
+              onSuccess={(data) => {
+                setSelectedCustomer(data);
+              }}
+            >
+              <Button variant="outline" className="w-10 h-12">
+                <Plus />
+              </Button>
+            </CreateCustomerDialog>
+          </ButtonGroup>
         </div>
 
         {/* ── Row 3: Financial Summary ── */}
@@ -212,37 +175,46 @@ export default function InvoiceEditor() {
 
         {/* ── Row 4: Actions ── */}
         <div className=" flex items-center gap-1.5 px-2 pb-2">
-          <SelectDialog<any>
-            onSelect={handleSelectItem}
-            data={availableItems as any}
-            searchFields={['sku', 'name', 'description']}
-            cardRenderer={SimpleItemCard as any}
-            rowHeight={72}
-            itemName="Items"
-          >
-            <Button size="sm" className="h-8 gap-1.5 text-xs flex-1 sm:flex-none">
-              <Plus size={13} />
-              Add Product/Service
+          <ButtonGroup className="w-full">
+            <CreateInvoiceLineDialog
+              onSuccess={function (
+                line: {
+                  description: string;
+                  quantity: number;
+                  unitSalePrice: number;
+                  itemId?: string | undefined;
+                } & { lineTotal: number },
+              ): void {
+                setLines((prev) => [...prev, line]);
+              }}
+            >
+              <Button
+                variant="secondary"
+                size={'sm'}
+                className="h-8 border border-secondary gap-1.5 text-xs  "
+              >
+                <BoxIcon size={13} />
+                Item
+              </Button>
+            </CreateInvoiceLineDialog>
+            <Button
+              size="sm"
+              variant="outline"
+              className="h-8 gap-1.5 text-xs  "
+              onClick={() => {
+                const newGroup = {
+                  id: Math.random().toString(36).substr(2, 9),
+                  isGroup: true,
+                  description: 'New Group',
+                  total: 0,
+                };
+                setLines((prev) => [...prev, newGroup]);
+              }}
+            >
+              <Group size={13} />
+              Group
             </Button>
-          </SelectDialog>
-
-          <Button
-            size="sm"
-            variant="outline"
-            className="h-8 gap-1.5 text-xs flex-1 sm:flex-none"
-            onClick={() => {
-              const newGroup = {
-                id: Math.random().toString(36).substr(2, 9),
-                isGroup: true,
-                description: 'New Group',
-                total: 0,
-              };
-              setLines((prev) => [...prev, newGroup]);
-            }}
-          >
-            <Group size={13} />
-            Group
-          </Button>
+          </ButtonGroup>
         </div>
       </header>
       <main className="flex-1 overflow-auto">

@@ -4,32 +4,33 @@ import { useTheme } from 'next-themes';
 export function useTableTheme() {
   const theme = useTheme();
   const dark = themeQuartz.withParams({
-    backgroundColor: '#111111',
-    foregroundColor: '#fafafa',
-    headerTextColor: '#a1a1aa',
-    headerBackgroundColor: '#2b2b2b',
+    backgroundColor: 'var(--popover)',
+    foregroundColor: 'var(--foreground)',
+    headerTextColor: 'var(--foreground)',
+    headerBackgroundColor: 'var(--card)',
     oddRowBackgroundColor: '#131313',
     headerColumnResizeHandleColor: '#a1a1aa',
     wrapperBorderRadius: '0px',
+    // borderColor: 'var(--border)',
     listItemHeight: '30px',
     columnBorder: {
       color: '#2b2b2b',
-      width: '1px',
+      width: '0px',
     },
   });
 
   const light = themeQuartz.withParams({
-    backgroundColor: '#ffffff',
-    foregroundColor: '#000000',
-    headerTextColor: '#000000',
-    headerBackgroundColor: '#f0f0f0',
+    backgroundColor: 'var(--popover)',
+    foregroundColor: 'var(--foreground)',
+    headerTextColor: 'var(--foreground)',
+    headerBackgroundColor: 'var(--card)',
     oddRowBackgroundColor: '#f9f9f9',
     headerColumnResizeHandleColor: '#000000',
-    borderColor: '#cccccc',
+    // borderColor: 'var(--border)',
     wrapperBorderRadius: '0px',
     columnBorder: {
       color: '#cccccc',
-      width: '1px',
+      width: '0px',
     },
   });
 

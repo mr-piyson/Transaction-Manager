@@ -113,10 +113,15 @@ export function calcLineTotal(
 }
 
 // Must be called inside a $transaction
-export function generateID(prefix: 'INV' | 'PO' | 'CN', number: string | number): string {
+export function formatID(prefix: 'INV' | 'PO' | 'CN', number: string | number): string {
   return `${prefix}-${number.toString().padStart(5, '0')}`;
 }
 // helper to convert BigInt to JSON
 (BigInt.prototype as any).toJSON = function () {
   return Number(this); // Use Number if you aren't dealing with trillions
 };
+
+// formatDate(new Date()) → "sat 18 Apr 2024"
+export function formatDate(date: Date | null | undefined): string {
+  return date?.toUTCString().slice(0, -13) || '';
+}

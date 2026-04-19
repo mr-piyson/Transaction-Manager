@@ -1,12 +1,8 @@
 'use client';
 
 import { ReactNode } from 'react';
-import { useRouter } from 'next/navigation';
-import { Sidebar } from 'lucide-react';
-import { Button } from '../../components/ui/button';
 import { cn } from '@/lib/utils';
 import { Separator } from '../../components/ui/separator';
-import { useSidebar } from '../../components/sidebar';
 import { SidebarToggleButton } from './App-Sidebar';
 
 interface HeaderProps {
@@ -20,6 +16,7 @@ interface HeaderProps {
   showBackButton?: boolean;
   className?: string;
   children?: ReactNode;
+  description?: string;
 }
 
 export function Header({
@@ -33,12 +30,13 @@ export function Header({
   showBackButton = false,
   className,
   children,
+  description,
 }: HeaderProps) {
   return (
     <>
       <header
         className={cn(
-          'flex h-14 items-center gap-2 px-2 z-50 transition-all duration-300 print:hidden',
+          ' flex h-14 items-center gap-2 px-2 z-50 transition-all duration-300 print:hidden',
           sticky && 'sticky top-0',
           transparent
             ? 'bg-transparent'
@@ -47,7 +45,7 @@ export function Header({
           className,
         )}
       >
-        <SidebarToggleButton className="hidden md:flex" />
+        <SidebarToggleButton />
         <Separator orientation="vertical" className="bg-primary w-1 h-1/2 rounded-2xl" />
 
         {/* Left Section */}
@@ -55,10 +53,13 @@ export function Header({
           {leftContent || (
             <div className="flex items-center gap-2 truncate">
               {title && (
-                <>
+                <div className="flex flex-row  gap-2 items-center truncate">
                   {icon && <span className="text-muted-foreground">{icon}</span>}
                   <h1 className="text-2xl font-semibold capitalize truncate">{title}</h1>
-                </>
+                  {description && (
+                    <p className="text-sm text-muted-foreground truncate">{description}</p>
+                  )}
+                </div>
               )}
             </div>
           )}

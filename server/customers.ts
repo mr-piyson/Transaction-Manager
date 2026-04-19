@@ -17,13 +17,13 @@ export const customerRouter = t.router({
 
   getCustomerById: protectedProcedure
     .input(z.object({ id: z.string() }))
-    .query(async ({ input }) => {
+    .query(async ({ input, ctx }) => {
       try {
         const customer = await db.customer.findUnique({
-          where: { id: input.id },
+          where: { id: input.id, AND: { organizationId: ctx.user.organizationId } },
           include: {
-            organization: true,
             invoices: true,
+            payments: true,
           },
         });
         if (!customer) {

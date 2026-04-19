@@ -1,7 +1,7 @@
 'use client';
 
 import { JSX, useState } from 'react';
-import { useForm } from 'react-hook-form';
+import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Loader2, Plus, User, Phone, MapPin } from 'lucide-react';
 import { toast } from 'sonner';
@@ -21,6 +21,7 @@ import { trpc } from '@/lib/trpc/client';
 
 import * as z from 'zod';
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/input-group';
+import { CityCombobox } from '@/components/cities/combobox-cities';
 
 export const customerSchema = z.object({
   name: z.string().min(2, 'Name is required'),
@@ -37,9 +38,17 @@ interface CreateCustomerDialogProps {
   onSuccess?: (data: any) => void;
   onError?: (error: any) => void;
   children?: JSX.Element;
+  variant?: 'default' | 'outline' | 'ghost' | 'link' | 'destructive' | 'secondary';
+  className?: string;
 }
 
-export function CreateCustomerDialog({ onSuccess, onError, children }: CreateCustomerDialogProps) {
+export function CreateCustomerDialog({
+  onSuccess,
+  onError,
+  children,
+  variant,
+  className,
+}: CreateCustomerDialogProps) {
   const [open, setOpen] = useState(false);
   const utils = trpc.useUtils();
   const createMutation = trpc.customers.createCustomer.useMutation();
@@ -48,6 +57,7 @@ export function CreateCustomerDialog({ onSuccess, onError, children }: CreateCus
     register,
     handleSubmit,
     reset,
+    control,
     formState: { errors },
   } = useForm<CustomerFormValues>({
     resolver: zodResolver(customerSchema),
@@ -82,7 +92,7 @@ export function CreateCustomerDialog({ onSuccess, onError, children }: CreateCus
       <DialogTrigger
         render={
           children ?? (
-            <Button variant="default" className="gap-2">
+            <Button size={'sm'} variant={variant} className={className}>
               <Plus className="size-4" />
               Add Customer
             </Button>
@@ -128,14 +138,19 @@ export function CreateCustomerDialog({ onSuccess, onError, children }: CreateCus
           {/* Address Field */}
           <Field data-invalid={!!errors.address}>
             <FieldLabel>Address</FieldLabel>
-            <InputGroup>
-              <InputGroupInput {...register('address')} placeholder="Address ..." />
-              <InputGroupAddon>
-                <MapPin />
-              </InputGroupAddon>
-            </InputGroup>
+            <Controller
+              control={control}
+              name="address"
+              render={({ field }) => (
+                <CityCombobox
+                  // field.value would be the current string
+                  onSelect={(city) => field.onChange(city.en)}
+                />
+              )}
+            />
             <FieldError>{errors.address?.message}</FieldError>
           </Field>
+
           {/* Dialog Footer */}
           <DialogFooter>
             <Button type="button" variant="ghost" onClick={() => setOpen(false)}>

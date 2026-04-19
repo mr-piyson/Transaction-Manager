@@ -8,13 +8,11 @@
     "start": "next start",
     "lint": "eslint",
     "format": "prettier --write .",
-    "sync": "bunx prisma generate && bunx prisma db push"
+    "sync": "bunx prisma generate && bunx prisma db push "
   },
   "dependencies": {
     "@base-ui/react": "^1.4.0",
     "@better-auth/cli": "^1.4.21",
-    "@casl/ability": "^6.8.0",
-    "@casl/prisma": "^1.6.2",
     "@hookform/resolvers": "^5.2.2",
     "@paralleldrive/cuid2": "^3.3.0",
     "@prisma/adapter-libsql": "^7.7.0",
@@ -31,7 +29,6 @@
     "ag-grid-community": "^35.2.1",
     "ag-grid-react": "^35.2.1",
     "better-auth": "^1.6.2",
-    "browser-image-compression": "^2.0.2",
     "class-variance-authority": "^0.7.1",
     "cmdk": "^1.1.1",
     "embla-carousel-react": "^8.6.0",

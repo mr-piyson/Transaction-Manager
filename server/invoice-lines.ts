@@ -37,10 +37,10 @@ export const invoiceLinesRouter = t.router({
       z.object({
         id: z.string(),
         description: z.string(),
-        quantity: z.string(),
-        purchasePrice: z.bigint(),
-        unitPrice: z.bigint(),
-        discountAmt: z.bigint(),
+        quantity: z.coerce.number(),
+        purchasePrice: z.coerce.bigint(),
+        unitPrice: z.coerce.bigint(),
+        discountAmt: z.coerce.bigint(),
       }),
     )
     .mutation(async ({ input }) => {
@@ -53,9 +53,6 @@ export const invoiceLinesRouter = t.router({
             purchasePrice: input.purchasePrice,
             unitPrice: input.unitPrice,
             discountAmt: input.discountAmt,
-          },
-          include: {
-            item: true,
           },
         });
 

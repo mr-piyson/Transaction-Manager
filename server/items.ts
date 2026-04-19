@@ -4,24 +4,54 @@ import { TRPCError } from '@trpc/server';
 import db from '@/lib/db';
 
 export const itemRouter = t.router({
-  getItems: protectedProcedure.query(async ({ ctx }) => {
+  getItems: protectedProcedure
+    .input(
+      z.object({
+        group: z.enum(['all', 'products', 'services']),
+      }),
+    )
+
+    .query(async ({ input, ctx }) => {
+      try {
+        if (input.group === 'products') {
+          return await db.item.findMany({
+            where: { organizationId: ctx.user.organizationId, AND: { type: 'PRODUCT' } },
+            include: {
+              category: true,
+            },
+          });
+        } else if (input.group === 'services') {
+          return await db.item.findMany({
+            where: { organizationId: ctx.user.organizationId, AND: { type: 'SERVICE' } },
+            include: {
+              category: true,
+            },
+          });
+        } else {
+          return await db.item.findMany({
+            where: { organizationId: ctx.user.organizationId },
+            include: {
+              category: true,
+            },
+          });
+        }
+      } catch (error) {
+        throw new TRPCError({
+          code: 'INTERNAL_SERVER_ERROR',
+          message: 'Failed to fetch stock items',
+        });
+      }
+    }),
+
+  getCategories: protectedProcedure.query(async ({ ctx }) => {
     try {
-      return await db.item.findMany({
+      return await db.itemCategory.findMany({
         where: { organizationId: ctx.user.organizationId },
-        include: {
-          category: true,
-          stockEntries: {
-            include: { warehouse: true },
-          },
-          _count: {
-            select: { stockEntries: true, supplierItems: true },
-          },
-        },
       });
     } catch (error) {
       throw new TRPCError({
         code: 'INTERNAL_SERVER_ERROR',
-        message: 'Failed to fetch stock items',
+        message: 'Failed to fetch categories',
       });
     }
   }),
@@ -34,12 +64,6 @@ export const itemRouter = t.router({
           where: { id: input.id },
           include: {
             category: true,
-            supplierItems: {
-              include: { supplier: true },
-            },
-            stockEntries: {
-              include: { warehouse: true },
-            },
           },
         });
 
@@ -87,9 +111,6 @@ export const itemRouter = t.router({
             purchasePrice: input.purchasePrice,
             salesPrice: input.salesPrice,
             categoryId: input.categoryId,
-            image: input.image,
-            unit: input.unit,
-            minStock: input.minStock,
             organizationId: ctx.user.organizationId,
           },
         });
@@ -128,14 +149,11 @@ export const itemRouter = t.router({
           data: {
             categoryId: input.data.categoryId,
             description: input.data.description,
-            image: input.data.image,
-            minStock: input.data.minStock,
             name: input.data.name,
             purchasePrice: input.data.purchasePrice,
             salesPrice: input.data.salesPrice,
             sku: input.data.sku,
             type: input.data.type,
-            unit: input.data.unit,
           },
         });
       } catch (error) {

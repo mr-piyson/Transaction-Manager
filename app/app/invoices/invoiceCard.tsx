@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation';
 import { User, Calendar, FileText } from 'lucide-react';
 
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { cn, formatAmount, generateID } from '@/lib/utils';
+import { cn, formatAmount, formatID } from '@/lib/utils';
 import { useDateFormat } from '@/hooks/use-date-format';
 
 export function InvoiceCard({ data }: { data: any }) {
@@ -39,7 +39,7 @@ export function InvoiceCard({ data }: { data: any }) {
 
       {/* Invoice Details */}
       <div className="flex-1 min-w-0">
-        <p className="font-semibold truncate text-sm sm:text-base">{generateID('INV', data.id)}</p>
+        <p className="font-semibold truncate text-sm sm:text-base">{formatID('INV', data.id)}</p>
         <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
           <span className="flex items-center gap-1">
             <User className="size-3" />

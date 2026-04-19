@@ -37,7 +37,7 @@ import {
   HandCoinsIcon,
 } from 'lucide-react';
 import { trpc } from '@/lib/trpc/client';
-import { cn, formatAmount, generateID } from '@/lib/utils';
+import { cn, formatAmount, formatID } from '@/lib/utils';
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
 import { Badge } from '@/components/ui/badge';
@@ -162,7 +162,7 @@ export default function InvoiceDetailPage() {
               <div className="bg-primary/10 p-2 rounded-lg">
                 <Receipt className="h-6 w-6 text-primary" />
               </div>
-              {generateID('INV', invoice.id)}
+              {formatID('INV', invoice.id)}
             </h2>
           </div>
 
@@ -181,7 +181,13 @@ export default function InvoiceDetailPage() {
                 }`}
               >
                 {/* show loading */}
-                {updateMutation.isPending ? <Spinner /> : invoice.status === 'PAID' ? 'Done' : 'Pending'}
+                {updateMutation.isPending ? (
+                  <Spinner />
+                ) : invoice.status === 'PAID' ? (
+                  'Done'
+                ) : (
+                  'Pending'
+                )}
               </span>
 
               <Switch
@@ -225,7 +231,9 @@ export default function InvoiceDetailPage() {
             <span
               className={cn(
                 'absolute inset-0 flex items-center text-xs font-semibold px-2 pointer-events-none transition-all duration-300',
-                invoice.status === 'PAID' ? 'justify-start text-white' : 'justify-end text-gray-700',
+                invoice.status === 'PAID'
+                  ? 'justify-start text-white'
+                  : 'justify-end text-gray-700',
               )}
             ></span>
             {/* Payment Button */}

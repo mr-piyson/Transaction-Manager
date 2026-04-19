@@ -28,5 +28,23 @@ if (process.env.NODE_ENV !== 'production') global.prisma = db;
 //     logger.debug(`Query: ${e.query} - Params: ${e.params} - Duration: ${e.duration}ms`);
 //   }
 // });
-
+seed();
 export default db;
+
+// add seed data
+async function seed() {
+  const organizationExists = await db.organization.findFirst();
+  const isCategoryExists = await db.itemCategory.count();
+  if (isCategoryExists === 0) {
+    await db.itemCategory.upsert({
+      where: { name: 'Others' },
+      create: {
+        name: 'Others',
+        color: 'blue',
+        icon: 'tool',
+        organizationId: organizationExists?.id || '',
+      },
+      update: {},
+    });
+  }
+}

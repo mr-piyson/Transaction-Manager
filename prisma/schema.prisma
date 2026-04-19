@@ -50,19 +50,13 @@ enum ItemType {
   SERVICE // Intangible — no stock tracking
 }
 
-enum InvoiceType {
-  INVOICE
-  CREDIT_NOTE // Linked to a parent Invoice via parentInvoiceId
-  QUOTE // Can be converted to an Invoice
-}
-
 enum InvoiceStatus {
-  DRAFT
-  SENT
-  PAID
-  PARTIAL
-  CANCELLED
-  DELETED
+  DRAFT // initial state can generate quotation
+  IN_PROGRESS // when the invoice is created
+  SENT // when the invoice is sent to the customer
+  COMPLETED // when the invoice is completed
+  CANCELLED // when the invoice is cancelled
+  DELETED // when the invoice is deleted
 }
 
 enum PaymentMethod {
@@ -79,24 +73,6 @@ enum PurchaseStatus {
   PARTIAL_RECEIVED
   RECEIVED
   CANCELLED
-}
-
-// [CHANGE 6] New enum — codifies every reason stock quantity changes.
-enum StockMovementType {
-  SALE_OUTBOUND // Deducted when invoice is confirmed
-  PURCHASE_INBOUND // Added when PO is marked received
-  RETURN_INBOUND // Customer return adds stock back
-  RETURN_OUTBOUND // Stock sent back to supplier
-  ADJUSTMENT_UP // Manual positive correction
-  ADJUSTMENT_DOWN // Manual negative correction / write-off
-  TRANSFER // Movement between warehouses
-}
-
-// [CHANGE 17] JobStatus relocated from the bottom orphan position
-enum JobStatus {
-  NOT_STARTED
-  IN_PROGRESS
-  COMPLETED
 }
 
 // ============================================================
@@ -125,48 +101,11 @@ model Organization {
   users                 User[]
   userOrganizationRoles UserOrganizationRole[]
   customers             Customer[]
-  suppliers             Supplier[]
-  items                 Item[]
-  warehouses            Warehouse[]
-  stocks                Stock[]
-  stockMovements        StockMovement[]
-  categories            Category[]
-  taxRates              TaxRate[]
+  jobs                  Job[]
+  purchases             Purchase[]
   invoices              Invoice[]
-  purchaseOrders        PurchaseOrder[]
-  contracts             Contract[]
-  supplierItems         SupplierItem[]
-  payments              Payment[]
-}
-
-// ============================================================
-// Tax Rates
-// [CHANGE 3] New model — was magic Int fields scattered across
-// InvoiceLine. Centralises VAT/GST management; supports
-// multi-rate (standard, zero-rated, exempt) per org.
-// ============================================================
-
-model TaxRate {
-  id   String @id @default(cuid())
-  name String // e.g. "Standard VAT", "Zero-rated", "Exempt"
-
-  // [CHANGE 2] Decimal — e.g. 0.10 = 10%, 0.05 = 5%, 0.00 = exempt
-  rate      Decimal
-  isDefault Boolean @default(false)
-  isActive  Boolean @default(true)
-
-  organizationId String
-  organization   Organization @relation(fields: [organizationId], references: [id])
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  items        Item[]
-  invoiceLines InvoiceLine[]
-
-  @@unique([name, organizationId])
-  @@index([organizationId])
-  @@index([isActive, organizationId])
+  items                 Item[]
+  itemCategories        itemCategory[]
 }
 
 // ============================================================
@@ -197,9 +136,8 @@ model User {
 
   accounts              Account[]
   sessions              Session[]
-  invoices              Invoice[]              @relation("InvoiceCreatedBy")
+  invoices              Invoice[]
   userOrganizationRoles UserOrganizationRole[]
-  stockMovements        StockMovement[]
 
   @@index([email])
   @@index([organizationId])
@@ -313,11 +251,12 @@ model Customer {
   organizationId String
   organization   Organization @relation(fields: [organizationId], references: [id])
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  jobs      Job[]
+  purchases Purchase[]
   invoices  Invoice[]
-  contracts Contract[]
+  payments  Payment[]
 
   @@index([organizationId])
   @@index([email])
@@ -327,525 +266,172 @@ model Customer {
 }
 
 // ============================================================
-// Suppliers
+// Jobs
 // ============================================================
-
-model Supplier {
-  id          String    @id @default(cuid())
-  name        String
-  phone       String?
-  email       String?
-  address     String?
-  contactName String?
-  website     String?
-  taxId       String?
-  notes       String?
-  isActive    Boolean   @default(true)
-  deletedAt   DateTime? // Soft delete
-
-  organizationId String
-  organization   Organization @relation(fields: [organizationId], references: [id])
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  supplierItems  SupplierItem[]
-  purchaseOrders PurchaseOrder[]
-
-  @@index([organizationId])
-  @@index([deletedAt])
+enum JobStatus {
+  NOT_STARTED
+  IN_PROGRESS
+  COMPLETED
 }
 
-// Supplier-specific SKU / price mapping for an Item you stock.
-model SupplierItem {
+model Job {
   id          String    @id @default(cuid())
-  supplierSku String? // Supplier's part number
-  name        String? // Supplier's name for the item
-  // [CHANGE 1] Was Int
-  basePrice   BigInt
-  notes       String?
-  isActive    Boolean   @default(true)
-  // [CHANGE 14] Added soft delete to match other entity models
-  deletedAt   DateTime?
-
-  supplierId String
-  supplier   Supplier @relation(fields: [supplierId], references: [id])
-
-  // [CHANGE 16] Was ItemId (capital I) — camelCase fix
-  itemId String
-  item   Item   @relation(fields: [itemId], references: [id])
-
-  organizationId String?
-  organization   Organization? @relation(fields: [organizationId], references: [id])
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@unique([supplierId, supplierSku])
-  @@index([itemId])
-  @@index([organizationId])
-}
-
-// ============================================================
-// Categories
-// ============================================================
-
-model Category {
-  id    String  @id @default(cuid())
-  name  String
-  color String?
-
-  // [CHANGE 14] Added soft delete for consistency
-  isActive  Boolean   @default(true)
-  deletedAt DateTime?
-
-  organizationId String
-  organization   Organization @relation(fields: [organizationId], references: [id])
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  items Item[]
-
-  @@unique([name, organizationId])
-  @@index([organizationId])
-}
-
-// ============================================================
-// Items (unified catalog — products AND services)
-// ============================================================
-
-model Item {
-  id          String    @id @default(cuid())
-  type        ItemType  @default(PRODUCT)
-  sku         String
-  name        String
+  title       String
   description String?
-  image       String?
-  isActive    Boolean   @default(true)
-  deletedAt   DateTime? // Soft delete — never hard-delete referenced items
+  status      JobStatus @default(NOT_STARTED)
 
-  // [CHANGE 1] Was Int — BigInt for monetary safety
-  purchasePrice BigInt @default(0)
-  salesPrice    BigInt @default(0)
-
-  categoryId String?
-  category   Category? @relation(fields: [categoryId], references: [id])
-
-  // [CHANGE 4] Was a dangling Int? with no @relation — now a real FK
-  taxRateId String?
-  taxRate   TaxRate? @relation(fields: [taxRateId], references: [id])
-
-  organizationId String
-  unit           String @default("units")
-  minStock       Int    @default(0)
+  startDate DateTime?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  stockEntries   Stock[]
-  supplierItems  SupplierItem[]
+  // relations
+  customerId     String
+  customer       Customer      @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  invoices       Invoice[]
+  organization   Organization? @relation(fields: [organizationId], references: [id])
+  organizationId String?
+
+  @@index([customerId])
+  @@index([status])
+}
+
+model Purchase {
+  id         String @id @default(cuid())
+  customerId String
+
+  // What you did / what it costs you
+  title    String
+  details  String?
+  quantity Decimal @default(1)
+  unitCost BigInt // your cost basis
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  customer Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+
   invoiceLines   InvoiceLine[]
-  purchaseLines  PurchaseLine[]
-  stockMovements StockMovement[]
-  organization   Organization    @relation(fields: [organizationId], references: [id])
+  organization   Organization? @relation(fields: [organizationId], references: [id])
+  organizationId String?
 
-  @@unique([sku, organizationId])
-  @@index([organizationId])
-  @@index([type])
-  @@index([deletedAt])
-  // [CHANGE 12] Composite — common catalog lookup
-  @@index([organizationId, type, isActive])
+  @@index([customerId])
 }
-
-// ============================================================
-// Warehouses
-// ============================================================
-
-model Warehouse {
-  id        String    @id @default(cuid())
-  name      String
-  address   String?
-  isActive  Boolean   @default(true)
-  // [CHANGE 14] Added soft delete for consistency
-  deletedAt DateTime?
-
-  organizationId String
-  organization   Organization @relation(fields: [organizationId], references: [id])
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  stock             Stock[]
-  invoices          Invoice[]
-  outgoingMovements StockMovement[] @relation("FromStockMovements")
-  incomingMovements StockMovement[] @relation("ToStockMovements")
-
-  @@unique([name, organizationId])
-  @@index([organizationId])
-}
-
-// Per-item, per-warehouse quantity snapshot
-model Stock {
-  id       String  @id @default(cuid())
-  // [CHANGE 19] NOTE: Enforce quantity >= 0 via application layer or
-  // raw SQL migration: ALTER TABLE "Stock" ADD CONSTRAINT
-  // "stock_quantity_non_negative" CHECK (quantity >= 0);
-  quantity Int     @default(0)
-  location String? // Bin / shelf reference
-
-  itemId String
-  item   Item   @relation(fields: [itemId], references: [id])
-
-  warehouseId String
-  warehouse   Warehouse @relation(fields: [warehouseId], references: [id])
-
-  organizationId String
-  organization   Organization @relation(fields: [organizationId], references: [id])
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@unique([itemId, warehouseId])
-  @@index([organizationId])
-}
-
-// ============================================================
-// Stock Movements
-// [CHANGE 5] New model — was completely missing.
-// Every change to Stock.quantity must be backed by a movement
-// row. This is the ERP audit trail for inventory: why did the
-// quantity change, when, by whom, and linked to which document.
-// ============================================================
-
-model StockMovement {
-  id       String            @id @default(cuid())
-  type     StockMovementType
-  // Positive = stock added, negative = stock removed
-  quantity Int
-  notes    String?
-
-  // Document references (all optional — depends on movement type)
-  invoiceLineId String?
-  invoiceLine   InvoiceLine? @relation(fields: [invoiceLineId], references: [id])
-
-  purchaseLineId String?
-  purchaseLine   PurchaseLine? @relation(fields: [purchaseLineId], references: [id])
-
-  // For TRANSFER movements — source and destination
-  fromWarehouseId String?
-  fromWarehouse   Warehouse? @relation("FromStockMovements", fields: [fromWarehouseId], references: [id])
-
-  toWarehouseId String?
-  toWarehouse   Warehouse? @relation("ToStockMovements", fields: [toWarehouseId], references: [id])
-
-  itemId String
-  item   Item   @relation(fields: [itemId], references: [id])
-
-  organizationId String
-  organization   Organization @relation(fields: [organizationId], references: [id])
-
-  userId String?
-  user   User?   @relation(fields: [userId], references: [id])
-
-  createdAt DateTime @default(now())
-
-  @@index([organizationId])
-  @@index([itemId])
-  @@index([invoiceLineId])
-  @@index([purchaseLineId])
-  // [CHANGE 12] Composite — audit trail queries are always org + date range
-  @@index([organizationId, createdAt])
-  @@index([organizationId, type])
-  @@index([toWarehouseId])
-  @@index([fromWarehouseId])
-}
-
-// ============================================================
-// Invoices
-// ============================================================
 
 model Invoice {
   id String @id @default(cuid())
 
-  type   InvoiceType   @default(INVOICE)
-  status InvoiceStatus @default(DRAFT)
+  status InvoiceStatus @default(IN_PROGRESS)
 
-  date    DateTime  @default(now())
-  // [CHANGE 18] dueDate is still nullable in schema to allow DRAFT state,
-  // but application MUST populate it on transition to SENT.
-  dueDate DateTime?
+  invoiceNumber String?  @unique
+  currency      String   @default("BHD")
+  invoiceDate   DateTime @default(now())
 
-  parentInvoiceId String?
-  parentInvoice   Invoice?  @relation("CreditNotes", fields: [parentInvoiceId], references: [id])
-  creditNotes     Invoice[] @relation("CreditNotes")
+  notes String?
 
-  description String?
-
-  // [CHANGE 8] Typed enum
-  currency CurrencyCode @default(BHD)
-
-  notes     String?
-  termsText String?
-
-  // [CHANGE 1] All totals → BigInt
-  subtotal      BigInt @default(0)
-  discountTotal BigInt @default(0)
-  taxTotal      BigInt @default(0)
-  total         BigInt @default(0)
-
-  // [CHANGE 11] Explicit walk-in flag instead of inferring from null customerId
-  isWalkIn   Boolean   @default(false)
-  customerId String?
-  customer   Customer? @relation(fields: [customerId], references: [id])
-
-  warehouseId String?
-  warehouse   Warehouse? @relation(fields: [warehouseId], references: [id])
-
-  userId    String
-  createdBy User   @relation("InvoiceCreatedBy", fields: [userId], references: [id])
-
-  organizationId String
-  organization   Organization @relation(fields: [organizationId], references: [id])
+  subtotal      BigInt
+  taxTotal      BigInt
+  discountTotal BigInt
+  total         BigInt
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  lines             InvoiceLine[]
-  payments          Payment[]
-  invoiceLineGroups InvoiceLineGroup[]
+  // relations
 
-  @@index([organizationId])
+  customerId String
+  customer   Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  jobId      String?
+  job        Job?     @relation(fields: [jobId], references: [id], onDelete: SetNull)
+
+  lines          InvoiceLine[]
+  payments       Payment[]
+  organization   Organization? @relation(fields: [organizationId], references: [id])
+  organizationId String?
+  user           User?         @relation(fields: [userId], references: [id])
+  userId         String?
+
   @@index([customerId])
   @@index([status])
-  @@index([type])
-  @@index([date])
-  @@index([dueDate])
-  // [CHANGE 12] Composite indexes — core ERP dashboard queries
-  @@index([organizationId, status])
-  @@index([organizationId, date])
-  @@index([organizationId, type, status])
-  @@index([customerId, status])
+  @@index([invoiceDate])
 }
 
 model InvoiceLine {
-  id          String  @id @default(cuid())
-  description String?
-
-  // [CHANGE 9] Was Int — Decimal supports fractional quantities
-  // (e.g. 2.5 kg, 0.5 hours of service billing)
-  quantity Decimal @default(1)
-
-  // [CHANGE 1] Prices → BigInt
-  purchasePrice BigInt @default(0)
-  unitPrice     BigInt @default(0)
-  discountAmt   BigInt @default(0)
-  taxAmt        BigInt @default(0)
-  total         BigInt @default(0)
-
-  itemId String?
-  item   Item?   @relation(fields: [itemId], references: [id])
-
-  // [CHANGE 2/3] Now a FK to TaxRate — replaces the raw Int taxRate field.
-  // Snapshot of the rate name/% at time of sale is preserved in taxRateSnapshot.
-  taxRateId       String?
-  taxRate         TaxRate? @relation(fields: [taxRateId], references: [id])
-  // Snapshot fields — preserve the rate even if TaxRate row changes later
-  taxRateSnapshot Decimal? // e.g. 0.10 for 10%
-  taxRateName     String? // e.g. "Standard VAT 10%"
+  id String @id @default(cuid())
 
   invoiceId String
   invoice   Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
 
-  sortOrder Int @default(0)
+  // Quantities and pricing on the sale side
+  description   String
+  quantity      BigInt // e.g. hours, units
+  unitSalePrice BigInt
+  lineTotal     BigInt
+
+  purchaseId String? // null when MANUAL
+  purchase   Purchase? @relation(fields: [purchaseId], references: [id], onDelete: SetNull)
 
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  // [CHANGE 5] Back-reference for StockMovement audit trail
-  stockMovements     StockMovement[]
-  invoiceLineGroup   InvoiceLineGroup? @relation(fields: [invoiceLineGroupId], references: [id])
-  invoiceLineGroupId String?
+  itemId    String?
 
   @@index([invoiceId])
-  @@index([itemId])
-}
-
-model InvoiceLineGroup {
-  id        String   @id @default(cuid())
-  title     String
-  invoiceId String
-  invoice   Invoice  @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  // ADD: The toggle for the frontend / PDF generator
-  showAsSingleLine Boolean @default(true)
-
-  // ADD: Group-level snapshot totals (matching your BigInt pattern)
-  subtotal BigInt @default(0)
-  taxTotal BigInt @default(0)
-  total    BigInt @default(0)
-
-  lines InvoiceLine[]
-
-  @@index([invoiceId])
+  @@index([purchaseId])
 }
 
 model Payment {
-  id        String        @id @default(cuid())
-  date      DateTime      @default(now())
-  method    PaymentMethod @default(CASH)
-  // [CHANGE 1] Was Int
-  amount    BigInt
-  reference String?
-  notes     String?
-
-  invoiceId String
-  invoice   Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
-
-  // [CHANGE 10] Direct org FK — eliminates join-through-Invoice for
-  // every AR aging report, cash flow dashboard, and audit query.
-  organizationId String
-  organization   Organization @relation(fields: [organizationId], references: [id])
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@index([invoiceId])
-  @@index([organizationId])
-  // [CHANGE 12] Composite — cash flow queries always filter by org + date
-  @@index([organizationId, date])
-  @@index([organizationId, method])
-}
-
-// ============================================================
-// Purchase Orders
-// ============================================================
-
-model PurchaseOrder {
   id String @id @default(cuid())
 
-  status       PurchaseStatus @default(DRAFT)
-  date         DateTime       @default(now())
-  expectedDate DateTime?
-  notes        String?
-
-  // [CHANGE 8] Typed enum
-  currency CurrencyCode @default(BHD)
-
-  // [CHANGE 1] Totals → BigInt
-  subtotal BigInt @default(0)
-  taxTotal BigInt @default(0)
-  total    BigInt @default(0)
-
-  isReceived Boolean   @default(false)
-  receivedAt DateTime?
-
-  supplierId String
-  supplier   Supplier @relation(fields: [supplierId], references: [id])
-
-  organizationId String
-  organization   Organization @relation(fields: [organizationId], references: [id])
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  lines    PurchaseLine[]
-  payments PurchasePayment[]
-
-  @@index([supplierId])
-  @@index([organizationId])
-  @@index([status])
-  // [CHANGE 12] Composite — procurement dashboards always org + status/date
-  @@index([organizationId, status])
-  @@index([organizationId, date])
-  @@index([organizationId, supplierId])
-}
-
-model PurchaseLine {
-  id       String @id @default(cuid())
-  quantity Int
-  // [CHANGE 1] Was Int
-  unitCost BigInt
-  taxAmt   BigInt @default(0)
-  total    BigInt
-
-  purchaseOrderId String
-  purchaseOrder   PurchaseOrder @relation(fields: [purchaseOrderId], references: [id], onDelete: Cascade)
-
-  itemId String
-  item   Item   @relation(fields: [itemId], references: [id])
-
-  receivedQty Int @default(0)
-
-  // [CHANGE 5] Back-reference for StockMovement audit trail
-  stockMovements StockMovement[]
-
-  @@index([purchaseOrderId])
-  @@index([itemId])
-}
-
-model PurchasePayment {
-  id        String        @id @default(cuid())
-  // [CHANGE 1] Was Int
   amount    BigInt
-  method    PaymentMethod @default(TRANSFER)
-  date      DateTime      @default(now())
-  reference String?
-  notes     String?
-
-  purchaseOrderId String
-  purchaseOrder   PurchaseOrder @relation(fields: [purchaseOrderId], references: [id], onDelete: Cascade)
+  method    PaymentMethod @default(CASH)
+  reference String? // external txn id
+  paidAt    DateTime      @default(now())
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@index([purchaseOrderId])
+  customerId String
+  invoiceId  String
+  customer   Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  invoice    Invoice  @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+
+  @@index([invoiceId])
+  @@index([customerId])
 }
 
-// ============================================================
-// Contracts (CRM — customer agreements, renewals)
-// ============================================================
-
-model Contract {
-  id          String  @id @default(cuid())
-  title       String
+model Item {
+  id          String   @id @default(cuid())
+  sku         String?  @unique
+  barcode     String?  @unique
+  name        String
   description String?
-  isActive    Boolean @default(true)
+  type        ItemType @default(PRODUCT)
 
-  // [CHANGE 1] Was Int?
-  contractValue BigInt?
+  // For PRODUCTS, this is the current stock level.
+  // For SERVICES, this can be null or ignored.
+  stockQuantity BigInt?
 
-  // [CHANGE 8] Typed enum
-  currency CurrencyCode @default(BHD)
+  purchasePrice BigInt @default(0) // your cost basis
+  salesPrice    BigInt @default(0) // what you charge customers
 
-  startDate        DateTime
-  endDate          DateTime
-  renewalDate      DateTime?
-  renewalAlertDays Int       @default(30)
+  categoryId String?
+  category   itemCategory? @relation(fields: [categoryId], references: [id])
 
-  // [CHANGE 14] Soft delete added for consistency
-  deletedAt DateTime?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  organization   Organization? @relation(fields: [organizationId], references: [id])
+  organizationId String?
+}
 
-  version Int @default(1)
-
-  customerId String?
-  customer   Customer? @relation(fields: [customerId], references: [id])
-
-  organizationId String
-  organization   Organization @relation(fields: [organizationId], references: [id])
+model itemCategory {
+  id    String  @id @default(cuid())
+  name  String  @unique
+  color String? // for UI tagging
+  icon  String? // e.g. "box", "tool", "service" — for UI
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@index([organizationId])
-  @@index([isActive])
-  @@index([endDate])
-  @@index([customerId])
-  @@index([organizationId, endDate])
-  @@index([organizationId, isActive])
-  @@index([isActive, endDate]) // "all active contracts expiring soon"
-  @@index([organizationId, renewalDate])
-  @@index([customerId, isActive])
+  organization   Organization? @relation(fields: [organizationId], references: [id])
+  organizationId String?
+  items          Item[]
 }
