@@ -202,6 +202,9 @@ export const invoiceRouter = t.router({
         warehouseId: z.string().optional(),
         lines: z.array(
           z.object({
+            id: z.string().optional(),
+            parentId: z.string().optional(),
+            isGroup: z.boolean().optional(),
             itemId: z.string().optional(),
             inventoryItemId: z.string().optional(),
             description: z.string(),
@@ -218,7 +221,7 @@ export const invoiceRouter = t.router({
       try {
         return await db.$transaction(async (tx) => {
           let subtotal = 0;
-          for (const line of input.lines) {
+          for (const line of input.lines.filter((l) => !l.isGroup)) {
             subtotal += line.unitPrice * line.quantity;
           }
           const total = subtotal;
@@ -228,31 +231,48 @@ export const invoiceRouter = t.router({
               organizationId: ctx.user.organizationId,
               userId: ctx.user.id,
               customerId: input.customerId,
-              date: input.date || new Date(),
-              warehouseId: input.warehouseId,
-              subtotal,
-              total,
+              invoiceDate: input.date || new Date(),
+              subtotal: BigInt(Math.round(subtotal)),
+              taxTotal: BigInt(0),
+              discountTotal: BigInt(0),
+              total: BigInt(Math.round(total)),
               status: input.isCompleted ? 'SENT' : 'DRAFT',
             },
           });
 
+          // Map to store temporary UI IDs to real DB IDs for groups
+          const groupMap = new Map<string, string>();
+
+          // First, create all groups
+          const groupLines = input.lines.filter((l) => l.isGroup);
+          for (const g of groupLines) {
+            const group = await tx.invoiceLineGroup.create({
+              data: {
+                title: g.description,
+                invoiceId: invoice.id,
+              },
+            });
+            groupMap.set(g.id!, group.id);
+          }
+
           const createdLines = [];
-          for (const line of input.lines) {
+          const regularLines = input.lines.filter((l) => !l.isGroup);
+          for (const line of regularLines) {
             const invoiceLine = await tx.invoiceLine.create({
               data: {
                 invoiceId: invoice.id,
                 itemId: line.itemId || line.inventoryItemId,
                 description: line.description,
-                quantity: line.quantity,
-                unitPrice: line.unitPrice,
-                purchasePrice: line.purchasePrice,
-                total: line.unitPrice * line.quantity,
+                quantity: BigInt(line.quantity),
+                unitSalePrice: BigInt(Math.round(line.unitPrice)),
+                lineTotal: BigInt(Math.round(line.unitPrice * line.quantity)),
+                invoiceLineGroupId: line.parentId ? groupMap.get(line.parentId) : null,
               },
             });
             createdLines.push(invoiceLine);
           }
 
-          if (input.isCompleted && (input.warehouseId || invoice.warehouseId)) {
+          if (input.isCompleted) {
             await deductStockForInvoice(tx, invoice, createdLines, ctx, 'New Invoice');
           }
 

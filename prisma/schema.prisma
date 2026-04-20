@@ -344,12 +344,13 @@ model Invoice {
   jobId      String?
   job        Job?     @relation(fields: [jobId], references: [id], onDelete: SetNull)
 
-  lines          InvoiceLine[]
-  payments       Payment[]
-  organization   Organization? @relation(fields: [organizationId], references: [id])
-  organizationId String?
-  user           User?         @relation(fields: [userId], references: [id])
-  userId         String?
+  lines             InvoiceLine[]
+  payments          Payment[]
+  organization      Organization?      @relation(fields: [organizationId], references: [id])
+  organizationId    String?
+  user              User?              @relation(fields: [userId], references: [id])
+  userId            String?
+  invoiceLineGroups InvoiceLineGroup[]
 
   @@index([customerId])
   @@index([status])
@@ -371,11 +372,21 @@ model InvoiceLine {
   purchaseId String? // null when MANUAL
   purchase   Purchase? @relation(fields: [purchaseId], references: [id], onDelete: SetNull)
 
-  createdAt DateTime @default(now())
-  itemId    String?
+  createdAt          DateTime          @default(now())
+  itemId             String?
+  invoiceLineGroup   InvoiceLineGroup? @relation(fields: [invoiceLineGroupId], references: [id])
+  invoiceLineGroupId String?
 
   @@index([invoiceId])
   @@index([purchaseId])
+}
+
+model InvoiceLineGroup {
+  id        String        @id @default(cuid())
+  title     String
+  invoiceId String
+  invoice   Invoice       @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  lines     InvoiceLine[]
 }
 
 model Payment {

@@ -2,7 +2,6 @@
 
 import { JSX, useState, useMemo } from 'react';
 import { useForm, Controller } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
 import {
   Plus,
   Search,
@@ -50,10 +49,11 @@ interface CreateInvoiceLineDialogProps {
 
 export function CreateInvoiceLineDialog({ onSuccess, children }: CreateInvoiceLineDialogProps) {
   const [open, setOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
 
   // Data Fetching for "Import from existing"
-  const { data: items, isLoading: isLoadingItems } = trpc.items.getItems.useQuery();
+  const { data: items, isLoading: isLoadingItems } = trpc.items.getItems.useQuery({
+    group: 'all',
+  });
 
   const {
     register,
@@ -74,25 +74,12 @@ export function CreateInvoiceLineDialog({ onSuccess, children }: CreateInvoiceLi
   const watchPrice = watch('unitSalePrice');
   const lineTotal = useMemo(() => watchQuantity * watchPrice, [watchQuantity, watchPrice]);
 
-  // Filter items for the search dropdown
-  const filteredItems = useMemo(() => {
-    if (!searchQuery) return [];
-    return items
-      ?.filter(
-        (item) =>
-          item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          item.sku?.toLowerCase().includes(searchQuery.toLowerCase()),
-      )
-      .slice(0, 5);
-  }, [items, searchQuery]);
-
   const handleSelectItem = (item: any) => {
     setValue('description', item.name);
     // Convert back from smallest unit (fils) for the UI input if needed,
     // assuming item.salesPrice is stored as BigInt/Integer
     setValue('unitSalePrice', Number(item.salesPrice) / 1000);
     setValue('itemId', item.id);
-    setSearchQuery('');
   };
 
   const onSubmit = (values: InvoiceLineValues) => {
@@ -129,42 +116,39 @@ export function CreateInvoiceLineDialog({ onSuccess, children }: CreateInvoiceLi
         </DialogHeader>
 
         {/* Search / Import Section */}
-        <div className="space-y-2 relative">
-          <FieldLabel>Quick Import from Items</FieldLabel>
-          <div className="flex gap-2">
-            <div className="relative flex-1">
-              <Button variant="outline" className="w-full justify-start text-left font-normal ">
-                <Search className="mr-2 size-4 text-muted-foreground shrink-0" />
-                <div className="flex flex-col items-start overflow-hidden">
-                  <span className="font-medium truncate">Select an item</span>
-                </div>
-              </Button>
-
-              {filteredItems && filteredItems.length > 0 && (
-                <div className="absolute z-50 w-full mt-1 bg-popover border rounded-md shadow-lg p-1">
-                  {filteredItems.map((item) => (
-                    <button
-                      key={item.id}
-                      type="button"
-                      onClick={() => handleSelectItem(item)}
-                      className="w-full text-left px-3 py-2 text-sm hover:bg-accent rounded-sm flex justify-between items-center"
-                    >
-                      <span>
-                        {item.name}{' '}
-                        <span className="text-muted-foreground text-xs">({item.sku})</span>
-                      </span>
-                      <span className="font-mono text-xs">
-                        {(Number(item.salesPrice) / 1000).toFixed(3)} BD
-                      </span>
-                    </button>
-                  ))}
-                </div>
-              )}
+        <div className="space-y-4">
+          <div className="flex gap-2 items-end">
+            <div className="flex-1 space-y-1.5">
+              <FieldLabel className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                Quick Import from Items
+              </FieldLabel>
+              <ItemSelectionDialog
+                data={items ?? []}
+                isLoading={isLoadingItems}
+                onSelect={(item) => handleSelectItem(item)}
+                searchFields={['name', 'sku']}
+              >
+                <Button
+                  variant="outline"
+                  className="w-full justify-start text-left font-normal h-11 border-dashed hover:border-primary/50 hover:bg-primary/5 transition-all"
+                >
+                  <Search className="mr-2 size-4 text-muted-foreground shrink-0" />
+                  <div className="flex flex-col items-start overflow-hidden">
+                    <span className="font-medium truncate">Search products or services...</span>
+                  </div>
+                </Button>
+              </ItemSelectionDialog>
             </div>
 
             {/* Create Item if not exists */}
             <CreateItemDialog onSuccess={handleSelectItem}>
-              <Button type="button" variant="secondary" size="icon" title="Create New Master Item">
+              <Button
+                type="button"
+                variant="secondary"
+                size="icon"
+                className="h-11 w-11 shrink-0"
+                title="Create New Master Item"
+              >
                 <PackagePlus className="size-4" />
               </Button>
             </CreateItemDialog>
@@ -246,8 +230,12 @@ interface ItemWithCategory extends Record<string, any> {
 export function ItemSelectionDialog<T extends ItemWithCategory>({
   data = [],
   onSelect,
+  children,
   ...props
-}: Omit<SelectionDialogProps<T>, 'cardRenderer'>) {
+}: Omit<SelectionDialogProps<T>, 'cardRenderer' | 'open' | 'onOpenChange'> & {
+  children?: React.ReactNode;
+}) {
+  const [open, setOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<'ALL' | 'PRODUCT' | 'SERVICE'>('ALL');
 
   // Filter data based on active tab before passing to the base SelectionDialog
@@ -256,66 +244,79 @@ export function ItemSelectionDialog<T extends ItemWithCategory>({
     return data.filter((item) => item.type === activeTab);
   }, [data, activeTab]);
 
+  const handleSelect = (selectedItems: T[]) => {
+    if (selectedItems.length > 0) {
+      // onSelect(selectedItems[0]);
+      setOpen(false);
+    }
+  };
+
   return (
-    <SelectionDialog
-      {...props}
-      data={tabFilteredData}
-      onSelect={onSelect}
-      itemName={activeTab === 'ALL' ? 'items' : activeTab.toLowerCase() + 's'}
-      title="Select Item"
-      description="Choose an existing product or service to add to your line."
-      cardRenderer={(item, selected) => (
-        <div className="p-4 flex items-start justify-between gap-4">
-          <div className="flex gap-3">
-            <div className="mt-1 p-2 bg-muted rounded-md">
-              {item.type === 'PRODUCT' ? (
-                <Box className="size-4 text-blue-500" />
-              ) : (
-                <Wrench className="size-4 text-orange-500" />
-              )}
-            </div>
-            <div>
-              <div className="font-bold flex items-center gap-2">
-                {item.name}
-                <Badge variant="outline" className="text-[10px] uppercase font-bold">
-                  {item.sku}
-                </Badge>
-              </div>
-              <p className="text-sm text-muted-foreground line-clamp-1">{item.description}</p>
-            </div>
-          </div>
-          <div className="text-right shrink-0">
-            <div className="font-mono font-bold text-primary">
-              {(Number(item.salesPrice) / 1000).toFixed(3)} <small>BD</small>
-            </div>
-            {item.type === 'PRODUCT' && (
-              <p className="text-[10px] text-muted-foreground uppercase">
-                Stock: {item.stockQuantity?.toString() ?? '0'}
-              </p>
-            )}
-          </div>
+    <>
+      {children && (
+        <div onClick={() => setOpen(true)} className="contents">
+          {children}
         </div>
       )}
-    >
-      {/* Injecting the Tabs UI into the SelectionDialog top area 
-        Note: You may need to add a 'children' or 'headerActions' prop 
-        to select-dialog-v2.tsx to render this cleanly above the search bar.
-      */}
-      <div className="px-4 pt-2">
-        <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as any)}>
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="ALL" className="gap-2">
+      <SelectionDialog
+        {...props}
+        open={open}
+        onOpenChange={setOpen}
+        data={tabFilteredData}
+        onSelect={handleSelect}
+        rowHeight={72}
+        mode="single"
+        getItemId={(item) => item.id}
+        itemName={activeTab === 'ALL' ? 'items' : activeTab.toLowerCase() + 's'}
+        title="Select Item"
+        description="Choose an existing product or service to add to your line."
+        cardRenderer={(item, selected) => (
+          <div className="p-4 flex items-start justify-between gap-4 border-y">
+            <div className="flex gap-3">
+              <div className="mt-1 p-2 bg-muted  group-hover:bg-background transition-colors">
+                {item.type === 'PRODUCT' ? (
+                  <Box className="size-4 text-blue-500" />
+                ) : (
+                  <Wrench className="size-4 text-orange-500" />
+                )}
+              </div>
+              <div>
+                <div className="font-bold flex items-center gap-2">
+                  {item.name}
+                  <Badge variant="outline" className="text-[10px] uppercase font-bold px-1.5 h-4">
+                    {item.sku}
+                  </Badge>
+                </div>
+                <p className="text-sm text-muted-foreground line-clamp-1">{item.description}</p>
+              </div>
+            </div>
+            <div className="text-right shrink-0">
+              <div className="font-mono font-bold text-primary">
+                {(Number(item.salesPrice) / 1000).toFixed(3)} <small>BD</small>
+              </div>
+              <p className="text-[10px] text-muted-foreground uppercase font-medium">
+                {item.type === 'PRODUCT'
+                  ? `Stock: ${item.stockQuantity?.toString() ?? '0'}`
+                  : 'Service'}
+              </p>
+            </div>
+          </div>
+        )}
+      >
+        <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as any)} className="w-full">
+          <TabsList className="grid w-full grid-cols-3 h-10 p-1 bg-muted/50">
+            <TabsTrigger value="ALL" className="text-xs gap-2">
               All
             </TabsTrigger>
-            <TabsTrigger value="PRODUCT" className="gap-2">
+            <TabsTrigger value="PRODUCT" className="text-xs gap-2">
               <Box className="size-3.5" /> Products
             </TabsTrigger>
-            <TabsTrigger value="SERVICE" className="gap-2">
+            <TabsTrigger value="SERVICE" className="text-xs gap-2">
               <Wrench className="size-3.5" /> Services
             </TabsTrigger>
           </TabsList>
         </Tabs>
-      </div>
-    </SelectionDialog>
+      </SelectionDialog>
+    </>
   );
 }

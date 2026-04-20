@@ -17,15 +17,16 @@ import InvoiceForm from './invoiceForm';
 import { cn, formatAmount } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { SelectDialog } from '@/components/select-dialog';
 import { useParams, useRouter } from 'next/navigation';
 import { trpc } from '@/lib/trpc/client';
-import { CreateInvoiceLineDialog } from './invoice-line-dialog';
+import { CreateInvoiceLineDialog, ItemSelectionDialog } from './invoice-line-dialog';
 import { useState } from 'react';
 import { toast } from 'sonner';
+import { SelectionDialog } from '@/components/select-dialog-v2';
 import { Customer_List_Item } from '../../customers/customer-item-list';
 import { ButtonGroup } from '@/components/ui/button-group';
 import { CreateCustomerDialog } from '../../customers/create-customer-dialog';
+import { SelectDialog } from '@/components/select-dialog';
 
 export default function InvoiceEditor() {
   const router = useRouter();
@@ -33,6 +34,17 @@ export default function InvoiceEditor() {
   const [lines, setLines] = useState<any[]>([]);
 
   const { data: customers } = trpc.customers.getCustomers.useQuery();
+  const { data: items } = trpc.items.getItems.useQuery({ group: 'all' });
+
+  const createInvoice = trpc.invoices.createFullInvoice.useMutation({
+    onSuccess: (data) => {
+      toast.success('Invoice created successfully');
+      router.push(`/app/invoices/${data.id}`);
+    },
+    onError: (error) => {
+      toast.error(error.message);
+    },
+  });
 
   const handleSave = (isCompleted: boolean = false) => {
     if (!selectedCustomer) {
@@ -43,6 +55,21 @@ export default function InvoiceEditor() {
       toast.error('Please add at least one item');
       return;
     }
+
+    createInvoice.mutate({
+      customerId: selectedCustomer.id,
+      lines: lines.map((l) => ({
+        id: l.id,
+        parentId: l.parentId,
+        isGroup: l.isGroup,
+        itemId: l.itemId,
+        description: l.description,
+        quantity: Number(l.quantity),
+        unitPrice: Number(l.unitPrice),
+        purchasePrice: Number(l.purchasePrice || 0),
+      })),
+      isCompleted,
+    });
   };
 
   const total = lines.reduce((acc, l) => acc + (l.total || 0), 0);
@@ -87,9 +114,31 @@ export default function InvoiceEditor() {
             <ArrowLeft size={16} />
           </Button>
 
-          <div className="flex flex-col min-w-0">
+          <div className="flex flex-col min-w-0 flex-1">
             <span className="font-semibold leading-tight truncate">New Invoice</span>
             <span className="text-xs text-muted-foreground truncate">Draft</span>
+          </div>
+
+          <div className="flex items-center gap-2 pr-1">
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-8 gap-1.5 text-xs"
+              onClick={() => handleSave(false)}
+              disabled={createInvoice.isPending}
+            >
+              <Save size={14} className="text-muted-foreground" />
+              Save Draft
+            </Button>
+            <Button
+              size="sm"
+              className="h-8 gap-1.5 text-xs shadow-md shadow-primary/20"
+              onClick={() => handleSave(true)}
+              disabled={createInvoice.isPending}
+            >
+              <DollarSign size={14} />
+              Complete
+            </Button>
           </div>
         </div>
 
@@ -176,17 +225,11 @@ export default function InvoiceEditor() {
         {/* ── Row 4: Actions ── */}
         <div className=" flex items-center gap-1.5 px-2 pb-2">
           <ButtonGroup className="w-full">
-            <CreateInvoiceLineDialog
-              onSuccess={function (
-                line: {
-                  description: string;
-                  quantity: number;
-                  unitSalePrice: number;
-                  itemId?: string | undefined;
-                } & { lineTotal: number },
-              ): void {
-                setLines((prev) => [...prev, line]);
-              }}
+            <ItemSelectionDialog
+              onSelect={handleSelectItem}
+              data={items || []}
+              searchFields={['name', 'sku', 'description']}
+              getItemId={(item) => item.id}
             >
               <Button
                 variant="secondary"
@@ -196,7 +239,7 @@ export default function InvoiceEditor() {
                 <BoxIcon size={13} />
                 Item
               </Button>
-            </CreateInvoiceLineDialog>
+            </ItemSelectionDialog>
             <Button
               size="sm"
               variant="outline"
@@ -218,7 +261,7 @@ export default function InvoiceEditor() {
         </div>
       </header>
       <main className="flex-1 overflow-auto">
-        <InvoiceForm lines={lines} setLines={setLines} />
+        <InvoiceForm lines={lines} setLines={setLines} items={items || []} />
       </main>
     </div>
   );

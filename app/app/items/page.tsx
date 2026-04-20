@@ -132,7 +132,6 @@ export default function PurchaseServicesPage() {
               <Wrench /> Service Definitions
             </TabsTrigger>
           </TabsList>
-          <Settings className="h-4 w-4 text-muted-foreground cursor-pointer hover:rotate-90 transition-transform" />
         </div>
 
         <Card className="flex-1  border-none shadow-md overflow-hidden pt-0 ">
@@ -143,7 +142,7 @@ export default function PurchaseServicesPage() {
                 <CreateItemDialog>
                   <Button variant="secondary" size="sm">
                     <Plus className="h-4 w-4" />
-                    <div className="w-px h-full bg-border mx-1" />
+                    <div className="w-px h-full bg-card mx-1" />
                     Purchase item
                   </Button>
                 </CreateItemDialog>

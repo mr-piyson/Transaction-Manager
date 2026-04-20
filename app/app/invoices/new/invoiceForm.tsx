@@ -7,14 +7,17 @@ import { trpc } from '@/lib/trpc/client';
 import { UniversalContextMenu } from '@/components/context-menu';
 import { alert } from '@/components/Alert-dialog';
 import { Item } from '@prisma/client';
-// import InvoiceItemCardGroup from './invoiceItemGroup';
 import InvoiceItemCard from './invoiceItem';
+import { ItemSelectionDialog } from './invoice-line-dialog';
+import InvoiceItemCardGroup from './InvoiceItemGroup';
 export default function InvoiceForm({
   lines,
   setLines,
+  items,
 }: {
   lines: any[];
   setLines: React.Dispatch<React.SetStateAction<any[]>>;
+  items: any[];
 }) {
   const utils = trpc.useUtils();
 
@@ -79,24 +82,22 @@ export default function InvoiceForm({
               },
             ]}
           >
-            <></>
-            {/* <InvoiceItemCardGroup
+            <InvoiceItemCardGroup
               key={g.id}
               title={g.description || 'Group'}
               totalQty={groupTotal}
               actionSlot={
-                <SelectDialog<any>
+                <ItemSelectionDialog
                   onSelect={(item) => handleSelectItem(item, g.id)}
-                  data={inventoryItems as any}
-                  searchFields={['code', 'name', 'description']}
-                  cardRenderer={InventoryItemCard as any}
-                  rowHeight={72}
+                  data={items || []}
+                  searchFields={['name', 'sku', 'description']}
+                  getItemId={(item: any): string => item.id}
                 >
                   <Button size="sm" className="h-8 gap-1.5 text-xs flex-1 sm:flex-none">
                     <Box size={13} />
                     Add Item
                   </Button>
-                </SelectDialog>
+                </ItemSelectionDialog>
               }
             >
               {childLines.length === 0 ? (
@@ -104,9 +105,18 @@ export default function InvoiceForm({
                   No items in this group
                 </div>
               ) : (
-                childLines.map((line: any) => <InvoiceItemCard key={line.id} line={line as any} />)
+                childLines.map((line: any) => (
+                  <InvoiceItemCard
+                    key={line.id}
+                    line={line as any}
+                    onDelete={() => setLines((prev) => prev.filter((l) => l.id !== line.id))}
+                    onUpdate={(updatedLine) =>
+                      setLines((prev) => prev.map((l) => (l.id === line.id ? updatedLine : l)))
+                    }
+                  />
+                ))
               )}
-            </InvoiceItemCardGroup> */}
+            </InvoiceItemCardGroup>
           </UniversalContextMenu>
         );
       })}

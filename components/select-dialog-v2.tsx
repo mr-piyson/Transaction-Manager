@@ -48,6 +48,7 @@ export interface SelectionDialogProps<T extends Record<string, any>> {
   onOpenChange: (open: boolean) => void;
   title?: string;
   description?: string;
+  children?: React.ReactNode;
 
   // Data
   data: T[] | undefined;
@@ -101,6 +102,7 @@ export function SelectionDialog<T extends Record<string, any>>({
   onOpenChange,
   title = 'Select items',
   description,
+  children,
   data = [],
   isLoading = false,
   isError = false,
@@ -111,7 +113,7 @@ export function SelectionDialog<T extends Record<string, any>>({
   selectedIds: controlledSelectedIds,
   onSelect,
   onCancel,
-  searchPlaceholder = 'Search...',
+  searchPlaceholder = 'Search ...',
   searchFields,
   filters = [],
   cardRenderer,
@@ -192,12 +194,11 @@ export function SelectionDialog<T extends Record<string, any>>({
       const id = getItemId(item);
 
       if (mode === 'single') {
-        // Single: replace selection or deselect
-        setSelectedIds((prev) => {
-          const next = new Set<string>();
-          if (!prev.has(id)) next.add(id);
-          return next;
-        });
+        // Single: replace selection
+        setSelectedIds(new Set([id]));
+        // Auto confirm for single mode? Maybe not always, but often desired.
+        // For now, just update state and let confirm button handle it,
+        // or we could auto-confirm if desired.
         return;
       }
 
@@ -267,8 +268,8 @@ export function SelectionDialog<T extends Record<string, any>>({
   }, [cardHeight]);
 
   const calculatedRowHeight = useMemo(() => {
-    if (rowHeight === 'auto') return cardHeight > 0 ? cardHeight : isMobile ? 400 : 250;
-    return rowHeight;
+    if (rowHeight === 'auto') return cardHeight > 0 ? cardHeight : isMobile ? 400 : 150;
+    return typeof rowHeight === 'number' ? rowHeight : 150;
   }, [rowHeight, cardHeight, isMobile]);
 
   // ─── Grid ─────────────────────────────────────────────────────────────────
@@ -285,12 +286,20 @@ export function SelectionDialog<T extends Record<string, any>>({
           ref={isFirst && rowHeight === 'auto' ? cardRef : null}
           onClick={() => toggleItem(item)}
           className={cn(
-            'cursor-pointer transition-colors w-full',
+            'cursor-pointer transition-all duration-200 w-full group py-1',
             'ring-inset',
-            isSelected ? 'ring-2 ring-primary rounded-lg bg-primary/5' : 'hover:bg-muted/50',
           )}
         >
-          {cardRenderer(item, isSelected)}
+          <div
+            className={cn(
+              'rounded-xl border transition-all duration-200 overflow-hidden',
+              isSelected
+                ? 'border-primary bg-primary/5 ring-1 ring-primary'
+                : 'border-transparent hover:border-muted-foreground/30 hover:bg-muted/50',
+            )}
+          >
+            {cardRenderer(item, isSelected)}
+          </div>
         </div>
       );
     },
@@ -307,6 +316,7 @@ export function SelectionDialog<T extends Record<string, any>>({
       rowHeight: calculatedRowHeight,
       suppressHorizontalScroll: true,
       headerHeight: 0,
+      suppressRowClickSelection: true,
     }),
     [FullWidthCellRenderer, calculatedRowHeight],
   );
@@ -328,32 +338,40 @@ export function SelectionDialog<T extends Record<string, any>>({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="flex flex-col gap-0 p-0 max-w-2xl w-full min-h-[90vh] overflow-hidden">
+      <DialogContent className="flex flex-col gap-0 p-0 max-w-2xl w-full h-[90vh] sm:h-auto sm:max-h-[85vh] overflow-hidden bg-background border shadow-2xl">
         {/* Header */}
-        <DialogHeader className="px-6 pt-6 pb-0 shrink-0">
-          <DialogTitle>{title}</DialogTitle>
-          {description && <DialogDescription>{description}</DialogDescription>}
-        </DialogHeader>
+        <div className="px-6 pt-6 pb-2 shrink-0 border-b bg-muted/20">
+          <div className="flex justify-between items-start mb-2">
+            <div>
+              <DialogTitle className="text-xl font-bold tracking-tight">{title}</DialogTitle>
+              {description && (
+                <DialogDescription className="mt-1 text-sm">{description}</DialogDescription>
+              )}
+            </div>
+          </div>
+        </div>
 
-        {/* Search + Filters */}
-        <div className="px-4 pt-4 shrink-0">
-          <div className="flex gap-2">
+        {/* Search + Filters + Optional Children (Tabs etc) */}
+        <div className="px-6 pt-4 shrink-0 bg-background">
+          {children && <div className="mb-4">{children}</div>}
+
+          <div className="flex gap-2 items-center">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
               <Input
                 placeholder={searchPlaceholder}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 pr-9"
+                className="pl-10 pr-9 h-11 bg-muted/40 border-none focus-visible:ring-1 focus-visible:ring-primary/50"
               />
               {searchTerm && (
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7"
+                  className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8 hover:bg-transparent"
                   onClick={() => setSearchTerm('')}
                 >
-                  <X className="w-3.5 h-3.5" />
+                  <X className="w-4 h-4 text-muted-foreground hover:text-foreground" />
                 </Button>
               )}
             </div>
@@ -362,13 +380,13 @@ export function SelectionDialog<T extends Record<string, any>>({
               <Popover>
                 <PopoverTrigger
                   render={
-                    <Button variant="outline" className="gap-2 relative shrink-0">
+                    <Button variant="outline" className="gap-2 h-11 px-4 shrink-0 border-dashed">
                       <Filter className="w-4 h-4" />
                       <span className="hidden sm:inline">Filters</span>
                       {activeFiltersCount > 0 && (
                         <Badge
                           variant="destructive"
-                          className="absolute -top-2 -right-2 h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs"
+                          className="ml-1 h-5 min-w-5 rounded-full p-0 flex items-center justify-center text-[10px]"
                         >
                           {activeFiltersCount}
                         </Badge>
@@ -376,7 +394,7 @@ export function SelectionDialog<T extends Record<string, any>>({
                     </Button>
                   }
                 />
-                <PopoverContent className="w-72" align="end">
+                <PopoverContent className="w-72 p-4" align="end">
                   <div className="space-y-4">
                     <div className="flex items-center justify-between">
                       <h4 className="font-semibold text-sm">Filters</h4>
@@ -385,7 +403,7 @@ export function SelectionDialog<T extends Record<string, any>>({
                           variant="ghost"
                           size="sm"
                           onClick={clearAllFilters}
-                          className="h-7 text-xs"
+                          className="h-7 text-xs hover:text-destructive"
                         >
                           Clear all
                         </Button>
@@ -394,14 +412,14 @@ export function SelectionDialog<T extends Record<string, any>>({
                     <Separator />
                     {filters.map((filter) => (
                       <div key={filter.key} className="space-y-1.5">
-                        <Label htmlFor={`${filter.key}-filter`} className="text-sm">
+                        <Label htmlFor={`${filter.key}-filter`} className="text-xs font-medium">
                           {filter.label}
                         </Label>
                         <Select
                           value={filterValues[filter.key]}
                           onValueChange={(v) => updateFilter(filter.key, v as string)}
                         >
-                          <SelectTrigger className="w-full" id={`${filter.key}-filter`}>
+                          <SelectTrigger className="w-full h-9" id={`${filter.key}-filter`}>
                             <SelectValue placeholder={`All ${filter.label.toLowerCase()}`} />
                           </SelectTrigger>
                           <SelectContent>
@@ -423,7 +441,7 @@ export function SelectionDialog<T extends Record<string, any>>({
 
           {/* Active filter badges */}
           {activeFiltersCount > 0 && (
-            <div className="flex flex-wrap gap-1.5 mt-2">
+            <div className="flex flex-wrap gap-1.5 mt-3">
               {filters.map((filter) => {
                 const value = filterValues[filter.key];
                 if (value === 'all') return null;
@@ -431,11 +449,11 @@ export function SelectionDialog<T extends Record<string, any>>({
                   <Badge
                     key={filter.key}
                     variant="secondary"
-                    className="gap-1 cursor-pointer hover:bg-secondary/80 text-xs"
+                    className="gap-1 pr-1 pl-2 py-0.5 cursor-pointer hover:bg-secondary/80 text-[10px] items-center"
                     onClick={() => updateFilter(filter.key, 'all')}
                   >
-                    {filter.label}: {value}
-                    <X className="w-2.5 h-2.5" />
+                    <span className="opacity-70">{filter.label}:</span> {value}
+                    <X className="w-3 h-3 ml-0.5 text-muted-foreground" />
                   </Badge>
                 );
               })}
@@ -443,13 +461,13 @@ export function SelectionDialog<T extends Record<string, any>>({
           )}
 
           {/* Select all / count row */}
-          <div className="flex items-center justify-between mt-3 pb-2">
-            <span className="text-xs text-muted-foreground">
-              {filteredData.length} {itemName}
+          <div className="flex items-center justify-between mt-4 pb-2">
+            <span className="text-xs text-muted-foreground font-medium">
+              {filteredData.length} {itemName} found
               {selectedIds.size > 0 && (
                 <>
                   {' '}
-                  · <span className="text-foreground font-medium">{selectedIds.size} selected</span>
+                  · <span className="text-primary font-semibold">{selectedIds.size} selected</span>
                 </>
               )}
             </span>
@@ -458,20 +476,21 @@ export function SelectionDialog<T extends Record<string, any>>({
               <Button
                 variant="ghost"
                 size="sm"
-                className="h-7 text-xs gap-1.5"
+                className="h-8 text-xs gap-1.5 hover:bg-muted font-medium"
                 onClick={allFilteredSelected ? deselectAll : selectAll}
               >
                 {allFilteredSelected ? (
                   <>
-                    <CheckSquare className="w-3.5 h-3.5" /> Deselect all
-                  </>
-                ) : someFilteredSelected ? (
-                  <>
-                    <Square className="w-3.5 h-3.5" /> Select all ({filteredData.length})
+                    <CheckSquare className="w-3.5 h-3.5 text-primary" /> Deselect all
                   </>
                 ) : (
                   <>
-                    <CheckSquare className="w-3.5 h-3.5" /> Select all ({filteredData.length})
+                    {someFilteredSelected ? (
+                      <Square className="w-3.5 h-3.5 text-primary/60" />
+                    ) : (
+                      <CheckSquare className="w-3.5 h-3.5" />
+                    )}
+                    Select all
                   </>
                 )}
               </Button>
@@ -481,74 +500,103 @@ export function SelectionDialog<T extends Record<string, any>>({
           <Separator />
         </div>
 
-        {/* Grid */}
-        <div className="flex flex-col flex-1">
+        {/* Grid Content */}
+        <div className="flex flex-col min-h-0 flex-1 bg-background px-4">
           {isError ? (
-            <div className="flex flex-col items-center justify-center h-full gap-3 p-6 text-center">
-              <p className="text-destructive font-semibold">Failed to load {itemName}</p>
-              <p className="text-sm text-muted-foreground">
-                {error instanceof Error ? error.message : 'An unexpected error occurred'}
-              </p>
+            <div className="flex flex-col items-center justify-center h-full gap-4 p-8 text-center">
+              <div className="p-3 bg-destructive/10 rounded-full">
+                <X className="w-6 h-6 text-destructive" />
+              </div>
+              <div>
+                <p className="text-base font-semibold">Failed to load {itemName}</p>
+                <p className="max-w-[300px] mt-1 text-sm text-muted-foreground">
+                  {error instanceof Error ? error.message : 'An unexpected error occurred'}
+                </p>
+              </div>
               {onRefetch && (
-                <Button variant="destructive" size="sm" onClick={onRefetch}>
+                <Button variant="outline" size="sm" onClick={onRefetch}>
                   Try again
                 </Button>
               )}
             </div>
           ) : isLoading ? (
-            <div className="flex flex-col items-center justify-center h-full gap-3 p-6">
-              <Spinner />
-              <p className="text-sm text-muted-foreground">Loading {itemName}…</p>
+            <div className="flex flex-col items-center justify-center h-full gap-4 p-8">
+              <Spinner className="size-8 text-primary" />
+              <p className="text-sm font-medium text-muted-foreground animate-pulse">
+                Loading {itemName}…
+              </p>
             </div>
           ) : filteredData.length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-full gap-2 p-6 text-center">
-              {emptyIcon}
-              <p className="font-semibold">{emptyTitle}</p>
-              <p className="text-sm text-muted-foreground">{emptyDescription}</p>
+            <div className="flex flex-col items-center justify-center h-full gap-4 p-8 text-center animate-in fade-in transition-all">
+              <div className="p-4 bg-muted/30 rounded-full">
+                {emptyIcon ?? <Search className="w-8 h-8 text-muted-foreground/50" />}
+              </div>
+              <div>
+                <p className="text-base font-semibold">{emptyTitle}</p>
+                <p className="max-w-[300px] mt-1 text-sm text-muted-foreground">
+                  {emptyDescription}
+                </p>
+              </div>
               {(searchTerm || activeFiltersCount > 0) && (
-                <Button variant="outline" size="sm" onClick={clearAllFilters}>
-                  Clear filters
+                <Button variant="outline" size="sm" onClick={clearAllFilters} className="mt-2">
+                  Clear all filters
                 </Button>
               )}
             </div>
           ) : (
-            <AgGridReact
-              ref={gridRef}
-              rowData={filteredData}
-              columnDefs={columnDefs}
-              defaultColDef={defaultColDef}
-              gridOptions={gridOptions}
-              animateRows
-              suppressMenuHide
-              theme={useTheme ? theme : undefined}
-              loading={isLoading}
-              isFullWidthRow={() => true}
-              fullWidthCellRenderer={FullWidthCellRenderer}
-              rowHeight={calculatedRowHeight}
-              domLayout="normal"
-              className="h-full w-full"
-            />
+            <div className="h-full min-h-0 py-2 overflow-hidden">
+              <AgGridReact
+                ref={gridRef}
+                rowData={filteredData}
+                columnDefs={columnDefs}
+                defaultColDef={defaultColDef}
+                gridOptions={gridOptions}
+                animateRows
+                suppressMenuHide
+                theme={useTheme ? theme : undefined}
+                loading={isLoading}
+                isFullWidthRow={() => true}
+                fullWidthCellRenderer={FullWidthCellRenderer}
+                rowHeight={calculatedRowHeight}
+                domLayout="autoHeight"
+                className="h-full w-full"
+                containerStyle={
+                  {
+                    '--ag-background-color': 'transparent',
+                    '--ag-border-color': 'transparent',
+                  } as any
+                }
+              />
+            </div>
           )}
         </div>
 
         {/* Footer */}
-        <div className="shrink-0">
-          <Separator />
-          <DialogFooter className="px-6 py-4 gap-2">
-            <Button variant="outline" onClick={handleCancel}>
+        <DialogFooter className="px-6 py-4 border-t bg-muted/20 shrink-0">
+          <div className="flex w-full items-center justify-between gap-4">
+            <Button variant="ghost" onClick={handleCancel} className="font-medium">
               {cancelLabel}
             </Button>
-            <Button onClick={handleConfirm} disabled={selectedIds.size === 0} className="gap-2">
-              <Check className="w-4 h-4" />
-              {confirmLabel}
-              {selectedIds.size > 0 && (
-                <Badge variant="secondary" className="ml-1 h-5 px-1.5 text-xs">
-                  {selectedIds.size}
-                </Badge>
-              )}
-            </Button>
-          </DialogFooter>
-        </div>
+            <div className="flex gap-2">
+              <Button
+                onClick={handleConfirm}
+                disabled={selectedIds.size === 0}
+                className="gap-2 px-6 h-11 font-semibold shadow-lg shadow-primary/20 transition-all hover:scale-[1.02] active:scale-[0.98]"
+              >
+                <Check className="w-5 h-5" />
+                {confirmLabel}
+                {selectedIds.size > 0 && (
+                  <Badge
+                    variant="secondary"
+                    className="ml-1 bg-primary-foreground/20 text-primary-foreground border-none h-5 px-1.5 text-xs"
+                  >
+                    {selectedIds.size}
+                  </Badge>
+                )}
+              </Button>
+            </div>
+          </div>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );
