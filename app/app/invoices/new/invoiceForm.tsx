@@ -8,7 +8,7 @@ import { UniversalContextMenu } from '@/components/context-menu';
 import { alert } from '@/components/Alert-dialog';
 import { Item } from '@prisma/client';
 import InvoiceItemCard from './invoiceItem';
-import { ItemSelectionDialog } from './invoice-line-dialog';
+import { InvoiceLineDialog, ItemSelectionDialog } from './invoice-line-dialog';
 import InvoiceItemCardGroup from './InvoiceItemGroup';
 export default function InvoiceForm({
   lines,
@@ -28,9 +28,9 @@ export default function InvoiceForm({
       inventoryItemId: item.id,
       description: item.name,
       quantity: 1,
-      unitPrice: Number(item.salesPrice),
-      purchasePrice: Number(item.purchasePrice),
-      total: Number(item.salesPrice),
+      unitPrice: Number(item.salesPrice) / 1000,
+      purchasePrice: Number(item.purchasePrice) / 1000,
+      total: Number(item.salesPrice) / 1000,
       parentId: parentId,
       itemRef: item,
     };
@@ -87,17 +87,16 @@ export default function InvoiceForm({
               title={g.description || 'Group'}
               totalQty={groupTotal}
               actionSlot={
-                <ItemSelectionDialog
-                  onSelect={(item) => handleSelectItem(item, g.id)}
-                  data={items || []}
-                  searchFields={['name', 'sku', 'description']}
-                  getItemId={(item: any): string => item.id}
+                <InvoiceLineDialog
+                  onSuccess={(newLine) => {
+                    setLines((prev) => [...prev, { ...newLine, parentId: g.id }]);
+                  }}
                 >
                   <Button size="sm" className="h-8 gap-1.5 text-xs flex-1 sm:flex-none">
                     <Box size={13} />
                     Add Item
                   </Button>
-                </ItemSelectionDialog>
+                </InvoiceLineDialog>
               }
             >
               {childLines.length === 0 ? (

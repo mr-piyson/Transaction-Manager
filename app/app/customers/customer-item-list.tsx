@@ -21,8 +21,8 @@ export function Customer_List_Item({
   return (
     <div
       className={cn(
-        'flex h-18 items-center gap-3 p-3 transition-colors hover:bg-muted/30',
-        selectable && 'hover:bg-muted/30',
+        'flex h-18 items-center gap-3 p-3 transition-colors hover:bg-secondary/10',
+        selectable && 'hover:bg-secondary/10',
         className,
       )}
       {...props}

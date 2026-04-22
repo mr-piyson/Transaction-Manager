@@ -19,7 +19,7 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { useParams, useRouter } from 'next/navigation';
 import { trpc } from '@/lib/trpc/client';
-import { CreateInvoiceLineDialog, ItemSelectionDialog } from './invoice-line-dialog';
+import { InvoiceLineDialog, ItemSelectionDialog } from './invoice-line-dialog';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { SelectionDialog } from '@/components/select-dialog-v2';
@@ -84,9 +84,9 @@ export default function InvoiceEditor() {
       inventoryItemId: item.id,
       description: item.name,
       quantity: 1,
-      unitPrice: Number(item.salesPrice),
-      purchasePrice: Number(item.purchasePrice),
-      total: Number(item.salesPrice),
+      unitPrice: Number(item.salesPrice) / 1000,
+      purchasePrice: Number(item.purchasePrice) / 1000,
+      total: Number(item.salesPrice) / 1000,
       itemRef: item,
     };
     setLines((prev) => [...prev, newLine]);
@@ -225,11 +225,10 @@ export default function InvoiceEditor() {
         {/* ── Row 4: Actions ── */}
         <div className=" flex items-center gap-1.5 px-2 pb-2">
           <ButtonGroup className="w-full">
-            <ItemSelectionDialog
-              onSelect={handleSelectItem}
-              data={items || []}
-              searchFields={['name', 'sku', 'description']}
-              getItemId={(item) => item.id}
+            <InvoiceLineDialog
+              onSuccess={(newLine) => {
+                setLines((prev) => [...prev, newLine]);
+              }}
             >
               <Button
                 variant="secondary"
@@ -239,7 +238,7 @@ export default function InvoiceEditor() {
                 <BoxIcon size={13} />
                 Item
               </Button>
-            </ItemSelectionDialog>
+            </InvoiceLineDialog>
             <Button
               size="sm"
               variant="outline"

@@ -94,10 +94,10 @@ export default function InvoiceDetailPage() {
     isError,
     refetch,
   } = trpc.invoices.getInvoiceById.useQuery({
-    id: Number(invoiceId),
+    id: invoiceId,
     include: {
       customer: true,
-      invoiceLines: true,
+      lines: true,
       payments: true,
     },
   });
@@ -112,7 +112,7 @@ export default function InvoiceDetailPage() {
   const handleDelete = () => {
     if (!invoice) return;
     deleteMutation.mutate(
-      { id: Number(invoice.id) },
+      { id: invoice.id },
       {
         onSuccess: () => {
           router.push('/app/invoices');
@@ -140,8 +140,7 @@ export default function InvoiceDetailPage() {
     );
   }
 
-  const lines = (invoice as any).invoiceLines || [];
-  const rootLines = lines.filter((l: any) => !l.parentId);
+  const rootLines = invoice.lines.filter((l: any) => !l.parentId);
 
   const revenue = invoice.total || 0;
   return (
@@ -171,19 +170,19 @@ export default function InvoiceDetailPage() {
             <Label
               className={cn(
                 'drop-shadow-sm w-30 h-8.75 rounded-lg flex items-center justify-between px-3 border',
-                invoice.status === 'PAID' ? 'bg-default border-primary' : 'bg-muted',
+                invoice.status === 'COMPLETED' ? 'bg-default border-primary' : 'bg-muted',
               )}
             >
               {/* Left placeholder (OFF state) */}
               <span
                 className={`text-sm transition-opacity ${
-                  invoice.status === 'PAID' ? 'opacity-30' : 'opacity-100'
+                  invoice.status === 'COMPLETED' ? 'opacity-30' : 'opacity-100'
                 }`}
               >
                 {/* show loading */}
                 {updateMutation.isPending ? (
                   <Spinner />
-                ) : invoice.status === 'PAID' ? (
+                ) : invoice.status === 'COMPLETED' ? (
                   'Done'
                 ) : (
                   'Pending'
@@ -194,13 +193,13 @@ export default function InvoiceDetailPage() {
                 disabled={updateMutation.isPending}
                 size="default"
                 className={'border-muted-foreground/50'}
-                checked={invoice.status === 'PAID'}
+                checked={invoice.status === 'COMPLETED'}
                 onCheckedChange={(checked) => {
                   console.log(checked);
                   updateMutation.mutate(
                     {
-                      id: Number(invoice.id),
-                      data: { isCompleted: checked },
+                      id: invoice.id,
+                      data: { status: checked ? 'COMPLETED' : 'IN_PROGRESS' },
                     },
                     {
                       onError: (e) => toast.error('Update failed'),
@@ -218,7 +217,7 @@ export default function InvoiceDetailPage() {
             <Button
               size="lg"
               onClick={() => {
-                router.push(`/app/invoices/${params.invoiceId}/editor`);
+                router.push(`/app/invoices/${params.invoiceId}`);
               }}
               variant="secondary"
               className="shadow-sm border-secondary/50"
@@ -231,7 +230,7 @@ export default function InvoiceDetailPage() {
             <span
               className={cn(
                 'absolute inset-0 flex items-center text-xs font-semibold px-2 pointer-events-none transition-all duration-300',
-                invoice.status === 'PAID'
+                invoice.status === 'COMPLETED'
                   ? 'justify-start text-white'
                   : 'justify-end text-gray-700',
               )}
@@ -291,7 +290,7 @@ export default function InvoiceDetailPage() {
                     <span className="text-muted-foreground flex items-center gap-2">
                       <Calendar className="w-4 h-4" /> Date
                     </span>
-                    <span className="font-medium">{formatDate(invoice.date)}</span>
+                    <span className="font-medium">{formatDate(invoice.createdAt)}</span>
                   </div>
 
                   {/* Existing Customer Field */}
@@ -315,7 +314,7 @@ export default function InvoiceDetailPage() {
                       <CreditCard className="w-4 h-4" /> Status
                     </span>
                     <span
-                      className={`font-medium ${invoice.status === 'PAID' ? 'text-green-600' : 'text-amber-600'}`}
+                      className={`font-medium ${invoice.status === 'COMPLETED' ? 'text-green-600' : 'text-amber-600'}`}
                     >
                       {invoice.status}
                     </span>
@@ -336,7 +335,9 @@ export default function InvoiceDetailPage() {
                       <span className="text-muted-foreground flex items-center gap-2">
                         <UserCheck className="w-4 h-4" /> Created By
                       </span>
-                      <span className="font-medium">{'Me'}</span>
+                      {invoice.user?.name && (
+                        <span className="font-medium">{invoice.user.name}</span>
+                      )}
                     </div>
                   )}
                 </div>
@@ -356,7 +357,7 @@ export default function InvoiceDetailPage() {
                 {/* NEW: Completion Badge  */}
                 <div className="flex flex-col pt-2">
                   <span className="text-muted-foreground flex items-center gap-2">
-                    {invoice.status === 'PAID' ? (
+                    {invoice.status === 'COMPLETED' ? (
                       <CheckCircle2 className="w-4 h-4" />
                     ) : (
                       <Clock className="w-4 h-4" />
@@ -364,7 +365,7 @@ export default function InvoiceDetailPage() {
                     Status
                   </span>
                   <div className="py-2 text-xs inline-block">
-                    {invoice.status === 'PAID' ? (
+                    {invoice.status === 'COMPLETED' ? (
                       <Badge variant="default">
                         <CheckCircle2 className="w-4 h-4" />
                         Completed
@@ -387,7 +388,7 @@ export default function InvoiceDetailPage() {
                   <CardTitle className="text-base font-semibold">Line Items</CardTitle>
                 </div>
                 <div className="text-sm font-medium px-2.5 py-1 bg-muted rounded-full">
-                  {lines.length} {lines.length === 1 ? 'Item' : 'Items'}
+                  {invoice.lines.length} {invoice.lines.length === 1 ? 'Item' : 'Items'}
                 </div>
               </CardHeader>
 
@@ -400,16 +401,16 @@ export default function InvoiceDetailPage() {
                     </div>
                   ) : (
                     rootLines.map((line: any) => (
-                      <InvoiceLineRow key={line.id} line={line} lines={lines} />
+                      <InvoiceLineRow key={line.id} line={line} lines={invoice.lines} />
                     ))
                   )}
                 </div>
 
                 <CardFooter className="bg-muted/20">
-                  {lines.length > 0 && (
+                  {invoice.lines.length > 0 && (
                     <div className="w-full flex justify-between">
                       <span className="font-semibold text-muted-foreground">Total Revenue</span>
-                      <span className="text-lg font-bold">{formatAmount(revenue)}</span>
+                      <span className="text-lg font-bold">{formatAmount(invoice.total)}</span>
                     </div>
                   )}
                 </CardFooter>
@@ -418,7 +419,7 @@ export default function InvoiceDetailPage() {
           </div>
 
           {/* Sidebar Column */}
-          <div className="w-full lg:w-[350px] shrink-0 flex flex-col space-y-6">
+          <div className="w-full lg:w-87.5 shrink-0 flex flex-col space-y-6">
             {/* Customer Card */}
             <Card className="rounded-xl shadow-sm">
               <CardHeader className="pb-3">
@@ -464,7 +465,7 @@ export default function InvoiceDetailPage() {
                       <Mail className="h-4 w-4" />
                       Email
                     </div>
-                    <span className="font-medium text-sm truncate max-w-[180px] text-right">
+                    <span className="font-medium text-sm truncate max-w-45 text-right">
                       {(invoice as any)?.customer?.email || 'N/A'}
                     </span>
                   </div>
@@ -481,9 +482,9 @@ export default function InvoiceDetailPage() {
                   <span className="text-muted-foreground flex items-center gap-2">
                     <CreditCard className="w-4 h-4" /> Status
                   </span>
-                  {(invoice as any).payments.map((payment: any) => (
+                  {/* {(invoice as any).payments.map((payment: any) => (
                     <PaymentCard key={payment.id} payment={payment} />
-                  ))}
+                  ))} */}
                 </div>
               </CardContent>
             </Card>

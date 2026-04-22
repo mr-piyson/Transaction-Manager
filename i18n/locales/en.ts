@@ -101,6 +101,7 @@ export const en = {
     due: 'Due',
     paid: 'Paid',
     unpaid: 'Unpaid',
+    productsAndServices: 'Products & Services',
   },
   auth: {
     login: 'Login',

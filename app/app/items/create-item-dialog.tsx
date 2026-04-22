@@ -112,7 +112,7 @@ export function CreateItemDialog({ children, onSuccess }: CreateItemDialogProps)
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-primary text-2xl font-bold">
             <Box className="size-5" />
-            Purchase New Item
+            Item Master
           </DialogTitle>
           <DialogDescription>Register a new product or service.</DialogDescription>
         </DialogHeader>

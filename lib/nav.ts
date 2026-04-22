@@ -71,7 +71,7 @@ export const ROUTES = [
       {
         type: 'item',
         label: 'Products & Services',
-        key: 'Products & Services',
+        key: 'common.productsAndServices',
         href: '/app/items',
         icon: Boxes,
       },

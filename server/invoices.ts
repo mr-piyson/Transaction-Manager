@@ -36,6 +36,18 @@ async function deductStockForInvoice(
     const masterItem = await tx.item.findUnique({
       where: { id: itemId },
     });
+
+    if (masterItem && masterItem.type === 'PRODUCT') {
+      const currentStock = masterItem.stockQuantity || BigInt(0);
+      const lineQty = BigInt(line.quantity);
+
+      await tx.item.update({
+        where: { id: itemId },
+        data: {
+          stockQuantity: currentStock - lineQty,
+        },
+      });
+    }
   }
 }
 
@@ -72,26 +84,61 @@ export const invoiceRouter = t.router({
     .input(
       z.object({
         customerId: z.string(),
+        lines: z
+          .array(
+            z.object({
+              description: z.string(),
+              quantity: z.number().int().positive(),
+              unitSalePrice: z.number().int(), // Assuming input in cents/fils
+            }),
+          )
+          .min(1),
       }),
     )
     .mutation(async ({ input, ctx }) => {
+      // 1. Calculate totals for each line and the overall invoice
+      // Note: We convert numbers to BigInt for Prisma
+      const invoiceLines = input.lines.map((line) => {
+        const lineTotal = BigInt(line.quantity) * BigInt(line.unitSalePrice);
+        return {
+          description: line.description,
+          quantity: BigInt(line.quantity),
+          unitSalePrice: BigInt(line.unitSalePrice),
+          lineTotal,
+        };
+      });
+
+      const subtotal = invoiceLines.reduce((acc, line) => acc + line.lineTotal, BigInt(0));
+
+      // You can adjust these if you add tax/discount logic later
+      const taxTotal = BigInt(0);
+      const discountTotal = BigInt(0);
+      const total = subtotal + taxTotal - discountTotal;
+
       try {
         return await db.invoice.create({
           data: {
             organizationId: ctx.user.organizationId,
             customerId: input.customerId,
             createdBy: ctx.user.id,
+            subtotal,
+            taxTotal,
+            discountTotal,
+            total,
+            currency: 'BHD', // Defaulting to BHD as per schema
+            lines: {
+              create: invoiceLines,
+            },
+          },
+          include: {
+            lines: true,
           },
         });
       } catch (error) {
-        throw new TRPCError({
-          code: 'INTERNAL_SERVER_ERROR',
-          message: 'Failed to create invoice',
-          cause: error,
-        });
+        console.error('Failed to create invoice:', error);
+        throw new Error('Could not create invoice. Please check your data.');
       }
     }),
-
   getInvoiceById: publicProcedure
     .input(
       z.object({
@@ -99,7 +146,6 @@ export const invoiceRouter = t.router({
         include: z
           .object({
             customer: z.boolean().optional(),
-            // ✅ Renamed to match Prisma relation field name
             lines: z.boolean().optional(),
             payments: z.boolean().optional(),
           })
@@ -110,7 +156,12 @@ export const invoiceRouter = t.router({
       try {
         const item = await db.invoice.findUnique({
           where: { id: input.id },
-          include: input.include,
+          include: {
+            customer: input.include?.customer,
+            lines: input.include?.lines,
+            payments: input.include?.payments,
+            user: true,
+          },
         });
 
         if (!item) {
@@ -229,13 +280,13 @@ export const invoiceRouter = t.router({
           const invoice = await tx.invoice.create({
             data: {
               organizationId: ctx.user.organizationId,
-              userId: ctx.user.id,
+              createdBy: ctx.user.id,
               customerId: input.customerId,
               invoiceDate: input.date || new Date(),
-              subtotal: BigInt(Math.round(subtotal)),
+              subtotal: BigInt(Math.round(subtotal * 1000)),
               taxTotal: BigInt(0),
               discountTotal: BigInt(0),
-              total: BigInt(Math.round(total)),
+              total: BigInt(Math.round(total * 1000)),
               status: input.isCompleted ? 'SENT' : 'DRAFT',
             },
           });
@@ -258,14 +309,17 @@ export const invoiceRouter = t.router({
           const createdLines = [];
           const regularLines = input.lines.filter((l) => !l.isGroup);
           for (const line of regularLines) {
+            const unitPriceFils = Math.round(line.unitPrice * 1000);
+            const lineTotalFils = Math.round(line.unitPrice * line.quantity * 1000);
+
             const invoiceLine = await tx.invoiceLine.create({
               data: {
                 invoiceId: invoice.id,
                 itemId: line.itemId || line.inventoryItemId,
                 description: line.description,
                 quantity: BigInt(line.quantity),
-                unitSalePrice: BigInt(Math.round(line.unitPrice)),
-                lineTotal: BigInt(Math.round(line.unitPrice * line.quantity)),
+                unitSalePrice: BigInt(unitPriceFils),
+                lineTotal: BigInt(lineTotalFils),
                 invoiceLineGroupId: line.parentId ? groupMap.get(line.parentId) : null,
               },
             });

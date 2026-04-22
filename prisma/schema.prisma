@@ -319,7 +319,8 @@ model Purchase {
 }
 
 model Invoice {
-  id String @id @default(cuid())
+  id          String  @id @default(cuid())
+  description String?
 
   status InvoiceStatus @default(IN_PROGRESS)
 
@@ -348,8 +349,8 @@ model Invoice {
   payments          Payment[]
   organization      Organization?      @relation(fields: [organizationId], references: [id])
   organizationId    String?
-  user              User?              @relation(fields: [userId], references: [id])
-  userId            String?
+  user              User?              @relation(fields: [createdBy], references: [id])
+  createdBy         String?
   invoiceLineGroups InvoiceLineGroup[]
 
   @@index([customerId])

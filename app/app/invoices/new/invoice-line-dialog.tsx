@@ -1,6 +1,6 @@
 'use client';
 
-import { JSX, useState, useMemo } from 'react';
+import { JSX, useState, useMemo, useEffect } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import {
   Plus,
@@ -42,13 +42,23 @@ const invoiceLineSchema = z.object({
 
 type InvoiceLineValues = z.infer<typeof invoiceLineSchema>;
 
-interface CreateInvoiceLineDialogProps {
-  onSuccess: (line: InvoiceLineValues & { lineTotal: number }) => void;
+interface InvoiceLineDialogProps {
+  onSuccess: (line: any) => void;
   children?: JSX.Element;
+  initialValues?: any;
+  title?: string;
+  mode?: 'create' | 'edit';
 }
 
-export function CreateInvoiceLineDialog({ onSuccess, children }: CreateInvoiceLineDialogProps) {
+export function InvoiceLineDialog({
+  onSuccess,
+  children,
+  initialValues,
+  title,
+  mode = 'create',
+}: InvoiceLineDialogProps) {
   const [open, setOpen] = useState(false);
+  const [selectedItem, setSelectedItem] = useState<any>(initialValues?.itemRef || null);
 
   // Data Fetching for "Import from existing"
   const { data: items, isLoading: isLoadingItems } = trpc.items.getItems.useQuery({
@@ -64,32 +74,56 @@ export function CreateInvoiceLineDialog({ onSuccess, children }: CreateInvoiceLi
     formState: { errors },
   } = useForm<InvoiceLineValues>({
     defaultValues: {
-      description: '',
-      quantity: 1,
-      unitSalePrice: 0,
+      description: initialValues?.description || '',
+      quantity: initialValues?.quantity || 1,
+      unitSalePrice: initialValues?.unitPrice || 0,
+      itemId: initialValues?.itemId || undefined,
     },
   });
+
+  // Sync form with initialValues when they change (critical for edit mode)
+  useEffect(() => {
+    if (initialValues) {
+      reset({
+        description: initialValues.description || '',
+        quantity: initialValues.quantity || 1,
+        unitSalePrice: initialValues.unitPrice || 0,
+        itemId: initialValues.itemId || undefined,
+      });
+      setSelectedItem(initialValues.itemRef || null);
+    }
+  }, [initialValues, reset]);
 
   const watchQuantity = watch('quantity');
   const watchPrice = watch('unitSalePrice');
   const lineTotal = useMemo(() => watchQuantity * watchPrice, [watchQuantity, watchPrice]);
 
   const handleSelectItem = (item: any) => {
+    setSelectedItem(item);
     setValue('description', item.name);
-    // Convert back from smallest unit (fils) for the UI input if needed,
-    // assuming item.salesPrice is stored as BigInt/Integer
     setValue('unitSalePrice', Number(item.salesPrice) / 1000);
     setValue('itemId', item.id);
   };
 
   const onSubmit = (values: InvoiceLineValues) => {
     onSuccess({
+      ...initialValues, // Preserve other fields like parentId
+      id: mode === 'create' ? Math.random().toString(36).substr(2, 9) : initialValues?.id,
       ...values,
-      lineTotal,
+      unitPrice: values.unitSalePrice,
+      purchasePrice: selectedItem ? Number(selectedItem.purchasePrice) / 1000 : 0,
+      total: lineTotal,
+      itemRef: selectedItem,
     });
-    reset();
+
+    if (mode === 'create') {
+      reset();
+      setSelectedItem(null);
+    }
     setOpen(false);
   };
+
+  const dialogTitle = title || (mode === 'create' ? 'Add Invoice Line' : 'Edit Invoice Line');
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -108,7 +142,7 @@ export function CreateInvoiceLineDialog({ onSuccess, children }: CreateInvoiceLi
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-primary">
             <FileText className="size-5" />
-            Add Invoice Line
+            {dialogTitle}
           </DialogTitle>
           <DialogDescription>
             Search existing master items or enter details manually.
@@ -127,6 +161,35 @@ export function CreateInvoiceLineDialog({ onSuccess, children }: CreateInvoiceLi
                 isLoading={isLoadingItems}
                 onSelect={(item) => handleSelectItem(item)}
                 searchFields={['name', 'sku']}
+                getItemId={function (
+                  item: {
+                    category: {
+                      id: string;
+                      createdAt: Date;
+                      updatedAt: Date;
+                      name: string;
+                      organizationId: string | null;
+                      color: string | null;
+                      icon: string | null;
+                    } | null;
+                  } & {
+                    type: $Enums.ItemType;
+                    description: string | null;
+                    id: string;
+                    createdAt: Date;
+                    updatedAt: Date;
+                    name: string;
+                    organizationId: string | null;
+                    sku: string | null;
+                    barcode: string | null;
+                    stockQuantity: bigint | null;
+                    purchasePrice: bigint;
+                    salesPrice: bigint;
+                    categoryId: string | null;
+                  },
+                ): string {
+                  return item.id;
+                }}
               >
                 <Button
                   variant="outline"
@@ -208,7 +271,7 @@ export function CreateInvoiceLineDialog({ onSuccess, children }: CreateInvoiceLi
             </Button>
             <Button type="submit" className="gap-2">
               <Check className="size-4" />
-              Add to Invoice
+              Confirm
             </Button>
           </DialogFooter>
         </form>
@@ -220,7 +283,7 @@ export function CreateInvoiceLineDialog({ onSuccess, children }: CreateInvoiceLi
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { SelectionDialog, SelectionDialogProps } from '@/components/select-dialog-v2'; // Assuming the original file name
 import { Badge } from '@/components/ui/badge';
-import { Item } from '@prisma/client';
+import { $Enums, Item } from '@prisma/client';
 
 // Extending your existing T to include ItemType specifically for this context
 interface ItemWithCategory extends Record<string, any> {
@@ -246,7 +309,7 @@ export function ItemSelectionDialog<T extends ItemWithCategory>({
 
   const handleSelect = (selectedItems: T[]) => {
     if (selectedItems.length > 0) {
-      // onSelect(selectedItems[0]);
+      onSelect?.(selectedItems[0]);
       setOpen(false);
     }
   };
@@ -281,7 +344,7 @@ export function ItemSelectionDialog<T extends ItemWithCategory>({
                 )}
               </div>
               <div>
-                <div className="font-bold flex items-center gap-2">
+                <div className="font-bold flex items-center gap-2 text-foreground">
                   {item.name}
                   <Badge variant="outline" className="text-[10px] uppercase font-bold px-1.5 h-4">
                     {item.sku}
