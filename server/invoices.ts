@@ -13,7 +13,6 @@ import {
   computeInvoiceTotals,
   deductStockForInvoice,
   nextSerial,
-  paginationInput,
   recomputeGroupTotals,
   requireOrgId,
   reverseStockForInvoice,
@@ -70,21 +69,18 @@ export const invoiceRouter = t.router({
 
   list: protectedProcedure
     .input(
-      paginationInput.extend({
+      z.object({
         search: z.string().optional(),
         type: z.enum(['INVOICE', 'QUOTE', 'CREDIT_NOTE']).optional(),
         status: z.enum(['DRAFT', 'SENT', 'PARTIAL', 'PAID', 'CANCELLED', 'DELETED']).optional(),
         paymentStatus: z.enum(['PENDING', 'PARTIAL', 'PAID', 'OVERDUE', 'CANCELLED']).optional(),
         customerId: z.string().optional(),
         jobId: z.string().optional(),
-        from: z.coerce.date().optional(),
-        to: z.coerce.date().optional(),
       }),
     )
     .query(async ({ ctx, input }) => {
       const orgId = requireOrgId(ctx.organizationId);
-      const { page, pageSize, search, type, status, paymentStatus, customerId, jobId, from, to } =
-        input;
+      const { search, type, status, paymentStatus, customerId, jobId } = input;
 
       const where: any = {
         organizationId: orgId,
@@ -94,7 +90,6 @@ export const invoiceRouter = t.router({
         ...(paymentStatus && { paymentStatus }),
         ...(customerId && { customerId }),
         ...(jobId && { jobId }),
-        ...(from || to ? { date: { ...(from && { gte: from }), ...(to && { lte: to }) } } : {}),
         ...(search && {
           OR: [
             { serial: { contains: search, mode: 'insensitive' } },
@@ -103,33 +98,27 @@ export const invoiceRouter = t.router({
         }),
       };
 
-      const [items, total] = await ctx.prisma.$transaction([
-        ctx.prisma.invoice.findMany({
-          where,
-          orderBy: { date: 'desc' },
-          skip: (page - 1) * pageSize,
-          take: pageSize,
-          select: {
-            id: true,
-            serial: true,
-            type: true,
-            status: true,
-            paymentStatus: true,
-            date: true,
-            dueDate: true,
-            subtotal: true,
-            total: true,
-            amountPaid: true,
-            amountDue: true,
-            isWalkIn: true,
-            customer: { select: { id: true, name: true } },
-            job: { select: { id: true, title: true } },
-          },
-        }),
-        ctx.prisma.invoice.count({ where }),
-      ]);
-
-      return { items, total, page, pageSize };
+      return await ctx.prisma.invoice.findMany({
+        where,
+        orderBy: { date: 'desc' },
+        select: {
+          id: true,
+          serial: true,
+          type: true,
+          status: true,
+          paymentStatus: true,
+          date: true,
+          dueDate: true,
+          subtotal: true,
+          total: true,
+          amountPaid: true,
+          amountDue: true,
+          isWalkIn: true,
+          createdBy: { select: { id: true, name: true } },
+          customer: { select: { id: true, name: true } },
+          job: { select: { id: true, title: true } },
+        },
+      });
     }),
 
   getById: protectedProcedure.input(z.object({ id: z.string() })).query(async ({ ctx, input }) => {

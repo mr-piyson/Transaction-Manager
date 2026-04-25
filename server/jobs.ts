@@ -6,7 +6,7 @@
 import { z } from 'zod';
 import { protectedProcedure, adminProcedure, t } from '@/lib/trpc/server';
 import { TRPCError } from '@trpc/server';
-import { assertOwnership, paginationInput, requireOrgId } from './_shared';
+import { assertOwnership, requireOrgId } from './_shared';
 
 const JOB_STATUSES = ['NOT_STARTED', 'IN_PROGRESS', 'ON_HOLD', 'COMPLETED', 'CANCELLED'] as const;
 
@@ -24,7 +24,7 @@ export const jobRouter = t.router({
   // -------------------------------------------------------------------------
   list: protectedProcedure
     .input(
-      paginationInput.extend({
+      z.object({
         search: z.string().optional(),
         status: z.enum(JOB_STATUSES).optional(),
         customerId: z.string().optional(),
@@ -32,7 +32,7 @@ export const jobRouter = t.router({
     )
     .query(async ({ ctx, input }) => {
       const orgId = requireOrgId(ctx.organizationId);
-      const { page, pageSize, search, status, customerId } = input;
+      const { search, status, customerId } = input;
 
       const where: any = {
         organizationId: orgId,
@@ -46,28 +46,21 @@ export const jobRouter = t.router({
         }),
       };
 
-      const [items, total] = await ctx.prisma.$transaction([
-        ctx.prisma.job.findMany({
-          where,
-          orderBy: { createdAt: 'desc' },
-          skip: (page - 1) * pageSize,
-          take: pageSize,
-          select: {
-            id: true,
-            title: true,
-            status: true,
-            startDate: true,
-            endDate: true,
-            completedAt: true,
-            createdAt: true,
-            customer: { select: { id: true, name: true } },
-            _count: { select: { invoices: true } },
-          },
-        }),
-        ctx.prisma.job.count({ where }),
-      ]);
-
-      return { items, total, page, pageSize };
+      return await ctx.prisma.job.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+        select: {
+          id: true,
+          title: true,
+          status: true,
+          startDate: true,
+          endDate: true,
+          completedAt: true,
+          createdAt: true,
+          customer: { select: { id: true, name: true } },
+          _count: { select: { invoices: true } },
+        },
+      });
     }),
 
   // -------------------------------------------------------------------------

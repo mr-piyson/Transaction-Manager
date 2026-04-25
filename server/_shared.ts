@@ -2,23 +2,8 @@
  * shared.ts — Zod primitives and helpers shared across all routers
  */
 
-import { z } from 'zod';
 import { TRPCError } from '@trpc/server';
 import type { PrismaClient } from '@prisma/client';
-
-// ---------------------------------------------------------------------------
-// Common pagination / list input
-// ---------------------------------------------------------------------------
-
-export const paginationInput = z.object({
-  page: z.number().int().min(1).default(1),
-  pageSize: z.number().int().min(1).max(100).default(20),
-});
-
-export const dateRangeInput = z.object({
-  from: z.coerce.date().optional(),
-  to: z.coerce.date().optional(),
-});
 
 // ---------------------------------------------------------------------------
 // Guard helpers

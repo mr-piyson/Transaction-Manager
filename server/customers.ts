@@ -2,12 +2,12 @@ import { z } from 'zod';
 import { adminProcedure, protectedProcedure, t } from '@/lib/trpc/server';
 import { TRPCError } from '@trpc/server';
 import db from '@/lib/db';
-import { assertOwnership, paginationInput, requireOrgId } from './_shared';
+import { assertOwnership, requireOrgId } from './_shared';
 
 const customerInput = z.object({
   name: z.string().min(1, 'Name is required'),
   phone: z.string().optional(),
-  email: z.string().email().optional().or(z.literal('')),
+  email: z.email().optional().or(z.literal('')),
   address: z.string().optional(),
   city: z.string().optional(),
   taxId: z.string().optional(),
@@ -21,49 +21,33 @@ export const customerRouter = t.router({
   // -------------------------------------------------------------------------
   list: protectedProcedure
     .input(
-      paginationInput.extend({
-        search: z.string().optional(),
-        isActive: z.boolean().optional(),
-      }),
+      z
+        .object({
+          isActive: z.boolean().optional(),
+        })
+        .optional(),
     )
     .query(async ({ ctx, input }) => {
       const orgId = requireOrgId(ctx.organizationId);
-      const { page, pageSize, search, isActive } = input;
 
-      const where = {
-        organizationId: orgId,
-        deletedAt: null,
-        ...(isActive !== undefined && { isActive }),
-        ...(search && {
-          OR: [
-            { name: { contains: search, mode: 'insensitive' as const } },
-            { email: { contains: search, mode: 'insensitive' as const } },
-            { phone: { contains: search } },
-          ],
-        }),
-      };
-
-      const [items, total] = await ctx.prisma.$transaction([
-        ctx.prisma.customer.findMany({
-          where,
-          orderBy: { name: 'asc' },
-          skip: (page - 1) * pageSize,
-          take: pageSize,
-          select: {
-            id: true,
-            name: true,
-            phone: true,
-            email: true,
-            city: true,
-            isActive: true,
-            creditLimit: true,
-            _count: { select: { invoices: true } },
-          },
-        }),
-        ctx.prisma.customer.count({ where }),
-      ]);
-
-      return { items, total, page, pageSize };
+      return await ctx.prisma.customer.findMany({
+        where: {
+          organizationId: orgId,
+          deletedAt: null,
+          isActive: input?.isActive,
+        },
+        orderBy: { name: 'asc' },
+        select: {
+          id: true,
+          name: true,
+          phone: true,
+          email: true,
+          city: true,
+          isActive: true,
+          creditLimit: true,
+          _count: { select: { invoices: true } },
+        },
+      });
     }),
 
   // -------------------------------------------------------------------------

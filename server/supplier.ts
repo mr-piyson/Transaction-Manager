@@ -5,7 +5,7 @@
 
 import { z } from 'zod';
 import { router, protectedProcedure, adminProcedure } from '@/lib/trpc/server';
-import { requireOrgId, assertOwnership, paginationInput } from './_shared';
+import { requireOrgId, assertOwnership } from './_shared';
 import { TRPCError } from '@trpc/server';
 
 const supplierInput = z.object({
@@ -25,14 +25,14 @@ export const supplierRouter = router({
   // -------------------------------------------------------------------------
   list: protectedProcedure
     .input(
-      paginationInput.extend({
+      z.object({
         search: z.string().optional(),
         includeSystem: z.boolean().default(false),
       }),
     )
     .query(async ({ ctx, input }) => {
       const orgId = requireOrgId(ctx.organizationId);
-      const { page, pageSize, search, includeSystem } = input;
+      const { search, includeSystem } = input;
 
       const where = {
         organizationId: orgId,
@@ -48,27 +48,20 @@ export const supplierRouter = router({
         }),
       };
 
-      const [items, total] = await ctx.prisma.$transaction([
-        ctx.prisma.supplier.findMany({
-          where,
-          orderBy: { name: 'asc' },
-          skip: (page - 1) * pageSize,
-          take: pageSize,
-          select: {
-            id: true,
-            name: true,
-            phone: true,
-            email: true,
-            contactName: true,
-            isSystem: true,
-            isActive: true,
-            _count: { select: { purchaseOrders: true, supplierItems: true } },
-          },
-        }),
-        ctx.prisma.supplier.count({ where }),
-      ]);
-
-      return { items, total, page, pageSize };
+      return await ctx.prisma.supplier.findMany({
+        where,
+        orderBy: { name: 'asc' },
+        select: {
+          id: true,
+          name: true,
+          phone: true,
+          email: true,
+          contactName: true,
+          isSystem: true,
+          isActive: true,
+          _count: { select: { purchaseOrders: true, supplierItems: true } },
+        },
+      });
     }),
 
   // -------------------------------------------------------------------------

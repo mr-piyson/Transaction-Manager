@@ -6,7 +6,7 @@
 import { z } from 'zod';
 import { protectedProcedure, adminProcedure, t } from '@/lib/trpc/server';
 import { TRPCError } from '@trpc/server';
-import { assertOwnership, paginationInput, requireOrgId } from './_shared';
+import { assertOwnership, requireOrgId } from './_shared';
 
 // ---------------------------------------------------------------------------
 // Shared input schemas
@@ -161,7 +161,7 @@ export const itemRouter = t.router({
 
   list: protectedProcedure
     .input(
-      paginationInput.extend({
+      z.object({
         search: z.string().optional(),
         type: z.enum(['PRODUCT', 'SERVICE']).optional(),
         categoryId: z.string().optional(),
@@ -171,7 +171,7 @@ export const itemRouter = t.router({
     )
     .query(async ({ ctx, input }) => {
       const orgId = requireOrgId(ctx.organizationId);
-      const { page, pageSize, search, type, categoryId, isSaleable, lowStock } = input;
+      const { search, type, categoryId, isSaleable, lowStock } = input;
 
       const where: any = {
         organizationId: orgId,
@@ -199,36 +199,29 @@ export const itemRouter = t.router({
         };
       }
 
-      const [items, total] = await ctx.prisma.$transaction([
-        ctx.prisma.item.findMany({
-          where,
-          orderBy: { name: 'asc' },
-          skip: (page - 1) * pageSize,
-          take: pageSize,
-          select: {
-            id: true,
-            name: true,
-            sku: true,
-            type: true,
-            unit: true,
-            purchasePrice: true,
-            salesPrice: true,
-            minStock: true,
-            isSaleable: true,
-            category: { select: { id: true, name: true } },
-            taxRate: { select: { id: true, name: true, rate: true } },
-            stock: {
-              select: {
-                quantity: true,
-                warehouse: { select: { id: true, name: true } },
-              },
+      return await ctx.prisma.item.findMany({
+        where,
+        orderBy: { name: 'asc' },
+        select: {
+          id: true,
+          name: true,
+          sku: true,
+          type: true,
+          unit: true,
+          purchasePrice: true,
+          salesPrice: true,
+          minStock: true,
+          isSaleable: true,
+          category: { select: { id: true, name: true } },
+          taxRate: { select: { id: true, name: true, rate: true } },
+          stock: {
+            select: {
+              quantity: true,
+              warehouse: { select: { id: true, name: true } },
             },
           },
-        }),
-        ctx.prisma.item.count({ where }),
-      ]);
-
-      return { items, total, page, pageSize };
+        },
+      });
     }),
 
   getById: protectedProcedure.input(z.object({ id: z.string() })).query(async ({ ctx, input }) => {

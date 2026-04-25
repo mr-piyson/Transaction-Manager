@@ -17,7 +17,7 @@ type CustomerLayoutProps = {
 
 export default function CustomerLayout(props: CustomerLayoutProps) {
   const title = 'Customers';
-  const { data, isPending } = trpc.customers.getCustomers.useQuery();
+  const { data, isPending } = trpc.customers.list.useQuery({});
   const isMobile = useIsMobile();
   const pathname = usePathname();
   const isListView = pathname === `/app/${title.toLowerCase()}`;

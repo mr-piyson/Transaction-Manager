@@ -6,7 +6,7 @@
 import { z } from 'zod';
 import { protectedProcedure, adminProcedure, t } from '@/lib/trpc/server';
 import { TRPCError } from '@trpc/server';
-import { assertOwnership, paginationInput, requireOrgId } from './_shared';
+import { assertOwnership, requireOrgId } from './_shared';
 import { CurrencyCode } from '@prisma/client';
 
 const contractInput = z.object({
@@ -28,8 +28,7 @@ export const contractRouter = t.router({
   // -------------------------------------------------------------------------
   list: protectedProcedure
     .input(
-      paginationInput.extend({
-        search: z.string().optional(),
+      z.object({
         customerId: z.string().optional(),
         isActive: z.boolean().optional(),
         expiringWithinDays: z.number().int().min(0).optional(),
@@ -37,52 +36,31 @@ export const contractRouter = t.router({
     )
     .query(async ({ ctx, input }) => {
       const orgId = requireOrgId(ctx.organizationId);
-      const { page, pageSize, search, customerId, isActive, expiringWithinDays } = input;
+      const { customerId, isActive } = input;
 
       const where: any = {
         organizationId: orgId,
         deletedAt: null,
         ...(customerId && { customerId }),
         ...(isActive !== undefined && { isActive }),
-        ...(search && {
-          OR: [
-            { title: { contains: search, mode: 'insensitive' } },
-            { description: { contains: search, mode: 'insensitive' } },
-            { customer: { name: { contains: search, mode: 'insensitive' } } },
-          ],
-        }),
       };
 
-      // Expiring-soon filter
-      if (expiringWithinDays !== undefined) {
-        const alertDate = new Date();
-        alertDate.setDate(alertDate.getDate() + expiringWithinDays);
-        where.renewalDate = { lte: alertDate, gte: new Date() };
-      }
-
-      const [items, total] = await ctx.prisma.$transaction([
-        ctx.prisma.contract.findMany({
-          where,
-          orderBy: { renewalDate: 'asc' },
-          skip: (page - 1) * pageSize,
-          take: pageSize,
-          select: {
-            id: true,
-            title: true,
-            value: true,
-            currency: true,
-            startDate: true,
-            endDate: true,
-            renewalDate: true,
-            renewalAlertDays: true,
-            isActive: true,
-            customer: { select: { id: true, name: true } },
-          },
-        }),
-        ctx.prisma.contract.count({ where }),
-      ]);
-
-      return { items, total, page, pageSize };
+      return await ctx.prisma.contract.findMany({
+        where,
+        orderBy: { renewalDate: 'asc' },
+        select: {
+          id: true,
+          title: true,
+          value: true,
+          currency: true,
+          startDate: true,
+          endDate: true,
+          renewalDate: true,
+          renewalAlertDays: true,
+          isActive: true,
+          customer: { select: { id: true, name: true } },
+        },
+      });
     }),
 
   // -------------------------------------------------------------------------

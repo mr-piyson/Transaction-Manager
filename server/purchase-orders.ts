@@ -7,13 +7,7 @@
 import { z } from 'zod';
 import { protectedProcedure, adminProcedure, t } from '@/lib/trpc/server';
 import { TRPCError } from '@trpc/server';
-import {
-  assertOwnership,
-  nextSerial,
-  paginationInput,
-  requireOrgId,
-  syncPOPaymentStatus,
-} from './_shared';
+import { assertOwnership, nextSerial, requireOrgId, syncPOPaymentStatus } from './_shared';
 import { Prisma } from '@prisma/client';
 
 const PO_STATUSES = ['DRAFT', 'ORDERED', 'PARTIAL_RECEIVED', 'RECEIVED', 'CANCELLED'] as const;
@@ -52,7 +46,7 @@ export const purchaseOrderRouter = t.router({
   // -------------------------------------------------------------------------
   list: protectedProcedure
     .input(
-      paginationInput.extend({
+      z.object({
         search: z.string().optional(),
         status: z.enum(PO_STATUSES).optional(),
         supplierId: z.string().optional(),
@@ -60,7 +54,7 @@ export const purchaseOrderRouter = t.router({
     )
     .query(async ({ ctx, input }) => {
       const orgId = requireOrgId(ctx.organizationId);
-      const { page, pageSize, search, status, supplierId } = input;
+      const { search, status, supplierId } = input;
 
       const where: any = {
         organizationId: orgId,
@@ -75,29 +69,22 @@ export const purchaseOrderRouter = t.router({
         }),
       };
 
-      const [items, total] = await ctx.prisma.$transaction([
-        ctx.prisma.purchaseOrder.findMany({
-          where,
-          orderBy: { createdAt: 'desc' },
-          skip: (page - 1) * pageSize,
-          take: pageSize,
-          select: {
-            id: true,
-            serial: true,
-            status: true,
-            orderDate: true,
-            expectedDate: true,
-            total: true,
-            amountPaid: true,
-            amountOwed: true,
-            supplier: { select: { id: true, name: true } },
-            _count: { select: { lines: true } },
-          },
-        }),
-        ctx.prisma.purchaseOrder.count({ where }),
-      ]);
-
-      return { items, total, page, pageSize };
+      return await ctx.prisma.purchaseOrder.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+        select: {
+          id: true,
+          serial: true,
+          status: true,
+          orderDate: true,
+          expectedDate: true,
+          total: true,
+          amountPaid: true,
+          amountOwed: true,
+          supplier: { select: { id: true, name: true } },
+          _count: { select: { lines: true } },
+        },
+      });
     }),
 
   // -------------------------------------------------------------------------

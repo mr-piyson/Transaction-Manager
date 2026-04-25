@@ -6,7 +6,7 @@
 import { z } from 'zod';
 import { protectedProcedure, adminProcedure, t } from '@/lib/trpc/server';
 import { TRPCError } from '@trpc/server';
-import { assertOwnership, paginationInput, requireOrgId } from './_shared';
+import { assertOwnership, requireOrgId } from './_shared';
 
 export const stockRouter = t.router({
   // -------------------------------------------------------------------------
@@ -14,7 +14,7 @@ export const stockRouter = t.router({
   // -------------------------------------------------------------------------
   levels: protectedProcedure
     .input(
-      paginationInput.extend({
+      z.object({
         warehouseId: z.string().optional(),
         itemId: z.string().optional(),
         search: z.string().optional(),
@@ -22,7 +22,7 @@ export const stockRouter = t.router({
     )
     .query(async ({ ctx, input }) => {
       const orgId = requireOrgId(ctx.organizationId);
-      const { page, pageSize, warehouseId, itemId, search } = input;
+      const { warehouseId, itemId, search } = input;
 
       const where: any = {
         organizationId: orgId,
@@ -44,8 +44,6 @@ export const stockRouter = t.router({
       const [items, total] = await ctx.prisma.$transaction([
         ctx.prisma.stock.findMany({
           where,
-          skip: (page - 1) * pageSize,
-          take: pageSize,
           orderBy: { item: { name: 'asc' } },
           include: {
             item: {
@@ -70,8 +68,6 @@ export const stockRouter = t.router({
           isBelowMin: s.quantity < s.item.minStock,
         })),
         total,
-        page,
-        pageSize,
       };
     }),
 
@@ -80,7 +76,7 @@ export const stockRouter = t.router({
   // -------------------------------------------------------------------------
   movements: protectedProcedure
     .input(
-      paginationInput.extend({
+      z.object({
         itemId: z.string().optional(),
         warehouseId: z.string().optional(),
         type: z
@@ -100,7 +96,7 @@ export const stockRouter = t.router({
     )
     .query(async ({ ctx, input }) => {
       const orgId = requireOrgId(ctx.organizationId);
-      const { page, pageSize, itemId, warehouseId, type, from, to } = input;
+      const { itemId, warehouseId, type, from, to } = input;
 
       const where: any = {
         organizationId: orgId,
@@ -119,23 +115,16 @@ export const stockRouter = t.router({
           : {}),
       };
 
-      const [movements, total] = await ctx.prisma.$transaction([
-        ctx.prisma.stockMovement.findMany({
-          where,
-          orderBy: { createdAt: 'desc' },
-          skip: (page - 1) * pageSize,
-          take: pageSize,
-          include: {
-            item: { select: { id: true, name: true, sku: true, unit: true } },
-            fromWarehouse: { select: { id: true, name: true } },
-            toWarehouse: { select: { id: true, name: true } },
-            user: { select: { id: true, name: true } },
-          },
-        }),
-        ctx.prisma.stockMovement.count({ where }),
-      ]);
-
-      return { movements, total, page, pageSize };
+      return await ctx.prisma.stockMovement.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+        include: {
+          item: { select: { id: true, name: true, sku: true, unit: true } },
+          fromWarehouse: { select: { id: true, name: true } },
+          toWarehouse: { select: { id: true, name: true } },
+          user: { select: { id: true, name: true } },
+        },
+      });
     }),
 
   // -------------------------------------------------------------------------
