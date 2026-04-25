@@ -45,16 +45,10 @@ datasource db {
 // ISO 4217 currency codes supported by this system.
 // Add more as needed — the CURRENCIES map in utils.ts must stay in sync.
 enum CurrencyCode {
-  BHD
   USD
+  BHD
   EUR
-  GBP
-  SAR
-  AED
-  KWD
-  OMR
-  QAR
-  EGP
+  JPY
 }
 
 // User roles — global (on User) for platform-level access,
