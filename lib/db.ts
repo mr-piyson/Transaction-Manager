@@ -41,7 +41,6 @@ async function seed() {
       create: {
         name: 'Others',
         color: 'blue',
-        icon: 'tool',
         organizationId: organizationExists?.id || '',
       },
       update: {},

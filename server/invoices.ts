@@ -1,344 +1,873 @@
-import { TRPCError } from '@trpc/server';
+/**
+ * invoices.ts
+ * Full invoice lifecycle: DRAFT → SENT → PARTIAL → PAID → CANCELLED.
+ * Covers INVOICE, QUOTE (convertible), and CREDIT_NOTE.
+ * All multi-table mutations use prisma.$transaction.
+ */
+
 import { z } from 'zod';
-import db from '@/lib/db';
-import { protectedProcedure, publicProcedure, t } from '@/lib/trpc/server';
-import { InvoiceStatus, Prisma } from '@prisma/client';
+import { protectedProcedure, adminProcedure, t } from '@/lib/trpc/server';
+import { TRPCError } from '@trpc/server';
+import {
+  assertOwnership,
+  computeInvoiceTotals,
+  deductStockForInvoice,
+  nextSerial,
+  paginationInput,
+  recomputeGroupTotals,
+  requireOrgId,
+  reverseStockForInvoice,
+  syncInvoicePaymentStatus,
+} from './_shared';
+import { Prisma } from '@prisma/client';
 
-export async function updateInvoiceStatus(
-  invoiceId: number,
-  tx: any,
-  totalPaid: number,
-  invoiceTotal: number,
-) {
-  let newStatus: 'Unpaid' | 'Partial' | 'Paid' = 'Unpaid';
+// ---------------------------------------------------------------------------
+// Input schemas
+// ---------------------------------------------------------------------------
 
-  if (totalPaid >= invoiceTotal && invoiceTotal > 0) newStatus = 'Paid';
-  else if (totalPaid > 0) newStatus = 'Partial';
+const invoiceLineInput = z.object({
+  itemId: z.string().optional(),
+  groupId: z.string().optional(),
+  description: z.string().optional(),
+  quantity: z.string().default('1'), // Decimal stored as string
+  unitPrice: z.number().int().min(0),
+  discountAmt: z.number().int().min(0).default(0),
+  taxAmt: z.number().int().min(0).default(0),
+  taxRateId: z.string().optional(),
+  purchasePrice: z.number().int().min(0).default(0), // snapshot at invoice time
+  sortOrder: z.number().int().default(0),
+});
 
-  return await tx.invoice.update({
-    where: { id: invoiceId },
-    data: { paymentStatus: newStatus },
-  });
+const lineGroupInput = z.object({
+  title: z.string().min(1),
+  showLineDetails: z.boolean().default(false),
+  sortOrder: z.number().int().default(0),
+});
+
+// ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
+
+function computeLineTotal(
+  unitPrice: number,
+  quantity: string,
+  discountAmt: number,
+  taxAmt: number,
+): bigint {
+  const qty = parseFloat(quantity);
+  const lineSubtotal = Math.round(unitPrice * qty);
+  return BigInt(lineSubtotal - discountAmt + taxAmt);
 }
 
-// ✅ Moved OUTSIDE the router object
-async function deductStockForInvoice(
-  tx: Prisma.TransactionClient,
-  invoice: any,
-  lines: any[],
-  ctx: any,
-  sourceLabel: string,
-) {
-  for (const line of lines) {
-    const itemId = line.itemId || line.inventoryItemId;
-    if (!itemId) continue;
-
-    const masterItem = await tx.item.findUnique({
-      where: { id: itemId },
-    });
-
-    if (masterItem && masterItem.type === 'PRODUCT') {
-      const currentStock = masterItem.stockQuantity || BigInt(0);
-      const lineQty = BigInt(line.quantity);
-
-      await tx.item.update({
-        where: { id: itemId },
-        data: {
-          stockQuantity: currentStock - lineQty,
-        },
-      });
-    }
-  }
-}
+// ---------------------------------------------------------------------------
+// Router
+// ---------------------------------------------------------------------------
 
 export const invoiceRouter = t.router({
-  getInvoices: protectedProcedure
+  // =========================================================================
+  // LIST & GET
+  // =========================================================================
+
+  list: protectedProcedure
     .input(
-      z.object({
-        customer: z.boolean().optional(),
-        invoiceLines: z.boolean().optional(),
-        payments: z.boolean().optional(),
+      paginationInput.extend({
+        search: z.string().optional(),
+        type: z.enum(['INVOICE', 'QUOTE', 'CREDIT_NOTE']).optional(),
+        status: z.enum(['DRAFT', 'SENT', 'PARTIAL', 'PAID', 'CANCELLED', 'DELETED']).optional(),
+        paymentStatus: z.enum(['PENDING', 'PARTIAL', 'PAID', 'OVERDUE', 'CANCELLED']).optional(),
+        customerId: z.string().optional(),
+        jobId: z.string().optional(),
+        from: z.coerce.date().optional(),
+        to: z.coerce.date().optional(),
       }),
     )
-    .query(async ({ input }) => {
-      try {
-        return await db.invoice.findMany({
-          include: {
-            customer: input.customer || undefined,
-            lines: input.invoiceLines || undefined,
-            payments: input.payments || undefined,
+    .query(async ({ ctx, input }) => {
+      const orgId = requireOrgId(ctx.organizationId);
+      const { page, pageSize, search, type, status, paymentStatus, customerId, jobId, from, to } =
+        input;
+
+      const where: any = {
+        organizationId: orgId,
+        status: { not: 'DELETED' },
+        ...(type && { type }),
+        ...(status && { status }),
+        ...(paymentStatus && { paymentStatus }),
+        ...(customerId && { customerId }),
+        ...(jobId && { jobId }),
+        ...(from || to ? { date: { ...(from && { gte: from }), ...(to && { lte: to }) } } : {}),
+        ...(search && {
+          OR: [
+            { serial: { contains: search, mode: 'insensitive' } },
+            { customer: { name: { contains: search, mode: 'insensitive' } } },
+          ],
+        }),
+      };
+
+      const [items, total] = await ctx.prisma.$transaction([
+        ctx.prisma.invoice.findMany({
+          where,
+          orderBy: { date: 'desc' },
+          skip: (page - 1) * pageSize,
+          take: pageSize,
+          select: {
+            id: true,
+            serial: true,
+            type: true,
+            status: true,
+            paymentStatus: true,
+            date: true,
+            dueDate: true,
+            subtotal: true,
+            total: true,
+            amountPaid: true,
+            amountDue: true,
+            isWalkIn: true,
+            customer: { select: { id: true, name: true } },
+            job: { select: { id: true, title: true } },
           },
-          orderBy: {
-            createdAt: 'desc',
-          },
-        });
-      } catch (error) {
-        throw new TRPCError({
-          code: 'INTERNAL_SERVER_ERROR',
-          message: 'Database fetch failed',
-        });
-      }
+        }),
+        ctx.prisma.invoice.count({ where }),
+      ]);
+
+      return { items, total, page, pageSize };
     }),
 
-  createInvoice: protectedProcedure
+  getById: protectedProcedure.input(z.object({ id: z.string() })).query(async ({ ctx, input }) => {
+    const orgId = requireOrgId(ctx.organizationId);
+
+    const invoice = await ctx.prisma.invoice.findUnique({
+      where: { id: input.id },
+      include: {
+        customer: true,
+        job: { select: { id: true, title: true } },
+        lineGroups: {
+          orderBy: { sortOrder: 'asc' },
+          include: {
+            lines: {
+              orderBy: { sortOrder: 'asc' },
+              include: { item: { select: { id: true, name: true, sku: true, unit: true } } },
+            },
+          },
+        },
+        // Ungrouped lines
+        lines: {
+          where: { groupId: null },
+          orderBy: { sortOrder: 'asc' },
+          include: { item: { select: { id: true, name: true, sku: true, unit: true } } },
+        },
+        payments: { orderBy: { date: 'desc' } },
+        parentInvoice: { select: { id: true, serial: true } },
+        creditNotes: { select: { id: true, serial: true, total: true, status: true } },
+      },
+    });
+
+    assertOwnership(invoice, orgId, 'Invoice');
+    return invoice;
+  }),
+
+  // =========================================================================
+  // CREATE
+  // =========================================================================
+
+  create: protectedProcedure
     .input(
       z.object({
-        customerId: z.string(),
+        type: z.enum(['INVOICE', 'QUOTE', 'CREDIT_NOTE']).default('INVOICE'),
+        customerId: z.string().optional(),
+        jobId: z.string().optional(),
+        isWalkIn: z.boolean().default(false),
+        date: z.coerce.date().optional(),
+        dueDate: z.coerce.date().optional(),
+        parentInvoiceId: z.string().optional(), // for credit notes
+        notes: z.string().optional(),
+        termsText: z.string().optional(),
+        warehouseId: z.string().optional(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const orgId = requireOrgId(ctx.organizationId);
+
+      if (!input.isWalkIn && !input.customerId) {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'Either a customer or walk-in must be specified',
+        });
+      }
+
+      if (input.type === 'CREDIT_NOTE' && !input.parentInvoiceId) {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'Credit notes must reference a parent invoice',
+        });
+      }
+
+      // Fetch org defaults for payment terms
+      const org = await ctx.prisma.organization.findUniqueOrThrow({
+        where: { id: orgId },
+        select: { paymentTermsDays: true, defaultTermsText: true },
+      });
+
+      const prefix = input.type === 'QUOTE' ? 'QTE' : input.type === 'CREDIT_NOTE' ? 'CN' : 'INV';
+
+      return ctx.prisma.$transaction(async (tx) => {
+        const serial = await nextSerial(tx, orgId, prefix as 'INV' | 'QTE' | 'CN');
+
+        const invoiceDate = input.date ?? new Date();
+        const dueDate =
+          input.dueDate ??
+          (input.type === 'INVOICE'
+            ? new Date(invoiceDate.getTime() + (org.paymentTermsDays ?? 30) * 86400000)
+            : undefined);
+
+        return tx.invoice.create({
+          data: {
+            serial,
+            type: input.type,
+            status: 'DRAFT',
+            paymentStatus: 'PENDING',
+            organizationId: orgId,
+            customerId: input.customerId,
+            jobId: input.jobId,
+            parentInvoiceId: input.parentInvoiceId,
+            isWalkIn: input.isWalkIn,
+            date: invoiceDate,
+            dueDate,
+            notes: input.notes,
+            termsText: input.termsText ?? org.defaultTermsText,
+            warehouseId: input.warehouseId,
+            subtotal: BigInt(0),
+            discountTotal: BigInt(0),
+            taxTotal: BigInt(0),
+            total: BigInt(0),
+            amountPaid: BigInt(0),
+            amountDue: BigInt(0),
+            createdById: ctx.user.id,
+          },
+        });
+      });
+    }),
+
+  // =========================================================================
+  // UPDATE HEADER (DRAFT only)
+  // =========================================================================
+
+  update: protectedProcedure
+    .input(
+      z.object({
+        id: z.string(),
+        customerId: z.string().optional(),
+        jobId: z.string().optional(),
+        date: z.coerce.date().optional(),
+        dueDate: z.coerce.date().optional(),
+        notes: z.string().optional(),
+        termsText: z.string().optional(),
+        warehouseId: z.string().optional(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const orgId = requireOrgId(ctx.organizationId);
+      const { id, ...rest } = input;
+
+      const existing = await ctx.prisma.invoice.findUnique({
+        where: { id },
+        select: { organizationId: true, status: true },
+      });
+      if (!existing) {
+        throw new TRPCError({ code: 'BAD_REQUEST', message: 'invoice not found' });
+      }
+      assertOwnership(existing, orgId, 'Invoice');
+
+      if (existing.status !== 'DRAFT') {
+        throw new TRPCError({ code: 'BAD_REQUEST', message: 'Only DRAFT invoices can be edited' });
+      }
+
+      return ctx.prisma.invoice.update({ where: { id }, data: rest });
+    }),
+
+  // =========================================================================
+  // LINE GROUPS
+  // =========================================================================
+
+  addLineGroup: protectedProcedure
+    .input(z.object({ invoiceId: z.string() }).merge(lineGroupInput))
+    .mutation(async ({ ctx, input }) => {
+      const orgId = requireOrgId(ctx.organizationId);
+      const { invoiceId, ...groupData } = input;
+
+      const invoice = await ctx.prisma.invoice.findUnique({
+        where: { id: invoiceId },
+        select: { organizationId: true, status: true },
+      });
+      if (!invoice) {
+        throw new TRPCError({ code: 'BAD_REQUEST', message: 'invoice not found' });
+      }
+      assertOwnership(invoice, orgId, 'Invoice');
+      if (invoice.status !== 'DRAFT')
+        throw new TRPCError({ code: 'BAD_REQUEST', message: 'Invoice is not editable' });
+
+      return ctx.prisma.invoiceLineGroup.create({
+        data: {
+          title: groupData.title,
+          showLineDetails: groupData.showLineDetails,
+          sortOrder: groupData.sortOrder,
+          invoiceId,
+          organizationId: ctx.organizationId,
+          subtotal: BigInt(0),
+          discountTotal: BigInt(0),
+          taxTotal: BigInt(0),
+          total: BigInt(0),
+        },
+      });
+    }),
+
+  updateLineGroup: protectedProcedure
+    .input(z.object({ id: z.string(), invoiceId: z.string() }).merge(lineGroupInput.partial()))
+    .mutation(async ({ ctx, input }) => {
+      const orgId = requireOrgId(ctx.organizationId);
+      const { id, invoiceId, ...rest } = input;
+
+      const group = await ctx.prisma.invoiceLineGroup.findUnique({
+        where: { id },
+        select: {
+          invoice: {
+            select: {
+              organizationId: true,
+            },
+          },
+        },
+      });
+      if (!group?.invoice) {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'one of the Line group or the invoice not exists',
+        });
+      }
+      assertOwnership(group?.invoice, orgId, 'InvoiceLineGroup');
+
+      return ctx.prisma.invoiceLineGroup.update({ where: { id }, data: rest });
+    }),
+
+  deleteLineGroup: protectedProcedure
+    .input(z.object({ id: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      const orgId = requireOrgId(ctx.organizationId);
+
+      const group = await ctx.prisma.invoiceLineGroup.findUnique({
+        where: { id: input.id },
+        include: { invoice: { select: { status: true, organizationId: true } } },
+      });
+      if (!group) throw new TRPCError({ code: 'NOT_FOUND', message: 'Group not found' });
+      if (group.invoice.organizationId !== orgId) throw new TRPCError({ code: 'FORBIDDEN' });
+      if (group.invoice.status !== 'DRAFT')
+        throw new TRPCError({ code: 'BAD_REQUEST', message: 'Invoice is not editable' });
+
+      // Delete all lines within the group first
+      await ctx.prisma.invoiceLine.deleteMany({ where: { groupId: input.id } });
+
+      return ctx.prisma.$transaction(async (tx) => {
+        await tx.invoiceLineGroup.delete({ where: { id: input.id } });
+        const totals = await computeInvoiceTotals(tx, group.invoiceId);
+        return tx.invoice.update({ where: { id: group.invoiceId }, data: totals });
+      });
+    }),
+
+  // =========================================================================
+  // LINES — Add / Update / Delete
+  // =========================================================================
+
+  addLine: protectedProcedure
+    .input(z.object({ invoiceId: z.string() }).merge(invoiceLineInput))
+    .mutation(async ({ ctx, input }) => {
+      const orgId = requireOrgId(ctx.organizationId);
+      const { invoiceId, unitPrice, discountAmt, taxAmt, quantity, ...rest } = input;
+
+      const invoice = await ctx.prisma.invoice.findUnique({
+        where: { id: invoiceId },
+        select: { organizationId: true, status: true },
+      });
+      if (!invoice) {
+        throw new TRPCError({ code: 'BAD_REQUEST', message: 'Invoice is not exist' });
+      }
+      assertOwnership(invoice, orgId, 'Invoice');
+      if (invoice.status !== 'DRAFT')
+        throw new TRPCError({ code: 'BAD_REQUEST', message: 'Invoice is not editable' });
+
+      // Snapshot tax rate name at creation time
+      let taxRateSnapshot: string | undefined;
+      let taxRateValueSnapshot: Prisma.Decimal | undefined;
+      if (rest.taxRateId) {
+        const taxRate = await ctx.prisma.taxRate.findUnique({
+          where: { id: rest.taxRateId },
+          select: { name: true, rate: true },
+        });
+        taxRateSnapshot = taxRate?.name;
+        taxRateValueSnapshot = taxRate?.rate;
+      }
+
+      const lineTotal = computeLineTotal(unitPrice, quantity, discountAmt ?? 0, taxAmt ?? 0);
+
+      return ctx.prisma.$transaction(async (tx) => {
+        await tx.invoiceLine.create({
+          data: {
+            ...rest,
+            invoiceId,
+            organizationId: orgId,
+            unitPrice: BigInt(unitPrice),
+            discountAmt: BigInt(discountAmt ?? 0),
+            taxAmt: BigInt(taxAmt ?? 0),
+            quantity,
+            total: lineTotal,
+            purchasePrice: BigInt(rest.purchasePrice ?? 0),
+            taxRateName: taxRateSnapshot,
+            taxRateValue: taxRateValueSnapshot,
+          },
+        });
+
+        // Recompute group totals if grouped
+        if (rest.groupId) await recomputeGroupTotals(tx, rest.groupId);
+
+        // Recompute invoice totals
+        const totals = await computeInvoiceTotals(tx, invoiceId);
+        return tx.invoice.update({ where: { id: invoiceId }, data: totals });
+      });
+    }),
+
+  updateLine: protectedProcedure
+    .input(z.object({ id: z.string(), invoiceId: z.string() }).merge(invoiceLineInput.partial()))
+    .mutation(async ({ ctx, input }) => {
+      const orgId = requireOrgId(ctx.organizationId);
+      const { id, invoiceId, unitPrice, discountAmt, taxAmt, quantity, ...rest } = input;
+
+      const line = await ctx.prisma.invoiceLine.findUnique({
+        where: { id },
+        select: {
+          organizationId: true,
+          groupId: true,
+          unitPrice: true,
+          quantity: true,
+          discountAmt: true,
+          taxAmt: true,
+        },
+      });
+      if (!line || line.organizationId !== orgId)
+        throw new TRPCError({ code: 'NOT_FOUND', message: 'Line not found' });
+
+      const newUnitPrice = unitPrice ?? Number(line.unitPrice);
+      const newQty = quantity ?? String(line.quantity);
+      const newDiscount = discountAmt ?? Number(line.discountAmt);
+      const newTax = taxAmt ?? Number(line.taxAmt);
+      const lineTotal = computeLineTotal(newUnitPrice, newQty, newDiscount, newTax);
+
+      return ctx.prisma.$transaction(async (tx) => {
+        await tx.invoiceLine.update({
+          where: { id },
+          data: {
+            ...rest,
+            ...(unitPrice !== undefined && { unitPrice: BigInt(unitPrice) }),
+            ...(discountAmt !== undefined && { discountAmt: BigInt(discountAmt) }),
+            ...(taxAmt !== undefined && { taxAmt: BigInt(taxAmt) }),
+            ...(quantity !== undefined && { quantity }),
+            total: lineTotal,
+          },
+        });
+
+        if (line.groupId) await recomputeGroupTotals(tx, line.groupId);
+
+        const totals = await computeInvoiceTotals(tx, invoiceId);
+        return tx.invoice.update({ where: { id: invoiceId }, data: totals });
+      });
+    }),
+
+  deleteLine: protectedProcedure
+    .input(z.object({ id: z.string(), invoiceId: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      const orgId = requireOrgId(ctx.organizationId);
+
+      const line = await ctx.prisma.invoiceLine.findUnique({
+        where: { id: input.id },
+        select: { organizationId: true, groupId: true },
+      });
+      if (!line || line.organizationId !== orgId)
+        throw new TRPCError({ code: 'NOT_FOUND', message: 'Line not found' });
+
+      return ctx.prisma.$transaction(async (tx) => {
+        await tx.invoiceLine.delete({ where: { id: input.id } });
+        if (line.groupId) await recomputeGroupTotals(tx, line.groupId);
+        const totals = await computeInvoiceTotals(tx, input.invoiceId);
+        return tx.invoice.update({ where: { id: input.invoiceId }, data: totals });
+      });
+    }),
+
+  // =========================================================================
+  // CONFIRM (DRAFT → SENT)
+  // Deducts stock, sets dueDate, freezes totals — all in one $transaction
+  // =========================================================================
+
+  confirm: protectedProcedure
+    .input(
+      z.object({
+        id: z.string(),
+        warehouseId: z.string(), // warehouse to deduct stock from
+        dueDate: z.coerce.date().optional(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const orgId = requireOrgId(ctx.organizationId);
+
+      const invoice = await ctx.prisma.invoice.findUnique({
+        where: { id: input.id },
+        select: {
+          organizationId: true,
+          status: true,
+          type: true,
+          total: true,
+          dueDate: true,
+          customerId: true,
+        },
+      });
+      if (!invoice) {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'Invoice is not exists',
+        });
+      }
+      assertOwnership(invoice, orgId, 'Invoice');
+
+      if (invoice.status !== 'DRAFT') {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'Only DRAFT invoices can be confirmed',
+        });
+      }
+
+      if (invoice.total === BigInt(0)) {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'Cannot confirm an invoice with zero total',
+        });
+      }
+
+      // Fetch org payment terms for due date default
+      const org = await ctx.prisma.organization.findUniqueOrThrow({
+        where: { id: orgId },
+        select: { paymentTermsDays: true },
+      });
+
+      return ctx.prisma.$transaction(async (tx) => {
+        // 1. Recompute invoice totals one final time
+        const totals = await computeInvoiceTotals(tx, input.id);
+
+        // 2. Set dueDate
+        const now = new Date();
+        const dueDate =
+          input.dueDate ??
+          invoice.dueDate ??
+          new Date(now.getTime() + (org.paymentTermsDays ?? 30) * 86400000);
+
+        // 3. Deduct stock for PRODUCT lines (only for INVOICE type, not QUOTE)
+        if (invoice.type === 'INVOICE') {
+          await deductStockForInvoice(tx, input.id, input.warehouseId, ctx.user.id, orgId);
+        }
+
+        // 4. Update invoice status + totals
+        return tx.invoice.update({
+          where: { id: input.id },
+          data: {
+            ...totals,
+            status: 'SENT',
+            dueDate,
+            amountDue: totals.total,
+          },
+        });
+      });
+    }),
+
+  // =========================================================================
+  // CONVERT QUOTE → INVOICE
+  // =========================================================================
+
+  convertQuote: protectedProcedure
+    .input(z.object({ id: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      const orgId = requireOrgId(ctx.organizationId);
+
+      const quote = await ctx.prisma.invoice.findUnique({
+        where: { id: input.id },
+        select: { organizationId: true, type: true, status: true },
+      });
+      if (!quote) {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'Quotation is not exists',
+        });
+      }
+      assertOwnership(quote, orgId, 'Quote');
+
+      if (quote.type !== 'QUOTE') {
+        throw new TRPCError({ code: 'BAD_REQUEST', message: 'Only quotes can be converted' });
+      }
+      if (quote.status !== 'DRAFT') {
+        throw new TRPCError({ code: 'BAD_REQUEST', message: 'Only DRAFT quotes can be converted' });
+      }
+
+      return ctx.prisma.$transaction(async (tx) => {
+        const serial = await nextSerial(tx, orgId, 'INV');
+        return tx.invoice.update({
+          where: { id: input.id },
+          data: { type: 'INVOICE', serial },
+        });
+      });
+    }),
+
+  // =========================================================================
+  // CANCEL
+  // =========================================================================
+
+  cancel: adminProcedure
+    .input(z.object({ id: z.string(), warehouseId: z.string(), reason: z.string().optional() }))
+    .mutation(async ({ ctx, input }) => {
+      const orgId = requireOrgId(ctx.organizationId);
+
+      const invoice = await ctx.prisma.invoice.findUnique({
+        where: { id: input.id },
+        select: { organizationId: true, status: true, type: true },
+      });
+      if (!invoice) {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'Invoice is not exists',
+        });
+      }
+      assertOwnership(invoice, orgId, 'Invoice');
+
+      if (['PAID', 'CANCELLED', 'DELETED'].includes(invoice.status)) {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: `Cannot cancel a ${invoice.status} invoice`,
+        });
+      }
+
+      return ctx.prisma.$transaction(async (tx) => {
+        // Reverse stock if invoice was already sent
+        if (['SENT', 'PARTIAL'].includes(invoice.status) && invoice.type === 'INVOICE') {
+          await reverseStockForInvoice(tx, input.id, input.warehouseId, ctx.user.id, orgId);
+        }
+
+        return tx.invoice.update({
+          where: { id: input.id },
+          data: { status: 'CANCELLED', paymentStatus: 'CANCELLED', notes: input.reason },
+        });
+      });
+    }),
+
+  // =========================================================================
+  // CREDIT NOTE
+  // =========================================================================
+
+  createCreditNote: protectedProcedure
+    .input(
+      z.object({
+        parentInvoiceId: z.string(),
+        warehouseId: z.string(),
+        notes: z.string().optional(),
         lines: z
           .array(
             z.object({
-              description: z.string(),
-              quantity: z.number().int().positive(),
-              unitSalePrice: z.number().int(), // Assuming input in cents/fils
+              parentLineId: z.string(),
+              quantity: z.string(),
+              reason: z.string().optional(),
             }),
           )
           .min(1),
       }),
     )
-    .mutation(async ({ input, ctx }) => {
-      // 1. Calculate totals for each line and the overall invoice
-      // Note: We convert numbers to BigInt for Prisma
-      const invoiceLines = input.lines.map((line) => {
-        const lineTotal = BigInt(line.quantity) * BigInt(line.unitSalePrice);
-        return {
-          description: line.description,
-          quantity: BigInt(line.quantity),
-          unitSalePrice: BigInt(line.unitSalePrice),
-          lineTotal,
-        };
+    .mutation(async ({ ctx, input }) => {
+      const orgId = requireOrgId(ctx.organizationId);
+
+      const parent = await ctx.prisma.invoice.findUnique({
+        where: { id: input.parentInvoiceId },
+        include: {
+          lines: true,
+          customer: { select: { id: true } },
+        },
       });
-
-      const subtotal = invoiceLines.reduce((acc, line) => acc + line.lineTotal, BigInt(0));
-
-      // You can adjust these if you add tax/discount logic later
-      const taxTotal = BigInt(0);
-      const discountTotal = BigInt(0);
-      const total = subtotal + taxTotal - discountTotal;
-
-      try {
-        return await db.invoice.create({
-          data: {
-            organizationId: ctx.user.organizationId,
-            customerId: input.customerId,
-            createdBy: ctx.user.id,
-            subtotal,
-            taxTotal,
-            discountTotal,
-            total,
-            currency: 'BHD', // Defaulting to BHD as per schema
-            lines: {
-              create: invoiceLines,
-            },
-          },
-          include: {
-            lines: true,
-          },
+      if (!parent) {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'Invoice Parent is not exist',
         });
-      } catch (error) {
-        console.error('Failed to create invoice:', error);
-        throw new Error('Could not create invoice. Please check your data.');
       }
-    }),
-  getInvoiceById: publicProcedure
-    .input(
-      z.object({
-        id: z.string(),
-        include: z
-          .object({
-            customer: z.boolean().optional(),
-            lines: z.boolean().optional(),
-            payments: z.boolean().optional(),
-          })
-          .optional(),
-      }),
-    )
-    .query(async ({ input }) => {
-      try {
-        const item = await db.invoice.findUnique({
-          where: { id: input.id },
-          include: {
-            customer: input.include?.customer,
-            lines: input.include?.lines,
-            payments: input.include?.payments,
-            user: true,
-          },
-        });
+      assertOwnership(parent, orgId, 'Invoice');
 
-        if (!item) {
-          throw new TRPCError({
-            code: 'NOT_FOUND',
-            message: 'Invoice not found',
+      if (!['SENT', 'PARTIAL', 'PAID'].includes(parent.status)) {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'Can only credit a SENT, PARTIAL, or PAID invoice',
+        });
+      }
+
+      return ctx.prisma.$transaction(async (tx) => {
+        const serial = await nextSerial(tx, orgId, 'CN');
+
+        // Build credit note lines mirroring the parent lines selected
+        const creditLines = [];
+        for (const ref of input.lines) {
+          const parentLine = parent.lines.find((l) => l.id === ref.parentLineId);
+          if (!parentLine) {
+            throw new TRPCError({
+              code: 'BAD_REQUEST',
+              message: `Line ${ref.parentLineId} not found on parent invoice`,
+            });
+          }
+
+          const qty = parseFloat(ref.quantity);
+          const unitPrice = Number(parentLine.unitPrice);
+          const discountAmt = Number(parentLine.discountAmt);
+          const taxAmt = Math.round(
+            Number(parentLine.taxAmt) * (qty / Number(parentLine.quantity)),
+          );
+          const lineTotal = computeLineTotal(unitPrice, ref.quantity, discountAmt, taxAmt);
+
+          creditLines.push({
+            itemId: parentLine.itemId ?? undefined,
+            description: ref.reason ?? parentLine.description ?? undefined,
+            quantity: ref.quantity,
+            unitPrice: BigInt(unitPrice),
+            discountAmt: BigInt(discountAmt),
+            taxAmt: BigInt(taxAmt),
+            total: lineTotal,
+            taxRateId: parentLine.taxRateId ?? undefined,
+            taxRateName: parentLine.taxRateName ?? undefined,
+            taxRateValue: parentLine.taxRateSnapshot ?? undefined,
+            purchasePrice: parentLine.purchasePrice,
+            organizationId: orgId,
           });
         }
 
-        return item;
-      } catch (error) {
-        if (error instanceof TRPCError) throw error;
-        throw new TRPCError({
-          code: 'INTERNAL_SERVER_ERROR',
-          message: 'Failed to fetch invoice',
+        const subtotal = creditLines.reduce(
+          (s, l) =>
+            s +
+            (BigInt(l.unitPrice) * BigInt(Math.round(parseFloat(l.quantity) * 1000))) /
+              BigInt(1000),
+          BigInt(0),
+        );
+        const taxTotal = creditLines.reduce((s, l) => s + l.taxAmt, BigInt(0));
+        const total = creditLines.reduce((s, l) => s + l.total, BigInt(0));
+
+        const creditNote = await tx.invoice.create({
+          data: {
+            serial,
+            createdById: ctx.user.id,
+            type: 'CREDIT_NOTE',
+            status: 'SENT',
+            paymentStatus: 'PAID', // CN is immediately settled
+            organizationId: orgId,
+            customerId: parent.customerId,
+            parentInvoiceId: parent.id,
+            date: new Date(),
+            notes: input.notes,
+            subtotal,
+            discountTotal: BigInt(0),
+            taxTotal,
+            total,
+            amountPaid: total,
+            amountDue: BigInt(0),
+            lines: { create: creditLines },
+          },
         });
-      }
+
+        // Return stock for physical items
+        await reverseStockForInvoice(tx, creditNote.id, input.warehouseId, ctx.user.id, orgId);
+
+        return creditNote;
+      });
     }),
 
-  updateInvoice: protectedProcedure
+  // =========================================================================
+  // PAYMENTS
+  // =========================================================================
+
+  addPayment: protectedProcedure
     .input(
       z.object({
-        id: z.string(),
-        data: z.object({
-          // ✅ Fixed: z.nativeEnum for Prisma enums
-          status: z.nativeEnum(InvoiceStatus).optional(),
-          amount: z.number().optional(),
-          dueDate: z.date().optional(),
-          customerId: z.string().optional(),
-          warehouseId: z.string().optional(),
-        }),
+        invoiceId: z.string(),
+        amount: z.number().int().min(1),
+        method: z.enum(['CASH', 'TRANSFER', 'CARD', 'CHEQUE', 'OTHER']),
+        date: z.coerce.date().optional(),
+        reference: z.string().optional(),
+        notes: z.string().optional(),
       }),
     )
-    .mutation(async ({ input, ctx }) => {
-      try {
-        return await db.$transaction(async (tx) => {
-          const currentInvoice = await tx.invoice.findUnique({
-            where: { id: input.id },
-            include: { lines: true },
-          });
+    .mutation(async ({ ctx, input }) => {
+      const orgId = requireOrgId(ctx.organizationId);
+      const { invoiceId, amount, ...rest } = input;
 
-          if (!currentInvoice) throw new Error('Invoice not found');
-
-          if (input.data.status === 'SENT' && currentInvoice.status !== 'SENT') {
-            await deductStockForInvoice(
-              tx,
-              currentInvoice,
-              currentInvoice.lines,
-              ctx,
-              'Invoice Update',
-            );
-          }
-
-          return await tx.invoice.update({
-            where: { id: input.id },
-            data: { ...input.data },
-          });
-        });
-      } catch (error) {
-        if (error instanceof TRPCError) throw error;
+      const invoice = await ctx.prisma.invoice.findUnique({
+        where: { id: invoiceId },
+        select: { organizationId: true, status: true, amountDue: true, type: true },
+      });
+      if (!invoice) {
         throw new TRPCError({
-          code: 'INTERNAL_SERVER_ERROR',
-          message: 'Failed to update invoice',
-          cause: error,
+          code: 'BAD_REQUEST',
+          message: 'invoice is not exist',
         });
       }
+      assertOwnership(invoice, orgId, 'Invoice');
+
+      if (!['SENT', 'PARTIAL', 'OVERDUE'].includes(invoice.status)) {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: `Cannot record payment on a ${invoice.status} invoice`,
+        });
+      }
+
+      if (invoice.type !== 'INVOICE') {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'Payments can only be recorded on invoices',
+        });
+      }
+
+      const bigAmount = BigInt(amount);
+      if (bigAmount > invoice.amountDue) {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'Payment exceeds outstanding balance',
+        });
+      }
+
+      return ctx.prisma.$transaction(async (tx) => {
+        await tx.payment.create({
+          data: {
+            invoiceId,
+            amount: bigAmount,
+            date: rest.date ?? new Date(),
+            method: rest.method,
+            reference: rest.reference,
+            notes: rest.notes,
+            organizationId: orgId,
+          },
+        });
+
+        await syncInvoicePaymentStatus(tx, invoiceId);
+      });
     }),
 
-  deleteInvoice: protectedProcedure
-    .input(z.object({ id: z.string() }))
-    .mutation(async ({ input }) => {
-      try {
-        return await db.invoice.delete({
-          where: { id: input.id },
-        });
-      } catch (error) {
-        throw new TRPCError({
-          code: 'INTERNAL_SERVER_ERROR',
-          message: 'Failed to delete invoice',
-        });
-      }
-    }),
+  deletePayment: adminProcedure
+    .input(z.object({ paymentId: z.string(), invoiceId: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      const orgId = requireOrgId(ctx.organizationId);
 
-  createFullInvoice: protectedProcedure
-    .input(
-      z.object({
-        customerId: z.string(),
-        date: z.date().optional(),
-        warehouseId: z.string().optional(),
-        lines: z.array(
-          z.object({
-            id: z.string().optional(),
-            parentId: z.string().optional(),
-            isGroup: z.boolean().optional(),
-            itemId: z.string().optional(),
-            inventoryItemId: z.string().optional(),
-            description: z.string(),
-            quantity: z.number(),
-            unitPrice: z.number(),
-            purchasePrice: z.number(),
-            tax: z.number().optional().default(0),
-          }),
-        ),
-        isCompleted: z.boolean().optional().default(false),
-      }),
-    )
-    .mutation(async ({ input, ctx }) => {
-      try {
-        return await db.$transaction(async (tx) => {
-          let subtotal = 0;
-          for (const line of input.lines.filter((l) => !l.isGroup)) {
-            subtotal += line.unitPrice * line.quantity;
-          }
-          const total = subtotal;
+      const payment = await ctx.prisma.payment.findUnique({
+        where: { id: input.paymentId },
+        select: { organizationId: true },
+      });
+      if (!payment || payment.organizationId !== orgId)
+        throw new TRPCError({ code: 'NOT_FOUND', message: 'Payment not found' });
 
-          const invoice = await tx.invoice.create({
-            data: {
-              organizationId: ctx.user.organizationId,
-              createdBy: ctx.user.id,
-              customerId: input.customerId,
-              invoiceDate: input.date || new Date(),
-              subtotal: BigInt(Math.round(subtotal * 1000)),
-              taxTotal: BigInt(0),
-              discountTotal: BigInt(0),
-              total: BigInt(Math.round(total * 1000)),
-              status: input.isCompleted ? 'SENT' : 'DRAFT',
-            },
-          });
-
-          // Map to store temporary UI IDs to real DB IDs for groups
-          const groupMap = new Map<string, string>();
-
-          // First, create all groups
-          const groupLines = input.lines.filter((l) => l.isGroup);
-          for (const g of groupLines) {
-            const group = await tx.invoiceLineGroup.create({
-              data: {
-                title: g.description,
-                invoiceId: invoice.id,
-              },
-            });
-            groupMap.set(g.id!, group.id);
-          }
-
-          const createdLines = [];
-          const regularLines = input.lines.filter((l) => !l.isGroup);
-          for (const line of regularLines) {
-            const unitPriceFils = Math.round(line.unitPrice * 1000);
-            const lineTotalFils = Math.round(line.unitPrice * line.quantity * 1000);
-
-            const invoiceLine = await tx.invoiceLine.create({
-              data: {
-                invoiceId: invoice.id,
-                itemId: line.itemId || line.inventoryItemId,
-                description: line.description,
-                quantity: BigInt(line.quantity),
-                unitSalePrice: BigInt(unitPriceFils),
-                lineTotal: BigInt(lineTotalFils),
-                invoiceLineGroupId: line.parentId ? groupMap.get(line.parentId) : null,
-              },
-            });
-            createdLines.push(invoiceLine);
-          }
-
-          if (input.isCompleted) {
-            await deductStockForInvoice(tx, invoice, createdLines, ctx, 'New Invoice');
-          }
-
-          return invoice;
-        });
-      } catch (error) {
-        console.error('[INVOICE_CREATE_ERROR]', error);
-        throw new TRPCError({
-          code: 'INTERNAL_SERVER_ERROR',
-          message: 'Failed to create full invoice',
-          cause: error,
-        });
-      }
+      return ctx.prisma.$transaction(async (tx) => {
+        await tx.payment.delete({ where: { id: input.paymentId } });
+        await syncInvoicePaymentStatus(tx, input.invoiceId);
+      });
     }),
 });

@@ -32,6 +32,9 @@ export const auth = betterAuth({
       lastName: {
         type: 'string',
       },
+      isActive : {
+        type : "boolean"
+      }
     },
   },
 });

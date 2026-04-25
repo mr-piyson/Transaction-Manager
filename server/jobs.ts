@@ -1,142 +1,226 @@
-import { z } from 'zod';
-import { protectedProcedure, t } from '@/lib/trpc/server';
-import { TRPCError } from '@trpc/server';
-import db from '@/lib/db';
+/**
+ * jobs.ts
+ * Job / project tracking. One job can produce one invoice.
+ */
 
-// Zod schema matching the Job model in schema.prisma [cite: 22, 23, 24]
-const jobInputSchema = z.object({
+import { z } from 'zod';
+import { protectedProcedure, adminProcedure, t } from '@/lib/trpc/server';
+import { TRPCError } from '@trpc/server';
+import { assertOwnership, paginationInput, requireOrgId } from './_shared';
+
+const JOB_STATUSES = ['NOT_STARTED', 'IN_PROGRESS', 'ON_HOLD', 'COMPLETED', 'CANCELLED'] as const;
+
+const jobInput = z.object({
   title: z.string().min(1),
-  description: z.string().optional().nullable(),
-  status: z.enum(['NOT_STARTED', 'IN_PROGRESS', 'COMPLETED']).default('NOT_STARTED'),
-  startDate: z.date().optional().nullable(),
-  endDate: z.date().optional().nullable(),
-  customerId: z.string().min(1),
+  description: z.string().optional(),
+  customerId: z.string().optional(),
+  startDate: z.coerce.date().optional(),
+  endDate: z.coerce.date().optional(),
 });
 
 export const jobRouter = t.router({
-  // Fetch all jobs for the user's current organization
-  getJobs: protectedProcedure.query(async ({ ctx }) => {
-    try {
-      return await db.job.findMany({
-        where: {
-          customer: {
-            organizationId: ctx.user.organizationId,
-          },
-        },
-        include: {
-          customer: true,
-        },
-        orderBy: { updatedAt: 'desc' },
-      });
-    } catch (error) {
-      throw new TRPCError({
-        code: 'INTERNAL_SERVER_ERROR',
-        message: 'Failed to fetch jobs',
-      });
-    }
-  }),
+  // -------------------------------------------------------------------------
+  // List — paginated, filterable by status / customer
+  // -------------------------------------------------------------------------
+  list: protectedProcedure
+    .input(
+      paginationInput.extend({
+        search: z.string().optional(),
+        status: z.enum(JOB_STATUSES).optional(),
+        customerId: z.string().optional(),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      const orgId = requireOrgId(ctx.organizationId);
+      const { page, pageSize, search, status, customerId } = input;
 
-  // Fetch a single job with its financial links [cite: 24, 27, 30]
-  getJobById: protectedProcedure
-    .input(z.object({ id: z.string() }))
-    .query(async ({ input, ctx }) => {
-      try {
-        const job = await db.job.findFirst({
-          where: {
-            id: input.id,
-            customer: { organizationId: ctx.user.organizationId },
-          },
-          include: {
-            customer: true,
-            invoices: true,
-          },
-        });
+      const where: any = {
+        organizationId: orgId,
+        ...(status && { status }),
+        ...(customerId && { customerId }),
+        ...(search && {
+          OR: [
+            { title: { contains: search, mode: 'insensitive' } },
+            { description: { contains: search, mode: 'insensitive' } },
+          ],
+        }),
+      };
 
-        if (!job) {
-          throw new TRPCError({ code: 'NOT_FOUND', message: 'Job not found' });
-        }
-        return job;
-      } catch (error) {
-        console.log('Error fetching job by ID:', error);
-        if (error instanceof TRPCError) throw error;
-        throw new TRPCError({
-          code: 'INTERNAL_SERVER_ERROR',
-          message: 'Failed to fetch job details',
-        });
-      }
+      const [items, total] = await ctx.prisma.$transaction([
+        ctx.prisma.job.findMany({
+          where,
+          orderBy: { createdAt: 'desc' },
+          skip: (page - 1) * pageSize,
+          take: pageSize,
+          select: {
+            id: true,
+            title: true,
+            status: true,
+            startDate: true,
+            endDate: true,
+            completedAt: true,
+            createdAt: true,
+            customer: { select: { id: true, name: true } },
+            _count: { select: { invoices: true } },
+          },
+        }),
+        ctx.prisma.job.count({ where }),
+      ]);
+
+      return { items, total, page, pageSize };
     }),
 
-  // Create a new job record [cite: 22, 24]
-  createJob: protectedProcedure.input(jobInputSchema).mutation(async ({ input, ctx }) => {
-    try {
-      // Verify customer belongs to the organization before creating
-      const customer = await db.customer.findFirst({
-        where: { id: input.customerId, organizationId: ctx.user.organizationId },
-      });
+  // -------------------------------------------------------------------------
+  // Get single job with related invoices
+  // -------------------------------------------------------------------------
+  getById: protectedProcedure.input(z.object({ id: z.string() })).query(async ({ ctx, input }) => {
+    const orgId = requireOrgId(ctx.organizationId);
 
-      if (!customer) {
-        throw new TRPCError({ code: 'FORBIDDEN', message: 'Invalid customer selection' });
-      }
-
-      return await db.job.create({
-        data: {
-          title: input.title,
-          description: input.description,
-          status: input.status,
-          startDate: input.startDate,
-          customerId: input.customerId,
+    const job = await ctx.prisma.job.findUnique({
+      where: { id: input.id },
+      include: {
+        customer: { select: { id: true, name: true, phone: true, email: true } },
+        invoices: {
+          where: { status: { not: 'DELETED' } },
+          select: {
+            id: true,
+            serial: true,
+            type: true,
+            status: true,
+            paymentStatus: true,
+            total: true,
+            date: true,
+          },
         },
-      });
-    } catch (error) {
-      if (error instanceof TRPCError) throw error;
-      throw new TRPCError({
-        code: 'INTERNAL_SERVER_ERROR',
-        message: 'Failed to create job',
-      });
-    }
+      },
+    });
+
+    assertOwnership(job, orgId, 'Job');
+    return job;
   }),
 
-  // Update job details or status [cite: 23, 24]
-  updateJob: protectedProcedure
+  // -------------------------------------------------------------------------
+  // Create
+  // -------------------------------------------------------------------------
+  create: protectedProcedure.input(jobInput).mutation(async ({ ctx, input }) => {
+    const orgId = requireOrgId(ctx.organizationId);
+
+    // Verify customer belongs to org if provided
+    if (input.customerId) {
+      const customer = await ctx.prisma.customer.findUnique({
+        where: { id: input.customerId },
+        select: { organizationId: true },
+      });
+      assertOwnership(customer, orgId, 'Customer');
+    }
+
+    return ctx.prisma.job.create({
+      data: { ...input, organizationId: orgId, status: 'NOT_STARTED', createdById: ctx.user.id },
+    });
+  }),
+
+  // -------------------------------------------------------------------------
+  // Update
+  // -------------------------------------------------------------------------
+  update: protectedProcedure
+    .input(z.object({ id: z.string() }).merge(jobInput.partial()))
+    .mutation(async ({ ctx, input }) => {
+      const orgId = requireOrgId(ctx.organizationId);
+      const { id, ...rest } = input;
+
+      const existing = await ctx.prisma.job.findUnique({
+        where: { id },
+        select: { organizationId: true, status: true },
+      });
+      if (!existing) {
+        throw new TRPCError({ code: 'BAD_REQUEST', message: 'Job is not exist' });
+      }
+      assertOwnership(existing, orgId, 'Job');
+
+      if (existing.status === 'CANCELLED') {
+        throw new TRPCError({ code: 'BAD_REQUEST', message: 'Cannot edit a cancelled job' });
+      }
+
+      return ctx.prisma.job.update({ where: { id }, data: rest });
+    }),
+
+  // -------------------------------------------------------------------------
+  // Update status
+  // -------------------------------------------------------------------------
+  updateStatus: protectedProcedure
     .input(
       z.object({
         id: z.string(),
-        data: jobInputSchema.partial(),
+        status: z.enum(JOB_STATUSES),
       }),
     )
-    .mutation(async ({ input, ctx }) => {
-      try {
-        return await db.job.update({
-          where: {
-            id: input.id,
-            customer: { organizationId: ctx.user.organizationId },
-          },
-          data: input.data,
-        });
-      } catch (error) {
+    .mutation(async ({ ctx, input }) => {
+      const orgId = requireOrgId(ctx.organizationId);
+
+      const existing = await ctx.prisma.job.findUnique({
+        where: { id: input.id },
+        select: { organizationId: true, status: true },
+      });
+      if (!existing) {
         throw new TRPCError({
-          code: 'INTERNAL_SERVER_ERROR',
-          message: 'Failed to update job',
+          message: 'job is not exists',
+          code: 'BAD_REQUEST',
         });
       }
+      assertOwnership(existing, orgId, 'Job');
+
+      // Validate transitions
+      const ALLOWED_TRANSITIONS: Record<string, string[]> = {
+        NOT_STARTED: ['IN_PROGRESS', 'CANCELLED'],
+        IN_PROGRESS: ['ON_HOLD', 'COMPLETED', 'CANCELLED'],
+        ON_HOLD: ['IN_PROGRESS', 'CANCELLED'],
+        COMPLETED: [], // terminal
+        CANCELLED: [], // terminal
+      };
+
+      if (!ALLOWED_TRANSITIONS[existing.status]?.includes(input.status)) {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: `Cannot transition job from ${existing.status} to ${input.status}`,
+        });
+      }
+
+      const data: any = { status: input.status };
+      if (input.status === 'COMPLETED') data.completedAt = new Date();
+
+      return ctx.prisma.job.update({ where: { id: input.id }, data });
     }),
 
-  // Delete a job record (Cascade will handle relation cleanup if configured)
-  deleteJob: protectedProcedure
-    .input(z.object({ id: z.string() }))
-    .mutation(async ({ input, ctx }) => {
-      try {
-        return await db.job.delete({
-          where: {
-            id: input.id,
-            customer: { organizationId: ctx.user.organizationId },
-          },
-        });
-      } catch (error) {
-        throw new TRPCError({
-          code: 'INTERNAL_SERVER_ERROR',
-          message: 'Failed to delete job',
-        });
-      }
-    }),
+  // -------------------------------------------------------------------------
+  // Delete (admin only, only non-started/cancelled jobs)
+  // -------------------------------------------------------------------------
+  delete: adminProcedure.input(z.object({ id: z.string() })).mutation(async ({ ctx, input }) => {
+    const orgId = requireOrgId(ctx.organizationId);
+
+    const existing = await ctx.prisma.job.findUnique({
+      where: { id: input.id },
+      select: {
+        organizationId: true,
+        status: true,
+        _count: { select: { invoices: true } },
+      },
+    });
+    assertOwnership(existing, orgId, 'Job');
+
+    if (!existing || existing._count.invoices > 0) {
+      throw new TRPCError({
+        code: 'BAD_REQUEST',
+        message: 'Cannot delete a job that has invoices',
+      });
+    }
+
+    if (!['NOT_STARTED', 'CANCELLED'].includes(existing.status)) {
+      throw new TRPCError({
+        code: 'BAD_REQUEST',
+        message: 'Only not-started or cancelled jobs can be deleted',
+      });
+    }
+
+    return ctx.prisma.job.delete({ where: { id: input.id } });
+  }),
 });

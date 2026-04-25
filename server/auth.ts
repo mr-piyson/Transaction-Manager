@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { protectedProcedure, publicProcedure, t } from '@/lib/trpc/server';
+import { publicProcedure, t } from '@/lib/trpc/server';
 import { TRPCError } from '@trpc/server';
 import { auth } from '@/auth/auth-server';
 import { headers } from 'next/headers';

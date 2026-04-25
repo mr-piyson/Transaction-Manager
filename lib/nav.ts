@@ -60,14 +60,7 @@ export const ROUTES = [
         icon: User,
         auth: { action: 'read', subject: 'Customer' },
       },
-      {
-        type: 'item',
-        label: 'Jobs',
-        key: 'common.jobs',
-        href: '/app/jobs',
-        icon: FileText,
-        auth: { action: 'read', subject: 'Contracts' },
-      },
+
       {
         type: 'item',
         label: 'Products & Services',

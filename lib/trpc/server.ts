@@ -1,54 +1,126 @@
-import { getSession } from '@/auth/auth-server';
 import { initTRPC, TRPCError } from '@trpc/server';
-import db from '@/lib/db';
+import { type FetchCreateContextFnOptions } from '@trpc/server/adapters/fetch';
 import superjson from 'superjson';
+import { ZodError } from 'zod';
+import type { Role } from '@prisma/client';
+import { auth } from '@/auth/auth-server';
 
-// Define the context
-export const createContext = async () => {
-  // Fetch the current session using better-auth
-  const sessionData = await getSession();
+// ---------------------------------------------------------------------------
+// Context
+// ---------------------------------------------------------------------------
+
+export async function createContext(opts: FetchCreateContextFnOptions) {
+  const session = await auth.api.getSession({ headers: opts.req.headers });
 
   return {
-    db,
-    user: sessionData?.user || null,
-    session: sessionData?.session || null,
+    prisma,
+    session,
+    user: session?.user ?? null,
   };
-};
+}
 
-// Initialize tRPC with the context type
-export const t = initTRPC.context<typeof createContext>().create({
+export type Context = Awaited<ReturnType<typeof createContext>>;
+
+// ---------------------------------------------------------------------------
+// tRPC init
+// ---------------------------------------------------------------------------
+
+export const t = initTRPC.context<Context>().create({
   transformer: superjson,
+  errorFormatter({ shape, error }) {
+    return {
+      ...shape,
+      data: {
+        ...shape.data,
+        zodError: error.cause instanceof ZodError ? error.cause.flatten() : null,
+      },
+    };
+  },
 });
 
-/**
- * ================================
- * Middlewares
- * ================================
- */
+export const router = t.router;
+export const createCallerFactory = t.createCallerFactory;
 
-// Create an Authentication Middleware
-const authMiddleware = t.middleware(({ ctx, next }) => {
-  if (!ctx.user || !ctx.session) {
-    throw new TRPCError({
-      code: 'UNAUTHORIZED',
-      message: 'You must be logged in to perform this action',
-    });
+// ---------------------------------------------------------------------------
+// Reusable middleware
+// ---------------------------------------------------------------------------
+
+/** Requires a valid Better Auth session. Attaches user + org to ctx. */
+const enforceAuth = t.middleware(async ({ ctx, next }) => {
+  if (!ctx.session || !ctx.user) {
+    throw new TRPCError({ code: 'UNAUTHORIZED' });
   }
 
-  // Pass the user to the next procedure, guaranteeing it is not null
+  if (!ctx.user.isActive) {
+    throw new TRPCError({ code: 'FORBIDDEN', message: 'Account is disabled' });
+  }
+
+  // Resolve the user's org-level role
+  const orgRole = ctx.user.organizationId
+    ? await ctx.prisma.userOrganizationRole.findUnique({
+        where: {
+          userId_organizationId: {
+            userId: ctx.user.id,
+            organizationId: ctx.user.organizationId,
+          },
+        },
+        select: { role: true },
+      })
+    : null;
+
   return next({
     ctx: {
       ...ctx,
-      // Type override: user and session are strictly non-null here
       user: ctx.user,
       session: ctx.session,
+      organizationId: ctx.user.organizationId ?? null,
+      orgRole: (orgRole?.role ?? ctx.user.role) as Role,
     },
   });
 });
 
-// Base router
-export const router = t.router;
-// Base procedure
+/** Requires ADMIN or SUPER_ADMIN role. */
+const enforceAdmin = t.middleware(async ({ ctx, next }) => {
+  if (!ctx.session || !ctx.user) {
+    throw new TRPCError({ code: 'UNAUTHORIZED' });
+  }
+
+  const orgRole = ctx.user.organizationId
+    ? await ctx.prisma.userOrganizationRole.findUnique({
+        where: {
+          userId_organizationId: {
+            userId: ctx.user.id,
+            organizationId: ctx.user.organizationId!,
+          },
+        },
+        select: { role: true },
+      })
+    : null;
+
+  const role = orgRole?.role ?? ctx.user.role;
+
+  if (role !== 'ADMIN' && role !== 'SUPER_ADMIN') {
+    throw new TRPCError({
+      code: 'FORBIDDEN',
+      message: 'Admin access required',
+    });
+  }
+
+  return next({
+    ctx: {
+      ...ctx,
+      user: ctx.user,
+      session: ctx.session,
+      organizationId: ctx.user.organizationId ?? null,
+      orgRole: role as Role,
+    },
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Procedure builders
+// ---------------------------------------------------------------------------
+
 export const publicProcedure = t.procedure;
-// Authed procedure
-export const protectedProcedure = t.procedure.use(authMiddleware);
+export const protectedProcedure = t.procedure.use(enforceAuth);
+export const adminProcedure = t.procedure.use(enforceAdmin);

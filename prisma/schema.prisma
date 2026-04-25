@@ -1,23 +1,49 @@
-// ============================================================
-// Prisma Schema — ERP / CRM  (Optimized)
-// Compatible with PostgreSQL (prod) / SQLite (dev)
+// =============================================================================
+// Prisma Schema — CCTV Field Operations ERP
+// Stack : Next.js 16 · tRPC · Prisma 5.x · Better Auth · Bun
+// DB    : PostgreSQL (prod) · SQLite (dev) — switch via DATABASE_URL env var
 //
-// ============================================================
+// Money  : ALL monetary fields are BigInt in smallest currency unit
+//           BHD → fils  (1 BHD = 1000 fils,  precision 3)
+//           USD → cents (1 USD = 100  cents,  precision 2)
+//           Use utils.ts  toSmallestUnit() / formatAmount() everywhere.
+//
+// Soft-delete pattern : every user-facing entity has deletedAt DateTime?
+//   Always filter with  WHERE deletedAt IS NULL  in application queries.
+//   A Prisma middleware / tRPC context helper should apply this globally.
+//
+// Serial numbers : invoices and POs use a per-org sequence table
+//   (DocumentSequence) so INV-00001 can exist once per org, not once globally.
+//   Generate inside a $transaction with SELECT FOR UPDATE on the sequence row.
+//
+// Stock invariant : Stock.quantity MUST never go negative.
+//   Enforced by application layer + raw SQL CHECK constraint in migration:
+//   ALTER TABLE "Stock" ADD CONSTRAINT "stock_qty_non_negative" CHECK (quantity >= 0);
+//
+// Transactions : every multi-table mutation (PO receive, invoice confirm,
+//   stock adjustment) MUST use prisma.$transaction — never fire separate queries.
+//
+// "Other" supplier : seed one Supplier row with isSystem = true per org.
+//   The app uses this row when a purchase has no known supplier.
+// =============================================================================
 
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "sqlite" // Switch to "sqlite" for local dev
+  // Switch provider to "postgresql" for production.
+  // Keep "sqlite" for local dev — Bun + Prisma work fine with both.
+  provider = "sqlite"
 }
 
-// ============================================================
-// Enums
-// ============================================================
+// =============================================================================
+// ENUMS
+// All enums that Prisma needs to know at compile time live here at the top.
+// =============================================================================
 
-// [CHANGE 8] Was a raw String — typos like "bhd" caused silent
-// document corruption. Enum enforces valid ISO 4217 codes.
+// ISO 4217 currency codes supported by this system.
+// Add more as needed — the CURRENCIES map in utils.ts must stay in sync.
 enum CurrencyCode {
   BHD
   USD
@@ -31,34 +57,51 @@ enum CurrencyCode {
   EGP
 }
 
-enum PaymentStatus {
-  PENDING
-  PARTIAL
-  PAID
-  OVERDUE
-  CANCELLED
-}
-
+// User roles — global (on User) for platform-level access,
+// per-org (on UserOrganizationRole) for org-level access.
 enum Role {
-  SUPER_ADMIN
-  ADMIN
-  USER
+  SUPER_ADMIN // Platform admin — cross-org access, no org scope
+  ADMIN // Full access within their org
+  USER // Read + create, no delete / manual stock adj / confirmed-invoice edits
 }
 
+// Whether a catalogue item is a physical product or an intangible service.
+// PRODUCT → tracked in Stock.
+// SERVICE → no stock tracking, no stock movement on invoice confirm.
 enum ItemType {
-  PRODUCT // Physical goods — tracked in stock
-  SERVICE // Intangible — no stock tracking
+  PRODUCT
+  SERVICE
 }
 
+// Document types issued to customers.
+enum InvoiceType {
+  QUOTE // Estimate — can be converted to INVOICE
+  INVOICE // Standard tax invoice
+  CREDIT_NOTE // Reversal — must reference a parent INVOICE via parentInvoiceId
+}
+
+// Lifecycle of a customer-facing document.
 enum InvoiceStatus {
-  DRAFT // initial state can generate quotation
-  IN_PROGRESS // when the invoice is created
-  SENT // when the invoice is sent to the customer
-  COMPLETED // when the invoice is completed
-  CANCELLED // when the invoice is cancelled
-  DELETED // when the invoice is deleted
+  DRAFT // Being built — stock NOT yet committed
+  SENT // Issued to customer — stock committed, dueDate populated
+  PARTIAL // Partially paid
+  PAID // Fully paid — sum(payments) >= total
+  OVERDUE // Past dueDate with outstanding balance (set by scheduled job)
+  CANCELLED // Voided — stock movements reversed
+  DELETED // Soft-deleted — hidden from all views
 }
 
+// Receivable payment status — derived field kept denormalised for fast queries.
+// Computed and stored on Invoice whenever a Payment is inserted/deleted.
+enum PaymentStatus {
+  PENDING // No payment recorded yet
+  PARTIAL // Some payments recorded, balance remains
+  PAID // Fully settled
+  OVERDUE // Past due date, still outstanding
+  CANCELLED // Invoice was cancelled
+}
+
+// Methods of payment accepted for both customer invoices and supplier POs.
 enum PaymentMethod {
   CASH
   TRANSFER
@@ -67,86 +110,172 @@ enum PaymentMethod {
   OTHER
 }
 
+// Purchase order lifecycle.
 enum PurchaseStatus {
-  DRAFT
-  ORDERED
-  PARTIAL_RECEIVED
-  RECEIVED
+  DRAFT // Being drafted
+  ORDERED // Sent to supplier
+  PARTIAL_RECEIVED // Some lines received
+  RECEIVED // All lines fully received
   CANCELLED
 }
 
-// ============================================================
-// Organization (multi-tenancy root)
-// ============================================================
+// Every reason stock quantity can change.
+// Each StockMovement row must carry one of these types.
+enum StockMovementType {
+  PURCHASE_INBOUND // Stock added when PO line is received
+  SALE_OUTBOUND // Stock deducted when invoice is confirmed (DRAFT→SENT)
+  RETURN_INBOUND // Customer return — stock added back (credit note)
+  RETURN_OUTBOUND // Supplier return — stock removed
+  ADJUSTMENT_UP // Manual positive correction by ADMIN
+  ADJUSTMENT_DOWN // Manual negative correction / write-off by ADMIN
+  TRANSFER // Between warehouses — paired FROM/TO movements
+}
 
+// CCTV job / project lifecycle.
+enum JobStatus {
+  NOT_STARTED
+  IN_PROGRESS
+  COMPLETED // Triggers "Create Invoice" action in the UI
+  CANCELLED
+  ON_HOLD
+}
+
+// =============================================================================
+// DOCUMENT SEQUENCE
+// One row per (org, prefix). Use SELECT FOR UPDATE inside $transaction.
+// Replaces the broken global @unique invoiceSerial on Invoice.
+// =============================================================================
+
+// Generates collision-safe, per-org sequential document numbers.
+// Usage: SELECT FOR UPDATE → increment nextVal → formatID(prefix, nextVal).
+//
+// Supported prefixes defined by this system:
+//   INV → customer invoices
+//   QTE → quotes
+//   CN  → credit notes
+//   PO  → purchase orders
+model DocumentSequence {
+  id     String @id @default(cuid())
+  prefix String // "INV" | "QTE" | "CN" | "PO"
+
+  // Increment this inside a $transaction, then use the new value as the serial.
+  nextVal Int @default(1)
+
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+
+  // One sequence per prefix per org.
+  @@unique([organizationId, prefix])
+  @@index([organizationId])
+}
+
+// =============================================================================
+// ORGANIZATION  (multi-tenancy root)
+// =============================================================================
+
+// Root tenant. All data is scoped to an Organization via organizationId.
+// For this CCTV business there will likely be one org, but the schema
+// is built multi-tenant-ready so it can scale later.
 model Organization {
   id      String  @id @default(cuid())
   name    String
-  logo    String?
+  slug    String  @unique // URL-safe identifier e.g. "acme-cctv"
+  logo    String? // URL or storage path
   address String?
+  phone   String?
+  email   String?
   website String?
-  taxId   String? // VAT / CR number shown on documents
 
-  slug String @unique
+  // VAT / Commercial Registration number printed on invoices.
+  taxId String?
 
-  // [CHANGE 8] Was String — now typed CurrencyCode enum
+  // Default org currency — pre-set to BHD for Bahrain.
   currency CurrencyCode @default(BHD)
 
-  // Default payment terms in days (e.g. 30 → Net 30)
+  // Default payment terms used when issuing invoices (days).
+  // e.g. 30 → Net 30. Overridable per invoice.
   paymentTermsDays Int @default(30)
+
+  // Default terms & conditions text appended to all invoices.
+  defaultTermsText String?
+
+  // Stamp / signature image for PDF invoices.
+  stampImage String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  // Relations — every org-scoped model back-references here.
   users                 User[]
   userOrganizationRoles UserOrganizationRole[]
+  documentSequences     DocumentSequence[]
   customers             Customer[]
-  jobs                  Job[]
-  purchases             Purchase[]
-  invoices              Invoice[]
+  suppliers             Supplier[]
   items                 Item[]
-  itemCategories        itemCategory[]
+  categories            ItemCategory[]
+  taxRates              TaxRate[]
+  warehouses            Warehouse[]
+  stocks                Stock[]
+  stockMovements        StockMovement[]
+  jobs                  Job[]
+  invoices              Invoice[]
+  invoiceLineGroup      InvoiceLineGroup[]
+  payments              Payment[]
+  purchaseOrders        PurchaseOrder[]
+  purchasePayments      PurchasePayment[]
+  contracts             Contract[]
+  supplierItems         SupplierItem[]
+  expenseCategories     ExpenseCategory[]
+  expenses              Expense[]
 }
 
-// ============================================================
-// Auth
-// ============================================================
+// =============================================================================
+// AUTH  (Better Auth — do not rename these tables/fields)
+// =============================================================================
 
+// Platform user. A user belongs to exactly one org (or none for SUPER_ADMIN).
+// Per-org role is in UserOrganizationRole.
 model User {
   id            String  @id @default(cuid())
   name          String
   email         String  @unique
   emailVerified Boolean @default(false)
   image         String?
+  firstName     String?
+  lastName      String?
+  locale        String  @default("en")
+  isActive      Boolean @default(true)
 
-  firstName String?
-  lastName  String?
-  isActive  Boolean @default(true)
-  locale    String  @default("en")
-
-  // [CHANGE 7] Global role kept only for SUPER_ADMIN.
-  // Per-org roles now live in UserOrganizationRole.
+  // Global platform role. Only SUPER_ADMIN is meaningful here.
+  // Org-level ADMIN / USER is stored in UserOrganizationRole.
   role Role @default(USER)
 
+  // Primary org association — for single-org users this is set at onboarding.
   organizationId String?
   organization   Organization? @relation(fields: [organizationId], references: [id])
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  accounts              Account[]
-  sessions              Session[]
-  invoices              Invoice[]
+  // Auth relations (Better Auth standard)
+  accounts Account[]
+  sessions Session[]
+
+  // Audit back-references
   userOrganizationRoles UserOrganizationRole[]
+  createdInvoices       Invoice[]              @relation("InvoiceCreatedBy")
+  createdPurchaseOrders PurchaseOrder[]        @relation("POCreatedBy")
+  createdJobs           Job[]                  @relation("JobCreatedBy")
+  stockMovements        StockMovement[]
+  createdExpenses       Expense[]              @relation("ExpenseCreatedBy")
 
   @@index([email])
   @@index([organizationId])
   @@map("user")
 }
 
-// [CHANGE 7] New junction model — replaces the single Role enum
-// on User. Each row grants a user a role within one org.
-// A SUPER_ADMIN can still be checked via User.role globally.
+// Grants a user a role within one specific org.
+// A SUPER_ADMIN ignores this table and has cross-org access via User.role.
 model UserOrganizationRole {
   id   String @id @default(cuid())
   role Role   @default(USER)
@@ -160,7 +289,8 @@ model UserOrganizationRole {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@unique([userId, organizationId]) // One role per user per org
+  // One role per user per org.
+  @@unique([userId, organizationId])
   @@index([organizationId])
   @@index([userId])
 }
@@ -227,223 +357,876 @@ model Jwks {
   @@map("jwks")
 }
 
-// ============================================================
-// Customers
-// ============================================================
+// =============================================================================
+// TAX RATES
+// Centralised tax rate management. Each org defines its own rates.
+// InvoiceLine snapshots the rate at time of issue — changing a TaxRate
+// row does NOT retroactively alter historical invoice lines.
+// =============================================================================
+
+model TaxRate {
+  id   String @id @default(cuid())
+  name String // e.g. "Standard VAT 10%", "Zero-rated", "Exempt"
+
+  // Stored as a Decimal percentage, e.g. 10.00 = 10%, 0.00 = exempt.
+  // Application must divide by 100 when computing amounts.
+  rate      Decimal
+  isDefault Boolean @default(false) // Pre-selected in new invoice lines
+  isActive  Boolean @default(true)
+
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  items        Item[]
+  invoiceLines InvoiceLine[]
+
+  // Rate names must be unique per org.
+  @@unique([name, organizationId])
+  @@index([organizationId])
+  @@index([isActive, organizationId])
+}
+
+// =============================================================================
+// CATEGORIES
+// Used to group items (e.g. "Cameras", "Cables", "Labour").
+// =============================================================================
+
+model ItemCategory {
+  id    String  @id @default(cuid())
+  name  String  @unique
+  color String? // Hex color for UI badges e.g. "#3B82F6"
+
+  isActive  Boolean   @default(true)
+  deletedAt DateTime? // Soft delete
+
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  items Item[]
+
+  @@unique([name, organizationId])
+  @@index([organizationId])
+  @@index([deletedAt])
+  @@map("Category")
+}
+
+// =============================================================================
+// CUSTOMERS
+// =============================================================================
 
 model Customer {
-  id    String  @id @default(cuid())
-  name  String
+  id   String @id @default(cuid())
+  name String
+
+  // Contact details
   phone String?
   email String?
 
-  address  String?
-  taxId    String? // Customer's VAT number
-  notes    String?
-  isActive Boolean @default(true)
+  // Billing / installation address
+  address String?
+  city    String?
 
-  // [CHANGE 14] Soft delete — aligned with Item/Supplier pattern
-  deletedAt DateTime?
+  // Customer's VAT / tax registration number (printed on their invoice copy).
+  taxId String?
 
-  // [CHANGE 1] Was Int — BigInt prevents overflow on high-value accounts
+  notes     String?
+  isActive  Boolean   @default(true)
+  deletedAt DateTime? // Soft delete
+
+  // Credit limit in smallest currency unit (fils). 0 = no limit enforced.
   creditLimit BigInt @default(0)
 
   organizationId String
   organization   Organization @relation(fields: [organizationId], references: [id])
 
-  createdAt DateTime   @default(now())
-  updatedAt DateTime   @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   jobs      Job[]
-  purchases Purchase[]
   invoices  Invoice[]
-  payments  Payment[]
+  contracts Contract[]
 
   @@index([organizationId])
   @@index([email])
   @@index([deletedAt])
-  // [CHANGE 12] Composite — "active customers for org X" is a common lookup
   @@index([organizationId, isActive])
 }
 
-// ============================================================
-// Jobs
-// ============================================================
-enum JobStatus {
-  NOT_STARTED
-  IN_PROGRESS
-  COMPLETED
+// =============================================================================
+// SUPPLIERS
+// =============================================================================
+
+model Supplier {
+  id          String  @id @default(cuid())
+  name        String
+  phone       String?
+  email       String?
+  address     String?
+  contactName String? // Primary contact person
+  website     String?
+  taxId       String?
+  notes       String?
+  isActive    Boolean @default(true)
+
+  // isSystem = true marks the seeded "Other / Unknown" supplier.
+  // This row must never be deleted. The app auto-assigns it when no
+  // supplier is specified on a purchase order.
+  isSystem Boolean @default(false)
+
+  deletedAt DateTime? // Soft delete — block delete if isSystem = true
+
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  supplierItems  SupplierItem[]
+  purchaseOrders PurchaseOrder[]
+
+  @@index([organizationId])
+  @@index([deletedAt])
+  @@index([organizationId, isActive])
 }
+
+// Supplier-specific pricing for a catalogue item.
+// Acts as the quotation price template shown when raising a PO.
+// The unitCost on a PurchaseLine is pre-filled from here but overridable.
+model SupplierItem {
+  id String @id @default(cuid())
+
+  // Supplier's own part number / SKU for this item.
+  supplierSku String?
+
+  // Supplier's name for this item (may differ from our catalogue name).
+  supplierName String?
+
+  // Quoted price in smallest currency unit. Pre-fills PurchaseLine.unitCost.
+  basePrice BigInt
+
+  // Lead time in days (informational).
+  leadTimeDays Int?
+
+  notes     String?
+  isActive  Boolean   @default(true)
+  deletedAt DateTime?
+
+  supplierId String
+  supplier   Supplier @relation(fields: [supplierId], references: [id])
+
+  itemId String
+  item   Item   @relation(fields: [itemId], references: [id])
+
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // A supplier can only have one price entry per their SKU.
+  // If supplierSku is null, fall back to unique(supplierId, itemId).
+  @@unique([supplierId, supplierSku])
+  @@unique([supplierId, itemId]) // one default price per item per supplier
+  @@index([itemId])
+  @@index([organizationId])
+  @@index([supplierId])
+}
+
+// =============================================================================
+// ITEMS  (unified catalogue — products AND services)
+// =============================================================================
+
+model Item {
+  id          String   @id @default(cuid())
+  type        ItemType @default(PRODUCT)
+  sku         String // Internal SKU — unique per org
+  name        String
+  description String?
+  image       String? // URL or storage path
+  unit        String   @default("pcs") // e.g. "pcs", "m", "hrs", "roll"
+
+  isActive  Boolean   @default(true)
+  deletedAt DateTime? // Never hard-delete — historical lines reference this
+
+  // ---------- Pricing ----------
+  // Default purchase price (fils). Pre-fills PurchaseLine.unitCost.
+  // Updated to last purchase cost automatically on PO receive (optional).
+  purchasePrice BigInt @default(0)
+
+  // Default sales price (fils). Pre-fills InvoiceLine.unitPrice.
+  // Must be set by sales-responsible user before item appears on invoices.
+  salesPrice BigInt @default(0)
+
+  // ---------- Sales eligibility ----------
+  // isSaleable = false → item is a consumable / installation material.
+  // It can be purchased and tracked in stock but CANNOT be added to invoices.
+  // Example: raw cable, conduit, screws purchased by the metre/lot.
+  isSaleable Boolean @default(true)
+
+  // ---------- Stock settings (PRODUCT only) ----------
+  // Alert threshold — surfaced in low-stock report when quantity falls below.
+  minStock Int @default(0)
+
+  // ---------- Associations ----------
+  categoryId String?
+  category   ItemCategory? @relation(fields: [categoryId], references: [id])
+
+  // Default tax rate for this item. Copied to InvoiceLine on creation.
+  taxRateId String?
+  taxRate   TaxRate? @relation(fields: [taxRateId], references: [id])
+
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  stock          Stock[]
+  supplierItems  SupplierItem[]
+  invoiceLines   InvoiceLine[]
+  purchaseLines  PurchaseLine[]
+  stockMovements StockMovement[]
+  expenses       Expense[]
+
+  // SKU must be unique per org.
+  @@unique([sku, organizationId])
+  @@index([organizationId])
+  @@index([type])
+  @@index([deletedAt])
+  @@index([organizationId, type, isActive])
+  @@index([organizationId, isSaleable, isActive]) // Invoice item picker query
+}
+
+// =============================================================================
+// WAREHOUSES
+// Physical storage locations. Most small businesses will have one.
+// =============================================================================
+
+model Warehouse {
+  id       String  @id @default(cuid())
+  name     String
+  address  String?
+  isActive Boolean @default(true)
+
+  // isDefault = true → pre-selected when raising POs and invoices.
+  isDefault Boolean   @default(false)
+  deletedAt DateTime?
+
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  stock             Stock[]
+  invoices          Invoice[]
+  purchaseOrders    PurchaseOrder[]
+  outgoingMovements StockMovement[] @relation("FromWarehouseMovements")
+  incomingMovements StockMovement[] @relation("ToWarehouseMovements")
+  jobs              Job[]
+
+  @@unique([name, organizationId])
+  @@index([organizationId])
+  @@index([deletedAt])
+}
+
+// Per-item, per-warehouse quantity snapshot.
+// This is the "current stock level" table.
+// Quantity changes ONLY through StockMovement + $transaction.
+model Stock {
+  id       String  @id @default(cuid())
+  quantity Int     @default(0) // MUST be >= 0 — enforced via SQL CHECK
+  location String? // Bin / shelf reference e.g. "Shelf A3"
+
+  itemId String
+  item   Item   @relation(fields: [itemId], references: [id])
+
+  warehouseId String
+  warehouse   Warehouse @relation(fields: [warehouseId], references: [id])
+
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // One stock record per item per warehouse.
+  @@unique([itemId, warehouseId])
+  @@index([organizationId])
+  @@index([warehouseId])
+  @@index([organizationId, itemId])
+}
+
+// Immutable audit trail for every stock quantity change.
+// Every mutation to Stock.quantity must be paired with a StockMovement row
+// inside the same $transaction. Never update Stock without a movement.
+model StockMovement {
+  id   String            @id @default(cuid())
+  type StockMovementType
+
+  // Positive = added to stock, Negative = removed from stock.
+  // For TRANSFER, create two rows: one negative (fromWarehouse) + one positive (toWarehouse).
+  quantity Int
+
+  notes String? // Reason for manual adjustments
+
+  // ---------- Document back-references (all optional) ----------
+  // Set when movement is triggered by an invoice line confirmation.
+  invoiceLineId String?
+  invoiceLine   InvoiceLine? @relation(fields: [invoiceLineId], references: [id])
+
+  // Set when movement is triggered by a purchase line receipt.
+  purchaseLineId String?
+  purchaseLine   PurchaseLine? @relation(fields: [purchaseLineId], references: [id])
+
+  // Set for TRANSFER type — source warehouse.
+  fromWarehouseId String?
+  fromWarehouse   Warehouse? @relation("FromWarehouseMovements", fields: [fromWarehouseId], references: [id])
+
+  // Set for TRANSFER type — destination warehouse.
+  toWarehouseId String?
+  toWarehouse   Warehouse? @relation("ToWarehouseMovements", fields: [toWarehouseId], references: [id])
+
+  itemId String
+  item   Item   @relation(fields: [itemId], references: [id])
+
+  // The user who triggered the movement (null for system-generated movements).
+  userId String?
+  user   User?   @relation(fields: [userId], references: [id])
+
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+
+  // Immutable — no updatedAt, movements are never modified after creation.
+  createdAt DateTime @default(now())
+
+  @@index([organizationId])
+  @@index([itemId])
+  @@index([invoiceLineId])
+  @@index([purchaseLineId])
+  @@index([organizationId, createdAt]) // Audit trail date range queries
+  @@index([organizationId, type]) // "Show me all inbound movements"
+  @@index([fromWarehouseId])
+  @@index([toWarehouseId])
+  @@index([organizationId, itemId, createdAt]) // Per-item history
+}
+
+// =============================================================================
+// JOBS  (field operations — the core workflow driver)
+// A Job represents one CCTV installation project.
+// Invoice is generated after Job is marked COMPLETED.
+// =============================================================================
 
 model Job {
-  id          String    @id @default(cuid())
-  title       String
-  description String?
-  status      JobStatus @default(NOT_STARTED)
-
-  startDate DateTime?
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  // relations
-  customerId     String
-  customer       Customer      @relation(fields: [customerId], references: [id], onDelete: Cascade)
-  invoices       Invoice[]
-  organization   Organization? @relation(fields: [organizationId], references: [id])
-  organizationId String?
-
-  @@index([customerId])
-  @@index([status])
-}
-
-model Purchase {
-  id         String @id @default(cuid())
-  customerId String
-
-  // What you did / what it costs you
-  title    String
-  details  String?
-  quantity Decimal @default(1)
-  unitCost BigInt // your cost basis
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  customer Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
-
-  invoiceLines   InvoiceLine[]
-  organization   Organization? @relation(fields: [organizationId], references: [id])
-  organizationId String?
-
-  @@index([customerId])
-}
-
-model Invoice {
   id          String  @id @default(cuid())
-  description String?
+  title       String // e.g. "Villa CCTV Install — Ali Mohammed"
+  description String? // Scope of work agreed with customer
+  reference   String? // Internal reference / site reference
 
-  status InvoiceStatus @default(IN_PROGRESS)
+  status JobStatus @default(NOT_STARTED)
 
-  invoiceNumber String?  @unique
-  currency      String   @default("BHD")
-  invoiceDate   DateTime @default(now())
+  // Scheduled dates agreed with customer.
+  scheduledStart DateTime?
+  scheduledEnd   DateTime?
 
-  notes String?
+  // Actual dates recorded in the field.
+  actualStart DateTime?
+  actualEnd   DateTime?
+  completedAt DateTime? // Set automatically when status → COMPLETED
 
-  subtotal      BigInt
-  taxTotal      BigInt
-  discountTotal BigInt
-  total         BigInt
+  notes String? // Internal notes / site observations
+
+  // Soft delete
+  deletedAt DateTime?
+
+  // ---------- Associations ----------
+  customerId String?
+  customer   Customer? @relation(fields: [customerId], references: [id])
+
+  // The warehouse items are pulled from for this job.
+  warehouseId String?
+  warehouse   Warehouse? @relation(fields: [warehouseId], references: [id])
+
+  createdById String
+  createdBy   User   @relation("JobCreatedBy", fields: [createdById], references: [id])
+
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  // relations
+  // A job can produce at most one invoice (one-to-one enforced at app layer).
+  // The Invoice references back via jobId.
+  invoices Invoice[]
+  expenses Expense[]
 
-  customerId String
-  customer   Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
-  jobId      String?
-  job        Job?     @relation(fields: [jobId], references: [id], onDelete: SetNull)
-
-  lines             InvoiceLine[]
-  payments          Payment[]
-  organization      Organization?      @relation(fields: [organizationId], references: [id])
-  organizationId    String?
-  user              User?              @relation(fields: [createdBy], references: [id])
-  createdBy         String?
-  invoiceLineGroups InvoiceLineGroup[]
-
+  @@index([organizationId])
   @@index([customerId])
   @@index([status])
-  @@index([invoiceDate])
+  @@index([deletedAt])
+  @@index([organizationId, status])
+  @@index([organizationId, customerId])
+  @@index([createdById])
 }
 
-model InvoiceLine {
+// Warehouses relation to Job (Prisma requires explicit field on the other side)
+// Added in Warehouse model above: jobs Job[]
+// Add this to Warehouse model: jobs Job[]
+
+// =============================================================================
+// INVOICES
+// =============================================================================
+
+// Customer-facing document: QUOTE → INVOICE or CREDIT_NOTE.
+model Invoice {
   id String @id @default(cuid())
+
+  // Human-readable serial: "INV-00042", "QTE-00005", "CN-00003".
+  // Generated from DocumentSequence inside a $transaction.
+  // Unique per org — NOT globally unique (fixed from original schema).
+  serial String
+
+  type   InvoiceType   @default(INVOICE)
+  status InvoiceStatus @default(DRAFT)
+
+  // paymentStatus is a denormalised computed field.
+  // Recompute and persist whenever payments change.
+  paymentStatus PaymentStatus @default(PENDING)
+
+  // Issue date and due date.
+  date    DateTime  @default(now())
+  // Populated on transition DRAFT → SENT. App enforces this — nullable only for DRAFT.
+  dueDate DateTime?
+
+  // CREDIT_NOTE: must reference the invoice being reversed.
+  parentInvoiceId String?
+  parentInvoice   Invoice?  @relation("CreditNotes", fields: [parentInvoiceId], references: [id])
+  creditNotes     Invoice[] @relation("CreditNotes")
+
+  // QUOTE: when converted to an invoice, record the source quote.
+  convertedFromId String?
+  convertedFrom   Invoice?  @relation("QuoteConversions", fields: [convertedFromId], references: [id])
+  conversions     Invoice[] @relation("QuoteConversions")
+
+  description String? // Internal description / job summary
+  notes       String? // Printed notes on the invoice (e.g. bank details)
+  termsText   String? // T&C printed at the bottom — defaults from org.defaultTermsText
+
+  currency CurrencyCode @default(BHD)
+
+  // ---------- Totals (BigInt fils) ----------
+  // Recomputed from lines whenever the invoice is saved.
+  subtotal      BigInt @default(0) // Sum of (unitPrice × quantity) before discounts
+  discountTotal BigInt @default(0) // Sum of all line discountAmt
+  taxTotal      BigInt @default(0) // Sum of all line taxAmt
+  total         BigInt @default(0) // subtotal - discountTotal + taxTotal
+  amountPaid    BigInt @default(0) // Denormalised sum of confirmed payments
+  amountDue     BigInt @default(0) // total - amountPaid
+
+  // ---------- Customer ----------
+  // isWalkIn = true → invoice without a named customer (cash sale).
+  isWalkIn   Boolean   @default(false)
+  customerId String?
+  customer   Customer? @relation(fields: [customerId], references: [id])
+
+  // ---------- Job link ----------
+  // Set when invoice is generated from a completed job.
+  jobId String?
+  job   Job?    @relation(fields: [jobId], references: [id])
+
+  // ---------- Warehouse ----------
+  // The warehouse stock is deducted from on confirmation.
+  warehouseId String?
+  warehouse   Warehouse? @relation(fields: [warehouseId], references: [id])
+
+  // ---------- Audit ----------
+  createdById String
+  createdBy   User   @relation("InvoiceCreatedBy", fields: [createdById], references: [id])
+
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  lines    InvoiceLine[]
+  groups   InvoiceLineGroup[]
+  payments Payment[]
+
+  // Serial unique per org — not globally.
+  @@unique([serial, organizationId])
+  @@index([organizationId])
+  @@index([customerId])
+  @@index([jobId])
+  @@index([status])
+  @@index([type])
+  @@index([date])
+  @@index([dueDate])
+  @@index([organizationId, status])
+  @@index([organizationId, date])
+  @@index([organizationId, type, status])
+  @@index([customerId, status])
+  @@index([organizationId, paymentStatus]) // AR aging dashboard
+  @@index([organizationId, dueDate]) // Overdue check job
+}
+
+// Groups of invoice lines — the key feature for CCTV installs.
+// The manager groups items by area/task (e.g. "Ground Floor Cameras").
+// showLineDetails = false → the printed invoice shows ONLY the group title
+// and its total, hiding individual item names and costs.
+// This lets the manager protect pricing while still showing the breakdown
+// internally in the system.
+model InvoiceLineGroup {
+  id    String @id @default(cuid())
+  title String // e.g. "Ground Floor — Camera Installation"
+
+  // When true: print/PDF shows group title + total only (hides item details).
+  // When false: print/PDF shows all lines inside the group.
+  showLineDetails Boolean @default(false)
+
+  sortOrder Int @default(0) // Display order within the invoice
+
+  // ---------- Group-level snapshot totals ----------
+  // Recomputed whenever lines in this group change.
+  subtotal      BigInt @default(0)
+  discountTotal BigInt @default(0)
+  taxTotal      BigInt @default(0)
+  total         BigInt @default(0)
 
   invoiceId String
   invoice   Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
 
-  // Quantities and pricing on the sale side
-  description   String
-  quantity      BigInt // e.g. hours, units
-  unitSalePrice BigInt
-  lineTotal     BigInt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  purchaseId String? // null when MANUAL
-  purchase   Purchase? @relation(fields: [purchaseId], references: [id], onDelete: SetNull)
-
-  createdAt          DateTime          @default(now())
-  itemId             String?
-  invoiceLineGroup   InvoiceLineGroup? @relation(fields: [invoiceLineGroupId], references: [id])
-  invoiceLineGroupId String?
+  lines          InvoiceLine[]
+  organization   Organization? @relation(fields: [organizationId], references: [id])
+  organizationId String?
 
   @@index([invoiceId])
-  @@index([purchaseId])
+  @@index([invoiceId, sortOrder]) // Ordered group retrieval
 }
 
-model InvoiceLineGroup {
-  id        String        @id @default(cuid())
-  title     String
-  invoiceId String
-  invoice   Invoice       @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
-  lines     InvoiceLine[]
-}
-
-model Payment {
+// One line on an invoice — a quantity of an item or a free-text service.
+model InvoiceLine {
   id String @id @default(cuid())
 
-  amount    BigInt
-  method    PaymentMethod @default(CASH)
-  reference String? // external txn id
-  paidAt    DateTime      @default(now())
+  // Free-text description. Required if itemId is null (free-text line).
+  // Pre-filled from Item.name when itemId is set, but overridable.
+  description String?
+
+  // Decimal supports fractional quantities: 2.5 hrs, 15.5 m of cable.
+  quantity Decimal @default(1)
+
+  // ---------- Pricing (BigInt fils) ----------
+  // Snapshot of purchase price at time of invoicing — used for gross profit reporting.
+  purchasePrice BigInt @default(0)
+
+  // Actual unit price charged. Pre-filled from Item.salesPrice but overridable.
+  unitPrice BigInt @default(0)
+
+  // Line-level discount amount (not percentage — store amount for precision).
+  discountAmt BigInt @default(0)
+
+  // Tax amount calculated from (unitPrice × quantity - discountAmt) × taxRateSnapshot.
+  taxAmt BigInt @default(0)
+
+  // Line total = (unitPrice × quantity) - discountAmt + taxAmt
+  total BigInt @default(0)
+
+  // ---------- Item ----------
+  // null = free-text line (e.g. "Installation Labour — 4 hrs").
+  itemId String?
+  item   Item?   @relation(fields: [itemId], references: [id])
+
+  // ---------- Tax ----------
+  // FK to TaxRate — used to pre-fill snapshot fields.
+  taxRateId String?
+  taxRate   TaxRate? @relation(fields: [taxRateId], references: [id])
+
+  // Snapshot preserved so historical invoices don't change if TaxRate is edited.
+  taxRateSnapshot Decimal? // e.g. 10.00 (for 10%)
+  taxRateName     String? // e.g. "Standard VAT 10%"
+
+  // ---------- Group ----------
+  // null = ungrouped line, sits outside all groups.
+  groupId String?
+  group   InvoiceLineGroup? @relation(fields: [groupId], references: [id])
+
+  // ---------- Invoice ----------
+  invoiceId String
+  invoice   Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+
+  sortOrder Int @default(0)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  customerId String
-  invoiceId  String
-  customer   Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
-  invoice    Invoice  @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  stockMovements StockMovement[]
 
   @@index([invoiceId])
-  @@index([customerId])
+  @@index([itemId])
+  @@index([groupId])
+  @@index([invoiceId, sortOrder]) // Ordered line retrieval
 }
 
-model Item {
-  id          String   @id @default(cuid())
-  sku         String?  @unique
-  barcode     String?  @unique
-  name        String
-  description String?
-  type        ItemType @default(PRODUCT)
+// Customer payment against an invoice.
+// Multiple partial payments are supported.
+model Payment {
+  id        String        @id @default(cuid())
+  date      DateTime      @default(now())
+  method    PaymentMethod @default(CASH)
+  amount    BigInt // Fils — must be > 0
+  reference String? // Bank reference, cheque number, etc.
+  notes     String?
 
-  // For PRODUCTS, this is the current stock level.
-  // For SERVICES, this can be null or ignored.
-  stockQuantity BigInt?
+  invoiceId String
+  invoice   Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
 
-  purchasePrice BigInt @default(0) // your cost basis
-  salesPrice    BigInt @default(0) // what you charge customers
-
-  categoryId String?
-  category   itemCategory? @relation(fields: [categoryId], references: [id])
-
-  createdAt      DateTime      @default(now())
-  updatedAt      DateTime      @updatedAt
-  organization   Organization? @relation(fields: [organizationId], references: [id])
-  organizationId String?
-}
-
-model itemCategory {
-  id    String  @id @default(cuid())
-  name  String  @unique
-  color String? // for UI tagging
-  icon  String? // e.g. "box", "tool", "service" — for UI
+  // Direct org FK — avoids join-through-Invoice for every cash flow query.
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  organization   Organization? @relation(fields: [organizationId], references: [id])
-  organizationId String?
-  items          Item[]
+  @@index([invoiceId])
+  @@index([organizationId])
+  @@index([organizationId, date]) // Cash flow by period
+  @@index([organizationId, method]) // Payment method breakdown
+}
+
+// =============================================================================
+// PURCHASE ORDERS
+// =============================================================================
+
+// Order raised to a supplier to purchase items or materials.
+model PurchaseOrder {
+  id String @id @default(cuid())
+
+  // Human-readable serial: "PO-00018". Generated from DocumentSequence.
+  serial String
+
+  status       PurchaseStatus @default(DRAFT)
+  date         DateTime       @default(now())
+  expectedDate DateTime? // Expected delivery date
+  receivedAt   DateTime? // Set when fully received
+
+  notes    String?
+  currency CurrencyCode @default(BHD)
+
+  // ---------- Totals (BigInt fils) ----------
+  subtotal   BigInt @default(0)
+  taxTotal   BigInt @default(0)
+  total      BigInt @default(0)
+  amountPaid BigInt @default(0) // Denormalised sum of PurchasePayment amounts
+  amountOwed BigInt @default(0) // total - amountPaid
+
+  // ---------- Supplier ----------
+  // If no supplier known, use the seeded "Other" supplier (Supplier.isSystem = true).
+  supplierId String
+  supplier   Supplier @relation(fields: [supplierId], references: [id])
+
+  // Destination warehouse — items are received into this warehouse.
+  warehouseId String
+  warehouse   Warehouse @relation(fields: [warehouseId], references: [id])
+
+  // ---------- Audit ----------
+  createdById String
+  createdBy   User   @relation("POCreatedBy", fields: [createdById], references: [id])
+
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  lines    PurchaseLine[]
+  payments PurchasePayment[]
+
+  // Serial unique per org.
+  @@unique([serial, organizationId])
+  @@index([supplierId])
+  @@index([organizationId])
+  @@index([status])
+  @@index([warehouseId])
+  @@index([organizationId, status])
+  @@index([organizationId, date])
+  @@index([organizationId, supplierId])
+  @@index([createdById])
+}
+
+// One line on a purchase order — a quantity of a catalogue item at a cost.
+model PurchaseLine {
+  id String @id @default(cuid())
+
+  // Decimal to support fractional quantities (cable by metre, etc.)
+  quantity    Decimal @default(1)
+  receivedQty Decimal @default(0) // How many have been received so far
+
+  // Unit cost in smallest currency unit. Pre-filled from SupplierItem.basePrice.
+  unitCost BigInt
+
+  // Tax amount on this line. Calculated at order time.
+  taxAmt BigInt @default(0)
+
+  // Total = (unitCost × quantity) + taxAmt
+  total BigInt
+
+  itemId String
+  item   Item   @relation(fields: [itemId], references: [id])
+
+  purchaseOrderId String
+  purchaseOrder   PurchaseOrder @relation(fields: [purchaseOrderId], references: [id], onDelete: Cascade)
+
+  // Back-reference for StockMovement audit trail.
+  stockMovements StockMovement[]
+
+  @@index([purchaseOrderId])
+  @@index([itemId])
+}
+
+// Payment made to a supplier against a purchase order.
+model PurchasePayment {
+  id        String        @id @default(cuid())
+  amount    BigInt // Fils — must be > 0
+  method    PaymentMethod @default(TRANSFER)
+  date      DateTime      @default(now())
+  reference String?
+  notes     String?
+
+  purchaseOrderId String
+  purchaseOrder   PurchaseOrder @relation(fields: [purchaseOrderId], references: [id], onDelete: Cascade)
+
+  // Direct org FK for AP aging / cash outflow queries.
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([purchaseOrderId])
+  @@index([organizationId])
+  @@index([organizationId, date]) // AP cash outflow by period
+}
+
+// =============================================================================
+// CONTRACTS  (CRM — ongoing customer maintenance agreements)
+// =============================================================================
+
+model Contract {
+  id          String  @id @default(cuid())
+  title       String // e.g. "Annual CCTV Maintenance — Villa Al-Rashid"
+  description String?
+  isActive    Boolean @default(true)
+
+  // Contract value in smallest currency unit (fils).
+  contractValue BigInt?
+  currency      CurrencyCode @default(BHD)
+
+  startDate   DateTime
+  endDate     DateTime
+  renewalDate DateTime? // When to start renewal negotiation
+
+  // Alert will fire this many days before renewalDate / endDate.
+  renewalAlertDays Int @default(30)
+
+  // Contract version — increment on renewal or amendment.
+  version Int @default(1)
+
+  notes String?
+
+  deletedAt DateTime? // Soft delete
+
+  customerId String?
+  customer   Customer? @relation(fields: [customerId], references: [id])
+
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([organizationId])
+  @@index([isActive])
+  @@index([endDate])
+  @@index([customerId])
+  @@index([deletedAt])
+  @@index([organizationId, endDate])
+  @@index([organizationId, isActive])
+  @@index([isActive, endDate]) // "Active contracts expiring soon"
+  @@index([organizationId, renewalDate])
+  @@index([customerId, isActive])
+}
+
+// =============================================================================
+// EXPENSES  (operational costs not tied to a PO — fuel, tools, petty cash)
+// Provides a complete picture of outgoings for the P&L report.
+// =============================================================================
+
+model ExpenseCategory {
+  id   String @id @default(cuid())
+  name String // e.g. "Fuel", "Tools", "Petty Cash", "Subcontracting"
+
+  isActive  Boolean   @default(true)
+  deletedAt DateTime?
+
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  expenses Expense[]
+
+  @@unique([name, organizationId])
+  @@index([organizationId])
+}
+
+// A one-off expense entry (petty cash, fuel, tools, etc.).
+model Expense {
+  id          String   @id @default(cuid())
+  description String
+  amount      BigInt // Fils
+  date        DateTime @default(now())
+  reference   String? // Receipt / voucher number
+  notes       String?
+
+  method PaymentMethod @default(CASH)
+
+  categoryId String?
+  category   ExpenseCategory? @relation(fields: [categoryId], references: [id])
+
+  // Optionally link to a job for per-job cost tracking.
+  jobId String?
+  job   Job?    @relation(fields: [jobId], references: [id])
+
+  // Optionally link to an item (e.g. a tool purchased).
+  itemId String?
+  item   Item?   @relation(fields: [itemId], references: [id])
+
+  createdById String
+  createdBy   User   @relation("ExpenseCreatedBy", fields: [createdById], references: [id])
+
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+
+  deletedAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([organizationId])
+  @@index([categoryId])
+  @@index([jobId])
+  @@index([organizationId, date]) // P&L by period
+  @@index([organizationId, categoryId]) // Expense breakdown by category
+  @@index([deletedAt])
 }
