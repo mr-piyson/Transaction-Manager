@@ -11,6 +11,7 @@ import {
   PackageSearch,
   Settings,
   ShoppingCart,
+  ShoppingCartIcon,
   Store,
   User,
   UserCircle,
@@ -60,7 +61,13 @@ export const ROUTES = [
         icon: User,
         auth: { action: 'read', subject: 'Customer' },
       },
-
+      {
+        type: 'item',
+        label: 'Purchase Order',
+        key: 'common.purchaseOrders',
+        href: '/app/purchase-order',
+        icon: ShoppingCartIcon,
+      },
       {
         type: 'item',
         label: 'Products & Services',

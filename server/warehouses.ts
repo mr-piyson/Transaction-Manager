@@ -16,7 +16,7 @@ const warehouseInput = z.object({
 });
 
 export const warehouseRouter = t.router({
-  list: protectedProcedure.query(async ({ ctx }) => {
+  list: protectedProcedure.input(z.object()).query(async ({ ctx }) => {
     const orgId = requireOrgId(ctx.organizationId);
 
     return ctx.prisma.warehouse.findMany({
