@@ -41,22 +41,11 @@ import {
 } from '@/components/ui/dropdown-menu';
 
 import { trpc } from '@/lib/trpc/client';
-import { format } from 'date-fns';
 import Link from 'next/link';
 import { formatAmount, formatDate } from '@/lib/utils';
 import { CustomerFormDialog } from '../customer-form-dialog';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-
-// ---------------------------------------------------------------------------
-// Helpers
-// ---------------------------------------------------------------------------
-
-function nameToHue(name: string | undefined) {
-  let hash = 0;
-  if (!name) return '';
-  for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash);
-  return Math.abs(hash) % 360;
-}
+import { useTheme } from 'next-themes';
 
 // ---------------------------------------------------------------------------
 // Invoice status config
@@ -179,6 +168,8 @@ function DetailSkeleton() {
 // ---------------------------------------------------------------------------
 
 export default function CustomerDetailPage() {
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
   const params = useParams();
   const router = useRouter();
   const id = params.customerId as string;
@@ -210,7 +201,6 @@ export default function CustomerDetailPage() {
   }
 
   const customer = data;
-  const hue = nameToHue(customer.id as string);
   const arBalance = Number(customer.arBalance ?? 0);
   const creditLimit = Number(customer.creditLimit ?? 0);
   const creditUsedPct = creditLimit > 0 ? Math.min((arBalance / creditLimit) * 100, 100) : 0;
@@ -229,7 +219,7 @@ export default function CustomerDetailPage() {
             variant="ghost"
             size="sm"
             className="gap-2 -ml-2 text-muted-foreground hover:text-foreground"
-            onClick={() => router.back()}
+            onClick={() => router.push('/app/customers')}
           >
             <ArrowLeft className="size-4" />
             Customers
@@ -254,10 +244,10 @@ export default function CustomerDetailPage() {
               ></DropdownMenuTrigger>
               <DropdownMenuContent align="end">
                 <DropdownMenuItem
-                  render={<Link href={`/invoices/new?customerId=${id}`}>New Invoice</Link>}
+                  render={<Link href={`/app/invoices`}>New Invoice</Link>}
                 ></DropdownMenuItem>
                 <DropdownMenuItem
-                  render={<Link href={`/jobs/new?customerId=${id}`}>New Job</Link>}
+                  render={<Link href={`/app/jobs`}>New Job</Link>}
                 ></DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
@@ -282,19 +272,11 @@ export default function CustomerDetailPage() {
             {/* Identity card */}
             <div className="rounded-xl border bg-card shadow-sm overflow-hidden">
               {/* Colored band */}
-              <div
-                className="h-16 w-full"
-                style={{
-                  background: `linear-gradient(135deg, hsl(${hue} 55% 48%), hsl(${(hue + 40) % 360} 60% 58%))`,
-                }}
-              />
+              <div className="h-16 w-full bg-secondary/90" />
 
               {/* Avatar overlapping band */}
               <div className="flex flex-col items-center -mt-8 pb-5 px-5">
-                <Avatar
-                  className="flex size-16 items-center justify-center rounded-full  font-bold shadow-lg ring-4 ring-primary"
-                  style={{ backgroundColor: `hsl(${hue} 55% 40%)` }}
-                >
+                <Avatar className="flex size-16 items-center justify-center rounded-full  font-bold shadow-lg ring-4 ring-muted-foreground">
                   <AvatarFallback>
                     <User2 size={32} />
                   </AvatarFallback>
@@ -422,16 +404,11 @@ export default function CustomerDetailPage() {
                   title="Recent Invoices"
                   count={recentInvoices.length}
                 />
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="gap-1 text-xs -mt-3"
-                  render={
-                    <Link href={`/invoices?customerId=${id}`}>
-                      View all <ChevronRight className="size-3" />
-                    </Link>
-                  }
-                ></Button>
+                <Link href={`/app`}>
+                  <Button variant="ghost" size="sm" className="gap-1 text-xs -mt-3">
+                    View all <ChevronRight className="size-3" />
+                  </Button>
+                </Link>
               </div>
 
               {invoicesLoading ? (
@@ -444,13 +421,11 @@ export default function CustomerDetailPage() {
                 <div className="flex flex-col items-center gap-2 py-8 text-center text-muted-foreground">
                   <FileText className="size-8 opacity-40" />
                   <p className="text-sm">No invoices yet</p>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    render={
-                      <Link href={`/invoices/new?customerId=${id}`}>Create first invoice</Link>
-                    }
-                  ></Button>
+                  <Link href={`/app`}>
+                    <Button size="sm" variant="outline">
+                      Create first invoice
+                    </Button>
+                  </Link>
                 </div>
               ) : (
                 <div className="flex flex-col divide-y divide-border/60">
@@ -460,7 +435,7 @@ export default function CustomerDetailPage() {
                     return (
                       <Link
                         key={inv.id}
-                        href={`/invoices/${inv.id}`}
+                        href={`/app`}
                         className="flex items-center gap-3 py-3 hover:bg-muted/40 -mx-2 px-2 rounded-lg transition-colors group"
                       >
                         {/* Serial + type */}
@@ -548,16 +523,11 @@ export default function CustomerDetailPage() {
             <div className="rounded-xl border bg-card shadow-sm p-5">
               <div className="flex items-center justify-between mb-4">
                 <SectionHeader icon={Briefcase} title="Jobs" count={customer._count?.jobs} />
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="gap-1 text-xs -mt-3"
-                  render={
-                    <Link href={`app/jobs?customerId=${id}`}>
-                      View all <ChevronRight className="size-3" />
-                    </Link>
-                  }
-                ></Button>
+                <Link href={`/app`}>
+                  <Button variant="ghost" size="sm" className="gap-1 text-xs -mt-3">
+                    View all <ChevronRight className="size-3" />
+                  </Button>
+                </Link>
               </div>
 
               {/* Jobs are loaded via getById's related data — display contracts placeholder */}
@@ -568,15 +538,11 @@ export default function CustomerDetailPage() {
                     ? `${customer._count.jobs} job${customer._count.jobs !== 1 ? 's' : ''} linked`
                     : 'No jobs yet'}
                 </p>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  render={
-                    <Link href={`/jobs?customerId=${id}`}>
-                      {customer._count?.jobs ? 'View jobs' : 'Create first job'}
-                    </Link>
-                  }
-                ></Button>
+                <Link href={'/app'}>
+                  <Button size="sm" variant="outline">
+                    {customer._count?.jobs ? 'View jobs' : 'Create first job'}
+                  </Button>
+                </Link>
               </div>
             </div>
           </div>
