@@ -25,7 +25,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { CreateCustomerDialog } from '../customers/create-customer-dialog';
+import { CreateCustomerDialog } from '../customers/customer-form-dialog';
 import { SelectionDialog } from '@/components/select-dialog-v2';
 import { SelectDialog } from '@/components/select-dialog';
 import { Customer_List_Item } from '../customers/customer-item-list';

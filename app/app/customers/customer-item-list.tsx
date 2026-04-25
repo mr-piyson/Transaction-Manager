@@ -19,14 +19,7 @@ export function Customer_List_Item({
   const { name, phone, address } = data || {};
 
   return (
-    <div
-      className={cn(
-        'flex h-18 items-center gap-3 p-3 transition-colors hover:bg-secondary/10',
-        selectable && 'hover:bg-secondary/10',
-        className,
-      )}
-      {...props}
-    >
+    <div className={cn('flex h-18 items-center gap-3 p-3', className)} {...props}>
       <Avatar className="size-11 rounded-lg shrink-0 after:border-0">
         <AvatarFallback className={cn('rounded-lg transition-colors')}>
           <User2 className="size-6" />

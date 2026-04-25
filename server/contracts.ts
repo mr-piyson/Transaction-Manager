@@ -71,9 +71,6 @@ export const contractRouter = t.router({
 
     const contract = await ctx.prisma.contract.findUnique({
       where: { id: input.id },
-      include: {
-        customer: { select: { id: true, name: true, phone: true, email: true } },
-      },
     });
 
     assertOwnership(contract, orgId, 'Contract');

@@ -25,7 +25,7 @@ import { toast } from 'sonner';
 import { SelectionDialog } from '@/components/select-dialog-v2';
 import { Customer_List_Item } from '../../customers/customer-item-list';
 import { ButtonGroup } from '@/components/ui/button-group';
-import { CreateCustomerDialog } from '../../customers/create-customer-dialog';
+import { CreateCustomerDialog } from '../../customers/customer-form-dialog';
 import { SelectDialog } from '@/components/select-dialog';
 
 export default function InvoiceEditor() {

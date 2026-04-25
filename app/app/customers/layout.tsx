@@ -9,7 +9,7 @@ import { cn } from '@/lib/utils';
 import { useIsMobile } from '@/hooks/use-mobile';
 import Link from 'next/link';
 import { Customer_List_Item } from './customer-item-list';
-import { CreateCustomerDialog } from './create-customer-dialog';
+import { CustomerFormDialog } from './customer-form-dialog';
 
 type CustomerLayoutProps = {
   children?: React.ReactNode;
@@ -20,6 +20,7 @@ export default function CustomerLayout(props: CustomerLayoutProps) {
   const { data, isPending } = trpc.customers.list.useQuery({});
   const isMobile = useIsMobile();
   const pathname = usePathname();
+  const activeItem = pathname.split('/')[3];
   const isListView = pathname === `/app/${title.toLowerCase()}`;
 
   return (
@@ -38,7 +39,7 @@ export default function CustomerLayout(props: CustomerLayoutProps) {
               {/* flex-col + overflow-hidden prevents the sidebar itself from growing */}
               <aside className="flex h-full flex-col overflow-hidden border-r">
                 <div className="flex gap-2 px-4 pt-4 ">
-                  <CreateCustomerDialog className="w-full" variant="secondary" />
+                  <CustomerFormDialog className="w-full" variant="secondary" />
                 </div>
                 {/* ListView needs to be able to scroll internally */}
                 <div className="flex-1 overflow-y-auto">
@@ -48,7 +49,7 @@ export default function CustomerLayout(props: CustomerLayoutProps) {
                     className="h-full"
                     useTheme
                     searchFields={[]}
-                    rowHeight={72}
+                    rowHeight={73}
                     emptyTitle={`No ${title.toLowerCase()} found`}
                     emptyDescription={`Create your first ${title.slice(0, -1).toLowerCase()} to see them here.`}
                     emptyIcon={<User2 className="size-20 text-muted-foreground" />}
@@ -58,7 +59,13 @@ export default function CustomerLayout(props: CustomerLayoutProps) {
                         draggable={false}
                         className="block w-full h-full"
                       >
-                        <Customer_List_Item data={data as any} selectable />
+                        <Customer_List_Item
+                          data={data as any}
+                          className={cn(
+                            'hover:bg-muted/40 border border-transparent',
+                            activeItem === data.id ? 'border-primary border bg-primary/10' : '',
+                          )}
+                        />
                       </Link>
                     )}
                   />
