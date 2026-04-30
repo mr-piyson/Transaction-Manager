@@ -1061,6 +1061,8 @@ model PurchaseOrder {
 model PurchaseLine {
   id String @id @default(cuid())
 
+  description String?
+
   // Decimal to support fractional quantities (cable by metre, etc.)
   quantity    Decimal @default(1)
   receivedQty Decimal @default(0) // How many have been received so far

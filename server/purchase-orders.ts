@@ -15,7 +15,7 @@ const PO_STATUSES = ['DRAFT', 'ORDERED', 'PARTIAL_RECEIVED', 'RECEIVED', 'CANCEL
 const purchaseLineInput = z.object({
   itemId: z.string(),
   description: z.string().optional(),
-  quantity: z.number().int().min(1),
+  quantity: z.number().min(0.001),
   unitCost: z.number().int().min(0), // fils
   taxAmt: z.number().int().min(0).default(0),
 });
@@ -29,7 +29,8 @@ function computePOTotals(lines: { quantity: number; unitCost: number; taxAmt: nu
   let taxTotal = BigInt(0);
 
   for (const l of lines) {
-    subtotal += BigInt(l.unitCost) * BigInt(l.quantity);
+    const lineSubtotal = (BigInt(l.unitCost) * BigInt(Math.round(l.quantity * 1000))) / BigInt(1000);
+    subtotal += lineSubtotal;
     taxTotal += BigInt(l.taxAmt);
   }
 
@@ -153,7 +154,6 @@ export const purchaseOrderRouter = t.router({
             organizationId: orgId,
             supplierId: input.supplierId,
             warehouseId: input.warehouseId,
-            //   orderDate: input.orderDate ?? new Date(),
             createdById: ctx.user.id,
             expectedDate: input.expectedDate,
             notes: input.notes,
@@ -170,7 +170,7 @@ export const purchaseOrderRouter = t.router({
                 quantity: l.quantity,
                 unitCost: BigInt(l.unitCost),
                 taxAmt: BigInt(l.taxAmt),
-                total: BigInt(l.unitCost) * BigInt(l.quantity) + BigInt(l.taxAmt),
+                total: (BigInt(l.unitCost) * BigInt(Math.round(l.quantity * 1000))) / BigInt(1000) + BigInt(l.taxAmt),
                 receivedQty: 0,
               })),
             },
@@ -239,7 +239,7 @@ export const purchaseOrderRouter = t.router({
                   quantity: l.quantity,
                   unitCost: BigInt(l.unitCost),
                   taxAmt: BigInt(l.taxAmt),
-                  total: BigInt(l.unitCost) * BigInt(l.quantity) + BigInt(l.taxAmt),
+                  total: (BigInt(l.unitCost) * BigInt(Math.round(l.quantity * 1000))) / BigInt(1000) + BigInt(l.taxAmt),
                   receivedQty: 0,
                 })),
               },

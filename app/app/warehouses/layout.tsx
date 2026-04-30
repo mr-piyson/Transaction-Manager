@@ -1,7 +1,7 @@
 'use client';
 
 import { Header } from '../App-Header';
-import { PackageOpen, MapPinIcon } from 'lucide-react';
+import { PackageOpen, MapPinIcon, StoreIcon, WarehouseIcon } from 'lucide-react';
 import { ListView } from '@/components/list-view';
 import { trpc } from '@/lib/trpc/client';
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@/components/ui/resizable';
@@ -51,7 +51,7 @@ export default function WarehouseLayout(props: WarehouseLayoutProps) {
                     rowHeight={73}
                     emptyTitle={`No ${title.toLowerCase()} found`}
                     emptyDescription={`Create your first ${title.slice(0, -1).toLowerCase()} to see them here.`}
-                    emptyIcon={<MapPinIcon className="size-20 text-muted-foreground" />}
+                    emptyIcon={<WarehouseIcon className="size-20 text-muted-foreground" />}
                     cardRenderer={(data) => (
                       <Link
                         href={`/app/${title.toLowerCase()}/${data.id}` as any}
