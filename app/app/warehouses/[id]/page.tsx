@@ -13,6 +13,9 @@ import {
   Package,
   CheckCircle2,
   AlertTriangle,
+  ArrowRightLeft,
+  Scale,
+  History,
 } from 'lucide-react';
 
 import { Badge } from '@/components/ui/badge';
@@ -31,6 +34,9 @@ import { trpc } from '@/lib/trpc/client';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { WarehouseFormDialog } from '../warehouse-form-dialog';
 import { cn } from '@/lib/utils';
+import { StockAdjustDialog } from '../components/stock-adjust-dialog';
+import { StockTransferDialog } from '../components/stock-transfer-dialog';
+import { StockHistoryDialog } from '../components/stock-history-dialog';
 
 function InfoRow({ icon: Icon, label, value }: { icon: React.ElementType; label: string; value?: string | null }) {
   if (!value) return null;
@@ -227,6 +233,40 @@ export default function WarehouseDetailPage() {
                           </span>
                         </div>
                         <p className="text-[10px] text-muted-foreground">{stk.item.unit}</p>
+                      </div>
+                      
+                      {/* ACTIONS MENU */}
+                      <div>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger
+                            render={
+                              <Button variant="ghost" size="icon" className="size-8">
+                                <MoreVertical className="size-4" />
+                              </Button>
+                            }
+                          />
+                          <DropdownMenuContent align="end" className="w-48">
+                            <StockHistoryDialog itemId={stk.item.id} warehouseId={warehouse.id} itemName={stk.item.name}>
+                              <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                                <History className="mr-2 size-4" />
+                                View History
+                              </DropdownMenuItem>
+                            </StockHistoryDialog>
+                            <DropdownMenuSeparator />
+                            <StockAdjustDialog itemId={stk.item.id} warehouseId={warehouse.id} itemName={stk.item.name} currentQuantity={stk.quantity}>
+                              <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                                <Scale className="mr-2 size-4" />
+                                Adjust Stock
+                              </DropdownMenuItem>
+                            </StockAdjustDialog>
+                            <StockTransferDialog itemId={stk.item.id} fromWarehouseId={warehouse.id} itemName={stk.item.name} currentQuantity={stk.quantity}>
+                              <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                                <ArrowRightLeft className="mr-2 size-4" />
+                                Transfer Stock
+                              </DropdownMenuItem>
+                            </StockTransferDialog>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
                       </div>
                     </div>
                   );
