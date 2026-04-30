@@ -28,7 +28,7 @@ import {
 import { CreateCustomerDialog } from '../customers/customer-form-dialog';
 import { SelectionDialog } from '@/components/select-dialog-v2';
 import { SelectDialog } from '@/components/select-dialog';
-import { Customer_List_Item } from '../customers/customer-item-list';
+import { Customer_List_Item } from '../customers/customer-list-item';
 import { Customer } from '@prisma/client';
 
 // Schema matching your jobs.ts jobInputSchema

@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { ListView } from '@/components/list-view';
 import { useI18n } from '@/i18n/use-i18n';
 import { Header } from '@/app/app/App-Header';
-import { InvoiceCard } from './invoiceCard';
+import { Invoice_List_Item } from './invoice-list-item';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { trpc } from '@/lib/trpc/client';
 import { useSession } from '@/auth/auth-client';

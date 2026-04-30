@@ -7,7 +7,7 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { cn, formatAmount, formatID } from '@/lib/utils';
 import { useDateFormat } from '@/hooks/use-date-format';
 
-export function InvoiceCard({ data }: { data: any }) {
+export function Invoice_List_Item({ data, className }: { data: any; className?: string }) {
   const router = useRouter();
   const { formatDateAgo } = useDateFormat();
 
@@ -19,7 +19,10 @@ export function InvoiceCard({ data }: { data: any }) {
   return (
     <div
       onClick={() => router.push(`/app/invoices/${data.id}`)}
-      className="flex h-18 items-center gap-4 px-4 py-3 hover:bg-accent/50 cursor-pointer transition-colors border-b last:border-0"
+      className={cn(
+        className,
+        'flex h-18 items-center gap-4 px-4 py-3 hover:bg-accent/50 cursor-pointer transition-colors border-b last:border-0',
+      )}
     >
       {/* Customer Avatar */}
       <Avatar className="size-11 rounded-lg shrink-0 after:border-0">

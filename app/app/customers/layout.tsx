@@ -8,7 +8,7 @@ import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { useIsMobile } from '@/hooks/use-mobile';
 import Link from 'next/link';
-import { Customer_List_Item } from './customer-item-list';
+import { Customer_List_Item } from './customer-list-item';
 import { CustomerFormDialog } from './customer-form-dialog';
 
 type CustomerLayoutProps = {

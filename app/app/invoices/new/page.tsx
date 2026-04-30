@@ -23,20 +23,20 @@ import { InvoiceLineDialog, ItemSelectionDialog } from './invoice-line-dialog';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { SelectionDialog } from '@/components/select-dialog-v2';
-import { Customer_List_Item } from '../../customers/customer-item-list';
+import { Customer_List_Item } from '../../customers/customer-list-item';
 import { ButtonGroup } from '@/components/ui/button-group';
-import { CreateCustomerDialog } from '../../customers/customer-form-dialog';
 import { SelectDialog } from '@/components/select-dialog';
+import { CustomerFormDialog } from '../../customers/customer-form-dialog';
 
 export default function InvoiceEditor() {
   const router = useRouter();
   const [selectedCustomer, setSelectedCustomer] = useState<any>(null);
   const [lines, setLines] = useState<any[]>([]);
 
-  const { data: customers } = trpc.customers.getCustomers.useQuery();
-  const { data: items } = trpc.items.getItems.useQuery({ group: 'all' });
+  const { data: customers } = trpc.customers.list.useQuery();
+  const { data: items } = trpc.items.list.useQuery({});
 
-  const createInvoice = trpc.invoices.createFullInvoice.useMutation({
+  const createInvoice = trpc.invoices.create.useMutation({
     onSuccess: (data) => {
       toast.success('Invoice created successfully');
       router.push(`/app/invoices/${data.id}`);
@@ -55,20 +55,9 @@ export default function InvoiceEditor() {
       toast.error('Please add at least one item');
       return;
     }
-
+    // TODO : pass lines, if any
     createInvoice.mutate({
       customerId: selectedCustomer.id,
-      lines: lines.map((l) => ({
-        id: l.id,
-        parentId: l.parentId,
-        isGroup: l.isGroup,
-        itemId: l.itemId,
-        description: l.description,
-        quantity: Number(l.quantity),
-        unitPrice: Number(l.unitPrice),
-        purchasePrice: Number(l.purchasePrice || 0),
-      })),
-      isCompleted,
     });
   };
 
@@ -185,7 +174,7 @@ export default function InvoiceEditor() {
                 )}
               </Button>
             </SelectDialog>
-            <CreateCustomerDialog
+            <CustomerFormDialog
               onSuccess={(data) => {
                 setSelectedCustomer(data);
               }}
@@ -193,7 +182,7 @@ export default function InvoiceEditor() {
               <Button variant="outline" className="w-10 h-12">
                 <Plus />
               </Button>
-            </CreateCustomerDialog>
+            </CustomerFormDialog>
           </ButtonGroup>
         </div>
 

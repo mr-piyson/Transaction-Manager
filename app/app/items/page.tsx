@@ -33,11 +33,11 @@ export default function PurchaseServicesPage() {
   const [activeTab, setActiveTab] = useState('purchase');
   const tableTheme = useTableTheme();
 
-  const { data: products, isLoading: isProductsLoading } = trpc.items.getItems.useQuery({
-    group: 'products',
+  const { data: products, isLoading: isProductsLoading } = trpc.items.list.useQuery({
+    type: 'PRODUCT',
   });
-  const { data: services, isLoading: isServicesLoading } = trpc.items.getItems.useQuery({
-    group: 'services',
+  const { data: services, isLoading: isServicesLoading } = trpc.items.list.useQuery({
+    type: 'SERVICE',
   });
 
   const purchaseColumnDefs = useMemo<ColDef[]>(
