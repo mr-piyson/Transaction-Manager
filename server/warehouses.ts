@@ -11,7 +11,6 @@ import { assertOwnership, requireOrgId } from './_shared';
 const warehouseInput = z.object({
   name: z.string().min(1),
   address: z.string().optional(),
-  notes: z.string().optional(),
   isDefault: z.boolean().default(false),
 });
 
