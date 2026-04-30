@@ -41,10 +41,12 @@ export default function CustomerLayout(props: CustomerLayoutProps) {
               {/* flex-col + overflow-hidden prevents the sidebar itself from growing */}
               <aside className="flex h-full flex-col overflow-hidden border-r">
                 <div className="flex gap-2 px-4 pt-4 ">
-                  <Button className="w-full" variant="secondary">
-                    <Plus />
-                    New PO
-                  </Button>
+                  <Link href="/app/purchase-order/new" className="w-full block">
+                    <Button className="w-full" variant="secondary">
+                      <Plus className="mr-2 h-4 w-4" />
+                      New PO
+                    </Button>
+                  </Link>
                 </div>
                 {/* ListView needs to be able to scroll internally */}
                 <div className="flex-1 overflow-y-auto">
@@ -55,12 +57,12 @@ export default function CustomerLayout(props: CustomerLayoutProps) {
                     useTheme
                     searchFields={[]}
                     rowHeight={73}
-                    emptyTitle={`No ${title.toLowerCase()} found`}
-                    emptyDescription={`Create your first ${title.slice(0, -1).toLowerCase()} to see them here.`}
+                    emptyTitle={`No ${title.toLowerCase()}s found`}
+                    emptyDescription={`Create your first ${title.toLowerCase()} to see them here.`}
                     emptyIcon={<Icon className="size-20 text-muted-foreground" />}
                     cardRenderer={(data) => (
                       <Link
-                        href={`/app/${title.toLowerCase()}/${data.id}` as any}
+                        href={`/app/${url}/${data.id}` as any}
                         draggable={false}
                         className="block w-full h-full"
                       >

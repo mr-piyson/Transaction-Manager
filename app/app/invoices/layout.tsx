@@ -42,7 +42,7 @@ export default function InvoiceLayout(props: InvoiceProps) {
               <aside className="flex h-full flex-col overflow-hidden border-r">
                 <div className="flex flex-col gap-2 px-4 pt-4 ">
                   <Link href={'/app/invoices/new'}>
-                    <Button className="w-full" variant="secondary">
+                    <Button size="sm" className="w-full" variant="secondary">
                       <Plus /> Create Invoice
                     </Button>
                   </Link>

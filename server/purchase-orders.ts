@@ -76,7 +76,7 @@ export const purchaseOrderRouter = t.router({
           id: true,
           serial: true,
           status: true,
-          orderDate: true,
+          date: true,
           expectedDate: true,
           total: true,
           amountPaid: true,

@@ -46,7 +46,7 @@ export function CreateItemDialog({ children, onSuccess }: CreateItemDialogProps)
   const [activeTab, setActiveTab] = useState<'PRODUCT' | 'SERVICE'>('PRODUCT');
 
   const utils = trpc.useUtils();
-  const createMutation = trpc.items.createItem.useMutation();
+  const createMutation = trpc.items.create.useMutation();
 
   const {
     register,
@@ -83,7 +83,7 @@ export function CreateItemDialog({ children, onSuccess }: CreateItemDialogProps)
 
     createMutation.mutate(data as any, {
       onSuccess: (newItem) => {
-        utils.items.getItems.invalidate();
+        utils.items.list.invalidate();
         reset();
         setOpen(false);
         onSuccess?.(newItem);

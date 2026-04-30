@@ -1,15 +1,17 @@
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { FileText, Calendar, DollarSign } from 'lucide-react';
+import { FileText, Calendar } from 'lucide-react';
 import { HTMLAttributes } from 'react';
 import { cn, formatAmount } from '@/lib/utils';
-import { PurchaseOrder } from '@prisma/client';
+import { RouterOutputs } from '@/lib/trpc/client';
 
-interface PO_List_Item_Props extends HTMLAttributes<HTMLDivElement> {
-  data?: PurchaseOrder;
+type PurchaseOrderListItem = RouterOutputs['purchaseOrders']['list'][number];
+
+interface PO_List_Item_Props extends Omit<HTMLAttributes<HTMLDivElement>, 'data'> {
+  data: PurchaseOrderListItem;
 }
 
 export function PO_List_Item({ data, className, ...props }: PO_List_Item_Props) {
-  const { serial, status, date, expectedDate, total, currency } = data || {};
+  const { serial, status, date, expectedDate, total, supplier } = data;
 
   return (
     <div className={cn('flex h-18 items-center gap-3 p-3', className)} {...props}>
@@ -24,7 +26,11 @@ export function PO_List_Item({ data, className, ...props }: PO_List_Item_Props) 
       {serial && (
         <div className="flex-1 min-w-0">
           <p className="font-semibold truncate">{serial}</p>
-          <p className="text-sm text-muted-foreground truncate">{status}</p>
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-muted-foreground truncate">{supplier?.name ?? 'Unknown Supplier'}</span>
+            <span className="text-xs text-muted-foreground">•</span>
+            <span className="text-sm text-muted-foreground truncate">{status}</span>
+          </div>
         </div>
       )}
 
@@ -32,7 +38,7 @@ export function PO_List_Item({ data, className, ...props }: PO_List_Item_Props) 
       <div className="text-right text-xs space-y-0.5">
         {/* Total */}
         <p className="flex items-center justify-end gap-1 text-primary font-mono font-semibold">
-          {formatAmount(total, currency)}
+          {formatAmount(Number(total))}
         </p>
 
         {/* Dates */}
@@ -43,7 +49,7 @@ export function PO_List_Item({ data, className, ...props }: PO_List_Item_Props) 
           </p>
         )}
 
-        {expectedDate && (
+        {expectedDate && !date && (
           <p className="flex items-center justify-end gap-1 text-muted-foreground">
             ETA: {new Date(expectedDate).toLocaleDateString()}
           </p>
