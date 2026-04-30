@@ -121,38 +121,46 @@ export const invoiceRouter = t.router({
       });
     }),
 
-  getById: protectedProcedure.input(z.object({ id: z.string() })).query(async ({ ctx, input }) => {
-    const orgId = requireOrgId(ctx.organizationId);
+  getInvoiceById: protectedProcedure
+    .input(z.object({ id: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const orgId = requireOrgId(ctx.organizationId);
 
-    const invoice = await ctx.prisma.invoice.findUnique({
-      where: { id: input.id },
-      include: {
-        customer: true,
-        job: { select: { id: true, title: true } },
-        lineGroups: {
-          orderBy: { sortOrder: 'asc' },
-          include: {
-            lines: {
-              orderBy: { sortOrder: 'asc' },
-              include: { item: { select: { id: true, name: true, sku: true, unit: true } } },
+      const invoice = await ctx.prisma.invoice.findUnique({
+        where: { id: input.id },
+        include: {
+          customer: true,
+          job: { select: { id: true, title: true } },
+          groups: {
+            include: {
+              lines: {
+                include: {
+                  item: true,
+                },
+              },
             },
           },
+          createdBy: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+          // Ungrouped lines
+          lines: {
+            where: { groupId: null },
+            orderBy: { sortOrder: 'asc' },
+            include: { item: { select: { id: true, name: true, sku: true, unit: true } } },
+          },
+          payments: { orderBy: { date: 'desc' } },
+          parentInvoice: { select: { id: true, serial: true } },
+          creditNotes: { select: { id: true, serial: true, total: true, status: true } },
         },
-        // Ungrouped lines
-        lines: {
-          where: { groupId: null },
-          orderBy: { sortOrder: 'asc' },
-          include: { item: { select: { id: true, name: true, sku: true, unit: true } } },
-        },
-        payments: { orderBy: { date: 'desc' } },
-        parentInvoice: { select: { id: true, serial: true } },
-        creditNotes: { select: { id: true, serial: true, total: true, status: true } },
-      },
-    });
+      });
 
-    assertOwnership(invoice, orgId, 'Invoice');
-    return invoice;
-  }),
+      assertOwnership(invoice, orgId, 'Invoice');
+      return invoice;
+    }),
 
   // =========================================================================
   // CREATE
@@ -400,7 +408,7 @@ export const invoiceRouter = t.router({
           data: {
             ...rest,
             invoiceId,
-            organizationId: orgId,
+            // organizationId: orgId,
             unitPrice: BigInt(unitPrice),
             discountAmt: BigInt(discountAmt ?? 0),
             taxAmt: BigInt(taxAmt ?? 0),
@@ -408,7 +416,7 @@ export const invoiceRouter = t.router({
             total: lineTotal,
             purchasePrice: BigInt(rest.purchasePrice ?? 0),
             taxRateName: taxRateSnapshot,
-            taxRateValue: taxRateValueSnapshot,
+            // taxRateValue: taxRateValueSnapshot,
           },
         });
 
@@ -430,7 +438,7 @@ export const invoiceRouter = t.router({
       const line = await ctx.prisma.invoiceLine.findUnique({
         where: { id },
         select: {
-          organizationId: true,
+          // organizationId: true,
           groupId: true,
           unitPrice: true,
           quantity: true,
@@ -438,8 +446,7 @@ export const invoiceRouter = t.router({
           taxAmt: true,
         },
       });
-      if (!line || line.organizationId !== orgId)
-        throw new TRPCError({ code: 'NOT_FOUND', message: 'Line not found' });
+      if (!line) throw new TRPCError({ code: 'NOT_FOUND', message: 'Line not found' });
 
       const newUnitPrice = unitPrice ?? Number(line.unitPrice);
       const newQty = quantity ?? String(line.quantity);
@@ -474,10 +481,9 @@ export const invoiceRouter = t.router({
 
       const line = await ctx.prisma.invoiceLine.findUnique({
         where: { id: input.id },
-        select: { organizationId: true, groupId: true },
+        select: { groupId: true },
       });
-      if (!line || line.organizationId !== orgId)
-        throw new TRPCError({ code: 'NOT_FOUND', message: 'Line not found' });
+      if (!line) throw new TRPCError({ code: 'NOT_FOUND', message: 'Line not found' });
 
       return ctx.prisma.$transaction(async (tx) => {
         await tx.invoiceLine.delete({ where: { id: input.id } });

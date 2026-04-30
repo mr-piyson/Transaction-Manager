@@ -1,25 +1,12 @@
 'use client';
 
-import React, { useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { AgGridReact } from 'ag-grid-react';
-import {
-  ShoppingBag,
-  Settings,
-  Plus,
-  Filter,
-  MoreHorizontal,
-  CheckCircle2,
-  Clock,
-  EyeOff,
-  Eye,
-  ShoppingCart,
-  Wrench,
-} from 'lucide-react';
+import { ShoppingBag, Plus, EyeOff, Eye, ShoppingCart, Wrench } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+import { Card } from '@/components/ui/card';
 import { AllCommunityModule, ColDef, ModuleRegistry } from 'ag-grid-community';
 import { Header } from '../App-Header';
 import { trpc } from '@/lib/trpc/client';

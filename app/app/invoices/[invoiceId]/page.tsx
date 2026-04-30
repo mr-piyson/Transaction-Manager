@@ -95,34 +95,13 @@ export default function InvoiceDetailPage() {
     refetch,
   } = trpc.invoices.getInvoiceById.useQuery({
     id: invoiceId,
-    include: {
-      customer: true,
-      lines: true,
-      payments: true,
-    },
   });
 
-  const deleteMutation = trpc.invoices.deleteInvoice.useMutation();
-  const updateMutation = trpc.invoices.updateInvoice.useMutation({
+  const updateMutation = trpc.invoices.update.useMutation({
     onSuccess: () => {
       refetch();
     },
   });
-
-  const handleDelete = () => {
-    if (!invoice) return;
-    deleteMutation.mutate(
-      { id: invoice.id },
-      {
-        onSuccess: () => {
-          router.push('/app/invoices');
-        },
-        onError: (e) => {
-          toast.error('Delete failed');
-        },
-      },
-    );
-  };
 
   if (isLoading) {
     return (
@@ -170,19 +149,19 @@ export default function InvoiceDetailPage() {
             <Label
               className={cn(
                 'drop-shadow-sm w-30 h-8.75 rounded-lg flex items-center justify-between px-3 border',
-                invoice.status === 'COMPLETED' ? 'bg-default border-primary' : 'bg-muted',
+                invoice.status === 'SENT' ? 'bg-default border-primary' : 'bg-muted',
               )}
             >
               {/* Left placeholder (OFF state) */}
               <span
                 className={`text-sm transition-opacity ${
-                  invoice.status === 'COMPLETED' ? 'opacity-30' : 'opacity-100'
+                  invoice.status === 'SENT' ? 'opacity-30' : 'opacity-100'
                 }`}
               >
                 {/* show loading */}
                 {updateMutation.isPending ? (
                   <Spinner />
-                ) : invoice.status === 'COMPLETED' ? (
+                ) : invoice.status === 'SENT' ? (
                   'Done'
                 ) : (
                   'Pending'
@@ -193,13 +172,12 @@ export default function InvoiceDetailPage() {
                 disabled={updateMutation.isPending}
                 size="default"
                 className={'border-muted-foreground/50'}
-                checked={invoice.status === 'COMPLETED'}
+                checked={invoice.status === 'SENT'}
                 onCheckedChange={(checked) => {
                   console.log(checked);
                   updateMutation.mutate(
                     {
                       id: invoice.id,
-                      data: { status: checked ? 'COMPLETED' : 'IN_PROGRESS' },
                     },
                     {
                       onError: (e) => toast.error('Update failed'),
@@ -230,7 +208,7 @@ export default function InvoiceDetailPage() {
             <span
               className={cn(
                 'absolute inset-0 flex items-center text-xs font-semibold px-2 pointer-events-none transition-all duration-300',
-                invoice.status === 'COMPLETED'
+                invoice.status === 'SENT'
                   ? 'justify-start text-white'
                   : 'justify-end text-gray-700',
               )}
@@ -314,7 +292,7 @@ export default function InvoiceDetailPage() {
                       <CreditCard className="w-4 h-4" /> Status
                     </span>
                     <span
-                      className={`font-medium ${invoice.status === 'COMPLETED' ? 'text-green-600' : 'text-amber-600'}`}
+                      className={`font-medium ${invoice.status === 'SENT' ? 'text-green-600' : 'text-amber-600'}`}
                     >
                       {invoice.status}
                     </span>
@@ -335,8 +313,8 @@ export default function InvoiceDetailPage() {
                       <span className="text-muted-foreground flex items-center gap-2">
                         <UserCheck className="w-4 h-4" /> Created By
                       </span>
-                      {invoice.user?.name && (
-                        <span className="font-medium">{invoice.user.name}</span>
+                      {invoice.createdBy?.name && (
+                        <span className="font-medium">{invoice.createdBy.name}</span>
                       )}
                     </div>
                   )}
@@ -357,7 +335,7 @@ export default function InvoiceDetailPage() {
                 {/* NEW: Completion Badge  */}
                 <div className="flex flex-col pt-2">
                   <span className="text-muted-foreground flex items-center gap-2">
-                    {invoice.status === 'COMPLETED' ? (
+                    {invoice.status === 'SENT' ? (
                       <CheckCircle2 className="w-4 h-4" />
                     ) : (
                       <Clock className="w-4 h-4" />
@@ -365,7 +343,7 @@ export default function InvoiceDetailPage() {
                     Status
                   </span>
                   <div className="py-2 text-xs inline-block">
-                    {invoice.status === 'COMPLETED' ? (
+                    {invoice.status === 'SENT' ? (
                       <Badge variant="default">
                         <CheckCircle2 className="w-4 h-4" />
                         Completed
