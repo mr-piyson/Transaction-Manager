@@ -49,11 +49,11 @@ const lineGroupInput = z.object({
 
 function computeLineTotal(
   unitPrice: number,
-  quantity: string,
+  quantity: string | number,
   discountAmt: number,
   taxAmt: number,
 ): bigint {
-  const qty = parseFloat(quantity);
+  const qty = typeof quantity === 'string' ? parseFloat(quantity) : quantity;
   const lineSubtotal = Math.round(unitPrice * qty);
   return BigInt(lineSubtotal - discountAmt + taxAmt);
 }
@@ -179,6 +179,24 @@ export const invoiceRouter = t.router({
         notes: z.string().optional(),
         termsText: z.string().optional(),
         warehouseId: z.string().optional(),
+        lines: z
+          .array(
+            z.object({
+              id: z.string().optional(), // local UI ID
+              itemId: z.string().optional(),
+              parentId: z.string().optional(), // maps to groupId
+              description: z.string().optional(),
+              quantity: z.union([z.string(), z.number()]).default('1'),
+              unitPrice: z.number().int().min(0),
+              discountAmt: z.number().int().min(0).default(0),
+              taxAmt: z.number().int().min(0).default(0),
+              taxRateId: z.string().optional(),
+              purchasePrice: z.number().int().min(0).default(0),
+              sortOrder: z.number().int().default(0),
+              isGroup: z.boolean().optional(),
+            }),
+          )
+          .optional(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
@@ -216,7 +234,7 @@ export const invoiceRouter = t.router({
             ? new Date(invoiceDate.getTime() + (org.paymentTermsDays ?? 30) * 86400000)
             : undefined);
 
-        return tx.invoice.create({
+        const invoice = await tx.invoice.create({
           data: {
             serial,
             type: input.type,
@@ -241,6 +259,81 @@ export const invoiceRouter = t.router({
             createdById: ctx.user.id,
           },
         });
+
+        // Handle lines and groups
+        if (input.lines && input.lines.length > 0) {
+          const uiIdToDbId: Record<string, string> = {};
+
+          // 1. Create groups first
+          const groups = input.lines.filter((l) => l.isGroup);
+          for (const g of groups) {
+            const dbGroup = await tx.invoiceLineGroup.create({
+              data: {
+                title: g.description || 'Group',
+                invoiceId: invoice.id,
+                organizationId: orgId,
+                sortOrder: g.sortOrder,
+              },
+            });
+            if (g.id) uiIdToDbId[g.id] = dbGroup.id;
+          }
+
+          // 2. Create items
+          const items = input.lines.filter((l) => !l.isGroup);
+          for (const item of items) {
+            const lineTotal = computeLineTotal(
+              item.unitPrice,
+              item.quantity,
+              item.discountAmt,
+              item.taxAmt,
+            );
+
+            // Snapshot tax rate name at creation time (optional for now, but good practice)
+            let taxRateSnapshot: string | undefined;
+            let taxRateValueSnapshot: Prisma.Decimal | undefined;
+            if (item.taxRateId) {
+              const taxRate = await tx.taxRate.findUnique({
+                where: { id: item.taxRateId },
+                select: { name: true, rate: true },
+              });
+              taxRateSnapshot = taxRate?.name;
+              taxRateValueSnapshot = taxRate?.rate;
+            }
+
+            await tx.invoiceLine.create({
+              data: {
+                invoiceId: invoice.id,
+                groupId: item.parentId ? uiIdToDbId[item.parentId] : null,
+                itemId: item.itemId,
+                description: item.description,
+                quantity: String(item.quantity),
+                unitPrice: BigInt(item.unitPrice),
+                discountAmt: BigInt(item.discountAmt),
+                taxAmt: BigInt(item.taxAmt),
+                total: lineTotal,
+                purchasePrice: BigInt(item.purchasePrice),
+                sortOrder: item.sortOrder,
+                taxRateId: item.taxRateId,
+                taxRateName: taxRateSnapshot,
+                taxRateSnapshot: taxRateValueSnapshot,
+              },
+            });
+          }
+
+          // 3. Recompute group totals
+          for (const groupId of Object.values(uiIdToDbId)) {
+            await recomputeGroupTotals(tx, groupId);
+          }
+
+          // 4. Final invoice totals
+          const totals = await computeInvoiceTotals(tx, invoice.id);
+          return tx.invoice.update({
+            where: { id: invoice.id },
+            data: { ...totals, amountDue: totals.total },
+          });
+        }
+
+        return invoice;
       });
     }),
 

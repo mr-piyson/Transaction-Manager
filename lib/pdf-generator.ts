@@ -1,0 +1,155 @@
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
+import { formatAmount } from './utils';
+
+interface PDFData {
+  invoice: any;
+  organization: any;
+}
+
+export const generateInvoicePDF = (data: PDFData) => {
+  const { invoice, organization } = data;
+  const doc = new jsPDF();
+
+  const isQuote = invoice.type === 'QUOTE';
+  const title = isQuote ? 'QUOTATION' : 'INVOICE';
+
+  // --- Colors & Styles ---
+  const primaryColor = [63, 81, 181]; // Indigo
+  const textColor = [51, 51, 51];
+  const secondaryTextColor = [102, 102, 102];
+
+  // --- Header ---
+  doc.setFontSize(22);
+  doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+  doc.text(title, 105, 20, { align: 'center' });
+
+  // --- Company Details (Left) ---
+  doc.setFontSize(10);
+  doc.setTextColor(textColor[0], textColor[1], textColor[2]);
+  doc.setFont('helvetica', 'bold');
+  doc.text(organization.name || 'Our Company', 20, 40);
+  doc.setFont('helvetica', 'normal');
+  doc.text(organization.address || '', 20, 45);
+  doc.text(`Phone: ${organization.phone || ''}`, 20, 50);
+  doc.text(`Email: ${organization.email || ''}`, 20, 55);
+  if (organization.taxId) {
+    doc.text(`VAT ID: ${organization.taxId}`, 20, 60);
+  }
+
+  // --- Invoice/Quote Details (Right) ---
+  const rightX = 140;
+  doc.text(`${isQuote ? 'Quote' : 'Invoice'} #:`, rightX, 40);
+  doc.setFont('helvetica', 'bold');
+  doc.text(invoice.serial || invoice.id.slice(-8).toUpperCase(), rightX + 30, 40);
+  
+  doc.setFont('helvetica', 'normal');
+  doc.text('Date:', rightX, 45);
+  doc.text(new Date(invoice.date).toLocaleDateString(), rightX + 30, 45);
+  
+  if (invoice.dueDate) {
+    doc.text('Due Date:', rightX, 50);
+    doc.text(new Date(invoice.dueDate).toLocaleDateString(), rightX + 30, 50);
+  }
+
+  // --- Bill To ---
+  doc.setFontSize(12);
+  doc.setFont('helvetica', 'bold');
+  doc.text('BILL TO:', 20, 80);
+  doc.setFontSize(10);
+  doc.setFont('helvetica', 'normal');
+  const customer = invoice.customer || { name: 'Walk-in Customer' };
+  doc.text(customer.name, 20, 85);
+  doc.text(customer.address || '', 20, 90);
+  doc.text(`Phone: ${customer.phone || ''}`, 20, 95);
+  if (customer.taxId) {
+    doc.text(`VAT ID: ${customer.taxId}`, 20, 100);
+  }
+
+  // --- Items Table ---
+  const tableRows: any[] = [];
+  
+  // Flattern lines from groups and ungrouped lines
+  const allLines: any[] = [];
+  
+  if (invoice.groups) {
+    invoice.groups.forEach((group: any) => {
+      // Add a header row for the group if needed
+      tableRows.push([
+        { content: group.title, colSpan: 4, styles: { fillColor: [245, 245, 245], fontStyle: 'bold' } },
+        { content: formatAmount(group.total), styles: { fillColor: [245, 245, 245], fontStyle: 'bold', halign: 'right' } }
+      ]);
+      
+      group.lines.forEach((line: any) => {
+        tableRows.push([
+          line.description || line.item?.name || 'Item',
+          line.quantity.toString(),
+          formatAmount(line.unitPrice),
+          formatAmount(line.taxAmt),
+          formatAmount(line.total)
+        ]);
+      });
+    });
+  }
+  
+  if (invoice.lines) {
+    invoice.lines.forEach((line: any) => {
+      tableRows.push([
+        line.description || line.item?.name || 'Item',
+        line.quantity.toString(),
+        formatAmount(line.unitPrice),
+        formatAmount(line.taxAmt),
+        formatAmount(line.total)
+      ]);
+    });
+  }
+
+  autoTable(doc, {
+    startY: 110,
+    head: [['Description', 'Qty', 'Unit Price', 'Tax', 'Total']],
+    body: tableRows,
+    headStyles: { fillColor: primaryColor as any },
+    alternateRowStyles: { fillColor: [250, 250, 250] },
+    margin: { left: 20, right: 20 },
+    theme: 'grid'
+  });
+
+  // --- Totals ---
+  const finalY = (doc as any).lastAutoTable.finalY + 10;
+  const totalsX = 140;
+  
+  doc.setFont('helvetica', 'normal');
+  doc.text('Subtotal:', totalsX, finalY);
+  doc.text(formatAmount(invoice.subtotal), totalsX + 35, finalY, { align: 'right' });
+  
+  doc.text('Tax Total:', totalsX, finalY + 5);
+  doc.text(formatAmount(invoice.taxTotal), totalsX + 35, finalY + 5, { align: 'right' });
+  
+  if (Number(invoice.discountTotal) > 0) {
+    doc.text('Discount:', totalsX, finalY + 10);
+    doc.text(`-${formatAmount(invoice.discountTotal)}`, totalsX + 35, finalY + 10, { align: 'right' });
+  }
+
+  doc.setFontSize(12);
+  doc.setFont('helvetica', 'bold');
+  doc.text('TOTAL:', totalsX, finalY + 18);
+  doc.text(formatAmount(invoice.total), totalsX + 35, finalY + 18, { align: 'right' });
+
+  // --- Footer ---
+  const pageHeight = doc.internal.pageSize.height;
+  doc.setFontSize(8);
+  doc.setTextColor(secondaryTextColor[0], secondaryTextColor[1], secondaryTextColor[2]);
+  doc.setFont('helvetica', 'normal');
+  const terms = invoice.termsText || organization.defaultTermsText || '';
+  if (terms) {
+    doc.text('Terms & Conditions:', 20, pageHeight - 40);
+    const splitTerms = doc.splitTextToSize(terms, 170);
+    doc.text(splitTerms, 20, pageHeight - 35);
+  }
+  
+  doc.text('Generated by Transaction Manager', 105, pageHeight - 10, { align: 'center' });
+
+  // --- Download ---
+  const fileName = `${title}_${invoice.serial || invoice.id.slice(-8)}.pdf`;
+  doc.save(fileName);
+};

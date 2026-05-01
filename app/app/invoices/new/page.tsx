@@ -31,15 +31,34 @@ import { CustomerFormDialog } from '../../customers/customer-form-dialog';
 export default function InvoiceEditor() {
   const router = useRouter();
   const [selectedCustomer, setSelectedCustomer] = useState<any>(null);
+  const [selectedWarehouse, setSelectedWarehouse] = useState<any>(null);
   const [lines, setLines] = useState<any[]>([]);
 
   const { data: customers } = trpc.customers.list.useQuery();
   const { data: items } = trpc.items.list.useQuery({});
+  const { data: warehouses } = trpc.warehouses.list.useQuery({});
+
+  const confirmInvoice = trpc.invoices.confirm.useMutation({
+    onSuccess: (data) => {
+      toast.success('Invoice completed and stock deducted');
+      router.push(`/app/invoices/${data.id}`);
+    },
+    onError: (error) => {
+      toast.error('Invoice created but failed to confirm: ' + error.message);
+    },
+  });
 
   const createInvoice = trpc.invoices.create.useMutation({
-    onSuccess: (data) => {
-      toast.success('Invoice created successfully');
-      router.push(`/app/invoices/${data.id}`);
+    onSuccess: (data, variables) => {
+      if ((variables as any)._isCompleted) {
+        confirmInvoice.mutate({
+          id: data.id,
+          warehouseId: selectedWarehouse?.id || data.warehouseId || '',
+        });
+      } else {
+        toast.success('Invoice created successfully');
+        router.push(`/app/invoices/${data.id}`);
+      }
     },
     onError: (error) => {
       toast.error(error.message);
@@ -55,9 +74,30 @@ export default function InvoiceEditor() {
       toast.error('Please add at least one item');
       return;
     }
-    // TODO : pass lines, if any
+    if (isCompleted && !selectedWarehouse) {
+      toast.error('Please select a warehouse to deduct stock from');
+      return;
+    }
+
+    const formattedLines = lines.map((l) => ({
+      id: l.id,
+      itemId: l.itemId,
+      parentId: l.parentId,
+      description: l.description,
+      quantity: String(l.quantity),
+      unitPrice: Math.round((l.unitPrice || 0) * 1000),
+      discountAmt: Math.round((l.discountAmt || 0) * 1000),
+      taxAmt: Math.round((l.taxAmt || 0) * 1000),
+      purchasePrice: Math.round((l.purchasePrice || 0) * 1000),
+      isGroup: l.isGroup || false,
+    }));
+
     createInvoice.mutate({
       customerId: selectedCustomer.id,
+      warehouseId: selectedWarehouse?.id,
+      lines: formattedLines,
+      // @ts-ignore - internal flag for onSuccess
+      _isCompleted: isCompleted,
     });
   };
 
@@ -134,9 +174,9 @@ export default function InvoiceEditor() {
         {/* ── Progress bar ── */}
         <Progress value={progressPercent} className="h-1 w-full" />
 
-        {/* ── Row 2: Customer Selection ── */}
-        <div className="flex flex-row px-2 py-2 border-b border-border/50 overflow-hidden">
-          <ButtonGroup className="w-full">
+        {/* ── Row 2: Customer & Warehouse Selection ── */}
+        <div className="flex flex-col md:flex-row px-2 py-2 border-b border-border/50 gap-2 overflow-hidden">
+          <ButtonGroup className="flex-2">
             <SelectDialog<any>
               title="Select Customer"
               data={customers}
@@ -184,6 +224,50 @@ export default function InvoiceEditor() {
               </Button>
             </CustomerFormDialog>
           </ButtonGroup>
+
+          <div className="flex-1 min-w-[200px]">
+            <SelectDialog<any>
+              title="Select Warehouse"
+              data={warehouses}
+              onSelect={setSelectedWarehouse}
+              searchFields={['name', 'address']}
+              cardRenderer={(w) => (
+                <div className="p-3 flex items-center gap-3">
+                  <div className="p-2 bg-primary/10 rounded-md">
+                    <MapPinIcon className="size-4 text-primary" />
+                  </div>
+                  <div>
+                    <div className="font-medium">{w.name}</div>
+                    <div className="text-xs text-muted-foreground">{w.address || 'No address'}</div>
+                  </div>
+                </div>
+              )}
+              rowHeight={64}
+              itemName="Warehouses"
+            >
+              <Button
+                variant="outline"
+                className={cn(
+                  'w-full justify-start text-left font-normal h-12',
+                  !selectedWarehouse && 'text-muted-foreground',
+                )}
+              >
+                <MapPinIcon className="mr-2 size-5 text-muted-foreground shrink-0" />
+                <div className="flex flex-col items-start overflow-hidden">
+                  {selectedWarehouse ? (
+                    <>
+                      <span className="font-medium truncate">{selectedWarehouse.name}</span>
+                      <span className="text-xs text-muted-foreground truncate">
+                        Stock Location
+                      </span>
+                    </>
+                  ) : (
+                    <span>Select Warehouse</span>
+                  )}
+                </div>
+              </Button>
+            </SelectDialog>
+          </div>
         </div>
 
         {/* ── Row 3: Financial Summary ── */}

@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -32,9 +33,11 @@ import {
   CheckCircle,
   Clock,
   CheckCircle2,
+  MapPinIcon,
   Phone,
   Mail,
   HandCoinsIcon,
+  Group,
 } from 'lucide-react';
 import { trpc } from '@/lib/trpc/client';
 import { cn, formatAmount, formatID } from '@/lib/utils';
@@ -43,41 +46,53 @@ import { Spinner } from '@/components/ui/spinner';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useDateFormat } from '@/hooks/use-date-format';
+import { generateInvoicePDF } from '@/lib/pdf-generator';
 
-function InvoiceLineRow({ line, lines, depth = 0 }: { line: any; lines: any[]; depth?: number }) {
-  const childLines = lines.filter((l) => l.parentId === line.id);
-
+function InvoiceLineRow({ line, depth = 0 }: { line: any; depth?: number }) {
   return (
-    <>
-      <div
-        className={`flex items-center justify-between py-3 px-4 transition-colors hover:bg-muted/50 ${depth > 0 ? ' border-l-2 border-muted/50 ms-4' : ''}`}
-      >
-        <div className="flex items-center gap-3 flex-1 min-w-0">
-          <div
-            className={`w-8 h-8 rounded-md flex items-center justify-center shrink-0 ${depth > 0 ? 'bg-muted text-muted-foreground' : 'bg-primary/10 text-primary'}`}
-          >
-            <Package className="w-4 h-4" />
-          </div>
-          <div className="min-w-0">
-            <p className="text-sm font-medium truncate leading-none mb-1">
-              {line.description || line.itemRef?.name || (line.isGroup ? 'Group' : 'Item')}
-            </p>
-            {line.itemRef?.code && (
-              <p className="text-xs text-muted-foreground font-mono">{line.itemRef.code}</p>
-            )}
-          </div>
+    <div
+      className={`flex items-center justify-between py-3 px-4 transition-colors hover:bg-muted/50 ${depth > 0 ? ' border-l-2 border-muted/50 ms-4' : ''}`}
+    >
+      <div className="flex items-center gap-3 flex-1 min-w-0">
+        <div
+          className={`w-8 h-8 rounded-md flex items-center justify-center shrink-0 ${depth > 0 ? 'bg-muted text-muted-foreground' : 'bg-primary/10 text-primary'}`}
+        >
+          <Package className="w-4 h-4" />
         </div>
-
-        <div className="text-right shrink-0 ml-4">
-          <p className="text-sm font-semibold">{formatAmount(line.total || 0)}</p>
-          <p className="text-xs text-muted-foreground">Qty: {line.quantity || 1}</p>
+        <div className="min-w-0">
+          <p className="text-sm font-medium truncate leading-none mb-1">
+            {line.description || line.item?.name || 'Item'}
+          </p>
+          {line.item?.sku && (
+            <p className="text-xs text-muted-foreground font-mono">{line.item.sku}</p>
+          )}
         </div>
       </div>
 
-      {childLines.map((sub) => (
-        <InvoiceLineRow key={sub.id} line={sub} lines={lines} depth={depth + 1} />
-      ))}
-    </>
+      <div className="text-right shrink-0 ml-4">
+        <p className="text-sm font-semibold">{formatAmount(line.total || 0)}</p>
+        <p className="text-xs text-muted-foreground">Qty: {line.quantity || 1}</p>
+      </div>
+    </div>
+  );
+}
+
+function InvoiceGroupRow({ group }: { group: any }) {
+  return (
+    <div className="flex flex-col border-b last:border-0">
+      <div className="bg-muted/30 px-4 py-2 flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <Group className="w-4 h-4 text-muted-foreground" />
+          <span className="text-sm font-semibold">{group.title}</span>
+        </div>
+        <span className="text-sm font-bold">{formatAmount(group.total)}</span>
+      </div>
+      <div className="flex flex-col">
+        {group.lines.map((line: any) => (
+          <InvoiceLineRow key={line.id} line={line} depth={1} />
+        ))}
+      </div>
+    </div>
   );
 }
 
@@ -97,11 +112,24 @@ export default function InvoiceDetailPage() {
     id: invoiceId,
   });
 
-  const updateMutation = trpc.invoices.update.useMutation({
+  const { data: organization } = trpc.organizations.get.useQuery();
+
+  const confirmMutation = trpc.invoices.confirm.useMutation({
     onSuccess: () => {
+      toast.success('Invoice confirmed and stock deducted');
       refetch();
     },
+    onError: (e) => toast.error('Confirmation failed: ' + e.message),
   });
+
+  const { data: warehouses } = trpc.warehouses.list.useQuery({});
+  const [selectedWarehouseId, setSelectedWarehouseId] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (invoice?.warehouseId) {
+      setSelectedWarehouseId(invoice.warehouseId);
+    }
+  }, [invoice]);
 
   if (isLoading) {
     return (
@@ -159,9 +187,9 @@ export default function InvoiceDetailPage() {
                 }`}
               >
                 {/* show loading */}
-                {updateMutation.isPending ? (
+                {confirmMutation.isPending ? (
                   <Spinner />
-                ) : invoice.status === 'SENT' ? (
+                ) : invoice.status !== 'DRAFT' ? (
                   'Done'
                 ) : (
                   'Pending'
@@ -169,25 +197,37 @@ export default function InvoiceDetailPage() {
               </span>
 
               <Switch
-                disabled={updateMutation.isPending}
+                disabled={confirmMutation.isPending || invoice.status !== 'DRAFT'}
                 size="default"
                 className={'border-muted-foreground/50'}
-                checked={invoice.status === 'SENT'}
+                checked={invoice.status !== 'DRAFT'}
                 onCheckedChange={(checked) => {
-                  console.log(checked);
-                  updateMutation.mutate(
-                    {
+                  if (checked && invoice.status === 'DRAFT') {
+                    if (!selectedWarehouseId) {
+                      toast.error('Please select a warehouse first');
+                      return;
+                    }
+                    confirmMutation.mutate({
                       id: invoice.id,
-                    },
-                    {
-                      onError: (e) => toast.error('Update failed'),
-                    },
-                  );
+                      warehouseId: selectedWarehouseId,
+                    });
+                  }
                 }}
               />
             </Label>
 
-            <Button size="lg" variant="outline" className="shadow-sm border-dashed">
+            <Button
+              size="lg"
+              variant="outline"
+              className="shadow-sm border-dashed"
+              onClick={() => {
+                if (invoice && organization) {
+                  generateInvoicePDF({ invoice, organization });
+                } else {
+                  toast.error('Data not loaded yet');
+                }
+              }}
+            >
               <File className="w-4 h-4 md:mr-2" />
               <span className="hidden md:inline">Download PDF</span>
             </Button>
@@ -318,6 +358,31 @@ export default function InvoiceDetailPage() {
                       )}
                     </div>
                   )}
+
+                  {/* NEW: Warehouse */}
+                  <div className="flex flex-col space-y-1">
+                    <span className="text-muted-foreground flex items-center gap-2">
+                      <MapPinIcon className="w-4 h-4" /> Warehouse
+                    </span>
+                    {invoice.status === 'DRAFT' ? (
+                      <select
+                        className="bg-transparent border-none text-primary font-medium focus:ring-0 p-0"
+                        value={selectedWarehouseId || ''}
+                        onChange={(e) => setSelectedWarehouseId(e.target.value)}
+                      >
+                        <option value="">Select Warehouse</option>
+                        {warehouses?.map((w) => (
+                          <option key={w.id} value={w.id}>
+                            {w.name}
+                          </option>
+                        ))}
+                      </select>
+                    ) : (
+                      <span className="font-medium">
+                        {warehouses?.find((w) => w.id === invoice.warehouseId)?.name || 'Default'}
+                      </span>
+                    )}
+                  </div>
                 </div>
 
                 {/* Existing Description */}
@@ -372,15 +437,20 @@ export default function InvoiceDetailPage() {
 
               <CardContent className="p-0">
                 <div className="flex flex-col divide-y divide-border border-t">
-                  {rootLines.length === 0 ? (
+                  {invoice.groups.length === 0 && invoice.lines.length === 0 ? (
                     <div className="py-12 text-center flex flex-col items-center">
                       <Package className="w-8 h-8 text-muted-foreground/50 mb-3" />
                       <p className="text-sm text-muted-foreground">No items on this invoice.</p>
                     </div>
                   ) : (
-                    rootLines.map((line: any) => (
-                      <InvoiceLineRow key={line.id} line={line} lines={invoice.lines} />
-                    ))
+                    <>
+                      {invoice.groups.map((group: any) => (
+                        <InvoiceGroupRow key={group.id} group={group} />
+                      ))}
+                      {invoice.lines.map((line: any) => (
+                        <InvoiceLineRow key={line.id} line={line} />
+                      ))}
+                    </>
                   )}
                 </div>
 

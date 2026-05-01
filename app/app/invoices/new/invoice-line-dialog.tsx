@@ -61,7 +61,7 @@ export function InvoiceLineDialog({
   const [selectedItem, setSelectedItem] = useState<any>(initialValues?.itemRef || null);
 
   // Data Fetching for "Import from existing"
-  const { data: items, isLoading: isLoadingItems } = trpc.items.getItems.useQuery({
+  const { data: items, isLoading: isLoadingItems } = trpc.items.list.useQuery({
     group: 'all',
   });
 
@@ -161,33 +161,7 @@ export function InvoiceLineDialog({
                 isLoading={isLoadingItems}
                 onSelect={(item) => handleSelectItem(item)}
                 searchFields={['name', 'sku']}
-                getItemId={function (
-                  item: {
-                    category: {
-                      id: string;
-                      createdAt: Date;
-                      updatedAt: Date;
-                      name: string;
-                      organizationId: string | null;
-                      color: string | null;
-                      icon: string | null;
-                    } | null;
-                  } & {
-                    type: $Enums.ItemType;
-                    description: string | null;
-                    id: string;
-                    createdAt: Date;
-                    updatedAt: Date;
-                    name: string;
-                    organizationId: string | null;
-                    sku: string | null;
-                    barcode: string | null;
-                    stockQuantity: bigint | null;
-                    purchasePrice: bigint;
-                    salesPrice: bigint;
-                    categoryId: string | null;
-                  },
-                ): string {
+                getItemId={(item: any) => {
                   return item.id;
                 }}
               >
