@@ -1,33 +1,108 @@
 'use client';
 
-import { usePathname, useRouter } from 'next/navigation';
-import { cn } from '@/lib/utils';
 import {
+  Boxes,
+  ChevronDown,
+  FilePenLine,
+  LayoutDashboard,
+  type LucideIcon,
+  ShoppingCartIcon,
+  SidebarIcon,
+  User,
+} from 'lucide-react';
+import Link from 'next/link';
+import { usePathname, useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import Logo from '@/components/Logo';
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarFooter,
   SidebarGroup,
   SidebarGroupLabel,
-  SidebarMenu,
-  SidebarMenuItem,
-  SidebarMenuButton,
-  SidebarMenuSub,
-  SidebarMenuSubItem,
-  SidebarMenuSubButton,
-  Sidebar,
   SidebarHeader,
-  SidebarContent,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  SidebarMenuSub,
+  SidebarMenuSubButton,
+  SidebarMenuSubItem,
   SidebarRail,
   useSidebar,
-  SidebarFooter,
 } from '@/components/sidebar';
-import Logo from '@/components/Logo';
-import { useI18n } from '@/i18n/use-i18n';
-import { ROUTES, RouteConfig } from '@/lib/nav';
-import { useEffect, useState } from 'react';
-import { Spinner } from '@/components/ui/spinner';
-import { Route } from 'next';
-import { NavUser } from './User-Options';
 import { Button } from '@/components/ui/button';
-import { ChevronDown, SidebarIcon } from 'lucide-react';
-import Link from 'next/link';
+import { Spinner } from '@/components/ui/spinner';
+import type { TranslationKeys } from '@/i18n/config';
+import { useI18n } from '@/i18n/use-i18n';
+import type { AppActions, AppSubjects } from '@/lib/permissions';
+import { cn } from '@/lib/utils';
+import { NavUser } from './User-Options';
+
+// 1. Define what a single route looks like
+export type RouteConfig = {
+  type: 'item' | 'group';
+  key: TranslationKeys; // for i18n lookup
+  label: string; // optional fallback
+  href?: string;
+  icon?: LucideIcon;
+  children?: RouteConfig[];
+  auth?: { action: AppActions; subject: AppSubjects };
+  // 🔍 search metadata
+  search?: {
+    keywords?: string[]; // additional keywords for search
+    hidden?: boolean; // exclude from search
+  };
+};
+
+// Derive a type from the const
+export type Routes = typeof ROUTES;
+
+// Define the routes as a const to get literal types
+export const ROUTES = [
+  {
+    type: 'group',
+    label: 'Navigation',
+    key: 'common.navigation',
+    children: [
+      {
+        type: 'item',
+        label: 'Dashboard',
+        key: 'common.dashboard',
+        href: '/app',
+        icon: LayoutDashboard,
+      },
+      {
+        type: 'item',
+        label: 'Customers',
+        key: 'common.customers',
+        href: '/app/customers',
+        icon: User,
+        auth: { action: 'read', subject: 'Customer' },
+      },
+      {
+        type: 'item',
+        label: 'Purchase Order',
+        key: 'common.purchaseOrders',
+        href: '/app/purchase-order',
+        icon: ShoppingCartIcon,
+      },
+      {
+        type: 'item',
+        label: 'Products & Services',
+        key: 'common.productsAndServices',
+        href: '/app/items',
+        icon: Boxes,
+      },
+      {
+        type: 'item',
+        label: 'Invoices',
+        key: 'common.invoices',
+        href: '/app/invoices',
+        icon: FilePenLine,
+      },
+    ],
+  },
+] as const satisfies RouteConfig[];
 
 interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {}
 
@@ -55,7 +130,7 @@ export function AppSidebar({ ...props }: AppSidebarProps) {
   const handleNavigate = (href: string) => {
     if (currentPath === href) return;
     setLoading(href);
-    router.push(href as Route);
+    router.push(href);
   };
 
   const showSpinnerFor = (href: string) => loading === href && (!open || isMobile);
@@ -129,7 +204,6 @@ function RouteGroup({
   ...shared
 }: SharedProps & { route: RouteConfig & { type: 'group' } }) {
   const { i18n } = shared;
-  const router = useRouter();
   const [open, setOpen] = useState(true);
 
   return (
@@ -173,7 +247,7 @@ function RouteGroup({
 // ─── Route Item (leaf or nested) ─────────────────────────────────────────────
 
 function RouteItem({ route, ...shared }: SharedProps & { route: RouteConfig }) {
-  const { isActive, loading, open, isMobile, showSpinnerFor, onNavigate, i18n } = shared;
+  const { isActive, loading, showSpinnerFor, onNavigate, i18n } = shared;
 
   const active = isActive(route.href);
   const href = route.href as string | undefined;
@@ -217,7 +291,7 @@ function RouteItem({ route, ...shared }: SharedProps & { route: RouteConfig }) {
 
         {/* Sub-items */}
         <SidebarMenuSub>
-          {route.children!.map((child) => {
+          {route.children?.map((child) => {
             const childHref = child.href as string | undefined;
             const childActive = isActive(childHref);
             const childLabel = i18n.t(child.key);

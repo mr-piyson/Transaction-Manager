@@ -9,25 +9,32 @@ export const env = createEnv({
     NODE_ENV: z.enum(['development', 'production']).optional(),
   },
   runtimeEnv: process.env,
-  onValidationError: (issues) => {
-    console.error(`Invalid environment variables:`);
-    issues.forEach((issue) => {
-      if (issue.path)
-        console.log(
-          '\x1b[31m',
-          issue.path[0].toString().trim(),
-          '\x1b[31m',
-          '\x1b[0m=\x1b[0m',
-          '\x1b[32m',
-          '""',
-          '\x1b[32m',
-        );
+    onValidationError: (error: any) => {  
+    console.error('\x1b[31m%s\x1b[0m', '❌ Invalid Environment Variables:');
+
+    error.issues.forEach((issue: any) => {
+      const varName = issue.path[0]?.toString() || 'UNKNOWN';
+      let errorMessage = issue.message;
+
+      // Handle type mismatches (Expected vs Received)
+      if ('expected' in issue && 'received' in issue) {
+        errorMessage = `Expected ${issue.expected}, but received ${issue.received}`;
+      }
+
+      // Output format: NAME="current_val" -> Error detail
+      console.log(
+        '  \x1b[1m\x1b[31m%s\x1b[0m \x1b[90m->\x1b[0m \x1b[33m%s\x1b[0m',
+        varName.padEnd(20), // Aligns the arrows
+        errorMessage,
+      );
     });
-    // throw error with out log the zod runtime error log
+
+    console.log('\n\x1b[41m\x1b[37m%s\x1b[0m', ' FATAL: Fix your .env file to continue. ');
     process.exit(1);
   },
+
   onInvalidAccess(variable) {
-    console.error(`❌ Invalid access to environment variable: ${variable}`);
+    console.error('\x1b[31m%s\x1b[0m \x1b[1m%s\x1b[0m', '❌ Invalid access to:', variable);
     process.exit(1);
   },
 });

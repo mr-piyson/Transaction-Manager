@@ -1,7 +1,11 @@
 'use client';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
+import { toast } from 'sonner';
 import z from 'zod';
+import { authClient, signIn } from '@/auth/auth-client';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -13,10 +17,6 @@ import {
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Spinner } from '@/components/ui/spinner';
-import { trpc } from '@/lib/trpc/client';
-import { useRouter } from 'next/navigation';
-import { authClient, signIn } from '@/auth/auth-client';
-import { useState } from 'react';
 
 export const SignInSchema = z.object({
   email: z.email(),
@@ -40,7 +40,7 @@ export default function SignInTab() {
       router.push('/app');
     }
 
-    if (error) console.error(error.message);
+    if (error) toast.error(error.message);
   };
 
   const {

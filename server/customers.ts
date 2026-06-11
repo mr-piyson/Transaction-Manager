@@ -1,7 +1,6 @@
+import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 import { adminProcedure, protectedProcedure, t } from '@/lib/trpc/server';
-import { TRPCError } from '@trpc/server';
-import db from '@/lib/db';
 import { assertOwnership, requireOrgId } from './_shared';
 
 const customerInput = z.object({
@@ -119,7 +118,9 @@ export const customerRouter = t.router({
         where: { id },
         data: {
           ...rest,
-          ...(creditLimit !== undefined && { creditLimit: BigInt(creditLimit) }),
+          ...(creditLimit !== undefined && {
+            creditLimit: BigInt(creditLimit),
+          }),
         },
       });
     }),
@@ -132,7 +133,10 @@ export const customerRouter = t.router({
 
     const existing = await ctx.prisma.customer.findUnique({
       where: { id: input.id },
-      select: { organizationId: true, _count: { select: { invoices: true } } },
+      select: {
+        organizationId: true,
+        _count: { select: { invoices: true } },
+      },
     });
     assertOwnership(existing, orgId, 'Customer');
 
@@ -160,7 +164,12 @@ export const customerRouter = t.router({
   // Recent invoices for a customer (for sidebar / detail view)
   // -------------------------------------------------------------------------
   recentInvoices: protectedProcedure
-    .input(z.object({ customerId: z.string(), limit: z.number().int().min(1).max(20).default(5) }))
+    .input(
+      z.object({
+        customerId: z.string(),
+        limit: z.number().int().min(1).max(20).default(5),
+      }),
+    )
     .query(async ({ ctx, input }) => {
       const orgId = requireOrgId(ctx.organizationId);
 

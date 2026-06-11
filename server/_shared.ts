@@ -2,8 +2,8 @@
  * shared.ts — Zod primitives and helpers shared across all routers
  */
 
-import { TRPCError } from '@trpc/server';
 import type { PrismaClient } from '@prisma/client';
+import { TRPCError } from '@trpc/server';
 
 // ---------------------------------------------------------------------------
 // Guard helpers
@@ -82,7 +82,13 @@ export async function computeInvoiceTotals(
 ) {
   const lines = await tx.invoiceLine.findMany({
     where: { invoiceId },
-    select: { unitPrice: true, quantity: true, discountAmt: true, taxAmt: true, total: true },
+    select: {
+      unitPrice: true,
+      quantity: true,
+      discountAmt: true,
+      taxAmt: true,
+      total: true,
+    },
   });
 
   let subtotal = BigInt(0);
@@ -111,7 +117,13 @@ export async function recomputeGroupTotals(
 ) {
   const lines = await tx.invoiceLine.findMany({
     where: { groupId },
-    select: { discountAmt: true, taxAmt: true, total: true, unitPrice: true, quantity: true },
+    select: {
+      discountAmt: true,
+      taxAmt: true,
+      total: true,
+      unitPrice: true,
+      quantity: true,
+    },
   });
 
   let subtotal = BigInt(0);

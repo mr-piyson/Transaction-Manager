@@ -213,6 +213,7 @@ model Organization {
   stockMovements        StockMovement[]
   jobs                  Job[]
   invoices              Invoice[]
+  invoiceLine           InvoiceLine[]
   invoiceLineGroup      InvoiceLineGroup[]
   payments              Payment[]
   purchaseOrders        PurchaseOrder[]
@@ -964,6 +965,9 @@ model InvoiceLine {
   updatedAt DateTime @updatedAt
 
   stockMovements StockMovement[]
+  
+  organization   Organization?   @relation(fields: [organizationId], references: [id])
+  organizationId String?
 
   @@index([invoiceId])
   @@index([itemId])

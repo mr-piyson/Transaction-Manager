@@ -1,7 +1,9 @@
 'use client';
 
 import { Check, ChevronsUpDown, Languages, LogOut, Moon, Settings, Sun } from 'lucide-react';
-
+import { useTheme } from 'next-themes';
+import { signOut, useSession } from '@/auth/auth-client';
+import { SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/sidebar';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
   DropdownMenu,
@@ -17,12 +19,9 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar } from '@/components/sidebar';
 import { Switch } from '@/components/ui/switch';
-import { useTheme } from 'next-themes';
-import { useI18n } from '@/i18n/use-i18n';
 import { LANGUAGE_CONFIG } from '@/i18n/config';
-import { signOut, useSession } from '@/auth/auth-client';
+import { useI18n } from '@/i18n/use-i18n';
 
 export function NavUser() {
   const { theme, setTheme } = useTheme();

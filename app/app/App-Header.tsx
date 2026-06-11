@@ -1,6 +1,6 @@
 'use client';
 
-import { ReactNode } from 'react';
+import type { ReactNode } from 'react';
 import { cn } from '@/lib/utils';
 import { Separator } from '../../components/ui/separator';
 import { SidebarToggleButton } from './App-Sidebar';

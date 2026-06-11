@@ -5,9 +5,10 @@
  * All multi-table mutations use prisma.$transaction.
  */
 
-import { z } from 'zod';
-import { protectedProcedure, adminProcedure, t } from '@/lib/trpc/server';
+import type { Prisma } from '@prisma/client';
 import { TRPCError } from '@trpc/server';
+import { z } from 'zod';
+import { adminProcedure, protectedProcedure, t } from '@/lib/trpc/server';
 import {
   assertOwnership,
   computeInvoiceTotals,
@@ -18,7 +19,6 @@ import {
   reverseStockForInvoice,
   syncInvoicePaymentStatus,
 } from './_shared';
-import { Prisma } from '@prisma/client';
 
 // ---------------------------------------------------------------------------
 // Input schemas
@@ -134,7 +134,11 @@ export const invoiceRouter = t.router({
           include: {
             lines: {
               orderBy: { sortOrder: 'asc' },
-              include: { item: { select: { id: true, name: true, sku: true, unit: true } } },
+              include: {
+                item: {
+                  select: { id: true, name: true, sku: true, unit: true },
+                },
+              },
             },
           },
         },
@@ -142,11 +146,15 @@ export const invoiceRouter = t.router({
         lines: {
           where: { groupId: null },
           orderBy: { sortOrder: 'asc' },
-          include: { item: { select: { id: true, name: true, sku: true, unit: true } } },
+          include: {
+            item: { select: { id: true, name: true, sku: true, unit: true } },
+          },
         },
         payments: { orderBy: { date: 'desc' } },
         parentInvoice: { select: { id: true, serial: true } },
-        creditNotes: { select: { id: true, serial: true, total: true, status: true } },
+        creditNotes: {
+          select: { id: true, serial: true, total: true, status: true },
+        },
       },
     });
 
@@ -262,12 +270,18 @@ export const invoiceRouter = t.router({
         select: { organizationId: true, status: true },
       });
       if (!existing) {
-        throw new TRPCError({ code: 'BAD_REQUEST', message: 'invoice not found' });
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'invoice not found',
+        });
       }
       assertOwnership(existing, orgId, 'Invoice');
 
       if (existing.status !== 'DRAFT') {
-        throw new TRPCError({ code: 'BAD_REQUEST', message: 'Only DRAFT invoices can be edited' });
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'Only DRAFT invoices can be edited',
+        });
       }
 
       return ctx.prisma.invoice.update({ where: { id }, data: rest });
@@ -288,11 +302,17 @@ export const invoiceRouter = t.router({
         select: { organizationId: true, status: true },
       });
       if (!invoice) {
-        throw new TRPCError({ code: 'BAD_REQUEST', message: 'invoice not found' });
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'invoice not found',
+        });
       }
       assertOwnership(invoice, orgId, 'Invoice');
       if (invoice.status !== 'DRAFT')
-        throw new TRPCError({ code: 'BAD_REQUEST', message: 'Invoice is not editable' });
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'Invoice is not editable',
+        });
 
       return ctx.prisma.invoiceLineGroup.create({
         data: {
@@ -343,12 +363,17 @@ export const invoiceRouter = t.router({
 
       const group = await ctx.prisma.invoiceLineGroup.findUnique({
         where: { id: input.id },
-        include: { invoice: { select: { status: true, organizationId: true } } },
+        include: {
+          invoice: { select: { status: true, organizationId: true } },
+        },
       });
       if (!group) throw new TRPCError({ code: 'NOT_FOUND', message: 'Group not found' });
       if (group.invoice.organizationId !== orgId) throw new TRPCError({ code: 'FORBIDDEN' });
       if (group.invoice.status !== 'DRAFT')
-        throw new TRPCError({ code: 'BAD_REQUEST', message: 'Invoice is not editable' });
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'Invoice is not editable',
+        });
 
       // Delete all lines within the group first
       await ctx.prisma.invoiceLine.deleteMany({ where: { groupId: input.id } });
@@ -356,7 +381,10 @@ export const invoiceRouter = t.router({
       return ctx.prisma.$transaction(async (tx) => {
         await tx.invoiceLineGroup.delete({ where: { id: input.id } });
         const totals = await computeInvoiceTotals(tx, group.invoiceId);
-        return tx.invoice.update({ where: { id: group.invoiceId }, data: totals });
+        return tx.invoice.update({
+          where: { id: group.invoiceId },
+          data: totals,
+        });
       });
     }),
 
@@ -375,11 +403,17 @@ export const invoiceRouter = t.router({
         select: { organizationId: true, status: true },
       });
       if (!invoice) {
-        throw new TRPCError({ code: 'BAD_REQUEST', message: 'Invoice is not exist' });
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'Invoice is not exist',
+        });
       }
       assertOwnership(invoice, orgId, 'Invoice');
       if (invoice.status !== 'DRAFT')
-        throw new TRPCError({ code: 'BAD_REQUEST', message: 'Invoice is not editable' });
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'Invoice is not editable',
+        });
 
       // Snapshot tax rate name at creation time
       let taxRateSnapshot: string | undefined;
@@ -453,7 +487,9 @@ export const invoiceRouter = t.router({
           data: {
             ...rest,
             ...(unitPrice !== undefined && { unitPrice: BigInt(unitPrice) }),
-            ...(discountAmt !== undefined && { discountAmt: BigInt(discountAmt) }),
+            ...(discountAmt !== undefined && {
+              discountAmt: BigInt(discountAmt),
+            }),
             ...(taxAmt !== undefined && { taxAmt: BigInt(taxAmt) }),
             ...(quantity !== undefined && { quantity }),
             total: lineTotal,
@@ -483,7 +519,10 @@ export const invoiceRouter = t.router({
         await tx.invoiceLine.delete({ where: { id: input.id } });
         if (line.groupId) await recomputeGroupTotals(tx, line.groupId);
         const totals = await computeInvoiceTotals(tx, input.invoiceId);
-        return tx.invoice.update({ where: { id: input.invoiceId }, data: totals });
+        return tx.invoice.update({
+          where: { id: input.invoiceId },
+          data: totals,
+        });
       });
     }),
 
@@ -593,10 +632,16 @@ export const invoiceRouter = t.router({
       assertOwnership(quote, orgId, 'Quote');
 
       if (quote.type !== 'QUOTE') {
-        throw new TRPCError({ code: 'BAD_REQUEST', message: 'Only quotes can be converted' });
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'Only quotes can be converted',
+        });
       }
       if (quote.status !== 'DRAFT') {
-        throw new TRPCError({ code: 'BAD_REQUEST', message: 'Only DRAFT quotes can be converted' });
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'Only DRAFT quotes can be converted',
+        });
       }
 
       return ctx.prisma.$transaction(async (tx) => {
@@ -613,7 +658,13 @@ export const invoiceRouter = t.router({
   // =========================================================================
 
   cancel: adminProcedure
-    .input(z.object({ id: z.string(), warehouseId: z.string(), reason: z.string().optional() }))
+    .input(
+      z.object({
+        id: z.string(),
+        warehouseId: z.string(),
+        reason: z.string().optional(),
+      }),
+    )
     .mutation(async ({ ctx, input }) => {
       const orgId = requireOrgId(ctx.organizationId);
 
@@ -644,7 +695,11 @@ export const invoiceRouter = t.router({
 
         return tx.invoice.update({
           where: { id: input.id },
-          data: { status: 'CANCELLED', paymentStatus: 'CANCELLED', notes: input.reason },
+          data: {
+            status: 'CANCELLED',
+            paymentStatus: 'CANCELLED',
+            notes: input.reason,
+          },
         });
       });
     }),
@@ -793,7 +848,12 @@ export const invoiceRouter = t.router({
 
       const invoice = await ctx.prisma.invoice.findUnique({
         where: { id: invoiceId },
-        select: { organizationId: true, status: true, amountDue: true, type: true },
+        select: {
+          organizationId: true,
+          status: true,
+          amountDue: true,
+          type: true,
+        },
       });
       if (!invoice) {
         throw new TRPCError({
@@ -852,7 +912,10 @@ export const invoiceRouter = t.router({
         select: { organizationId: true },
       });
       if (!payment || payment.organizationId !== orgId)
-        throw new TRPCError({ code: 'NOT_FOUND', message: 'Payment not found' });
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'Payment not found',
+        });
 
       return ctx.prisma.$transaction(async (tx) => {
         await tx.payment.delete({ where: { id: input.paymentId } });

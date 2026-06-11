@@ -113,7 +113,7 @@ export const reportsRouter = t.router({
       select: {
         id: true,
         serial: true,
-        orderDate: true,
+        date: true,
         expectedDate: true,
         total: true,
         amountOwed: true,
@@ -129,7 +129,7 @@ export const reportsRouter = t.router({
     };
 
     for (const po of pos) {
-      const bucket = ageBucket(po.orderDate);
+      const bucket = ageBucket(po.date);
       buckets[bucket].count++;
       buckets[bucket].total += po.amountOwed;
       buckets[bucket].pos.push(po);

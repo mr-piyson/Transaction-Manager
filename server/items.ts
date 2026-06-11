@@ -3,9 +3,9 @@
  * Item catalogue (products + services) and item categories.
  */
 
-import { z } from 'zod';
-import { protectedProcedure, adminProcedure, t } from '@/lib/trpc/server';
 import { TRPCError } from '@trpc/server';
+import { z } from 'zod';
+import { adminProcedure, protectedProcedure, t } from '@/lib/trpc/server';
 import { assertOwnership, requireOrgId } from './_shared';
 
 // ---------------------------------------------------------------------------
@@ -256,7 +256,10 @@ export const itemRouter = t.router({
       select: { id: true },
     });
     if (skuConflict) {
-      throw new TRPCError({ code: 'BAD_REQUEST', message: `SKU "${input.sku}" already exists` });
+      throw new TRPCError({
+        code: 'BAD_REQUEST',
+        message: `SKU "${input.sku}" already exists`,
+      });
     }
 
     return ctx.prisma.item.create({
@@ -288,7 +291,10 @@ export const itemRouter = t.router({
           select: { id: true },
         });
         if (conflict) {
-          throw new TRPCError({ code: 'BAD_REQUEST', message: `SKU "${sku}" already exists` });
+          throw new TRPCError({
+            code: 'BAD_REQUEST',
+            message: `SKU "${sku}" already exists`,
+          });
         }
       }
 
@@ -297,7 +303,9 @@ export const itemRouter = t.router({
         data: {
           ...rest,
           ...(sku && { sku }),
-          ...(purchasePrice !== undefined && { purchasePrice: BigInt(purchasePrice) }),
+          ...(purchasePrice !== undefined && {
+            purchasePrice: BigInt(purchasePrice),
+          }),
           ...(salesPrice !== undefined && { salesPrice: BigInt(salesPrice) }),
         },
       });
@@ -324,7 +332,10 @@ export const itemRouter = t.router({
       assertOwnership(existing, orgId, 'Item');
 
       if (!existing || existing.type !== 'PRODUCT') {
-        throw new TRPCError({ code: 'BAD_REQUEST', message: 'Only products need a sales price' });
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'Only products need a sales price',
+        });
       }
 
       return ctx.prisma.item.update({

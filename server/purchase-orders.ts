@@ -4,11 +4,11 @@
  * Receiving POs atomically upserts Stock + creates StockMovement rows.
  */
 
-import { z } from 'zod';
-import { protectedProcedure, adminProcedure, t } from '@/lib/trpc/server';
-import { TRPCError } from '@trpc/server';
-import { assertOwnership, nextSerial, requireOrgId, syncPOPaymentStatus } from './_shared';
 import { Prisma } from '@prisma/client';
+import { TRPCError } from '@trpc/server';
+import { z } from 'zod';
+import { adminProcedure, protectedProcedure, t } from '@/lib/trpc/server';
+import { assertOwnership, nextSerial, requireOrgId, syncPOPaymentStatus } from './_shared';
 
 const PO_STATUSES = ['DRAFT', 'ORDERED', 'PARTIAL_RECEIVED', 'RECEIVED', 'CANCELLED'] as const;
 
@@ -76,7 +76,7 @@ export const purchaseOrderRouter = t.router({
           id: true,
           serial: true,
           status: true,
-          orderDate: true,
+          date: true,
           expectedDate: true,
           total: true,
           amountPaid: true,
@@ -273,7 +273,10 @@ export const purchaseOrderRouter = t.router({
       assertOwnership(po, orgId, 'PurchaseOrder');
 
       if (po.status !== 'DRAFT') {
-        throw new TRPCError({ code: 'BAD_REQUEST', message: 'Only DRAFT POs can be ordered' });
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'Only DRAFT POs can be ordered',
+        });
       }
 
       return ctx.prisma.purchaseOrder.update({
@@ -327,7 +330,10 @@ export const purchaseOrderRouter = t.router({
         for (const recv of input.receivedLines) {
           const line = po.lines.find((l) => l.id === recv.lineId);
           if (!line) {
-            throw new TRPCError({ code: 'BAD_REQUEST', message: `Line ${recv.lineId} not found` });
+            throw new TRPCError({
+              code: 'BAD_REQUEST',
+              message: `Line ${recv.lineId} not found`,
+            });
           }
 
           const remaining = line.quantity.minus(line.receivedQty);
@@ -449,7 +455,12 @@ export const purchaseOrderRouter = t.router({
 
       const po = await ctx.prisma.purchaseOrder.findUnique({
         where: { id: purchaseOrderId },
-        select: { organizationId: true, status: true, total: true, amountOwed: true },
+        select: {
+          organizationId: true,
+          status: true,
+          total: true,
+          amountOwed: true,
+        },
       });
       if (!po) {
         throw new TRPCError({
@@ -461,7 +472,10 @@ export const purchaseOrderRouter = t.router({
       assertOwnership(po, orgId, 'PurchaseOrder');
 
       if (po.status === 'CANCELLED') {
-        throw new TRPCError({ code: 'BAD_REQUEST', message: 'Cannot add payment to cancelled PO' });
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'Cannot add payment to cancelled PO',
+        });
       }
 
       const bigAmount = BigInt(amount);

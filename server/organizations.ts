@@ -1,9 +1,9 @@
-import { z } from 'zod';
-import { publicProcedure, protectedProcedure, t, adminProcedure } from '@/lib/trpc/server';
-import { TRPCError } from '@trpc/server';
-import db from '@/lib/db';
-import { auth } from '@/auth/auth-server';
 import { CurrencyCode } from '@prisma/client';
+import { TRPCError } from '@trpc/server';
+import { z } from 'zod';
+import { auth } from '@/auth/auth-server';
+import db from '@/lib/db';
+import { adminProcedure, protectedProcedure, publicProcedure, t } from '@/lib/trpc/server';
 import { requireOrgId } from './_shared';
 
 export async function checkOrganization() {
@@ -156,12 +156,10 @@ export const organizationRouter = t.router({
         name: z.string().min(1).optional(),
         address: z.string().optional(),
         phone: z.string().optional(),
-        email: z.string().email().optional(),
-        website: z.string().url().optional().or(z.literal('')),
+        email: z.email().optional(),
+        website: z.url().optional().or(z.literal('')),
         taxId: z.string().optional(),
-        currency: z
-          .enum(['BHD', 'USD', 'EUR', 'GBP', 'SAR', 'AED', 'KWD', 'OMR', 'QAR', 'EGP'])
-          .optional(),
+        currency: z.enum(CurrencyCode).optional(),
         paymentTermsDays: z.number().int().min(0).max(365).optional(),
         defaultTermsText: z.string().optional(),
         logo: z.string().optional(),
@@ -173,7 +171,19 @@ export const organizationRouter = t.router({
 
       return ctx.prisma.organization.update({
         where: { id: orgId },
-        data: input,
+        data: {
+          name: input.name,
+          address: input.address,
+          phone: input.phone,
+          email: input.email,
+          website: input.website,
+          taxId: input.taxId,
+          currency: input.currency,
+          paymentTermsDays: input.paymentTermsDays,
+          defaultTermsText: input.defaultTermsText,
+          logo: input.logo,
+          stampImage: input.stampImage,
+        },
       });
     }),
 
@@ -229,8 +239,17 @@ export const organizationRouter = t.router({
       }
 
       return ctx.prisma.userOrganizationRole.upsert({
-        where: { userId_organizationId: { userId: input.userId, organizationId: orgId } },
-        create: { userId: input.userId, organizationId: orgId, role: input.role },
+        where: {
+          userId_organizationId: {
+            userId: input.userId,
+            organizationId: orgId,
+          },
+        },
+        create: {
+          userId: input.userId,
+          organizationId: orgId,
+          role: input.role,
+        },
         update: { role: input.role },
       });
     }),

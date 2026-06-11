@@ -1,11 +1,11 @@
-import { SplashScreen } from '@/components/Splash-Screen';
-import { AppSidebar } from './App-Sidebar';
-import { AlertProvider } from '@/components/Alert-dialog';
-import { SidebarProvider } from '@/components/sidebar';
 import { redirect } from 'next/navigation';
+import { getCurrentUser } from '@/auth/auth-server';
+import { AlertProvider } from '@/components/Alert-dialog';
+import { SplashScreen } from '@/components/Splash-Screen';
+import { SidebarProvider } from '@/components/sidebar';
 import { checkOrganization } from '@/server/organizations';
 import { AppFooter } from './App-Footer';
-import { getCurrentUser } from '@/auth/auth-server';
+import { AppSidebar } from './App-Sidebar';
 
 export default async function App(props: any) {
   if (!checkOrganization()) {

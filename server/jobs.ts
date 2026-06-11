@@ -3,9 +3,9 @@
  * Job / project tracking. One job can produce one invoice.
  */
 
-import { z } from 'zod';
-import { protectedProcedure, adminProcedure, t } from '@/lib/trpc/server';
 import { TRPCError } from '@trpc/server';
+import { z } from 'zod';
+import { adminProcedure, protectedProcedure, t } from '@/lib/trpc/server';
 import { assertOwnership, requireOrgId } from './_shared';
 
 const JOB_STATUSES = ['NOT_STARTED', 'IN_PROGRESS', 'ON_HOLD', 'COMPLETED', 'CANCELLED'] as const;
@@ -72,7 +72,9 @@ export const jobRouter = t.router({
     const job = await ctx.prisma.job.findUnique({
       where: { id: input.id },
       include: {
-        customer: { select: { id: true, name: true, phone: true, email: true } },
+        customer: {
+          select: { id: true, name: true, phone: true, email: true },
+        },
         invoices: {
           where: { status: { not: 'DELETED' } },
           select: {
@@ -108,7 +110,12 @@ export const jobRouter = t.router({
     }
 
     return ctx.prisma.job.create({
-      data: { ...input, organizationId: orgId, status: 'NOT_STARTED', createdById: ctx.user.id },
+      data: {
+        ...input,
+        organizationId: orgId,
+        status: 'NOT_STARTED',
+        createdById: ctx.user.id,
+      },
     });
   }),
 
@@ -126,12 +133,18 @@ export const jobRouter = t.router({
         select: { organizationId: true, status: true },
       });
       if (!existing) {
-        throw new TRPCError({ code: 'BAD_REQUEST', message: 'Job is not exist' });
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'Job is not exist',
+        });
       }
       assertOwnership(existing, orgId, 'Job');
 
       if (existing.status === 'CANCELLED') {
-        throw new TRPCError({ code: 'BAD_REQUEST', message: 'Cannot edit a cancelled job' });
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'Cannot edit a cancelled job',
+        });
       }
 
       return ctx.prisma.job.update({ where: { id }, data: rest });

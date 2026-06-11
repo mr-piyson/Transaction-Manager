@@ -12,10 +12,11 @@
  *   - currency       : supported currency display (read-only enum list)
  */
 
-import { z } from 'zod';
 import { TRPCError } from '@trpc/server';
-import { router, protectedProcedure, adminProcedure } from '@/lib/trpc/server';
-import { requireOrgId, assertOwnership } from './_shared';
+import { z } from 'zod';
+import { adminProcedure, protectedProcedure, router } from '@/lib/trpc/server';
+import { assertOwnership, requireOrgId } from './_shared';
+import { CurrencyCode } from '@prisma/client';
 
 // ─── Reusable sub-schemas ────────────────────────────────────────────────────
 
@@ -74,21 +75,27 @@ export const settingsRouter = router({
       )
       .mutation(async ({ ctx, input }) => {
         const orgId = requireOrgId(ctx.organizationId);
-        return ctx.prisma.organization.update({ where: { id: orgId }, data: input });
+        return ctx.prisma.organization.update({
+          where: { id: orgId },
+          data: input,
+        });
       }),
 
     /** Update billing / invoice defaults */
     updateDefaults: adminProcedure
       .input(
         z.object({
-          currency: currencyEnum.optional(),
+          currency: z.enum(CurrencyCode).optional(),
           paymentTermsDays: z.number().int().min(0).max(365).optional(),
           defaultTermsText: z.string().optional(),
         }),
       )
       .mutation(async ({ ctx, input }) => {
         const orgId = requireOrgId(ctx.organizationId);
-        return ctx.prisma.organization.update({ where: { id: orgId }, data: input });
+        return ctx.prisma.organization.update({
+          where: { id: orgId },
+          data: input,
+        });
       }),
   }),
 
@@ -158,7 +165,10 @@ export const settingsRouter = router({
           throw new TRPCError({ code: 'NOT_FOUND', message: 'User not found' });
         }
 
-        return { ...user, orgRole: user.userOrganizationRoles[0]?.role ?? 'USER' };
+        return {
+          ...user,
+          orgRole: user.userOrganizationRoles[0]?.role ?? 'USER',
+        };
       }),
 
     /** Update org-level role for a user (ADMIN / USER) */
@@ -187,9 +197,16 @@ export const settingsRouter = router({
 
         return ctx.prisma.userOrganizationRole.upsert({
           where: {
-            userId_organizationId: { userId: input.userId, organizationId: orgId },
+            userId_organizationId: {
+              userId: input.userId,
+              organizationId: orgId,
+            },
           },
-          create: { userId: input.userId, organizationId: orgId, role: input.role },
+          create: {
+            userId: input.userId,
+            organizationId: orgId,
+            role: input.role,
+          },
           update: { role: input.role },
         });
       }),
@@ -384,7 +401,10 @@ export const settingsRouter = router({
           where: { name: input.name, organizationId: orgId, deletedAt: null },
         });
         if (exists) {
-          throw new TRPCError({ code: 'CONFLICT', message: 'Category name already exists' });
+          throw new TRPCError({
+            code: 'CONFLICT',
+            message: 'Category name already exists',
+          });
         }
 
         return ctx.prisma.itemCategory.create({
@@ -413,9 +433,18 @@ export const settingsRouter = router({
 
         if (data.name) {
           const dupe = await ctx.prisma.itemCategory.findFirst({
-            where: { name: data.name, organizationId: orgId, deletedAt: null, id: { not: id } },
+            where: {
+              name: data.name,
+              organizationId: orgId,
+              deletedAt: null,
+              id: { not: id },
+            },
           });
-          if (dupe) throw new TRPCError({ code: 'CONFLICT', message: 'Name already in use' });
+          if (dupe)
+            throw new TRPCError({
+              code: 'CONFLICT',
+              message: 'Name already in use',
+            });
         }
 
         return ctx.prisma.itemCategory.update({ where: { id }, data });
@@ -486,7 +515,10 @@ export const settingsRouter = router({
           where: { name: input.name, organizationId: orgId, isActive: true },
         });
         if (exists)
-          throw new TRPCError({ code: 'CONFLICT', message: 'Tax rate name already exists' });
+          throw new TRPCError({
+            code: 'CONFLICT',
+            message: 'Tax rate name already exists',
+          });
 
         return ctx.prisma.$transaction(async (tx) => {
           // Only one default at a time
@@ -608,7 +640,10 @@ export const settingsRouter = router({
           where: { name: input.name, organizationId: orgId, deletedAt: null },
         });
         if (exists)
-          throw new TRPCError({ code: 'CONFLICT', message: 'Warehouse name already exists' });
+          throw new TRPCError({
+            code: 'CONFLICT',
+            message: 'Warehouse name already exists',
+          });
 
         return ctx.prisma.$transaction(async (tx) => {
           if (input.isDefault) {
@@ -617,7 +652,9 @@ export const settingsRouter = router({
               data: { isDefault: false },
             });
           }
-          return tx.warehouse.create({ data: { ...input, organizationId: orgId } });
+          return tx.warehouse.create({
+            data: { ...input, organizationId: orgId },
+          });
         });
       }),
 
@@ -724,7 +761,11 @@ export const settingsRouter = router({
         const exists = await ctx.prisma.expenseCategory.findFirst({
           where: { name: input.name, organizationId: orgId, deletedAt: null },
         });
-        if (exists) throw new TRPCError({ code: 'CONFLICT', message: 'Category already exists' });
+        if (exists)
+          throw new TRPCError({
+            code: 'CONFLICT',
+            message: 'Category already exists',
+          });
 
         return ctx.prisma.expenseCategory.create({
           data: { name: input.name, organizationId: orgId },
@@ -754,7 +795,10 @@ export const settingsRouter = router({
       const orgId = requireOrgId(ctx.organizationId);
       const existing = await ctx.prisma.expenseCategory.findUnique({
         where: { id: input.id },
-        select: { organizationId: true, _count: { select: { expenses: true } } },
+        select: {
+          organizationId: true,
+          _count: { select: { expenses: true } },
+        },
       });
       if (!existing) {
         throw new TRPCError({

@@ -1,21 +1,11 @@
 'use client';
 
-import { Header } from '@/app/app/App-Header';
-import {
-  ShoppingCart,
-  Users,
-  Store,
-  FileText,
-  LayoutDashboard,
-  Box,
-  ArrowRight,
-} from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { ArrowRight } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import React from 'react';
+import { Header } from '@/app/app/App-Header';
 import { trpc } from '@/lib/trpc/client';
 import { cn } from '@/lib/utils';
-import React from 'react';
-import Link from 'next/link';
 
 // ---------------------------------------------------------------------------
 // Quick Action Card Component
@@ -61,7 +51,7 @@ function QuickActionCard({
   }
 
   return (
-    <button onClick={onClick} className="aspect-square text-left">
+    <button type={'button'} onClick={onClick} className="aspect-square text-left">
       {content}
     </button>
   );

@@ -11,17 +11,17 @@
 import { t } from '@/lib/trpc/server';
 
 import { authRouter } from './auth';
-import { organizationRouter } from './organizations';
-import { customerRouter } from './customers';
-import { supplierRouter } from './supplier';
-import { itemRouter } from './items';
-import { warehouseRouter } from './warehouses';
-import { jobRouter } from './jobs';
-import { purchaseOrderRouter } from './purchase-orders';
-import { stockRouter } from './stock';
-import { invoiceRouter } from './invoices';
 import { contractRouter } from './contracts';
+import { customerRouter } from './customers';
+import { invoiceRouter } from './invoices';
+import { itemRouter } from './items';
+import { jobRouter } from './jobs';
+import { organizationRouter } from './organizations';
+import { purchaseOrderRouter } from './purchase-orders';
 import { reportsRouter } from './reports';
+import { stockRouter } from './stock';
+import { supplierRouter } from './supplier';
+import { warehouseRouter } from './warehouses';
 
 export const appRouter = t.router({
   auth: authRouter,

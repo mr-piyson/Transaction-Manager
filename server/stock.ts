@@ -3,9 +3,9 @@
  * Stock management: movements, manual adjustments, warehouse transfers, valuation.
  */
 
-import { z } from 'zod';
-import { protectedProcedure, adminProcedure, t } from '@/lib/trpc/server';
 import { TRPCError } from '@trpc/server';
+import { z } from 'zod';
+import { adminProcedure, protectedProcedure, t } from '@/lib/trpc/server';
 import { assertOwnership, requireOrgId } from './_shared';
 
 export const stockRouter = t.router({
@@ -166,7 +166,12 @@ export const stockRouter = t.router({
         // Check we won't go negative
         if (input.adjustment < 0) {
           const stock = await tx.stock.findUnique({
-            where: { itemId_warehouseId: { itemId: input.itemId, warehouseId: input.warehouseId } },
+            where: {
+              itemId_warehouseId: {
+                itemId: input.itemId,
+                warehouseId: input.warehouseId,
+              },
+            },
             select: { quantity: true },
           });
           const current = stock?.quantity ?? 0;
@@ -180,7 +185,12 @@ export const stockRouter = t.router({
 
         // Upsert stock row
         await tx.stock.upsert({
-          where: { itemId_warehouseId: { itemId: input.itemId, warehouseId: input.warehouseId } },
+          where: {
+            itemId_warehouseId: {
+              itemId: input.itemId,
+              warehouseId: input.warehouseId,
+            },
+          },
           create: {
             itemId: input.itemId,
             warehouseId: input.warehouseId,
@@ -252,7 +262,10 @@ export const stockRouter = t.router({
         // Check source stock
         const sourceStock = await tx.stock.findUnique({
           where: {
-            itemId_warehouseId: { itemId: input.itemId, warehouseId: input.fromWarehouseId },
+            itemId_warehouseId: {
+              itemId: input.itemId,
+              warehouseId: input.fromWarehouseId,
+            },
           },
           select: { quantity: true },
         });
@@ -267,14 +280,22 @@ export const stockRouter = t.router({
         // Deduct from source
         await tx.stock.update({
           where: {
-            itemId_warehouseId: { itemId: input.itemId, warehouseId: input.fromWarehouseId },
+            itemId_warehouseId: {
+              itemId: input.itemId,
+              warehouseId: input.fromWarehouseId,
+            },
           },
           data: { quantity: { decrement: input.quantity } },
         });
 
         // Add to destination
         await tx.stock.upsert({
-          where: { itemId_warehouseId: { itemId: input.itemId, warehouseId: input.toWarehouseId } },
+          where: {
+            itemId_warehouseId: {
+              itemId: input.itemId,
+              warehouseId: input.toWarehouseId,
+            },
+          },
           create: {
             itemId: input.itemId,
             warehouseId: input.toWarehouseId,
@@ -315,7 +336,9 @@ export const stockRouter = t.router({
           ...(input.warehouseId && { warehouseId: input.warehouseId }),
         },
         include: {
-          item: { select: { id: true, name: true, sku: true, purchasePrice: true } },
+          item: {
+            select: { id: true, name: true, sku: true, purchasePrice: true },
+          },
           warehouse: { select: { id: true, name: true } },
         },
       });

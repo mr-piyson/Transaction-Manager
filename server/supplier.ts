@@ -3,18 +3,18 @@
  * Suppliers + their item price lists (SupplierItem).
  */
 
-import { z } from 'zod';
-import { router, protectedProcedure, adminProcedure } from '@/lib/trpc/server';
-import { requireOrgId, assertOwnership } from './_shared';
 import { TRPCError } from '@trpc/server';
+import { z } from 'zod';
+import { adminProcedure, protectedProcedure, router } from '@/lib/trpc/server';
+import { assertOwnership, requireOrgId } from './_shared';
 
 const supplierInput = z.object({
   name: z.string().min(1),
   phone: z.string().optional(),
-  email: z.string().email().optional().or(z.literal('')),
+  email: z.email().optional().or(z.literal('')),
   address: z.string().optional(),
   contactName: z.string().optional(),
-  website: z.string().url().optional().or(z.literal('')),
+  website: z.url().optional().or(z.literal('')),
   taxId: z.string().optional(),
   notes: z.string().optional(),
 });
@@ -75,7 +75,9 @@ export const supplierRouter = router({
       include: {
         supplierItems: {
           where: { deletedAt: null, isActive: true },
-          include: { item: { select: { id: true, name: true, sku: true, unit: true } } },
+          include: {
+            item: { select: { id: true, name: true, sku: true, unit: true } },
+          },
           orderBy: { item: { name: 'asc' } },
         },
         _count: { select: { purchaseOrders: true } },

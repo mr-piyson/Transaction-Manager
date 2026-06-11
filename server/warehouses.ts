@@ -3,9 +3,9 @@
  * Warehouse management — create, update, soft-delete.
  */
 
-import { z } from 'zod';
-import { protectedProcedure, adminProcedure, t } from '@/lib/trpc/server';
 import { TRPCError } from '@trpc/server';
+import { z } from 'zod';
+import { adminProcedure, protectedProcedure, t } from '@/lib/trpc/server';
 import { assertOwnership, requireOrgId } from './_shared';
 
 const warehouseInput = z.object({
@@ -42,7 +42,13 @@ export const warehouseRouter = t.router({
           where: { item: { deletedAt: null } },
           include: {
             item: {
-              select: { id: true, name: true, sku: true, unit: true, minStock: true },
+              select: {
+                id: true,
+                name: true,
+                sku: true,
+                unit: true,
+                minStock: true,
+              },
             },
           },
           orderBy: { item: { name: 'asc' } },

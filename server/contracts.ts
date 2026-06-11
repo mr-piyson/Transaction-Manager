@@ -3,11 +3,11 @@
  * CRM contracts — ongoing customer agreements with renewal alert support.
  */
 
-import { z } from 'zod';
-import { protectedProcedure, adminProcedure, t } from '@/lib/trpc/server';
-import { TRPCError } from '@trpc/server';
-import { assertOwnership, requireOrgId } from './_shared';
 import { CurrencyCode } from '@prisma/client';
+import { TRPCError } from '@trpc/server';
+import { z } from 'zod';
+import { adminProcedure, protectedProcedure, t } from '@/lib/trpc/server';
+import { assertOwnership, requireOrgId } from './_shared';
 
 const contractInput = z.object({
   customerId: z.string(),

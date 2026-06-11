@@ -1,8 +1,8 @@
-import { z } from 'zod';
-import { publicProcedure, t } from '@/lib/trpc/server';
 import { TRPCError } from '@trpc/server';
-import { auth } from '@/auth/auth-server';
 import { headers } from 'next/headers';
+import { z } from 'zod';
+import { auth } from '@/auth/auth-server';
+import { publicProcedure, t } from '@/lib/trpc/server';
 
 export const authRouter = t.router({
   signIn: publicProcedure
