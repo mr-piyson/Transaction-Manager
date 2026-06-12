@@ -18,6 +18,7 @@ import { itemRouter } from './items';
 import { organizationRouter } from './organizations';
 import { purchaseOrderRouter } from './purchase-orders';
 import { reportsRouter } from './reports';
+import { settingsRouter } from './settings';
 import { stockRouter } from './stock';
 import { supplierRouter } from './supplier';
 import { warehouseRouter } from './warehouses';
@@ -34,6 +35,7 @@ export const appRouter = t.router({
   invoices: invoiceRouter,
   contracts: contractRouter,
   reports: reportsRouter,
+  settings: settingsRouter,
 });
 
 export type AppRouter = typeof appRouter;
