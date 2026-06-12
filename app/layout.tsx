@@ -29,9 +29,9 @@ export const metadata: Metadata = {
 };
 
 export default async function RootLayout(props: any) {
-  const { locale, direction, dict } = await getServerI18n('en');
+  const { locale, direction, dict } = await getServerI18n();
   return (
-    <html lang="en" dir={direction} suppressHydrationWarning>
+    <html lang={locale} dir={direction} suppressHydrationWarning>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <ThemeProvider
           attribute={'class'}
