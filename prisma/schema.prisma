@@ -3,7 +3,7 @@
 // Stack : Next.js 16 · tRPC · Prisma 5.x · Better Auth · Bun
 // DB    : PostgreSQL (prod) · SQLite (dev) — switch via DATABASE_URL env var
 //
-// Money  : ALL monetary fields are BigInt in smallest currency unit
+// Money  : ALL monetary fields are Decimal in smallest currency unit
 //           BHD → fils  (1 BHD = 1000 fils,  precision 3)
 //           USD → cents (1 USD = 100  cents,  precision 2)
 //           Use utils.ts  toSmallestUnit() / formatAmount() everywhere.
@@ -423,7 +423,7 @@ model Customer {
   deletedAt DateTime? // Soft delete
 
   // Credit limit in smallest currency unit (fils). 0 = no limit enforced.
-  creditLimit BigInt @default(0)
+  creditLimit Decimal @default(0)
 
   organizationId String
   organization   Organization @relation(fields: [organizationId], references: [id])
@@ -490,7 +490,7 @@ model SupplierItem {
   supplierName String?
 
   // Quoted price in smallest currency unit. Pre-fills PurchaseLine.unitCost.
-  basePrice BigInt
+  basePrice Decimal
 
   // Lead time in days (informational).
   leadTimeDays Int?
@@ -539,11 +539,11 @@ model Item {
   // ---------- Pricing ----------
   // Default purchase price (fils). Pre-fills PurchaseLine.unitCost.
   // Updated to last purchase cost automatically on PO receive (optional).
-  purchasePrice BigInt @default(0)
+  purchasePrice Decimal @default(0)
 
   // Default sales price (fils). Pre-fills InvoiceLine.unitPrice.
   // Must be set by sales-responsible user before item appears on invoices.
-  salesPrice BigInt @default(0)
+  salesPrice Decimal @default(0)
 
   // ---------- Sales eligibility ----------
   // isSaleable = false → item is a consumable / installation material.
@@ -739,14 +739,14 @@ model Invoice {
 
   currency CurrencyCode @default(BHD)
 
-  // ---------- Totals (BigInt fils) ----------
+  // ---------- Totals (Decimal fils) ----------
   // Recomputed from lines whenever the invoice is saved.
-  subtotal      BigInt @default(0) // Sum of (unitPrice × quantity) before discounts
-  discountTotal BigInt @default(0) // Sum of all line discountAmt
-  taxTotal      BigInt @default(0) // Sum of all line taxAmt
-  total         BigInt @default(0) // subtotal - discountTotal + taxTotal
-  amountPaid    BigInt @default(0) // Denormalised sum of confirmed payments
-  amountDue     BigInt @default(0) // total - amountPaid
+  subtotal      Decimal @default(0) // Sum of (unitPrice × quantity) before discounts
+  discountTotal Decimal @default(0) // Sum of all line discountAmt
+  taxTotal      Decimal @default(0) // Sum of all line taxAmt
+  total         Decimal @default(0) // subtotal - discountTotal + taxTotal
+  amountPaid    Decimal @default(0) // Denormalised sum of confirmed payments
+  amountDue     Decimal @default(0) // total - amountPaid
 
   // ---------- Customer ----------
   // isWalkIn = true → invoice without a named customer (cash sale).
@@ -799,21 +799,21 @@ model InvoiceLine {
   // Decimal supports fractional quantities: 2.5 hrs, 15.5 m of cable.
   quantity Decimal @default(1)
 
-  // ---------- Pricing (BigInt fils) ----------
+  // ---------- Pricing  ----------
   // Snapshot of purchase price at time of invoicing — used for gross profit reporting.
-  purchasePrice BigInt @default(0)
+  purchasePrice Decimal @default(0)
 
   // Actual unit price charged. Pre-filled from Item.salesPrice but overridable.
-  unitPrice BigInt @default(0)
+  unitPrice Decimal @default(0)
 
   // Line-level discount amount (not percentage — store amount for precision).
-  discountAmt BigInt @default(0)
+  discountAmt Decimal @default(0)
 
   // Tax amount calculated from (unitPrice × quantity - discountAmt) × taxRateSnapshot.
-  taxAmt BigInt @default(0)
+  taxAmt Decimal @default(0)
 
   // Line total = (unitPrice × quantity) - discountAmt + taxAmt
-  total BigInt @default(0)
+  total Decimal @default(0)
 
   // ---------- Item ----------
   // null = free-text line (e.g. "Installation Labour — 4 hrs").
@@ -854,7 +854,7 @@ model Payment {
   id        String        @id @default(cuid())
   date      DateTime      @default(now())
   method    PaymentMethod @default(CASH)
-  amount    BigInt // Fils — must be > 0
+  amount    Decimal // Fils — must be > 0
   reference String? // Bank reference, cheque number, etc.
   notes     String?
 
@@ -893,12 +893,12 @@ model PurchaseOrder {
   notes    String?
   currency CurrencyCode @default(BHD)
 
-  // ---------- Totals (BigInt fils) ----------
-  subtotal   BigInt @default(0)
-  taxTotal   BigInt @default(0)
-  total      BigInt @default(0)
-  amountPaid BigInt @default(0) // Denormalised sum of PurchasePayment amounts
-  amountOwed BigInt @default(0) // total - amountPaid
+  // ---------- Totals (Decimal fils) ----------
+  subtotal   Decimal @default(0)
+  taxTotal   Decimal @default(0)
+  total      Decimal @default(0)
+  amountPaid Decimal @default(0) // Denormalised sum of PurchasePayment amounts
+  amountOwed Decimal @default(0) // total - amountPaid
 
   // ---------- Supplier ----------
   // If no supplier known, use the seeded "Other" supplier (Supplier.isSystem = true).
@@ -943,13 +943,13 @@ model PurchaseLine {
   receivedQty Decimal @default(0) // How many have been received so far
 
   // Unit cost in smallest currency unit. Pre-filled from SupplierItem.basePrice.
-  unitCost BigInt
+  unitCost Decimal
 
   // Tax amount on this line. Calculated at order time.
-  taxAmt BigInt @default(0)
+  taxAmt Decimal @default(0)
 
   // Total = (unitCost × quantity) + taxAmt
-  total BigInt
+  total Decimal
 
   itemId String
   item   Item   @relation(fields: [itemId], references: [id])
@@ -967,7 +967,7 @@ model PurchaseLine {
 // Payment made to a supplier against a purchase order.
 model PurchasePayment {
   id        String        @id @default(cuid())
-  amount    BigInt // Fils — must be > 0
+  amount    Decimal // Fils — must be > 0
   method    PaymentMethod @default(TRANSFER)
   date      DateTime      @default(now())
   reference String?
@@ -999,7 +999,7 @@ model Contract {
   isActive    Boolean @default(true)
 
   // Contract value in smallest currency unit (fils).
-  contractValue BigInt?
+  contractValue Decimal?
   currency      CurrencyCode @default(BHD)
 
   startDate   DateTime
@@ -1065,7 +1065,7 @@ model ExpenseCategory {
 model Expense {
   id          String   @id @default(cuid())
   description String
-  amount      BigInt // Fils
+  amount      Decimal // Fils
   date        DateTime @default(now())
   reference   String? // Receipt / voucher number
   notes       String?
