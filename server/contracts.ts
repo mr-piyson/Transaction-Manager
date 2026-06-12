@@ -51,7 +51,7 @@ export const contractRouter = t.router({
         select: {
           id: true,
           title: true,
-          value: true,
+          contractValue:true,
           currency: true,
           startDate: true,
           endDate: true,
@@ -104,7 +104,7 @@ export const contractRouter = t.router({
         endDate: rest.endDate,
         customerId: rest.customerId,
         currency: rest.currency,
-        value: BigInt(value),
+        contractValue:BigInt(value),
         organizationId: orgId,
         isActive: true,
       },

@@ -49,7 +49,6 @@ export const itemRouter = t.router({
       select: {
         id: true,
         name: true,
-        description: true,
         _count: { select: { items: true } },
       },
     });
@@ -110,7 +109,7 @@ export const itemRouter = t.router({
     const orgId = requireOrgId(ctx.organizationId);
 
     return ctx.prisma.taxRate.findMany({
-      where: { organizationId: orgId, deletedAt: null },
+      where: { organizationId: orgId },
       orderBy: { rate: 'asc' },
       select: { id: true, name: true, rate: true, isDefault: true },
     });

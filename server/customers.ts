@@ -62,7 +62,7 @@ export const customerRouter = t.router({
           where: { deletedAt: null, isActive: true },
           orderBy: { endDate: 'asc' },
         },
-        _count: { select: { invoices: true, jobs: true } },
+        _count: { select: { invoices: true } },
       },
     });
 

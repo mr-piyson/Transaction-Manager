@@ -15,7 +15,6 @@ import { contractRouter } from './contracts';
 import { customerRouter } from './customers';
 import { invoiceRouter } from './invoices';
 import { itemRouter } from './items';
-import { jobRouter } from './jobs';
 import { organizationRouter } from './organizations';
 import { purchaseOrderRouter } from './purchase-orders';
 import { reportsRouter } from './reports';
@@ -30,7 +29,6 @@ export const appRouter = t.router({
   suppliers: supplierRouter,
   items: itemRouter,
   warehouses: warehouseRouter,
-  jobs: jobRouter,
   purchaseOrders: purchaseOrderRouter,
   stock: stockRouter,
   invoices: invoiceRouter,

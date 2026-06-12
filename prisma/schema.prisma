@@ -80,7 +80,7 @@ enum InvoiceStatus {
   SENT // Issued to customer — stock committed, dueDate populated
   PARTIAL // Partially paid
   PAID // Fully paid — sum(payments) >= total
-  OVERDUE // Past dueDate with outstanding balance (set by scheduled job)
+  OVERDUE // Past dueDate with outstanding balance
   CANCELLED // Voided — stock movements reversed
   DELETED // Soft-deleted — hidden from all views
 }
@@ -123,15 +123,6 @@ enum StockMovementType {
   ADJUSTMENT_UP // Manual positive correction by ADMIN
   ADJUSTMENT_DOWN // Manual negative correction / write-off by ADMIN
   TRANSFER // Between warehouses — paired FROM/TO movements
-}
-
-// CCTV job / project lifecycle.
-enum JobStatus {
-  NOT_STARTED
-  IN_PROGRESS
-  COMPLETED // Triggers "Create Invoice" action in the UI
-  CANCELLED
-  ON_HOLD
 }
 
 // =============================================================================
@@ -211,10 +202,8 @@ model Organization {
   warehouses            Warehouse[]
   stocks                Stock[]
   stockMovements        StockMovement[]
-  jobs                  Job[]
   invoices              Invoice[]
   invoiceLine           InvoiceLine[]
-  invoiceLineGroup      InvoiceLineGroup[]
   payments              Payment[]
   purchaseOrders        PurchaseOrder[]
   purchasePayments      PurchasePayment[]
@@ -260,7 +249,6 @@ model User {
   userOrganizationRoles UserOrganizationRole[]
   createdInvoices       Invoice[]              @relation("InvoiceCreatedBy")
   createdPurchaseOrders PurchaseOrder[]        @relation("POCreatedBy")
-  createdJobs           Job[]                  @relation("JobCreatedBy")
   stockMovements        StockMovement[]
   createdExpenses       Expense[]              @relation("ExpenseCreatedBy")
 
@@ -443,7 +431,6 @@ model Customer {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  jobs      Job[]
   invoices  Invoice[]
   contracts Contract[]
 
@@ -624,7 +611,6 @@ model Warehouse {
   purchaseOrders    PurchaseOrder[]
   outgoingMovements StockMovement[] @relation("FromWarehouseMovements")
   incomingMovements StockMovement[] @relation("ToWarehouseMovements")
-  jobs              Job[]
 
   @@unique([name, organizationId])
   @@index([organizationId])
@@ -713,69 +699,6 @@ model StockMovement {
 }
 
 // =============================================================================
-// JOBS  (field operations — the core workflow driver)
-// A Job represents one CCTV installation project.
-// Invoice is generated after Job is marked COMPLETED.
-// =============================================================================
-
-model Job {
-  id          String  @id @default(cuid())
-  title       String // e.g. "Villa CCTV Install — Ali Mohammed"
-  description String? // Scope of work agreed with customer
-  reference   String? // Internal reference / site reference
-
-  status JobStatus @default(NOT_STARTED)
-
-  // Scheduled dates agreed with customer.
-  scheduledStart DateTime?
-  scheduledEnd   DateTime?
-
-  // Actual dates recorded in the field.
-  actualStart DateTime?
-  actualEnd   DateTime?
-  completedAt DateTime? // Set automatically when status → COMPLETED
-
-  notes String? // Internal notes / site observations
-
-  // Soft delete
-  deletedAt DateTime?
-
-  // ---------- Associations ----------
-  customerId String?
-  customer   Customer? @relation(fields: [customerId], references: [id])
-
-  // The warehouse items are pulled from for this job.
-  warehouseId String?
-  warehouse   Warehouse? @relation(fields: [warehouseId], references: [id])
-
-  createdById String
-  createdBy   User   @relation("JobCreatedBy", fields: [createdById], references: [id])
-
-  organizationId String
-  organization   Organization @relation(fields: [organizationId], references: [id])
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  // A job can produce at most one invoice (one-to-one enforced at app layer).
-  // The Invoice references back via jobId.
-  invoices Invoice[]
-  expenses Expense[]
-
-  @@index([organizationId])
-  @@index([customerId])
-  @@index([status])
-  @@index([deletedAt])
-  @@index([organizationId, status])
-  @@index([organizationId, customerId])
-  @@index([createdById])
-}
-
-// Warehouses relation to Job (Prisma requires explicit field on the other side)
-// Added in Warehouse model above: jobs Job[]
-// Add this to Warehouse model: jobs Job[]
-
-// =============================================================================
 // INVOICES
 // =============================================================================
 
@@ -831,11 +754,6 @@ model Invoice {
   customerId String?
   customer   Customer? @relation(fields: [customerId], references: [id])
 
-  // ---------- Job link ----------
-  // Set when invoice is generated from a completed job.
-  jobId String?
-  job   Job?    @relation(fields: [jobId], references: [id])
-
   // ---------- Warehouse ----------
   // The warehouse stock is deducted from on confirmation.
   warehouseId String?
@@ -852,14 +770,12 @@ model Invoice {
   updatedAt DateTime @updatedAt
 
   lines    InvoiceLine[]
-  groups   InvoiceLineGroup[]
   payments Payment[]
 
   // Serial unique per org — not globally.
   @@unique([serial, organizationId])
   @@index([organizationId])
   @@index([customerId])
-  @@index([jobId])
   @@index([status])
   @@index([type])
   @@index([date])
@@ -870,43 +786,6 @@ model Invoice {
   @@index([customerId, status])
   @@index([organizationId, paymentStatus]) // AR aging dashboard
   @@index([organizationId, dueDate]) // Overdue check job
-}
-
-// Groups of invoice lines — the key feature for CCTV installs.
-// The manager groups items by area/task (e.g. "Ground Floor Cameras").
-// showLineDetails = false → the printed invoice shows ONLY the group title
-// and its total, hiding individual item names and costs.
-// This lets the manager protect pricing while still showing the breakdown
-// internally in the system.
-model InvoiceLineGroup {
-  id    String @id @default(cuid())
-  title String // e.g. "Ground Floor — Camera Installation"
-
-  // When true: print/PDF shows group title + total only (hides item details).
-  // When false: print/PDF shows all lines inside the group.
-  showLineDetails Boolean @default(false)
-
-  sortOrder Int @default(0) // Display order within the invoice
-
-  // ---------- Group-level snapshot totals ----------
-  // Recomputed whenever lines in this group change.
-  subtotal      BigInt @default(0)
-  discountTotal BigInt @default(0)
-  taxTotal      BigInt @default(0)
-  total         BigInt @default(0)
-
-  invoiceId String
-  invoice   Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  lines          InvoiceLine[]
-  organization   Organization? @relation(fields: [organizationId], references: [id])
-  organizationId String?
-
-  @@index([invoiceId])
-  @@index([invoiceId, sortOrder]) // Ordered group retrieval
 }
 
 // One line on an invoice — a quantity of an item or a free-text service.
@@ -950,11 +829,6 @@ model InvoiceLine {
   taxRateSnapshot Decimal? // e.g. 10.00 (for 10%)
   taxRateName     String? // e.g. "Standard VAT 10%"
 
-  // ---------- Group ----------
-  // null = ungrouped line, sits outside all groups.
-  groupId String?
-  group   InvoiceLineGroup? @relation(fields: [groupId], references: [id])
-
   // ---------- Invoice ----------
   invoiceId String
   invoice   Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
@@ -965,13 +839,12 @@ model InvoiceLine {
   updatedAt DateTime @updatedAt
 
   stockMovements StockMovement[]
-  
-  organization   Organization?   @relation(fields: [organizationId], references: [id])
+
+  organization   Organization? @relation(fields: [organizationId], references: [id])
   organizationId String?
 
   @@index([invoiceId])
   @@index([itemId])
-  @@index([groupId])
   @@index([invoiceId, sortOrder]) // Ordered line retrieval
 }
 
@@ -1202,10 +1075,6 @@ model Expense {
   categoryId String?
   category   ExpenseCategory? @relation(fields: [categoryId], references: [id])
 
-  // Optionally link to a job for per-job cost tracking.
-  jobId String?
-  job   Job?    @relation(fields: [jobId], references: [id])
-
   // Optionally link to an item (e.g. a tool purchased).
   itemId String?
   item   Item?   @relation(fields: [itemId], references: [id])
@@ -1223,7 +1092,6 @@ model Expense {
 
   @@index([organizationId])
   @@index([categoryId])
-  @@index([jobId])
   @@index([organizationId, date]) // P&L by period
   @@index([organizationId, categoryId]) // Expense breakdown by category
   @@index([deletedAt])
