@@ -23,6 +23,7 @@ export const en = {
     security: 'Security',
     appearance: 'Appearance',
     inventory: 'Inventory',
+    reports: 'Reports',
     inventoryItems: 'Inventory Items',
     contracts: 'Contracts',
     navigation: 'Navigation',

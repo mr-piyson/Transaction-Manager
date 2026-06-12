@@ -1,14 +1,21 @@
 'use client';
 
 import {
+  BarChart3,
   Boxes,
   ChevronDown,
   FilePenLine,
+  Handshake,
   LayoutDashboard,
   type LucideIcon,
-  ShoppingCartIcon,
+  Package,
+  Settings,
+  ShoppingCart,
   SidebarIcon,
+  Truck,
   User,
+  Users,
+  Warehouse,
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
@@ -71,34 +78,110 @@ export const ROUTES = [
         href: '/app',
         icon: LayoutDashboard,
       },
-      {
-        type: 'item',
-        label: 'Customers',
-        key: 'common.customers',
-        href: '/app/customers',
-        icon: User,
-        auth: { action: 'read', subject: 'Customer' },
-      },
-      {
-        type: 'item',
-        label: 'Purchase Order',
-        key: 'common.purchaseOrders',
-        href: '/app/purchase-order',
-        icon: ShoppingCartIcon,
-      },
-      {
-        type: 'item',
-        label: 'Products & Services',
-        key: 'common.productsAndServices',
-        href: '/app/items',
-        icon: Boxes,
-      },
+    ],
+  },
+  {
+    type: 'group',
+    label: 'Sales',
+    key: 'common.sales',
+    children: [
       {
         type: 'item',
         label: 'Invoices',
         key: 'common.invoices',
         href: '/app/invoices',
         icon: FilePenLine,
+      },
+      {
+        type: 'item',
+        label: 'Customers',
+        key: 'common.customers',
+        href: '/app/customers',
+        icon: Users,
+      },
+      {
+        type: 'item',
+        label: 'Contracts',
+        key: 'common.contracts',
+        href: '/app/contracts',
+        icon: Handshake,
+      },
+    ],
+  },
+  {
+    type: 'group',
+    label: 'Purchases',
+    key: 'common.purchase',
+    children: [
+      {
+        type: 'item',
+        label: 'Purchase Orders',
+        key: 'common.purchaseOrders',
+        href: '/app/purchase-orders',
+        icon: ShoppingCart,
+      },
+      {
+        type: 'item',
+        label: 'Suppliers',
+        key: 'common.suppliers',
+        href: '/app/suppliers',
+        icon: Truck,
+      },
+    ],
+  },
+  {
+    type: 'group',
+    label: 'Inventory',
+    key: 'common.inventory',
+    children: [
+      {
+        type: 'item',
+        label: 'Stock Levels',
+        key: 'common.stock',
+        href: '/app/stock',
+        icon: Boxes,
+      },
+      {
+        type: 'item',
+        label: 'Items Catalogue',
+        key: 'common.items',
+        href: '/app/items',
+        icon: Package,
+      },
+      {
+        type: 'item',
+        label: 'Warehouses',
+        key: 'common.warehouses',
+        href: '/app/warehouses',
+        icon: Warehouse,
+      },
+    ],
+  },
+  {
+    type: 'group',
+    label: 'Analytics',
+    key: 'common.reports',
+    children: [
+      {
+        type: 'item',
+        label: 'Reports',
+        key: 'common.reports',
+        href: '/app/reports',
+        icon: BarChart3,
+      },
+    ],
+  },
+  {
+    type: 'group',
+    label: 'Configuration',
+    key: 'common.settings',
+    children: [
+      {
+        type: 'item',
+        label: 'Settings',
+        key: 'common.settings',
+        href: '/app/settings',
+        icon: Settings,
       },
     ],
   },
