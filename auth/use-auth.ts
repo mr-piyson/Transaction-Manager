@@ -1,5 +1,5 @@
-import { authClient } from '@/auth/auth-client'; // Adjust path to your client
 import { useState } from 'react';
+import { authClient } from '@/auth/auth-client'; // Adjust path to your client
 
 export const useAuth = () => {
   // 1. Get the session state (This already works like a tRPC query)

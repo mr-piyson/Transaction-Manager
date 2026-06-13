@@ -1,12 +1,10 @@
 import type { Metadata } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
 import './globals.css';
-import { ThemeProvider } from '@/components/Theme-Provider';
-import { I18nProvider } from '@/i18n/use-i18n';
 import { Toaster } from '@/components/sonner';
-import { getServerI18n } from '@/i18n/i18n.action';
-import TrpcProvider from '@/lib/trpc/Provider';
+import { ThemeProvider } from '@/components/Theme-Provider';
 import { DateFormatProvider } from '@/hooks/use-date-format';
+import TrpcProvider from '@/lib/trpc/Provider';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -29,9 +27,8 @@ export const metadata: Metadata = {
 };
 
 export default async function RootLayout(props: any) {
-  const { locale, direction, dict } = await getServerI18n();
   return (
-    <html lang={locale} dir={direction} suppressHydrationWarning>
+    <html lang={'en'} suppressHydrationWarning>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <ThemeProvider
           attribute={'class'}
@@ -39,11 +36,9 @@ export default async function RootLayout(props: any) {
           enableSystem={true}
           storageKey={'theme'}
         >
-          <I18nProvider initialLocale={locale} initialDict={dict}>
-            <DateFormatProvider defaultFormat={'date'}>
-              <TrpcProvider>{props.children}</TrpcProvider>
-            </DateFormatProvider>
-          </I18nProvider>
+          <DateFormatProvider defaultFormat={'date'}>
+            <TrpcProvider>{props.children}</TrpcProvider>
+          </DateFormatProvider>
         </ThemeProvider>
         <Toaster position="top-center" />
       </body>

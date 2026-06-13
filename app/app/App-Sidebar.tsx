@@ -39,8 +39,6 @@ import {
 } from '@/components/sidebar';
 import { Button } from '@/components/ui/button';
 import { Spinner } from '@/components/ui/spinner';
-import type { TranslationKeys } from '@/i18n/config';
-import { useI18n } from '@/i18n/use-i18n';
 import type { AppActions, AppSubjects } from '@/lib/permissions';
 import { cn } from '@/lib/utils';
 import { NavUser } from './User-Options';
@@ -48,7 +46,6 @@ import { NavUser } from './User-Options';
 // 1. Define what a single route looks like
 export type RouteConfig = {
   type: 'item' | 'group';
-  key: TranslationKeys; // for i18n lookup
   label: string; // optional fallback
   href?: string;
   icon?: LucideIcon;
@@ -69,12 +66,12 @@ export const ROUTES = [
   {
     type: 'group',
     label: 'Navigation',
-    key: 'common.navigation',
+
     children: [
       {
         type: 'item',
         label: 'Dashboard',
-        key: 'common.dashboard',
+
         href: '/app',
         icon: LayoutDashboard,
       },
@@ -83,26 +80,26 @@ export const ROUTES = [
   {
     type: 'group',
     label: 'Sales',
-    key: 'common.sales',
+
     children: [
       {
         type: 'item',
         label: 'Invoices',
-        key: 'common.invoices',
+
         href: '/app/invoices',
         icon: FilePenLine,
       },
       {
         type: 'item',
         label: 'Customers',
-        key: 'common.customers',
+
         href: '/app/customers',
         icon: Users,
       },
       {
         type: 'item',
         label: 'Contracts',
-        key: 'common.contracts',
+
         href: '/app/contracts',
         icon: Handshake,
       },
@@ -111,19 +108,19 @@ export const ROUTES = [
   {
     type: 'group',
     label: 'Purchases',
-    key: 'common.purchase',
+
     children: [
       {
         type: 'item',
         label: 'Purchase Orders',
-        key: 'common.purchaseOrders',
+
         href: '/app/purchase-orders',
         icon: ShoppingCart,
       },
       {
         type: 'item',
         label: 'Suppliers',
-        key: 'common.suppliers',
+
         href: '/app/suppliers',
         icon: Truck,
       },
@@ -132,26 +129,26 @@ export const ROUTES = [
   {
     type: 'group',
     label: 'Inventory',
-    key: 'common.inventory',
+
     children: [
       {
         type: 'item',
         label: 'Stock Levels',
-        key: 'common.stock',
+
         href: '/app/stock',
         icon: Boxes,
       },
       {
         type: 'item',
         label: 'Items Catalogue',
-        key: 'common.items',
+
         href: '/app/items',
         icon: Package,
       },
       {
         type: 'item',
         label: 'Warehouses',
-        key: 'common.warehouses',
+
         href: '/app/warehouses',
         icon: Warehouse,
       },
@@ -160,12 +157,12 @@ export const ROUTES = [
   {
     type: 'group',
     label: 'Analytics',
-    key: 'common.reports',
+
     children: [
       {
         type: 'item',
         label: 'Reports',
-        key: 'common.reports',
+
         href: '/app/reports',
         icon: BarChart3,
       },
@@ -174,12 +171,12 @@ export const ROUTES = [
   {
     type: 'group',
     label: 'Configuration',
-    key: 'common.settings',
+
     children: [
       {
         type: 'item',
         label: 'Settings',
-        key: 'common.settings',
+
         href: '/app/settings',
         icon: Settings,
       },
@@ -194,7 +191,6 @@ export function AppSidebar({ ...props }: AppSidebarProps) {
   const { isMobile, open, setOpenMobile } = useSidebar();
   const router = useRouter();
   const [loading, setLoading] = useState('');
-  const i18n = useI18n();
 
   useEffect(() => {
     if (loading === currentPath) {
@@ -219,12 +215,7 @@ export function AppSidebar({ ...props }: AppSidebarProps) {
   const showSpinnerFor = (href: string) => loading === href && (!open || isMobile);
 
   return (
-    <Sidebar
-      collapsible="icon"
-      type="Drawer"
-      side={i18n.direction === 'ltr' ? 'left' : 'right'}
-      {...props}
-    >
+    <Sidebar collapsible="icon" type="Drawer" {...props}>
       <SidebarHeader>
         <AppLogo />
       </SidebarHeader>
@@ -233,7 +224,7 @@ export function AppSidebar({ ...props }: AppSidebarProps) {
         {ROUTES.map((route) =>
           route.type === 'group' ? (
             <RouteGroup
-              key={route.key}
+              key={route.label}
               route={route}
               isActive={isActive}
               loading={loading}
@@ -241,11 +232,10 @@ export function AppSidebar({ ...props }: AppSidebarProps) {
               isMobile={isMobile}
               showSpinnerFor={showSpinnerFor}
               onNavigate={handleNavigate}
-              i18n={i18n}
             />
           ) : (
             // Top-level items without a group wrapper
-            <SidebarGroup key={route.key}>
+            <SidebarGroup key={route.label}>
               <SidebarMenu>
                 <RouteItem
                   route={route}
@@ -255,7 +245,6 @@ export function AppSidebar({ ...props }: AppSidebarProps) {
                   isMobile={isMobile}
                   showSpinnerFor={showSpinnerFor}
                   onNavigate={handleNavigate}
-                  i18n={i18n}
                 />
               </SidebarMenu>
             </SidebarGroup>
@@ -279,14 +268,12 @@ interface SharedProps {
   isMobile: boolean;
   showSpinnerFor: (href: string) => boolean;
   onNavigate: (href: string) => void;
-  i18n: ReturnType<typeof useI18n>;
 }
 
 function RouteGroup({
   route,
   ...shared
 }: SharedProps & { route: RouteConfig & { type: 'group' } }) {
-  const { i18n } = shared;
   const [open, setOpen] = useState(true);
 
   return (
@@ -299,7 +286,7 @@ function RouteGroup({
         }}
       >
         {/* LABEL = navigation */}
-        <SidebarGroupLabel style={{ flex: 1 }}>{i18n.t(route.key)}</SidebarGroupLabel>
+        <SidebarGroupLabel style={{ flex: 1 }}>{route.label}</SidebarGroupLabel>
 
         {/* ARROW = toggle */}
         <ChevronDown
@@ -319,7 +306,7 @@ function RouteGroup({
       {open && (
         <SidebarMenu>
           {route.children?.map((child) => (
-            <RouteItem key={child.key} route={child} {...shared} />
+            <RouteItem key={child.label} route={child} {...shared} />
           ))}
         </SidebarMenu>
       )}
@@ -330,11 +317,10 @@ function RouteGroup({
 // ─── Route Item (leaf or nested) ─────────────────────────────────────────────
 
 function RouteItem({ route, ...shared }: SharedProps & { route: RouteConfig }) {
-  const { isActive, loading, showSpinnerFor, onNavigate, i18n } = shared;
+  const { isActive, loading, showSpinnerFor, onNavigate } = shared;
 
   const active = isActive(route.href);
   const href = route.href as string | undefined;
-  const label = i18n.t(route.key);
   const Icon = route.icon;
 
   const hasChildren = route.children && route.children.length > 0;
@@ -345,7 +331,7 @@ function RouteItem({ route, ...shared }: SharedProps & { route: RouteConfig }) {
         {/* Parent button – navigates if it has an href, otherwise just a label */}
         <SidebarMenuButton
           isActive={active}
-          tooltip={label}
+          tooltip={route.label}
           className={cn('flex', active && 'bg-primary!')}
           onClick={() => href && onNavigate(href)}
         >
@@ -366,7 +352,7 @@ function RouteItem({ route, ...shared }: SharedProps & { route: RouteConfig }) {
                 href && showSpinnerFor(href) ? 'hidden' : '',
               )}
             >
-              {label}
+              {route.label}
             </span>
             {href && loading === href && <Spinner />}
           </div>
@@ -377,11 +363,11 @@ function RouteItem({ route, ...shared }: SharedProps & { route: RouteConfig }) {
           {route.children?.map((child) => {
             const childHref = child.href as string | undefined;
             const childActive = isActive(childHref);
-            const childLabel = i18n.t(child.key);
+            const childLabel = child.label;
             const ChildIcon = child.icon;
 
             return (
-              <SidebarMenuSubItem key={child.key}>
+              <SidebarMenuSubItem key={child.label}>
                 <SidebarMenuSubButton
                   isActive={childActive}
                   className={cn(childActive && 'bg-primary! text-white')}
@@ -412,7 +398,7 @@ function RouteItem({ route, ...shared }: SharedProps & { route: RouteConfig }) {
       <SidebarMenuButton
         isActive={active}
         className={cn('flex', active && 'bg-primary!')}
-        tooltip={label}
+        tooltip={route.label}
         onClick={() => href && onNavigate(href)}
       >
         {Icon && (
@@ -432,7 +418,7 @@ function RouteItem({ route, ...shared }: SharedProps & { route: RouteConfig }) {
               href && showSpinnerFor(href) ? 'hidden' : '',
             )}
           >
-            {label}
+            {route.label}
           </span>
           {href && loading === href && <Spinner />}
         </div>

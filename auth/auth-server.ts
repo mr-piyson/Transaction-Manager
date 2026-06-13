@@ -1,9 +1,9 @@
 import { betterAuth } from 'better-auth';
 import { prismaAdapter } from 'better-auth/adapters/prisma';
 import { jwt } from 'better-auth/plugins';
+import { headers } from 'next/headers';
 import db from '@/lib/db';
 import { env } from '@/lib/env';
-import { headers } from 'next/headers';
 
 export const auth = betterAuth({
   trustedProxyHeaders: true,
@@ -32,9 +32,9 @@ export const auth = betterAuth({
       lastName: {
         type: 'string',
       },
-      isActive : {
-        type : "boolean"
-      }
+      isActive: {
+        type: 'boolean',
+      },
     },
   },
 });

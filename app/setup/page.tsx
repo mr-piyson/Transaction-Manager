@@ -1,19 +1,17 @@
 'use client';
 
+import { zodResolver } from '@hookform/resolvers/zod';
+import { AnimatePresence, motion } from 'framer-motion';
+import { ArrowLeft } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { motion, AnimatePresence } from 'framer-motion';
-import { useRouter } from 'next/navigation';
-
-import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft } from 'lucide-react';
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 
 import { trpc } from '@/lib/trpc/client';
-import { useI18n } from '@/i18n/use-i18n';
 
-import { setupSchema, SetupData, STEP_FIELDS, STEP_META } from './setup-types';
+import { type SetupData, STEP_FIELDS, STEP_META, setupSchema } from './setup-types';
 import { Step1Language } from './step1';
 import { Step2Organization } from './step2';
 import { Step3Admin } from './step3';
@@ -38,7 +36,6 @@ const STEP_COMPONENTS = [Step1Language, Step2Organization, Step3Admin];
 
 export default function SetupWizard() {
   const router = useRouter();
-  const { locale } = useI18n();
   const setupMutation = trpc.organizations.setup.useMutation();
   const isPending = setupMutation.isPending;
 
@@ -50,7 +47,6 @@ export default function SetupWizard() {
     resolver: zodResolver(setupSchema),
     mode: 'onChange',
     defaultValues: {
-      language: locale,
       currency: 'BHD',
       orgName: '',
       slug: '',

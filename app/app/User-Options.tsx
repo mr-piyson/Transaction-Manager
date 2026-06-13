@@ -20,12 +20,9 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Switch } from '@/components/ui/switch';
-import { LANGUAGE_CONFIG } from '@/i18n/config';
-import { useI18n } from '@/i18n/use-i18n';
 
 export function NavUser() {
   const { theme, setTheme } = useTheme();
-  const { availableLocales, setLocale, locale } = useI18n();
   const user = useSession().data?.user;
 
   const toggleTheme = (e: React.MouseEvent | React.BaseSyntheticEvent) => {
@@ -36,24 +33,22 @@ export function NavUser() {
     <SidebarMenu>
       <SidebarMenuItem>
         <DropdownMenu>
-          <DropdownMenuTrigger
-            render={
-              <SidebarMenuButton
-                size="lg"
-                className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
-              >
-                <Avatar className="h-8 w-8 rounded-lg">
-                  <AvatarImage src={user?.image || ''} alt={user?.name || ''} />
-                  <AvatarFallback className="rounded-lg">CN</AvatarFallback>
-                </Avatar>
-                <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-medium">{user?.name}</span>
-                  <span className="truncate text-xs">{user?.email}</span>
-                </div>
-                <ChevronsUpDown className="ml-auto size-4" />
-              </SidebarMenuButton>
-            }
-          ></DropdownMenuTrigger>
+          <DropdownMenuTrigger asChild>
+            <SidebarMenuButton
+              size="lg"
+              className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+            >
+              <Avatar className="h-8 w-8 rounded-lg">
+                <AvatarImage src={user?.image || ''} alt={user?.name || ''} />
+                <AvatarFallback className="rounded-lg">CN</AvatarFallback>
+              </Avatar>
+              <div className="grid flex-1 text-left text-sm leading-tight">
+                <span className="truncate font-medium">{user?.name}</span>
+                <span className="truncate text-xs">{user?.email}</span>
+              </div>
+              <ChevronsUpDown className="ml-auto size-4" />
+            </SidebarMenuButton>
+          </DropdownMenuTrigger>
           <DropdownMenuContent className="w-56 bg-background/90 backdrop-blur-md supports-backdrop-filter:bg-background/60 border-border">
             <DropdownMenuLabel className="p-0 font-normal">
               <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
@@ -92,16 +87,7 @@ export function NavUser() {
                   <span>Language</span>
                 </DropdownMenuSubTrigger>
                 <DropdownMenuPortal>
-                  <DropdownMenuSubContent>
-                    {availableLocales.map((lang) => (
-                      <DropdownMenuItem key={lang} onClick={() => setLocale(lang)}>
-                        <span>{LANGUAGE_CONFIG[lang].nativeName}</span>
-                        {locale === lang && (
-                          <Check className="ml-auto h-4 w-4 text-muted-foreground" />
-                        )}
-                      </DropdownMenuItem>
-                    ))}
-                  </DropdownMenuSubContent>
+                  <DropdownMenuSubContent>Add Languages Here</DropdownMenuSubContent>
                 </DropdownMenuPortal>
               </DropdownMenuSub>
             </DropdownMenuGroup>

@@ -9,14 +9,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Locale } from '@/i18n/config';
-import { useI18n } from '@/i18n/use-i18n';
-import { SetupData } from './setup-types';
-import { CurrencyCode } from '@/lib/utils';
+import type { CurrencyCode } from '@/lib/utils';
+import type { SetupData } from './setup-types';
 
 export function Step1Language() {
   const { setValue, watch } = useFormContext<SetupData>();
-  const { availableLocales, setLocale } = useI18n();
 
   const language = watch('language');
   const currency = watch('currency');
@@ -25,22 +22,13 @@ export function Step1Language() {
     <div className="space-y-4">
       <div className="space-y-2">
         <Label>System Language</Label>
-        <Select
-          value={language}
-          onValueChange={(val) => {
-            setValue('language', val as Locale, { shouldValidate: true });
-            setLocale(val as Locale);
-          }}
-        >
+        <Select value={language}>
           <SelectTrigger>
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            {availableLocales.map((l) => (
-              <SelectItem key={l} value={l}>
-                {l === 'ar' ? 'العربية' : 'English'}
-              </SelectItem>
-            ))}
+            <SelectItem value={'English'}>English</SelectItem>
+            <SelectItem value={'Arabic'}>العربية</SelectItem>
           </SelectContent>
         </Select>
       </div>

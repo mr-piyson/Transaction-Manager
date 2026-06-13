@@ -23,7 +23,7 @@ import { stockRouter } from './stock';
 import { supplierRouter } from './supplier';
 import { warehouseRouter } from './warehouses';
 
-export const appRouter = t.router({
+export const AppRouter = t.router({
   auth: authRouter,
   organizations: organizationRouter,
   customers: customerRouter,
@@ -38,4 +38,4 @@ export const appRouter = t.router({
   settings: settingsRouter,
 });
 
-export type AppRouter = typeof appRouter;
+export type AppRouter = typeof AppRouter;
