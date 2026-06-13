@@ -1,15 +1,15 @@
-import { z } from 'zod';
 import { createEnv } from '@t3-oss/env-core';
+import { z } from 'zod';
 
 export const env = createEnv({
   server: {
     DATABASE_URL: z.string(),
-    DATABASE_PROVIDER: z.enum(['sqlite', 'postgresql', 'mysql']),
+    DATABASE_PROVIDER: z.enum(['sqlite', 'postgresql', 'mysql']).default('postgresql'),
     BETTER_AUTH_SECRET: z.string(),
     NODE_ENV: z.enum(['development', 'production']).optional(),
   },
   runtimeEnv: process.env,
-    onValidationError: (error: any) => {  
+  onValidationError: (error: any) => {
     console.error('\x1b[31m%s\x1b[0m', '❌ Invalid Environment Variables:');
 
     error.issues.forEach((issue: any) => {

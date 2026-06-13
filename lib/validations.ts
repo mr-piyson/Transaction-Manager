@@ -132,3 +132,122 @@ export const SIGNUP_SCHEMA = z.object({
   email: validateEmail(),
   password: validatePassword(),
 });
+
+/**
+ *
+ * Reusable Zod schemas shared across routers.
+ *
+ * WHY CENTRALISE SCHEMAS?
+ * Pagination, sorting, and filter shapes repeat across every list endpoint.
+ * Centralising prevents drift (one router paginating with `page`/`limit`,
+ * another with `cursor`/`take`) and allows the client to share a single
+ * pagination component backed by a single type.
+ *
+ * CURSOR VS OFFSET PAGINATION:
+ * We expose both patterns:
+ * - offsetPaginationSchema → simple page/limit for UI tables (≤10k rows)
+ * - cursorPaginationSchema → cursor-based for infinite scroll / large datasets
+ *
+ * For ERP list views (invoices, customers, items) offset is sufficient and
+ * easier to implement with "Page X of Y" UI. Switch to cursor when a list
+ * can realistically exceed 50k rows (audit logs, stock movements).
+ */
+
+import type { Prisma } from '@prisma/client';
+
+// ---------------------------------------------------------------------------
+// Pagination
+// ---------------------------------------------------------------------------
+
+export const offsetPaginationSchema = z.object({
+  page: z.number().int().min(1).default(1),
+  limit: z.number().int().min(1).max(200).default(25),
+});
+
+export const cursorPaginationSchema = z.object({
+  cursor: z.string().cuid().optional(),
+  limit: z.number().int().min(1).max(200).default(25),
+});
+
+export type OffsetPagination = z.infer<typeof offsetPaginationSchema>;
+export type CursorPagination = z.infer<typeof cursorPaginationSchema>;
+
+/** Compute skip/take from offset pagination params. */
+export function toPrismaPage({ page, limit }: OffsetPagination) {
+  return { skip: (page - 1) * limit, take: limit };
+}
+
+/** Build a standard paginated response envelope. */
+export function paginatedResponse<T>(data: T[], total: number, { page, limit }: OffsetPagination) {
+  return {
+    data,
+    meta: {
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
+      hasNextPage: page * limit < total,
+      hasPrevPage: page > 1,
+    },
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Sorting
+// ---------------------------------------------------------------------------
+
+export const sortOrderSchema = z.enum(['asc', 'desc']).default('desc');
+export type SortOrder = z.infer<typeof sortOrderSchema>;
+
+// ---------------------------------------------------------------------------
+// Common field schemas
+// ---------------------------------------------------------------------------
+
+export const cuidSchema = z.string().cuid();
+export const decimalSchema = z
+  .number()
+  .or(z.string().regex(/^\d+(\.\d+)?$/))
+  .transform((v) => String(v)); // Store as string for Prisma Decimal
+
+export const currencyCodeSchema = z.enum([
+  'USD',
+  'BHD',
+  'EUR',
+  'GBP',
+  'JPY',
+  'AED',
+  'SAR',
+  'KWD',
+  'QAR',
+  'OMR',
+]);
+
+export const paymentMethodSchema = z.enum([
+  'CASH',
+  'BANK_TRANSFER',
+  'CARD',
+  'CHEQUE',
+  'ONLINE',
+  'CREDIT',
+  'OTHER',
+]);
+
+// ---------------------------------------------------------------------------
+// Date range filter (used by invoices, payments, expenses)
+// ---------------------------------------------------------------------------
+
+export const dateRangeSchema = z
+  .object({
+    from: z.coerce.date().optional(),
+    to: z.coerce.date().optional(),
+  })
+  .optional();
+
+/** Convert a date range to Prisma `gte`/`lte` filter. */
+export function toDateRangeFilter(range?: { from?: Date; to?: Date }) {
+  if (!range?.from && !range?.to) return undefined;
+  return {
+    ...(range.from ? { gte: range.from } : {}),
+    ...(range.to ? { lte: range.to } : {}),
+  } satisfies Prisma.DateTimeFilter;
+}

@@ -4,7 +4,7 @@ import './globals.css';
 import { Toaster } from '@/components/sonner';
 import { ThemeProvider } from '@/components/Theme-Provider';
 import { DateFormatProvider } from '@/hooks/use-date-format';
-import TrpcProvider from '@/lib/trpc/Provider';
+import TrpcProvider from '@/lib/trpc/provider';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',

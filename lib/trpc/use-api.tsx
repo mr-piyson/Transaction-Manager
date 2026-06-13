@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useCallback, useState } from 'react';
 
 // Custom event to notify the TrpcProvider when the URL changes
 export const API_URL_CHANGE_EVENT = 'api-url-changed';

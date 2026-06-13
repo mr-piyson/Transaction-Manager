@@ -62,7 +62,7 @@ function QuickActionCard({
 // ---------------------------------------------------------------------------
 export default function App_Page() {
   const router = useRouter();
-  const { data: user } = trpc.auth.getSession.useQuery();
+  const { data: user } = trpc.auth.session.useQuery();
 
   return (
     <div className="flex flex-col min-h-screen pb-20">

@@ -1,419 +1,495 @@
 /**
- * items.ts
- * Item catalogue (products + services) and item categories.
+ * src/server/modules/items/router.ts
+ *
+ * Item catalogue router (products, services, bundles).
+ *
+ * STOCK AWARENESS:
+ * Items themselves don't hold quantity — that lives in Stock rows.
+ * The `withStock` query option joins stock across all warehouses so the
+ * client gets a single "total available" number without a separate call.
+ *
+ * PRICE RESOLUTION ORDER (used by invoice line creation):
+ * 1. Customer's assigned PriceList → PriceListLine for this item
+ * 2. Item.salesPrice (default)
+ * The items router exposes `resolvePrice` for the invoice router to call.
  */
 
-import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
-import { adminProcedure, protectedProcedure, t } from '@/lib/trpc/server';
-import { assertOwnership, requireOrgId } from './_shared';
+import { ConflictError, NotFoundError } from '@/lib/error';
+import { assertCan, orgProcedure, router } from '@/lib/trpc/context';
+import {
+  decimalSchema,
+  offsetPaginationSchema,
+  paginatedResponse,
+  sortOrderSchema,
+  toPrismaPage,
+} from '@/lib/validations';
+import { writeAuditLog } from './audit.service';
 
 // ---------------------------------------------------------------------------
-// Shared input schemas
+// Input schemas
 // ---------------------------------------------------------------------------
 
-const categoryInput = z.object({
-  name: z.string().min(1),
-  description: z.string().optional(),
+const itemBaseSchema = z.object({
+  type: z.enum(['PRODUCT', 'SERVICE', 'BUNDLE']).default('PRODUCT'),
+  sku: z.string().min(1).max(100),
+  barcode: z.string().max(100).optional(),
+  name: z.string().min(1).max(255),
+  description: z.string().max(5000).optional(),
+  unit: z.string().max(50).default('pcs'),
+  isSaleable: z.boolean().default(true),
+  isPurchasable: z.boolean().default(true),
+  purchasePrice: decimalSchema.optional(),
+  salesPrice: decimalSchema.optional(),
+  minStock: z.number().int().min(0).default(0),
+  reorderPoint: z.number().int().min(0).default(0),
+  reorderQty: z.number().int().min(0).default(0),
+  categoryId: z.string().cuid().optional(),
+  taxRateId: z.string().cuid().optional(),
+  revenueAccountId: z.string().cuid().optional(),
+  cogsAccountId: z.string().cuid().optional(),
+  inventoryAccountId: z.string().cuid().optional(),
 });
 
-const itemInput = z.object({
-  name: z.string().min(1),
-  sku: z.string().min(1),
-  type: z.enum(['PRODUCT', 'SERVICE']),
-  description: z.string().optional(),
-  unit: z.string().optional(),
-  categoryId: z.string().optional(),
-  taxRateId: z.string().optional(),
-  purchasePrice: z.number().int().min(0).default(0), // fils
-  salesPrice: z.number().int().min(0).default(0), // fils
-  minStock: z.number().int().min(0).default(0),
-  isSaleable: z.boolean().default(true),
+const createItemSchema = itemBaseSchema;
+const updateItemSchema = itemBaseSchema.partial().extend({
+  id: z.string(),
+});
+
+const listItemsSchema = z.object({
+  ...offsetPaginationSchema.shape,
+  search: z.string().optional(),
+  type: z.enum(['PRODUCT', 'SERVICE', 'BUNDLE']).optional(),
+  categoryId: z.string().cuid().optional(),
+  isActive: z.boolean().optional(),
+  isSaleable: z.boolean().optional(),
+  lowStock: z.boolean().optional(), // Filter items below reorderPoint
+  sortBy: z.enum(['name', 'sku', 'salesPrice', 'createdAt']).default('name'),
+  sortOrder: sortOrderSchema,
+  withStock: z.boolean().default(false), // Include aggregated stock levels
 });
 
 // ---------------------------------------------------------------------------
 // Router
 // ---------------------------------------------------------------------------
 
-export const itemRouter = t.router({
-  // =========================================================================
-  // CATEGORIES
-  // =========================================================================
+export const itemsRouter = router({
+  // ── LIST ──────────────────────────────────────────────────────────────────
+  list: orgProcedure.input(listItemsSchema).query(async ({ ctx, input }) => {
+    assertCan(ctx.ability, 'item:read', 'Item');
 
-  listCategories: protectedProcedure.query(async ({ ctx }) => {
-    const orgId = requireOrgId(ctx.organizationId);
+    const {
+      search,
+      type,
+      categoryId,
+      isActive,
+      isSaleable,
+      lowStock,
+      sortBy,
+      sortOrder,
+      withStock,
+      ...pagination
+    } = input;
+    const { skip, take } = toPrismaPage(pagination);
+    const orgId = ctx.user.organizationId;
 
-    return ctx.prisma.itemCategory.findMany({
-      where: { organizationId: orgId, deletedAt: null },
-      orderBy: { name: 'asc' },
+    const where = {
+      organizationId: orgId,
+      deletedAt: null,
+      ...(type ? { type } : {}),
+      ...(categoryId ? { categoryId } : {}),
+      ...(isActive !== undefined ? { isActive } : {}),
+      ...(isSaleable !== undefined ? { isSaleable } : {}),
+      ...(search
+        ? {
+            OR: [
+              { name: { contains: search, mode: 'insensitive' as const } },
+              { sku: { contains: search, mode: 'insensitive' as const } },
+              { barcode: { contains: search, mode: 'insensitive' as const } },
+              {
+                description: {
+                  contains: search,
+                  mode: 'insensitive' as const,
+                },
+              },
+            ],
+          }
+        : {}),
+    };
+
+    const [items, total] = await ctx.db.$transaction([
+      ctx.db.item.findMany({
+        where,
+        skip,
+        take,
+        orderBy: { [sortBy]: sortOrder },
+        select: {
+          id: true,
+          sku: true,
+          barcode: true,
+          name: true,
+          type: true,
+          unit: true,
+          salesPrice: true,
+          purchasePrice: true,
+          averageCost: true,
+          minStock: true,
+          reorderPoint: true,
+          isSaleable: true,
+          isPurchasable: true,
+          isActive: true,
+          category: { select: { id: true, name: true, color: true } },
+          taxRate: { select: { id: true, name: true, rate: true } },
+          // Aggregate stock across all warehouses if requested
+          ...(withStock
+            ? {
+                stock: {
+                  select: {
+                    quantity: true,
+                    warehouse: { select: { id: true, name: true } },
+                  },
+                },
+              }
+            : {}),
+        },
+      }),
+      ctx.db.item.count({ where }),
+    ]);
+
+    // Post-process: add totalStock and lowStockFlag
+    const enriched = items.map((item) => {
+      const stockRows = 'stock' in item ? item.stock : [];
+      const totalStock = stockRows.reduce((sum, s) => sum + Number(s.quantity), 0);
+      return {
+        ...item,
+        totalStock: withStock ? totalStock : undefined,
+        isLowStock: withStock ? totalStock <= item.reorderPoint : undefined,
+      };
+    });
+
+    // Apply lowStock filter post-aggregation (can't do in Prisma directly)
+    const filtered = lowStock && withStock ? enriched.filter((i) => i.isLowStock) : enriched;
+
+    return paginatedResponse(filtered, total, pagination);
+  }),
+
+  // ── GET BY ID ─────────────────────────────────────────────────────────────
+  byId: orgProcedure
+    .input(z.object({ id: z.string().cuid(), withStock: z.boolean().default(true) }))
+    .query(async ({ ctx, input }) => {
+      assertCan(ctx.ability, 'item:read', 'Item');
+
+      const item = await ctx.db.item.findFirst({
+        where: {
+          id: input.id,
+          organizationId: ctx.user.organizationId,
+          deletedAt: null,
+        },
+        include: {
+          category: true,
+          taxRate: true,
+          revenueAccount: { select: { id: true, code: true, name: true } },
+          cogsAccount: { select: { id: true, code: true, name: true } },
+          inventoryAccount: { select: { id: true, code: true, name: true } },
+          supplierItems: {
+            where: { isActive: true, deletedAt: null },
+            include: {
+              supplier: { select: { id: true, name: true } },
+            },
+          },
+          ...(input.withStock
+            ? {
+                stock: {
+                  include: {
+                    warehouse: {
+                      select: { id: true, name: true, isDefault: true },
+                    },
+                  },
+                },
+              }
+            : {}),
+          bundleLines: {
+            include: {
+              componentItem: {
+                select: { id: true, sku: true, name: true, unit: true },
+              },
+            },
+          },
+          _count: { select: { invoiceLines: true, purchaseLines: true } },
+        },
+      });
+
+      if (!item) throw new NotFoundError('Item', input.id);
+      return item;
+    }),
+
+  // ── GET BY SKU ────────────────────────────────────────────────────────────
+  bySku: orgProcedure.input(z.object({ sku: z.string() })).query(async ({ ctx, input }) => {
+    assertCan(ctx.ability, 'item:read', 'Item');
+
+    const item = await ctx.db.item.findFirst({
+      where: {
+        sku: input.sku,
+        organizationId: ctx.user.organizationId,
+        deletedAt: null,
+      },
       select: {
         id: true,
+        sku: true,
         name: true,
-        _count: { select: { items: true } },
+        salesPrice: true,
+        unit: true,
+        taxRate: { select: { id: true, rate: true, name: true } },
       },
     });
+
+    if (!item) throw new NotFoundError('Item (SKU)', input.sku);
+    return item;
   }),
 
-  createCategory: adminProcedure.input(categoryInput).mutation(async ({ ctx, input }) => {
-    const orgId = requireOrgId(ctx.organizationId);
-
-    return ctx.prisma.itemCategory.create({
-      data: { ...input, organizationId: orgId },
-    });
-  }),
-
-  updateCategory: adminProcedure
-    .input(z.object({ id: z.string() }).merge(categoryInput.partial()))
-    .mutation(async ({ ctx, input }) => {
-      const orgId = requireOrgId(ctx.organizationId);
-      const { id, ...rest } = input;
-
-      const existing = await ctx.prisma.itemCategory.findUnique({
-        where: { id },
-        select: { organizationId: true },
-      });
-      assertOwnership(existing, orgId, 'Category');
-
-      return ctx.prisma.itemCategory.update({ where: { id }, data: rest });
-    }),
-
-  deleteCategory: adminProcedure
-    .input(z.object({ id: z.string() }))
-    .mutation(async ({ ctx, input }) => {
-      const orgId = requireOrgId(ctx.organizationId);
-
-      const existing = await ctx.prisma.itemCategory.findUnique({
-        where: { id: input.id },
-        select: { organizationId: true, _count: { select: { items: true } } },
-      });
-      assertOwnership(existing, orgId, 'Category');
-
-      if (!existing || existing._count.items > 0) {
-        throw new TRPCError({
-          code: 'BAD_REQUEST',
-          message: `Cannot delete category with ${existing?._count.items} item(s). Reassign items first.`,
-        });
-      }
-
-      return ctx.prisma.itemCategory.update({
-        where: { id: input.id },
-        data: { deletedAt: new Date() },
-      });
-    }),
-
-  // =========================================================================
-  // TAX RATES
-  // =========================================================================
-
-  listTaxRates: protectedProcedure.query(async ({ ctx }) => {
-    const orgId = requireOrgId(ctx.organizationId);
-
-    return ctx.prisma.taxRate.findMany({
-      where: { organizationId: orgId },
-      orderBy: { rate: 'asc' },
-      select: { id: true, name: true, rate: true, isDefault: true },
-    });
-  }),
-
-  upsertTaxRate: adminProcedure
+  // ── RESOLVE PRICE (for invoice line creation) ─────────────────────────────
+  resolvePrice: orgProcedure
     .input(
       z.object({
-        id: z.string().optional(),
-        name: z.string().min(1),
-        rate: z.number().min(0).max(100), // percentage, e.g. 10 for 10%
-        isDefault: z.boolean().default(false),
-      }),
-    )
-    .mutation(async ({ ctx, input }) => {
-      const orgId = requireOrgId(ctx.organizationId);
-      const { id, isDefault, ...rest } = input;
-
-      // If setting as default, clear existing default first
-      if (isDefault) {
-        await ctx.prisma.taxRate.updateMany({
-          where: { organizationId: orgId, isDefault: true },
-          data: { isDefault: false },
-        });
-      }
-
-      if (id) {
-        const existing = await ctx.prisma.taxRate.findUnique({
-          where: { id },
-          select: { organizationId: true },
-        });
-        assertOwnership(existing, orgId, 'TaxRate');
-
-        return ctx.prisma.taxRate.update({
-          where: { id },
-          data: { ...rest, isDefault },
-        });
-      }
-
-      return ctx.prisma.taxRate.create({
-        data: { ...rest, isDefault, organizationId: orgId },
-      });
-    }),
-
-  // =========================================================================
-  // ITEMS
-  // =========================================================================
-
-  list: protectedProcedure
-    .input(
-      z.object({
-        search: z.string().optional(),
-        type: z.enum(['PRODUCT', 'SERVICE']).optional(),
-        categoryId: z.string().optional(),
-        isSaleable: z.boolean().optional(),
-        lowStock: z.boolean().optional(), // filter items below minStock
+        itemId: z.string().cuid(),
+        customerId: z.string().cuid().optional(),
+        quantity: z.number().positive().default(1),
       }),
     )
     .query(async ({ ctx, input }) => {
-      const orgId = requireOrgId(ctx.organizationId);
-      const { search, type, categoryId, isSaleable, lowStock } = input;
+      assertCan(ctx.ability, 'item:read', 'Item');
 
-      const where: any = {
-        organizationId: orgId,
-        deletedAt: null,
-        ...(type && { type }),
-        ...(categoryId && { categoryId }),
-        ...(isSaleable !== undefined && { isSaleable }),
-        ...(search && {
-          OR: [
-            { name: { contains: search, mode: 'insensitive' } },
-            { sku: { contains: search, mode: 'insensitive' } },
-            { description: { contains: search, mode: 'insensitive' } },
-          ],
-        }),
-      };
-
-      // Low-stock filter: items where any stock row < minStock
-      // We do this via a subquery approach using a 'some' relation filter
-      if (lowStock) {
-        where.type = 'PRODUCT';
-        where.stock = {
-          some: {
-            quantity: { lt: ctx.prisma.item.fields.minStock }, // handled below
-          },
-        };
-      }
-
-      return await ctx.prisma.item.findMany({
-        where,
-        orderBy: { name: 'asc' },
+      const item = await ctx.db.item.findFirst({
+        where: {
+          id: input.itemId,
+          organizationId: ctx.user.organizationId,
+          deletedAt: null,
+          isSaleable: true,
+        },
         select: {
           id: true,
-          name: true,
-          sku: true,
-          type: true,
-          unit: true,
-          purchasePrice: true,
           salesPrice: true,
-          minStock: true,
-          isSaleable: true,
-          category: { select: { id: true, name: true } },
-          taxRate: { select: { id: true, name: true, rate: true } },
-          stock: {
+          purchasePrice: true,
+          taxRateId: true,
+          taxRate: { select: { rate: true, name: true } },
+        },
+      });
+
+      if (!item) throw new NotFoundError('Item', input.itemId);
+
+      let resolvedPrice = item.salesPrice;
+      let priceSource: 'price_list' | 'item_default' = 'item_default';
+
+      // Check customer's price list
+      if (input.customerId) {
+        const customer = await ctx.db.customer.findFirst({
+          where: {
+            id: input.customerId,
+            organizationId: ctx.user.organizationId,
+            deletedAt: null,
+          },
+          select: {
+            priceList: {
+              select: {
+                lines: {
+                  where: {
+                    itemId: input.itemId,
+                    minQty: { lte: input.quantity },
+                  },
+                  orderBy: { minQty: 'desc' },
+                  take: 1,
+                  select: { unitPrice: true },
+                },
+              },
+            },
+          },
+        });
+
+        const plPrice = customer?.priceList?.lines[0]?.unitPrice;
+        if (plPrice !== undefined) {
+          resolvedPrice = plPrice;
+          priceSource = 'price_list';
+        }
+      }
+
+      return {
+        itemId: input.itemId,
+        unitPrice: resolvedPrice,
+        priceSource,
+        taxRateId: item.taxRateId,
+        taxRate: item.taxRate,
+        purchasePrice: item.purchasePrice,
+      };
+    }),
+
+  // ── CREATE ────────────────────────────────────────────────────────────────
+  create: orgProcedure.input(createItemSchema).mutation(async ({ ctx, input }) => {
+    assertCan(ctx.ability, 'item:create', 'Item');
+
+    // SKU uniqueness within org
+    const existing = await ctx.db.item.findFirst({
+      where: {
+        sku: input.sku,
+        organizationId: ctx.user.organizationId,
+        deletedAt: null,
+      },
+      select: { id: true },
+    });
+    if (existing) {
+      throw new ConflictError(`SKU "${input.sku}" is already in use.`);
+    }
+
+    const item = await ctx.db.$transaction(async (tx) => {
+      const created = await tx.item.create({
+        data: {
+          ...input,
+          organizationId: ctx.user.organizationId,
+          createdById: ctx.user.id,
+        },
+      });
+
+      await writeAuditLog(
+        {
+          entityType: 'Item',
+          entityId: created.id,
+          action: 'CREATE',
+          organizationId: ctx.user.organizationId,
+          userId: ctx.user.id,
+          ipAddress: ctx.ipAddress,
+        },
+        tx,
+      );
+
+      return created;
+    });
+
+    return item;
+  }),
+
+  // ── UPDATE ────────────────────────────────────────────────────────────────
+  update: orgProcedure.input(updateItemSchema).mutation(async ({ ctx, input }) => {
+    const { id, ...data } = input;
+
+    const existing = await ctx.db.item.findFirst({
+      where: { id, organizationId: ctx.user.organizationId, deletedAt: null },
+    });
+    if (!existing) throw new NotFoundError('Item', id);
+
+    assertCan(ctx.ability, 'item:update', 'Item', existing as Record<string, unknown>);
+
+    // SKU uniqueness (ignore self)
+    if (data.sku && data.sku !== existing.sku) {
+      const conflict = await ctx.db.item.findFirst({
+        where: {
+          sku: data.sku,
+          organizationId: ctx.user.organizationId,
+          deletedAt: null,
+          NOT: { id },
+        },
+        select: { id: true },
+      });
+      if (conflict) {
+        throw new ConflictError(`SKU "${data.sku}" is already in use.`);
+      }
+    }
+
+    return ctx.db.$transaction(async (tx) => {
+      const updated = await tx.item.update({
+        where: { id },
+        data: { ...data, updatedById: ctx.user.id },
+      });
+
+      await writeAuditLog(
+        {
+          entityType: 'Item',
+          entityId: id,
+          action: 'UPDATE',
+          organizationId: ctx.user.organizationId,
+          userId: ctx.user.id,
+          ipAddress: ctx.ipAddress,
+        },
+        tx,
+      );
+
+      return updated;
+    });
+  }),
+
+  // ── SOFT DELETE ───────────────────────────────────────────────────────────
+  delete: orgProcedure
+    .input(z.object({ id: z.string().cuid() }))
+    .mutation(async ({ ctx, input }) => {
+      const existing = await ctx.db.item.findFirst({
+        where: {
+          id: input.id,
+          organizationId: ctx.user.organizationId,
+          deletedAt: null,
+        },
+        select: {
+          id: true,
+          organizationId: true,
+          _count: {
             select: {
-              quantity: true,
-              warehouse: { select: { id: true, name: true } },
+              stock: { where: { quantity: { gt: 0 } } },
             },
           },
         },
       });
-    }),
+      if (!existing) throw new NotFoundError('Item', input.id);
 
-  getById: protectedProcedure.input(z.object({ id: z.string() })).query(async ({ ctx, input }) => {
-    const orgId = requireOrgId(ctx.organizationId);
+      assertCan(ctx.ability, 'item:delete', 'Item', existing as Record<string, unknown>);
 
-    const item = await ctx.prisma.item.findUnique({
-      where: { id: input.id },
-      include: {
-        category: true,
-        taxRate: true,
-        stock: {
-          include: { warehouse: { select: { id: true, name: true } } },
-        },
-        supplierItems: {
-          where: { deletedAt: null, isActive: true },
-          include: { supplier: { select: { id: true, name: true } } },
-        },
-      },
-    });
-
-    assertOwnership(item, orgId, 'Item');
-    return item;
-  }),
-
-  create: protectedProcedure.input(itemInput).mutation(async ({ ctx, input }) => {
-    const orgId = requireOrgId(ctx.organizationId);
-    const { purchasePrice, salesPrice, ...rest } = input;
-
-    // Ensure SKU is unique within org
-    const skuConflict = await ctx.prisma.item.findFirst({
-      where: { sku: input.sku, organizationId: orgId, deletedAt: null },
-      select: { id: true },
-    });
-    if (skuConflict) {
-      throw new TRPCError({
-        code: 'BAD_REQUEST',
-        message: `SKU "${input.sku}" already exists`,
-      });
-    }
-
-    return ctx.prisma.item.create({
-      data: {
-        ...rest,
-        purchasePrice: BigInt(purchasePrice),
-        salesPrice: BigInt(salesPrice),
-        organizationId: orgId,
-      },
-    });
-  }),
-
-  update: protectedProcedure
-    .input(z.object({ id: z.string() }).merge(itemInput.partial()))
-    .mutation(async ({ ctx, input }) => {
-      const orgId = requireOrgId(ctx.organizationId);
-      const { id, purchasePrice, salesPrice, sku, ...rest } = input;
-
-      const existing = await ctx.prisma.item.findUnique({
-        where: { id },
-        select: { organizationId: true },
-      });
-      assertOwnership(existing, orgId, 'Item');
-
-      // Check SKU uniqueness if changing SKU
-      if (sku) {
-        const conflict = await ctx.prisma.item.findFirst({
-          where: { sku, organizationId: orgId, deletedAt: null, NOT: { id } },
-          select: { id: true },
-        });
-        if (conflict) {
-          throw new TRPCError({
-            code: 'BAD_REQUEST',
-            message: `SKU "${sku}" already exists`,
-          });
-        }
+      if (existing._count.stock > 0) {
+        throw new ConflictError(
+          'Cannot delete item: it has stock on hand. Adjust stock to zero first.',
+        );
       }
 
-      return ctx.prisma.item.update({
-        where: { id },
-        data: {
-          ...rest,
-          ...(sku && { sku }),
-          ...(purchasePrice !== undefined && {
-            purchasePrice: BigInt(purchasePrice),
-          }),
-          ...(salesPrice !== undefined && { salesPrice: BigInt(salesPrice) }),
-        },
-      });
-    }),
-
-  /**
-   * Confirm the sales price after stock has been received for a new item.
-   * Marks the item as saleable once the price is set.
-   */
-  confirmSalesPrice: protectedProcedure
-    .input(
-      z.object({
-        id: z.string(),
-        salesPrice: z.number().int().min(1),
-      }),
-    )
-    .mutation(async ({ ctx, input }) => {
-      const orgId = requireOrgId(ctx.organizationId);
-
-      const existing = await ctx.prisma.item.findUnique({
-        where: { id: input.id },
-        select: { organizationId: true, type: true },
-      });
-      assertOwnership(existing, orgId, 'Item');
-
-      if (!existing || existing.type !== 'PRODUCT') {
-        throw new TRPCError({
-          code: 'BAD_REQUEST',
-          message: 'Only products need a sales price',
+      await ctx.db.$transaction(async (tx) => {
+        await tx.item.update({
+          where: { id: input.id },
+          data: {
+            deletedAt: new Date(),
+            isActive: false,
+            updatedById: ctx.user.id,
+          },
         });
-      }
 
-      return ctx.prisma.item.update({
-        where: { id: input.id },
-        data: { salesPrice: BigInt(input.salesPrice), isSaleable: true },
+        await writeAuditLog(
+          {
+            entityType: 'Item',
+            entityId: input.id,
+            action: 'DELETE',
+            organizationId: ctx.user.organizationId,
+            userId: ctx.user.id,
+            ipAddress: ctx.ipAddress,
+          },
+          tx,
+        );
       });
+
+      return { success: true };
     }),
 
-  delete: adminProcedure.input(z.object({ id: z.string() })).mutation(async ({ ctx, input }) => {
-    const orgId = requireOrgId(ctx.organizationId);
+  // ── STOCK SUMMARY ─────────────────────────────────────────────────────────
+  stockSummary: orgProcedure
+    .input(z.object({ itemId: z.string().cuid() }))
+    .query(async ({ ctx, input }) => {
+      assertCan(ctx.ability, 'stock:read', 'Stock');
 
-    const existing = await ctx.prisma.item.findUnique({
-      where: { id: input.id },
-      select: {
-        organizationId: true,
-        stock: { select: { quantity: true } },
-      },
-    });
-    assertOwnership(existing, orgId, 'Item');
-
-    if (!existing) {
-      throw new TRPCError({
-        code: 'BAD_REQUEST',
-        message: '',
-      });
-    }
-
-    const totalStock = existing.stock.reduce((sum, s) => sum + s.quantity, 0);
-    if (totalStock > 0) {
-      throw new TRPCError({
-        code: 'BAD_REQUEST',
-        message: `Cannot delete item with ${totalStock} units in stock`,
-      });
-    }
-
-    return ctx.prisma.item.update({
-      where: { id: input.id },
-      data: { deletedAt: new Date() },
-    });
-  }),
-
-  // -------------------------------------------------------------------------
-  // Low-stock alert list (for dashboard widget)
-  // -------------------------------------------------------------------------
-  lowStockAlerts: protectedProcedure.query(async ({ ctx }) => {
-    const orgId = requireOrgId(ctx.organizationId);
-
-    // Fetch all PRODUCT items with their stock per warehouse
-    const items = await ctx.prisma.item.findMany({
-      where: { organizationId: orgId, deletedAt: null, type: 'PRODUCT' },
-      select: {
-        id: true,
-        name: true,
-        sku: true,
-        minStock: true,
-        unit: true,
-        stock: {
-          include: { warehouse: { select: { id: true, name: true } } },
+      const stocks = await ctx.db.stock.findMany({
+        where: {
+          itemId: input.itemId,
+          organizationId: ctx.user.organizationId,
+          warehouse: { isActive: true },
         },
-      },
-    });
+        include: {
+          warehouse: { select: { id: true, name: true, isDefault: true } },
+        },
+      });
 
-    // Filter to items where any warehouse is below minStock
-    return items
-      .flatMap((item) =>
-        item.stock
-          .filter((s) => s.quantity < item.minStock)
-          .map((s) => ({
-            itemId: item.id,
-            itemName: item.name,
-            sku: item.sku,
-            unit: item.unit,
-            warehouseId: s.warehouse.id,
-            warehouseName: s.warehouse.name,
-            currentQty: s.quantity,
-            minStock: item.minStock,
-            shortfall: item.minStock - s.quantity,
-          })),
-      )
-      .sort((a, b) => b.shortfall - a.shortfall);
-  }),
+      const totalQty = stocks.reduce((sum, s) => sum + Number(s.quantity), 0);
+
+      return { stocks, totalQuantity: totalQty };
+    }),
 });

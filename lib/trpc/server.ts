@@ -1,126 +1,155 @@
-import { initTRPC, TRPCError } from '@trpc/server';
-import { type FetchCreateContextFnOptions } from '@trpc/server/adapters/fetch';
-import superjson from 'superjson';
-import { ZodError } from 'zod';
-import type { Role } from '@prisma/client';
+import type { Prisma } from '@prisma/client';
+import type { FetchCreateContextFnOptions } from '@trpc/server/adapters/fetch';
+import type { NextRequest } from 'next/server';
 import { auth } from '@/auth/auth-server';
+import { type AppAbilityType, defineAbilitiesFor } from '@/lib/abilities';
+import db from '../db';
 
 // ---------------------------------------------------------------------------
-// Context
+// 1. Standalone Select Block (Best Practice: Prevents Circular Types)
 // ---------------------------------------------------------------------------
+const userSelect = {
+  id: true,
+  name: true,
+  email: true,
+  organizationId: true,
+  platformRole: true,
+  userOrganizationRoles: {
+    where: {
+      isActive: true,
+      deletedAt: null,
+    },
+    select: { role: true },
+    take: 1,
+  },
+} as const;
 
-export async function createContext(opts: FetchCreateContextFnOptions) {
-  const session = await auth.api.getSession({ headers: opts.req.headers });
+// ---------------------------------------------------------------------------
+// 2. Automated Type Inference (Best Practice: Zero-Maintenance Database Sync)
+// ---------------------------------------------------------------------------
+type DbUserPayload = Prisma.UserGetPayload<{ select: typeof userSelect }>;
 
-  return {
-    prisma,
-    session,
-    user: session?.user ?? null,
-  };
+export type ContextUser = Omit<DbUserPayload, 'userOrganizationRoles'> & {
+  orgRole: import('@prisma/client').OrgRole | null;
+  permissions: string[];
+};
+
+// ---------------------------------------------------------------------------
+// 3. Explicit Context Contract (Best Practice: Fast Compilation & Fail-Fast Safety)
+// ---------------------------------------------------------------------------
+export interface Context {
+  db: typeof db;
+  req: NextRequest;
+  ipAddress: string;
+  session: Awaited<ReturnType<typeof auth.api.getSession>> | null;
+  user: ContextUser | null;
+  ability: AppAbilityType;
 }
 
-export type Context = Awaited<ReturnType<typeof createContext>>;
-
 // ---------------------------------------------------------------------------
-// tRPC init
+// 4. Request Context Builder (Best Practice: Decoupled Web/Adapter Layer)
 // ---------------------------------------------------------------------------
+export async function createContext(opts: FetchCreateContextFnOptions): Promise<Context> {
+  // Cast standard Request to NextRequest to preserve custom properties (cookies, nextUrl)
+  const { req } = opts as unknown as { req: NextRequest };
 
-export const t = initTRPC.context<Context>().create({
-  transformer: superjson,
-  errorFormatter({ shape, error }) {
+  const ipAddress =
+    req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ??
+    req.headers.get('x-real-ip') ??
+    'unknown';
+
+  // Resolve Auth Session
+  let betterSession: Awaited<ReturnType<typeof auth.api.getSession>> | null = null;
+  try {
+    betterSession = await auth.api.getSession({ headers: req.headers });
+  } catch {
+    // Treat invalid tokens as unauthenticated
+  }
+
+  // Early Return: Unauthenticated User Branch
+  if (!betterSession?.user) {
     return {
-      ...shape,
-      data: {
-        ...shape.data,
-        zodError: error.cause instanceof ZodError ? error.cause.flatten() : null,
-      },
+      db,
+      req,
+      ipAddress,
+      session: null,
+      user: null,
+      ability: defineAbilitiesFor({
+        id: '',
+        platformRole: 'USER',
+        permissions: [],
+      }),
     };
-  },
-});
-
-export const router = t.router;
-export const createCallerFactory = t.createCallerFactory;
-
-// ---------------------------------------------------------------------------
-// Reusable middleware
-// ---------------------------------------------------------------------------
-
-/** Requires a valid Better Auth session. Attaches user + org to ctx. */
-const enforceAuth = t.middleware(async ({ ctx, next }) => {
-  if (!ctx.session || !ctx.user) {
-    throw new TRPCError({ code: 'UNAUTHORIZED' });
   }
 
-  if (!ctx.user.isActive) {
-    throw new TRPCError({ code: 'FORBIDDEN', message: 'Account is disabled' });
-  }
-
-  // Resolve the user's org-level role
-  const orgRole = ctx.user.organizationId
-    ? await ctx.prisma.userOrganizationRole.findUnique({
+  // Fetch Full User Database Record
+  const dbUser = await db.user.findUnique({
+    where: { id: betterSession.user.id, isActive: true, deletedAt: null },
+    select: {
+      ...userSelect,
+      userOrganizationRoles: {
+        ...userSelect.userOrganizationRoles,
         where: {
-          userId_organizationId: {
-            userId: ctx.user.id,
-            organizationId: ctx.user.organizationId,
-          },
+          ...userSelect.userOrganizationRoles.where,
+          organizationId: betterSession.user.organizationId ?? undefined,
         },
-        select: { role: true },
-      })
-    : null;
-
-  return next({
-    ctx: {
-      ...ctx,
-      user: ctx.user,
-      session: ctx.session,
-      organizationId: ctx.user.organizationId ?? null,
-      orgRole: (orgRole?.role ?? ctx.user.role) as Role,
+      },
     },
   });
-});
 
-/** Requires ADMIN or SUPER_ADMIN role. */
-const enforceAdmin = t.middleware(async ({ ctx, next }) => {
-  if (!ctx.session || !ctx.user) {
-    throw new TRPCError({ code: 'UNAUTHORIZED' });
+  // Early Return: Session Valid but User Row Missing/Deactivated
+  if (!dbUser) {
+    return {
+      db,
+      req,
+      ipAddress,
+      session: betterSession,
+      user: null,
+      ability: defineAbilitiesFor({
+        id: '',
+        platformRole: 'USER',
+        permissions: [],
+      }),
+    };
   }
 
-  const orgRole = ctx.user.organizationId
-    ? await ctx.prisma.userOrganizationRole.findUnique({
-        where: {
-          userId_organizationId: {
-            userId: ctx.user.id,
-            organizationId: ctx.user.organizationId!,
-          },
-        },
-        select: { role: true },
-      })
-    : null;
+  const orgRole = dbUser.userOrganizationRoles[0]?.role ?? null;
+  let permissionCodes: string[] = [];
 
-  const role = orgRole?.role ?? ctx.user.role;
-
-  if (role !== 'ADMIN' && role !== 'SUPER_ADMIN') {
-    throw new TRPCError({
-      code: 'FORBIDDEN',
-      message: 'Admin access required',
+  // Load Permissions synchronously into context to prevent N+1 queries downstream
+  if (orgRole && dbUser.platformRole !== 'SUPER_ADMIN') {
+    const rolePerms = await db.rolePermission.findMany({
+      where: { role: orgRole },
+      select: { permission: { select: { code: true } } },
     });
+    permissionCodes = rolePerms.map((rp) => rp.permission.code);
   }
 
-  return next({
-    ctx: {
-      ...ctx,
-      user: ctx.user,
-      session: ctx.session,
-      organizationId: ctx.user.organizationId ?? null,
-      orgRole: role as Role,
-    },
+  const contextUser: ContextUser = {
+    id: dbUser.id,
+    name: dbUser.name,
+    email: dbUser.email,
+    organizationId: dbUser.organizationId,
+    platformRole: dbUser.platformRole,
+    orgRole,
+    permissions: permissionCodes,
+  };
+
+  // Synchronously compute CASL Ability for direct procedure access
+  const ability = defineAbilitiesFor({
+    id: dbUser.id,
+    platformRole: dbUser.platformRole,
+    orgRole: orgRole ?? undefined,
+    organizationId: dbUser.organizationId ?? undefined,
+    permissions: permissionCodes as import('@/lib/abilities').Action[],
   });
-});
 
-// ---------------------------------------------------------------------------
-// Procedure builders
-// ---------------------------------------------------------------------------
-
-export const publicProcedure = t.procedure;
-export const protectedProcedure = t.procedure.use(enforceAuth);
-export const adminProcedure = t.procedure.use(enforceAdmin);
+  return {
+    db,
+    req,
+    ipAddress,
+    session: betterSession,
+    user: contextUser,
+    ability,
+  };
+}

@@ -2,9 +2,9 @@
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { httpBatchLink } from '@trpc/client';
-import { useState, useEffect, useMemo } from 'react';
-import { trpc } from './client';
+import { useEffect, useMemo, useState } from 'react';
 import superjson from 'superjson';
+import { trpc } from './client';
 import { API_URL_CHANGE_EVENT } from './use-api'; // Adjust the import path
 
 export default function TrpcProvider({ children }: { children: React.ReactNode }) {
