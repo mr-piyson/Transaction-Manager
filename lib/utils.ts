@@ -1,4 +1,4 @@
-import { clsx, type ClassValue } from 'clsx';
+import { type ClassValue, clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
 export function cn(...inputs: ClassValue[]) {
@@ -50,12 +50,12 @@ export const CURRENCIES = {
 // formatAmount(1500, 'BHD') → 'BD 1.500'
 // formatAmount(1500, 'USD') → '$15.00'
 export function formatAmount(
-  amount: number | BigInt | string | null | undefined,
+  amount: number | bigint | string | null | undefined,
   currency: CurrencyCode = 'BHD',
 ): string {
   if (!amount) amount = 0;
   const config = CURRENCIES[currency];
-  const displayAmount = Number(amount) / Math.pow(10, config.precision);
+  const displayAmount = Number(amount) / 10 ** config.precision;
 
   return `${config.symbol} ${displayAmount.toFixed(config.precision)}`;
 }
@@ -66,7 +66,7 @@ export function formatAmount(
  */
 export function deformatMoney(amount: number, currency: CurrencyCode): string {
   const { precision } = CURRENCIES[currency] ?? { precision: 2 };
-  const value = amount / Math.pow(10, precision);
+  const value = amount / 10 ** precision;
   return value.toFixed(precision); // always returns correct decimal places
 }
 
@@ -75,7 +75,7 @@ export function deformatMoney(amount: number, currency: CurrencyCode): string {
 // toSmallestUnit(15, 'USD') → 1500
 export function toSmallestUnit(display: number, currency: CurrencyCode): number {
   const config = CURRENCIES[currency];
-  return Math.round(display * Math.pow(10, config.precision));
+  return Math.round(display * 10 ** config.precision);
 }
 
 // Divide a money amount by a factor

@@ -31,7 +31,6 @@ interface BaseMenuItem {
 export interface ContextMenuActionItem extends BaseMenuItem {
   type?: 'item';
   label: string;
-  /** Lucide icon component */
   icon?: LucideIcon;
   onClick?: (data: any) => void;
   shortcut?: string;
