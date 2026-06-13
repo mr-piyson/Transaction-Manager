@@ -455,9 +455,7 @@ export function UniversalContextMenu({ items, children, className }: UniversalCo
   // so the context menu never opened and onClick handlers never fired.
   return (
     <ContextMenu>
-      <ContextMenuTrigger asChild onContextMenu={(e) => e.preventDefault()}>
-        <div className={className}>{children}</div>
-      </ContextMenuTrigger>
+      <ContextMenuTrigger asChild>{children}</ContextMenuTrigger>
       <ContextMenuContent className="min-w-56">
         <DesktopMenuItems items={items} />
       </ContextMenuContent>

@@ -162,9 +162,6 @@
   body {
     @apply bg-background text-foreground;
   }
-  .invoice * {
-    @apply !border-[#cccccc] !text-[#17141d];
-  }
 }
 
 /* Only apply scrollbar styles on devices with screens wider than 768px (typical desktop breakpoint) */
