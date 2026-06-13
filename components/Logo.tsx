@@ -10,9 +10,9 @@ export default function Logo({
     const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
     if (!result) return { h: 210, s: 90, l: 60 };
 
-    let r = parseInt(result[1], 16) / 255;
-    let g = parseInt(result[2], 16) / 255;
-    let b = parseInt(result[3], 16) / 255;
+    const r = parseInt(result[1], 16) / 255;
+    const g = parseInt(result[2], 16) / 255;
+    const b = parseInt(result[3], 16) / 255;
 
     const max = Math.max(r, g, b);
     const min = Math.min(r, g, b);
@@ -67,6 +67,7 @@ export default function Logo({
       xmlns="http://www.w3.org/2000/svg"
       className={className}
     >
+      <title>diamond</title>
       {/* Top left section - darkest facet */}
       <path d="M99,0 L0,155.5 L65.5,101 Z" fill="url(#paint0_linear)" stroke="none" />
 

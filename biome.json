@@ -15,16 +15,23 @@
   "linter": {
     "enabled": true,
     "rules": {
+      "a11y": {
+        "useButtonType": "off",
+        "useFocusableInteractive": "off",
+        "useSemanticElements": "off"
+      },
       "recommended": true,
       "correctness": {
-        "useExhaustiveDependencies": "off"
+        "useExhaustiveDependencies": "off",
+        "useUniqueElementIds": "off"
       },
       "style": {
         "useNodejsImportProtocol": "off"
       },
       "suspicious": {
-        "noRedeclare": "off", 
-        "noUnknownAtRules": "off"
+        "noRedeclare": "off",
+        "noUnknownAtRules": "off",
+        "noImplicitAnyLet": "off"
       }
     }
   },

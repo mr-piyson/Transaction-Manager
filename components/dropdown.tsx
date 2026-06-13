@@ -1,23 +1,24 @@
 'use client';
 
+import { ArrowLeft, ChevronRight, type LucideIcon } from 'lucide-react';
 import * as React from 'react';
-import { ChevronRight, ArrowLeft, ChevronDown, LucideIcon } from 'lucide-react';
-import { useIsMobile } from '@/hooks/use-mobile';
-import { cn } from '@/lib/utils';
-import { Switch } from '@/components/ui/switch';
+import { Drawer, DrawerContent, DrawerDescription, DrawerTitle } from '@/components/ui/drawer';
 import {
   DropdownMenu,
-  DropdownMenuTrigger,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuSeparator,
   DropdownMenuLabel,
-  DropdownMenuSub,
-  DropdownMenuSubTrigger,
-  DropdownMenuSubContent,
+  DropdownMenuSeparator,
   DropdownMenuShortcut,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
+  DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Drawer, DrawerContent, DrawerTitle, DrawerDescription } from '@/components/ui/drawer';
+import { Switch } from '@/components/ui/switch';
+import { useIsMobile } from '@/hooks/use-mobile';
+import { cn } from '@/lib/utils';
+import { Button } from './button';
 
 // ─── Discriminated Union Schema Types ────────────────────────────────────────
 // Identical to the context-menu schema — reuse or re-export as needed.
@@ -218,7 +219,7 @@ const MobileDrawerItems = React.memo(function MobileDrawerItems({
     <div className="flex flex-col gap-0.5" role="menu">
       {items.map((item) => {
         if (item.type === 'separator') {
-          return <div key={item.id} className="my-1 h-px bg-border" role="separator" />;
+          return <hr key={item.id} className="my-1 h-px bg-border" />;
         }
 
         if (item.type === 'label') {
@@ -459,18 +460,16 @@ export function UniversalDropdownMenu({
   // ─── Desktop: Radix DropdownMenu ────────────────────────────────────────────
   return (
     <DropdownMenu open={open} onOpenChange={setOpen}>
-      <DropdownMenuTrigger
-        render={
-          <button
-            type="button"
-            className={cn('cursor-pointer', className)}
-            aria-haspopup="menu"
-            aria-expanded={open}
-          >
-            {resolvedTrigger}
-          </button>
-        }
-      ></DropdownMenuTrigger>
+      <DropdownMenuTrigger asChild>
+        <Button
+          type="button"
+          className={cn('cursor-pointer', className)}
+          aria-haspopup="menu"
+          aria-expanded={open}
+        >
+          {resolvedTrigger}
+        </Button>
+      </DropdownMenuTrigger>
       <DropdownMenuContent className="min-w-56" align={align} side={side}>
         <DesktopMenuItems items={items} />
       </DropdownMenuContent>

@@ -1,6 +1,6 @@
 // lib/alert.ts
 'use client';
-import { ReactNode } from 'react';
+import type { ReactNode } from 'react';
 
 export type AlertVariant = 'default' | 'success' | 'error' | 'warning' | 'info' | 'delete';
 
@@ -69,6 +69,8 @@ export const alert = {
 
 // components/providers/alert-provider.tsx
 
+import { AlertTriangle, CheckCircle2, Info, Trash2, XCircle } from 'lucide-react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -79,9 +81,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-
-import { CheckCircle2, XCircle, AlertTriangle, Info, Trash2 } from 'lucide-react';
-import { useCallback, useEffect, useRef, useState } from 'react';
 import { cn } from '@/lib/utils';
 
 type QueueItem = {
@@ -176,10 +175,9 @@ export function AlertProvider({ children }: { children: ReactNode }) {
             <AlertDialogTitle className="flex items-center gap-2">{opts?.title}</AlertDialogTitle>
 
             {opts?.description && (
-              <AlertDialogDescription
-                className="w-full "
-                render={<div>{opts.description}</div>}
-              ></AlertDialogDescription>
+              <AlertDialogDescription asChild className="w-full ">
+                <div>{opts.description}</div>
+              </AlertDialogDescription>
             )}
           </AlertDialogHeader>
 

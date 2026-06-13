@@ -6,6 +6,7 @@ import { SidebarProvider } from '@/components/sidebar';
 import { checkOrganization } from '@/server/organizations';
 import { AppFooter } from './App-Footer';
 import { AppSidebar } from './App-Sidebar';
+import { CustomerFormProvider } from '@/components/dialogs/customerForm';
 
 export default async function App(props: any) {
   if (!checkOrganization()) {
@@ -22,10 +23,12 @@ export default async function App(props: any) {
       <AlertProvider>
         <SidebarProvider className="flex ">
           <AppSidebar />
-          <div className="relative flex flex-col flex-1 min-h-full">
-            <main className="flex flex-col flex-1 relative">{props.children}</main>
-            {/* <AppFooter /> */}
-          </div>
+          <CustomerFormProvider>
+            <div className="relative flex flex-col flex-1 min-h-full">
+              <main className="flex flex-col flex-1 relative">{props.children}</main>
+              {/* <AppFooter /> */}
+            </div>
+          </CustomerFormProvider>
         </SidebarProvider>
       </AlertProvider>
     </SplashScreen>

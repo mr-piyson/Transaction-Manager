@@ -1,23 +1,23 @@
 'use client';
 
+import { ArrowLeft, ChevronRight, type LucideIcon } from 'lucide-react';
 import * as React from 'react';
-import { ChevronRight, ArrowLeft, LucideIcon } from 'lucide-react';
-import { useIsMobile } from '@/hooks/use-mobile';
-import { cn } from '@/lib/utils';
-import { Switch } from '@/components/ui/switch';
 import {
   ContextMenu,
-  ContextMenuTrigger,
   ContextMenuContent,
   ContextMenuItem,
-  ContextMenuSeparator,
   ContextMenuLabel,
-  ContextMenuSub,
-  ContextMenuSubTrigger,
-  ContextMenuSubContent,
+  ContextMenuSeparator,
   ContextMenuShortcut,
+  ContextMenuSub,
+  ContextMenuSubContent,
+  ContextMenuSubTrigger,
+  ContextMenuTrigger,
 } from '@/components/ui/context-menu';
-import { Drawer, DrawerContent, DrawerTitle, DrawerDescription } from '@/components/ui/drawer';
+import { Drawer, DrawerContent, DrawerDescription, DrawerTitle } from '@/components/ui/drawer';
+import { Switch } from '@/components/ui/switch';
+import { useIsMobile } from '@/hooks/use-mobile';
+import { cn } from '@/lib/utils';
 
 // ─── Discriminated Union Schema Types ────────────────────────────────────────
 
@@ -209,7 +209,7 @@ const MobileDrawerItems = React.memo(function MobileDrawerItems({
     <div className="flex flex-col gap-0.5" role="menu">
       {items.map((item) => {
         if (item.type === 'separator') {
-          return <div key={item.id} className="my-1 h-px bg-border" role="separator" />;
+          return <hr key={item.id} className="my-1 h-px bg-border" />;
         }
 
         if (item.type === 'label') {
@@ -262,6 +262,7 @@ const MobileDrawerItems = React.memo(function MobileDrawerItems({
         if (actionItem.children && actionItem.children.length > 0) {
           return (
             <button
+              type={'button'}
               key={item.id}
               disabled={item.disabled}
               onClick={() => {
@@ -288,6 +289,7 @@ const MobileDrawerItems = React.memo(function MobileDrawerItems({
 
         return (
           <button
+            type={'button'}
             key={item.id}
             disabled={item.disabled}
             onClick={() => {
@@ -371,6 +373,7 @@ function MobileDrawerMenu({
         <div className="flex items-center gap-3 border-b border-border px-4 pb-3 pt-2">
           {canGoBack ? (
             <button
+              type={'button'}
               onClick={popLevel}
               className="flex items-center gap-1.5 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
               aria-label="Go back"
@@ -434,13 +437,14 @@ export function UniversalContextMenu({ items, children, className }: UniversalCo
   if (isMobile) {
     return (
       <>
-        <div
+        <button
+          type={'button'}
           className={cn('select-none', className)}
           onContextMenu={handleContextMenu}
           style={{ WebkitTouchCallout: 'none' }}
         >
           {children}
-        </div>
+        </button>
         <MobileDrawerMenu items={items} open={drawerOpen} onOpenChange={setDrawerOpen} />
       </>
     );
@@ -452,10 +456,9 @@ export function UniversalContextMenu({ items, children, className }: UniversalCo
   // so the context menu never opened and onClick handlers never fired.
   return (
     <ContextMenu>
-      <ContextMenuTrigger
-        onContextMenu={(e) => e.preventDefault()}
-        render={<div className={className}>{children}</div>}
-      ></ContextMenuTrigger>
+      <ContextMenuTrigger asChild onContextMenu={(e) => e.preventDefault()}>
+        <div className={className}>{children}</div>
+      </ContextMenuTrigger>
       <ContextMenuContent className="min-w-56">
         <DesktopMenuItems items={items} />
       </ContextMenuContent>

@@ -324,22 +324,20 @@ export function ListView<T extends Record<string, any>>({
           {/* Filter Popover (only show if filters exist) */}
           {filters.length > 0 && (
             <Popover>
-              <PopoverTrigger
-                render={
-                  <Button variant="outline" className="gap-2 relative">
-                    <Filter className="w-4 h-4" />
-                    <span className="hidden sm:inline">Filters</span>
-                    {activeFiltersCount > 0 && (
-                      <Badge
-                        variant="destructive"
-                        className="absolute -top-2 -right-2 h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs"
-                      >
-                        {activeFiltersCount}
-                      </Badge>
-                    )}
-                  </Button>
-                }
-              ></PopoverTrigger>
+              <PopoverTrigger asChild>
+                <Button variant="outline" className="gap-2 relative">
+                  <Filter className="w-4 h-4" />
+                  <span className="hidden sm:inline">Filters</span>
+                  {activeFiltersCount > 0 && (
+                    <Badge
+                      variant="destructive"
+                      className="absolute -top-2 -right-2 h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs"
+                    >
+                      {activeFiltersCount}
+                    </Badge>
+                  )}
+                </Button>
+              </PopoverTrigger>
               <PopoverContent className="w-80" align="end">
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">

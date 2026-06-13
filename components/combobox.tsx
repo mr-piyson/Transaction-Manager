@@ -1,10 +1,8 @@
 'use client';
 
-import * as React from 'react';
 import Fuse from 'fuse.js';
 import { Check, ChevronsUpDown } from 'lucide-react';
-
-import { cn } from '@/lib/utils';
+import * as React from 'react';
 import { Button } from '@/components/ui/button';
 import {
   Command,
@@ -16,6 +14,7 @@ import {
   CommandSeparator,
 } from '@/components/ui/command';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { cn } from '@/lib/utils';
 
 type UniversalComboboxProps<T> = {
   data?: T[]; // ✅ now optional
@@ -96,24 +95,22 @@ export function UniversalCombobox<T>({
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger
-        render={
-          children ?? (
-            <Button
-              variant="outline"
-              role="combobox"
-              aria-expanded={open}
-              className="w-full justify-between"
-              disabled={loading}
-            >
-              <span className="truncate">
-                {selectedItem ? getLabel(selectedItem) : loading ? 'Loading...' : placeholder}
-              </span>
-              <ChevronsUpDown className="ml-2 h-4 w-4 opacity-50" />
-            </Button>
-          )
-        }
-      />
+      <PopoverTrigger asChild>
+        {children ?? (
+          <Button
+            variant="outline"
+            role="combobox"
+            aria-expanded={open}
+            className="w-full justify-between"
+            disabled={loading}
+          >
+            <span className="truncate">
+              {selectedItem ? getLabel(selectedItem) : loading ? 'Loading...' : placeholder}
+            </span>
+            <ChevronsUpDown className="ml-2 h-4 w-4 opacity-50" />
+          </Button>
+        )}
+      </PopoverTrigger>
 
       <PopoverContent className="w-full p-0">
         <Command shouldFilter={false}>

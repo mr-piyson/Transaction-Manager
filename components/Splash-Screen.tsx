@@ -1,11 +1,10 @@
 'use client';
 
+import { AnimatePresence, motion } from 'framer-motion';
 import type React from 'react';
-
-import { useEffect, useState, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Progress } from '@/components/ui/progress';
+import { useEffect, useRef, useState } from 'react';
 import Logo from '@/components/Logo';
+import { Progress } from '@/components/ui/progress';
 
 export function SplashScreen(props: { children: React.ReactNode; minimumLoadingTime?: number }) {
   const { minimumLoadingTime = 1000 } = props;
@@ -14,7 +13,7 @@ export function SplashScreen(props: { children: React.ReactNode; minimumLoadingT
   const initialResourceCount = useRef(0);
   const resourcesLoaded = useRef(0);
   const rafId = useRef<number | null>(null);
-  const startTime = useRef<number>(new Date().getTime());
+  const startTime = useRef<number>(Date.now());
 
   useEffect(() => {
     // Set the start time only once on mount

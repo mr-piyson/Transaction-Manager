@@ -8,6 +8,7 @@ import { StatusBadge, VirtualTable } from '@/components/virtual-table';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { trpc } from '@/lib/trpc/client';
+import { CustomerFormDialog } from '@/components/dialogs/customerForm';
 
 type CustomerRow = {
   id: string;
@@ -24,9 +25,7 @@ const columns: ColumnDef<CustomerRow>[] = [
   {
     accessorKey: 'name',
     header: 'Name',
-    cell: ({ row }) => (
-      <span className="font-semibold text-foreground">{row.original.name}</span>
-    ),
+    cell: ({ row }) => <span className="font-semibold text-foreground">{row.original.name}</span>,
   },
   {
     accessorKey: 'email',
@@ -65,9 +64,7 @@ const columns: ColumnDef<CustomerRow>[] = [
     accessorKey: 'isActive',
     header: 'Status',
     size: 100,
-    cell: ({ row }) => (
-      <StatusBadge status={row.original.isActive ? 'ACTIVE' : 'CANCELLED'} />
-    ),
+    cell: ({ row }) => <StatusBadge status={row.original.isActive ? 'ACTIVE' : 'CANCELLED'} />,
   },
 ];
 
@@ -77,16 +74,7 @@ export default function CustomersPage() {
 
   return (
     <div className="flex flex-col h-screen">
-      <Header
-        title="Customers"
-        icon={<Users className="size-5" />}
-        rightContent={
-          <Button size="sm" className="gap-1.5" onClick={() => router.push('/app/customers/new')}>
-            <Plus className="size-4" />
-            New Customer
-          </Button>
-        }
-      />
+      <Header title="Customers" icon={<Users className="size-5" />} />
       <VirtualTable
         data={data as CustomerRow[]}
         columns={columns}

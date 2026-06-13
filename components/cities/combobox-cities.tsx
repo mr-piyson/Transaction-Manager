@@ -1,8 +1,7 @@
-import * as React from 'react';
-import { Check, ChevronsUpDown, MapPin } from 'lucide-react';
 import Fuse from 'fuse.js';
-
-import { cn } from '@/lib/utils';
+import { Check, ChevronsUpDown, MapPin } from 'lucide-react';
+import type { JSX } from 'react';
+import * as React from 'react';
 import { Button } from '@/components/ui/button';
 import {
   Command,
@@ -14,8 +13,8 @@ import {
   CommandSeparator,
 } from '@/components/ui/command';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { BAHRAIN_CITIES, BahrainCity } from './cities';
-import { JSX } from 'react';
+import { cn } from '@/lib/utils';
+import { BAHRAIN_CITIES, type BahrainCity } from './cities';
 
 export function CityCombobox({
   cities = BAHRAIN_CITIES,
@@ -59,28 +58,26 @@ export function CityCombobox({
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger
-        render={
-          children ? (
-            children
-          ) : (
-            <Button
-              variant="outline"
-              role="combobox"
-              aria-expanded={open}
-              className="w-75 justify-between"
-            >
-              <div className="flex items-center gap-2 overflow-hidden">
-                <MapPin className="h-4 w-4 shrink-0 opacity-50" />
-                <span className="truncate">
-                  {value ? cities.find((city) => city.id === value)?.en : 'Select city...'}
-                </span>
-              </div>
-              <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-            </Button>
-          )
-        }
-      ></PopoverTrigger>
+      <PopoverTrigger asChild>
+        {children ? (
+          children
+        ) : (
+          <Button
+            variant="outline"
+            role="combobox"
+            aria-expanded={open}
+            className="w-75 justify-between"
+          >
+            <div className="flex items-center gap-2 overflow-hidden">
+              <MapPin className="h-4 w-4 shrink-0 opacity-50" />
+              <span className="truncate">
+                {value ? cities.find((city) => city.id === value)?.en : 'Select city...'}
+              </span>
+            </div>
+            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+          </Button>
+        )}
+      </PopoverTrigger>
       <PopoverContent className="w-75 p-0">
         <Command shouldFilter={false}>
           <CommandInput
