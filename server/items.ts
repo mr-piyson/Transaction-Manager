@@ -30,6 +30,11 @@ import { writeAuditLog } from './audit.service';
 // Input schemas
 // ---------------------------------------------------------------------------
 
+const bundleLineSchema = z.object({
+  componentItemId: z.string().cuid(),
+  quantity: decimalSchema,
+});
+
 const itemBaseSchema = z.object({
   type: z.enum(['PRODUCT', 'SERVICE', 'BUNDLE']).default('PRODUCT'),
   sku: z.string().min(1).max(100),
@@ -49,6 +54,7 @@ const itemBaseSchema = z.object({
   revenueAccountId: z.string().cuid().optional(),
   cogsAccountId: z.string().cuid().optional(),
   inventoryAccountId: z.string().cuid().optional(),
+  bundleLines: z.array(bundleLineSchema).optional(),
 });
 
 const createItemSchema = itemBaseSchema;
@@ -339,14 +345,27 @@ export const itemsRouter = router({
       throw new ConflictError(`SKU "${input.sku}" is already in use.`);
     }
 
+    const { bundleLines, ...itemData } = input;
+
     const item = await ctx.db.$transaction(async (tx) => {
       const created = await tx.item.create({
         data: {
-          ...input,
+          ...itemData,
           organizationId: ctx.user.organizationId,
           createdById: ctx.user.id,
         },
       });
+
+      if (bundleLines && bundleLines.length > 0) {
+        await tx.bundleLine.createMany({
+          data: bundleLines.map((bl) => ({
+            bundleItemId: created.id,
+            componentItemId: bl.componentItemId,
+            quantity: bl.quantity,
+            organizationId: ctx.user.organizationId,
+          })),
+        });
+      }
 
       await writeAuditLog(
         {
@@ -393,11 +412,30 @@ export const itemsRouter = router({
       }
     }
 
+    const { bundleLines, ...itemData } = data;
+
     return ctx.db.$transaction(async (tx) => {
       const updated = await tx.item.update({
         where: { id },
-        data: { ...data, updatedById: ctx.user.id },
+        data: { ...itemData, updatedById: ctx.user.id },
       });
+
+      if (bundleLines !== undefined) {
+        await tx.bundleLine.deleteMany({
+          where: { bundleItemId: id },
+        });
+
+        if (bundleLines.length > 0) {
+          await tx.bundleLine.createMany({
+            data: bundleLines.map((bl) => ({
+              bundleItemId: id,
+              componentItemId: bl.componentItemId,
+              quantity: bl.quantity,
+              organizationId: ctx.user.organizationId,
+            })),
+          });
+        }
+      }
 
       await writeAuditLog(
         {
