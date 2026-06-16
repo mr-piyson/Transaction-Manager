@@ -1,15 +1,15 @@
 import { redirect } from 'next/navigation';
 import { getCurrentUser } from '@/auth/auth-server';
 import { AlertProvider } from '@/components/Alert-dialog';
+import { DialogsProvider } from '@/components/dialogs';
 import { SplashScreen } from '@/components/Splash-Screen';
 import { SidebarProvider } from '@/components/sidebar';
-import { checkOrganization } from '@/server/organizations';
+import db from '@/lib/db';
 import { AppFooter } from './App-Footer';
 import { AppSidebar } from './App-Sidebar';
-import { CustomerFormProvider } from '@/components/dialogs/customerForm';
 
 export default async function App(props: any) {
-  if (!checkOrganization()) {
+  if (!(await db.organization.count())) {
     redirect('/setup');
   }
   const user = await getCurrentUser();
@@ -23,12 +23,12 @@ export default async function App(props: any) {
       <AlertProvider>
         <SidebarProvider className="flex ">
           <AppSidebar />
-          <CustomerFormProvider>
+          <DialogsProvider>
             <div className="relative flex flex-col flex-1 min-h-full">
               <main className="flex flex-col flex-1 relative">{props.children}</main>
               {/* <AppFooter /> */}
             </div>
-          </CustomerFormProvider>
+          </DialogsProvider>
         </SidebarProvider>
       </AlertProvider>
     </SplashScreen>

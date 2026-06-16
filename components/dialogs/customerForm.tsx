@@ -48,16 +48,12 @@ import { Label } from '../ui/label';
 const schema = z.object({
   name: z.string().min(1, 'Name is required'),
   phone: z.string().optional(),
-  email: z.email('Invalid email address').or(z.literal('')).optional(),
+  email: z.string().email('Invalid email address').or(z.literal('')).optional(),
   address: z.string().optional(),
   city: z.string().optional(),
   taxId: z.string().optional(),
   notes: z.string().optional(),
-  creditLimit: z.coerce
-    .number()
-    .int('Must be a whole number')
-    .min(0, 'Must be 0 or more')
-    .default(0),
+  creditLimit: z.number().int('Must be a whole number').min(0, 'Must be 0 or more'),
 });
 
 export type CustomerFormValues = z.infer<typeof schema>;
@@ -120,7 +116,7 @@ export function CustomerFormDialog({
     reset,
     formState: { errors, isSubmitting },
   } = useForm<CustomerFormValues>({
-    resolver: zodResolver(schema),
+    resolver: zodResolver(schema) as any,
     defaultValues: defaults(customer),
   });
 
@@ -146,7 +142,6 @@ export function CustomerFormDialog({
   const updateMutation = trpc.customers.update.useMutation({
     onSuccess(data) {
       utils.customers.list.invalidate();
-      utils.customers.getById.invalidate({ id: data.id });
       toast.success('Customer updated', { description: data.name });
       onSuccess?.(data.id);
       onOpenChange(false);

@@ -915,20 +915,17 @@ model AuditLog {
 // =============================================================================
 
 model Attachment {
-  id         String  @id @default(cuid())
-  entityType String
-  entityId   String
-  fileName   String
-  mimeType   String
-  sizeBytes  Int
-  storageKey String // S3 key / storage path
-  label      String? // "Supplier Invoice", "Delivery Note", "Contract PDF"
-
-  uploadedById String?
-
+  id             String   @id @default(cuid())
+  entityType     String
+  entityId       String
+  fileName       String
+  mimeType       String
+  sizeBytes      Int
+  storageKey     String // S3 key / storage path
+  label          String? // "Supplier Invoice", "Delivery Note", "Contract PDF"
+  uploadedById   String?
   organizationId String
-
-  createdAt DateTime @default(now())
+  createdAt      DateTime @default(now())
 
   @@index([entityType, entityId])
   @@index([organizationId])

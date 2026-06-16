@@ -2,16 +2,15 @@
 
 import type { ColumnDef } from '@tanstack/react-table';
 import { Plus, Trash, Users } from 'lucide-react';
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Header } from '@/app/app/App-Header';
 import { type ContextMenuItemSchema, UniversalContextMenu } from '@/components/context-menu';
 import { Customer_List_Item } from '@/components/customers/customer-list-item';
-import { CustomerFormDialog } from '@/components/dialogs/customerForm';
 import { ListView } from '@/components/list-view';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { trpc } from '@/lib/trpc/client';
+import { useCustomerForm } from '@/components/dialogs/customerForm';
 
 type CustomerRow = {
   id: string;
@@ -24,30 +23,40 @@ type CustomerRow = {
 };
 
 export default function CustomersPage() {
-  const router = useRouter();
   const { data = [], isLoading } = trpc.customers.list.useQuery({});
+  const { openCreate, openEdit } = useCustomerForm();
+  const utils = trpc.useUtils();
+  const deleteMutation = trpc.customers.delete.useMutation({
+    onSuccess: () => { utils.customers.list.invalidate(); },
+  });
 
   const contextMenu: ContextMenuItemSchema[] = [
-    {
-      id: 'delete',
-      label: 'Delete',
-      icon: Trash,
-      destructive: true,
-      onClick: () => {},
-    },
+    { id: 'edit', label: 'Edit', onClick: () => {} },
+    { id: 'delete', label: 'Delete', icon: Trash, destructive: true, onClick: () => {} },
   ];
+
+  const customers = Array.isArray(data) ? data : data?.data ?? [];
 
   return (
     <div className="flex flex-col h-screen">
-      <Header title="Customers" icon={<Users className="size-5" />} />
+      <Header
+        title="Customers"
+        icon={<Users className="size-5" />}
+        rightContent={
+          <Button size="sm" className="gap-1.5" onClick={() => openCreate()}>
+            <Plus className="size-4" />
+            New Customer
+          </Button>
+        }
+      />
       <ListView
-        cardRenderer={(data) => (
+        cardRenderer={(data: any) => (
           <UniversalContextMenu items={contextMenu}>
             <Customer_List_Item data={data} />
           </UniversalContextMenu>
         )}
-        searchFields={[]}
-        data={data as CustomerRow[]}
+        searchFields={['name', 'phone', 'email']}
+        data={customers}
         isLoading={isLoading}
         searchPlaceholder="Search by name, email or phone..."
         emptyTitle="No customers found."
