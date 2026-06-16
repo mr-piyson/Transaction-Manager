@@ -6,6 +6,8 @@ import { ArrowLeft } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
+import { toast } from 'sonner';
+import { authClient } from '@/auth/auth-client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 
@@ -100,9 +102,19 @@ export default function SetupWizard() {
   const onFinalSubmit = async (data: SetupData) => {
     try {
       await setupMutation.mutateAsync(data as any);
-      router.push('/auth');
-    } catch (error) {
-      console.error('Setup failed', error);
+      toast.success('Organization created! Signing you in...');
+      const { error } = await authClient.signIn.email({
+        email: data.adminEmail,
+        password: data.adminPassword,
+      });
+      if (error) {
+        toast.error('Account created but auto-sign-in failed. Please sign in manually.');
+        router.push('/auth');
+        return;
+      }
+      router.push('/app');
+    } catch (error: any) {
+      toast.error(error.message ?? 'Setup failed. Please try again.');
     }
   };
 

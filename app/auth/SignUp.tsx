@@ -2,16 +2,18 @@
 
 import { zodResolver } from '@hookform/resolvers/zod';
 import { User } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import type React from 'react';
 import { useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
+import { toast } from 'sonner';
+import { authClient } from '@/auth/auth-client';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
-import { trpc } from '@/lib/trpc/client';
 import z from 'zod';
 
 // SIGN UP SCHEMA
@@ -29,10 +31,10 @@ export const SignUpSchema = z
   });
 
 export default function SignUpTab() {
+  const router = useRouter();
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  // const [loading, setLoading] = useState(false);
-  const { mutateAsync: signUp, isPending: loading } = trpc.auth.signUp.useMutation();
+  const [isPending, setIsPending] = useState(false);
 
   const {
     register,
@@ -58,19 +60,16 @@ export default function SignUpTab() {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Check file size (1MB = 1048576 bytes)
     if (file.size > 1048576) {
       alert('Avatar image must be less than 1MB');
       return;
     }
 
-    // Check file type
     if (!file.type.startsWith('image/')) {
       alert('Please upload an image file');
       return;
     }
 
-    // Convert image to base64
     const reader = new FileReader();
     reader.onloadend = () => {
       const base64 = reader.result as string;
@@ -80,7 +79,26 @@ export default function SignUpTab() {
     reader.readAsDataURL(file);
   };
 
-  const onSubmit = async (data: z.infer<typeof SignUpSchema>) => {};
+  const onSubmit = async (data: z.infer<typeof SignUpSchema>) => {
+    setIsPending(true);
+    try {
+      const { error } = await authClient.signUp.email({
+        name: data.name,
+        email: data.email,
+        password: data.password,
+      });
+      if (error) {
+        toast.error(error.message);
+        return;
+      }
+      toast.success('Account created successfully!');
+      router.push('/app');
+    } catch (err: any) {
+      toast.error(err.message ?? 'Something went wrong');
+    } finally {
+      setIsPending(false);
+    }
+  };
 
   return (
     <Card className="gap-0">
@@ -171,9 +189,9 @@ export default function SignUpTab() {
             )}
           </div>
 
-          <Button disabled={loading} type="submit" className="w-full font-bold">
-            {loading && <Spinner className="ps-2 h-4 w-4 " />}
-            {!loading && 'Sign Up'}
+          <Button disabled={isPending} type="submit" className="w-full font-bold">
+            {isPending && <Spinner className="ps-2 h-4 w-4 " />}
+            {!isPending && 'Sign Up'}
           </Button>
         </form>
       </CardContent>

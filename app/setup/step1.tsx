@@ -22,7 +22,10 @@ export function Step1Language() {
     <div className="space-y-4">
       <div className="space-y-2">
         <Label>System Language</Label>
-        <Select value={language}>
+        <Select
+          value={language}
+          onValueChange={(val) => setValue('language', val, { shouldValidate: true })}
+        >
           <SelectTrigger>
             <SelectValue />
           </SelectTrigger>

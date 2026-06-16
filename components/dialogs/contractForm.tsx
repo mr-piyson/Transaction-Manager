@@ -19,12 +19,12 @@ import { Label } from '@/components/ui/label';
 const schema = z.object({
   title: z.string().min(1, 'Title is required'),
   description: z.string().optional(),
-  contractValue: z.number().min(0),
+  contractValue: z.coerce.number().min(0),
   currency: z.enum(['BHD', 'USD', 'EUR', 'GBP', 'JPY', 'AED', 'SAR', 'KWD', 'QAR', 'OMR']),
   startDate: z.string().min(1, 'Start date is required'),
   endDate: z.string().min(1, 'End date is required'),
   renewalDate: z.string().optional(),
-  renewalAlertDays: z.number().int().min(0).max(365),
+  renewalAlertDays: z.coerce.number().int().min(0).max(365),
   notes: z.string().optional(),
   customerId: z.string().optional(),
 });

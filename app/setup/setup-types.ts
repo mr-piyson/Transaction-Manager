@@ -21,7 +21,7 @@ export type SetupData = z.infer<typeof setupSchema>;
 export const STEP_FIELDS: (keyof SetupData)[][] = [
   ['language', 'currency'],
   ['orgName', 'slug', 'website'],
-  ['adminFirstName', 'adminEmail', 'adminPassword'],
+  ['adminFirstName', 'adminLastName', 'adminEmail', 'adminPassword'],
 ];
 
 export const STEP_META = [

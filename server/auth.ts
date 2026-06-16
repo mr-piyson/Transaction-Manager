@@ -35,11 +35,33 @@ export const authRouter = t.router({
         name: z.string(),
         email: z.email(),
         password: z.string(),
-        image: z.string(),
+        image: z.string().optional(),
       }),
     )
-    .mutation(async ({ input }) => {
+    .mutation(async ({ ctx, input }) => {
       const { name, email, password, image } = input;
+      const nameParts = name.trim().split(/\s+/);
+      try {
+        const result = await auth.api.signUpEmail({
+          body: {
+            name,
+            email,
+            password,
+            image,
+            firstName: nameParts[0] ?? name,
+            lastName: nameParts.slice(1).join(' ') || '',
+            isActive: true,
+            organizationId: '',
+          },
+          headers: ctx.req.headers,
+        });
+        return result;
+      } catch (error: any) {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: error.message || 'Failed to sign up',
+        });
+      }
     }),
   // Getting current session
   session: publicProcedure.query(async () => {

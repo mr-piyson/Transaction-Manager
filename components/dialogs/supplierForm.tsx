@@ -25,7 +25,7 @@ const schema = z.object({
   taxId: z.string().optional(),
   crNumber: z.string().optional(),
   notes: z.string().optional(),
-  paymentTermsDays: z.number().int().min(0).max(365),
+  paymentTermsDays: z.coerce.number().int().min(0).max(365),
 });
 
 export type SupplierFormValues = z.infer<typeof schema>;

@@ -19,10 +19,6 @@ export const auth = betterAuth({
   plugins: [jwt()],
   user: {
     additionalFields: {
-      role: {
-        type: 'string',
-        defaultValue: 'USER',
-      },
       organizationId: {
         type: 'string',
       },

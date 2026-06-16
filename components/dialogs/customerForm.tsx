@@ -48,12 +48,12 @@ import { Label } from '../ui/label';
 const schema = z.object({
   name: z.string().min(1, 'Name is required'),
   phone: z.string().optional(),
-  email: z.string().email('Invalid email address').or(z.literal('')).optional(),
+  email: z.email('Invalid email address').or(z.literal('')).optional(),
   address: z.string().optional(),
   city: z.string().optional(),
   taxId: z.string().optional(),
   notes: z.string().optional(),
-  creditLimit: z.number().int('Must be a whole number').min(0, 'Must be 0 or more'),
+  creditLimit: z.coerce.number().int('Must be a whole number').min(0, 'Must be 0 or more'),
 });
 
 export type CustomerFormValues = z.infer<typeof schema>;
