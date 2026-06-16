@@ -58,17 +58,18 @@ interface GenerateSerialOptions {
 export async function generateSerial(opts: GenerateSerialOptions): Promise<string> {
   const { db, organizationId, prefix, padLength = 5, fiscalYear } = opts;
 
+  const fiscalYearParam: number | null = fiscalYear ?? null;
+
   // Upsert the sequence row so first-time use auto-creates it.
   // Then lock it for the duration of this transaction.
   await db.$executeRaw`
-    INSERT INTO "DocumentSequence" (id, prefix, serial, "nextVal", "organizationId", "fiscalYear")
+    INSERT INTO "DocumentSequence" (id, prefix, "nextVal", "organizationId", "fiscalYear")
     VALUES (
       gen_random_uuid(),
       ${prefix},
-      0,
       1,
       ${organizationId},
-      ${fiscalYear ?? null}
+      ${fiscalYearParam}
     )
     ON CONFLICT ("organizationId", prefix, "fiscalYear")
     DO NOTHING
@@ -80,7 +81,7 @@ export async function generateSerial(opts: GenerateSerialOptions): Promise<strin
     SET "nextVal" = "nextVal" + 1
     WHERE "organizationId" = ${organizationId}
       AND prefix = ${prefix}
-      AND ("fiscalYear" = ${fiscalYear ?? null} OR ("fiscalYear" IS NULL AND ${fiscalYear ?? null} IS NULL))
+      AND "fiscalYear" IS NOT DISTINCT FROM ${fiscalYearParam}
     RETURNING "nextVal"
   `;
 

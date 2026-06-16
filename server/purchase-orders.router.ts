@@ -26,9 +26,9 @@ const purchaseLineInputSchema = z.object({
 const purchaseOrderBaseSchema = z.object({
   date: z.coerce.date().default(() => new Date()),
   expectedDate: z.coerce.date().optional(),
-  supplierId: z.string().cuid(),
-  warehouseId: z.string().cuid(),
-  departmentId: z.string().cuid().optional(),
+  supplierId: z.cuid2(),
+  warehouseId: z.cuid2(),
+  departmentId: z.cuid2().optional(),
   currency: currencyCodeSchema.default('BHD'),
   exchangeRate: z.number().positive().default(1),
   notes: z.string().max(5000).optional(),
@@ -47,7 +47,19 @@ const updatePurchaseOrderSchema = purchaseOrderBaseSchema.partial().extend({
 const listPurchaseOrdersSchema = z.object({
   ...offsetPaginationSchema.shape,
   search: z.string().optional(),
-  status: z.enum(['DRAFT', 'PENDING_APPROVAL', 'APPROVED', 'ORDERED', 'PARTIAL_RECEIVED', 'RECEIVED', 'INVOICED', 'CANCELLED', 'CLOSED']).optional(),
+  status: z
+    .enum([
+      'DRAFT',
+      'PENDING_APPROVAL',
+      'APPROVED',
+      'ORDERED',
+      'PARTIAL_RECEIVED',
+      'RECEIVED',
+      'INVOICED',
+      'CANCELLED',
+      'CLOSED',
+    ])
+    .optional(),
   supplierId: z.string().cuid().optional(),
   sortBy: z.enum(['date', 'serial', 'total', 'createdAt', 'expectedDate']).default('date'),
   sortOrder: sortOrderSchema,
@@ -128,6 +140,25 @@ export const purchaseOrdersRouter = router({
     return order;
   }),
 
+  stockMovements: orgProcedure
+    .input(z.object({ id: z.string().cuid() }))
+    .query(async ({ ctx, input }) => {
+      assertCan(ctx.ability, 'stock:read', 'StockMovement');
+      return ctx.db.stockMovement.findMany({
+        where: {
+          purchaseLine: { purchaseOrderId: input.id },
+          organizationId: ctx.user.organizationId,
+        },
+        include: {
+          item: { select: { id: true, sku: true, name: true } },
+          toWarehouse: { select: { id: true, name: true } },
+          user: { select: { id: true, name: true } },
+        },
+        orderBy: { createdAt: 'desc' },
+        take: 200,
+      });
+    }),
+
   create: orgProcedure.input(createPurchaseOrderSchema).mutation(async ({ ctx, input }) => {
     assertCan(ctx.ability, 'po:create', 'PurchaseOrder');
 
@@ -163,7 +194,11 @@ export const purchaseOrdersRouter = router({
     );
 
     const totals = calculateInvoiceTotals(
-      enrichedLines.map((l) => ({ quantity: l.quantity, unitPrice: l.unitCost, taxRateSnapshot: l.taxRateSnapshot })),
+      enrichedLines.map((l) => ({
+        quantity: l.quantity,
+        unitPrice: l.unitCost,
+        taxRateSnapshot: l.taxRateSnapshot,
+      })),
     );
 
     const order = await ctx.db.$transaction(async (tx) => {
@@ -194,7 +229,6 @@ export const purchaseOrdersRouter = router({
               taxRateId: line.taxRateId,
               taxRateSnapshot: line.taxRateSnapshot,
               taxRateName: line.taxRateName,
-              organizationId: orgId,
             })),
           },
         },
@@ -202,7 +236,15 @@ export const purchaseOrdersRouter = router({
       });
 
       await writeAuditLog(
-        { entityType: 'PurchaseOrder', entityId: created.id, action: 'CREATE', diff: { serial: { before: null, after: serial } }, organizationId: orgId, userId: ctx.user.id, ipAddress: ctx.ipAddress },
+        {
+          entityType: 'PurchaseOrder',
+          entityId: created.id,
+          action: 'CREATE',
+          diff: { serial: { before: null, after: serial } },
+          organizationId: orgId,
+          userId: ctx.user.id,
+          ipAddress: ctx.ipAddress,
+        },
         tx,
       );
 
@@ -247,7 +289,11 @@ export const purchaseOrdersRouter = router({
         );
 
         const totals = calculateInvoiceTotals(
-          enrichedLines.map((l) => ({ quantity: l.quantity, unitPrice: l.unitCost, taxRateSnapshot: l.taxRateSnapshot })),
+          enrichedLines.map((l) => ({
+            quantity: l.quantity,
+            unitPrice: l.unitCost,
+            taxRateSnapshot: l.taxRateSnapshot,
+          })),
         );
 
         await tx.purchaseLine.deleteMany({ where: { purchaseOrderId: id } });
@@ -263,11 +309,15 @@ export const purchaseOrdersRouter = router({
             taxRateId: line.taxRateId,
             taxRateSnapshot: line.taxRateSnapshot,
             taxRateName: line.taxRateName,
-            organizationId: orgId,
           })),
         });
 
-        totalsData = { subtotal: totals.subtotal, taxTotal: totals.taxTotal, total: totals.total, amountOwed: totals.total };
+        totalsData = {
+          subtotal: totals.subtotal,
+          taxTotal: totals.taxTotal,
+          total: totals.total,
+          amountOwed: totals.total,
+        };
       }
 
       const result = await tx.purchaseOrder.update({
@@ -276,7 +326,14 @@ export const purchaseOrdersRouter = router({
       });
 
       await writeAuditLog(
-        { entityType: 'PurchaseOrder', entityId: id, action: 'UPDATE', organizationId: orgId, userId: ctx.user.id, ipAddress: ctx.ipAddress },
+        {
+          entityType: 'PurchaseOrder',
+          entityId: id,
+          action: 'UPDATE',
+          organizationId: orgId,
+          userId: ctx.user.id,
+          ipAddress: ctx.ipAddress,
+        },
         tx,
       );
 
@@ -284,136 +341,336 @@ export const purchaseOrdersRouter = router({
     });
   }),
 
-  order: orgProcedure.input(z.object({ id: z.string().cuid(), version: z.number().int() })).mutation(async ({ ctx, input }) => {
-    const orgId = ctx.user.organizationId;
+  submitForApproval: orgProcedure
+    .input(z.object({ id: z.string().cuid(), version: z.number().int() }))
+    .mutation(async ({ ctx, input }) => {
+      const orgId = ctx.user.organizationId;
 
-    const po = await ctx.db.purchaseOrder.findFirst({
-      where: { id: input.id, organizationId: orgId, deletedAt: null },
-    });
-    if (!po) throw new NotFoundError('PurchaseOrder', input.id);
-    assertCan(ctx.ability, 'po:approve', 'PurchaseOrder', po as Record<string, unknown>);
-    if (po.status !== 'APPROVED') throw new UnprocessableError(`PO must be APPROVED before ordering. Current: ${po.status}`);
-    if (po.version !== input.version) throw new StaleDataError('PurchaseOrder');
-
-    return ctx.db.$transaction(async (tx) => {
-      const updated = await tx.purchaseOrder.update({
-        where: { id: input.id },
-        data: { status: 'ORDERED', version: { increment: 1 }, updatedById: ctx.user.id },
+      const po = await ctx.db.purchaseOrder.findFirst({
+        where: { id: input.id, organizationId: orgId, deletedAt: null },
+        select: { id: true, status: true, version: true },
       });
+      if (!po) throw new NotFoundError('PurchaseOrder', input.id);
+      assertCan(ctx.ability, 'po:update', 'PurchaseOrder', po as Record<string, unknown>);
+      if (po.status !== 'DRAFT')
+        throw new UnprocessableError(`Only DRAFT POs can be submitted. Current: ${po.status}`);
+      if (po.version !== input.version) throw new StaleDataError('PurchaseOrder');
 
-      await writeAuditLog(
-        { entityType: 'PurchaseOrder', entityId: input.id, action: 'STATUS_CHANGE', diff: { status: { before: po.status, after: 'ORDERED' } }, organizationId: orgId, userId: ctx.user.id, ipAddress: ctx.ipAddress },
-        tx,
-      );
-
-      return updated;
-    });
-  }),
-
-  receive: orgProcedure.input(z.object({ id: z.string().cuid(), version: z.number().int() })).mutation(async ({ ctx, input }) => {
-    const orgId = ctx.user.organizationId;
-
-    const po = await ctx.db.purchaseOrder.findFirst({
-      where: { id: input.id, organizationId: orgId, deletedAt: null },
-      include: { lines: true },
-    });
-    if (!po) throw new NotFoundError('PurchaseOrder', input.id);
-    assertCan(ctx.ability, 'po:receive', 'PurchaseOrder', po as Record<string, unknown>);
-    if (!['ORDERED', 'PARTIAL_RECEIVED'].includes(po.status)) throw new UnprocessableError(`PO must be ORDERED to receive.`);
-    if (po.version !== input.version) throw new StaleDataError('PurchaseOrder');
-
-    return ctx.db.$transaction(async (tx) => {
-      let allReceived = true;
-
-      for (const line of po.lines) {
-        const newReceived = Number(line.receivedQty) + Number(line.quantity);
-        await tx.purchaseLine.update({
-          where: { id: line.id },
-          data: { receivedQty: line.quantity },
-        });
-
-        await tx.stockMovement.create({
+      return ctx.db.$transaction(async (tx) => {
+        const updated = await tx.purchaseOrder.update({
+          where: { id: input.id },
           data: {
-            type: 'PURCHASE_INBOUND',
-            quantity: Number(line.quantity),
-            itemId: line.itemId,
-            purchaseLineId: line.id,
-            toWarehouseId: po.warehouseId,
-            userId: ctx.user.id,
-            organizationId: orgId,
+            status: 'PENDING_APPROVAL',
+            approvalStatus: 'PENDING',
+            version: { increment: 1 },
+            updatedById: ctx.user.id,
           },
         });
 
-        await tx.stock.upsert({
-          where: { itemId_warehouseId: { itemId: line.itemId, warehouseId: po.warehouseId } },
-          create: { itemId: line.itemId, warehouseId: po.warehouseId, organizationId: orgId, quantity: line.quantity },
-          update: { quantity: { increment: Number(line.quantity) }, version: { increment: 1 } },
+        await writeAuditLog(
+          {
+            entityType: 'PurchaseOrder',
+            entityId: input.id,
+            action: 'STATUS_CHANGE',
+            diff: { status: { before: po.status, after: 'PENDING_APPROVAL' } },
+            organizationId: orgId,
+            userId: ctx.user.id,
+            ipAddress: ctx.ipAddress,
+          },
+          tx,
+        );
+
+        return updated;
+      });
+    }),
+
+  approve: orgProcedure
+    .input(z.object({ id: z.string().cuid(), version: z.number().int() }))
+    .mutation(async ({ ctx, input }) => {
+      const orgId = ctx.user.organizationId;
+
+      const po = await ctx.db.purchaseOrder.findFirst({
+        where: { id: input.id, organizationId: orgId, deletedAt: null },
+        select: { id: true, status: true, version: true },
+      });
+      if (!po) throw new NotFoundError('PurchaseOrder', input.id);
+      assertCan(ctx.ability, 'po:approve', 'PurchaseOrder', po as Record<string, unknown>);
+      if (po.status !== 'PENDING_APPROVAL')
+        throw new UnprocessableError(
+          `PO must be PENDING_APPROVAL to approve. Current: ${po.status}`,
+        );
+      if (po.version !== input.version) throw new StaleDataError('PurchaseOrder');
+
+      return ctx.db.$transaction(async (tx) => {
+        const updated = await tx.purchaseOrder.update({
+          where: { id: input.id },
+          data: {
+            status: 'APPROVED',
+            approvalStatus: 'APPROVED',
+            version: { increment: 1 },
+            updatedById: ctx.user.id,
+          },
         });
 
-        allReceived = allReceived && true;
+        await writeAuditLog(
+          {
+            entityType: 'PurchaseOrder',
+            entityId: input.id,
+            action: 'STATUS_CHANGE',
+            diff: { status: { before: po.status, after: 'APPROVED' } },
+            organizationId: orgId,
+            userId: ctx.user.id,
+            ipAddress: ctx.ipAddress,
+          },
+          tx,
+        );
+
+        return updated;
+      });
+    }),
+
+  reject: orgProcedure
+    .input(
+      z.object({ id: z.string().cuid(), version: z.number().int(), reason: z.string().optional() }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const orgId = ctx.user.organizationId;
+
+      const po = await ctx.db.purchaseOrder.findFirst({
+        where: { id: input.id, organizationId: orgId, deletedAt: null },
+        select: { id: true, status: true, version: true },
+      });
+      if (!po) throw new NotFoundError('PurchaseOrder', input.id);
+      assertCan(ctx.ability, 'po:approve', 'PurchaseOrder', po as Record<string, unknown>);
+      if (po.status !== 'PENDING_APPROVAL')
+        throw new UnprocessableError(`PO must be PENDING_APPROVAL to reject. Current: ${po.status}`);
+      if (po.version !== input.version) throw new StaleDataError('PurchaseOrder');
+
+      return ctx.db.$transaction(async (tx) => {
+        const updated = await tx.purchaseOrder.update({
+          where: { id: input.id },
+          data: {
+            status: 'DRAFT',
+            approvalStatus: 'REJECTED',
+            version: { increment: 1 },
+            updatedById: ctx.user.id,
+          },
+        });
+
+        await writeAuditLog(
+          {
+            entityType: 'PurchaseOrder',
+            entityId: input.id,
+            action: 'STATUS_CHANGE',
+            diff: { status: { before: po.status, after: 'DRAFT' }, reason: { before: null, after: input.reason } },
+            organizationId: orgId,
+            userId: ctx.user.id,
+            ipAddress: ctx.ipAddress,
+          },
+          tx,
+        );
+
+        return updated;
+      });
+    }),
+
+  order: orgProcedure
+    .input(z.object({ id: z.string().cuid(), version: z.number().int() }))
+    .mutation(async ({ ctx, input }) => {
+      const orgId = ctx.user.organizationId;
+
+      const po = await ctx.db.purchaseOrder.findFirst({
+        where: { id: input.id, organizationId: orgId, deletedAt: null },
+      });
+      if (!po) throw new NotFoundError('PurchaseOrder', input.id);
+      assertCan(ctx.ability, 'po:approve', 'PurchaseOrder', po as Record<string, unknown>);
+      if (po.status !== 'APPROVED')
+        throw new UnprocessableError(`PO must be APPROVED before ordering. Current: ${po.status}`);
+      if (po.version !== input.version) throw new StaleDataError('PurchaseOrder');
+
+      return ctx.db.$transaction(async (tx) => {
+        const updated = await tx.purchaseOrder.update({
+          where: { id: input.id },
+          data: { status: 'ORDERED', version: { increment: 1 }, updatedById: ctx.user.id },
+        });
+
+        await writeAuditLog(
+          {
+            entityType: 'PurchaseOrder',
+            entityId: input.id,
+            action: 'STATUS_CHANGE',
+            diff: { status: { before: po.status, after: 'ORDERED' } },
+            organizationId: orgId,
+            userId: ctx.user.id,
+            ipAddress: ctx.ipAddress,
+          },
+          tx,
+        );
+
+        return updated;
+      });
+    }),
+
+  receive: orgProcedure
+    .input(z.object({ id: z.string().cuid(), version: z.number().int() }))
+    .mutation(async ({ ctx, input }) => {
+      const orgId = ctx.user.organizationId;
+
+      const po = await ctx.db.purchaseOrder.findFirst({
+        where: { id: input.id, organizationId: orgId, deletedAt: null },
+        include: { lines: true },
+      });
+      if (!po) throw new NotFoundError('PurchaseOrder', input.id);
+      assertCan(ctx.ability, 'po:receive', 'PurchaseOrder', po as Record<string, unknown>);
+      if (!['ORDERED', 'PARTIAL_RECEIVED'].includes(po.status))
+        throw new UnprocessableError(`PO must be ORDERED to receive.`);
+      if (po.version !== input.version) throw new StaleDataError('PurchaseOrder');
+
+      return ctx.db.$transaction(async (tx) => {
+        let allFullyReceived = true;
+
+        for (const line of po.lines) {
+          const orderedQty = Number(line.quantity);
+          const alreadyReceived = Number(line.receivedQty);
+          const toReceive = orderedQty - alreadyReceived;
+
+          if (toReceive <= 0) continue;
+
+          await tx.purchaseLine.update({
+            where: { id: line.id },
+            data: { receivedQty: orderedQty },
+          });
+
+          await tx.stockMovement.create({
+            data: {
+              type: 'PURCHASE_INBOUND',
+              quantity: toReceive,
+              itemId: line.itemId,
+              purchaseLineId: line.id,
+              toWarehouseId: po.warehouseId,
+              userId: ctx.user.id,
+              organizationId: orgId,
+            },
+          });
+
+          await tx.stock.upsert({
+            where: { itemId_warehouseId: { itemId: line.itemId, warehouseId: po.warehouseId } },
+            create: {
+              itemId: line.itemId,
+              warehouseId: po.warehouseId,
+              organizationId: orgId,
+              quantity: toReceive,
+            },
+            update: { quantity: { increment: toReceive }, version: { increment: 1 } },
+          });
+
+          if (alreadyReceived + toReceive < orderedQty) allFullyReceived = false;
+        }
+
+        const newStatus = allFullyReceived ? 'RECEIVED' : 'PARTIAL_RECEIVED';
+
+        const updated = await tx.purchaseOrder.update({
+          where: { id: input.id },
+          data: {
+            status: newStatus,
+            receivedAt: new Date(),
+            version: { increment: 1 },
+            updatedById: ctx.user.id,
+          },
+        });
+
+        await writeAuditLog(
+          {
+            entityType: 'PurchaseOrder',
+            entityId: input.id,
+            action: 'STATUS_CHANGE',
+            diff: { status: { before: po.status, after: newStatus } },
+            organizationId: orgId,
+            userId: ctx.user.id,
+            ipAddress: ctx.ipAddress,
+          },
+          tx,
+        );
+
+        return updated;
+      });
+    }),
+
+  cancel: orgProcedure
+    .input(
+      z.object({ id: z.string().cuid(), version: z.number().int(), reason: z.string().optional() }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const orgId = ctx.user.organizationId;
+
+      const po = await ctx.db.purchaseOrder.findFirst({
+        where: { id: input.id, organizationId: orgId, deletedAt: null },
+      });
+      if (!po) throw new NotFoundError('PurchaseOrder', input.id);
+      assertCan(ctx.ability, 'po:delete', 'PurchaseOrder', po as Record<string, unknown>);
+      if (['CANCELLED', 'CLOSED', 'RECEIVED', 'INVOICED'].includes(po.status)) {
+        throw new UnprocessableError(`PO in status "${po.status}" cannot be cancelled.`);
       }
+      if (po.version !== input.version) throw new StaleDataError('PurchaseOrder');
 
-      const newStatus = allReceived ? 'RECEIVED' : 'PARTIAL_RECEIVED';
+      return ctx.db.$transaction(async (tx) => {
+        const updated = await tx.purchaseOrder.update({
+          where: { id: input.id },
+          data: {
+            status: 'CANCELLED',
+            cancelledAt: new Date(),
+            version: { increment: 1 },
+            updatedById: ctx.user.id,
+          },
+        });
 
-      const updated = await tx.purchaseOrder.update({
-        where: { id: input.id },
-        data: { status: newStatus, receivedAt: new Date(), version: { increment: 1 }, updatedById: ctx.user.id },
+        await writeAuditLog(
+          {
+            entityType: 'PurchaseOrder',
+            entityId: input.id,
+            action: 'STATUS_CHANGE',
+            diff: { status: { before: po.status, after: 'CANCELLED' } },
+            organizationId: orgId,
+            userId: ctx.user.id,
+            ipAddress: ctx.ipAddress,
+          },
+          tx,
+        );
+
+        return updated;
+      });
+    }),
+
+  delete: orgProcedure
+    .input(z.object({ id: z.string().cuid() }))
+    .mutation(async ({ ctx, input }) => {
+      const existing = await ctx.db.purchaseOrder.findFirst({
+        where: { id: input.id, organizationId: ctx.user.organizationId, deletedAt: null },
+        select: { id: true, status: true },
+      });
+      if (!existing) throw new NotFoundError('PurchaseOrder', input.id);
+      assertCan(ctx.ability, 'po:delete', 'PurchaseOrder', existing as Record<string, unknown>);
+      if (existing.status !== 'DRAFT')
+        throw new UnprocessableError('Only DRAFT POs can be deleted.');
+
+      await ctx.db.$transaction(async (tx) => {
+        await tx.purchaseOrder.update({
+          where: { id: input.id },
+          data: { deletedAt: new Date(), status: 'CANCELLED' },
+        });
+        await writeAuditLog(
+          {
+            entityType: 'PurchaseOrder',
+            entityId: input.id,
+            action: 'DELETE',
+            organizationId: ctx.user.organizationId,
+            userId: ctx.user.id,
+            ipAddress: ctx.ipAddress,
+          },
+          tx,
+        );
       });
 
-      await writeAuditLog(
-        { entityType: 'PurchaseOrder', entityId: input.id, action: 'STATUS_CHANGE', diff: { status: { before: po.status, after: newStatus } }, organizationId: orgId, userId: ctx.user.id, ipAddress: ctx.ipAddress },
-        tx,
-      );
-
-      return updated;
-    });
-  }),
-
-  cancel: orgProcedure.input(z.object({ id: z.string().cuid(), version: z.number().int(), reason: z.string().optional() })).mutation(async ({ ctx, input }) => {
-    const orgId = ctx.user.organizationId;
-
-    const po = await ctx.db.purchaseOrder.findFirst({
-      where: { id: input.id, organizationId: orgId, deletedAt: null },
-    });
-    if (!po) throw new NotFoundError('PurchaseOrder', input.id);
-    assertCan(ctx.ability, 'po:delete', 'PurchaseOrder', po as Record<string, unknown>);
-    if (['CANCELLED', 'CLOSED', 'RECEIVED', 'INVOICED'].includes(po.status)) {
-      throw new UnprocessableError(`PO in status "${po.status}" cannot be cancelled.`);
-    }
-    if (po.version !== input.version) throw new StaleDataError('PurchaseOrder');
-
-    return ctx.db.$transaction(async (tx) => {
-      const updated = await tx.purchaseOrder.update({
-        where: { id: input.id },
-        data: { status: 'CANCELLED', cancelledAt: new Date(), version: { increment: 1 }, updatedById: ctx.user.id },
-      });
-
-      await writeAuditLog(
-        { entityType: 'PurchaseOrder', entityId: input.id, action: 'STATUS_CHANGE', diff: { status: { before: po.status, after: 'CANCELLED' } }, organizationId: orgId, userId: ctx.user.id, ipAddress: ctx.ipAddress },
-        tx,
-      );
-
-      return updated;
-    });
-  }),
-
-  delete: orgProcedure.input(z.object({ id: z.string().cuid() })).mutation(async ({ ctx, input }) => {
-    const existing = await ctx.db.purchaseOrder.findFirst({
-      where: { id: input.id, organizationId: ctx.user.organizationId, deletedAt: null },
-      select: { id: true, status: true },
-    });
-    if (!existing) throw new NotFoundError('PurchaseOrder', input.id);
-    assertCan(ctx.ability, 'po:delete', 'PurchaseOrder', existing as Record<string, unknown>);
-    if (existing.status !== 'DRAFT') throw new UnprocessableError('Only DRAFT POs can be deleted.');
-
-    await ctx.db.$transaction(async (tx) => {
-      await tx.purchaseOrder.update({ where: { id: input.id }, data: { deletedAt: new Date(), status: 'CANCELLED' } });
-      await writeAuditLog(
-        { entityType: 'PurchaseOrder', entityId: input.id, action: 'DELETE', organizationId: ctx.user.organizationId, userId: ctx.user.id, ipAddress: ctx.ipAddress },
-        tx,
-      );
-    });
-
-    return { success: true };
-  }),
+      return { success: true };
+    }),
 });
