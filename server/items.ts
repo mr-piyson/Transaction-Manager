@@ -68,6 +68,7 @@ const listItemsSchema = z.object({
   type: z.enum(['PRODUCT', 'SERVICE', 'BUNDLE']).optional(),
   categoryId: z.string().cuid().optional(),
   isActive: z.boolean().optional(),
+  supplierId: z.string().cuid().optional(),
   isSaleable: z.boolean().optional(),
   lowStock: z.boolean().optional(), // Filter items below reorderPoint
   sortBy: z.enum(['name', 'sku', 'salesPrice', 'createdAt']).default('name'),
@@ -88,6 +89,7 @@ export const itemsRouter = router({
       search,
       type,
       categoryId,
+      supplierId,
       isActive,
       isSaleable,
       lowStock,
@@ -106,6 +108,9 @@ export const itemsRouter = router({
       ...(categoryId ? { categoryId } : {}),
       ...(isActive !== undefined ? { isActive } : {}),
       ...(isSaleable !== undefined ? { isSaleable } : {}),
+      ...(supplierId
+        ? { supplierItems: { some: { supplierId, isActive: true, deletedAt: null } } }
+        : {}),
       ...(search
         ? {
             OR: [
@@ -147,6 +152,20 @@ export const itemsRouter = router({
           category: { select: { id: true, name: true, color: true } },
           taxRate: { select: { id: true, name: true, rate: true } },
           // Aggregate stock across all warehouses if requested
+          ...(supplierId
+            ? {
+                supplierItems: {
+                  where: { supplierId, isActive: true, deletedAt: null },
+                  select: {
+                    supplierSku: true,
+                    basePrice: true,
+                    leadTimeDays: true,
+                    minOrderQty: true,
+                  },
+                  take: 1,
+                },
+              }
+            : {}),
           ...(withStock
             ? {
                 stock: {

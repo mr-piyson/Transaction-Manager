@@ -75,7 +75,36 @@ export const suppliersRouter = router({
 
     const supplier = await ctx.db.supplier.findFirst({
       where: { id: input.id, organizationId: ctx.user.organizationId, deletedAt: null },
-      include: { _count: { select: { purchaseOrders: true, supplierItems: true } } },
+      include: {
+        purchaseOrders: {
+          where: { deletedAt: null },
+          orderBy: { createdAt: 'desc' },
+          take: 20,
+          select: {
+            id: true,
+            serial: true,
+            status: true,
+            total: true,
+            currency: true,
+            date: true,
+            createdAt: true,
+          },
+        },
+        supplierItems: {
+          where: { deletedAt: null },
+          take: 20,
+          select: {
+            id: true,
+            supplierSku: true,
+            supplierName: true,
+            basePrice: true,
+            currency: true,
+            leadTimeDays: true,
+            item: { select: { id: true, name: true, sku: true } },
+          },
+        },
+        _count: { select: { purchaseOrders: true, supplierItems: true } },
+      },
     });
 
     if (!supplier) throw new NotFoundError('Supplier', input.id);

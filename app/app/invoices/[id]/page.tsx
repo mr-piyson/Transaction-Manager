@@ -9,6 +9,7 @@ import {
   HandCoins,
   Layers,
   Loader2,
+  Printer,
   Receipt,
   Send,
   Trash,
@@ -800,77 +801,79 @@ export default function InvoiceDetailPage() {
       </div>
 
       {/* Action footer */}
-      {showActions && (
-        <div className="border-t bg-background px-4 py-3 flex gap-2 justify-end shrink-0">
-          {actions.map(({ label, key, icon, variant = 'default', dialog }) =>
-            key === 'edit' ? (
-              <Button key={key} variant={variant} onClick={handleEdit} disabled={isPending}>
-                <Edit className="size-4 mr-1" /> Edit
-              </Button>
-            ) : key === 'convertQuote' ? (
-              <Button
-                key={key}
-                variant={variant}
-                onClick={() => {
-                  if (window.confirm(`Convert ${invoice.serial} to invoice? A new invoice will be created.`)) {
-                    convertQuoteMutation.mutate({ quoteId: invoice.id });
-                  }
-                }}
-                disabled={isPending}
-              >
-                {convertQuoteMutation.isPending && <Loader2 className="size-4 mr-1 animate-spin" />}
-                {!convertQuoteMutation.isPending && icon}
-                <span className="ml-1">{label}</span>
-              </Button>
-            ) : key === 'delete' ? (
-              <Button
-                key={key}
-                variant={variant}
-                onClick={() => {
-                  if (window.confirm(`Delete ${invoice.serial}? This action cannot be undone.`)) {
-                    deleteMutation.mutate({ id: invoice.id });
-                  }
-                }}
-                disabled={isPending}
-              >
-                {deleteMutation.isPending && <Loader2 className="size-4 mr-1 animate-spin" />}
-                {!deleteMutation.isPending && icon}
-                <span className="ml-1">{label}</span>
-              </Button>
-            ) : dialog === 'send' ? (
-              <Button
-                key={key}
-                variant={variant}
-                onClick={() => setSendOpen(true)}
-                disabled={isPending}
-              >
-                <Send className="size-4 mr-1" /> {label}
-              </Button>
-            ) : dialog === 'cancel' ? (
-              <Button
-                key={key}
-                variant={variant}
-                onClick={() => setCancelOpen(true)}
-                disabled={isPending}
-              >
-                <XCircle className="size-4 mr-1" /> {label}
-              </Button>
-            ) : dialog === 'payment' ? (
-              <Button
-                key={key}
-                variant={variant}
-                onClick={() => {
-                  resetPaymentForm();
-                  setPaymentOpen(true);
-                }}
-                disabled={isPending}
-              >
-                <Banknote className="size-4 mr-1" /> {label}
-              </Button>
-            ) : null,
-          )}
-        </div>
-      )}
+      <div className="border-t bg-background px-4 py-3 flex gap-2 justify-end shrink-0">
+        {actions.map(({ label, key, icon, variant = 'default', dialog }) =>
+          key === 'edit' ? (
+            <Button key={key} variant={variant} onClick={handleEdit} disabled={isPending}>
+              <Edit className="size-4 mr-1" /> Edit
+            </Button>
+          ) : key === 'convertQuote' ? (
+            <Button
+              key={key}
+              variant={variant}
+              onClick={() => {
+                if (window.confirm(`Convert ${invoice.serial} to invoice? A new invoice will be created.`)) {
+                  convertQuoteMutation.mutate({ quoteId: invoice.id });
+                }
+              }}
+              disabled={isPending}
+            >
+              {convertQuoteMutation.isPending && <Loader2 className="size-4 mr-1 animate-spin" />}
+              {!convertQuoteMutation.isPending && icon}
+              <span className="ml-1">{label}</span>
+            </Button>
+          ) : key === 'delete' ? (
+            <Button
+              key={key}
+              variant={variant}
+              onClick={() => {
+                if (window.confirm(`Delete ${invoice.serial}? This action cannot be undone.`)) {
+                  deleteMutation.mutate({ id: invoice.id });
+                }
+              }}
+              disabled={isPending}
+            >
+              {deleteMutation.isPending && <Loader2 className="size-4 mr-1 animate-spin" />}
+              {!deleteMutation.isPending && icon}
+              <span className="ml-1">{label}</span>
+            </Button>
+          ) : dialog === 'send' ? (
+            <Button
+              key={key}
+              variant={variant}
+              onClick={() => setSendOpen(true)}
+              disabled={isPending}
+            >
+              <Send className="size-4 mr-1" /> {label}
+            </Button>
+          ) : dialog === 'cancel' ? (
+            <Button
+              key={key}
+              variant={variant}
+              onClick={() => setCancelOpen(true)}
+              disabled={isPending}
+            >
+              <XCircle className="size-4 mr-1" /> {label}
+            </Button>
+          ) : dialog === 'payment' ? (
+            <Button
+              key={key}
+              variant={variant}
+              onClick={() => {
+                resetPaymentForm();
+                setPaymentOpen(true);
+              }}
+              disabled={isPending}
+            >
+              <Banknote className="size-4 mr-1" /> {label}
+            </Button>
+          ) : null,
+        )}
+        <div className="flex-1" />
+        <Button variant="outline" onClick={() => router.push(`/app/invoices/${invoice.id}/print`)}>
+          <Printer className="size-4 mr-1" /> Print / PDF
+        </Button>
+      </div>
 
       {/* Send confirmation dialog */}
       <Dialog open={sendOpen} onOpenChange={(v) => !sendMutation.isPending && setSendOpen(v)}>

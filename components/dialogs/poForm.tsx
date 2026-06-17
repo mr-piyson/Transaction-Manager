@@ -91,7 +91,6 @@ export function POFormDialog({ open, onOpenChange, po, onSuccess }: POFormDialog
 
   const { data: suppliersData } = trpc.suppliers.list.useQuery({ limit: 200 });
   const { data: warehousesData } = trpc.warehouses.list.useQuery({ limit: 200 });
-  const { data: itemsData } = trpc.items.list.useQuery({ type: 'PRODUCT' });
 
   const {
     register,
@@ -105,6 +104,13 @@ export function POFormDialog({ open, onOpenChange, po, onSuccess }: POFormDialog
     resolver: zodResolver(schema) as any,
     defaultValues: defaults(po, warehousesData),
   });
+
+  const selectedSupplierId = watch('supplierId');
+
+  const { data: itemsData, isLoading: itemsLoading } = trpc.items.list.useQuery(
+    { type: 'PRODUCT', supplierId: selectedSupplierId || undefined, withStock: true },
+    { enabled: !!selectedSupplierId },
+  );
 
   const { fields, append, remove } = useFieldArray({ control, name: 'lines' });
 
@@ -188,14 +194,13 @@ export function POFormDialog({ open, onOpenChange, po, onSuccess }: POFormDialog
     [items],
   );
 
-  const pickerItems = React.useMemo(() => items.filter((i: any) => i.type === 'PRODUCT'), [items]);
-
   const handleItemsSelected = (selected: any[]) => {
     for (const item of selected) {
+      const supplierItem = item.supplierItems?.[0];
       append({
         itemId: item.id,
-        quantity: 1,
-        unitCost: Number(item.purchasePrice) || 0,
+        quantity: Number(supplierItem?.minOrderQty) || 1,
+        unitCost: Number(supplierItem?.basePrice ?? item.purchasePrice) || 0,
       });
     }
     setItemPickerOpen(false);
@@ -303,6 +308,8 @@ export function POFormDialog({ open, onOpenChange, po, onSuccess }: POFormDialog
                     variant="outline"
                     size="sm"
                     onClick={() => setItemPickerOpen(true)}
+                    disabled={!selectedSupplierId}
+                    title={!selectedSupplierId ? 'Select a supplier first' : undefined}
                   >
                     <Package className="h-4 w-4 mr-1" /> Select items
                   </Button>
@@ -374,14 +381,20 @@ export function POFormDialog({ open, onOpenChange, po, onSuccess }: POFormDialog
                   <div className="text-sm text-muted-foreground text-center py-8 space-y-2">
                     <Package className="h-8 w-8 mx-auto opacity-30" />
                     <p>No items yet.</p>
-                    <Button
-                      type="button"
-                      variant="secondary"
-                      size="sm"
-                      onClick={() => setItemPickerOpen(true)}
-                    >
-                      Browse product catalogue
-                    </Button>
+                    {!selectedSupplierId ? (
+                      <p className="text-xs text-muted-foreground/60">
+                        Select a supplier first to browse available items.
+                      </p>
+                    ) : (
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        size="sm"
+                        onClick={() => setItemPickerOpen(true)}
+                      >
+                        Browse product catalogue
+                      </Button>
+                    )}
                   </div>
                 )}
               </div>
@@ -431,34 +444,82 @@ export function POFormDialog({ open, onOpenChange, po, onSuccess }: POFormDialog
         onOpenChange={setItemPickerOpen}
         title="Select items to purchase"
         description="Choose the items you want to add to this purchase order."
-        data={pickerItems}
+        data={items}
+        isLoading={!!selectedSupplierId && itemsLoading}
         mode="multi"
         getItemId={(i: any) => i.id}
         onSelect={handleItemsSelected}
         searchFields={['sku', 'name', 'barcode']}
-        cardRenderer={(item: any, selected: boolean) => (
-          <div className="flex items-center gap-3 p-3">
-            <div className="size-10 rounded-lg bg-muted flex items-center justify-center shrink-0">
-              <Package className="size-5 text-muted-foreground" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2">
-                <p className="font-semibold text-sm truncate">{item.name}</p>
-                <Badge variant="outline" className="text-[10px]">
-                  {item.sku}
-                </Badge>
+        emptyIcon={<Package className="size-8 text-muted-foreground/50" />}
+        emptyTitle={
+          !selectedSupplierId
+            ? 'No supplier selected'
+            : 'No items found for this supplier'
+        }
+        emptyDescription={
+          !selectedSupplierId
+            ? 'Please select a supplier first, then browse items.'
+            : 'Try adjusting your search or check supplier catalogue.'
+        }
+        cardRenderer={(item: any, selected: boolean) => {
+          const si = item.supplierItems?.[0];
+          const stockTotal = item.totalStock;
+          return (
+            <div className="flex items-center gap-3 p-3">
+              <div className="size-10 rounded-lg bg-muted flex items-center justify-center shrink-0">
+                <Package className="size-5 text-muted-foreground" />
               </div>
-              <p className="text-xs text-muted-foreground">
-                Unit: {item.unit} · Purchase price: {Number(item.purchasePrice).toFixed(3)}
-              </p>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <p className="font-semibold text-sm truncate">{item.name}</p>
+                  <Badge variant="outline" className="text-[10px] leading-none">
+                    {item.sku}
+                  </Badge>
+                  {si?.supplierSku && si.supplierSku !== item.sku && (
+                    <Badge variant="secondary" className="text-[10px] leading-none">
+                      {si.supplierSku}
+                    </Badge>
+                  )}
+                </div>
+                <div className="flex items-center gap-2 text-xs text-muted-foreground mt-0.5">
+                  <span>Unit: {item.unit}</span>
+                  <span>·</span>
+                  <span>
+                    Price:{' '}
+                    {Number(si?.basePrice ?? item.purchasePrice).toFixed(3)}
+                  </span>
+                  {si?.supplierSku && (
+                    <>
+                      <span>·</span>
+                      <span className="text-muted-foreground/60">
+                        Supplier SKU: {si.supplierSku}
+                      </span>
+                    </>
+                  )}
+                  {stockTotal !== undefined && (
+                    <>
+                      <span>·</span>
+                      <span
+                        className={
+                          stockTotal <= (item.reorderPoint ?? 0)
+                            ? 'text-destructive font-medium'
+                            : undefined
+                        }
+                      >
+                        Stock: {stockTotal}
+                      </span>
+                    </>
+                  )}
+                </div>
+              </div>
+              {selected && (
+                <Badge className="shrink-0 bg-primary text-primary-foreground text-xs">
+                  Selected
+                </Badge>
+              )}
             </div>
-            {selected && (
-              <Badge className="shrink-0 bg-primary text-primary-foreground text-xs">
-                Selected
-              </Badge>
-            )}
-          </div>
-        )}
+          );
+        }}
         itemName="products"
         confirmLabel="Add to PO"
       />

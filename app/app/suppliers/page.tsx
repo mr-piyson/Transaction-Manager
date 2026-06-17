@@ -1,13 +1,15 @@
 'use client';
 
-import { Plus, Trash, Truck } from 'lucide-react';
+import { Eye, Plus, Trash, Truck } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { Header } from '@/app/app/App-Header';
+import { alert } from '@/components/Alert-dialog';
 import { type ContextMenuItemSchema, UniversalContextMenu } from '@/components/context-menu';
 import { ListView } from '@/components/list-view';
 import { Button } from '@/components/ui/button';
 import { trpc } from '@/lib/trpc/client';
 import { useSupplierForm } from '@/components/dialogs/supplierForm';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { SupplierListItem } from '@/components/suppliers/supplier-list-item';
 
 type SupplierRow = {
   id: string;
@@ -21,29 +23,49 @@ type SupplierRow = {
 };
 
 export default function SuppliersPage() {
-  const { data = [], isLoading } = trpc.suppliers.list.useQuery({});
+  const router = useRouter();
+  const { data, isLoading } = trpc.suppliers.list.useQuery({});
   const { openCreate, openEdit } = useSupplierForm();
   const utils = trpc.useUtils();
   const deleteMutation = trpc.suppliers.delete.useMutation({
-    onSuccess: () => { utils.suppliers.list.invalidate(); },
+    onSuccess: () => {
+      utils.suppliers.list.invalidate();
+    },
   });
 
-  const contextMenu: ContextMenuItemSchema[] = [
+  const suppliers: SupplierRow[] = Array.isArray(data) ? data : (data as any)?.data ?? [];
+
+  const handleDelete = (supplier: SupplierRow) => {
+    alert.delete({
+      title: `Delete "${supplier.name}"?`,
+      description: 'This supplier will be deactivated. You can restore it later.',
+      confirmText: 'Delete',
+      onConfirm: async () => {
+        await deleteMutation.mutateAsync({ id: supplier.id });
+      },
+    });
+  };
+
+  const contextMenu = (supplier: SupplierRow): ContextMenuItemSchema[] => [
+    {
+      id: 'view',
+      label: 'View',
+      icon: Eye,
+      onClick: () => router.push(`/app/suppliers/${supplier.id}`),
+    },
     {
       id: 'edit',
       label: 'Edit',
-      onClick: () => {},
+      onClick: () => openEdit({ id: supplier.id, name: supplier.name, code: supplier.code ?? undefined, phone: supplier.phone ?? undefined, email: supplier.email ?? undefined, contactName: supplier.contactName ?? undefined, paymentTermsDays: supplier.paymentTermsDays }),
     },
     {
       id: 'delete',
       label: 'Delete',
       icon: Trash,
       destructive: true,
-      onClick: () => {},
+      onClick: () => handleDelete(supplier),
     },
   ];
-
-  const suppliers = Array.isArray(data) ? data : data?.data ?? [];
 
   return (
     <div className="flex flex-col h-screen">
@@ -57,18 +79,10 @@ export default function SuppliersPage() {
           </Button>
         }
       />
-      <ListView
-        cardRenderer={(s: SupplierRow) => (
-          <UniversalContextMenu items={contextMenu}>
-            <div className="flex h-18 items-center gap-3 p-3">
-              <Avatar className="size-11 rounded-lg shrink-0">
-                <AvatarFallback className="rounded-lg"><Truck className="size-5" /></AvatarFallback>
-              </Avatar>
-              <div className="flex-1 min-w-0">
-                <p className="font-semibold truncate">{s.name}</p>
-                <p className="text-sm text-muted-foreground truncate">{s.phone ?? s.email ?? s.code}</p>
-              </div>
-            </div>
+      <ListView<SupplierRow>
+        cardRenderer={(s) => (
+          <UniversalContextMenu items={contextMenu(s)}>
+            <SupplierListItem data={s} />
           </UniversalContextMenu>
         )}
         searchFields={['name', 'email', 'phone', 'code']}
@@ -77,6 +91,7 @@ export default function SuppliersPage() {
         searchPlaceholder="Search by name, email or phone..."
         emptyTitle="No suppliers found."
         emptyDescription="Add your first supplier to get started."
+        itemName="suppliers"
       />
     </div>
   );
