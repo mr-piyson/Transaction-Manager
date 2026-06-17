@@ -3,12 +3,17 @@
 import {
   ArrowLeft,
   Banknote,
+  Building2,
+  Calendar,
   Edit,
   HandCoins,
+  Layers,
   Loader2,
   Receipt,
   Send,
   Trash,
+  User,
+  Wallet,
   XCircle,
 } from 'lucide-react';
 import { useParams, useRouter } from 'next/navigation';
@@ -448,69 +453,66 @@ export default function InvoiceDetailPage() {
       </header>
 
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
-        {/* Info cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-          <Card>
-            <CardHeader className="pb-1.5">
-              <CardTitle className="text-xs text-muted-foreground font-medium">Customer</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="font-semibold">{invoice.customer?.name ?? (invoice.isWalkIn ? 'Walk-in' : '—')}</p>
-              {invoice.customer && (
-                <p className="text-xs text-muted-foreground">
-                  {invoice.customer.email}
-                  {invoice.customer.phone ? ` · ${invoice.customer.phone}` : ''}
-                </p>
-              )}
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="pb-1.5">
-              <CardTitle className="text-xs text-muted-foreground font-medium">Warehouse</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="font-semibold">{invoice.warehouse?.name ?? '—'}</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="pb-1.5">
-              <CardTitle className="text-xs text-muted-foreground font-medium">Date</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="font-semibold">
-                {invoice.date ? format(new Date(invoice.date), 'dd MMM yyyy') : '—'}
-              </p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="pb-1.5">
-              <CardTitle className="text-xs text-muted-foreground font-medium">Due Date</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="font-semibold">
-                {invoice.dueDate ? format(new Date(invoice.dueDate), 'dd MMM yyyy') : '—'}
-              </p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="pb-1.5">
-              <CardTitle className="text-xs text-muted-foreground font-medium">Currency</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="font-semibold">{invoice.currency}</p>
-            </CardContent>
-          </Card>
-          {invoice.department && (
-            <Card>
-              <CardHeader className="pb-1.5">
-                <CardTitle className="text-xs text-muted-foreground font-medium">Department</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="font-semibold">{invoice.department.name}</p>
-              </CardContent>
-            </Card>
-          )}
-        </div>
+        {/* Info card */}
+        <Card>
+          <CardContent className="pt-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+              <div className="flex items-start gap-3">
+                <User className="size-4 text-muted-foreground shrink-0 mt-0.5" />
+                <div className="min-w-0">
+                  <p className="text-xs text-muted-foreground">Customer</p>
+                  <p className="text-sm font-semibold truncate">
+                    {invoice.customer?.name ?? (invoice.isWalkIn ? 'Walk-in' : '—')}
+                  </p>
+                  {invoice.customer?.email && (
+                    <p className="text-xs text-muted-foreground truncate">{invoice.customer.email}</p>
+                  )}
+                </div>
+              </div>
+              <div className="flex items-start gap-3">
+                <Building2 className="size-4 text-muted-foreground shrink-0 mt-0.5" />
+                <div className="min-w-0">
+                  <p className="text-xs text-muted-foreground">Warehouse</p>
+                  <p className="text-sm font-semibold truncate">{invoice.warehouse?.name ?? '—'}</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-3">
+                <Calendar className="size-4 text-muted-foreground shrink-0 mt-0.5" />
+                <div className="min-w-0">
+                  <p className="text-xs text-muted-foreground">Date</p>
+                  <p className="text-sm font-semibold truncate">
+                    {invoice.date ? format(new Date(invoice.date), 'dd MMM yyyy') : '—'}
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-start gap-3">
+                <Calendar className="size-4 text-muted-foreground shrink-0 mt-0.5" />
+                <div className="min-w-0">
+                  <p className="text-xs text-muted-foreground">Due Date</p>
+                  <p className="text-sm font-semibold truncate">
+                    {invoice.dueDate ? format(new Date(invoice.dueDate), 'dd MMM yyyy') : '—'}
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-start gap-3">
+                <Wallet className="size-4 text-muted-foreground shrink-0 mt-0.5" />
+                <div className="min-w-0">
+                  <p className="text-xs text-muted-foreground">Currency</p>
+                  <p className="text-sm font-semibold">{invoice.currency}</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-3">
+                <Layers className="size-4 text-muted-foreground shrink-0 mt-0.5" />
+                <div className="min-w-0">
+                  <p className="text-xs text-muted-foreground">Department</p>
+                  <p className="text-sm font-semibold truncate">
+                    {invoice.department?.name ?? '—'}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Parent invoice link (for credit notes) */}
         {invoice.parentInvoice && (
