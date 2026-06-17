@@ -288,4 +288,31 @@ export const stockRouter = router({
 
     return result;
   }),
+
+  // ── BATCH: stock for a set of items in a single warehouse ──────────────────
+  forItems: orgProcedure
+    .input(
+      z.object({
+        itemIds: z.array(z.string().cuid()),
+        warehouseId: z.string().cuid(),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      assertCan(ctx.ability, 'stock:read', 'Stock');
+
+      const stocks = await ctx.db.stock.findMany({
+        where: {
+          itemId: { in: input.itemIds },
+          warehouseId: input.warehouseId,
+          organizationId: ctx.user.organizationId,
+        },
+        select: {
+          itemId: true,
+          quantity: true,
+          item: { select: { name: true, type: true } },
+        },
+      });
+
+      return stocks;
+    }),
 });

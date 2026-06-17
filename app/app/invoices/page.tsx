@@ -1,8 +1,10 @@
 'use client';
 
 import { Eye, Plus, Receipt, Trash } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { Header } from '@/app/app/App-Header';
 import { type ContextMenuItemSchema, UniversalContextMenu } from '@/components/context-menu';
+import { useInvoiceForm } from '@/components/dialogs/invoiceForm';
 import { ListView } from '@/components/list-view';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -29,18 +31,37 @@ interface InvoiceRow {
 }
 
 export default function InvoicesPage() {
+  const router = useRouter();
   const { data = [], isLoading } = trpc.invoices.list.useQuery({});
+  const { openCreate } = useInvoiceForm();
   const utils = trpc.useUtils();
   const deleteMutation = trpc.invoices.delete.useMutation({
-    onSuccess: () => { utils.invoices.list.invalidate(); },
+    onSuccess: () => {
+      utils.invoices.list.invalidate();
+    },
   });
 
-  const contextMenu: ContextMenuItemSchema[] = [
-    { id: 'view', label: 'View', icon: Eye, onClick: () => {} },
-    { id: 'delete', label: 'Delete', icon: Trash, destructive: true, onClick: () => {} },
+  const contextMenu = (inv: any): ContextMenuItemSchema[] => [
+    {
+      id: 'view',
+      label: 'View',
+      icon: Eye,
+      onClick: () => router.push(`/app/invoices/${inv.id}`),
+    },
+    {
+      id: 'delete',
+      label: 'Delete',
+      icon: Trash,
+      destructive: true,
+      onClick: () => {
+        if (window.confirm(`Delete ${inv.serial}?`)) {
+          deleteMutation.mutate({ id: inv.id });
+        }
+      },
+    },
   ];
 
-  const invoices = Array.isArray(data) ? data : data?.data ?? [];
+  const invoices = Array.isArray(data) ? data : (data?.data ?? []);
 
   return (
     <div className="flex flex-col h-screen">
@@ -48,7 +69,7 @@ export default function InvoicesPage() {
         title="Invoices"
         icon={<Receipt className="size-5" />}
         rightContent={
-          <Button size="sm" className="gap-1.5" onClick={() => {}}>
+          <Button size="sm" className="gap-1.5" onClick={() => openCreate()}>
             <Plus className="size-4" />
             New Invoice
           </Button>
@@ -56,7 +77,7 @@ export default function InvoicesPage() {
       />
       <ListView
         cardRenderer={(inv: any) => (
-          <UniversalContextMenu items={contextMenu}>
+          <UniversalContextMenu items={contextMenu(inv)}>
             <div className="flex items-center gap-3 p-3">
               <div className="size-11 rounded-lg bg-muted flex items-center justify-center shrink-0">
                 <Receipt className="size-5 text-muted-foreground" />
@@ -64,14 +85,19 @@ export default function InvoicesPage() {
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
                   <p className="font-semibold truncate">{inv.serial}</p>
-                  <Badge variant="outline" className={STATUS_COLORS[inv.status] ?? ''}>{inv.status}</Badge>
+                  <Badge variant="outline" className={STATUS_COLORS[inv.status] ?? ''}>
+                    {inv.status}
+                  </Badge>
                 </div>
                 <p className="text-sm text-muted-foreground truncate">
-                  {inv.customer?.name ?? '—'} · {inv.date ? format(new Date(inv.date), 'dd MMM yyyy') : '—'}
+                  {inv.customer?.name ?? '—'} ·{' '}
+                  {inv.date ? format(new Date(inv.date), 'dd MMM yyyy') : '—'}
                 </p>
               </div>
               <div className="text-right">
-                <p className="font-semibold">{Number(inv.total).toFixed(3)} {inv.currency}</p>
+                <p className="font-semibold">
+                  {Number(inv.total).toFixed(3)} {inv.currency}
+                </p>
               </div>
             </div>
           </UniversalContextMenu>

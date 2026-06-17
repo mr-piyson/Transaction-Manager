@@ -70,9 +70,11 @@ export async function deductStockForInvoice(opts: StockMovementOptions): Promise
 
     const available = Number(stock?.quantity ?? 0);
     if (available < line.quantity) {
-      shortfalls.push(
-        `${stock?.item.name ?? line.itemId}: need ${line.quantity}, available ${available}`,
-      );
+      const itemName =
+        stock?.item.name ??
+        (await tx.item.findUnique({ where: { id: line.itemId }, select: { name: true } }))?.name ??
+        line.itemId;
+      shortfalls.push(`${itemName}: need ${line.quantity}, available ${available}`);
     }
   }
 

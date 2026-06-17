@@ -3,6 +3,7 @@
 import type { ReactNode } from 'react';
 import { ContractFormProvider } from './contractForm';
 import { CustomerFormProvider } from './customerForm';
+import { InvoiceFormProvider } from './invoiceForm';
 import { ItemFormProvider } from './itemForm';
 import { POFormProvider } from './poForm';
 import { SupplierFormProvider } from './supplierForm';
@@ -26,6 +27,9 @@ export type { ContractFormValues } from './contractForm';
 export { POFormProvider, usePOForm, POFormDialog } from './poForm';
 export type { POFormValues } from './poForm';
 
+export { InvoiceFormProvider, useInvoiceForm, InvoiceFormDialog } from './invoiceForm';
+export type { InvoiceFormValues } from './invoiceForm';
+
 /**
  * DialogsProvider — mount once in your app layout.
  * Nest all form providers so their hooks work anywhere in the tree.
@@ -38,7 +42,9 @@ export function DialogsProvider({ children }: { children: ReactNode }) {
           <ItemFormProvider>
             <ContractFormProvider>
               <POFormProvider>
-                {children}
+                <InvoiceFormProvider>
+                  {children}
+                </InvoiceFormProvider>
               </POFormProvider>
             </ContractFormProvider>
           </ItemFormProvider>
