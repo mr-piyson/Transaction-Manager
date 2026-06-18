@@ -79,7 +79,7 @@ function FinancialForm({
   };
 
   return (
-    <div className="max-w-2xl space-y-6">
+    <div className="h-full space-y-6">
       <SectionCard title="Currency & Region">
         <Field label="Default Currency">
           <Select

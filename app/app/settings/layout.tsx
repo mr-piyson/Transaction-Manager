@@ -1,9 +1,24 @@
 'use client';
 
-import { Settings } from 'lucide-react';
+import { Menu, Settings } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useState } from 'react';
 import { Header } from '@/app/app/App-Header';
+import {
+  SidebarGroup,
+  SidebarGroupLabel,
+  SidebarMenu,
+  SidebarMenuItem,
+} from '@/components/sidebar';
+import { Button } from '@/components/ui/button';
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from '@/components/ui/sheet';
 import { cn } from '@/lib/utils';
 import { NAV_ITEMS } from './_shared';
 
@@ -14,58 +29,73 @@ export default function SettingsLayout({
 }) {
   const pathname = usePathname();
   const activeSection = pathname.split('/').pop() ?? 'general';
+  const [mobileOpen, setMobileOpen] = useState(false);
 
-  return (
-    <div className="flex flex-col h-screen">
-      <Header title="Settings" icon={<Settings className="size-5" />} />
-
-      <div className="flex flex-1 overflow-hidden">
-        <aside className="w-56 shrink-0 border-r bg-muted/30 p-3 hidden md:block">
-          <nav className="flex flex-col gap-1">
-            {NAV_ITEMS.map((item) => {
-              const Icon = item.icon;
-              const isActive = item.id === activeSection;
-              return (
-                <Link
-                  key={item.id}
-                  href={item.href}
-                  className={cn(
-                    'flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
-                    isActive
-                      ? 'bg-primary text-primary-foreground'
-                      : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground',
-                  )}
-                >
-                  <Icon className="size-4 shrink-0" />
-                  {item.label}
-                </Link>
-              );
-            })}
-          </nav>
-        </aside>
-
-        <div className="flex md:hidden gap-1 px-4 pt-3 pb-0 overflow-x-auto border-b bg-muted/30">
-          {NAV_ITEMS.map((item) => {
-            const Icon = item.icon;
-            const isActive = item.id === activeSection;
-            return (
+  const nav = (
+    <SidebarGroup>
+      <SidebarGroupLabel className="px-3 text-xs uppercase tracking-wider">
+        Settings
+      </SidebarGroupLabel>
+      <SidebarMenu>
+        {NAV_ITEMS.map((item) => {
+          const Icon = item.icon;
+          const isActive = item.id === activeSection;
+          return (
+            <SidebarMenuItem key={item.id}>
               <Link
-                key={item.id}
                 href={item.href}
+                onClick={() => setMobileOpen(false)}
                 className={cn(
-                  'flex items-center gap-2 rounded-lg px-3 py-1.5 text-sm font-medium whitespace-nowrap transition-colors',
+                  'flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors',
                   isActive
-                    ? 'bg-primary text-primary-foreground'
-                    : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground',
+                    ? 'bg-sidebar-accent text-sidebar-accent-foreground'
+                    : 'text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground',
                 )}
               >
                 <Icon className="size-4 shrink-0" />
-                {item.label}
+                <span>{item.label}</span>
               </Link>
-            );
-          })}
-        </div>
+            </SidebarMenuItem>
+          );
+        })}
+      </SidebarMenu>
+    </SidebarGroup>
+  );
 
+  return (
+    <div className="flex flex-col h-screen">
+      <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
+        <Header
+          title="Settings"
+          icon={<Settings className="size-5" />}
+        >
+          <SheetTrigger asChild>
+            <Button
+              variant="outline"
+              size="sm"
+              className="md:hidden gap-2"
+            >
+              <Menu className="size-4" />
+              {NAV_ITEMS.find((i) => i.id === activeSection)?.label ??
+                'Settings'}
+            </Button>
+          </SheetTrigger>
+        </Header>
+        <SheetContent side="left" className="w-64 p-4">
+          <SheetHeader>
+            <SheetTitle className="text-lg">Settings</SheetTitle>
+          </SheetHeader>
+          <nav className="mt-4">{nav}</nav>
+        </SheetContent>
+      </Sheet>
+
+      <div className="flex flex-1 min-h-0">
+        {/* Desktop sidebar */}
+        <aside className="w-56 shrink-0 border-r border-sidebar-border bg-sidebar hidden md:flex flex-col py-4">
+          {nav}
+        </aside>
+
+        {/* Content */}
         <div className="flex-1 overflow-y-auto p-6">{children}</div>
       </div>
     </div>

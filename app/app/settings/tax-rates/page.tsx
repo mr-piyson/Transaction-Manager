@@ -42,7 +42,7 @@ export default function TaxRatesPage() {
   };
 
   return (
-    <div className="max-w-2xl space-y-6">
+    <div className="h-full space-y-6">
       <SectionCard
         title="Tax Rates"
         description="Manage sales tax rates for your organization."

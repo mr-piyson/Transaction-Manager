@@ -438,7 +438,7 @@ export function UniversalContextMenu({ items, children, className }: UniversalCo
       <>
         <button
           type={'button'}
-          className={cn('select-none', className)}
+          className={cn('select-none w-full', className)}
           onContextMenu={handleContextMenu}
           style={{ WebkitTouchCallout: 'none' }}
         >
@@ -456,7 +456,7 @@ export function UniversalContextMenu({ items, children, className }: UniversalCo
   return (
     <ContextMenu>
       <ContextMenuTrigger asChild>{children}</ContextMenuTrigger>
-      <ContextMenuContent className="min-w-56">
+      <ContextMenuContent>
         <DesktopMenuItems items={items} />
       </ContextMenuContent>
     </ContextMenu>

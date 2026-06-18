@@ -133,4 +133,31 @@ export const authRouter = t.router({
 
       return { success: true };
     }),
+
+  // ── LIST SESSIONS ─────────────────────────────────────────────────────
+  listSessions: protectedProcedure.query(async ({ ctx }) => {
+    const sessions = await auth.api.listSessions({
+      headers: ctx.req.headers,
+    });
+    return sessions;
+  }),
+
+  // ── REVOKE SINGLE SESSION ─────────────────────────────────────────────
+  revokeSession: protectedProcedure
+    .input(z.object({ token: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      await auth.api.revokeSession({
+        headers: ctx.req.headers,
+        body: { token: input.token },
+      });
+      return { success: true };
+    }),
+
+  // ── REVOKE ALL OTHER SESSIONS ─────────────────────────────────────────
+  revokeOtherSessions: protectedProcedure.mutation(async ({ ctx }) => {
+    await auth.api.revokeOtherSessions({
+      headers: ctx.req.headers,
+    });
+    return { success: true };
+  }),
 });

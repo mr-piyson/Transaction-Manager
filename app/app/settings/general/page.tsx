@@ -64,7 +64,7 @@ function GeneralForm({
   };
 
   return (
-    <div className="max-w-2xl space-y-6">
+    <div className="h-full space-y-6">
       <SectionCard
         title="General Information"
         description="Basic details about your organization."
