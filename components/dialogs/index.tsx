@@ -7,6 +7,7 @@ import { InvoiceFormProvider } from './invoiceForm';
 import { ItemFormProvider } from './itemForm';
 import { POFormProvider } from './poForm';
 import { SupplierFormProvider } from './supplierForm';
+import { SupplierItemFormProvider } from './supplierItemForm';
 import { WarehouseFormProvider } from './warehouseForm';
 
 export { CustomerFormProvider, useCustomerForm, CustomerFormDialog } from './customerForm';
@@ -14,6 +15,9 @@ export type { CustomerFormValues } from './customerForm';
 
 export { SupplierFormProvider, useSupplierForm, SupplierFormDialog } from './supplierForm';
 export type { SupplierFormValues } from './supplierForm';
+
+export { SupplierItemFormProvider, useSupplierItemForm, SupplierItemFormDialog } from './supplierItemForm';
+export type { SupplierItemFormValues } from './supplierItemForm';
 
 export { WarehouseFormProvider, useWarehouseForm, WarehouseFormDialog } from './warehouseForm';
 export type { WarehouseFormValues } from './warehouseForm';
@@ -38,17 +42,19 @@ export function DialogsProvider({ children }: { children: ReactNode }) {
   return (
     <CustomerFormProvider>
       <SupplierFormProvider>
-        <WarehouseFormProvider>
-          <ItemFormProvider>
-            <ContractFormProvider>
-              <POFormProvider>
-                <InvoiceFormProvider>
-                  {children}
-                </InvoiceFormProvider>
-              </POFormProvider>
-            </ContractFormProvider>
-          </ItemFormProvider>
-        </WarehouseFormProvider>
+        <SupplierItemFormProvider>
+          <WarehouseFormProvider>
+            <ItemFormProvider>
+              <ContractFormProvider>
+                <POFormProvider>
+                  <InvoiceFormProvider>
+                    {children}
+                  </InvoiceFormProvider>
+                </POFormProvider>
+              </ContractFormProvider>
+            </ItemFormProvider>
+          </WarehouseFormProvider>
+        </SupplierItemFormProvider>
       </SupplierFormProvider>
     </CustomerFormProvider>
   );

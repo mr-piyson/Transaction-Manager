@@ -2,6 +2,8 @@ import { z } from 'zod';
 import { ConflictError, NotFoundError } from '@/lib/error';
 import { assertCan, orgProcedure, router } from '@/lib/trpc/context';
 import {
+  currencyCodeSchema,
+  decimalSchema,
   offsetPaginationSchema,
   paginatedResponse,
   sortOrderSchema,
@@ -214,4 +216,147 @@ export const suppliersRouter = router({
 
     return { success: true };
   }),
+
+  // ── SUPPLIER ITEMS ─────────────────────────────────────────────────────────
+
+  addSupplierItem: orgProcedure
+    .input(
+      z.object({
+        supplierId: z.string().cuid(),
+        itemId: z.string().cuid(),
+        supplierSku: z.string().max(100).optional(),
+        supplierName: z.string().max(255).optional(),
+        basePrice: decimalSchema,
+        currency: currencyCodeSchema.default('BHD'),
+        leadTimeDays: z.number().int().min(0).optional(),
+        minOrderQty: decimalSchema.optional(),
+        notes: z.string().max(5000).optional(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      assertCan(ctx.ability, 'po:update', 'all');
+
+      const supplier = await ctx.db.supplier.findFirst({
+        where: { id: input.supplierId, organizationId: ctx.user.organizationId, deletedAt: null },
+        select: { id: true },
+      });
+      if (!supplier) throw new NotFoundError('Supplier', input.supplierId);
+
+      const item = await ctx.db.item.findFirst({
+        where: { id: input.itemId, organizationId: ctx.user.organizationId, deletedAt: null },
+        select: { id: true },
+      });
+      if (!item) throw new NotFoundError('Item', input.itemId);
+
+      const existing = await ctx.db.supplierItem.findFirst({
+        where: { supplierId: input.supplierId, itemId: input.itemId, deletedAt: null },
+        select: { id: true },
+      });
+      if (existing) throw new ConflictError('This item is already linked to the supplier.');
+
+      return ctx.db.$transaction(async (tx) => {
+        const created = await tx.supplierItem.create({
+          data: {
+            supplierId: input.supplierId,
+            itemId: input.itemId,
+            supplierSku: input.supplierSku,
+            supplierName: input.supplierName,
+            basePrice: input.basePrice,
+            currency: input.currency,
+            leadTimeDays: input.leadTimeDays,
+            minOrderQty: input.minOrderQty ?? 1,
+            notes: input.notes,
+            organizationId: ctx.user.organizationId,
+          },
+        });
+
+        await writeAuditLog(
+          {
+            entityType: 'SupplierItem',
+            entityId: created.id,
+            action: 'CREATE',
+            organizationId: ctx.user.organizationId,
+            userId: ctx.user.id,
+            ipAddress: ctx.ipAddress,
+          },
+          tx,
+        );
+
+        return created;
+      });
+    }),
+
+  updateSupplierItem: orgProcedure
+    .input(
+      z.object({
+        id: z.string().cuid(),
+        supplierSku: z.string().max(100).optional(),
+        supplierName: z.string().max(255).optional(),
+        basePrice: decimalSchema.optional(),
+        currency: currencyCodeSchema.optional(),
+        leadTimeDays: z.number().int().min(0).optional(),
+        minOrderQty: decimalSchema.optional(),
+        notes: z.string().max(5000).optional(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { id, ...data } = input;
+
+      const existing = await ctx.db.supplierItem.findFirst({
+        where: { id, organizationId: ctx.user.organizationId, deletedAt: null },
+      });
+      if (!existing) throw new NotFoundError('SupplierItem', id);
+
+      assertCan(ctx.ability, 'po:update', 'all', existing as Record<string, unknown>);
+
+      return ctx.db.$transaction(async (tx) => {
+        const updated = await tx.supplierItem.update({ where: { id }, data });
+
+        await writeAuditLog(
+          {
+            entityType: 'SupplierItem',
+            entityId: id,
+            action: 'UPDATE',
+            organizationId: ctx.user.organizationId,
+            userId: ctx.user.id,
+            ipAddress: ctx.ipAddress,
+          },
+          tx,
+        );
+
+        return updated;
+      });
+    }),
+
+  deleteSupplierItem: orgProcedure
+    .input(z.object({ id: z.string().cuid() }))
+    .mutation(async ({ ctx, input }) => {
+      const existing = await ctx.db.supplierItem.findFirst({
+        where: { id: input.id, organizationId: ctx.user.organizationId, deletedAt: null },
+      });
+      if (!existing) throw new NotFoundError('SupplierItem', input.id);
+
+      assertCan(ctx.ability, 'po:update', 'all', existing as Record<string, unknown>);
+
+      await ctx.db.$transaction(async (tx) => {
+        await tx.supplierItem.update({
+          where: { id: input.id },
+          data: { deletedAt: new Date(), isActive: false },
+        });
+
+        await writeAuditLog(
+          {
+            entityType: 'SupplierItem',
+            entityId: input.id,
+            action: 'DELETE',
+            organizationId: ctx.user.organizationId,
+            userId: ctx.user.id,
+            ipAddress: ctx.ipAddress,
+          },
+          tx,
+        );
+      });
+
+      return { success: true };
+    }),
 });

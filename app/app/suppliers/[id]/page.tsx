@@ -1,6 +1,6 @@
 'use client';
 
-import { ArrowLeft, Edit, ExternalLink, Loader2, Plus, Trash, Truck } from 'lucide-react';
+import { ArrowLeft, Edit, ExternalLink, Loader2, Pen, Plus, Trash, Truck, X } from 'lucide-react';
 import { useParams, useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { alert } from '@/components/Alert-dialog';
@@ -11,7 +11,7 @@ import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '@/
 import { Separator } from '@/components/ui/separator';
 import { Spinner } from '@/components/ui/spinner';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { useSupplierForm } from '@/components/dialogs/supplierForm';
+import { useSupplierForm, useSupplierItemForm } from '@/components/dialogs';
 import { trpc } from '@/lib/trpc/client';
 import { format } from 'date-fns';
 
@@ -32,6 +32,7 @@ export default function SupplierDetailPage() {
   const router = useRouter();
   const utils = trpc.useUtils();
   const { openEdit } = useSupplierForm();
+  const { openCreate, openEdit: openSupplierItemEdit } = useSupplierItemForm();
 
   const { data: supplier, isLoading, isError, error, refetch } = trpc.suppliers.byId.useQuery(
     { id: params.id },
@@ -43,6 +44,14 @@ export default function SupplierDetailPage() {
       utils.suppliers.list.invalidate();
       toast.success('Supplier deleted');
       router.push('/app/suppliers');
+    },
+    onError: (e) => toast.error(e.message),
+  });
+
+  const deleteSupplierItemMutation = trpc.suppliers.deleteSupplierItem.useMutation({
+    onSuccess: () => {
+      if (supplier) utils.suppliers.byId.invalidate({ id: supplier.id });
+      toast.success('Supplier item removed');
     },
     onError: (e) => toast.error(e.message),
   });
@@ -254,8 +263,17 @@ export default function SupplierDetailPage() {
         {/* Supplier items */}
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-semibold">
-              Items supplied ({supplier._count?.supplierItems ?? 0})
+            <CardTitle className="text-sm font-semibold flex items-center justify-between">
+              <span>Items supplied ({supplier._count?.supplierItems ?? 0})</span>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="gap-1 text-xs h-7"
+                onClick={() => openCreate(supplier.id)}
+              >
+                <Plus className="size-3" />
+                Add item
+              </Button>
             </CardTitle>
           </CardHeader>
           <CardContent className="p-0">
@@ -267,6 +285,7 @@ export default function SupplierDetailPage() {
                   <TableHead>Supplier SKU</TableHead>
                   <TableHead className="text-right">Base price</TableHead>
                   <TableHead className="text-right">Lead time</TableHead>
+                  <TableHead className="w-20"></TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -279,11 +298,54 @@ export default function SupplierDetailPage() {
                       {Number(si.basePrice).toFixed(3)} {si.currency}
                     </TableCell>
                     <TableCell className="text-right">{si.leadTimeDays ? `${si.leadTimeDays}d` : '—'}</TableCell>
+                    <TableCell>
+                      <div className="flex items-center justify-end gap-1">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="size-7"
+                          onClick={() =>
+                            openSupplierItemEdit(supplier.id, {
+                              id: si.id,
+                              itemId: si.item?.id,
+                              itemName: si.item?.name,
+                              itemSku: si.item?.sku,
+                              supplierSku: si.supplierSku,
+                              supplierName: si.supplierName,
+                              basePrice: Number(si.basePrice),
+                              currency: si.currency,
+                              leadTimeDays: si.leadTimeDays,
+                              minOrderQty: Number(si.minOrderQty),
+                              notes: si.notes,
+                            })
+                          }
+                        >
+                          <Pen className="size-3" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="size-7 text-destructive hover:text-destructive"
+                          onClick={() =>
+                            alert.delete({
+                              title: 'Remove item?',
+                              description: `Remove "${si.item?.name ?? si.item?.sku ?? si.id}" from this supplier?`,
+                              confirmText: 'Remove',
+                              onConfirm: async () => {
+                                await deleteSupplierItemMutation.mutateAsync({ id: si.id });
+                              },
+                            })
+                          }
+                        >
+                          <X className="size-3" />
+                        </Button>
+                      </div>
+                    </TableCell>
                   </TableRow>
                 ))}
                 {supplierItems.length === 0 && (
                   <TableRow>
-                    <TableCell colSpan={5} className="text-center text-muted-foreground py-6">
+                    <TableCell colSpan={6} className="text-center text-muted-foreground py-6">
                       No items linked to this supplier
                     </TableCell>
                   </TableRow>
