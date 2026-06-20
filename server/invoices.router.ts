@@ -33,7 +33,7 @@
 import { z } from 'zod';
 import { calculateInvoiceTotals } from '@/lib/calculator';
 import { ConflictError, NotFoundError, StaleDataError, UnprocessableError } from '@/lib/error';
-import { generateSerial } from '@/lib/sequences';
+import { type DocumentPrefix, generateSerial } from '@/lib/sequences';
 import { assertCan, orgProcedure, router } from '@/lib/trpc/context';
 import {
   currencyCodeSchema,
@@ -351,89 +351,99 @@ export const invoicesRouter = router({
       })),
     );
 
-    const invoice = await ctx.db.$transaction(async (tx) => {
-      // Determine serial prefix
-      const prefixMap: Record<string, string> = {
-        INVOICE: 'INV',
-        QUOTE: 'QTE',
-        CREDIT_NOTE: 'CN',
-        PROFORMA: 'PFI',
-        DELIVERY_NOTE: 'DN',
-      };
-      const prefix = prefixMap[invoiceData.type ?? 'INVOICE'] ?? 'INV';
+    // Retry on serial unique constraint violation (P2002)
+    let invoice: any;
+    let lastError: any;
+    for (let attempt = 0; attempt < 3; attempt++) {
+      try {
+        invoice = await ctx.db.$transaction(async (tx) => {
+          // Determine serial prefix
+          const prefixMap: Record<string, string> = {
+            INVOICE: 'INV',
+            QUOTE: 'QTE',
+            CREDIT_NOTE: 'CN',
+            PROFORMA: 'PFI',
+            DELIVERY_NOTE: 'DN',
+          };
+          const prefix = prefixMap[invoiceData.type ?? 'INVOICE'] ?? 'INV';
 
-      const serial = await generateSerial({
-        db: tx as never,
-        organizationId: orgId,
-        prefix: prefix as 'INV',
-      });
+          const serial = await generateSerial({
+            db: tx as never,
+            organizationId: orgId,
+            prefix: prefix as DocumentPrefix,
+          });
 
-      // Compute due date from org default if not supplied
-      let dueDate = invoiceData.dueDate;
-      if (!dueDate && invoiceData.type === 'INVOICE') {
-        const org = await tx.organization.findUnique({
-          where: { id: orgId },
-          select: { paymentTermsDays: true },
-        });
-        const terms = org?.paymentTermsDays ?? 30;
-        dueDate = new Date((invoiceData.date ?? new Date()).getTime() + terms * 86_400_000);
-      }
+          // Compute due date from org default if not supplied
+          let dueDate = invoiceData.dueDate;
+          if (!dueDate && invoiceData.type === 'INVOICE') {
+            const org = await tx.organization.findUnique({
+              where: { id: orgId },
+              select: { paymentTermsDays: true },
+            });
+            const terms = org?.paymentTermsDays ?? 30;
+            dueDate = new Date((invoiceData.date ?? new Date()).getTime() + terms * 86_400_000);
+          }
 
-      const created = await tx.invoice.create({
-        data: {
-          serial,
-          ...invoiceData,
-          dueDate,
-          subtotal: totals.subtotal,
-          discountTotal: totals.discountTotal,
-          taxTotal: totals.taxTotal,
-          total: totals.total,
-          costTotal: totals.costTotal,
-          amountDue: totals.total,
-          organizationId: orgId,
-          createdById: ctx.user.id,
-          lines: {
-            create: enrichedLines.map((line, idx) => ({
-              itemId: line.itemId,
-              description: line.description,
-              quantity: totals.lines[idx]?.quantity,
-              unitPrice: totals.lines[idx]?.unitPrice,
-              discountAmt: totals.lines[idx]?.discountAmt,
-              purchasePrice: totals.lines[idx]?.purchasePrice ?? 0,
-              taxAmt: totals.lines[idx]?.taxAmt,
-              total: totals.lines[idx]?.total,
-              taxRateId: line.taxRateId,
-              taxRateSnapshot: line.taxRateSnapshot,
-              taxRateName: line.taxRateName,
-              sortOrder: line.sortOrder ?? idx,
-              departmentId: line.departmentId,
+          const created = await tx.invoice.create({
+            data: {
+              serial,
+              ...invoiceData,
+              dueDate,
+              subtotal: totals.subtotal,
+              discountTotal: totals.discountTotal,
+              taxTotal: totals.taxTotal,
+              total: totals.total,
+              costTotal: totals.costTotal,
+              amountDue: totals.total,
               organizationId: orgId,
-            })),
-          },
-        },
-        include: { lines: true },
-      });
+              createdById: ctx.user.id,
+              lines: {
+                create: enrichedLines.map((line, idx) => ({
+                  itemId: line.itemId,
+                  description: line.description,
+                  quantity: totals.lines[idx]?.quantity,
+                  unitPrice: totals.lines[idx]?.unitPrice,
+                  discountAmt: totals.lines[idx]?.discountAmt,
+                  purchasePrice: totals.lines[idx]?.purchasePrice ?? 0,
+                  taxAmt: totals.lines[idx]?.taxAmt,
+                  total: totals.lines[idx]?.total,
+                  taxRateId: line.taxRateId,
+                  taxRateSnapshot: line.taxRateSnapshot,
+                  taxRateName: line.taxRateName,
+                  sortOrder: line.sortOrder ?? idx,
+                  departmentId: line.departmentId,
+                  organizationId: orgId,
+                })),
+              },
+            },
+            include: { lines: true },
+          });
 
-      await writeAuditLog(
-        {
-          entityType: 'Invoice',
-          entityId: created.id,
-          action: 'CREATE',
-          diff: {
-            serial: { before: null, after: serial },
-            type: { before: null, after: invoiceData.type },
-          },
-          organizationId: orgId,
-          userId: ctx.user.id,
-          ipAddress: ctx.ipAddress,
-        },
-        tx,
-      );
+          await writeAuditLog(
+            {
+              entityType: 'Invoice',
+              entityId: created.id,
+              action: 'CREATE',
+              diff: {
+                serial: { before: null, after: serial },
+                type: { before: null, after: invoiceData.type },
+              },
+              organizationId: orgId,
+              userId: ctx.user.id,
+              ipAddress: ctx.ipAddress,
+            },
+            tx,
+          );
 
-      return created;
-    });
-
-    return invoice;
+          return created;
+        });
+        return invoice;
+      } catch (err: any) {
+        lastError = err;
+        if (err.code !== 'P2002') throw err;
+      }
+    }
+    throw lastError;
   }),
 
   // ── UPDATE (DRAFT only) ───────────────────────────────────────────────────

@@ -58,7 +58,7 @@ interface GenerateSerialOptions {
 export async function generateSerial(opts: GenerateSerialOptions): Promise<string> {
   const { db, organizationId, prefix, padLength = 5, fiscalYear } = opts;
 
-  const fiscalYearParam: number | null = fiscalYear ?? null;
+  const fiscalYearParam: number = fiscalYear ?? 0;
 
   // Upsert the sequence row so first-time use auto-creates it.
   // Then lock it for the duration of this transaction.
