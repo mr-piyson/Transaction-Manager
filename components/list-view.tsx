@@ -46,7 +46,7 @@ export interface UniversalListViewProps<T = any> {
 
   // Search configuration
   searchPlaceholder?: string;
-  searchFields: (keyof T | ((item: T) => string | undefined))[];
+  searchFields?: (keyof T | ((item: T) => string | undefined))[];
 
   // Filter configuration
   filters?: FilterConfig<T>[];
@@ -125,7 +125,7 @@ export function ListView<T extends Record<string, any>>({
       // Search filter
       const matchesSearch =
         !searchTerm ||
-        searchFields.some((field) => {
+        searchFields?.some((field) => {
           const value = typeof field === 'function' ? field(item) : String(item[field] || '');
           return value?.toLowerCase().includes(searchTerm.toLowerCase());
         });
@@ -301,25 +301,27 @@ export function ListView<T extends Record<string, any>>({
       <div>
         {/* Search Bar with Optional Filters */}
         <div className="flex flex-1 flex-col sm:flex-row gap-3 px-4 py-3">
-          <div className="flex relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-            <Input
-              placeholder={searchPlaceholder}
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10 pr-10"
-            />
-            {searchTerm && (
-              <Button
-                variant="ghost"
-                size="icon"
-                className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7"
-                onClick={clearSearch}
-              >
-                <X className="w-4 h-4" />
-              </Button>
-            )}
-          </div>
+          {!!searchFields && (
+            <div className="flex relative flex-1">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <Input
+                placeholder={searchPlaceholder}
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10 pr-10"
+              />
+              {searchTerm && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7"
+                  onClick={clearSearch}
+                >
+                  <X className="w-4 h-4" />
+                </Button>
+              )}
+            </div>
+          )}
 
           {/* Filter Popover (only show if filters exist) */}
           {filters.length > 0 && (
@@ -443,6 +445,8 @@ export function ListView<T extends Record<string, any>>({
             rowHeight={calculatedRowHeight}
             onGridReady={(params) => setGridApi(params.api)}
             domLayout="normal"
+            getRowId={(params) => params.data.id}
+            suppressScrollOnNewData={true}
           />
         )}
       </div>

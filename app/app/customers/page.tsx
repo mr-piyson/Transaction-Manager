@@ -1,66 +1,24 @@
 'use client';
 
-import type { ColumnDef } from '@tanstack/react-table';
-import { Plus, Trash, Users } from 'lucide-react';
+import { Users } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { Header } from '@/app/app/App-Header';
-import { type ContextMenuItemSchema, UniversalContextMenu } from '@/components/context-menu';
-import { Customer_List_Item } from '@/components/customers/customer-list-item';
-import { ListView } from '@/components/list-view';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { trpc } from '@/lib/trpc/client';
-
-type CustomerRow = {
-  id: string;
-  name: string;
-  phone: string | null;
-  email: string | null;
-  city: string | null;
-  isActive: boolean;
-  creditLimit: bigint;
-};
 
 export default function CustomersPage() {
   const router = useRouter();
-  const { data = [], isLoading } = trpc.customers.list.useQuery({});
-  const utils = trpc.useUtils();
-  const deleteMutation = trpc.customers.delete.useMutation({
-    onSuccess: () => { utils.customers.list.invalidate(); },
-  });
-
-  const contextMenu: ContextMenuItemSchema[] = [
-    { id: 'edit', label: 'Edit', onClick: () => {} },
-    { id: 'delete', label: 'Delete', icon: Trash, destructive: true, onClick: () => {} },
-  ];
-
-  const customers = Array.isArray(data) ? data : data?.data ?? [];
 
   return (
-    <div className="flex flex-col h-screen">
-      <Header
-        title="Customers"
-        icon={<Users className="size-5" />}
-        rightContent={
-          <Button size="sm" className="gap-1.5" onClick={() => router.push('/app/customers/new')}>
-            <Plus className="size-4" />
-            New Customer
-          </Button>
-        }
-      />
-      <ListView
-        cardRenderer={(data: any) => (
-          <UniversalContextMenu items={contextMenu}>
-            <Customer_List_Item data={data} />
-          </UniversalContextMenu>
-        )}
-        searchFields={['name', 'phone', 'email']}
-        data={customers}
-        isLoading={isLoading}
-        searchPlaceholder="Search by name, email or phone..."
-        emptyTitle="No customers found."
-        emptyDescription="Add your first customer to get started."
-      />
+    <div className="flex flex-col items-center justify-center h-full gap-4 p-8 text-center">
+      <div className="size-16 rounded-full bg-muted flex items-center justify-center">
+        <Users className="size-8 text-muted-foreground" />
+      </div>
+      <div>
+        <h2 className="text-xl font-semibold">Customers</h2>
+        <p className="text-muted-foreground mt-1">Select a customer from the list or create a new one.</p>
+      </div>
+      <Button onClick={() => router.push('/app/customers/new')}>
+        New Customer
+      </Button>
     </div>
   );
 }

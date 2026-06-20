@@ -1,75 +1,24 @@
 'use client';
 
-import { Package, Plus, Trash } from 'lucide-react';
+import { Package } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { Header } from '@/app/app/App-Header';
-import { type ContextMenuItemSchema, UniversalContextMenu } from '@/components/context-menu';
-import { ListView } from '@/components/list-view';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { trpc } from '@/lib/trpc/client';
-
-interface ItemRow {
-  id: string;
-  name: string;
-  sku: string | null;
-  description?: string | null;
-  isActive: boolean;
-  type: string;
-  unit: string | null;
-}
 
 export default function ItemsPage() {
   const router = useRouter();
-  const { data = [], isLoading } = trpc.items.list.useQuery({});
-  const utils = trpc.useUtils();
-  const deleteMutation = trpc.items.delete.useMutation({
-    onSuccess: () => { utils.items.list.invalidate(); },
-  });
-
-  const contextMenu: ContextMenuItemSchema[] = [
-    { id: 'edit', label: 'Edit', onClick: () => {} },
-    { id: 'delete', label: 'Delete', icon: Trash, destructive: true, onClick: () => {} },
-  ];
-
-  const items = Array.isArray(data) ? data : data?.data ?? [];
 
   return (
-    <div className="flex flex-col h-screen">
-      <Header
-        title="Items"
-        icon={<Package className="size-5" />}
-        rightContent={
-          <Button size="sm" className="gap-1.5" onClick={() => router.push('/app/items/new')}>
-            <Plus className="size-4" />
-            New Item
-          </Button>
-        }
-      />
-      <ListView
-        cardRenderer={(item: ItemRow) => (
-          <UniversalContextMenu items={contextMenu}>
-            <div className="flex h-18 items-center gap-3 p-3">
-              <div className="size-11 rounded-lg bg-muted flex items-center justify-center shrink-0">
-                <Package className="size-5 text-muted-foreground" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2">
-                  <p className="font-semibold truncate">{item.name}</p>
-                  <Badge variant="outline" className="text-xs">{item.type}</Badge>
-                </div>
-                <p className="text-sm text-muted-foreground truncate">{item.sku ?? '—'}</p>
-              </div>
-            </div>
-          </UniversalContextMenu>
-        )}
-        searchFields={['name', 'sku', 'description'] as any}
-        data={items}
-        isLoading={isLoading}
-        searchPlaceholder="Search by name, SKU or description..."
-        emptyTitle="No items found."
-        emptyDescription="Add your first item to get started."
-      />
+    <div className="flex flex-col items-center justify-center h-full gap-4 p-8 text-center">
+      <div className="size-16 rounded-full bg-muted flex items-center justify-center">
+        <Package className="size-8 text-muted-foreground" />
+      </div>
+      <div>
+        <h2 className="text-xl font-semibold">Items</h2>
+        <p className="text-muted-foreground mt-1">Select an item from the list or create a new one.</p>
+      </div>
+      <Button onClick={() => router.push('/app/items/new')}>
+        New Item
+      </Button>
     </div>
   );
 }
