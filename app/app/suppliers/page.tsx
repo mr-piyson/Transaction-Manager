@@ -73,7 +73,7 @@ export default function SuppliersPage() {
         title="Suppliers"
         icon={<Truck className="size-5" />}
         rightContent={
-          <Button size="sm" className="gap-1.5" onClick={() => openCreate()}>
+          <Button size="sm" className="gap-1.5" onClick={() => router.push('/app/suppliers/new')}>
             <Plus className="size-4" />
             New Supplier
           </Button>

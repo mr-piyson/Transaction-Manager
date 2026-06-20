@@ -82,7 +82,7 @@ export default function PurchaseOrdersPage() {
         title="Purchase Orders"
         icon={<ShoppingCart className="size-5" />}
         rightContent={
-          <Button size="sm" className="gap-1.5" onClick={() => openCreate()}>
+          <Button size="sm" className="gap-1.5" onClick={() => router.push('/app/purchase-orders/new')}>
             <Plus className="size-4" />
             New PO
           </Button>

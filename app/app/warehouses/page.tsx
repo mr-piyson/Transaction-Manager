@@ -1,13 +1,13 @@
 'use client';
 
 import { Plus, Trash, Warehouse } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { Header } from '@/app/app/App-Header';
 import { type ContextMenuItemSchema, UniversalContextMenu } from '@/components/context-menu';
 import { ListView } from '@/components/list-view';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { trpc } from '@/lib/trpc/client';
-import { useWarehouseForm } from '@/components/dialogs/warehouseForm';
 
 type WarehouseRow = {
   id: string;
@@ -19,8 +19,8 @@ type WarehouseRow = {
 };
 
 export default function WarehousesPage() {
+  const router = useRouter();
   const { data = [], isLoading } = trpc.warehouses.list.useQuery({});
-  const { openCreate, openEdit } = useWarehouseForm();
   const utils = trpc.useUtils();
   const deleteMutation = trpc.warehouses.delete.useMutation({
     onSuccess: () => { utils.warehouses.list.invalidate(); },
@@ -39,7 +39,7 @@ export default function WarehousesPage() {
         title="Warehouses"
         icon={<Warehouse className="size-5" />}
         rightContent={
-          <Button size="sm" className="gap-1.5" onClick={() => openCreate()}>
+          <Button size="sm" className="gap-1.5" onClick={() => router.push('/app/warehouses/new')}>
             <Plus className="size-4" />
             New Warehouse
           </Button>

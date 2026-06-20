@@ -10,7 +10,6 @@ import { ListView } from '@/components/list-view';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { trpc } from '@/lib/trpc/client';
-import { useCustomerForm } from '@/components/dialogs/customerForm';
 
 type CustomerRow = {
   id: string;
@@ -23,8 +22,8 @@ type CustomerRow = {
 };
 
 export default function CustomersPage() {
+  const router = useRouter();
   const { data = [], isLoading } = trpc.customers.list.useQuery({});
-  const { openCreate, openEdit } = useCustomerForm();
   const utils = trpc.useUtils();
   const deleteMutation = trpc.customers.delete.useMutation({
     onSuccess: () => { utils.customers.list.invalidate(); },
@@ -43,7 +42,7 @@ export default function CustomersPage() {
         title="Customers"
         icon={<Users className="size-5" />}
         rightContent={
-          <Button size="sm" className="gap-1.5" onClick={() => openCreate()}>
+          <Button size="sm" className="gap-1.5" onClick={() => router.push('/app/customers/new')}>
             <Plus className="size-4" />
             New Customer
           </Button>

@@ -1,13 +1,13 @@
 'use client';
 
 import { Package, Plus, Trash } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { Header } from '@/app/app/App-Header';
 import { type ContextMenuItemSchema, UniversalContextMenu } from '@/components/context-menu';
 import { ListView } from '@/components/list-view';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { trpc } from '@/lib/trpc/client';
-import { useItemForm } from '@/components/dialogs/itemForm';
 
 interface ItemRow {
   id: string;
@@ -20,8 +20,8 @@ interface ItemRow {
 }
 
 export default function ItemsPage() {
+  const router = useRouter();
   const { data = [], isLoading } = trpc.items.list.useQuery({});
-  const { openCreate, openEdit } = useItemForm();
   const utils = trpc.useUtils();
   const deleteMutation = trpc.items.delete.useMutation({
     onSuccess: () => { utils.items.list.invalidate(); },
@@ -40,7 +40,7 @@ export default function ItemsPage() {
         title="Items"
         icon={<Package className="size-5" />}
         rightContent={
-          <Button size="sm" className="gap-1.5" onClick={() => openCreate()}>
+          <Button size="sm" className="gap-1.5" onClick={() => router.push('/app/items/new')}>
             <Plus className="size-4" />
             New Item
           </Button>

@@ -1,13 +1,13 @@
 'use client';
 
 import { Handshake, Plus, Trash } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { Header } from '@/app/app/App-Header';
 import { type ContextMenuItemSchema, UniversalContextMenu } from '@/components/context-menu';
 import { ListView } from '@/components/list-view';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { trpc } from '@/lib/trpc/client';
-import { useContractForm } from '@/components/dialogs/contractForm';
 import { format, isAfter } from 'date-fns';
 
 interface ContractRow {
@@ -23,8 +23,8 @@ interface ContractRow {
 }
 
 export default function ContractsPage() {
+  const router = useRouter();
   const { data = [], isLoading } = trpc.contracts.list.useQuery({});
-  const { openCreate, openEdit } = useContractForm();
   const utils = trpc.useUtils();
   const deleteMutation = trpc.contracts.delete.useMutation({
     onSuccess: () => { utils.contracts.list.invalidate(); },
@@ -43,7 +43,7 @@ export default function ContractsPage() {
         title="Contracts"
         icon={<Handshake className="size-5" />}
         rightContent={
-          <Button size="sm" className="gap-1.5" onClick={() => openCreate()}>
+          <Button size="sm" className="gap-1.5" onClick={() => router.push('/app/contracts/new')}>
             <Plus className="size-4" />
             New Contract
           </Button>

@@ -24,7 +24,6 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { usePOForm } from '@/components/dialogs/poForm';
 import { trpc } from '@/lib/trpc/client';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
@@ -163,8 +162,6 @@ export default function App_Page() {
     sortBy: 'date',
     sortOrder: 'desc',
   });
-  const { openCreate: openCreatePO } = usePOForm();
-
   const poList = Array.isArray(recentPOs) ? recentPOs : ((recentPOs as any)?.data ?? []);
   const invoiceList = Array.isArray(recentInvoices)
     ? recentInvoices
@@ -206,7 +203,7 @@ export default function App_Page() {
                 variant="secondary"
                 size="sm"
                 className="gap-1.5 bg-white/20 text-white hover:bg-white/30 border-0"
-                onClick={() => openCreatePO()}
+                onClick={() => router.push('/app/purchase-orders/new')}
               >
                 <Plus className="size-4" /> New PO
               </Button>
@@ -214,7 +211,7 @@ export default function App_Page() {
                 variant="secondary"
                 size="sm"
                 className="gap-1.5 bg-white/20 text-white hover:bg-white/30 border-0"
-                onClick={() => router.push('/app/invoices')}
+                onClick={() => router.push('/app/invoices/new')}
               >
                 <Receipt className="size-4" /> New Invoice
               </Button>
@@ -234,7 +231,7 @@ export default function App_Page() {
               title="Create a Purchase Order"
               description="Order stock from your suppliers. Define items, quantities, and negotiated prices. Once approved, the PO is sent to the supplier."
               icon={<ShoppingCart className="size-5" />}
-              action={() => openCreatePO()}
+              action={() => router.push('/app/purchase-orders/new')}
               actionLabel="New PO"
               stats={[
                 { label: 'pending', value: String(pendingPOs) },
@@ -345,7 +342,7 @@ export default function App_Page() {
                 <div className="flex flex-col items-center py-8 text-muted-foreground">
                   <ShoppingCart className="size-8 mb-2 opacity-30" />
                   <p className="text-sm">No purchase orders yet</p>
-                  <Button variant="link" size="sm" onClick={() => openCreatePO()} className="mt-1">
+                  <Button variant="link" size="sm" onClick={() => router.push('/app/purchase-orders/new')} className="mt-1">
                     Create your first PO
                   </Button>
                 </div>
