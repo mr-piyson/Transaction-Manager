@@ -1,11 +1,6 @@
 'use client';
 
-import {
-  AllCommunityModule,
-  ModuleRegistry,
-  type ColDef,
-  type GridApi,
-} from 'ag-grid-community';
+import { AllCommunityModule, ModuleRegistry, type ColDef, type GridApi } from 'ag-grid-community';
 import { AgGridReact } from 'ag-grid-react';
 import {
   ArrowDown,
@@ -24,17 +19,7 @@ import {
   Wallet,
 } from 'lucide-react';
 import { useTheme } from 'next-themes';
-import {
-  Area,
-  AreaChart,
-  Bar,
-  BarChart,
-  Cell,
-  Pie,
-  PieChart,
-  XAxis,
-  YAxis,
-} from 'recharts';
+import { Area, AreaChart, Bar, BarChart, Cell, Pie, PieChart, XAxis, YAxis } from 'recharts';
 import { useMemo, useRef, useState } from 'react';
 import { Header } from '@/app/app/App-Header';
 import { Badge } from '@/components/ui/badge';
@@ -127,7 +112,9 @@ function KpiCard({
               <div
                 className={cn(
                   'flex items-center gap-1 mt-2 text-xs font-medium',
-                  trend.dir === 'up' ? 'text-emerald-600 dark:text-emerald-500' : 'text-red-600 dark:text-red-500',
+                  trend.dir === 'up'
+                    ? 'text-emerald-600 dark:text-emerald-500'
+                    : 'text-red-600 dark:text-red-500',
                 )}
               >
                 {trend.dir === 'up' ? (
@@ -160,11 +147,14 @@ function ChartSkeleton() {
 
 export default function ReportsPage() {
   const { data: summary, isLoading: summaryLoading } = trpc.reports.summary.useQuery();
-  const { data: monthlyRevenue, isLoading: monthlyLoading } = trpc.reports.monthlyRevenue.useQuery();
-  const { data: invoiceStatusDist, isLoading: statusLoading } = trpc.reports.invoiceStatusDistribution.useQuery();
+  const { data: monthlyRevenue, isLoading: monthlyLoading } =
+    trpc.reports.monthlyRevenue.useQuery();
+  const { data: invoiceStatusDist, isLoading: statusLoading } =
+    trpc.reports.invoiceStatusDistribution.useQuery();
   const { data: arAging, isLoading: agingLoading } = trpc.reports.arAging.useQuery();
   const { data: revVsExp, isLoading: revExpLoading } = trpc.reports.revenueVsExpenses.useQuery();
-  const { data: salesByCustomer, isLoading: salesLoading } = trpc.reports.salesByCustomer.useQuery();
+  const { data: salesByCustomer, isLoading: salesLoading } =
+    trpc.reports.salesByCustomer.useQuery();
   const { data: topItems, isLoading: itemsLoading } = trpc.reports.topItems.useQuery();
 
   const chartHeight = 300;
@@ -316,19 +306,14 @@ export default function ReportsPage() {
         type: 'rightAligned',
         valueFormatter: (p) => format(p.value),
         cellStyle: (p) =>
-          p.value < 0
-            ? { color: 'hsl(0 70% 50%)' }
-            : { color: 'hsl(142 70% 45%)' },
+          p.value < 0 ? { color: 'hsl(0 70% 50%)' } : { color: 'hsl(142 70% 45%)' },
       },
       {
         field: 'status',
         headerName: 'Status',
         width: 100,
         cellRenderer: (p: any) => (
-          <Badge
-            variant="outline"
-            className="text-[10px] h-5 mt-1.5"
-          >
+          <Badge variant="outline" className="text-[10px] h-5 mt-1.5">
             {p.value}
           </Badge>
         ),
@@ -397,9 +382,7 @@ export default function ReportsPage() {
               icon={<Receipt className="size-4" />}
               loading={summaryLoadingState}
               trend={
-                summary?.outstanding.total
-                  ? { dir: 'down', label: 'Needs collection' }
-                  : undefined
+                summary?.outstanding.total ? { dir: 'down', label: 'Needs collection' } : undefined
               }
             />
             <KpiCard
@@ -442,7 +425,10 @@ export default function ReportsPage() {
 
         {/* ── Charts Section ──────────────────────────────────────────────── */}
         <Tabs defaultValue="overview" className="space-y-6">
-          <TabsList variant="line" className="w-full justify-start border-b rounded-none bg-transparent h-auto pb-0 gap-0">
+          <TabsList
+            variant="line"
+            className="w-full justify-start border-b rounded-none bg-transparent h-auto pb-0 gap-0"
+          >
             <TabsTrigger
               value="overview"
               className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary pb-3 px-4"
@@ -474,14 +460,22 @@ export default function ReportsPage() {
                   <TrendingUp className="size-4 text-primary" />
                   Revenue Trend
                 </CardTitle>
-                <CardDescription>Monthly revenue and gross profit over the last 12 months</CardDescription>
+                <CardDescription>
+                  Monthly revenue and gross profit over the last 12 months
+                </CardDescription>
               </CardHeader>
               <CardContent>
                 {monthlyLoading ? (
                   <ChartSkeleton />
                 ) : (
-                  <ChartContainer config={revenueChartConfig} className="aspect-auto h-[300px] w-full">
-                    <AreaChart data={revenueData} margin={{ top: 5, right: 10, left: 10, bottom: 0 }}>
+                  <ChartContainer
+                    config={revenueChartConfig}
+                    className="aspect-auto h-[300px] w-full"
+                  >
+                    <AreaChart
+                      data={revenueData}
+                      margin={{ top: 5, right: 10, left: 10, bottom: 0 }}
+                    >
                       <defs>
                         <linearGradient id="fillRevenue" x1="0" y1="0" x2="0" y2="1">
                           <stop offset="5%" stopColor="hsl(var(--chart-1))" stopOpacity={0.3} />
@@ -497,7 +491,12 @@ export default function ReportsPage() {
                         content={<ChartTooltipContent indicator="dot" />}
                       />
                       <XAxis dataKey="month" tickLine={false} axisLine={false} tickMargin={8} />
-                      <YAxis tickLine={false} axisLine={false} tickMargin={8} tickFormatter={tickFormat} />
+                      <YAxis
+                        tickLine={false}
+                        axisLine={false}
+                        tickMargin={8}
+                        tickFormatter={tickFormat}
+                      />
                       <Area
                         dataKey="revenue"
                         type="monotone"
@@ -533,15 +532,26 @@ export default function ReportsPage() {
                   {salesLoading ? (
                     <ChartSkeleton />
                   ) : topCustomers.length === 0 ? (
-                    <p className="text-sm text-muted-foreground text-center py-12">No customer sales data</p>
+                    <p className="text-sm text-muted-foreground text-center py-12">
+                      No customer sales data
+                    </p>
                   ) : (
-                    <ChartContainer config={salesChartConfig} className="aspect-auto h-[300px] w-full">
-                      <BarChart data={topCustomers} layout="vertical" margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
-                        <ChartTooltip
-                          cursor={false}
-                          content={<ChartTooltipContent hideLabel />}
+                    <ChartContainer
+                      config={salesChartConfig}
+                      className="aspect-auto h-[300px] w-full"
+                    >
+                      <BarChart
+                        data={topCustomers}
+                        layout="vertical"
+                        margin={{ top: 5, right: 20, left: 0, bottom: 5 }}
+                      >
+                        <ChartTooltip cursor={false} content={<ChartTooltipContent hideLabel />} />
+                        <XAxis
+                          type="number"
+                          tickFormatter={tickFormat}
+                          tickLine={false}
+                          axisLine={false}
                         />
-                        <XAxis type="number" tickFormatter={tickFormat} tickLine={false} axisLine={false} />
                         <YAxis
                           type="category"
                           dataKey="name"
@@ -578,15 +588,26 @@ export default function ReportsPage() {
                   {itemsLoading ? (
                     <ChartSkeleton />
                   ) : topItemsData.length === 0 ? (
-                    <p className="text-sm text-muted-foreground text-center py-12">No item sales data</p>
+                    <p className="text-sm text-muted-foreground text-center py-12">
+                      No item sales data
+                    </p>
                   ) : (
-                    <ChartContainer config={itemsChartConfig} className="aspect-auto h-[300px] w-full">
-                      <BarChart data={topItemsData} layout="vertical" margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
-                        <ChartTooltip
-                          cursor={false}
-                          content={<ChartTooltipContent hideLabel />}
+                    <ChartContainer
+                      config={itemsChartConfig}
+                      className="aspect-auto h-[300px] w-full"
+                    >
+                      <BarChart
+                        data={topItemsData}
+                        layout="vertical"
+                        margin={{ top: 5, right: 20, left: 0, bottom: 5 }}
+                      >
+                        <ChartTooltip cursor={false} content={<ChartTooltipContent hideLabel />} />
+                        <XAxis
+                          type="number"
+                          tickFormatter={tickFormat}
+                          tickLine={false}
+                          axisLine={false}
                         />
-                        <XAxis type="number" tickFormatter={tickFormat} tickLine={false} axisLine={false} />
                         <YAxis
                           type="category"
                           dataKey="name"
@@ -629,16 +650,34 @@ export default function ReportsPage() {
                 {revExpLoading ? (
                   <ChartSkeleton />
                 ) : (
-                  <ChartContainer config={revExpChartConfig} className="aspect-auto h-[300px] w-full">
+                  <ChartContainer
+                    config={revExpChartConfig}
+                    className="aspect-auto h-[300px] w-full"
+                  >
                     <BarChart data={revExpData} margin={{ top: 5, right: 10, left: 10, bottom: 0 }}>
                       <ChartTooltip
                         cursor={false}
                         content={<ChartTooltipContent indicator="dot" />}
                       />
                       <XAxis dataKey="month" tickLine={false} axisLine={false} tickMargin={8} />
-                      <YAxis tickLine={false} axisLine={false} tickMargin={8} tickFormatter={tickFormat} />
-                      <Bar dataKey="revenue" radius={[4, 4, 0, 0]} barSize={20} fill="hsl(var(--chart-1))" />
-                      <Bar dataKey="expenses" radius={[4, 4, 0, 0]} barSize={20} fill="hsl(var(--chart-3))" />
+                      <YAxis
+                        tickLine={false}
+                        axisLine={false}
+                        tickMargin={8}
+                        tickFormatter={tickFormat}
+                      />
+                      <Bar
+                        dataKey="revenue"
+                        radius={[4, 4, 0, 0]}
+                        barSize={20}
+                        fill="hsl(var(--chart-1))"
+                      />
+                      <Bar
+                        dataKey="expenses"
+                        radius={[4, 4, 0, 0]}
+                        barSize={20}
+                        fill="hsl(var(--chart-3))"
+                      />
                       <ChartLegend content={<ChartLegendContent />} />
                     </BarChart>
                   </ChartContainer>
@@ -660,14 +699,16 @@ export default function ReportsPage() {
                   {statusLoading ? (
                     <ChartSkeleton />
                   ) : !invoiceStatusDist || invoiceStatusDist.length === 0 ? (
-                    <p className="text-sm text-muted-foreground text-center py-12">No invoice data</p>
+                    <p className="text-sm text-muted-foreground text-center py-12">
+                      No invoice data
+                    </p>
                   ) : (
-                    <ChartContainer config={statusChartConfig} className="aspect-auto h-[300px] w-full">
+                    <ChartContainer
+                      config={statusChartConfig}
+                      className="aspect-auto h-[300px] w-full"
+                    >
                       <PieChart>
-                        <ChartTooltip
-                          cursor={false}
-                          content={<ChartTooltipContent hideLabel />}
-                        />
+                        <ChartTooltip cursor={false} content={<ChartTooltipContent hideLabel />} />
                         <Pie
                           data={invoiceStatusDist}
                           dataKey="count"
@@ -711,18 +752,32 @@ export default function ReportsPage() {
                   {agingLoading ? (
                     <ChartSkeleton />
                   ) : !arAging || arAging.length === 0 ? (
-                    <p className="text-sm text-muted-foreground text-center py-12">No outstanding invoices</p>
+                    <p className="text-sm text-muted-foreground text-center py-12">
+                      No outstanding invoices
+                    </p>
                   ) : (
-                    <ChartContainer config={agingChartConfig} className="aspect-auto h-[300px] w-full">
+                    <ChartContainer
+                      config={agingChartConfig}
+                      className="aspect-auto h-[300px] w-full"
+                    >
                       <BarChart data={arAging} margin={{ top: 5, right: 10, left: 10, bottom: 5 }}>
                         <ChartTooltip
                           cursor={false}
-                           content={<ChartTooltipContent indicator="dot" formatter={(value: any) => format(Number(value))} />}
+                          content={
+                            <ChartTooltipContent
+                              indicator="dot"
+                              formatter={(value: any) => format(Number(value))}
+                            />
+                          }
                         />
                         <XAxis dataKey="bucket" tickLine={false} axisLine={false} tickMargin={8} />
-                      <YAxis tickLine={false} axisLine={false} tickMargin={8} tickFormatter={tickFormat} />
+                        <YAxis
+                          tickLine={false}
+                          axisLine={false}
+                          tickMargin={8}
+                          tickFormatter={tickFormat}
+                        />
 
-            
                         <Bar dataKey="amount" radius={[4, 4, 0, 0]} barSize={32}>
                           {arAging.map((entry, i) => {
                             const color =
