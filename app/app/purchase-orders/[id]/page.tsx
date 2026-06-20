@@ -329,51 +329,52 @@ export default function PurchaseOrderDetailPage() {
             </Badge>
           )}
         </div>
+        {showActions && (
+          <div className="flex items-center gap-2">
+            {actions.map(({ label, key, icon, variant = 'default', dialog }) =>
+              key === 'edit' ? (
+                <Button key={key} variant={variant} size="sm" onClick={handleEdit} disabled={isPending}>
+                  <Edit className="size-4 mr-1" /> Edit
+                </Button>
+              ) : dialog === 'receive' ? (
+                <Button
+                  key={key}
+                  variant={variant}
+                  size="sm"
+                  onClick={() => setReceiveOpen(true)}
+                  disabled={isPending}
+                >
+                  <Package className="size-4 mr-1" /> Receive stock
+                </Button>
+              ) : dialog === 'reject' ? (
+                <Button
+                  key={key}
+                  variant={variant}
+                  size="sm"
+                  onClick={() => setRejectOpen(true)}
+                  disabled={isPending}
+                >
+                  <ThumbsDown className="size-4 mr-1" /> Reject
+                </Button>
+              ) : (
+                <Button
+                  key={key}
+                  variant={variant}
+                  size="sm"
+                  onClick={() =>
+                    handleConfirmAction(key, `Are you sure you want to ${label.toLowerCase()}?`)
+                  }
+                  disabled={isPending}
+                >
+                  {isPending && <Loader2 className="size-4 mr-1 animate-spin" />}
+                  {!isPending && icon}
+                  <span className="ml-1">{label}</span>
+                </Button>
+              ),
+            )}
+          </div>
+        )}
       </header>
-
-      {/* Action footer */}
-      {showActions && (
-        <div className="border-t bg-background px-4 py-3 flex gap-2 justify-end shrink-0">
-          {actions.map(({ label, key, icon, variant = 'default', dialog }) =>
-            key === 'edit' ? (
-              <Button key={key} variant={variant} onClick={handleEdit} disabled={isPending}>
-                <Edit className="size-4 mr-1" /> Edit
-              </Button>
-            ) : dialog === 'receive' ? (
-              <Button
-                key={key}
-                variant={variant}
-                onClick={() => setReceiveOpen(true)}
-                disabled={isPending}
-              >
-                <Package className="size-4 mr-1" /> Receive stock
-              </Button>
-            ) : dialog === 'reject' ? (
-              <Button
-                key={key}
-                variant={variant}
-                onClick={() => setRejectOpen(true)}
-                disabled={isPending}
-              >
-                <ThumbsDown className="size-4 mr-1" /> Reject
-              </Button>
-            ) : (
-              <Button
-                key={key}
-                variant={variant}
-                onClick={() =>
-                  handleConfirmAction(key, `Are you sure you want to ${label.toLowerCase()}?`)
-                }
-                disabled={isPending}
-              >
-                {isPending && <Loader2 className="size-4 mr-1 animate-spin" />}
-                {!isPending && icon}
-                <span className="ml-1">{label}</span>
-              </Button>
-            ),
-          )}
-        </div>
-      )}
 
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
         {/* Info cards */}

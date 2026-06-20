@@ -139,6 +139,22 @@ export default function SupplierDetailPage() {
             </Badge>
           )}
         </div>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm" className="gap-1.5" onClick={handleEdit}>
+            <Edit className="size-4" />
+            Edit
+          </Button>
+          <Button
+            variant="destructive"
+            size="sm"
+            className="gap-1.5"
+            onClick={handleDelete}
+            disabled={isPending}
+          >
+            {isPending ? <Loader2 className="size-4 animate-spin" /> : <Trash className="size-4" />}
+            Delete
+          </Button>
+        </div>
       </header>
 
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
@@ -374,23 +390,7 @@ export default function SupplierDetailPage() {
         </div>
       </div>
 
-      {/* Action footer */}
-      <div className="border-t bg-background px-4 py-3 flex gap-2 justify-end shrink-0">
-        <Button variant="outline" size="sm" className="gap-1.5" onClick={handleEdit}>
-          <Edit className="size-4" />
-          Edit
-        </Button>
-        <Button
-          variant="destructive"
-          size="sm"
-          className="gap-1.5"
-          onClick={handleDelete}
-          disabled={isPending}
-        >
-          {isPending ? <Loader2 className="size-4 animate-spin" /> : <Trash className="size-4" />}
-          Delete
-        </Button>
-      </div>
+
     </div>
   );
 }
