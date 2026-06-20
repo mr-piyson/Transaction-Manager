@@ -20,6 +20,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
+import { useCurrency } from '@/hooks/use-currency';
 import { trpc } from '@/lib/trpc/client';
 
 const lineSchema = z.object({
@@ -42,14 +43,14 @@ const schema = z.object({
 
 type FormValues = z.infer<typeof schema>;
 
-function defaults(): FormValues {
+function defaults(currency: string): FormValues {
   const today = new Date().toISOString().slice(0, 10);
   return {
     supplierId: '',
     warehouseId: '',
     date: today,
     expectedDate: undefined,
-    currency: 'BHD',
+    currency: currency as FormValues['currency'],
     notes: undefined,
     internalNotes: undefined,
     lines: [],
@@ -81,6 +82,7 @@ export default function NewPurchaseOrderPage() {
 
   const { data: suppliersData, isLoading: suppliersLoading } = trpc.suppliers.list.useQuery({ limit: 200 });
   const { data: warehousesData, isLoading: warehousesLoading } = trpc.warehouses.list.useQuery({ limit: 200 });
+  const { currency } = useCurrency();
 
   const {
     register,
@@ -91,7 +93,7 @@ export default function NewPurchaseOrderPage() {
     formState: { errors, isSubmitting },
   } = useForm<FormValues>({
     resolver: zodResolver(schema) as any,
-    defaultValues: defaults(),
+    defaultValues: defaults(currency),
   });
 
   const { fields, append, remove } = useFieldArray({ control, name: 'lines' });

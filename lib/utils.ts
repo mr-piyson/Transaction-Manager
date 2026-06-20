@@ -5,59 +5,43 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-export type CurrencyCode = keyof typeof CURRENCIES;
+export type CurrencyCode =
+  | 'USD' | 'EUR' | 'GBP' | 'JPY' | 'BHD'
+  | 'AED' | 'SAR' | 'KWD' | 'QAR' | 'OMR';
 
-export const CURRENCIES = {
-  USD: {
-    code: 'USD',
-    symbol: '$',
-    label: 'US Dollar',
-    precision: 2,
-    separator: ',',
-    decimal: '.',
-    pattern: '! #',
-  },
-  EUR: {
-    code: 'EUR',
-    symbol: '€',
-    label: 'Euro',
-    precision: 2,
-    separator: '.',
-    decimal: ',',
-    pattern: '! #',
-  },
-  JPY: {
-    code: 'JPY',
-    symbol: '¥',
-    label: 'Japanese Yen',
-    precision: 0,
-    separator: ',',
-    decimal: '.',
-    pattern: '! #',
-  },
-  BHD: {
-    code: 'BHD',
-    symbol: 'BD',
-    label: 'Bahraini Dinar',
-    precision: 3,
-    separator: ',',
-    decimal: '.',
-    pattern: '! #',
-  },
+export const CURRENCIES: Record<
+  CurrencyCode,
+  { code: string; symbol: string; label: string; precision: number; separator: string; decimal: string }
+> = {
+  USD: { code: 'USD', symbol: '$', label: 'US Dollar', precision: 2, separator: ',', decimal: '.' },
+  EUR: { code: 'EUR', symbol: '€', label: 'Euro', precision: 2, separator: '.', decimal: ',' },
+  GBP: { code: 'GBP', symbol: '£', label: 'British Pound', precision: 2, separator: ',', decimal: '.' },
+  JPY: { code: 'JPY', symbol: '¥', label: 'Japanese Yen', precision: 0, separator: ',', decimal: '.' },
+  BHD: { code: 'BHD', symbol: 'BD', label: 'Bahraini Dinar', precision: 3, separator: ',', decimal: '.' },
+  AED: { code: 'AED', symbol: 'د.إ', label: 'UAE Dirham', precision: 2, separator: ',', decimal: '.' },
+  SAR: { code: 'SAR', symbol: '﷼', label: 'Saudi Riyal', precision: 2, separator: ',', decimal: '.' },
+  KWD: { code: 'KWD', symbol: 'KD', label: 'Kuwaiti Dinar', precision: 3, separator: ',', decimal: '.' },
+  QAR: { code: 'QAR', symbol: '﷼', label: 'Qatari Riyal', precision: 2, separator: ',', decimal: '.' },
+  OMR: { code: 'OMR', symbol: '﷼', label: 'Omani Rial', precision: 3, separator: ',', decimal: '.' },
 } as const;
 
-// Convert integer fils/cents to display string
-// formatAmount(1500, 'BHD') → 'BD 1.500'
-// formatAmount(1500, 'USD') → '$15.00'
 export function formatAmount(
-  amount: number | bigint | string | null | undefined,
+  amount: number | string | null | undefined,
   currency: CurrencyCode = 'BHD',
 ): string {
-  if (!amount) amount = 0;
+  const num = Number(amount ?? 0);
   const config = CURRENCIES[currency];
-  const displayAmount = Number(amount) / 10 ** config.precision;
+  return `${config.symbol} ${num.toLocaleString('en-US', {
+    minimumFractionDigits: config.precision,
+    maximumFractionDigits: config.precision,
+  })}`;
+}
 
-  return `${config.symbol} ${displayAmount.toFixed(config.precision)}`;
+export function formatCurrency(
+  amount: number | string | null | undefined,
+  currency: CurrencyCode = 'BHD',
+): string {
+  return formatAmount(amount, currency);
 }
 
 /**

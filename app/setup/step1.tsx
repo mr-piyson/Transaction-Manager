@@ -9,7 +9,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import type { CurrencyCode } from '@/lib/utils';
+import { CURRENCIES, type CurrencyCode } from '@/lib/utils';
 import type { SetupData } from './setup-types';
 
 export function Step1Language() {
@@ -48,8 +48,11 @@ export function Step1Language() {
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="BHD">BHD – Bahraini Dinar</SelectItem>
-            <SelectItem value="USD">USD – US Dollar</SelectItem>
+            {(Object.keys(CURRENCIES) as CurrencyCode[]).map((code) => (
+              <SelectItem key={code} value={code}>
+                {code} – {CURRENCIES[code].label}
+              </SelectItem>
+            ))}
           </SelectContent>
         </Select>
       </div>

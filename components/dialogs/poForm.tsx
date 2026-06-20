@@ -6,6 +6,7 @@ import * as React from 'react';
 import { type SubmitHandler, useFieldArray, useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { z } from 'zod';
+import { useCurrency } from '@/hooks/use-currency';
 import { SelectionDialog } from '@/components/select-dialog';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
@@ -87,6 +88,7 @@ export interface POFormDialogProps {
 export function POFormDialog({ open, onOpenChange, po, onSuccess }: POFormDialogProps) {
   const isEdit = Boolean(po?.id);
   const utils = trpc.useUtils();
+  const { currency: orgCurrency } = useCurrency();
   const [itemPickerOpen, setItemPickerOpen] = React.useState(false);
 
   const { data: suppliersData } = trpc.suppliers.list.useQuery({ limit: 200 });
@@ -102,7 +104,7 @@ export function POFormDialog({ open, onOpenChange, po, onSuccess }: POFormDialog
     formState: { errors, isSubmitting },
   } = useForm<POFormValues>({
     resolver: zodResolver(schema) as any,
-    defaultValues: defaults(po, warehousesData),
+    defaultValues: defaults(po, warehousesData, orgCurrency),
   });
 
   const selectedSupplierId = watch('supplierId');
@@ -132,8 +134,8 @@ export function POFormDialog({ open, onOpenChange, po, onSuccess }: POFormDialog
   }, [warehousesData, watch, setValue]);
 
   React.useEffect(() => {
-    if (open) reset(defaults(po, warehousesData));
-  }, [open, po, warehousesData, reset]);
+    if (open) reset(defaults(po, warehousesData, orgCurrency));
+  }, [open, po, warehousesData, orgCurrency, reset]);
 
   const createMutation = trpc.purchaseOrders.create.useMutation({
     onSuccess(data) {
@@ -589,6 +591,7 @@ export function usePOForm(): POFormContextValue {
 function defaults(
   po?: { id: string; version?: number } & Partial<POFormValues>,
   warehousesData?: any,
+  orgCurrency?: string,
 ): POFormValues {
   const today = new Date().toISOString().slice(0, 10);
   const list = Array.isArray(warehousesData)
@@ -600,7 +603,7 @@ function defaults(
     warehouseId: po?.warehouseId ?? defaultWarehouse?.id ?? '',
     date: po?.date ?? today,
     expectedDate: po?.expectedDate ?? undefined,
-    currency: po?.currency ?? 'BHD',
+    currency: (po?.currency ?? orgCurrency ?? 'BHD') as any,
     notes: po?.notes ?? undefined,
     internalNotes: po?.internalNotes ?? undefined,
     lines: po?.lines ?? [],

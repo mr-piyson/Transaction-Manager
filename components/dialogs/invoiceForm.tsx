@@ -129,7 +129,7 @@ export function InvoiceFormDialog({
     formState: { errors, isSubmitting },
   } = useForm<InvoiceFormValues>({
     resolver: zodResolver(schema) as any,
-    defaultValues: defaults(invoice, warehousesData),
+    defaultValues: defaults(invoice, warehousesData, orgData ?? undefined),
   });
 
   const { fields, append, remove } = useFieldArray({ control, name: 'lines' });
@@ -835,7 +835,7 @@ export function useInvoiceForm(): InvoiceFormContextValue {
 function defaults(
   invoice?: { id: string; version?: number } & Partial<InvoiceFormValues>,
   warehousesData?: any,
-  org?: { defaultTermsText?: string | null },
+  org?: { defaultTermsText?: string | null; currency?: string },
 ): InvoiceFormValues {
   const today = new Date().toISOString().slice(0, 10);
   const list = Array.isArray(warehousesData)
@@ -849,7 +849,7 @@ function defaults(
     customerId: invoice?.customerId ?? '',
     warehouseId: invoice?.warehouseId ?? defaultWarehouse?.id ?? '',
     departmentId: invoice?.departmentId ?? undefined,
-    currency: invoice?.currency ?? 'BHD',
+    currency: (invoice?.currency ?? org?.currency ?? 'BHD') as any,
     exchangeRate: invoice?.exchangeRate ?? 1,
     description: invoice?.description ?? undefined,
     notes: invoice?.notes ?? undefined,

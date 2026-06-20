@@ -14,11 +14,11 @@ export default function PurchaseOrdersPage() {
       </div>
       <div>
         <h2 className="text-xl font-semibold">Purchase Orders</h2>
-        <p className="text-muted-foreground mt-1">Select a purchase order from the list or create a new one.</p>
+        <p className="text-muted-foreground mt-1">
+          Select a purchase order from the list or create a new one.
+        </p>
       </div>
-      <Button onClick={() => router.push('/app/purchase-orders/new')}>
-        New Purchase Order
-      </Button>
+      <Button onClick={() => router.push('/app/purchase-orders/new')}>New Purchase Order</Button>
     </div>
   );
 }

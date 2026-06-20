@@ -17,6 +17,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
+import { useCurrency } from '@/hooks/use-currency';
 import { trpc } from '@/lib/trpc/client';
 
 const schema = z.object({
@@ -34,12 +35,12 @@ const schema = z.object({
 
 type FormValues = z.infer<typeof schema>;
 
-function defaults(): FormValues {
+function defaults(currency: string): FormValues {
   return {
     title: '',
     description: undefined,
     contractValue: 0,
-    currency: 'BHD',
+    currency: currency as FormValues['currency'],
     startDate: '',
     endDate: '',
     renewalDate: undefined,
@@ -69,6 +70,7 @@ export default function NewContractPage() {
   const router = useRouter();
   const utils = trpc.useUtils();
   const { data: customersData, isLoading: customersLoading } = trpc.customers.list.useQuery({ limit: 200 });
+  const { currency } = useCurrency();
 
   const {
     register,
@@ -77,7 +79,7 @@ export default function NewContractPage() {
     formState: { errors, isSubmitting },
   } = useForm<FormValues>({
     resolver: zodResolver(schema) as any,
-    defaultValues: defaults(),
+    defaultValues: defaults(currency),
   });
 
   const createMutation = trpc.contracts.create.useMutation({

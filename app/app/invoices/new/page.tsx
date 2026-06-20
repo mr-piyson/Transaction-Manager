@@ -22,6 +22,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
+import { useCurrency } from '@/hooks/use-currency';
 import { trpc } from '@/lib/trpc/client';
 
 const invoiceLineSchema = z.object({
@@ -59,7 +60,7 @@ const schema = z.object({
 
 type FormValues = z.infer<typeof schema>;
 
-function defaults(org?: { defaultTermsText?: string | null }): FormValues {
+function defaults(currency: string, org?: { defaultTermsText?: string | null }): FormValues {
   const today = new Date().toISOString().slice(0, 10);
   return {
     type: 'INVOICE',
@@ -68,7 +69,7 @@ function defaults(org?: { defaultTermsText?: string | null }): FormValues {
     customerId: '',
     warehouseId: '',
     departmentId: undefined,
-    currency: 'BHD',
+    currency: currency as FormValues['currency'],
     exchangeRate: 1,
     description: undefined,
     notes: undefined,
@@ -108,6 +109,7 @@ export default function NewInvoicePage() {
   const { data: itemsData } = trpc.items.list.useQuery({ isSaleable: true });
   const { data: taxRatesData, isLoading: taxLoading } = trpc.settings.taxRates.list.useQuery();
   const { data: orgData } = trpc.settings.getOrg.useQuery();
+  const { currency: orgCurrency } = useCurrency();
 
   const {
     register,
@@ -119,7 +121,7 @@ export default function NewInvoicePage() {
     formState: { errors, isSubmitting },
   } = useForm<FormValues>({
     resolver: zodResolver(schema) as any,
-    defaultValues: defaults(),
+    defaultValues: defaults(orgCurrency, orgData ?? undefined),
   });
 
   const orgLoaded = React.useRef(false);
@@ -130,13 +132,8 @@ export default function NewInvoicePage() {
         setValue('termsText', (orgData as any)?.defaultTermsText ?? '');
       }
     }
-  }, [orgData, setValue, watch]);
+  }, [orgData, watch, setValue]);
 
-  const { fields, append, remove } = useFieldArray({ control, name: 'lines' });
-
-  const lines = watch('lines');
-  const invoiceType = watch('type');
-  const isWalkIn = watch('isWalkIn');
   const currency = watch('currency');
 
   const isInvoiceType = invoiceType === 'INVOICE';

@@ -24,6 +24,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
+import { useCurrency } from '@/hooks/use-currency';
 import { trpc } from '@/lib/trpc/client';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
@@ -151,6 +152,7 @@ export default function App_Page() {
   const router = useRouter();
   const { data: sessionData } = trpc.auth.session.useQuery();
   const { data: summary } = trpc.reports.summary.useQuery();
+  const { format: currencyFormat, symbol } = useCurrency();
   const { data: topItems } = trpc.reports.topItems.useQuery();
   const { data: recentPOs } = trpc.purchaseOrders.list.useQuery({
     limit: 5,
@@ -238,7 +240,7 @@ export default function App_Page() {
                 { label: 'total POs', value: String(summary?.purchases.count ?? 0) },
                 {
                   label: 'value',
-                  value: `${(summary?.purchases.total ?? 0).toFixed(0)} ${summary ? 'BHD' : ''}`,
+                  value: summary ? currencyFormat(summary.purchases.total) : '—',
                 },
               ]}
             />
@@ -266,11 +268,11 @@ export default function App_Page() {
                 { label: 'invoiced', value: String(summary?.revenue.count ?? 0) },
                 {
                   label: 'revenue',
-                  value: `${(summary?.revenue.total ?? 0).toFixed(0)} ${summary ? 'BHD' : ''}`,
+                  value: summary ? currencyFormat(summary.revenue.total) : '—',
                 },
                 {
                   label: 'outstanding',
-                  value: `${(summary?.outstanding.total ?? 0).toFixed(0)} ${summary ? 'BHD' : ''}`,
+                  value: summary ? currencyFormat(summary.outstanding.total) : '—',
                 },
               ]}
               isLast
@@ -466,13 +468,13 @@ export default function App_Page() {
                       <div className="flex-1 min-w-0">
                         <p className="font-medium text-sm truncate">{item.name}</p>
                         <p className="text-xs text-muted-foreground">
-                          {item.sku ?? '—'} · {item.salesPrice.toFixed(3)} BHD/unit
+                          {item.sku ?? '—'} · {currencyFormat(item.salesPrice)}/unit
                         </p>
                       </div>
                       <div className="text-right shrink-0">
                         <p className="text-sm font-semibold">{item.totalSold.toFixed(0)} sold</p>
                         <p className="text-xs text-muted-foreground">
-                          {item.totalRevenue.toFixed(0)} BHD
+                          {currencyFormat(item.totalRevenue)}
                         </p>
                       </div>
                     </div>

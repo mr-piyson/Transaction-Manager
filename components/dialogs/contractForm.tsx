@@ -13,6 +13,7 @@ import { Field } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
+import { useCurrency } from '@/hooks/use-currency';
 import { trpc } from '@/lib/trpc/client';
 import { Label } from '@/components/ui/label';
 
@@ -61,16 +62,17 @@ export interface ContractFormDialogProps {
 export function ContractFormDialog({ open, onOpenChange, contract, onSuccess }: ContractFormDialogProps) {
   const isEdit = Boolean(contract?.id);
   const utils = trpc.useUtils();
+  const { currency: orgCurrency } = useCurrency();
   const { data: customersData } = trpc.customers.list.useQuery({ limit: 200 });
 
   const { register, handleSubmit, reset, setValue, watch, formState: { errors, isSubmitting } } = useForm<ContractFormValues>({
     resolver: zodResolver(schema) as any,
-    defaultValues: defaults(contract),
+    defaultValues: defaults(contract, orgCurrency),
   });
 
   React.useEffect(() => {
-    if (open) reset(defaults(contract));
-  }, [open, contract, reset]);
+    if (open) reset(defaults(contract, orgCurrency));
+  }, [open, contract, orgCurrency, reset]);
 
   const createMutation = trpc.contracts.create.useMutation({
     onSuccess(data) {
@@ -249,12 +251,12 @@ export function useContractForm(): ContractFormContextValue {
   return ctx;
 }
 
-function defaults(contract?: { id: string } & Partial<ContractFormValues>): ContractFormValues {
+function defaults(contract?: { id: string } & Partial<ContractFormValues>, orgCurrency?: string): ContractFormValues {
   return {
     title: contract?.title ?? '',
     description: contract?.description ?? undefined,
     contractValue: typeof contract?.contractValue === 'number' ? contract.contractValue : 0,
-    currency: contract?.currency ?? 'BHD',
+    currency: (contract?.currency ?? orgCurrency ?? 'BHD') as any,
     startDate: contract?.startDate ?? '',
     endDate: contract?.endDate ?? '',
     renewalDate: contract?.renewalDate ?? undefined,
