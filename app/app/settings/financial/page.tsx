@@ -12,6 +12,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
+import { Textarea } from '@/components/ui/textarea';
 import { trpc } from '@/lib/trpc/client';
 import { CURRENCIES } from '@/lib/utils';
 import type { CurrencyCode } from '@/lib/utils';
@@ -141,23 +142,27 @@ function FinancialForm({
             }
           />
         </Field>
-        <Field label="Default Terms Text">
-          <Input
+      </SectionCard>
+
+      <SectionCard title="Terms & Conditions">
+        <Field label="Default Terms & Conditions">
+          <Textarea
             value={form.defaultTermsText}
             onChange={(e) =>
               setForm({ ...form, defaultTermsText: e.target.value })
             }
+            placeholder="e.g. Payment is due within 30 days. Late payments may incur a 2% monthly fee."
+            rows={5}
           />
         </Field>
-      </SectionCard>
-
-      <SectionCard title="Invoice">
         <Field label="Invoice Footer">
-          <Input
+          <Textarea
             value={form.invoiceFooter}
             onChange={(e) =>
               setForm({ ...form, invoiceFooter: e.target.value })
             }
+            placeholder="e.g. Thank you for your business!"
+            rows={3}
           />
         </Field>
       </SectionCard>

@@ -27,7 +27,6 @@ const DOCUMENT_TYPES = [
   { value: 'INVOICE', label: 'Invoice' },
   { value: 'QUOTE', label: 'Quote' },
   { value: 'CREDIT_NOTE', label: 'Credit Note' },
-  { value: 'PROFORMA', label: 'Proforma' },
   { value: 'DELIVERY_NOTE', label: 'Delivery Note' },
 ] as const;
 
@@ -75,7 +74,7 @@ export default function InvoicesLayout({ children }: { children?: React.ReactNod
 
   if (isPrintRoute) return <>{children}</>;
 
-  const invoices = Array.isArray(data) ? data : data?.data ?? [];
+  const invoices = Array.isArray(data) ? data : (data?.data ?? []);
   const activeLabel = PAYMENT_STATUSES.find((s) => s.value === paymentStatus)?.label ?? 'All';
 
   const filterBar = (
@@ -95,7 +94,9 @@ export default function InvoicesLayout({ children }: { children?: React.ReactNod
         </SelectTrigger>
         <SelectContent>
           {PAYMENT_STATUSES.map((s) => (
-            <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>
+            <SelectItem key={s.value} value={s.value}>
+              {s.label}
+            </SelectItem>
           ))}
         </SelectContent>
       </Select>
@@ -108,7 +109,11 @@ export default function InvoicesLayout({ children }: { children?: React.ReactNod
       <div className="flex-1 min-h-0 w-full">
         <ResizablePanelGroup className="h-full">
           {(isListView || !isMobile) && (
-            <ResizablePanel minSize={20} defaultSize={30} className={cn('h-full', !isListView ? 'hidden md:block' : 'block')}>
+            <ResizablePanel
+              minSize={20}
+              defaultSize={30}
+              className={cn('h-full', !isListView ? 'hidden md:block' : 'block')}
+            >
               <aside className="flex h-full flex-col overflow-hidden border-r">
                 {filterBar}
                 <div className="flex-1 overflow-y-auto">
@@ -132,7 +137,10 @@ export default function InvoicesLayout({ children }: { children?: React.ReactNod
           <ResizableHandle className={cn('hidden md:flex', !isListView && 'hidden md:flex')} />
 
           {(!isListView || !isMobile) && (
-            <ResizablePanel defaultSize={70} className={cn('h-full w-full', isListView ? 'hidden md:block' : 'flex flex-col')}>
+            <ResizablePanel
+              defaultSize={70}
+              className={cn('h-full w-full', isListView ? 'hidden md:block' : 'flex flex-col')}
+            >
               {children}
             </ResizablePanel>
           )}

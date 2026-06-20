@@ -117,6 +117,7 @@ export function InvoiceFormDialog({
   const { data: warehousesData } = trpc.warehouses.list.useQuery({ limit: 200 });
   const { data: itemsData } = trpc.items.list.useQuery({ isSaleable: true });
   const { data: taxRatesData } = trpc.settings.taxRates.list.useQuery();
+  const { data: orgData } = trpc.settings.getOrg.useQuery();
 
   const {
     register,
@@ -166,8 +167,8 @@ export function InvoiceFormDialog({
   }, [warehousesData, watch, setValue]);
 
   React.useEffect(() => {
-    if (open) reset(defaults(invoice, warehousesData));
-  }, [open, invoice, warehousesData, reset]);
+    if (open) reset(defaults(invoice, warehousesData, orgData ?? undefined));
+  }, [open, invoice, warehousesData, reset, orgData]);
 
   const createMutation = trpc.invoices.create.useMutation({
     onSuccess(data) {
@@ -834,6 +835,7 @@ export function useInvoiceForm(): InvoiceFormContextValue {
 function defaults(
   invoice?: { id: string; version?: number } & Partial<InvoiceFormValues>,
   warehousesData?: any,
+  org?: { defaultTermsText?: string | null },
 ): InvoiceFormValues {
   const today = new Date().toISOString().slice(0, 10);
   const list = Array.isArray(warehousesData)
@@ -851,7 +853,7 @@ function defaults(
     exchangeRate: invoice?.exchangeRate ?? 1,
     description: invoice?.description ?? undefined,
     notes: invoice?.notes ?? undefined,
-    termsText: invoice?.termsText ?? undefined,
+    termsText: invoice?.termsText ?? org?.defaultTermsText ?? undefined,
     internalNotes: invoice?.internalNotes ?? undefined,
     isWalkIn: invoice?.isWalkIn ?? false,
     parentInvoiceId: invoice?.parentInvoiceId ?? undefined,

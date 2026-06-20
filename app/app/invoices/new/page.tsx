@@ -59,7 +59,7 @@ const schema = z.object({
 
 type FormValues = z.infer<typeof schema>;
 
-function defaults(): FormValues {
+function defaults(org?: { defaultTermsText?: string | null }): FormValues {
   const today = new Date().toISOString().slice(0, 10);
   return {
     type: 'INVOICE',
@@ -72,7 +72,7 @@ function defaults(): FormValues {
     exchangeRate: 1,
     description: undefined,
     notes: undefined,
-    termsText: undefined,
+    termsText: org?.defaultTermsText ?? undefined,
     internalNotes: undefined,
     isWalkIn: false,
     parentInvoiceId: undefined,
@@ -107,6 +107,7 @@ export default function NewInvoicePage() {
   const { data: warehousesData, isLoading: warehousesLoading } = trpc.warehouses.list.useQuery({ limit: 200 });
   const { data: itemsData } = trpc.items.list.useQuery({ isSaleable: true });
   const { data: taxRatesData, isLoading: taxLoading } = trpc.settings.taxRates.list.useQuery();
+  const { data: orgData } = trpc.settings.getOrg.useQuery();
 
   const {
     register,
@@ -114,11 +115,22 @@ export default function NewInvoicePage() {
     setValue,
     watch,
     control,
+    reset,
     formState: { errors, isSubmitting },
   } = useForm<FormValues>({
     resolver: zodResolver(schema) as any,
     defaultValues: defaults(),
   });
+
+  const orgLoaded = React.useRef(false);
+  React.useEffect(() => {
+    if (orgData && !orgLoaded.current) {
+      orgLoaded.current = true;
+      if (!watch('termsText')) {
+        setValue('termsText', (orgData as any)?.defaultTermsText ?? '');
+      }
+    }
+  }, [orgData, setValue, watch]);
 
   const { fields, append, remove } = useFieldArray({ control, name: 'lines' });
 
