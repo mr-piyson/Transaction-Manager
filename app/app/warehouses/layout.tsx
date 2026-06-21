@@ -9,12 +9,14 @@ import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@/componen
 import { useIsMobile } from '@/hooks/use-mobile';
 import { trpc } from '@/lib/trpc/client';
 import { cn } from '@/lib/utils';
+import { useWarehouseForm } from '@/components/dialogs';
 import { Header } from '../App-Header';
 import { WarehouseListItem } from '@/components/warehouses/warehouse-list-item';
 
 const title = 'Warehouses';
 
 export default function WarehousesLayout({ children }: { children?: React.ReactNode }) {
+  const { openCreate } = useWarehouseForm();
   const { data, isPending } = trpc.warehouses.list.useQuery({});
   const isMobile = useIsMobile();
   const pathname = usePathname();
@@ -45,7 +47,7 @@ export default function WarehousesLayout({ children }: { children?: React.ReactN
 
   return (
     <div className="flex h-screen flex-col overflow-hidden">
-      <Header title={title} icon={<Warehouse className="size-5" />} />
+      <Header title={title} icon={<Warehouse className="size-5" />} onCreate={() => openCreate()} createLabel="New Warehouse" />
       <div className="flex-1 min-h-0 w-full">
         <ResizablePanelGroup className="h-full">
           {(isListView || !isMobile) && (

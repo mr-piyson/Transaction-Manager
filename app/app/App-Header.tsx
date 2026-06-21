@@ -1,7 +1,9 @@
 'use client';
 
+import { Plus } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { cn } from '@/lib/utils';
+import { Button } from '../../components/ui/button';
 import { Separator } from '../../components/ui/separator';
 import { SidebarToggleButton } from './App-Sidebar';
 
@@ -17,6 +19,8 @@ interface HeaderProps {
   className?: string;
   children?: ReactNode;
   description?: string;
+  onCreate?: () => void;
+  createLabel?: string;
 }
 
 export function Header({
@@ -31,6 +35,8 @@ export function Header({
   className,
   children,
   description,
+  onCreate,
+  createLabel,
 }: HeaderProps) {
   return (
     <header
@@ -64,6 +70,12 @@ export function Header({
         )}
       </div>
       {rightContent}
+      {onCreate && (
+        <Button size="sm" className="gap-1.5 shrink-0" onClick={onCreate}>
+          <Plus className="size-4" />
+          {createLabel ?? 'Create'}
+        </Button>
+      )}
       {children}
     </header>
   );

@@ -9,12 +9,14 @@ import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@/componen
 import { useIsMobile } from '@/hooks/use-mobile';
 import { trpc } from '@/lib/trpc/client';
 import { cn } from '@/lib/utils';
+import { useCustomerForm } from '@/components/dialogs';
 import { Header } from '../App-Header';
 import { Customer_List_Item } from '@/components/customers/customer-list-item';
 
 const title = 'Customers';
 
 export default function CustomersLayout({ children }: { children?: React.ReactNode }) {
+  const { openCreate } = useCustomerForm();
   const { data, isPending } = trpc.customers.list.useQuery({});
   const isMobile = useIsMobile();
   const pathname = usePathname();
@@ -45,7 +47,7 @@ export default function CustomersLayout({ children }: { children?: React.ReactNo
 
   return (
     <div className="flex h-screen flex-col overflow-hidden">
-      <Header title={title} icon={<Users className="size-5" />} />
+      <Header title={title} icon={<Users className="size-5" />} onCreate={() => openCreate()} createLabel="New Customer" />
       <div className="flex-1 min-h-0 w-full">
         <ResizablePanelGroup className="h-full">
           {(isListView || !isMobile) && (

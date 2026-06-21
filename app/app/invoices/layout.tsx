@@ -18,6 +18,7 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { trpc } from '@/lib/trpc/client';
 import { cn } from '@/lib/utils';
+import { useInvoiceForm } from '@/components/dialogs';
 import { Header } from '../App-Header';
 
 const title = 'Invoices';
@@ -39,6 +40,7 @@ const PAYMENT_STATUSES = [
 ] as const;
 
 export default function InvoicesLayout({ children }: { children?: React.ReactNode }) {
+  const { openCreate } = useInvoiceForm();
   const [docType, setDocType] = useState('all');
   const [paymentStatus, setPaymentStatus] = useState('all');
 
@@ -105,7 +107,7 @@ export default function InvoicesLayout({ children }: { children?: React.ReactNod
 
   return (
     <div className="flex h-screen flex-col overflow-hidden">
-      <Header title={title} icon={<Receipt className="size-5" />} />
+      <Header title={title} icon={<Receipt className="size-5" />} onCreate={() => openCreate()} createLabel="New Invoice" />
       <div className="flex-1 min-h-0 w-full">
         <ResizablePanelGroup className="h-full">
           {(isListView || !isMobile) && (

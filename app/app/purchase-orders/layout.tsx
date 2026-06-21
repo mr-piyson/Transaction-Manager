@@ -9,12 +9,14 @@ import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@/componen
 import { useIsMobile } from '@/hooks/use-mobile';
 import { trpc } from '@/lib/trpc/client';
 import { cn } from '@/lib/utils';
+import { usePOForm } from '@/components/dialogs';
 import { Header } from '../App-Header';
 import { POListItem } from '@/components/purchase-orders/po-list-item';
 
 const title = 'Purchase Orders';
 
 export default function POLayout({ children }: { children?: React.ReactNode }) {
+  const { openCreate } = usePOForm();
   const { data, isPending } = trpc.purchaseOrders.list.useQuery({});
   const isMobile = useIsMobile();
   const pathname = usePathname();
@@ -45,7 +47,7 @@ export default function POLayout({ children }: { children?: React.ReactNode }) {
 
   return (
     <div className="flex h-screen flex-col overflow-hidden">
-      <Header title={title} icon={<ShoppingCart className="size-5" />} />
+      <Header title={title} icon={<ShoppingCart className="size-5" />} onCreate={() => openCreate()} createLabel="New Purchase Order" />
       <div className="flex-1 min-h-0 w-full">
         <ResizablePanelGroup className="h-full">
           {(isListView || !isMobile) && (

@@ -9,12 +9,14 @@ import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@/componen
 import { useIsMobile } from '@/hooks/use-mobile';
 import { trpc } from '@/lib/trpc/client';
 import { cn } from '@/lib/utils';
+import { useItemForm } from '@/components/dialogs';
 import { Header } from '../App-Header';
 import { ItemListItem } from '@/components/items/item-list-item';
 
 const title = 'Items';
 
 export default function ItemsLayout({ children }: { children?: React.ReactNode }) {
+  const { openCreate } = useItemForm();
   const { data, isPending } = trpc.items.list.useQuery({});
   const isMobile = useIsMobile();
   const pathname = usePathname();
@@ -45,7 +47,7 @@ export default function ItemsLayout({ children }: { children?: React.ReactNode }
 
   return (
     <div className="flex h-screen flex-col overflow-hidden">
-      <Header title={title} icon={<Package className="size-5" />} />
+      <Header title={title} icon={<Package className="size-5" />} onCreate={() => openCreate()} createLabel="New Item" />
       <div className="flex-1 min-h-0 w-full">
         <ResizablePanelGroup className="h-full">
           {(isListView || !isMobile) && (

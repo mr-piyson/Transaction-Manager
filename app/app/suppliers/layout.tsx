@@ -9,12 +9,14 @@ import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@/componen
 import { useIsMobile } from '@/hooks/use-mobile';
 import { trpc } from '@/lib/trpc/client';
 import { cn } from '@/lib/utils';
+import { useSupplierForm } from '@/components/dialogs';
 import { Header } from '../App-Header';
 import { SupplierListItem } from '@/components/suppliers/supplier-list-item';
 
 const title = 'Suppliers';
 
 export default function SuppliersLayout({ children }: { children?: React.ReactNode }) {
+  const { openCreate } = useSupplierForm();
   const { data, isPending } = trpc.suppliers.list.useQuery({});
   const isMobile = useIsMobile();
   const pathname = usePathname();
@@ -45,7 +47,7 @@ export default function SuppliersLayout({ children }: { children?: React.ReactNo
 
   return (
     <div className="flex h-screen flex-col overflow-hidden">
-      <Header title={title} icon={<Truck className="size-5" />} />
+      <Header title={title} icon={<Truck className="size-5" />} onCreate={() => openCreate()} createLabel="New Supplier" />
       <div className="flex-1 min-h-0 w-full">
         <ResizablePanelGroup className="h-full">
           {(isListView || !isMobile) && (

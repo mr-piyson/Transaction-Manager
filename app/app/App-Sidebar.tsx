@@ -217,7 +217,9 @@ export function AppSidebar({ ...props }: AppSidebarProps) {
   return (
     <Sidebar collapsible="icon" type="Drawer" {...props}>
       <SidebarHeader>
-        <AppLogo />
+        <div className="flex items-center gap-1">
+          <AppLogo />
+        </div>
       </SidebarHeader>
 
       <SidebarContent>

@@ -9,12 +9,14 @@ import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@/componen
 import { useIsMobile } from '@/hooks/use-mobile';
 import { trpc } from '@/lib/trpc/client';
 import { cn } from '@/lib/utils';
+import { useContractForm } from '@/components/dialogs';
 import { Header } from '../App-Header';
 import { ContractListItem } from '@/components/contracts/contract-list-item';
 
 const title = 'Contracts';
 
 export default function ContractsLayout({ children }: { children?: React.ReactNode }) {
+  const { openCreate } = useContractForm();
   const { data, isPending } = trpc.contracts.list.useQuery({});
   const isMobile = useIsMobile();
   const pathname = usePathname();
@@ -45,7 +47,7 @@ export default function ContractsLayout({ children }: { children?: React.ReactNo
 
   return (
     <div className="flex h-screen flex-col overflow-hidden">
-      <Header title={title} icon={<Handshake className="size-5" />} />
+      <Header title={title} icon={<Handshake className="size-5" />} onCreate={() => openCreate()} createLabel="New Contract" />
       <div className="flex-1 min-h-0 w-full">
         <ResizablePanelGroup className="h-full">
           {(isListView || !isMobile) && (
