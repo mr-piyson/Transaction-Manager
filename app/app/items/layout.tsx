@@ -1,46 +1,115 @@
 'use client';
 
-import { Package, User2 } from 'lucide-react';
+import { Edit, Eye, Package, Trash2, User2 } from 'lucide-react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { useCallback } from 'react';
+import { toast } from 'sonner';
+import { alert } from '@/components/Alert-dialog';
+import { UniversalContextMenu } from '@/components/context-menu';
+import type { ContextMenuItemSchema } from '@/components/context-menu';
+import { useItemForm } from '@/components/dialogs';
 import { ListView } from '@/components/list-view';
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@/components/ui/resizable';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { trpc } from '@/lib/trpc/client';
 import { cn } from '@/lib/utils';
-import { useItemForm } from '@/components/dialogs';
 import { Header } from '../App-Header';
 import { ItemListItem } from '@/components/items/item-list-item';
 
 const title = 'Items';
 
 export default function ItemsLayout({ children }: { children?: React.ReactNode }) {
-  const { openCreate } = useItemForm();
+  const { openCreate, openEdit } = useItemForm();
   const { data, isPending } = trpc.items.list.useQuery({});
+  const utils = trpc.useUtils();
+  const router = useRouter();
   const isMobile = useIsMobile();
   const pathname = usePathname();
   const activeItem = pathname.split('/')[3];
   const isListView = pathname === `/app/${title.toLowerCase()}`;
 
+  const deleteMutation = trpc.items.delete.useMutation({
+    onSuccess: () => {
+      utils.items.list.invalidate();
+      toast.success('Item deleted');
+    },
+    onError: (e) => toast.error(e.message),
+  });
+
   const renderCard = useCallback(
-    (item: any) => (
-      <Link
-        href={`/app/${title.toLowerCase()}/${item.id}`}
-        scroll={false}
-        draggable={false}
-        className="block w-full h-full"
-      >
-        <ItemListItem
-          data={item}
-          className={cn(
-            'hover:bg-muted/40 border border-transparent',
-            activeItem === item.id ? 'border-primary border bg-primary/10' : '',
-          )}
-        />
-      </Link>
-    ),
-    [activeItem],
+    (item: any) => {
+      const menuItems: ContextMenuItemSchema[] = [
+        {
+          id: 'view',
+          label: 'View details',
+          icon: Eye,
+          onClick: () => router.push(`/app/items/${item.id}`),
+        },
+        {
+          id: 'edit',
+          label: 'Edit',
+          icon: Edit,
+          onClick: () =>
+            openEdit(
+              {
+                id: item.id,
+                type: item.type,
+                sku: item.sku,
+                barcode: item.barcode ?? undefined,
+                name: item.name,
+                unit: item.unit,
+                isSaleable: item.isSaleable,
+                isPurchasable: item.isPurchasable,
+                purchasePrice: Number(item.purchasePrice),
+                salesPrice: Number(item.salesPrice),
+                minStock: item.minStock,
+                reorderPoint: item.reorderPoint,
+                reorderQty: item.reorderQty,
+                categoryId: item.category?.id ?? undefined,
+                taxRateId: item.taxRate?.id ?? undefined,
+              },
+              { onSuccess: () => utils.items.byId.invalidate({ id: item.id }) },
+            ),
+        },
+        { id: 'sep1', type: 'separator' },
+        {
+          id: 'delete',
+          label: 'Delete',
+          icon: Trash2,
+          destructive: true,
+          onClick: () =>
+            alert.delete({
+              title: `Delete "${item.name}"?`,
+              description: 'This item will be deactivated. It can be restored later.',
+              confirmText: 'Delete',
+              onConfirm: async () => {
+                await deleteMutation.mutateAsync({ id: item.id });
+              },
+            }),
+        },
+      ];
+
+      return (
+        <UniversalContextMenu items={menuItems}>
+          <Link
+            href={`/app/${title.toLowerCase()}/${item.id}`}
+            scroll={false}
+            draggable={false}
+            className="block w-full h-full"
+          >
+            <ItemListItem
+              data={item}
+              className={cn(
+                'hover:bg-muted/40 border border-transparent',
+                activeItem === item.id ? 'border-primary border bg-primary/10' : '',
+              )}
+            />
+          </Link>
+        </UniversalContextMenu>
+      );
+    },
+    [activeItem, openEdit, deleteMutation, utils, router],
   );
 
   const items = Array.isArray(data) ? data : data?.data ?? [];

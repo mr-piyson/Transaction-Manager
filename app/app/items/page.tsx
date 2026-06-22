@@ -1,11 +1,11 @@
 'use client';
 
 import { Package } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+import { useItemForm } from '@/components/dialogs';
 import { Button } from '@/components/ui/button';
 
 export default function ItemsPage() {
-  const router = useRouter();
+  const { openCreate } = useItemForm();
 
   return (
     <div className="flex flex-col items-center justify-center h-full gap-4 p-8 text-center">
@@ -16,7 +16,7 @@ export default function ItemsPage() {
         <h2 className="text-xl font-semibold">Items</h2>
         <p className="text-muted-foreground mt-1">Select an item from the list or create a new one.</p>
       </div>
-      <Button onClick={() => router.push('/app/items/new')}>
+      <Button onClick={() => openCreate()}>
         New Item
       </Button>
     </div>

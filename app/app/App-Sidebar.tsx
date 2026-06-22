@@ -140,7 +140,7 @@ export const ROUTES = [
       },
       {
         type: 'item',
-        label: 'Items Catalogue',
+        label: 'Items',
 
         href: '/app/items',
         icon: Package,

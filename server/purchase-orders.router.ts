@@ -579,6 +579,28 @@ export const purchaseOrdersRouter = router({
           },
         });
 
+        // Create expense record for the cost of received items
+        const receivedCost = po.lines.reduce((sum, line) => {
+          const orderedQty = Number(line.quantity);
+          const alreadyReceived = Number(line.receivedQty);
+          const toReceive = orderedQty - alreadyReceived;
+          if (toReceive <= 0) return sum;
+          return sum + Number(line.unitCost) * toReceive;
+        }, 0);
+
+        if (receivedCost > 0) {
+          await tx.expense.create({
+            data: {
+              description: `PO #${po.serial} — Inventory received`,
+              amount: receivedCost,
+              date: new Date(),
+              reference: po.serial,
+              organizationId: orgId,
+              createdById: ctx.user.id,
+            },
+          });
+        }
+
         await writeAuditLog(
           {
             entityType: 'PurchaseOrder',
