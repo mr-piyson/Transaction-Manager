@@ -585,6 +585,7 @@ export const invoicesRouter = router({
           lines: {
             include: { item: { select: { type: true } } },
           },
+          customer: { select: { name: true } },
         },
       });
 
@@ -638,6 +639,22 @@ export const invoicesRouter = router({
             updatedById: ctx.user.id,
           },
         });
+
+        // Create income record for the recognized revenue
+        if (invoice.type === 'INVOICE') {
+          await tx.income.create({
+            data: {
+              description: `INV #${invoice.serial}${invoice.customerId ? ` — ${invoice.customer?.name ?? ''}` : ''}`,
+              amount: Number(invoice.total),
+              date: new Date(),
+              reference: invoice.serial,
+              invoiceId: invoice.id,
+              customerId: invoice.customerId,
+              organizationId: orgId,
+              createdById: ctx.user.id,
+            },
+          });
+        }
 
         await writeAuditLog(
           {

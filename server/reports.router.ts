@@ -17,17 +17,32 @@ export const reportsRouter = router({
       lowStockCount,
       paidInvoicesAgg,
       expenseAgg,
+      incomeAgg,
     ] = await ctx.db.$transaction([
       ctx.db.invoice.aggregate({
-        where: { organizationId: orgId, type: 'INVOICE', deletedAt: null, status: { notIn: ['CANCELLED', 'DELETED'] } },
+        where: {
+          organizationId: orgId,
+          type: 'INVOICE',
+          deletedAt: null,
+          status: { notIn: ['CANCELLED', 'DELETED'] },
+        },
         _sum: { total: true, amountDue: true, costTotal: true },
         _count: true,
       }),
       ctx.db.invoice.count({
-        where: { organizationId: orgId, type: 'INVOICE', deletedAt: null, status: { in: ['SENT', 'PARTIAL', 'OVERDUE'] } },
+        where: {
+          organizationId: orgId,
+          type: 'INVOICE',
+          deletedAt: null,
+          status: { in: ['SENT', 'PARTIAL', 'OVERDUE'] },
+        },
       }),
       ctx.db.purchaseOrder.aggregate({
-        where: { organizationId: orgId, deletedAt: null, status: { notIn: ['CANCELLED', 'CLOSED'] } },
+        where: {
+          organizationId: orgId,
+          deletedAt: null,
+          status: { notIn: ['CANCELLED', 'CLOSED'] },
+        },
         _sum: { total: true, amountOwed: true },
         _count: true,
       }),
@@ -54,9 +69,16 @@ export const reportsRouter = router({
         where: { organizationId: orgId, deletedAt: null },
         _sum: { amount: true },
       }),
+      ctx.db.income.aggregate({
+        where: { organizationId: orgId, deletedAt: null },
+        _sum: { amount: true },
+      }),
     ]);
 
-    const totalRevenue = Number(invoiceAgg._sum.total ?? 0);
+    const hasIncomeData = incomeAgg._sum.amount !== null;
+    const totalRevenue = hasIncomeData
+      ? Number(incomeAgg._sum.amount)
+      : Number(invoiceAgg._sum.total ?? 0);
     const totalCost = Number(invoiceAgg._sum.costTotal ?? 0);
     const totalExpenses = Number(expenseAgg._sum.amount ?? 0);
 
@@ -68,7 +90,11 @@ export const reportsRouter = router({
       netProfit: totalRevenue - totalCost - totalExpenses,
       collected: { total: Number(paidInvoicesAgg._sum.total ?? 0) },
       outstanding: { total: Number(invoiceAgg._sum.amountDue ?? 0), count: openInvoiceCount },
-      purchases: { total: Number(poAgg._sum.total ?? 0), count: poAgg._count, owed: Number(poAgg._sum.amountOwed ?? 0) },
+      purchases: {
+        total: Number(poAgg._sum.total ?? 0),
+        count: poAgg._count,
+        owed: Number(poAgg._sum.amountOwed ?? 0),
+      },
       contracts: { activeCount: activeContractCount },
       customers: { activeCount: customerCount },
       suppliers: { activeCount: supplierCount },
@@ -126,7 +152,15 @@ export const reportsRouter = router({
 
     const orgId = ctx.user.organizationId;
 
-    const statuses = ['PAID', 'SENT', 'PARTIAL', 'OVERDUE', 'DRAFT', 'CANCELLED', 'DISPUTED'] as const;
+    const statuses = [
+      'PAID',
+      'SENT',
+      'PARTIAL',
+      'OVERDUE',
+      'DRAFT',
+      'CANCELLED',
+      'DISPUTED',
+    ] as const;
     const counts = await Promise.all(
       statuses.map((status) =>
         ctx.db.invoice.count({
@@ -172,7 +206,9 @@ export const reportsRouter = router({
         buckets.current += amount;
         continue;
       }
-      const daysOverdue = Math.floor((now.getTime() - new Date(inv.dueDate).getTime()) / (1000 * 60 * 60 * 24));
+      const daysOverdue = Math.floor(
+        (now.getTime() - new Date(inv.dueDate).getTime()) / (1000 * 60 * 60 * 24),
+      );
       if (daysOverdue <= 0) buckets.current += amount;
       else if (daysOverdue <= 30) buckets.days1to30 += amount;
       else if (daysOverdue <= 60) buckets.days31to60 += amount;
@@ -196,7 +232,7 @@ export const reportsRouter = router({
     const now = new Date();
     const twelveMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 11, 1);
 
-    const [invoices, expenses] = await ctx.db.$transaction([
+    const [invoices, expenses, incomes] = await ctx.db.$transaction([
       ctx.db.invoice.findMany({
         where: {
           organizationId: orgId,
@@ -215,7 +251,17 @@ export const reportsRouter = router({
         },
         select: { date: true, amount: true },
       }),
+      ctx.db.income.findMany({
+        where: {
+          organizationId: orgId,
+          deletedAt: null,
+          date: { gte: twelveMonthsAgo },
+        },
+        select: { date: true, amount: true },
+      }),
     ]);
+
+    const useIncome = incomes.length > 0;
 
     const monthly: Record<string, { revenue: number; expenses: number }> = {};
 
@@ -225,10 +271,18 @@ export const reportsRouter = router({
       monthly[key] = { revenue: 0, expenses: 0 };
     }
 
-    for (const inv of invoices) {
-      const d = new Date(inv.date);
-      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
-      if (monthly[key]) monthly[key].revenue += Number(inv.total);
+    if (useIncome) {
+      for (const inc of incomes) {
+        const d = new Date(inc.date);
+        const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+        if (monthly[key]) monthly[key].revenue += Number(inc.amount);
+      }
+    } else {
+      for (const inv of invoices) {
+        const d = new Date(inv.date);
+        const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+        if (monthly[key]) monthly[key].revenue += Number(inv.total);
+      }
     }
 
     for (const exp of expenses) {
