@@ -323,6 +323,9 @@ model Organization {
   priceListHeaders      PriceList[]
   creditNoteAllocations CreditNoteAllocation[]
   departments           Department[]
+  categoryFamilies      CategoryFamily[]
+  categoryClasses       CategoryClass[]
+  categoryCommodities   CategoryCommodity[]
 
   @@index([slug])
   @@index([deletedAt])
@@ -966,6 +969,97 @@ model ItemCategory {
 }
 
 // =============================================================================
+// 3-LAYER UNIVERSAL CATEGORIZATION  (Family → Class → Commodity)
+// Strict hierarchical categories for classifying catalogue items at three
+// levels of granularity. Each level has a code unique within its parent + org.
+// =============================================================================
+
+/// Layer 1 — "What is it?"  e.g. RAW, FIN, MRO, WIP, SVC
+model CategoryFamily {
+  id          String   @id @default(cuid())
+  name        String
+  code        String   // Short code, unique per org (e.g. "RAW", "FIN")
+  description String?
+  color       String?  // Hex colour for UI badges
+  icon        String?  // Icon identifier for UI
+
+  isActive  Boolean   @default(true)
+  deletedAt DateTime?
+
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  classes    CategoryClass[]
+  items      Item[]
+
+  @@unique([code, organizationId])
+  @@index([organizationId])
+  @@index([deletedAt])
+}
+
+/// Layer 2 — "What does it do?"  e.g. ELEC, METL, FURN
+model CategoryClass {
+  id          String   @id @default(cuid())
+  name        String
+  code        String   // Short code, unique per family + org (e.g. "ELEC")
+  description String?
+  color       String?
+  icon        String?
+
+  isActive  Boolean   @default(true)
+  deletedAt DateTime?
+
+  familyId String
+  family   CategoryFamily @relation(fields: [familyId], references: [id])
+
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  commodities CategoryCommodity[]
+  items       Item[]
+
+  @@unique([code, familyId, organizationId])
+  @@index([organizationId])
+  @@index([familyId])
+  @@index([deletedAt])
+}
+
+/// Layer 3 — "Which specific one?"  e.g. CABLE, SWITCH, CAMERA
+model CategoryCommodity {
+  id          String   @id @default(cuid())
+  name        String
+  code        String   // Short code, unique per class + org (e.g. "CABLE")
+  description String?
+  color       String?
+  icon        String?
+
+  isActive  Boolean   @default(true)
+  deletedAt DateTime?
+
+  classId String
+  class   CategoryClass @relation(fields: [classId], references: [id])
+
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  items Item[]
+
+  @@unique([code, classId, organizationId])
+  @@index([organizationId])
+  @@index([classId])
+  @@index([deletedAt])
+}
+
+// =============================================================================
 // PRICE LISTS
 // Supports tiered / customer-specific pricing without modifying Item.salesPrice.
 // =============================================================================
@@ -1184,6 +1278,16 @@ model Item {
 
   categoryId String?
   category   ItemCategory? @relation(fields: [categoryId], references: [id])
+
+  // 3-Layer Universal Categorization (nullable for backward compatibility)
+  familyId    String?
+  family      CategoryFamily?    @relation(fields: [familyId], references: [id])
+
+  classId     String?
+  class       CategoryClass?     @relation(fields: [classId], references: [id])
+
+  commodityId String?
+  commodity   CategoryCommodity? @relation(fields: [commodityId], references: [id])
 
   taxRateId String?
   taxRate   TaxRate? @relation(fields: [taxRateId], references: [id])

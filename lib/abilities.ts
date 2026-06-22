@@ -62,6 +62,11 @@ export type Action =
   | 'report:financial'
   | 'report:inventory'
   | 'report:sales'
+  // Categories
+  | 'category:read'
+  | 'category:create'
+  | 'category:update'
+  | 'category:delete'
   // Settings / admin
   | 'org:settings:read'
   | 'org:settings:update'
@@ -73,6 +78,9 @@ export type Action =
 // ---------------------------------------------------------------------------
 
 export type SubjectName =
+  | 'CategoryFamily'
+  | 'CategoryClass'
+  | 'CategoryCommodity'
   | 'Invoice'
   | 'InvoiceLine'
   | 'Payment'
@@ -136,6 +144,9 @@ const MUTATION_ACTIONS: Action[] = [
   'expense:create',
   'expense:update',
   'expense:delete',
+  'category:create',
+  'category:update',
+  'category:delete',
   'org:settings:update',
   'user:manage',
   'role:manage',
@@ -151,6 +162,7 @@ const RESOURCE_TO_SUBJECT_MAP: Record<string, SubjectName> = {
   stock: 'Stock',
   po: 'PurchaseOrder',
   expense: 'Expense',
+  category: 'CategoryFamily',
   org: 'Organization',
   user: 'User',
   report: 'all', // Reports aren't tied to a specific DB model row

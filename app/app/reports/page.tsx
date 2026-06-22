@@ -229,7 +229,7 @@ export default function ReportsPage() {
   );
 
   const topCustomers = useMemo(
-    () => salesByCustomer?.slice(0, 8).reverse() ?? [],
+    () => salesByCustomer?.slice(0, 8) ?? [],
     [salesByCustomer],
   );
 
@@ -241,7 +241,7 @@ export default function ReportsPage() {
     [],
   );
 
-  const topItemsData = useMemo(() => topItems?.slice(0, 10).reverse() ?? [], [topItems]);
+  const topItemsData = useMemo(() => topItems?.slice(0, 10) ?? [], [topItems]);
 
   // ── ag-Grid Financial Transactions ──────────────────────────────────────
   const theme = useTableTheme();

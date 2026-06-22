@@ -4,6 +4,7 @@ import {
   BookType,
   Building2,
   Coins,
+  Layers,
   LogOut,
   Palette,
   Percent,
@@ -22,6 +23,7 @@ export const NAV_ITEMS = [
   { id: 'general', label: 'General', href: '/app/settings/general', icon: Building2 },
   { id: 'financial', label: 'Financial', href: '/app/settings/financial', icon: Coins },
   { id: 'tax-rates', label: 'Tax Rates', href: '/app/settings/tax-rates', icon: Percent },
+  { id: 'categories', label: 'Categories', href: '/app/settings/categories', icon: Layers },
   {
     id: 'chart-of-accounts',
     label: 'Chart of Accounts',

@@ -7,6 +7,7 @@ import {
   Cuboid,
   Edit,
   Hash,
+  Layers,
   Loader2,
   Package,
   Scale,
@@ -22,7 +23,13 @@ import { alert } from '@/components/Alert-dialog';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '@/components/ui/empty';
+import {
+  Empty,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from '@/components/ui/empty';
 import { Spinner } from '@/components/ui/spinner';
 import { useItemForm } from '@/components/dialogs';
 import { trpc } from '@/lib/trpc/client';
@@ -40,10 +47,13 @@ export default function ItemDetailPage() {
   const utils = trpc.useUtils();
   const { openEdit } = useItemForm();
 
-  const { data: item, isLoading, isError, error, refetch } = trpc.items.byId.useQuery(
-    { id: params.id },
-    { enabled: !!params.id },
-  );
+  const {
+    data: item,
+    isLoading,
+    isError,
+    error,
+    refetch,
+  } = trpc.items.byId.useQuery({ id: params.id }, { enabled: !!params.id });
 
   const deleteMutation = trpc.items.delete.useMutation({
     onSuccess: () => {
@@ -106,6 +116,9 @@ export default function ItemDetailPage() {
         reorderPoint: item.reorderPoint,
         reorderQty: item.reorderQty,
         categoryId: item.categoryId ?? undefined,
+        familyId: item.family?.id ?? undefined,
+        classId: item.class?.id ?? undefined,
+        commodityId: item.commodity?.id ?? undefined,
         taxRateId: item.taxRateId ?? undefined,
       },
       { onSuccess: () => utils.items.byId.invalidate({ id: item.id }) },
@@ -140,7 +153,10 @@ export default function ItemDetailPage() {
             {item.type}
           </Badge>
           {!item.isActive && (
-            <Badge variant="outline" className="bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200">
+            <Badge
+              variant="outline"
+              className="bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200"
+            >
               Inactive
             </Badge>
           )}
@@ -150,7 +166,13 @@ export default function ItemDetailPage() {
             <Edit className="size-4" />
             Edit
           </Button>
-          <Button variant="destructive" size="sm" className="gap-1.5" onClick={handleDelete} disabled={isPending}>
+          <Button
+            variant="destructive"
+            size="sm"
+            className="gap-1.5"
+            onClick={handleDelete}
+            disabled={isPending}
+          >
             {isPending ? <Loader2 className="size-4 animate-spin" /> : <Trash className="size-4" />}
             Delete
           </Button>
@@ -159,7 +181,7 @@ export default function ItemDetailPage() {
 
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
         {/* Info cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3">
           <Card>
             <CardHeader className="pb-1.5">
               <CardTitle className="text-xs text-muted-foreground font-medium flex items-center gap-1">
@@ -190,6 +212,7 @@ export default function ItemDetailPage() {
               </p>
             </CardContent>
           </Card>
+
           <Card>
             <CardHeader className="pb-1.5">
               <CardTitle className="text-xs text-muted-foreground font-medium flex items-center gap-1">
@@ -245,7 +268,16 @@ export default function ItemDetailPage() {
               <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-4">
                 <div>
                   <p className="text-xs text-muted-foreground">Total stock</p>
-                  <p className={cn('text-2xl font-bold', totalStock <= item.reorderPoint && totalStock > 0 ? 'text-yellow-600' : totalStock === 0 ? 'text-destructive' : '')}>
+                  <p
+                    className={cn(
+                      'text-2xl font-bold',
+                      totalStock <= item.reorderPoint && totalStock > 0
+                        ? 'text-yellow-600'
+                        : totalStock === 0
+                          ? 'text-destructive'
+                          : '',
+                    )}
+                  >
                     {totalStock}
                   </p>
                 </div>
@@ -272,9 +304,17 @@ export default function ItemDetailPage() {
                   <p className="text-xs text-muted-foreground mb-2">Per warehouse</p>
                   <div className="space-y-1">
                     {item.stock.map((s: any) => (
-                      <div key={s.warehouse.id} className="flex items-center justify-between text-sm py-1 px-2 rounded bg-muted/50">
+                      <div
+                        key={s.warehouse.id}
+                        className="flex items-center justify-between text-sm py-1 px-2 rounded bg-muted/50"
+                      >
                         <span className="font-medium truncate">{s.warehouse.name}</span>
-                        <span className={cn('font-semibold', Number(s.quantity) <= 0 ? 'text-destructive' : '')}>
+                        <span
+                          className={cn(
+                            'font-semibold',
+                            Number(s.quantity) <= 0 ? 'text-destructive' : '',
+                          )}
+                        >
                           {Number(s.quantity)} {item.unit}
                         </span>
                       </div>
@@ -295,18 +335,30 @@ export default function ItemDetailPage() {
               </CardHeader>
               <CardContent className="flex gap-4">
                 <div className="flex items-center gap-1.5">
-                  <div className={cn('size-2.5 rounded-full', item.isSaleable ? 'bg-green-500' : 'bg-gray-300')} />
+                  <div
+                    className={cn(
+                      'size-2.5 rounded-full',
+                      item.isSaleable ? 'bg-green-500' : 'bg-gray-300',
+                    )}
+                  />
                   <span className="text-sm">Saleable</span>
                 </div>
                 <div className="flex items-center gap-1.5">
-                  <div className={cn('size-2.5 rounded-full', item.isPurchasable ? 'bg-green-500' : 'bg-gray-300')} />
+                  <div
+                    className={cn(
+                      'size-2.5 rounded-full',
+                      item.isPurchasable ? 'bg-green-500' : 'bg-gray-300',
+                    )}
+                  />
                   <span className="text-sm">Purchasable</span>
                 </div>
               </CardContent>
             </Card>
             <Card>
               <CardHeader className="pb-1.5">
-                <CardTitle className="text-xs text-muted-foreground font-medium">Dimensions</CardTitle>
+                <CardTitle className="text-xs text-muted-foreground font-medium">
+                  Dimensions
+                </CardTitle>
               </CardHeader>
               <CardContent className="flex flex-wrap gap-x-4 gap-y-1">
                 {item.weightKg && (
@@ -318,7 +370,8 @@ export default function ItemDetailPage() {
                 {item.widthCm && (
                   <div className="flex items-center gap-1 text-sm">
                     <Cuboid className="size-3.5 text-muted-foreground" />
-                    {Number(item.widthCm).toFixed(1)} x {Number(item.heightCm ?? 0).toFixed(1)} x {Number(item.depthCm ?? 0).toFixed(1)} cm
+                    {Number(item.widthCm).toFixed(1)} x {Number(item.heightCm ?? 0).toFixed(1)} x{' '}
+                    {Number(item.depthCm ?? 0).toFixed(1)} cm
                   </div>
                 )}
                 {!item.weightKg && !item.widthCm && (
@@ -340,7 +393,10 @@ export default function ItemDetailPage() {
             <CardContent>
               <div className="space-y-2">
                 {item.supplierItems.map((si) => (
-                  <div key={si.id} className="flex items-center justify-between py-1.5 px-2 rounded bg-muted/50">
+                  <div
+                    key={si.id}
+                    className="flex items-center justify-between py-1.5 px-2 rounded bg-muted/50"
+                  >
                     <div>
                       <p className="font-medium text-sm">{si.supplier.name}</p>
                       {si.supplierSku && (
@@ -349,7 +405,9 @@ export default function ItemDetailPage() {
                     </div>
                     <div className="text-right text-sm">
                       {si.basePrice && <p>{Number(si.basePrice).toFixed(3)}</p>}
-                      {si.leadTimeDays && <p className="text-xs text-muted-foreground">{si.leadTimeDays} days</p>}
+                      {si.leadTimeDays && (
+                        <p className="text-xs text-muted-foreground">{si.leadTimeDays} days</p>
+                      )}
                     </div>
                   </div>
                 ))}
@@ -367,7 +425,10 @@ export default function ItemDetailPage() {
             <CardContent>
               <div className="space-y-1">
                 {item.bundleLines.map((bl) => (
-                  <div key={bl.id} className="flex items-center justify-between text-sm py-1 px-2 rounded bg-muted/50">
+                  <div
+                    key={bl.id}
+                    className="flex items-center justify-between text-sm py-1 px-2 rounded bg-muted/50"
+                  >
                     <span className="font-medium">{bl.componentItem.name}</span>
                     <span className="text-muted-foreground">
                       {Number(bl.quantity)} {bl.componentItem.unit}
@@ -383,7 +444,9 @@ export default function ItemDetailPage() {
         {item.description && (
           <Card>
             <CardHeader className="pb-1.5">
-              <CardTitle className="text-xs text-muted-foreground font-medium">Description</CardTitle>
+              <CardTitle className="text-xs text-muted-foreground font-medium">
+                Description
+              </CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-sm whitespace-pre-wrap">{item.description}</p>
@@ -393,7 +456,10 @@ export default function ItemDetailPage() {
 
         {/* Related records */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <Card className="cursor-pointer hover:bg-muted/40 transition-colors" onClick={() => router.push(`/app/invoices?itemId=${item.id}`)}>
+          <Card
+            className="cursor-pointer hover:bg-muted/40 transition-colors"
+            onClick={() => router.push(`/app/invoices?itemId=${item.id}`)}
+          >
             <CardHeader className="pb-1.5">
               <CardTitle className="text-xs text-muted-foreground font-medium">Invoices</CardTitle>
             </CardHeader>
@@ -402,9 +468,14 @@ export default function ItemDetailPage() {
               <span className="text-sm text-muted-foreground">invoice lines</span>
             </CardContent>
           </Card>
-          <Card className="cursor-pointer hover:bg-muted/40 transition-colors" onClick={() => router.push(`/app/purchase-orders?itemId=${item.id}`)}>
+          <Card
+            className="cursor-pointer hover:bg-muted/40 transition-colors"
+            onClick={() => router.push(`/app/purchase-orders?itemId=${item.id}`)}
+          >
             <CardHeader className="pb-1.5">
-              <CardTitle className="text-xs text-muted-foreground font-medium">Purchase Orders</CardTitle>
+              <CardTitle className="text-xs text-muted-foreground font-medium">
+                Purchase Orders
+              </CardTitle>
             </CardHeader>
             <CardContent className="flex items-center gap-2">
               <span className="text-2xl font-bold">{item._count?.purchaseLines ?? 0}</span>
@@ -418,8 +489,12 @@ export default function ItemDetailPage() {
           {item.averageCost && Number(item.averageCost) > 0 && (
             <span>Avg cost: {Number(item.averageCost).toFixed(3)}</span>
           )}
-          <span>Created {item.createdAt ? format(new Date(item.createdAt), 'dd MMM yyyy HH:mm') : '—'}</span>
-          <span>Updated {item.updatedAt ? format(new Date(item.updatedAt), 'dd MMM yyyy HH:mm') : '—'}</span>
+          <span>
+            Created {item.createdAt ? format(new Date(item.createdAt), 'dd MMM yyyy HH:mm') : '—'}
+          </span>
+          <span>
+            Updated {item.updatedAt ? format(new Date(item.updatedAt), 'dd MMM yyyy HH:mm') : '—'}
+          </span>
         </div>
       </div>
     </div>

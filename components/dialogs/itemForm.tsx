@@ -1,7 +1,7 @@
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Loader2, TriangleAlert } from 'lucide-react';
+import { Loader2, TriangleAlert, Wand2 } from 'lucide-react';
 import * as React from 'react';
 import { type SubmitHandler, useForm } from 'react-hook-form';
 import { toast } from 'sonner';
@@ -45,6 +45,9 @@ const schema = z.object({
   reorderPoint: z.coerce.number().int().min(0).default(0),
   reorderQty: z.coerce.number().int().min(0).default(0),
   categoryId: z.string().optional(),
+  familyId: z.string().optional(),
+  classId: z.string().optional(),
+  commodityId: z.string().optional(),
   taxRateId: z.string().optional(),
 });
 
@@ -85,7 +88,11 @@ export function ItemFormDialog({ open, onOpenChange, item, onSuccess }: ItemForm
   const isEdit = Boolean(item?.id);
   const utils = trpc.useUtils();
   const { data: categories } = trpc.items.list.useQuery({ limit: 200 });
+  const { data: categoryTree } = trpc.categories.listTree.useQuery();
   const { data: taxRates } = trpc.settings.taxRates.list.useQuery();
+  const generateSku = trpc.categories.generateSku.useMutation();
+
+  const families = categoryTree ?? [];
 
   const {
     register,
@@ -93,7 +100,6 @@ export function ItemFormDialog({ open, onOpenChange, item, onSuccess }: ItemForm
     reset,
     setValue,
     watch,
-    control,
     formState: { errors, isSubmitting },
   } = useForm<ItemFormValues>({
     resolver: zodResolver(schema) as any,
@@ -101,14 +107,40 @@ export function ItemFormDialog({ open, onOpenChange, item, onSuccess }: ItemForm
   });
 
   const selectedType = watch('type');
+  const selectedFamilyId = watch('familyId');
+  const selectedClassId = watch('classId');
   const isService = selectedType === 'SERVICE';
   const isProduct = selectedType === 'PRODUCT';
+
+  const selectedFamily = families.find((f) => f.id === selectedFamilyId);
+  const classes = selectedFamily?.classes ?? [];
+  const selectedClass = classes.find((c) => c.id === selectedClassId);
+  const commodities = selectedClass?.commodities ?? [];
 
   React.useEffect(() => {
     if (open) reset(defaults(item));
   }, [open, item, reset]);
 
-  // Reset type-specific fields when type changes
+  React.useEffect(() => {
+    if (!selectedFamilyId) {
+      setValue('classId', undefined);
+      setValue('commodityId', undefined);
+    }
+  }, [selectedFamilyId, setValue]);
+
+  React.useEffect(() => {
+    if (!selectedClassId) {
+      setValue('commodityId', undefined);
+    }
+  }, [selectedClassId, setValue]);
+
+  // Auto-select first commodity when class has only one
+  React.useEffect(() => {
+    if (commodities.length === 1) {
+      setValue('commodityId', commodities[0].id);
+    }
+  }, [commodities, setValue]);
+
   const handleTypeChange = (type: string) => {
     setValue('type', type as 'PRODUCT' | 'SERVICE');
     if (type === 'SERVICE') {
@@ -118,6 +150,18 @@ export function ItemFormDialog({ open, onOpenChange, item, onSuccess }: ItemForm
       setValue('reorderQty', 0);
       setValue('isPurchasable', false);
     }
+  };
+
+  const handleGenerateSku = () => {
+    const familyCode = selectedFamily?.code;
+    const classCode = selectedClass?.code;
+    generateSku.mutate(
+      { familyCode, classCode },
+      {
+        onSuccess: (data) => setValue('sku', data.sku),
+        onError: (err) => toast.error('Failed to generate SKU', { description: err.message }),
+      },
+    );
   };
 
   const createMutation = trpc.items.create.useMutation({
@@ -147,21 +191,17 @@ export function ItemFormDialog({ open, onOpenChange, item, onSuccess }: ItemForm
   const isPending = isSubmitting || createMutation.isPending || updateMutation.isPending;
 
   const onSubmit: SubmitHandler<ItemFormValues> = (values) => {
-    const { ...rest } = values;
-
     if (isService) {
-      rest.purchasePrice = 0;
-      rest.minStock = 0;
-      rest.reorderPoint = 0;
-      rest.reorderQty = 0;
+      values.purchasePrice = 0;
+      values.minStock = 0;
+      values.reorderPoint = 0;
+      values.reorderQty = 0;
     }
 
-    const payload = rest;
-
     if (isEdit && item?.id) {
-      updateMutation.mutate({ id: item.id, ...payload });
+      updateMutation.mutate({ id: item.id, ...values });
     } else {
-      createMutation.mutate(payload);
+      createMutation.mutate(values);
     }
   };
 
@@ -219,12 +259,29 @@ export function ItemFormDialog({ open, onOpenChange, item, onSuccess }: ItemForm
             <div className="grid grid-cols-2 gap-3">
               <Field>
                 <Label htmlFor="sku">SKU *</Label>
-                <Input
-                  id="sku"
-                  placeholder="SKU-001"
-                  aria-invalid={!!errors.sku}
-                  {...register('sku')}
-                />
+                <div className="flex gap-2">
+                  <Input
+                    id="sku"
+                    placeholder="SKU-001"
+                    aria-invalid={!!errors.sku}
+                    {...register('sku')}
+                    className="flex-1"
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="icon"
+                    onClick={handleGenerateSku}
+                    disabled={generateSku.isPending}
+                    title="Auto-generate SKU"
+                  >
+                    {generateSku.isPending ? (
+                      <Loader2 className="size-4 animate-spin" />
+                    ) : (
+                      <Wand2 className="size-4" />
+                    )}
+                  </Button>
+                </div>
               </Field>
               <Field>
                 <Label htmlFor="barcode">Barcode</Label>
@@ -242,6 +299,66 @@ export function ItemFormDialog({ open, onOpenChange, item, onSuccess }: ItemForm
                 {...register('description')}
               />
             </Field>
+
+            {/* 3-Layer Category */}
+            <div className="grid grid-cols-3 gap-3">
+              <Field>
+                <Label>Family</Label>
+                <Select
+                  value={selectedFamilyId ?? ''}
+                  onValueChange={(v) => setValue('familyId', v || undefined)}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select family" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {families.map((f) => (
+                      <SelectItem key={f.id} value={f.id}>
+                        {f.code} — {f.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </Field>
+              <Field>
+                <Label>Class</Label>
+                <Select
+                  value={selectedClassId ?? ''}
+                  onValueChange={(v) => setValue('classId', v || undefined)}
+                  disabled={!selectedFamilyId}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder={selectedFamilyId ? 'Select class' : 'Select family first'} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {classes.map((c) => (
+                      <SelectItem key={c.id} value={c.id}>
+                        {c.code} — {c.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </Field>
+              <Field>
+                <Label>Commodity</Label>
+                <Select
+                  value={watch('commodityId') ?? ''}
+                  onValueChange={(v) => setValue('commodityId', v || undefined)}
+                  disabled={!selectedClassId}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder={selectedClassId ? 'Select commodity' : 'Select class first'} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {commodities.map((c) => (
+                      <SelectItem key={c.id} value={c.id}>
+                        {c.code} — {c.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </Field>
+            </div>
 
             {/* Product-only fields */}
             {isProduct && (
@@ -451,6 +568,9 @@ function defaults(item?: { id: string } & Partial<ItemFormValues>): ItemFormValu
     reorderPoint: typeof item?.reorderPoint === 'number' ? item.reorderPoint : 0,
     reorderQty: typeof item?.reorderQty === 'number' ? item.reorderQty : 0,
     categoryId: item?.categoryId ?? undefined,
+    familyId: item?.familyId ?? undefined,
+    classId: item?.classId ?? undefined,
+    commodityId: item?.commodityId ?? undefined,
     taxRateId: item?.taxRateId ?? undefined,
   };
 }
