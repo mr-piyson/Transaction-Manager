@@ -28,7 +28,7 @@ export default function POLayout({ children }: { children?: React.ReactNode }) {
   const isMobile = useIsMobile();
   const pathname = usePathname();
   const activeItem = pathname.split('/')[3];
-  const isListView = pathname === `/app/${title.toLowerCase()}`;
+  const isListView = pathname === `/app/${route}`;
 
   const deleteMutation = trpc.purchaseOrders.delete.useMutation({
     onSuccess: () => {
@@ -59,7 +59,7 @@ export default function POLayout({ children }: { children?: React.ReactNode }) {
           id: 'view',
           label: 'View details',
           icon: Eye,
-          onClick: () => router.push(`/app/${title.toLowerCase()}/${item.id}`),
+          onClick: () => router.push(`/app/${route}/${item.id}`),
         },
         {
           id: 'edit',
@@ -111,7 +111,7 @@ export default function POLayout({ children }: { children?: React.ReactNode }) {
       return (
         <UniversalContextMenu items={menuItems}>
           <Link
-            href={`/app/${title.toLowerCase()}/${item.id}`}
+            href={`/app/${route}/${item.id}`}
             scroll={false}
             draggable={false}
             className="block w-full h-full"
