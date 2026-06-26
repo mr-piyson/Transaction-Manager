@@ -1,9 +1,13 @@
 'use client';
 
-import { User2, Users } from 'lucide-react';
+import { Edit, Eye, Trash2, User2, Users } from 'lucide-react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { useCallback } from 'react';
+import { toast } from 'sonner';
+import { alert } from '@/components/Alert-dialog';
+import { UniversalContextMenu } from '@/components/context-menu';
+import type { ContextMenuItemSchema } from '@/components/context-menu';
 import { ListView } from '@/components/list-view';
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@/components/ui/resizable';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -16,31 +20,82 @@ import { Customer_List_Item } from '@/components/customers/customer-list-item';
 const title = 'Customers';
 
 export default function CustomersLayout({ children }: { children?: React.ReactNode }) {
-  const { openCreate } = useCustomerForm();
+  const { openCreate, openEdit } = useCustomerForm();
+  const utils = trpc.useUtils();
+  const router = useRouter();
   const { data, isPending } = trpc.customers.list.useQuery({});
   const isMobile = useIsMobile();
   const pathname = usePathname();
   const activeItem = pathname.split('/')[3];
   const isListView = pathname === `/app/${title.toLowerCase()}`;
 
+  const deleteMutation = trpc.customers.delete.useMutation({
+    onSuccess: () => {
+      utils.customers.list.invalidate();
+      toast.success('Customer deleted');
+      if (activeItem) router.push('/app/customers');
+    },
+    onError: (e) => toast.error(e.message),
+  });
+
   const renderCard = useCallback(
-    (item: any) => (
-      <Link
-        href={`/app/${title.toLowerCase()}/${item.id}`}
-        scroll={false}
-        draggable={false}
-        className="block w-full h-full"
-      >
-        <Customer_List_Item
-          data={item}
-          className={cn(
-            'hover:bg-muted/40 border border-transparent',
-            activeItem === item.id ? 'border-primary border bg-primary/10' : '',
-          )}
-        />
-      </Link>
-    ),
-    [activeItem],
+    (item: any) => {
+      const menuItems: ContextMenuItemSchema[] = [
+        {
+          id: 'view',
+          label: 'View details',
+          icon: Eye,
+          onClick: () => router.push(`/app/customers/${item.id}`),
+        },
+        {
+          id: 'edit',
+          label: 'Edit',
+          icon: Edit,
+          onClick: () =>
+            openEdit(
+              { id: item.id, name: item.name, phone: item.phone ?? undefined, email: item.email ?? undefined },
+              { onSuccess: () => utils.customers.byId.invalidate({ id: item.id }) },
+            ),
+        },
+        { id: 'sep1', type: 'separator' as const },
+        {
+          id: 'delete',
+          label: 'Delete',
+          icon: Trash2,
+          destructive: true,
+          disabled: deleteMutation.isPending,
+          onClick: () =>
+            alert.delete({
+              title: `Delete "${item.name}"?`,
+              description: 'This customer will be deactivated.',
+              confirmText: 'Delete',
+              onConfirm: async () => {
+                await deleteMutation.mutateAsync({ id: item.id });
+              },
+            }),
+        },
+      ];
+
+      return (
+        <UniversalContextMenu items={menuItems}>
+          <Link
+            href={`/app/${title.toLowerCase()}/${item.id}`}
+            scroll={false}
+            draggable={false}
+            className="block w-full h-full"
+          >
+            <Customer_List_Item
+              data={item}
+              className={cn(
+                'hover:bg-muted/40 border border-transparent',
+                activeItem === item.id ? 'border-primary border bg-primary/10' : '',
+              )}
+            />
+          </Link>
+        </UniversalContextMenu>
+      );
+    },
+    [activeItem, openEdit, deleteMutation, utils, router],
   );
 
   const items = Array.isArray(data) ? data : data?.data ?? [];

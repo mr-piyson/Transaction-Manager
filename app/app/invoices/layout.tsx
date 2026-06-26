@@ -1,9 +1,13 @@
 'use client';
 
-import { Receipt, User2 } from 'lucide-react';
+import { Edit, Eye, Receipt, Send, Trash2, User2, XCircle } from 'lucide-react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { useCallback, useState } from 'react';
+import { toast } from 'sonner';
+import { alert } from '@/components/Alert-dialog';
+import { UniversalContextMenu } from '@/components/context-menu';
+import type { ContextMenuItemSchema } from '@/components/context-menu';
 import { InvoiceListItem } from '@/components/invoices/invoice-list-item';
 import { ListView } from '@/components/list-view';
 import {
@@ -40,9 +44,20 @@ const PAYMENT_STATUSES = [
 ] as const;
 
 export default function InvoicesLayout({ children }: { children?: React.ReactNode }) {
-  const { openCreate } = useInvoiceForm();
+  const { openCreate, openEdit } = useInvoiceForm();
+  const utils = trpc.useUtils();
+  const router = useRouter();
   const [docType, setDocType] = useState('all');
   const [paymentStatus, setPaymentStatus] = useState('all');
+
+  const deleteMutation = trpc.invoices.delete.useMutation({
+    onSuccess: () => {
+      utils.invoices.list.invalidate();
+      toast.success('Invoice deleted');
+      if (activeItem) router.push('/app/invoices');
+    },
+    onError: (e) => toast.error(e.message),
+  });
 
   const { data, isPending } = trpc.invoices.list.useQuery({
     type: docType === 'all' ? undefined : (docType as any),
@@ -55,23 +70,88 @@ export default function InvoicesLayout({ children }: { children?: React.ReactNod
   const isPrintRoute = pathname.endsWith('/print');
 
   const renderCard = useCallback(
-    (item: any) => (
-      <Link
-        href={`/app/${title.toLowerCase()}/${item.id}`}
-        scroll={false}
-        draggable={false}
-        className="block w-full h-full"
-      >
-        <InvoiceListItem
-          data={item}
-          className={cn(
-            'hover:bg-muted/40 border border-transparent',
-            activeItem === item.id ? 'border-primary border bg-primary/10' : '',
-          )}
-        />
-      </Link>
-    ),
-    [activeItem],
+    (item: any) => {
+      const isDeletable = ['DRAFT', 'CANCELLED', 'DELETED'].includes(item.status);
+      const isCancellable = !['CANCELLED', 'DELETED', 'PAID'].includes(item.status);
+      const isSending = item.status === 'DRAFT' || item.status === 'APPROVED';
+
+      const menuItems: ContextMenuItemSchema[] = [
+        {
+          id: 'view',
+          label: 'View details',
+          icon: Eye,
+          onClick: () => router.push(`/app/invoices/${item.id}`),
+        },
+        {
+          id: 'edit',
+          label: 'Edit',
+          icon: Edit,
+          onClick: () =>
+            openEdit(
+              { id: item.id, type: item.type, lines: [] },
+              { onSuccess: () => utils.invoices.byId.invalidate({ id: item.id }) },
+            ),
+          disabled: !['DRAFT', 'APPROVED'].includes(item.status),
+        },
+        ...(isSending
+          ? [
+              {
+                id: 'send',
+                label: 'Send',
+                icon: Send,
+                onClick: () => router.push(`/app/invoices/${item.id}`),
+              } as ContextMenuItemSchema,
+            ]
+          : []),
+        ...(isCancellable
+          ? [
+              {
+                id: 'cancel',
+                label: 'Cancel',
+                icon: XCircle,
+                onClick: () => router.push(`/app/invoices/${item.id}`),
+              } as ContextMenuItemSchema,
+            ]
+          : []),
+        { id: 'sep1', type: 'separator' as const },
+        {
+          id: 'delete',
+          label: 'Delete',
+          icon: Trash2,
+          destructive: true,
+          onClick: () =>
+            alert.delete({
+              title: `Delete invoice ${item.serial}?`,
+              description: 'This action cannot be undone.',
+              confirmText: 'Delete',
+              onConfirm: async () => {
+                await deleteMutation.mutateAsync({ id: item.id });
+              },
+            }),
+          disabled: !isDeletable,
+        },
+      ];
+
+      return (
+        <UniversalContextMenu items={menuItems}>
+          <Link
+            href={`/app/${title.toLowerCase()}/${item.id}`}
+            scroll={false}
+            draggable={false}
+            className="block w-full h-full"
+          >
+            <InvoiceListItem
+              data={item}
+              className={cn(
+                'hover:bg-muted/40 border border-transparent',
+                activeItem === item.id ? 'border-primary border bg-primary/10' : '',
+              )}
+            />
+          </Link>
+        </UniversalContextMenu>
+      );
+    },
+    [activeItem, openEdit, deleteMutation, utils, router],
   );
 
   if (isPrintRoute) return <>{children}</>;
