@@ -1,8 +1,9 @@
 'use client';
 
-import { Edit, Eye, Package, Trash2, User2 } from 'lucide-react';
+import { Edit, Eye, FileText, Package, Trash2, User2 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
+import * as React from 'react';
 import { useCallback } from 'react';
 import { toast } from 'sonner';
 import { alert } from '@/components/Alert-dialog';
@@ -14,14 +15,22 @@ import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@/componen
 import { useIsMobile } from '@/hooks/use-mobile';
 import { trpc } from '@/lib/trpc/client';
 import { cn } from '@/lib/utils';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Header } from '../App-Header';
 import { ItemListItem } from '@/components/items/item-list-item';
 
 const title = 'Items';
 
+const TYPE_FILTERS = [
+  { value: '', label: 'All' },
+  { value: 'PRODUCT', label: 'Product' },
+  { value: 'SERVICE', label: 'Service' },
+];
+
 export default function ItemsLayout({ children }: { children?: React.ReactNode }) {
   const { openCreate, openEdit } = useItemForm();
-  const { data, isPending } = trpc.items.list.useQuery({});
+  const [typeFilter, setTypeFilter] = React.useState('');
+  const { data, isPending } = trpc.items.list.useQuery({ type: (typeFilter || undefined) as 'PRODUCT' | 'SERVICE' | undefined });
   const utils = trpc.useUtils();
   const router = useRouter();
   const isMobile = useIsMobile();
@@ -125,6 +134,17 @@ export default function ItemsLayout({ children }: { children?: React.ReactNode }
           {(isListView || !isMobile) && (
             <ResizablePanel minSize={20} defaultSize={30} className={cn('h-full', !isListView ? 'hidden md:block' : 'block')}>
               <aside className="flex h-full flex-col overflow-hidden border-r">
+                <div className="border-b px-4 py-2">
+                  <Tabs value={typeFilter} onValueChange={setTypeFilter}>
+                    <TabsList className="h-auto w-full justify-start">
+                      {TYPE_FILTERS.map((t) => (
+                        <TabsTrigger key={t.value} value={t.value} className="text-xs px-3 py-1">
+                          {t.label}
+                        </TabsTrigger>
+                      ))}
+                    </TabsList>
+                  </Tabs>
+                </div>
                 <div className="flex-1 overflow-y-auto">
                   <ListView
                     data={items}
