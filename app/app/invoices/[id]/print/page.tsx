@@ -298,9 +298,9 @@ export default function InvoicePrintPage() {
           </div>
         )}
 
-        {/* Terms */}
+        {/* Terms — always on its own last page */}
         {(invoice.termsText || org?.defaultTermsText) && (
-          <div className="px-8 py-3 border-t print:px-6">
+          <div className="px-8 py-3 border-t print:px-6 print:break-before-page">
             <h3 className="text-xs font-semibold text-muted-foreground uppercase mb-1">
               Terms & Conditions
             </h3>
