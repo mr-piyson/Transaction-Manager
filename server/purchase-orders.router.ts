@@ -98,6 +98,7 @@ export const purchaseOrdersRouter = router({
           id: true,
           serial: true,
           status: true,
+          version: true,
           date: true,
           expectedDate: true,
           total: true,

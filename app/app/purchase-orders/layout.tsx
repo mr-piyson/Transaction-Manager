@@ -1,9 +1,13 @@
 'use client';
 
-import { ShoppingCart, User2 } from 'lucide-react';
+import { Edit, Eye, ShoppingCart, Trash2, User2, XCircle } from 'lucide-react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { useCallback } from 'react';
+import { toast } from 'sonner';
+import { alert } from '@/components/Alert-dialog';
+import { UniversalContextMenu } from '@/components/context-menu';
+import type { ContextMenuItemSchema } from '@/components/context-menu';
 import { ListView } from '@/components/list-view';
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@/components/ui/resizable';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -14,33 +18,116 @@ import { Header } from '../App-Header';
 import { POListItem } from '@/components/purchase-orders/po-list-item';
 
 const title = 'Purchase Orders';
+const route = 'purchase-orders';
 
 export default function POLayout({ children }: { children?: React.ReactNode }) {
-  const { openCreate } = usePOForm();
+  const { openCreate, openEdit } = usePOForm();
+  const utils = trpc.useUtils();
+  const router = useRouter();
   const { data, isPending } = trpc.purchaseOrders.list.useQuery({});
   const isMobile = useIsMobile();
   const pathname = usePathname();
   const activeItem = pathname.split('/')[3];
   const isListView = pathname === `/app/${title.toLowerCase()}`;
 
+  const deleteMutation = trpc.purchaseOrders.delete.useMutation({
+    onSuccess: () => {
+      utils.purchaseOrders.list.invalidate();
+      toast.success('Purchase order deleted');
+      if (activeItem) router.push('/app/purchase-orders');
+    },
+    onError: (e) => toast.error(e.message),
+  });
+
+  const cancelMutation = trpc.purchaseOrders.cancel.useMutation({
+    onSuccess: () => {
+      utils.purchaseOrders.list.invalidate();
+      toast.success('Purchase order cancelled');
+      if (activeItem) router.push('/app/purchase-orders');
+    },
+    onError: (e) => toast.error(e.message),
+  });
+
   const renderCard = useCallback(
-    (item: any) => (
-      <Link
-        href={`/app/${title.toLowerCase()}/${item.id}`}
-        scroll={false}
-        draggable={false}
-        className="block w-full h-full"
-      >
-        <POListItem
-          data={item}
-          className={cn(
-            'hover:bg-muted/40 border border-transparent',
-            activeItem === item.id ? 'border-primary border bg-primary/10' : '',
-          )}
-        />
-      </Link>
-    ),
-    [activeItem],
+    (item: any) => {
+      const isEditable = ['DRAFT', 'PENDING_APPROVAL'].includes(item.status);
+      const isDeletable = item.status === 'DRAFT';
+      const isCancellable = !['CANCELLED', 'CLOSED', 'RECEIVED', 'INVOICED'].includes(item.status);
+
+      const menuItems: ContextMenuItemSchema[] = [
+        {
+          id: 'view',
+          label: 'View details',
+          icon: Eye,
+          onClick: () => router.push(`/app/${title.toLowerCase()}/${item.id}`),
+        },
+        {
+          id: 'edit',
+          label: 'Edit',
+          icon: Edit,
+          onClick: () =>
+            openEdit(
+              { id: item.id, version: item.version },
+              { onSuccess: () => utils.purchaseOrders.byId.invalidate({ id: item.id }) },
+            ),
+          disabled: !isEditable,
+        },
+        ...(isCancellable
+          ? [
+              {
+                id: 'cancel',
+                label: 'Cancel',
+                icon: XCircle,
+                onClick: () =>
+                  alert.delete({
+                    title: `Cancel purchase order ${item.serial}?`,
+                    description: 'This action cannot be undone.',
+                    confirmText: 'Cancel',
+                    onConfirm: async () => {
+                      await cancelMutation.mutateAsync({ id: item.id, version: item.version });
+                    },
+                  }),
+              } as ContextMenuItemSchema,
+            ]
+          : []),
+        { id: 'sep1', type: 'separator' as const },
+        {
+          id: 'delete',
+          label: 'Delete',
+          icon: Trash2,
+          onClick: () =>
+            alert.delete({
+              title: `Delete purchase order ${item.serial}?`,
+              description: 'This action cannot be undone.',
+              confirmText: 'Delete',
+              onConfirm: async () => {
+                await deleteMutation.mutateAsync({ id: item.id });
+              },
+            }),
+          disabled: !isDeletable,
+        },
+      ];
+
+      return (
+        <UniversalContextMenu items={menuItems}>
+          <Link
+            href={`/app/${title.toLowerCase()}/${item.id}`}
+            scroll={false}
+            draggable={false}
+            className="block w-full h-full"
+          >
+            <POListItem
+              data={item}
+              className={cn(
+                'hover:bg-muted/40 border border-transparent',
+                activeItem === item.id ? 'border-primary border bg-primary/10' : '',
+              )}
+            />
+          </Link>
+        </UniversalContextMenu>
+      );
+    },
+    [activeItem, cancelMutation, deleteMutation, openEdit, router, utils],
   );
 
   const orders = Array.isArray(data) ? data : data?.data ?? [];

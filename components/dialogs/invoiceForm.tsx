@@ -3,7 +3,7 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Calculator, Loader2, Package, Plus, Trash2, TriangleAlert, User } from 'lucide-react';
 import * as React from 'react';
-import { type SubmitHandler, useFieldArray, useForm } from 'react-hook-form';
+import { type SubmitHandler, useFieldArray, useForm, useWatch } from 'react-hook-form';
 import { toast } from 'sonner';
 import { z } from 'zod';
 import { calculateInvoiceTotals } from '@/lib/calculator';
@@ -134,7 +134,7 @@ export function InvoiceFormDialog({
 
   const { fields, append, remove } = useFieldArray({ control, name: 'lines' });
 
-  const lines = watch('lines');
+  const lines = useWatch({ control, name: 'lines' }) ?? [];
   const invoiceType = watch('type');
   const isWalkIn = watch('isWalkIn');
   const currency = watch('currency');
