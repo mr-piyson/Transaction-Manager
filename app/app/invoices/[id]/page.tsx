@@ -1,10 +1,13 @@
 'use client';
 
 import {
+  AlertCircle,
+  AlertTriangle,
   ArrowLeft,
   Banknote,
   Building2,
   Calendar,
+  Check,
   Edit,
   HandCoins,
   Layers,
@@ -75,14 +78,6 @@ const STATUS_COLORS: Record<string, string> = {
   DELETED: 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200',
 };
 
-const PAYMENT_STATUS_COLORS: Record<string, string> = {
-  PENDING: 'bg-muted text-muted-foreground',
-  PARTIAL: 'bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200',
-  PAID: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
-  OVERDUE: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200',
-  CANCELLED: 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200',
-};
-
 const PAYMENT_METHOD_LABELS: Record<string, string> = {
   CASH: 'Cash',
   BANK_TRANSFER: 'Bank Transfer',
@@ -92,6 +87,130 @@ const PAYMENT_METHOD_LABELS: Record<string, string> = {
   CREDIT: 'Credit',
   OTHER: 'Other',
 };
+
+export function StatusStepper({
+  status,
+  type,
+  paymentStatus,
+}: {
+  status: string;
+  type: string;
+  paymentStatus: string;
+}) {
+  // 1. Determine base path
+  const basePath =
+    type === 'INVOICE'
+      ? ['DRAFT', 'PENDING_APPROVAL', 'APPROVED', 'SENT', 'PAID']
+      : ['DRAFT', 'SENT'];
+
+  // 2. Dynamically inject PARTIAL to avoid duplicating UI logic
+  const steps = [...basePath];
+  const isPartiallyPaid = status === 'SENT' && paymentStatus === 'PARTIAL';
+
+  if (isPartiallyPaid) {
+    const sentIdx = steps.indexOf('SENT');
+    if (sentIdx !== -1) {
+      steps.splice(sentIdx + 1, 1, 'PARTIAL'); // Replaces PAID with PARTIAL
+    }
+  }
+
+  // 3. Intelligently determine the current step index even if status is a branch
+  const getActiveStepIndex = () => {
+    if (isPartiallyPaid) return steps.indexOf('PARTIAL');
+    if (status === 'OVERDUE' || status === 'DISPUTED') return steps.indexOf('SENT');
+    if (status === 'PAID') return steps.indexOf('PAID');
+    return steps.indexOf(status);
+  };
+
+  const activeIdx = getActiveStepIndex();
+  const isBranch = !steps.includes(status) && !isPartiallyPaid;
+
+  // Format step labels cleanly
+  const formatLabel = (step: string) => {
+    if (step === 'PENDING_APPROVAL') return 'Approval';
+    return step.charAt(0) + step.slice(1).toLowerCase().replace(/_/g, ' ');
+  };
+
+  return (
+    <Card className="w-full">
+      <CardContent className="pt-6 pb-6">
+        {/* STEPPER CONTAINER */}
+        <div className="flex items-center justify-between w-full relative">
+          {steps.map((step, idx) => {
+            const isCompleted = activeIdx !== -1 && idx < activeIdx;
+            const isCurrent = activeIdx === idx;
+
+            return (
+              <React.Fragment key={step}>
+                {/* STEP INDICATOR */}
+                <div className="flex flex-col items-center gap-2 relative z-10">
+                  <div
+                    className={`rounded-full border-2 size-8 flex items-center justify-center shrink-0 transition-colors ${
+                      isCompleted || isCurrent
+                        ? 'border-primary bg-primary text-primary-foreground'
+                        : 'border-muted bg-background text-muted-foreground'
+                    } ${isCurrent ? 'ring-4 ring-primary/20 ring-offset-background' : ''}`}
+                  >
+                    {isCompleted ? (
+                      <Check className="size-3.5 stroke-3" />
+                    ) : isCurrent ? (
+                      <div className="size-2.5 rounded-full bg-current animate-pulse" />
+                    ) : (
+                      <div className="size-2 rounded-full bg-muted-foreground/30" />
+                    )}
+                  </div>
+
+                  {/* LABEL */}
+                  <span
+                    className={`absolute top-9 text-[11px] whitespace-nowrap text-center ${
+                      isCompleted || isCurrent
+                        ? 'text-foreground font-medium'
+                        : 'text-muted-foreground'
+                    }`}
+                  >
+                    {formatLabel(step)}
+                  </span>
+                </div>
+
+                {/* CONNECTING LINE (Flex-1 makes it stretch perfectly) */}
+                {idx < steps.length - 1 && (
+                  <div
+                    className={`flex-1 h-0.5  mx-2 rounded-full transition-colors ${
+                      isCompleted || (isCurrent && activeIdx > idx) ? 'bg-primary' : 'bg-muted'
+                    }`}
+                  />
+                )}
+              </React.Fragment>
+            );
+          })}
+        </div>
+
+        {/* BRANCH / ALERT STATUS BANNER */}
+        {isBranch && status !== 'PAID' && (
+          <div className="mt-10 flex items-center justify-center animate-in fade-in slide-in-from-top-2">
+            <Badge
+              variant={
+                status === 'OVERDUE' || status === 'CANCELLED' || status === 'DELETED'
+                  ? 'destructive'
+                  : 'secondary'
+              }
+              className={`px-3 py-1 text-xs gap-1.5 ${
+                status === 'DISPUTED'
+                  ? 'bg-orange-500/15 text-orange-600 hover:bg-orange-500/25 border-0'
+                  : ''
+              }`}
+            >
+              {status === 'OVERDUE' && <AlertCircle className="size-3.5" />}
+              {status === 'DISPUTED' && <AlertTriangle className="size-3.5" />}
+              {(status === 'CANCELLED' || status === 'DELETED') && <XCircle className="size-3.5" />}
+              {status.replace(/_/g, ' ')}
+            </Badge>
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
 
 export default function InvoiceDetailPage() {
   const params = useParams<{ id: string }>();
@@ -311,8 +430,18 @@ export default function InvoiceDetailPage() {
 
   if (type === 'QUOTE') {
     if (status === 'DRAFT') {
-      actions.push({ label: 'Edit', key: 'edit', icon: <Edit className="size-4" />, variant: 'outline' });
-      actions.push({ label: 'Send Quote', key: 'send', icon: <Send className="size-4" />, dialog: 'send' });
+      actions.push({
+        label: 'Edit',
+        key: 'edit',
+        icon: <Edit className="size-4" />,
+        variant: 'outline',
+      });
+      actions.push({
+        label: 'Send Quote',
+        key: 'send',
+        icon: <Send className="size-4" />,
+        dialog: 'send',
+      });
       actions.push({
         label: 'Convert to Invoice',
         key: 'convertQuote',
@@ -350,8 +479,18 @@ export default function InvoiceDetailPage() {
     }
   } else if (type === 'INVOICE') {
     if (status === 'DRAFT') {
-      actions.push({ label: 'Edit', key: 'edit', icon: <Edit className="size-4" />, variant: 'outline' });
-      actions.push({ label: 'Send', key: 'send', icon: <Send className="size-4" />, dialog: 'send' });
+      actions.push({
+        label: 'Edit',
+        key: 'edit',
+        icon: <Edit className="size-4" />,
+        variant: 'outline',
+      });
+      actions.push({
+        label: 'Send',
+        key: 'send',
+        icon: <Send className="size-4" />,
+        dialog: 'send',
+      });
       actions.push({
         label: 'Delete',
         key: 'delete',
@@ -359,8 +498,18 @@ export default function InvoiceDetailPage() {
         variant: 'destructive',
       });
     } else if (status === 'PENDING_APPROVAL') {
-      actions.push({ label: 'Edit', key: 'edit', icon: <Edit className="size-4" />, variant: 'outline' });
-      actions.push({ label: 'Send', key: 'send', icon: <Send className="size-4" />, dialog: 'send' });
+      actions.push({
+        label: 'Edit',
+        key: 'edit',
+        icon: <Edit className="size-4" />,
+        variant: 'outline',
+      });
+      actions.push({
+        label: 'Send',
+        key: 'send',
+        icon: <Send className="size-4" />,
+        dialog: 'send',
+      });
       actions.push({
         label: 'Cancel',
         key: 'cancel',
@@ -369,7 +518,12 @@ export default function InvoiceDetailPage() {
         dialog: 'cancel',
       });
     } else if (status === 'APPROVED') {
-      actions.push({ label: 'Send', key: 'send', icon: <Send className="size-4" />, dialog: 'send' });
+      actions.push({
+        label: 'Send',
+        key: 'send',
+        icon: <Send className="size-4" />,
+        dialog: 'send',
+      });
       actions.push({
         label: 'Cancel',
         key: 'cancel',
@@ -398,8 +552,18 @@ export default function InvoiceDetailPage() {
   } else if (type === 'CREDIT_NOTE') {
     // Credit notes are mostly read-only after creation
     if (status === 'DRAFT') {
-      actions.push({ label: 'Edit', key: 'edit', icon: <Edit className="size-4" />, variant: 'outline' });
-      actions.push({ label: 'Send', key: 'send', icon: <Send className="size-4" />, dialog: 'send' });
+      actions.push({
+        label: 'Edit',
+        key: 'edit',
+        icon: <Edit className="size-4" />,
+        variant: 'outline',
+      });
+      actions.push({
+        label: 'Send',
+        key: 'send',
+        icon: <Send className="size-4" />,
+        dialog: 'send',
+      });
       actions.push({
         label: 'Delete',
         key: 'delete',
@@ -410,8 +574,18 @@ export default function InvoiceDetailPage() {
   } else {
     // PROFORMA, DELIVERY_NOTE
     if (status === 'DRAFT') {
-      actions.push({ label: 'Edit', key: 'edit', icon: <Edit className="size-4" />, variant: 'outline' });
-      actions.push({ label: 'Send', key: 'send', icon: <Send className="size-4" />, dialog: 'send' });
+      actions.push({
+        label: 'Edit',
+        key: 'edit',
+        icon: <Edit className="size-4" />,
+        variant: 'outline',
+      });
+      actions.push({
+        label: 'Send',
+        key: 'send',
+        icon: <Send className="size-4" />,
+        dialog: 'send',
+      });
       actions.push({
         label: 'Delete',
         key: 'delete',
@@ -441,21 +615,18 @@ export default function InvoiceDetailPage() {
         <div className="flex items-center gap-2 flex-1 min-w-0">
           <Receipt className="size-5 text-muted-foreground shrink-0" />
           <h1 className="text-xl font-semibold truncate">{invoice.serial}</h1>
-          <Badge variant="outline" className={STATUS_COLORS[invoice.status] ?? ''}>
-            {invoice.status.replace(/_/g, ' ')}
-          </Badge>
-          <Badge variant="outline" className={PAYMENT_STATUS_COLORS[invoice.paymentStatus] ?? ''}>
-            {invoice.paymentStatus}
-          </Badge>
-          <Badge variant="outline" className="bg-muted text-muted-foreground">
-            {typeLabel[invoice.type] ?? invoice.type}
-          </Badge>
         </div>
         {showActions && (
           <div className="flex items-center gap-2">
             {actions.map(({ label, key, icon, variant = 'default', dialog }) =>
               key === 'edit' ? (
-                <Button key={key} variant={variant} size="sm" onClick={handleEdit} disabled={isPending}>
+                <Button
+                  key={key}
+                  variant={variant}
+                  size="sm"
+                  onClick={handleEdit}
+                  disabled={isPending}
+                >
                   <Edit className="size-4 mr-1" /> Edit
                 </Button>
               ) : key === 'convertQuote' ? (
@@ -464,13 +635,19 @@ export default function InvoiceDetailPage() {
                   variant={variant}
                   size="sm"
                   onClick={() => {
-                    if (window.confirm(`Convert ${invoice.serial} to invoice? A new invoice will be created.`)) {
+                    if (
+                      window.confirm(
+                        `Convert ${invoice.serial} to invoice? A new invoice will be created.`,
+                      )
+                    ) {
                       convertQuoteMutation.mutate({ quoteId: invoice.id });
                     }
                   }}
                   disabled={isPending}
                 >
-                  {convertQuoteMutation.isPending && <Loader2 className="size-4 mr-1 animate-spin" />}
+                  {convertQuoteMutation.isPending && (
+                    <Loader2 className="size-4 mr-1 animate-spin" />
+                  )}
                   {!convertQuoteMutation.isPending && icon}
                   <span className="ml-1">{label}</span>
                 </Button>
@@ -525,7 +702,11 @@ export default function InvoiceDetailPage() {
                 </Button>
               ) : null,
             )}
-            <Button variant="outline" size="sm" onClick={() => router.push(`/app/invoices/${invoice.id}/print`)}>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => router.push(`/app/invoices/${invoice.id}/print`)}
+            >
               <Printer className="size-4 mr-1" /> Print / PDF
             </Button>
           </div>
@@ -533,6 +714,13 @@ export default function InvoiceDetailPage() {
       </header>
 
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
+        {/* Status pipeline visualization */}
+        <StatusStepper
+          status={invoice.status}
+          type={invoice.type}
+          paymentStatus={invoice.paymentStatus}
+        />
+
         {/* Info card */}
         <Card>
           <CardContent className="pt-4">
@@ -545,7 +733,9 @@ export default function InvoiceDetailPage() {
                     {invoice.customer?.name ?? (invoice.isWalkIn ? 'Walk-in' : '—')}
                   </p>
                   {invoice.customer?.email && (
-                    <p className="text-xs text-muted-foreground truncate">{invoice.customer.email}</p>
+                    <p className="text-xs text-muted-foreground truncate">
+                      {invoice.customer.email}
+                    </p>
                   )}
                 </div>
               </div>
@@ -638,7 +828,9 @@ export default function InvoiceDetailPage() {
                         <div className="text-xs text-muted-foreground">{line.item.sku}</div>
                       )}
                       {line.description && (
-                        <div className="text-xs text-muted-foreground italic">{line.description}</div>
+                        <div className="text-xs text-muted-foreground italic">
+                          {line.description}
+                        </div>
                       )}
                     </TableCell>
                     <TableCell className="text-right">{Number(line.quantity).toFixed(3)}</TableCell>
@@ -659,7 +851,9 @@ export default function InvoiceDetailPage() {
                         '—'
                       )}
                     </TableCell>
-                    <TableCell className="text-right">{Number(line.unitPrice).toFixed(3)}</TableCell>
+                    <TableCell className="text-right">
+                      {Number(line.unitPrice).toFixed(3)}
+                    </TableCell>
                     <TableCell className="text-right">
                       {Number(line.discountAmt) > 0 ? Number(line.discountAmt).toFixed(3) : '—'}
                     </TableCell>
@@ -704,7 +898,9 @@ export default function InvoiceDetailPage() {
                 {Number(invoice.discountTotal) > 0 && (
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Discount</span>
-                    <span className="text-destructive">-{Number(invoice.discountTotal).toFixed(3)}</span>
+                    <span className="text-destructive">
+                      -{Number(invoice.discountTotal).toFixed(3)}
+                    </span>
                   </div>
                 )}
                 <div className="flex justify-between">
@@ -784,7 +980,9 @@ export default function InvoiceDetailPage() {
                           className="size-7 text-muted-foreground hover:text-destructive"
                           disabled={isPending}
                           onClick={() => {
-                            if (window.confirm('Delete this payment? This action cannot be undone.')) {
+                            if (
+                              window.confirm('Delete this payment? This action cannot be undone.')
+                            ) {
                               deletePaymentMutation.mutate({ paymentId: payment.id });
                             }
                           }}
@@ -855,7 +1053,9 @@ export default function InvoiceDetailPage() {
         {invoice.termsText && (
           <Card>
             <CardHeader className="pb-1.5">
-              <CardTitle className="text-xs text-muted-foreground font-medium">Terms & Conditions</CardTitle>
+              <CardTitle className="text-xs text-muted-foreground font-medium">
+                Terms & Conditions
+              </CardTitle>
             </CardHeader>
             <CardContent>
               <div
@@ -882,8 +1082,6 @@ export default function InvoiceDetailPage() {
         </div>
       </div>
 
-
-
       {/* Send confirmation dialog */}
       <Dialog open={sendOpen} onOpenChange={(v) => !sendMutation.isPending && setSendOpen(v)}>
         <DialogContent>
@@ -898,7 +1096,11 @@ export default function InvoiceDetailPage() {
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setSendOpen(false)} disabled={sendMutation.isPending}>
+            <Button
+              variant="outline"
+              onClick={() => setSendOpen(false)}
+              disabled={sendMutation.isPending}
+            >
               Cancel
             </Button>
             <Button
@@ -924,7 +1126,8 @@ export default function InvoiceDetailPage() {
             <DialogTitle>Cancel {typeLabel[invoice.type] ?? 'document'}</DialogTitle>
             <DialogDescription>
               Provide a reason for cancelling {invoice.serial}.
-              {type === 'INVOICE' && ['SENT', 'PARTIAL', 'OVERDUE'].includes(status) &&
+              {type === 'INVOICE' &&
+                ['SENT', 'PARTIAL', 'OVERDUE'].includes(status) &&
                 ' Stock will be returned to the warehouse.'}
             </DialogDescription>
           </DialogHeader>
@@ -952,7 +1155,11 @@ export default function InvoiceDetailPage() {
             <Button
               variant="destructive"
               onClick={() =>
-                cancelMutation.mutate({ id: invoice.id, version, reason: cancelReason || undefined })
+                cancelMutation.mutate({
+                  id: invoice.id,
+                  version,
+                  reason: cancelReason || undefined,
+                })
               }
               disabled={cancelMutation.isPending}
             >
@@ -1053,7 +1260,9 @@ export default function InvoiceDetailPage() {
                   return;
                 }
                 if (amount > Number(invoice.amountDue) + 0.000001) {
-                  toast.error(`Amount exceeds outstanding balance of ${Number(invoice.amountDue).toFixed(3)}`);
+                  toast.error(
+                    `Amount exceeds outstanding balance of ${Number(invoice.amountDue).toFixed(3)}`,
+                  );
                   return;
                 }
                 addPaymentMutation.mutate({
