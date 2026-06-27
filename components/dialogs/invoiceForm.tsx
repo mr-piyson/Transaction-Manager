@@ -1,7 +1,7 @@
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Calculator, Loader2, Package, Plus, Trash2, TriangleAlert, User, PenLine, Pencil } from 'lucide-react';
+import { Calculator, Loader2, Package, Plus, Trash2, TriangleAlert, User, Pencil } from 'lucide-react';
 import * as React from 'react';
 import { type SubmitHandler, useFieldArray, useForm, useWatch } from 'react-hook-form';
 import { toast } from 'sonner';
@@ -255,15 +255,30 @@ export function InvoiceFormDialog({
   );
 
   const handleLineSave = (index: number, data: InvoiceLineData) => {
-    setValue(`lines.${index}.itemId`, data.itemId || undefined);
-    setValue(`lines.${index}.description`, data.description || undefined);
-    setValue(`lines.${index}.quantity`, data.quantity);
-    setValue(`lines.${index}.unitPrice`, data.unitPrice);
-    setValue(`lines.${index}.discountAmt`, data.discountAmt);
-    setValue(`lines.${index}.purchasePrice`, data.purchasePrice ?? undefined);
-    setValue(`lines.${index}.taxRateId`, data.taxRateId || undefined);
-    setValue(`lines.${index}.taxRateSnapshot`, data.taxRateSnapshot ?? undefined);
-    setValue(`lines.${index}.taxRateName`, data.taxRateName || undefined);
+    if (index >= fields.length) {
+      append({
+        itemId: data.itemId || '',
+        description: data.description || '',
+        quantity: data.quantity,
+        unitPrice: data.unitPrice,
+        discountAmt: data.discountAmt,
+        purchasePrice: data.purchasePrice ?? 0,
+        taxRateId: data.taxRateId || '',
+        taxRateSnapshot: data.taxRateSnapshot ?? undefined,
+        taxRateName: data.taxRateName || '',
+        sortOrder: 0,
+      });
+    } else {
+      setValue(`lines.${index}.itemId`, data.itemId || undefined);
+      setValue(`lines.${index}.description`, data.description || undefined);
+      setValue(`lines.${index}.quantity`, data.quantity);
+      setValue(`lines.${index}.unitPrice`, data.unitPrice);
+      setValue(`lines.${index}.discountAmt`, data.discountAmt);
+      setValue(`lines.${index}.purchasePrice`, data.purchasePrice ?? undefined);
+      setValue(`lines.${index}.taxRateId`, data.taxRateId || undefined);
+      setValue(`lines.${index}.taxRateSnapshot`, data.taxRateSnapshot ?? undefined);
+      setValue(`lines.${index}.taxRateName`, data.taxRateName || undefined);
+    }
   };
 
   const handleItemsSelected = (selected: any[]) => {
@@ -488,13 +503,10 @@ export function InvoiceFormDialog({
                       type="button"
                       variant="outline"
                       size="sm"
-                      onClick={() => {
-                        const idx = fields.length;
-                        append({ itemId: '', quantity: 1, unitPrice: 0, discountAmt: 0, sortOrder: 0 });
-                        setEditingLineIndex(idx);
-                      }}
+                      onClick={() => setEditingLineIndex(fields.length)}
                     >
-                      <Plus className="h-4 w-4 mr-1" /> Add line
+                      <Plus className="h-4 w-4 sm:mr-1" />
+                      <span className="hidden sm:inline">Add line</span>
                     </Button>
                     <Button
                       type="button"
@@ -502,19 +514,8 @@ export function InvoiceFormDialog({
                       size="sm"
                       onClick={() => setItemPickerOpen(true)}
                     >
-                      <Package className="h-4 w-4 mr-1" /> Browse
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => {
-                        const idx = fields.length;
-                        append({ itemId: '', description: '', quantity: 1, unitPrice: 0, discountAmt: 0, purchasePrice: 0, sortOrder: 0 });
-                        setEditingLineIndex(idx);
-                      }}
-                    >
-                      <PenLine className="h-4 w-4 mr-1" /> Manual
+                      <Package className="h-4 w-4 sm:mr-1" />
+                      <span className="hidden sm:inline">Browse</span>
                     </Button>
                   </div>
                 </div>
@@ -636,18 +637,10 @@ export function InvoiceFormDialog({
                         type="button"
                         variant="secondary"
                         size="sm"
-                        onClick={() => {
-                          append({
-                            itemId: '',
-                            quantity: 1,
-                            unitPrice: 0,
-                            discountAmt: 0,
-                            purchasePrice: 0,
-                            sortOrder: 0,
-                          });
-                        }}
+                        onClick={() => setEditingLineIndex(fields.length)}
                       >
-                        <Plus className="h-4 w-4 mr-1" /> Add line
+                        <Plus className="h-4 w-4 sm:mr-1" />
+                        <span className="hidden sm:inline">Add line</span>
                       </Button>
                       <Button
                         type="button"
@@ -655,25 +648,8 @@ export function InvoiceFormDialog({
                         size="sm"
                         onClick={() => setItemPickerOpen(true)}
                       >
-                        <Package className="h-4 w-4 mr-1" /> Browse catalogue
-                      </Button>
-                      <Button
-                        type="button"
-                        variant="secondary"
-                        size="sm"
-                        onClick={() => {
-                          append({
-                            itemId: '',
-                            description: '',
-                            quantity: 1,
-                            unitPrice: 0,
-                            discountAmt: 0,
-                            purchasePrice: 0,
-                            sortOrder: 0,
-                          });
-                        }}
-                      >
-                        <PenLine className="h-4 w-4 mr-1" /> Manual
+                        <Package className="h-4 w-4 sm:mr-1" />
+                        <span className="hidden sm:inline">Browse catalogue</span>
                       </Button>
                     </div>
                   </div>
@@ -797,23 +773,27 @@ export function InvoiceFormDialog({
         confirmLabel="Add to invoice"
       />
 
-      {/* Line edit dialog */}
-      {editingLineIndex !== null && fields[editingLineIndex] && (
+      {/* Line edit / create dialog */}
+      {editingLineIndex !== null && (
         <InvoiceLineDialog
           open={editingLineIndex !== null}
           onOpenChange={(v) => { if (!v) setEditingLineIndex(null); }}
           index={editingLineIndex}
-          initial={{
-            itemId: fields[editingLineIndex]?.itemId ?? null,
-            description: fields[editingLineIndex]?.description ?? null,
-            quantity: Number(fields[editingLineIndex]?.quantity) || 1,
-            unitPrice: Number(fields[editingLineIndex]?.unitPrice) || 0,
-            discountAmt: Number(fields[editingLineIndex]?.discountAmt) || 0,
-            purchasePrice: Number(fields[editingLineIndex]?.purchasePrice) || null,
-            taxRateId: fields[editingLineIndex]?.taxRateId ?? null,
-            taxRateSnapshot: Number(fields[editingLineIndex]?.taxRateSnapshot) || null,
-            taxRateName: fields[editingLineIndex]?.taxRateName ?? null,
-          }}
+          initial={
+            editingLineIndex < fields.length
+              ? {
+                  itemId: fields[editingLineIndex]?.itemId ?? null,
+                  description: fields[editingLineIndex]?.description ?? null,
+                  quantity: Number(fields[editingLineIndex]?.quantity) || 1,
+                  unitPrice: Number(fields[editingLineIndex]?.unitPrice) || 0,
+                  discountAmt: Number(fields[editingLineIndex]?.discountAmt) || 0,
+                  purchasePrice: Number(fields[editingLineIndex]?.purchasePrice) || null,
+                  taxRateId: fields[editingLineIndex]?.taxRateId ?? null,
+                  taxRateSnapshot: Number(fields[editingLineIndex]?.taxRateSnapshot) || null,
+                  taxRateName: fields[editingLineIndex]?.taxRateName ?? null,
+                }
+              : { quantity: 1, unitPrice: 0, discountAmt: 0, purchasePrice: 0 }
+          }
           onSave={handleLineSave}
         />
       )}
