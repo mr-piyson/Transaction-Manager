@@ -732,6 +732,31 @@ export function InvoiceFormDialog({
               </Button>
             </DialogFooter>
           </form>
+
+          {/* Line edit / create dialog (nested inside invoice DialogContent so Radix layers properly) */}
+          {editingLineIndex !== null && (
+            <InvoiceLineDialog
+              open={editingLineIndex !== null}
+              onOpenChange={(v) => { if (!v) setEditingLineIndex(null); }}
+              index={editingLineIndex}
+              initial={
+                editingLineIndex < fields.length
+                  ? {
+                      itemId: fields[editingLineIndex]?.itemId ?? null,
+                      description: fields[editingLineIndex]?.description ?? null,
+                      quantity: Number(fields[editingLineIndex]?.quantity) || 1,
+                      unitPrice: Number(fields[editingLineIndex]?.unitPrice) || 0,
+                      discountAmt: Number(fields[editingLineIndex]?.discountAmt) || 0,
+                      purchasePrice: Number(fields[editingLineIndex]?.purchasePrice) || null,
+                      taxRateId: fields[editingLineIndex]?.taxRateId ?? null,
+                      taxRateSnapshot: Number(fields[editingLineIndex]?.taxRateSnapshot) || null,
+                      taxRateName: fields[editingLineIndex]?.taxRateName ?? null,
+                    }
+                  : { quantity: 1, unitPrice: 0, discountAmt: 0, purchasePrice: 0 }
+              }
+              onSave={handleLineSave}
+            />
+          )}
         </DialogContent>
       </Dialog>
 
@@ -772,31 +797,6 @@ export function InvoiceFormDialog({
         itemName="items"
         confirmLabel="Add to invoice"
       />
-
-      {/* Line edit / create dialog */}
-      {editingLineIndex !== null && (
-        <InvoiceLineDialog
-          open={editingLineIndex !== null}
-          onOpenChange={(v) => { if (!v) setEditingLineIndex(null); }}
-          index={editingLineIndex}
-          initial={
-            editingLineIndex < fields.length
-              ? {
-                  itemId: fields[editingLineIndex]?.itemId ?? null,
-                  description: fields[editingLineIndex]?.description ?? null,
-                  quantity: Number(fields[editingLineIndex]?.quantity) || 1,
-                  unitPrice: Number(fields[editingLineIndex]?.unitPrice) || 0,
-                  discountAmt: Number(fields[editingLineIndex]?.discountAmt) || 0,
-                  purchasePrice: Number(fields[editingLineIndex]?.purchasePrice) || null,
-                  taxRateId: fields[editingLineIndex]?.taxRateId ?? null,
-                  taxRateSnapshot: Number(fields[editingLineIndex]?.taxRateSnapshot) || null,
-                  taxRateName: fields[editingLineIndex]?.taxRateName ?? null,
-                }
-              : { quantity: 1, unitPrice: 0, discountAmt: 0, purchasePrice: 0 }
-          }
-          onSave={handleLineSave}
-        />
-      )}
     </>
   );
 }
