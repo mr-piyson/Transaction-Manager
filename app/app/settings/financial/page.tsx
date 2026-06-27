@@ -12,6 +12,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
+import { RichtextEditor } from '@/components/richtext-editor';
 import { Textarea } from '@/components/ui/textarea';
 import { trpc } from '@/lib/trpc/client';
 import { CURRENCIES } from '@/lib/utils';
@@ -146,13 +147,11 @@ function FinancialForm({
 
       <SectionCard title="Terms & Conditions">
         <Field label="Default Terms & Conditions">
-          <Textarea
+          <RichtextEditor
             value={form.defaultTermsText}
-            onChange={(e) =>
-              setForm({ ...form, defaultTermsText: e.target.value })
-            }
+            onChange={(html) => setForm({ ...form, defaultTermsText: html })}
             placeholder="e.g. Payment is due within 30 days. Late payments may incur a 2% monthly fee."
-            rows={5}
+            minHeight="150px"
           />
         </Field>
         <Field label="Invoice Footer">

@@ -858,7 +858,10 @@ export default function InvoiceDetailPage() {
               <CardTitle className="text-xs text-muted-foreground font-medium">Terms & Conditions</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-sm whitespace-pre-wrap">{invoice.termsText}</p>
+              <div
+                className="prose prose-sm max-w-none [&_ol]:list-decimal [&_ul]:list-disc"
+                dangerouslySetInnerHTML={{ __html: invoice.termsText }}
+              />
             </CardContent>
           </Card>
         )}

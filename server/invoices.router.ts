@@ -84,7 +84,7 @@ const invoiceBaseSchema = z.object({
   exchangeRate: z.number().positive().default(1),
   description: z.string().max(2000).optional(),
   notes: z.string().max(5000).optional(),
-  termsText: z.string().max(10000).optional(),
+  termsText: z.string().max(50000).optional(),
   internalNotes: z.string().max(5000).optional(),
   isWalkIn: z.boolean().default(false),
   parentInvoiceId: z.string().cuid().optional(), // Required for CREDIT_NOTE

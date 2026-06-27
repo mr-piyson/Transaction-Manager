@@ -304,9 +304,10 @@ export default function InvoicePrintPage() {
             <h3 className="text-xs font-semibold text-muted-foreground uppercase mb-1">
               Terms & Conditions
             </h3>
-            <p className="text-sm whitespace-pre-wrap">
-              {invoice.termsText || org?.defaultTermsText}
-            </p>
+            <div
+              className="text-sm [&_ol]:list-decimal [&_ul]:list-disc [&_ol,_&_ul]:pl-5 [&_li]:mb-0.5"
+              dangerouslySetInnerHTML={{ __html: invoice.termsText || org?.defaultTermsText || '' }}
+            />
           </div>
         )}
 

@@ -7,6 +7,7 @@ import { type SubmitHandler, useFieldArray, useForm, useWatch } from 'react-hook
 import { toast } from 'sonner';
 import { z } from 'zod';
 import { calculateInvoiceTotals } from '@/lib/calculator';
+import { RichtextEditor } from '@/components/richtext-editor';
 import { SelectionDialog } from '@/components/select-dialog';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
@@ -705,11 +706,11 @@ export function InvoiceFormDialog({
               {/* Terms */}
               <Field>
                 <Label htmlFor="termsText">Terms & conditions</Label>
-                <Textarea
-                  id="termsText"
-                  className="resize-none"
-                  rows={2}
-                  {...register('termsText')}
+                <RichtextEditor
+                  value={watch('termsText')}
+                  onChange={(html) => setValue('termsText', html)}
+                  placeholder="e.g. Payment is due within 30 days. Late payments may incur a 2% monthly fee."
+                  minHeight="100px"
                 />
               </Field>
             </div>
