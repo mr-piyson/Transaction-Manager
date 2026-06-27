@@ -1,7 +1,7 @@
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Calculator, Loader2, Package, Plus, Trash2, TriangleAlert, User, PenLine } from 'lucide-react';
+import { Calculator, Loader2, Package, Plus, Trash2, TriangleAlert, User, PenLine, Pencil } from 'lucide-react';
 import * as React from 'react';
 import { type SubmitHandler, useFieldArray, useForm, useWatch } from 'react-hook-form';
 import { toast } from 'sonner';
@@ -9,6 +9,7 @@ import { z } from 'zod';
 import { calculateInvoiceTotals } from '@/lib/calculator';
 import { RichtextEditor } from '@/components/richtext-editor';
 import { SelectionDialog } from '@/components/select-dialog';
+import { InvoiceLineDialog, type InvoiceLineData } from '@/components/dialogs/invoiceLineDialog';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -113,6 +114,7 @@ export function InvoiceFormDialog({
   const isEdit = Boolean(invoice?.id);
   const utils = trpc.useUtils();
   const [itemPickerOpen, setItemPickerOpen] = React.useState(false);
+  const [editingLineIndex, setEditingLineIndex] = React.useState<number | null>(null);
 
   const { data: customersData } = trpc.customers.list.useQuery({ limit: 200 });
   const { data: warehousesData } = trpc.warehouses.list.useQuery({ limit: 200 });
@@ -251,6 +253,18 @@ export function InvoiceFormDialog({
     () => Object.fromEntries(taxRates.map((tr: any) => [tr.id, tr])),
     [taxRates],
   );
+
+  const handleLineSave = (index: number, data: InvoiceLineData) => {
+    setValue(`lines.${index}.itemId`, data.itemId || undefined);
+    setValue(`lines.${index}.description`, data.description || undefined);
+    setValue(`lines.${index}.quantity`, data.quantity);
+    setValue(`lines.${index}.unitPrice`, data.unitPrice);
+    setValue(`lines.${index}.discountAmt`, data.discountAmt);
+    setValue(`lines.${index}.purchasePrice`, data.purchasePrice ?? undefined);
+    setValue(`lines.${index}.taxRateId`, data.taxRateId || undefined);
+    setValue(`lines.${index}.taxRateSnapshot`, data.taxRateSnapshot ?? undefined);
+    setValue(`lines.${index}.taxRateName`, data.taxRateName || undefined);
+  };
 
   const handleItemsSelected = (selected: any[]) => {
     for (const item of selected) {
@@ -475,13 +489,9 @@ export function InvoiceFormDialog({
                       variant="outline"
                       size="sm"
                       onClick={() => {
-                        append({
-                          itemId: '',
-                          quantity: 1,
-                          unitPrice: 0,
-                          discountAmt: 0,
-                          sortOrder: 0,
-                        });
+                        const idx = fields.length;
+                        append({ itemId: '', quantity: 1, unitPrice: 0, discountAmt: 0, sortOrder: 0 });
+                        setEditingLineIndex(idx);
                       }}
                     >
                       <Plus className="h-4 w-4 mr-1" /> Add line
@@ -499,15 +509,9 @@ export function InvoiceFormDialog({
                       variant="outline"
                       size="sm"
                       onClick={() => {
-                        append({
-                          itemId: '',
-                          description: '',
-                          quantity: 1,
-                          unitPrice: 0,
-                          discountAmt: 0,
-                          purchasePrice: 0,
-                          sortOrder: 0,
-                        });
+                        const idx = fields.length;
+                        append({ itemId: '', description: '', quantity: 1, unitPrice: 0, discountAmt: 0, purchasePrice: 0, sortOrder: 0 });
+                        setEditingLineIndex(idx);
                       }}
                     >
                       <PenLine className="h-4 w-4 mr-1" /> Manual
@@ -537,125 +541,43 @@ export function InvoiceFormDialog({
                       key={field.id}
                       className="border rounded-lg p-3 bg-muted/20 space-y-2"
                     >
-                      <div className="flex items-start gap-2">
-                        <div className="flex-1 grid grid-cols-12 gap-2">
-                          {/* Item selector (item mode) or Description (manual mode) */}
-                          <div className="col-span-3">
-                            {isManual ? (
-                              <>
-                                <Label className="text-xs">Description</Label>
-                                <Input
-                                  placeholder="Describe this line item"
-                                  {...register(`lines.${index}.description` as const)}
-                                />
-                              </>
-                            ) : (
-                              <>
-                                <Label className="text-xs">Item</Label>
-                                <Select
-                                  value={field.itemId || '__manual__'}
-                                  onValueChange={(v) => {
-                                    if (v === '__manual__') {
-                                      setValue(`lines.${index}.itemId`, undefined);
-                                      setValue(`lines.${index}.unitPrice`, 0);
-                                      setValue(`lines.${index}.purchasePrice`, 0);
-                                      setValue(`lines.${index}.taxRateId`, undefined);
-                                      setValue(`lines.${index}.taxRateSnapshot`, undefined);
-                                      setValue(`lines.${index}.taxRateName`, undefined);
-                                      return;
-                                    }
-                                    const selected = itemsMap[v] as any;
-                                    const tr = taxRatesMap[selected?.taxRate?.id] as any;
-                                    setValue(`lines.${index}.itemId`, v);
-                                    if (selected) {
-                                      setValue(`lines.${index}.unitPrice`, Number(selected.salesPrice) || 0);
-                                      setValue(`lines.${index}.purchasePrice`, Number(selected.purchasePrice) || 0);
-                                      setValue(`lines.${index}.taxRateId`, selected.taxRate?.id);
-                                      setValue(`lines.${index}.taxRateSnapshot`, tr ? Number(tr.rate) : undefined);
-                                      setValue(`lines.${index}.taxRateName`, tr?.name || undefined);
-                                    }
-                                  }}
-                                >
-                                  <SelectTrigger>
-                                    <SelectValue placeholder="Select item" />
-                                  </SelectTrigger>
-                                  <SelectContent>
-                                    <SelectItem value="__manual__">Manual entry</SelectItem>
-                                    <div className="border-t my-1" />
-                                    {items.map((i: any) => (
-                                      <SelectItem key={i.id} value={i.id}>
-                                        {i.sku} — {i.name}
-                                      </SelectItem>
-                                    ))}
-                                  </SelectContent>
-                                </Select>
-                              </>
+                      {/* Compact card header */}
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium truncate">
+                            {isManual
+                              ? (lineWatch?.description || 'Manual entry')
+                              : (item?.name || field.itemId)}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            {qty} × {price.toFixed(3)}
+                            {discount > 0 && (
+                              <span className="text-destructive ml-1">(-{discount.toFixed(3)})</span>
                             )}
-                          </div>
-
-                          {/* Qty */}
-                          <div className="col-span-1">
-                            <Label className="text-xs">Qty</Label>
-                            <Input
-                              type="number"
-                              min={0.001}
-                              step="any"
-                              {...register(`lines.${index}.quantity` as const)}
-                            />
-                          </div>
-
-                          {/* Unit price */}
-                          <div className="col-span-2">
-                            <Label className="text-xs">Unit price</Label>
-                            <Input
-                              type="number"
-                              min={0}
-                              step="0.001"
-                              {...register(`lines.${index}.unitPrice` as const)}
-                            />
-                          </div>
-
-                          {/* Discount */}
-                          <div className="col-span-2">
-                            <Label className="text-xs">Discount</Label>
-                            <Input
-                              type="number"
-                              min={0}
-                              step="0.001"
-                              {...register(`lines.${index}.discountAmt` as const)}
-                            />
-                          </div>
-
-                          {/* Unit cost (costBasis) */}
-                          <div className="col-span-2">
-                            <Label className="text-xs">Unit cost</Label>
-                            <Input
-                              type="number"
-                              min={0}
-                              step="0.001"
-                              {...register(`lines.${index}.purchasePrice` as const)}
-                            />
-                          </div>
-
-                          {/* Line total */}
-                          <div className="col-span-1">
-                            <Label className="text-xs">Total</Label>
-                            <div className="h-9 flex items-center text-sm font-medium">
-                              {(lineTotal + lineTax).toFixed(3)}
-                            </div>
-                          </div>
-
-                          {/* Remove */}
-                          <div className="col-span-1 flex items-end pb-1">
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => remove(index)}
-                            >
-                              <Trash2 className="h-4 w-4 text-destructive" />
-                            </Button>
-                          </div>
+                          </p>
+                        </div>
+                        <div className="text-right shrink-0">
+                          <p className="text-sm font-semibold">{(lineTotal + lineTax).toFixed(3)}</p>
+                        </div>
+                        <div className="flex items-center gap-0.5 shrink-0">
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            className="size-7"
+                            onClick={() => setEditingLineIndex(index)}
+                          >
+                            <Pencil className="h-3.5 w-3.5" />
+                          </Button>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            className="size-7"
+                            onClick={() => remove(index)}
+                          >
+                            <Trash2 className="h-3.5 w-3.5 text-destructive" />
+                          </Button>
                         </div>
                       </div>
 
@@ -874,6 +796,27 @@ export function InvoiceFormDialog({
         itemName="items"
         confirmLabel="Add to invoice"
       />
+
+      {/* Line edit dialog */}
+      {editingLineIndex !== null && fields[editingLineIndex] && (
+        <InvoiceLineDialog
+          open={editingLineIndex !== null}
+          onOpenChange={(v) => { if (!v) setEditingLineIndex(null); }}
+          index={editingLineIndex}
+          initial={{
+            itemId: fields[editingLineIndex]?.itemId ?? null,
+            description: fields[editingLineIndex]?.description ?? null,
+            quantity: Number(fields[editingLineIndex]?.quantity) || 1,
+            unitPrice: Number(fields[editingLineIndex]?.unitPrice) || 0,
+            discountAmt: Number(fields[editingLineIndex]?.discountAmt) || 0,
+            purchasePrice: Number(fields[editingLineIndex]?.purchasePrice) || null,
+            taxRateId: fields[editingLineIndex]?.taxRateId ?? null,
+            taxRateSnapshot: Number(fields[editingLineIndex]?.taxRateSnapshot) || null,
+            taxRateName: fields[editingLineIndex]?.taxRateName ?? null,
+          }}
+          onSave={handleLineSave}
+        />
+      )}
     </>
   );
 }
