@@ -20,23 +20,23 @@ import {
 import { Label } from '@/components/ui/label';
 
 export const NAV_ITEMS = [
-  { id: 'general', label: 'General', href: '/app/settings/general', icon: Building2 },
-  { id: 'financial', label: 'Financial', href: '/app/settings/financial', icon: Coins },
-  { id: 'tax-rates', label: 'Tax Rates', href: '/app/settings/tax-rates', icon: Percent },
-  { id: 'categories', label: 'Categories', href: '/app/settings/categories', icon: Layers },
+  { id: 'general', labelKey: 'settings.general', href: '/app/settings/general', icon: Building2 },
+  { id: 'financial', labelKey: 'settings.financial', href: '/app/settings/financial', icon: Coins },
+  { id: 'tax-rates', labelKey: 'settings.defaultTaxRate', href: '/app/settings/tax-rates', icon: Percent },
+  { id: 'categories', labelKey: 'items.category', href: '/app/settings/categories', icon: Layers },
   {
     id: 'chart-of-accounts',
-    label: 'Chart of Accounts',
+    labelKey: 'settings.general',
     href: '/app/settings/chart-of-accounts',
     icon: BookType,
   },
-  { id: 'sessions', label: 'Sessions', href: '/app/settings/sessions', icon: LogOut },
-  { id: 'appearance', label: 'Appearance', href: '/app/settings/appearance', icon: Palette },
-  { id: 'notifications', label: 'Notifications', href: '/app/settings/notifications', icon: Bell },
-  { id: 'user', label: 'User', href: '/app/settings/user', icon: User },
+  { id: 'sessions', labelKey: 'settings.general', href: '/app/settings/sessions', icon: LogOut },
+  { id: 'appearance', labelKey: 'settings.appearance', href: '/app/settings/appearance', icon: Palette },
+  { id: 'notifications', labelKey: 'settings.notifications', href: '/app/settings/notifications', icon: Bell },
+  { id: 'user', labelKey: 'auth.name', href: '/app/settings/user', icon: User },
 ] as const satisfies {
   id: string;
-  label: string;
+  labelKey: string;
   href: string;
   icon: LucideIcon;
 }[];

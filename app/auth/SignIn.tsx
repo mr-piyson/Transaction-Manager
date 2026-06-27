@@ -1,5 +1,6 @@
 'use client';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
@@ -19,12 +20,13 @@ import { Input } from '@/components/ui/input';
 import { Spinner } from '@/components/ui/spinner';
 
 export const SignInSchema = z.object({
-  email: z.email(),
-  password: z.string().min(6),
+  email: z.email('Please enter a valid email address'),
+  password: z.string().min(6, 'Password must be at least 6 characters'),
 });
 
 export default function SignInTab() {
   const router = useRouter();
+  const t = useTranslations();
 
   const [isPending, setIsLoading] = useState(false);
 
@@ -62,21 +64,21 @@ export default function SignInTab() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-2xl font-bold">Sign In</CardTitle>
+        <CardTitle className="text-2xl font-bold">{t('auth.signIn')}</CardTitle>
         <CardDescription>
-          Sign in or create an account to begin managing your finances.
+          {t('auth.signInSubtitle')}
         </CardDescription>
       </CardHeader>
       <form onSubmit={handleSubmit(onSubmit)}>
         <CardContent className="space-y-2">
           <div className="space-y-1">
             <label htmlFor="email" className="text-sm font-medium">
-              Email
+              {t('auth.email')}
             </label>
             <Input
               id="email"
               type="email"
-              placeholder="user@example.com"
+              placeholder={t('auth.emailPlaceholder')}
               className="border border-muted-foreground/50"
               {...register('email')}
             />
@@ -84,7 +86,7 @@ export default function SignInTab() {
           </div>
           <div className="space-y-1">
             <label htmlFor="password" className="text-sm font-medium">
-              Password
+              {t('auth.password')}
             </label>
             <Input
               id="password"
@@ -100,7 +102,7 @@ export default function SignInTab() {
         <CardFooter className="mt-5">
           <Button disabled={isPending} type="submit" className="w-full font-bold">
             {isPending && <Spinner />}
-            {!isPending && 'Sign In'}
+            {!isPending && t('auth.signIn')}
           </Button>
         </CardFooter>
       </form>

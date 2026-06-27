@@ -1,11 +1,13 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { ShoppingCart } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 
 export default function PurchaseOrdersPage() {
   const router = useRouter();
+  const t = useTranslations();
 
   return (
     <div className="flex flex-col items-center justify-center h-full gap-4 p-8 text-center">
@@ -13,12 +15,10 @@ export default function PurchaseOrdersPage() {
         <ShoppingCart className="size-8 text-muted-foreground" />
       </div>
       <div>
-        <h2 className="text-xl font-semibold">Purchase Orders</h2>
-        <p className="text-muted-foreground mt-1">
-          Select a purchase order from the list or create a new one.
-        </p>
+        <h2 className="text-xl font-semibold">{t('purchaseOrders.title')}</h2>
+        <p className="text-muted-foreground mt-1">{t('purchaseOrders.selectDescription')}</p>
       </div>
-      <Button onClick={() => router.push('/app/purchase-orders/new')}>New Purchase Order</Button>
+      <Button onClick={() => router.push('/app/purchase-orders/new')}>{t('purchaseOrders.createPO')}</Button>
     </div>
   );
 }

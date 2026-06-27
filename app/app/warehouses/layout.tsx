@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { User2, Warehouse } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -13,20 +14,21 @@ import { useWarehouseForm } from '@/components/dialogs';
 import { Header } from '../App-Header';
 import { WarehouseListItem } from '@/components/warehouses/warehouse-list-item';
 
-const title = 'Warehouses';
+const warehousesSegment = 'warehouses';
 
 export default function WarehousesLayout({ children }: { children?: React.ReactNode }) {
+  const t = useTranslations();
   const { openCreate } = useWarehouseForm();
   const { data, isPending } = trpc.warehouses.list.useQuery({});
   const isMobile = useIsMobile();
   const pathname = usePathname();
   const activeItem = pathname.split('/')[3];
-  const isListView = pathname === `/app/${title.toLowerCase()}`;
+  const isListView = pathname === `/app/${warehousesSegment}`;
 
   const renderCard = useCallback(
     (item: any) => (
       <Link
-        href={`/app/${title.toLowerCase()}/${item.id}`}
+        href={`/app/${warehousesSegment}/${item.id}`}
         scroll={false}
         draggable={false}
         className="block w-full h-full"
@@ -47,7 +49,7 @@ export default function WarehousesLayout({ children }: { children?: React.ReactN
 
   return (
     <div className="flex h-screen flex-col overflow-hidden">
-      <Header title={title} icon={<Warehouse className="size-5" />} onCreate={() => openCreate()} createLabel="New Warehouse" />
+      <Header title={t('warehouses.title')} icon={<Warehouse className="size-5" />} onCreate={() => openCreate()} createLabel={t('warehouses.createWarehouse')} />
       <div className="flex-1 min-h-0 w-full">
         <ResizablePanelGroup className="h-full">
           {(isListView || !isMobile) && (
@@ -61,8 +63,8 @@ export default function WarehousesLayout({ children }: { children?: React.ReactN
                     useTheme
                     searchFields={['name', 'code']}
                     rowHeight={73}
-                    emptyTitle="No warehouses found"
-                    emptyDescription="Create your first warehouse to see them here."
+                    emptyTitle={t('warehouses.noWarehouses')}
+                    emptyDescription={t('warehouses.createWarehouse')}
                     emptyIcon={<User2 className="size-20 text-muted-foreground" />}
                     cardRenderer={renderCard}
                   />

@@ -1,8 +1,10 @@
 'use client';
 
-import { Check, ChevronsUpDown, Languages, LogOut, Moon, Settings, Sun } from 'lucide-react';
+import { ChevronsUpDown, LogOut, Moon, Settings, Sun } from 'lucide-react';
 import { useTheme } from 'next-themes';
+import { useTranslations } from 'next-intl';
 import { signOut, useSession } from '@/auth/auth-client';
+import { LocaleSwitcherMenu } from '@/components/locale-switcher';
 import { SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/sidebar';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
@@ -11,17 +13,14 @@ import {
   DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
-  DropdownMenuPortal,
   DropdownMenuSeparator,
   DropdownMenuShortcut,
-  DropdownMenuSub,
-  DropdownMenuSubContent,
-  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Switch } from '@/components/ui/switch';
 
 export function NavUser() {
+  const t = useTranslations();
   const { theme, setTheme } = useTheme();
   const user = useSession().data?.user;
 
@@ -63,43 +62,32 @@ export function NavUser() {
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
-            {/* Appearance Item with toggle */}
             <DropdownMenuGroup>
-              <DropdownMenuLabel className="px-2 py-1.5 text-sm">Appearance</DropdownMenuLabel>
+              <DropdownMenuLabel className="px-2 py-1.5 text-sm">{t('layout.appearance')}</DropdownMenuLabel>
 
               <DropdownMenuItem
-                onClick={toggleTheme} // Base UI sometimes uses onSelect
+                onClick={toggleTheme}
                 className={'bg-transparent!'}
               >
                 {theme === 'dark' ? <Moon className="size-4" /> : <Sun className="size-4" />}
-                <span>Dark Mode</span>
+                <span>{t('layout.darkMode')}</span>
                 <DropdownMenuShortcut>
                   <Switch checked={theme === 'dark'} />
                 </DropdownMenuShortcut>
               </DropdownMenuItem>
             </DropdownMenuGroup>
-            {/* internlization */}
             <DropdownMenuGroup>
-              <DropdownMenuLabel className="px-2 py-1.5 text-sm">Internlization</DropdownMenuLabel>
-              <DropdownMenuSub>
-                <DropdownMenuSubTrigger>
-                  <Languages className="mr-2 h-4 w-4" />
-                  <span>Language</span>
-                </DropdownMenuSubTrigger>
-                <DropdownMenuPortal>
-                  <DropdownMenuSubContent>Add Languages Here</DropdownMenuSubContent>
-                </DropdownMenuPortal>
-              </DropdownMenuSub>
+              <LocaleSwitcherMenu />
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuItem>
               <Settings className="size-4" />
-              <span>Settings</span>
+              <span>{t('layout.settings')}</span>
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem variant="destructive" onClick={() => signOut()}>
               <LogOut />
-              Log out
+              {t('layout.logOut')}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

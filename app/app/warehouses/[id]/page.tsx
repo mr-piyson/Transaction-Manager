@@ -1,6 +1,7 @@
 'use client';
 
 import { ArrowLeft, Edit, Loader2, MoveRight, Package, Trash, Warehouse as WarehouseIcon } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { useParams, useRouter } from 'next/navigation';
 import * as React from 'react';
 import { toast } from 'sonner';
@@ -47,26 +48,12 @@ import { useWarehouseForm } from '@/components/dialogs';
 import { trpc } from '@/lib/trpc/client';
 import { format } from 'date-fns';
 
-const MOVEMENT_TYPE_LABELS: Record<string, string> = {
-  PURCHASE_INBOUND: 'Purchase Inbound',
-  SALE_OUTBOUND: 'Sale Outbound',
-  RETURN_INBOUND: 'Return Inbound',
-  RETURN_OUTBOUND: 'Return Outbound',
-  ADJUSTMENT_UP: 'Adjustment Up',
-  ADJUSTMENT_DOWN: 'Adjustment Down',
-  TRANSFER_OUT: 'Transfer Out',
-  TRANSFER_IN: 'Transfer In',
-  OPENING_BALANCE: 'Opening Balance',
-  DAMAGE: 'Damage',
-  ASSEMBLY_CONSUME: 'Assembly Consume',
-  ASSEMBLY_PRODUCE: 'Assembly Produce',
-};
-
 export default function WarehouseDetailPage() {
   const params = useParams<{ id: string }>();
   const router = useRouter();
   const utils = trpc.useUtils();
   const { openEdit } = useWarehouseForm();
+  const t = useTranslations();
 
   const { data: warehouse, isLoading, isError, error, refetch } = trpc.warehouses.byId.useQuery(
     { id: params.id },
@@ -91,7 +78,7 @@ export default function WarehouseDetailPage() {
   const deleteMutation = trpc.warehouses.delete.useMutation({
     onSuccess: () => {
       utils.warehouses.list.invalidate();
-      toast.success('Warehouse deleted');
+      toast.success(t('warehouses.warehouseDeleted'));
       router.push('/app/warehouses');
     },
     onError: (e) => toast.error(e.message),
@@ -111,7 +98,7 @@ export default function WarehouseDetailPage() {
       setTransferQty('');
       setTransferNotes('');
       invalidateStock();
-      toast.success('Stock transferred');
+      toast.success(t('warehouses.stockTransferred'));
     },
     onError: (e) => toast.error(e.message),
   });
@@ -140,16 +127,16 @@ export default function WarehouseDetailPage() {
             <EmptyMedia variant="icon">
               <WarehouseIcon className="size-6" />
             </EmptyMedia>
-            <EmptyTitle>{isError ? 'Failed to load' : 'Not found'}</EmptyTitle>
+            <EmptyTitle>{isError ? t('common.failedToLoad') : t('common.notFound')}</EmptyTitle>
             <EmptyDescription>
-              {error?.message ?? 'This warehouse does not exist or has been deleted.'}
+              {error?.message ?? t('warehouses.doesNotExist')}
             </EmptyDescription>
           </EmptyHeader>
           <div className="flex gap-2">
             <Button variant="outline" onClick={() => router.push('/app/warehouses')}>
-              <ArrowLeft className="size-4 mr-1" /> Back
+              <ArrowLeft className="size-4 mr-1" /> {t('common.back')}
             </Button>
-            {isError && <Button onClick={() => refetch()}>Retry</Button>}
+            {isError && <Button onClick={() => refetch()}>{t('common.retry')}</Button>}
           </div>
         </Empty>
       </div>
@@ -170,11 +157,11 @@ export default function WarehouseDetailPage() {
 
   const handleDelete = () => {
     alert.delete({
-      title: `Delete "${warehouse.name}"?`,
+      title: t('common.confirmDelete'),
       description: warehouse.isDefault
-        ? 'This is the default warehouse. Set another as default first.'
-        : 'This warehouse will be deactivated. You can restore it later.',
-      confirmText: 'Delete',
+        ? t('warehouses.defaultDeleteBlocked')
+        : t('warehouses.deactivateRestoreConfirm'),
+      confirmText: t('common.delete'),
       onConfirm: async () => {
         await deleteMutation.mutateAsync({ id: warehouse.id });
       },
@@ -182,11 +169,11 @@ export default function WarehouseDetailPage() {
   };
 
   const handleTransfer = () => {
-    if (!transferItemId) { toast.error('Select an item'); return; }
-    if (!transferToWarehouseId) { toast.error('Select destination warehouse'); return; }
+    if (!transferItemId) { toast.error(t('warehouses.valSelectItem')); return; }
+    if (!transferToWarehouseId) { toast.error(t('warehouses.valSelectWarehouse')); return; }
     const qty = parseFloat(transferQty);
-    if (!qty || qty <= 0) { toast.error('Enter a valid quantity'); return; }
-    if (transferToWarehouseId === warehouse.id) { toast.error('Cannot transfer to the same warehouse'); return; }
+    if (!qty || qty <= 0) { toast.error(t('warehouses.valValidQty')); return; }
+    if (transferToWarehouseId === warehouse.id) { toast.error(t('warehouses.valSameWarehouse')); return; }
     transferMutation.mutate({
       itemId: transferItemId,
       fromWarehouseId: warehouse.id,
@@ -211,18 +198,18 @@ export default function WarehouseDetailPage() {
           <WarehouseIcon className="size-5 text-muted-foreground shrink-0" />
           <h1 className="text-xl font-semibold truncate">{warehouse.name}</h1>
           {warehouse.isDefault && (
-            <Badge variant="secondary" className="text-xs">Default</Badge>
+            <Badge variant="secondary" className="text-xs">{t('common.default')}</Badge>
           )}
           {!warehouse.isActive && (
             <Badge variant="outline" className="bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200">
-              Inactive
+              {t('common.inactive')}
             </Badge>
           )}
         </div>
         <div className="flex items-center gap-2">
           <Button variant="outline" size="sm" className="gap-1.5" onClick={handleEdit}>
             <Edit className="size-4" />
-            Edit
+            {t('common.edit')}
           </Button>
           <Button
             variant="outline"
@@ -232,7 +219,7 @@ export default function WarehouseDetailPage() {
             disabled={stockItems.length === 0}
           >
             <MoveRight className="size-4" />
-            Transfer
+            {t('common.transfer')}
           </Button>
           <Button
             variant="destructive"
@@ -242,7 +229,7 @@ export default function WarehouseDetailPage() {
             disabled={deleteMutation.isPending}
           >
             {deleteMutation.isPending ? <Loader2 className="size-4 animate-spin" /> : <Trash className="size-4" />}
-            Delete
+            {t('common.delete')}
           </Button>
         </div>
       </header>
@@ -252,31 +239,31 @@ export default function WarehouseDetailPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
           <Card>
             <CardHeader className="pb-1.5">
-              <CardTitle className="text-xs text-muted-foreground font-medium">Name & Code</CardTitle>
+              <CardTitle className="text-xs text-muted-foreground font-medium">{t('warehouses.nameCode')}</CardTitle>
             </CardHeader>
             <CardContent>
               <p className="font-semibold">{warehouse.name}</p>
-              <p className="text-xs text-muted-foreground">{warehouse.code ?? 'No code'}</p>
+              <p className="text-xs text-muted-foreground">{warehouse.code ?? t('warehouses.noCode')}</p>
             </CardContent>
           </Card>
           <Card>
             <CardHeader className="pb-1.5">
-              <CardTitle className="text-xs text-muted-foreground font-medium">Status</CardTitle>
+              <CardTitle className="text-xs text-muted-foreground font-medium">{t('common.status')}</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="font-semibold">{warehouse.isActive ? 'Active' : 'Inactive'}</p>
+              <p className="font-semibold">{warehouse.isActive ? t('common.active') : t('common.inactive')}</p>
               <p className="text-xs text-muted-foreground">
-                {warehouse.isDefault ? 'Default warehouse' : 'Not default'}
+                {warehouse.isDefault ? t('warehouses.defaultWarehouse') : t('warehouses.notDefault')}
               </p>
             </CardContent>
           </Card>
           <Card>
             <CardHeader className="pb-1.5">
-              <CardTitle className="text-xs text-muted-foreground font-medium">Stock Items</CardTitle>
+              <CardTitle className="text-xs text-muted-foreground font-medium">{t('warehouses.stockItems')}</CardTitle>
             </CardHeader>
             <CardContent>
               <p className="font-semibold">{stockItems.length}</p>
-              <p className="text-xs text-muted-foreground">unique items in stock</p>
+              <p className="text-xs text-muted-foreground">{t('warehouses.uniqueItems')}</p>
             </CardContent>
           </Card>
         </div>
@@ -285,18 +272,18 @@ export default function WarehouseDetailPage() {
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-semibold flex items-center gap-2">
-              <Package className="size-4" /> Stock levels ({stockItems.length})
+              <Package className="size-4" /> {t('warehouses.stockLevels', { count: stockItems.length })}
             </CardTitle>
           </CardHeader>
           <CardContent className="p-0">
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Item</TableHead>
-                  <TableHead>SKU</TableHead>
-                  <TableHead className="text-right">Quantity</TableHead>
-                  <TableHead>Unit</TableHead>
-                  <TableHead className="text-right">Reorder</TableHead>
+                  <TableHead>{t('common.item')}</TableHead>
+                  <TableHead>{t('common.sku')}</TableHead>
+                  <TableHead className="text-right">{t('common.quantity')}</TableHead>
+                  <TableHead>{t('common.unit')}</TableHead>
+                  <TableHead className="text-right">{t('common.reorder')}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -316,7 +303,7 @@ export default function WarehouseDetailPage() {
                 {stockItems.length === 0 && (
                   <TableRow>
                     <TableCell colSpan={5} className="text-center text-muted-foreground py-8">
-                      No stock items in this warehouse
+                      {t('warehouses.noStockItems')}
                     </TableCell>
                   </TableRow>
                 )}
@@ -329,19 +316,19 @@ export default function WarehouseDetailPage() {
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-semibold flex items-center gap-2">
-              <Package className="size-4" /> Recent movements ({movements.length})
+              <Package className="size-4" /> {t('warehouses.recentMovements', { count: movements.length })}
             </CardTitle>
           </CardHeader>
           <CardContent className="p-0">
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Date</TableHead>
-                  <TableHead>Type</TableHead>
-                  <TableHead>Item</TableHead>
-                  <TableHead className="text-right">Qty</TableHead>
-                  <TableHead>From → To</TableHead>
-                  <TableHead>Notes</TableHead>
+                  <TableHead>{t('common.date')}</TableHead>
+                  <TableHead>{t('common.type')}</TableHead>
+                  <TableHead>{t('common.item')}</TableHead>
+                  <TableHead className="text-right">{t('common.quantity')}</TableHead>
+                  <TableHead>{t('common.fromTo')}</TableHead>
+                  <TableHead>{t('common.notes')}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -352,7 +339,7 @@ export default function WarehouseDetailPage() {
                     </TableCell>
                     <TableCell>
                       <Badge variant="outline" className="text-xs">
-                        {MOVEMENT_TYPE_LABELS[m.type] ?? m.type}
+                        {t(`warehouses.movementTypes.${m.type}`)}
                       </Badge>
                     </TableCell>
                     <TableCell>
@@ -373,7 +360,7 @@ export default function WarehouseDetailPage() {
                 {movements.length === 0 && (
                   <TableRow>
                     <TableCell colSpan={6} className="text-center text-muted-foreground py-8">
-                      No movements yet
+                      {t('warehouses.noMovements')}
                     </TableCell>
                   </TableRow>
                 )}
@@ -384,8 +371,8 @@ export default function WarehouseDetailPage() {
 
         {/* Meta info */}
         <div className="text-xs text-muted-foreground flex flex-wrap gap-x-4 gap-y-1 pb-2">
-          <span>Created {warehouse.createdAt ? format(new Date(warehouse.createdAt), 'dd MMM yyyy HH:mm') : '—'}</span>
-          <span>Updated {warehouse.updatedAt ? format(new Date(warehouse.updatedAt), 'dd MMM yyyy HH:mm') : '—'}</span>
+          <span>{t('warehouses.created')} {warehouse.createdAt ? format(new Date(warehouse.createdAt), 'dd MMM yyyy HH:mm') : '—'}</span>
+          <span>{t('warehouses.updated')} {warehouse.updatedAt ? format(new Date(warehouse.updatedAt), 'dd MMM yyyy HH:mm') : '—'}</span>
         </div>
       </div>
 
@@ -393,17 +380,17 @@ export default function WarehouseDetailPage() {
       <Dialog open={transferOpen} onOpenChange={(v) => !transferMutation.isPending && setTransferOpen(v)}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Transfer stock</DialogTitle>
+            <DialogTitle>{t('warehouses.transferStock')}</DialogTitle>
             <DialogDescription>
-              Move stock from <strong>{warehouse.name}</strong> to another warehouse.
+              {t('warehouses.transferDesc', { name: warehouse.name })}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="transfer-item">Item *</Label>
+              <Label htmlFor="transfer-item">{t('warehouses.selectItem')} *</Label>
               <Select value={transferItemId} onValueChange={setTransferItemId}>
                 <SelectTrigger id="transfer-item">
-                  <SelectValue placeholder="Select item" />
+                  <SelectValue placeholder={t('warehouses.selectItem')} />
                 </SelectTrigger>
                 <SelectContent>
                   {stockItems.map((s: any) => (
@@ -415,37 +402,37 @@ export default function WarehouseDetailPage() {
               </Select>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="transfer-to">Destination warehouse *</Label>
+              <Label htmlFor="transfer-to">{t('warehouses.destinationWarehouse')} *</Label>
               <Select value={transferToWarehouseId} onValueChange={setTransferToWarehouseId}>
                 <SelectTrigger id="transfer-to">
-                  <SelectValue placeholder="Select warehouse" />
+                  <SelectValue placeholder={t('warehouses.selectWarehouse')} />
                 </SelectTrigger>
                 <SelectContent>
                   {otherWarehouses.map((w: any) => (
                     <SelectItem key={w.id} value={w.id}>
-                      {w.name}{w.isDefault ? ' (Default)' : ''}{!w.isActive ? ' (Inactive)' : ''}
+                      {w.name}{w.isDefault ? ` (${t('common.default')})` : ''}{!w.isActive ? ` (${t('common.inactive')})` : ''}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="transfer-qty">Quantity *</Label>
+              <Label htmlFor="transfer-qty">{t('common.quantity')} *</Label>
               <Input
                 id="transfer-qty"
                 type="number"
                 step="0.001"
                 min="0"
-                placeholder="0.000"
+                placeholder={t('common.placeholders.amount')}
                 value={transferQty}
                 onChange={(e) => setTransferQty(e.target.value)}
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="transfer-notes">Notes</Label>
+              <Label htmlFor="transfer-notes">{t('common.notes')}</Label>
               <Textarea
                 id="transfer-notes"
-                placeholder="Optional notes"
+                placeholder={t('common.optionalNotes')}
                 value={transferNotes}
                 onChange={(e) => setTransferNotes(e.target.value)}
                 rows={2}
@@ -454,12 +441,12 @@ export default function WarehouseDetailPage() {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setTransferOpen(false)} disabled={transferMutation.isPending}>
-              Cancel
+              {t('common.cancel')}
             </Button>
             <Button onClick={handleTransfer} disabled={transferMutation.isPending}>
               {transferMutation.isPending && <Loader2 className="size-4 mr-1 animate-spin" />}
               <MoveRight className="size-4 mr-1" />
-              Transfer
+              {t('common.transfer')}
             </Button>
           </DialogFooter>
         </DialogContent>

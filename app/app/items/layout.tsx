@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { Edit, Eye, FileText, Package, Trash2, User2 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
@@ -21,13 +22,15 @@ import { ItemListItem } from '@/components/items/item-list-item';
 
 const title = 'Items';
 
-const TYPE_FILTERS = [
-  { value: '', label: 'All' },
-  { value: 'PRODUCT', label: 'Product' },
-  { value: 'SERVICE', label: 'Service' },
-];
-
 export default function ItemsLayout({ children }: { children?: React.ReactNode }) {
+  const t = useTranslations();
+
+  const TYPE_FILTERS = [
+    { value: '', label: t('common.all') },
+    { value: 'PRODUCT', label: t('items.types.PRODUCT') },
+    { value: 'SERVICE', label: t('items.types.SERVICE') },
+  ];
+
   const { openCreate, openEdit } = useItemForm();
   const [typeFilter, setTypeFilter] = React.useState('');
   const { data, isPending } = trpc.items.list.useQuery({ type: (typeFilter || undefined) as 'PRODUCT' | 'SERVICE' | undefined });
@@ -41,7 +44,7 @@ export default function ItemsLayout({ children }: { children?: React.ReactNode }
   const deleteMutation = trpc.items.delete.useMutation({
     onSuccess: () => {
       utils.items.list.invalidate();
-      toast.success('Item deleted');
+      toast.success(t('items.itemDeleted'));
     },
     onError: (e) => toast.error(e.message),
   });
@@ -51,13 +54,13 @@ export default function ItemsLayout({ children }: { children?: React.ReactNode }
       const menuItems: ContextMenuItemSchema[] = [
         {
           id: 'view',
-          label: 'View details',
+          label: t('common.viewDetails'),
           icon: Eye,
           onClick: () => router.push(`/app/items/${item.id}`),
         },
         {
           id: 'edit',
-          label: 'Edit',
+          label: t('common.edit'),
           icon: Edit,
           onClick: () =>
             openEdit(
@@ -87,14 +90,14 @@ export default function ItemsLayout({ children }: { children?: React.ReactNode }
         { id: 'sep1', type: 'separator' },
         {
           id: 'delete',
-          label: 'Delete',
+          label: t('common.delete'),
           icon: Trash2,
           destructive: true,
           onClick: () =>
             alert.delete({
-              title: `Delete "${item.name}"?`,
-              description: 'This item will be deactivated. It can be restored later.',
-              confirmText: 'Delete',
+              title: t('common.confirmDelete'),
+              description: t('common.thisActionCannotBeUndone'),
+              confirmText: t('common.delete'),
               onConfirm: async () => {
                 await deleteMutation.mutateAsync({ id: item.id });
               },
@@ -128,7 +131,7 @@ export default function ItemsLayout({ children }: { children?: React.ReactNode }
 
   return (
     <div className="flex h-screen flex-col overflow-hidden">
-      <Header title={title} icon={<Package className="size-5" />} onCreate={() => openCreate()} createLabel="New Item" />
+      <Header title={t('layout.items')} icon={<Package className="size-5" />} onCreate={() => openCreate()} createLabel={t('items.createItem')} />
       <div className="flex-1 min-h-0 w-full">
         <ResizablePanelGroup className="h-full">
           {(isListView || !isMobile) && (
@@ -137,9 +140,9 @@ export default function ItemsLayout({ children }: { children?: React.ReactNode }
                 <div className="border-b px-4 py-2">
                   <Tabs value={typeFilter} onValueChange={setTypeFilter}>
                     <TabsList className="h-auto w-full justify-start">
-                      {TYPE_FILTERS.map((t) => (
-                        <TabsTrigger key={t.value} value={t.value} className="text-xs px-3 py-1">
-                          {t.label}
+                      {TYPE_FILTERS.map((filter) => (
+                        <TabsTrigger key={filter.value} value={filter.value} className="text-xs px-3 py-1">
+                          {filter.label}
                         </TabsTrigger>
                       ))}
                     </TabsList>
@@ -153,8 +156,8 @@ export default function ItemsLayout({ children }: { children?: React.ReactNode }
                     useTheme
                     searchFields={['name', 'sku', 'description'] as any}
                     rowHeight={73}
-                    emptyTitle="No items found"
-                    emptyDescription="Create your first item to see them here."
+                    emptyTitle={t('items.noItems')}
+                    emptyDescription={t('items.createItem')}
                     emptyIcon={<User2 className="size-20 text-muted-foreground" />}
                     cardRenderer={renderCard}
                   />

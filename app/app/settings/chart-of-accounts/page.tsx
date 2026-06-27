@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { Loader2 } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
@@ -15,22 +16,32 @@ import { Textarea } from '@/components/ui/textarea';
 import { trpc } from '@/lib/trpc/client';
 import { Field, SectionCard } from '../_shared';
 
-const ACCOUNT_TYPES = [
-  { value: 'ASSET', label: 'Asset' },
-  { value: 'LIABILITY', label: 'Liability' },
-  { value: 'EQUITY', label: 'Equity' },
-  { value: 'REVENUE', label: 'Revenue' },
-  { value: 'EXPENSE', label: 'Expense' },
-  { value: 'CONTRA_ASSET', label: 'Contra Asset' },
-  { value: 'CONTRA_REVENUE', label: 'Contra Revenue' },
-] as const;
-
-const NORMAL_BALANCES = [
-  { value: 'DEBIT', label: 'Debit' },
-  { value: 'CREDIT', label: 'Credit' },
-] as const;
-
 export default function ChartOfAccountsPage() {
+  const t = useTranslations();
+  const ACCOUNT_TYPES = [
+    { value: 'ASSET', label: t('settings.accountTypes.asset') },
+    { value: 'LIABILITY', label: t('settings.accountTypes.liability') },
+    { value: 'EQUITY', label: t('settings.accountTypes.equity') },
+    { value: 'REVENUE', label: t('settings.accountTypes.revenue') },
+    { value: 'EXPENSE', label: t('settings.accountTypes.expense') },
+    { value: 'CONTRA_ASSET', label: t('settings.accountTypes.contraAsset') },
+    { value: 'CONTRA_REVENUE', label: t('settings.accountTypes.contraRevenue') },
+  ] as const;
+
+  const NORMAL_BALANCES = [
+    { value: 'DEBIT', label: t('settings.normalBalances.debit') },
+    { value: 'CREDIT', label: t('settings.normalBalances.credit') },
+  ] as const;
+
+  const accountTypeLabel = (type: string) => {
+    const found = ACCOUNT_TYPES.find((a) => a.value === type);
+    return found ? found.label : type;
+  };
+  const normalBalanceLabel = (balance: string) => {
+    const found = NORMAL_BALANCES.find((b) => b.value === balance);
+    return found ? found.label : balance;
+  };
+
   const { data: accounts = [], isLoading } =
     trpc.settings.chartOfAccounts.list.useQuery();
   const utils = trpc.useUtils();
@@ -69,8 +80,8 @@ export default function ChartOfAccountsPage() {
   return (
     <div className="h-full space-y-6">
       <SectionCard
-        title="Chart of Accounts"
-        description="Manage your organization's ledger accounts."
+        title={t('settings.general')}
+        description={t('common.description')}
       >
         {isLoading ? (
           <div className="flex justify-center py-8">
@@ -78,7 +89,7 @@ export default function ChartOfAccountsPage() {
           </div>
         ) : accounts.length === 0 ? (
           <p className="text-sm text-muted-foreground py-4 text-center">
-            No accounts configured yet.
+            {t('common.noResults')}
           </p>
         ) : (
           <div className="space-y-1">
@@ -92,12 +103,12 @@ export default function ChartOfAccountsPage() {
                     {acct.code}
                   </span>
                   <span className="font-medium">{acct.name}</span>
-                  <span className="text-xs text-muted-foreground capitalize">
-                    {acct.type.replace('_', ' ').toLowerCase()}
+                  <span className="text-xs text-muted-foreground">
+                    {accountTypeLabel(acct.type)}
                   </span>
                 </div>
                 <span className="text-xs text-muted-foreground">
-                  {acct.normalBalance}
+                  {normalBalanceLabel(acct.normalBalance)}
                 </span>
               </div>
             ))}
@@ -107,23 +118,23 @@ export default function ChartOfAccountsPage() {
         <div className="pt-2">
           {showForm ? (
             <div className="space-y-4 rounded-lg border p-4">
-              <p className="text-sm font-medium">New Account</p>
+              <p className="text-sm font-medium">{t('common.addItem')}</p>
               <div className="grid grid-cols-2 gap-4">
-                <Field label="Code">
+                <Field label={t('common.code')}>
                   <Input
-                    placeholder="e.g. 1000"
+                    placeholder={t('settings.codePlaceholder')}
                     value={form.code}
                     onChange={(e) => setForm({ ...form, code: e.target.value })}
                   />
                 </Field>
-                <Field label="Name">
+                <Field label={t('common.name')}>
                   <Input
-                    placeholder="e.g. Cash"
+                    placeholder={t('settings.namePlaceholder')}
                     value={form.name}
                     onChange={(e) => setForm({ ...form, name: e.target.value })}
                   />
                 </Field>
-                <Field label="Type">
+                <Field label={t('common.type')}>
                   <Select
                     value={form.type}
                     onValueChange={(v) => setForm({ ...form, type: v })}
@@ -132,15 +143,15 @@ export default function ChartOfAccountsPage() {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      {ACCOUNT_TYPES.map((t) => (
-                        <SelectItem key={t.value} value={t.value}>
-                          {t.label}
+                      {ACCOUNT_TYPES.map((acctType) => (
+                        <SelectItem key={acctType.value} value={acctType.value}>
+                          {acctType.label}
                         </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
                 </Field>
-                <Field label="Normal Balance">
+                <Field label={t('common.status')}>
                   <Select
                     value={form.normalBalance}
                     onValueChange={(v) => setForm({ ...form, normalBalance: v })}
@@ -158,9 +169,9 @@ export default function ChartOfAccountsPage() {
                   </Select>
                 </Field>
               </div>
-              <Field label="Description">
+              <Field label={t('common.description')}>
                 <Textarea
-                  placeholder="Optional description"
+                  placeholder={t('common.optionalNotes')}
                   value={form.description}
                   onChange={(e) =>
                     setForm({ ...form, description: e.target.value })
@@ -172,7 +183,7 @@ export default function ChartOfAccountsPage() {
                   variant="outline"
                   onClick={() => setShowForm(false)}
                 >
-                  Cancel
+                  {t('common.cancel')}
                 </Button>
                 <Button
                   onClick={handleCreate}
@@ -181,13 +192,13 @@ export default function ChartOfAccountsPage() {
                   {createAccount.isPending && (
                     <Loader2 className="size-4 mr-2 animate-spin" />
                   )}
-                  Create Account
+                  {t('common.create')}
                 </Button>
               </div>
             </div>
           ) : (
             <Button onClick={() => setShowForm(true)}>
-              Add Account
+              {t('common.addItem')}
             </Button>
           )}
         </div>

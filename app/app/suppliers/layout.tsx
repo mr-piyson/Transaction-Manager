@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { Edit, Eye, Trash2, Truck, User2 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
@@ -20,6 +21,7 @@ import { SupplierListItem } from '@/components/suppliers/supplier-list-item';
 const title = 'Suppliers';
 
 export default function SuppliersLayout({ children }: { children?: React.ReactNode }) {
+  const t = useTranslations();
   const { openCreate, openEdit } = useSupplierForm();
   const utils = trpc.useUtils();
   const router = useRouter();
@@ -31,7 +33,7 @@ export default function SuppliersLayout({ children }: { children?: React.ReactNo
   const deleteMutation = trpc.suppliers.delete.useMutation({
     onSuccess: () => {
       utils.suppliers.list.invalidate();
-      toast.success('Supplier deleted');
+      toast.success(t('suppliers.supplierDeleted'));
       if (activeItem) router.push('/app/suppliers');
     },
     onError: (e) => toast.error(e.message),
@@ -42,9 +44,9 @@ export default function SuppliersLayout({ children }: { children?: React.ReactNo
     (item: any) => {
       const handleDelete = () => {
         alert.delete({
-          title: `Delete supplier ${item.name}?`,
-          description: 'This action cannot be undone.',
-          confirmText: 'Delete',
+          title: t('common.confirmDelete'),
+          description: t('common.thisActionCannotBeUndone'),
+          confirmText: t('common.delete'),
           onConfirm: async () => {
             await deleteMutation.mutateAsync({ id: item.id });
           },
@@ -54,13 +56,13 @@ export default function SuppliersLayout({ children }: { children?: React.ReactNo
       const menuItems: ContextMenuItemSchema[] = [
         {
           id: 'view',
-          label: 'View details',
+          label: t('common.viewDetails'),
           icon: Eye,
           onClick: () => router.push(`/app/suppliers/${item.id}`),
         },
         {
           id: 'edit',
-          label: 'Edit',
+          label: t('common.edit'),
           icon: Edit,
           onClick: () =>
             openEdit(
@@ -71,7 +73,7 @@ export default function SuppliersLayout({ children }: { children?: React.ReactNo
         { id: 'sep1', type: 'separator' as const },
         {
           id: 'delete',
-          label: 'Delete',
+          label: t('common.delete'),
           icon: Trash2,
           onClick: handleDelete,
           disabled: deleteMutation.isPending,
@@ -104,7 +106,7 @@ export default function SuppliersLayout({ children }: { children?: React.ReactNo
 
   return (
     <div className="flex h-screen flex-col overflow-hidden">
-      <Header title={title} icon={<Truck className="size-5" />} onCreate={() => openCreate()} createLabel="New Supplier" />
+      <Header title={t('layout.suppliers')} icon={<Truck className="size-5" />} onCreate={() => openCreate()} createLabel={t('suppliers.createSupplier')} />
       <div className="flex-1 min-h-0 w-full">
         <ResizablePanelGroup className="h-full">
           {(isListView || !isMobile) && (
@@ -118,8 +120,8 @@ export default function SuppliersLayout({ children }: { children?: React.ReactNo
                     useTheme
                     searchFields={['name', 'email', 'phone', 'code']}
                     rowHeight={73}
-                    emptyTitle="No suppliers found"
-                    emptyDescription="Create your first supplier to see them here."
+                    emptyTitle={t('suppliers.noSuppliers')}
+                    emptyDescription={t('suppliers.createSupplier')}
                     emptyIcon={<User2 className="size-20 text-muted-foreground" />}
                     cardRenderer={renderCard}
                   />

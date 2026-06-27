@@ -1,6 +1,7 @@
 'use client';
 
 import { ArrowLeft, Edit, ExternalLink, Loader2, Pen, Plus, Trash, Truck, X } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { useParams, useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { alert } from '@/components/Alert-dialog';
@@ -33,6 +34,7 @@ export default function SupplierDetailPage() {
   const utils = trpc.useUtils();
   const { openEdit } = useSupplierForm();
   const { openCreate, openEdit: openSupplierItemEdit } = useSupplierItemForm();
+  const t = useTranslations();
 
   const { data: supplier, isLoading, isError, error, refetch } = trpc.suppliers.byId.useQuery(
     { id: params.id },
@@ -42,7 +44,7 @@ export default function SupplierDetailPage() {
   const deleteMutation = trpc.suppliers.delete.useMutation({
     onSuccess: () => {
       utils.suppliers.list.invalidate();
-      toast.success('Supplier deleted');
+      toast.success(t('suppliers.supplierDeleted'));
       router.push('/app/suppliers');
     },
     onError: (e) => toast.error(e.message),
@@ -51,7 +53,7 @@ export default function SupplierDetailPage() {
   const deleteSupplierItemMutation = trpc.suppliers.deleteSupplierItem.useMutation({
     onSuccess: () => {
       if (supplier) utils.suppliers.byId.invalidate({ id: supplier.id });
-      toast.success('Supplier item removed');
+      toast.success(t('suppliers.itemRemoved'));
     },
     onError: (e) => toast.error(e.message),
   });
@@ -74,16 +76,16 @@ export default function SupplierDetailPage() {
             <EmptyMedia variant="icon">
               <Truck className="size-6" />
             </EmptyMedia>
-            <EmptyTitle>{isError ? 'Failed to load' : 'Not found'}</EmptyTitle>
+            <EmptyTitle>{isError ? t('common.failedToLoad') : t('common.notFound')}</EmptyTitle>
             <EmptyDescription>
-              {error?.message ?? 'This supplier does not exist or has been deleted.'}
+              {error?.message ?? t('suppliers.doesNotExist')}
             </EmptyDescription>
           </EmptyHeader>
           <div className="flex gap-2">
             <Button variant="outline" onClick={() => router.push('/app/suppliers')}>
-              <ArrowLeft className="size-4 mr-1" /> Back
+              <ArrowLeft className="size-4 mr-1" /> {t('common.back')}
             </Button>
-            {isError && <Button onClick={() => refetch()}>Retry</Button>}
+            {isError && <Button onClick={() => refetch()}>{t('common.retry')}</Button>}
           </div>
         </Empty>
       </div>
@@ -111,9 +113,9 @@ export default function SupplierDetailPage() {
 
   const handleDelete = () => {
     alert.delete({
-      title: `Delete "${supplier.name}"?`,
-      description: 'This supplier will be deactivated. You can restore it later.',
-      confirmText: 'Delete',
+      title: t('common.confirmDelete'),
+      description: t('suppliers.deactivateRestoreConfirm'),
+      confirmText: t('common.delete'),
       onConfirm: async () => {
         await deleteMutation.mutateAsync({ id: supplier.id });
       },
@@ -135,14 +137,14 @@ export default function SupplierDetailPage() {
           <h1 className="text-xl font-semibold truncate">{supplier.name}</h1>
           {!supplier.isActive && (
             <Badge variant="outline" className="bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200">
-              Inactive
+              {t('common.inactive')}
             </Badge>
           )}
         </div>
         <div className="flex items-center gap-2">
           <Button variant="outline" size="sm" className="gap-1.5" onClick={handleEdit}>
             <Edit className="size-4" />
-            Edit
+            {t('common.edit')}
           </Button>
           <Button
             variant="destructive"
@@ -152,7 +154,7 @@ export default function SupplierDetailPage() {
             disabled={isPending}
           >
             {isPending ? <Loader2 className="size-4 animate-spin" /> : <Trash className="size-4" />}
-            Delete
+            {t('common.delete')}
           </Button>
         </div>
       </header>
@@ -162,7 +164,7 @@ export default function SupplierDetailPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
           <Card>
             <CardHeader className="pb-1.5">
-              <CardTitle className="text-xs text-muted-foreground font-medium">Contact</CardTitle>
+              <CardTitle className="text-xs text-muted-foreground font-medium">{t('suppliers.contactInfo')}</CardTitle>
             </CardHeader>
             <CardContent>
               <p className="font-semibold">{supplier.contactName ?? '—'}</p>
@@ -172,26 +174,26 @@ export default function SupplierDetailPage() {
           </Card>
           <Card>
             <CardHeader className="pb-1.5">
-              <CardTitle className="text-xs text-muted-foreground font-medium">Code & Tax</CardTitle>
+              <CardTitle className="text-xs text-muted-foreground font-medium">{t('suppliers.codeAndTax')}</CardTitle>
             </CardHeader>
             <CardContent>
               <p className="font-semibold">{supplier.code ?? '—'}</p>
               <p className="text-xs text-muted-foreground">
-                Tax: {supplier.taxId ?? '—'} · CR: {supplier.crNumber ?? '—'}
+                {t('common.tax')}: {supplier.taxId ?? '—'} · {t('suppliers.crNumber')}: {supplier.crNumber ?? '—'}
               </p>
             </CardContent>
           </Card>
           <Card>
             <CardHeader className="pb-1.5">
-              <CardTitle className="text-xs text-muted-foreground font-medium">Payment Terms</CardTitle>
+              <CardTitle className="text-xs text-muted-foreground font-medium">{t('suppliers.paymentTerms')}</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="font-semibold">{supplier.paymentTermsDays} days</p>
+              <p className="font-semibold">{t('suppliers.paymentTermsDays', { days: supplier.paymentTermsDays })}</p>
             </CardContent>
           </Card>
           <Card>
             <CardHeader className="pb-1.5">
-              <CardTitle className="text-xs text-muted-foreground font-medium">Website</CardTitle>
+              <CardTitle className="text-xs text-muted-foreground font-medium">{t('common.website')}</CardTitle>
             </CardHeader>
             <CardContent>
               {supplier.website ? (
@@ -215,7 +217,7 @@ export default function SupplierDetailPage() {
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-semibold flex items-center justify-between">
-              <span>Purchase orders ({supplier._count?.purchaseOrders ?? 0})</span>
+              <span>{t('suppliers.purchaseOrders')} ({supplier._count?.purchaseOrders ?? 0})</span>
               <Button
                 variant="ghost"
                 size="sm"
@@ -223,7 +225,7 @@ export default function SupplierDetailPage() {
                 onClick={() => router.push(`/app/purchase-orders?supplierId=${supplier.id}`)}
               >
                 <Plus className="size-3" />
-                View all
+                {t('common.viewAll')}
               </Button>
             </CardTitle>
           </CardHeader>
@@ -231,10 +233,10 @@ export default function SupplierDetailPage() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Serial</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Date</TableHead>
-                  <TableHead className="text-right">Total</TableHead>
+                  <TableHead>{t('common.serial')}</TableHead>
+                  <TableHead>{t('common.status')}</TableHead>
+                  <TableHead>{t('common.date')}</TableHead>
+                  <TableHead className="text-right">{t('common.total')}</TableHead>
                   <TableHead className="w-10"></TableHead>
                 </TableRow>
               </TableHeader>
@@ -248,7 +250,7 @@ export default function SupplierDetailPage() {
                     <TableCell className="font-medium">{po.serial}</TableCell>
                     <TableCell>
                       <Badge variant="outline" className={STATUS_COLORS[po.status] ?? ''}>
-                        {po.status.replace(/_/g, ' ')}
+                        {t(`purchaseOrders.statuses.${po.status}`)}
                       </Badge>
                     </TableCell>
                     <TableCell className="text-sm text-muted-foreground">
@@ -267,7 +269,7 @@ export default function SupplierDetailPage() {
                 {purchaseOrders.length === 0 && (
                   <TableRow>
                     <TableCell colSpan={5} className="text-center text-muted-foreground py-6">
-                      No purchase orders yet
+                      {t('suppliers.noPurchaseOrders')}
                     </TableCell>
                   </TableRow>
                 )}
@@ -280,7 +282,7 @@ export default function SupplierDetailPage() {
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-semibold flex items-center justify-between">
-              <span>Items supplied ({supplier._count?.supplierItems ?? 0})</span>
+              <span>{t('suppliers.itemsSupplied')} ({supplier._count?.supplierItems ?? 0})</span>
               <Button
                 variant="ghost"
                 size="sm"
@@ -288,7 +290,7 @@ export default function SupplierDetailPage() {
                 onClick={() => openCreate(supplier.id)}
               >
                 <Plus className="size-3" />
-                Add item
+                {t('suppliers.addItem')}
               </Button>
             </CardTitle>
           </CardHeader>
@@ -296,11 +298,11 @@ export default function SupplierDetailPage() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Item</TableHead>
-                  <TableHead>SKU</TableHead>
-                  <TableHead>Supplier SKU</TableHead>
-                  <TableHead className="text-right">Base price</TableHead>
-                  <TableHead className="text-right">Lead time</TableHead>
+                  <TableHead>{t('common.item')}</TableHead>
+                  <TableHead>{t('common.sku')}</TableHead>
+                  <TableHead>{t('common.supplierSku')}</TableHead>
+                  <TableHead className="text-right">{t('common.basePrice')}</TableHead>
+                  <TableHead className="text-right">{t('common.leadTime')}</TableHead>
                   <TableHead className="w-20"></TableHead>
                 </TableRow>
               </TableHeader>
@@ -344,9 +346,9 @@ export default function SupplierDetailPage() {
                           className="size-7 text-destructive hover:text-destructive"
                           onClick={() =>
                             alert.delete({
-                              title: 'Remove item?',
-                              description: `Remove "${si.item?.name ?? si.item?.sku ?? si.id}" from this supplier?`,
-                              confirmText: 'Remove',
+                              title: t('common.confirmDelete'),
+                              description: t('suppliers.removeItemConfirm', { name: si.item?.name ?? si.item?.sku ?? si.id }),
+                              confirmText: t('common.remove'),
                               onConfirm: async () => {
                                 await deleteSupplierItemMutation.mutateAsync({ id: si.id });
                               },
@@ -362,7 +364,7 @@ export default function SupplierDetailPage() {
                 {supplierItems.length === 0 && (
                   <TableRow>
                     <TableCell colSpan={6} className="text-center text-muted-foreground py-6">
-                      No items linked to this supplier
+                      {t('suppliers.noSupplierItems')}
                     </TableCell>
                   </TableRow>
                 )}
@@ -375,7 +377,7 @@ export default function SupplierDetailPage() {
         {supplier.notes && (
           <Card>
             <CardHeader className="pb-1.5">
-              <CardTitle className="text-xs text-muted-foreground font-medium">Notes</CardTitle>
+              <CardTitle className="text-xs text-muted-foreground font-medium">{t('common.notes')}</CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-sm whitespace-pre-wrap">{supplier.notes}</p>
@@ -385,8 +387,8 @@ export default function SupplierDetailPage() {
 
         {/* Meta info */}
         <div className="text-xs text-muted-foreground flex flex-wrap gap-x-4 gap-y-1 pb-2">
-          <span>Created {supplier.createdAt ? format(new Date(supplier.createdAt), 'dd MMM yyyy HH:mm') : '—'}</span>
-          <span>Updated {supplier.updatedAt ? format(new Date(supplier.updatedAt), 'dd MMM yyyy HH:mm') : '—'}</span>
+          <span>{t('suppliers.created')} {supplier.createdAt ? format(new Date(supplier.createdAt), 'dd MMM yyyy HH:mm') : '—'}</span>
+          <span>{t('suppliers.updated')} {supplier.updatedAt ? format(new Date(supplier.updatedAt), 'dd MMM yyyy HH:mm') : '—'}</span>
         </div>
       </div>
 

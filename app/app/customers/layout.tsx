@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { Edit, Eye, Trash2, User2, Users } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
@@ -20,6 +21,7 @@ import { Customer_List_Item } from '@/components/customers/customer-list-item';
 const title = 'Customers';
 
 export default function CustomersLayout({ children }: { children?: React.ReactNode }) {
+  const t = useTranslations();
   const { openCreate, openEdit } = useCustomerForm();
   const utils = trpc.useUtils();
   const router = useRouter();
@@ -32,7 +34,7 @@ export default function CustomersLayout({ children }: { children?: React.ReactNo
   const deleteMutation = trpc.customers.delete.useMutation({
     onSuccess: () => {
       utils.customers.list.invalidate();
-      toast.success('Customer deleted');
+      toast.success(t('customers.customerDeleted'));
       if (activeItem) router.push('/app/customers');
     },
     onError: (e) => toast.error(e.message),
@@ -43,13 +45,13 @@ export default function CustomersLayout({ children }: { children?: React.ReactNo
       const menuItems: ContextMenuItemSchema[] = [
         {
           id: 'view',
-          label: 'View details',
+          label: t('common.viewDetails'),
           icon: Eye,
           onClick: () => router.push(`/app/customers/${item.id}`),
         },
         {
           id: 'edit',
-          label: 'Edit',
+          label: t('common.edit'),
           icon: Edit,
           onClick: () =>
             openEdit(
@@ -60,15 +62,15 @@ export default function CustomersLayout({ children }: { children?: React.ReactNo
         { id: 'sep1', type: 'separator' as const },
         {
           id: 'delete',
-          label: 'Delete',
+          label: t('common.delete'),
           icon: Trash2,
           destructive: true,
           disabled: deleteMutation.isPending,
           onClick: () =>
             alert.delete({
-              title: `Delete "${item.name}"?`,
-              description: 'This customer will be deactivated.',
-              confirmText: 'Delete',
+              title: t('common.confirmDelete'),
+              description: t('customers.deactivateConfirm'),
+              confirmText: t('common.delete'),
               onConfirm: async () => {
                 await deleteMutation.mutateAsync({ id: item.id });
               },
@@ -102,7 +104,7 @@ export default function CustomersLayout({ children }: { children?: React.ReactNo
 
   return (
     <div className="flex h-screen flex-col overflow-hidden">
-      <Header title={title} icon={<Users className="size-5" />} onCreate={() => openCreate()} createLabel="New Customer" />
+      <Header title={t('layout.customers')} icon={<Users className="size-5" />} onCreate={() => openCreate()} createLabel={t('customers.createCustomer')} />
       <div className="flex-1 min-h-0 w-full">
         <ResizablePanelGroup className="h-full">
           {(isListView || !isMobile) && (
@@ -116,8 +118,8 @@ export default function CustomersLayout({ children }: { children?: React.ReactNo
                     useTheme
                     searchFields={['name', 'phone', 'email']}
                     rowHeight={73}
-                    emptyTitle="No customers found"
-                    emptyDescription="Create your first customer to see them here."
+                    emptyTitle={t('customers.noCustomers')}
+                    emptyDescription={t('customers.createCustomer')}
                     emptyIcon={<User2 className="size-20 text-muted-foreground" />}
                     cardRenderer={renderCard}
                   />

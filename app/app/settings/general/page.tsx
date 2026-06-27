@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { Loader2 } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
@@ -8,6 +9,7 @@ import { trpc } from '@/lib/trpc/client';
 import { Field, SectionCard, type OrgData } from '../_shared';
 
 export default function GeneralSettingsPage() {
+  const t = useTranslations();
   const { data: rawOrg, isLoading } = trpc.settings.getOrg.useQuery();
   const utils = trpc.useUtils();
   const updateOrg = trpc.settings.updateOrg.useMutation({
@@ -27,7 +29,7 @@ export default function GeneralSettingsPage() {
   if (!org) {
     return (
       <p className="text-muted-foreground text-sm">
-        Could not load organization data.
+        {t('errors.generic')}
       </p>
     );
   }
@@ -42,6 +44,7 @@ function GeneralForm({
   org: OrgData;
   updateOrg: ReturnType<typeof trpc.settings.updateOrg.useMutation>;
 }) {
+  const t = useTranslations();
   const [form, setForm] = useState({
     name: org.name ?? '',
     phone: org.phone ?? '',
@@ -66,29 +69,29 @@ function GeneralForm({
   return (
     <div className="h-full space-y-6">
       <SectionCard
-        title="General Information"
-        description="Basic details about your organization."
+        title={t('settings.general')}
+        description={t('settings.organization')}
       >
-        <Field label="Organization Name">
+        <Field label={t('settings.organizationName')}>
           <Input
             value={form.name}
             onChange={(e) => setForm({ ...form, name: e.target.value })}
           />
         </Field>
-        <Field label="Phone">
+        <Field label={t('settings.organizationPhone')}>
           <Input
             value={form.phone}
             onChange={(e) => setForm({ ...form, phone: e.target.value })}
           />
         </Field>
-        <Field label="Email">
+        <Field label={t('settings.organizationEmail')}>
           <Input
             type="email"
             value={form.email}
             onChange={(e) => setForm({ ...form, email: e.target.value })}
           />
         </Field>
-        <Field label="Website">
+        <Field label={t('customers.website')}>
           <Input
             value={form.website}
             onChange={(e) => setForm({ ...form, website: e.target.value })}
@@ -96,14 +99,14 @@ function GeneralForm({
         </Field>
       </SectionCard>
 
-      <SectionCard title="Legal Information">
-        <Field label="Tax ID / VAT Number">
+      <SectionCard title={t('common.details')}>
+        <Field label={t('customers.taxId')}>
           <Input
             value={form.taxId}
             onChange={(e) => setForm({ ...form, taxId: e.target.value })}
           />
         </Field>
-        <Field label="CR Number">
+        <Field label={t('settings.crNumber')}>
           <Input
             value={form.crNumber}
             onChange={(e) => setForm({ ...form, crNumber: e.target.value })}
@@ -119,7 +122,7 @@ function GeneralForm({
           {updateOrg.isPending && (
             <Loader2 className="size-4 mr-2 animate-spin" />
           )}
-          Save Changes
+          {t('settings.saveSettings')}
         </Button>
       </div>
     </div>

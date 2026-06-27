@@ -14,6 +14,7 @@ import {
   History,
   ThumbsDown,
 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { useParams, useRouter } from 'next/navigation';
 import * as React from 'react';
 import { toast } from 'sonner';
@@ -69,6 +70,7 @@ export default function PurchaseOrderDetailPage() {
   const router = useRouter();
   const utils = trpc.useUtils();
   const { openEdit } = usePOForm();
+  const t = useTranslations();
 
   const {
     data: po,
@@ -93,14 +95,14 @@ export default function PurchaseOrderDetailPage() {
   const submitMutation = trpc.purchaseOrders.submitForApproval.useMutation({
     onSuccess: () => {
       invalidate();
-      toast.success('Submitted for approval');
+      toast.success(t('purchaseOrders.submittedForApproval'));
     },
     onError: (e) => toast.error(e.message),
   });
   const approveMutation = trpc.purchaseOrders.approve.useMutation({
     onSuccess: () => {
       invalidate();
-      toast.success('PO approved');
+      toast.success(t('purchaseOrders.poApproved'));
     },
     onError: (e) => toast.error(e.message),
   });
@@ -109,14 +111,14 @@ export default function PurchaseOrderDetailPage() {
       setRejectOpen(false);
       setRejectReason('');
       invalidate();
-      toast.success('PO rejected');
+      toast.success(t('purchaseOrders.poRejected'));
     },
     onError: (e) => toast.error(e.message),
   });
   const orderMutation = trpc.purchaseOrders.order.useMutation({
     onSuccess: () => {
       invalidate();
-      toast.success('PO placed — order sent to supplier');
+      toast.success(t('purchaseOrders.poPlaced'));
     },
     onError: (e) => toast.error(e.message),
   });
@@ -124,21 +126,21 @@ export default function PurchaseOrderDetailPage() {
     onSuccess: () => {
       setReceiveOpen(false);
       invalidate();
-      toast.success('Stock received');
+      toast.success(t('purchaseOrders.stockReceived'));
     },
     onError: (e) => toast.error(e.message),
   });
   const cancelMutation = trpc.purchaseOrders.cancel.useMutation({
     onSuccess: () => {
       invalidate();
-      toast.success('PO cancelled');
+      toast.success(t('purchaseOrders.poCancelled'));
     },
     onError: (e) => toast.error(e.message),
   });
   const deleteMutation = trpc.purchaseOrders.delete.useMutation({
     onSuccess: () => {
       utils.purchaseOrders.list.invalidate();
-      toast.success('PO deleted');
+      toast.success(t('purchaseOrders.poDeleted'));
       router.push('/app/purchase-orders');
     },
     onError: (e) => toast.error(e.message),
@@ -175,16 +177,16 @@ export default function PurchaseOrderDetailPage() {
             <EmptyMedia variant="icon">
               <ShoppingCart className="size-6" />
             </EmptyMedia>
-            <EmptyTitle>{isError ? 'Failed to load' : 'Not found'}</EmptyTitle>
+            <EmptyTitle>{isError ? t('common.failedToLoad') : t('common.notFound')}</EmptyTitle>
             <EmptyDescription>
-              {error?.message ?? 'This purchase order does not exist or has been deleted.'}
+              {error?.message ?? t('purchaseOrders.doesNotExist')}
             </EmptyDescription>
           </EmptyHeader>
           <div className="flex gap-2">
             <Button variant="outline" onClick={() => router.push('/app/purchase-orders')}>
-              <ArrowLeft className="size-4 mr-1" /> Back
+              <ArrowLeft className="size-4 mr-1" /> {t('common.back')}
             </Button>
-            {isError && <Button onClick={() => refetch()}>Retry</Button>}
+            {isError && <Button onClick={() => refetch()}>{t('common.retry')}</Button>}
           </div>
         </Empty>
       </div>
@@ -248,54 +250,54 @@ export default function PurchaseOrderDetailPage() {
   const actions: Action[] = [];
   if (po.status === 'DRAFT') {
     actions.push({
-      label: 'Submit for approval',
+      label: t('purchaseOrders.submitForApproval'),
       key: 'submit',
       icon: <Send className="size-4" />,
     });
     actions.push({
-      label: 'Edit',
+      label: t('common.edit'),
       key: 'edit',
       icon: <Edit className="size-4" />,
       variant: 'outline',
     });
     actions.push({
-      label: 'Delete',
+      label: t('common.delete'),
       key: 'delete',
       icon: <Trash className="size-4" />,
       variant: 'destructive',
     });
   } else if (po.status === 'PENDING_APPROVAL') {
-    actions.push({ label: 'Approve', key: 'approve', icon: <CheckCircle className="size-4" /> });
+    actions.push({ label: t('common.approve'), key: 'approve', icon: <CheckCircle className="size-4" /> });
     actions.push({
-      label: 'Reject',
+      label: t('common.reject'),
       key: 'reject',
       icon: <ThumbsDown className="size-4" />,
       variant: 'destructive',
       dialog: 'reject',
     });
     actions.push({
-      label: 'Cancel',
+      label: t('common.cancel'),
       key: 'cancel',
       icon: <XCircle className="size-4" />,
       variant: 'destructive',
     });
   } else if (po.status === 'APPROVED') {
-    actions.push({ label: 'Place order', key: 'order', icon: <FileDown className="size-4" /> });
+    actions.push({ label: t('purchaseOrders.placeOrder'), key: 'order', icon: <FileDown className="size-4" /> });
     actions.push({
-      label: 'Cancel',
+      label: t('common.cancel'),
       key: 'cancel',
       icon: <XCircle className="size-4" />,
       variant: 'destructive',
     });
   } else if (po.status === 'ORDERED' || po.status === 'PARTIAL_RECEIVED') {
     actions.push({
-      label: 'Receive stock',
+      label: t('purchaseOrders.receiveStock'),
       key: 'receive',
       icon: <Package className="size-4" />,
       dialog: 'receive',
     });
     actions.push({
-      label: 'Cancel',
+      label: t('common.cancel'),
       key: 'cancel',
       icon: <XCircle className="size-4" />,
       variant: 'destructive',
@@ -318,14 +320,14 @@ export default function PurchaseOrderDetailPage() {
           <ShoppingCart className="size-5 text-muted-foreground shrink-0" />
           <h1 className="text-xl font-semibold truncate">{po.serial}</h1>
           <Badge variant="outline" className={STATUS_COLORS[po.status] ?? ''}>
-            {po.status.replace(/_/g, ' ')}
+            {t(`purchaseOrders.statuses.${po.status}`)}
           </Badge>
           {po.approvalStatus === 'REJECTED' && (
             <Badge
               variant="outline"
               className="bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200"
             >
-              Rejected
+              {t('common.rejected')}
             </Badge>
           )}
         </div>
@@ -334,7 +336,7 @@ export default function PurchaseOrderDetailPage() {
             {actions.map(({ label, key, icon, variant = 'default', dialog }) =>
               key === 'edit' ? (
                 <Button key={key} variant={variant} size="sm" onClick={handleEdit} disabled={isPending}>
-                  <Edit className="size-4 mr-1" /> Edit
+                  <Edit className="size-4 mr-1" /> {label}
                 </Button>
               ) : dialog === 'receive' ? (
                 <Button
@@ -344,7 +346,7 @@ export default function PurchaseOrderDetailPage() {
                   onClick={() => setReceiveOpen(true)}
                   disabled={isPending}
                 >
-                  <Package className="size-4 mr-1" /> Receive stock
+                  <Package className="size-4 mr-1" /> {label}
                 </Button>
               ) : dialog === 'reject' ? (
                 <Button
@@ -354,7 +356,7 @@ export default function PurchaseOrderDetailPage() {
                   onClick={() => setRejectOpen(true)}
                   disabled={isPending}
                 >
-                  <ThumbsDown className="size-4 mr-1" /> Reject
+                  <ThumbsDown className="size-4 mr-1" /> {label}
                 </Button>
               ) : (
                 <Button
@@ -362,7 +364,7 @@ export default function PurchaseOrderDetailPage() {
                   variant={variant}
                   size="sm"
                   onClick={() =>
-                    handleConfirmAction(key, `Are you sure you want to ${label.toLowerCase()}?`)
+                    handleConfirmAction(key, t('purchaseOrders.confirmAction', { action: label.toLowerCase() }))
                   }
                   disabled={isPending}
                 >
@@ -381,7 +383,7 @@ export default function PurchaseOrderDetailPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
           <Card>
             <CardHeader className="pb-1.5">
-              <CardTitle className="text-xs text-muted-foreground font-medium">Supplier</CardTitle>
+              <CardTitle className="text-xs text-muted-foreground font-medium">{t('purchaseOrders.supplier')}</CardTitle>
             </CardHeader>
             <CardContent>
               <p className="font-semibold">{po.supplier?.name ?? '—'}</p>
@@ -393,7 +395,7 @@ export default function PurchaseOrderDetailPage() {
           </Card>
           <Card>
             <CardHeader className="pb-1.5">
-              <CardTitle className="text-xs text-muted-foreground font-medium">Warehouse</CardTitle>
+              <CardTitle className="text-xs text-muted-foreground font-medium">{t('purchaseOrders.warehouse')}</CardTitle>
             </CardHeader>
             <CardContent>
               <p className="font-semibold">{po.warehouse?.name ?? '—'}</p>
@@ -401,7 +403,7 @@ export default function PurchaseOrderDetailPage() {
           </Card>
           <Card>
             <CardHeader className="pb-1.5">
-              <CardTitle className="text-xs text-muted-foreground font-medium">Date</CardTitle>
+              <CardTitle className="text-xs text-muted-foreground font-medium">{t('common.date')}</CardTitle>
             </CardHeader>
             <CardContent>
               <p className="font-semibold">
@@ -412,7 +414,7 @@ export default function PurchaseOrderDetailPage() {
           <Card>
             <CardHeader className="pb-1.5">
               <CardTitle className="text-xs text-muted-foreground font-medium">
-                Expected date
+                {t('purchaseOrders.expectedDate')}
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -426,18 +428,18 @@ export default function PurchaseOrderDetailPage() {
         {/* Line items table */}
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-semibold">Line items</CardTitle>
+            <CardTitle className="text-sm font-semibold">{t('purchaseOrders.lineItems')}</CardTitle>
           </CardHeader>
           <CardContent className="p-0">
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="w-[32%]">Item</TableHead>
-                  <TableHead className="text-right">Ordered</TableHead>
-                  <TableHead className="text-right">Received</TableHead>
-                  <TableHead className="text-right">Remaining</TableHead>
-                  <TableHead className="text-right">Unit cost</TableHead>
-                  <TableHead className="text-right">Total</TableHead>
+                  <TableHead className="w-[32%]">{t('common.item')}</TableHead>
+                  <TableHead className="text-right">{t('common.ordered')}</TableHead>
+                  <TableHead className="text-right">{t('common.received')}</TableHead>
+                  <TableHead className="text-right">{t('common.remaining')}</TableHead>
+                  <TableHead className="text-right">{t('common.unitCost')}</TableHead>
+                  <TableHead className="text-right">{t('common.total')}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -473,7 +475,7 @@ export default function PurchaseOrderDetailPage() {
                 {po.lines.length === 0 && (
                   <TableRow>
                     <TableCell colSpan={6} className="text-center text-muted-foreground py-6">
-                      No line items
+                      {t('purchaseOrders.noLineItems')}
                     </TableCell>
                   </TableRow>
                 )}
@@ -488,23 +490,23 @@ export default function PurchaseOrderDetailPage() {
             <div className="flex justify-end">
               <div className="w-64 space-y-1 text-sm">
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Subtotal</span>
+                  <span className="text-muted-foreground">{t('common.subtotal')}</span>
                   <span>{Number(po.subtotal).toFixed(3)}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Tax</span>
+                  <span className="text-muted-foreground">{t('common.tax')}</span>
                   <span>{Number(po.taxTotal).toFixed(3)}</span>
                 </div>
                 <Separator />
                 <div className="flex justify-between font-bold text-base">
-                  <span>Total</span>
+                  <span>{t('common.total')}</span>
                   <span>
                     {Number(po.total).toFixed(3)} {po.currency}
                   </span>
                 </div>
                 {Number(po.amountOwed) > 0 && (
                   <div className="flex justify-between text-destructive font-medium">
-                    <span>Amount owed</span>
+                    <span>{t('common.amountOwed')}</span>
                     <span>
                       {Number(po.amountOwed).toFixed(3)} {po.currency}
                     </span>
@@ -519,7 +521,7 @@ export default function PurchaseOrderDetailPage() {
         {po.notes && (
           <Card>
             <CardHeader className="pb-1.5">
-              <CardTitle className="text-xs text-muted-foreground font-medium">Notes</CardTitle>
+              <CardTitle className="text-xs text-muted-foreground font-medium">{t('common.notes')}</CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-sm whitespace-pre-wrap">{po.notes}</p>
@@ -532,18 +534,18 @@ export default function PurchaseOrderDetailPage() {
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-semibold flex items-center gap-2">
-                <History className="size-4" /> Stock movements
+                <History className="size-4" /> {t('stock.movements')}
               </CardTitle>
             </CardHeader>
             <CardContent className="p-0">
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Date</TableHead>
-                    <TableHead>Item</TableHead>
-                    <TableHead className="text-right">Quantity</TableHead>
-                    <TableHead>Warehouse</TableHead>
-                    <TableHead>By</TableHead>
+                    <TableHead>{t('common.date')}</TableHead>
+                    <TableHead>{t('common.item')}</TableHead>
+                    <TableHead className="text-right">{t('common.quantity')}</TableHead>
+                    <TableHead>{t('common.warehouse')}</TableHead>
+                    <TableHead>{t('common.by')}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -576,15 +578,17 @@ export default function PurchaseOrderDetailPage() {
         {/* Meta info */}
         <div className="text-xs text-muted-foreground flex flex-wrap gap-x-4 gap-y-1 pb-2">
           <span>
-            Created by {po.createdBy?.name ?? '—'} on{' '}
-            {po.createdAt ? format(new Date(po.createdAt), 'dd MMM yyyy HH:mm') : '—'}
+            {t('purchaseOrders.metaCreated', {
+              name: po.createdBy?.name ?? '—',
+              date: po.createdAt ? format(new Date(po.createdAt), 'dd MMM yyyy HH:mm') : '—',
+            })}
           </span>
-          <span>Version {po.version}</span>
+          <span>{t('purchaseOrders.metaVersion', { version: po.version })}</span>
           {po.receivedAt && (
-            <span>Received on {format(new Date(po.receivedAt), 'dd MMM yyyy HH:mm')}</span>
+            <span>{t('purchaseOrders.metaReceivedOn', { date: format(new Date(po.receivedAt), 'dd MMM yyyy HH:mm') })}</span>
           )}
           {po.cancelledAt && (
-            <span>Cancelled on {format(new Date(po.cancelledAt), 'dd MMM yyyy HH:mm')}</span>
+            <span>{t('purchaseOrders.metaCancelledOn', { date: format(new Date(po.cancelledAt), 'dd MMM yyyy HH:mm') })}</span>
           )}
         </div>
       </div>
@@ -607,14 +611,14 @@ export default function PurchaseOrderDetailPage() {
       >
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Reject purchase order</DialogTitle>
-            <DialogDescription>Provide a reason for rejecting {po.serial}.</DialogDescription>
+            <DialogTitle>{t('purchaseOrders.rejectTitle')}</DialogTitle>
+            <DialogDescription>{t('purchaseOrders.rejectDesc', { serial: po.serial })}</DialogDescription>
           </DialogHeader>
           <div className="space-y-3">
-            <Label htmlFor="reject-reason">Reason</Label>
+            <Label htmlFor="reject-reason">{t('common.reason')}</Label>
             <Textarea
               id="reject-reason"
-              placeholder="Why is this PO being rejected?"
+              placeholder={t('purchaseOrders.rejectPlaceholder')}
               value={rejectReason}
               onChange={(e) => setRejectReason(e.target.value)}
               rows={3}
@@ -629,7 +633,7 @@ export default function PurchaseOrderDetailPage() {
               }}
               disabled={rejectMutation.isPending}
             >
-              Cancel
+              {t('common.cancel')}
             </Button>
             <Button
               variant="destructive"
@@ -639,7 +643,7 @@ export default function PurchaseOrderDetailPage() {
               disabled={rejectMutation.isPending}
             >
               {rejectMutation.isPending && <Loader2 className="size-4 mr-1 animate-spin" />}
-              Reject PO
+              {t('purchaseOrders.rejectPO')}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -663,6 +667,7 @@ function ReceiveDialog({
   onConfirm: () => void;
   isPending: boolean;
 }) {
+  const tr = useTranslations();
   const remaining = lines.filter((l: any) => Number(l.quantity) > Number(l.receivedQty));
   const allAlreadyReceived = remaining.length === 0;
 
@@ -670,11 +675,11 @@ function ReceiveDialog({
     <Dialog open={open} onOpenChange={(v) => !isPending && onOpenChange(v)}>
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>Receive stock</DialogTitle>
+          <DialogTitle>{tr('purchaseOrders.receiveStock')}</DialogTitle>
           <DialogDescription>
             {allAlreadyReceived
-              ? 'All line items have already been fully received.'
-              : `${remaining.length} line item${remaining.length > 1 ? 's' : ''} pending receipt.`}
+              ? tr('purchaseOrders.allReceived')
+              : tr('purchaseOrders.pendingReceipt', { count: remaining.length })}
           </DialogDescription>
         </DialogHeader>
 
@@ -683,10 +688,10 @@ function ReceiveDialog({
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Item</TableHead>
-                  <TableHead className="text-right">Ordered</TableHead>
-                  <TableHead className="text-right">Received</TableHead>
-                  <TableHead className="text-right">To receive</TableHead>
+                  <TableHead>{tr('common.item')}</TableHead>
+                  <TableHead className="text-right">{tr('common.ordered')}</TableHead>
+                  <TableHead className="text-right">{tr('common.received')}</TableHead>
+                  <TableHead className="text-right">{tr('common.toReceive')}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -718,13 +723,15 @@ function ReceiveDialog({
 
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isPending}>
-            Cancel
+            {tr('common.cancel')}
           </Button>
           <Button onClick={onConfirm} disabled={isPending || allAlreadyReceived}>
             {isPending && <Loader2 className="size-4 mr-1 animate-spin" />}
             {allAlreadyReceived
-              ? 'Close'
-              : `Receive all (${remaining.reduce((s: number, l: any) => s + Number(l.quantity) - Number(l.receivedQty), 0).toFixed(3)})`}
+              ? tr('common.close')
+              : tr('purchaseOrders.receiveAll', {
+                  qty: remaining.reduce((s: number, l: any) => s + Number(l.quantity) - Number(l.receivedQty), 0).toFixed(3),
+                })}
           </Button>
         </DialogFooter>
       </DialogContent>

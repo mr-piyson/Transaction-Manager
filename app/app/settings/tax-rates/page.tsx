@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { Loader2, Plus, Trash } from 'lucide-react';
 import { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
@@ -10,6 +11,7 @@ import { trpc } from '@/lib/trpc/client';
 import { SectionCard } from '../_shared';
 
 export default function TaxRatesPage() {
+  const t = useTranslations();
   const { data: rawTaxRates = [], isLoading } =
     trpc.settings.taxRates.list.useQuery();
   const utils = trpc.useUtils();
@@ -23,9 +25,9 @@ export default function TaxRatesPage() {
   const [newTaxName, setNewTaxName] = useState('');
   const [newTaxRate, setNewTaxRate] = useState('');
 
-  const taxRates = (rawTaxRates as unknown as { id: string; name: string; rate: number; isDefault: boolean; isActive: boolean }[]).map((t) => ({
-    ...t,
-    rate: Number(t.rate),
+  const taxRates = (rawTaxRates as unknown as { id: string; name: string; rate: number; isDefault: boolean; isActive: boolean }[]).map((tax) => ({
+    ...tax,
+    rate: Number(tax.rate),
   }));
 
   const handleAdd = () => {
@@ -44,8 +46,8 @@ export default function TaxRatesPage() {
   return (
     <div className="h-full space-y-6">
       <SectionCard
-        title="Tax Rates"
-        description="Manage sales tax rates for your organization."
+        title={t('settings.defaultTaxRate')}
+        description={t('common.description')}
       >
         {isLoading ? (
           <div className="flex justify-center py-8">
@@ -53,7 +55,7 @@ export default function TaxRatesPage() {
           </div>
         ) : taxRates.length === 0 ? (
           <p className="text-sm text-muted-foreground py-4 text-center">
-            No tax rates configured yet.
+            {t('common.noResults')}
           </p>
         ) : (
           <div className="space-y-2">
@@ -67,12 +69,12 @@ export default function TaxRatesPage() {
                   <Badge variant="outline">{tax.rate}%</Badge>
                   {tax.isDefault && (
                     <Badge variant="secondary" className="text-xs">
-                      Default
+                      {t('common.default')}
                     </Badge>
                   )}
                   {!tax.isActive && (
                     <Badge variant="destructive" className="text-xs">
-                      Inactive
+                      {t('common.inactive')}
                     </Badge>
                   )}
                 </div>
@@ -92,18 +94,18 @@ export default function TaxRatesPage() {
         <Separator />
 
         <div className="space-y-3">
-          <p className="text-sm font-medium">Add Tax Rate</p>
+          <p className="text-sm font-medium">{t('common.addItem')}</p>
           <div className="flex gap-3">
             <div className="flex-1">
               <Input
-                placeholder="Name (e.g. VAT)"
+                placeholder={t('common.name')}
                 value={newTaxName}
                 onChange={(e) => setNewTaxName(e.target.value)}
               />
             </div>
             <div className="w-24">
               <Input
-                placeholder="Rate"
+                placeholder={t('common.percentage')}
                 type="number"
                 min={0}
                 max={100}
@@ -116,7 +118,7 @@ export default function TaxRatesPage() {
               disabled={!newTaxName || !newTaxRate || createTaxRate.isPending}
             >
               <Plus className="size-4 mr-1" />
-              Add
+              {t('common.addItem')}
             </Button>
           </div>
         </div>

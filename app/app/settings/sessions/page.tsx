@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { LogOut, Monitor, Smartphone, Trash, Globe, Loader2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useSession } from '@/auth/auth-client';
@@ -17,33 +18,6 @@ interface SessionData {
   userAgent: string | null;
 }
 
-function parseDeviceInfo(ua: string | null): { icon: typeof Monitor; label: string; os: string } {
-  if (!ua) return { icon: Globe, label: 'Unknown', os: '' };
-  const lower = ua.toLowerCase();
-  const isMobile = /mobile|android|iphone|ipad/i.test(lower);
-  const isMac = /mac/i.test(lower);
-  const isWindows = /windows/i.test(lower);
-  const isLinux = /linux/i.test(lower);
-
-  let os = '';
-  if (isMac) os = 'macOS';
-  else if (isWindows) os = 'Windows';
-  else if (isLinux) os = 'Linux';
-  else if (/android/i.test(lower)) os = 'Android';
-  else if (/iphone|ipad/i.test(lower)) os = 'iOS';
-
-  const browser = /chrome/i.test(lower) ? 'Chrome' :
-    /firefox/i.test(lower) ? 'Firefox' :
-    /safari/i.test(lower) ? 'Safari' :
-    /edge/i.test(lower) ? 'Edge' : '';
-
-  return {
-    icon: isMobile ? Smartphone : Monitor,
-    label: [browser, os].filter(Boolean).join(' · ') || 'Unknown',
-    os,
-  };
-}
-
 function formatTime(dateStr: string) {
   const d = new Date(dateStr);
   return d.toLocaleString(undefined, {
@@ -53,6 +27,35 @@ function formatTime(dateStr: string) {
 }
 
 export default function SessionsSettingsPage() {
+  const t = useTranslations();
+
+  function parseDeviceInfo(ua: string | null): { icon: typeof Monitor; label: string; os: string } {
+    if (!ua) return { icon: Globe, label: t('common.unknown'), os: '' };
+    const lower = ua.toLowerCase();
+    const isMobile = /mobile|android|iphone|ipad/i.test(lower);
+    const isMac = /mac/i.test(lower);
+    const isWindows = /windows/i.test(lower);
+    const isLinux = /linux/i.test(lower);
+
+    let os = '';
+    if (isMac) os = t('sessions.osMacos');
+    else if (isWindows) os = t('sessions.osWindows');
+    else if (isLinux) os = t('sessions.osLinux');
+    else if (/android/i.test(lower)) os = t('sessions.osAndroid');
+    else if (/iphone|ipad/i.test(lower)) os = t('sessions.osiOs');
+
+    const browser = /chrome/i.test(lower) ? t('sessions.browserChrome') :
+      /firefox/i.test(lower) ? t('sessions.browserFirefox') :
+      /safari/i.test(lower) ? t('sessions.browserSafari') :
+      /edge/i.test(lower) ? t('sessions.browserEdge') : '';
+
+    return {
+      icon: isMobile ? Smartphone : Monitor,
+      label: [browser, os].filter(Boolean).join(' · ') || t('common.unknown'),
+      os,
+    };
+  }
+
   const { data: sessionsData, isLoading, refetch } =
     trpc.auth.listSessions.useQuery();
   const revokeSession = trpc.auth.revokeSession.useMutation({
@@ -80,8 +83,8 @@ export default function SessionsSettingsPage() {
   return (
     <div className="h-full space-y-6">
       <SectionCard
-        title="Active Sessions"
-        description="Manage devices and sessions logged into your account."
+        title={t('settings.notifications')}
+        description={t('common.details')}
       >
         {isLoading ? (
           <div className="flex justify-center py-8">
@@ -104,24 +107,24 @@ export default function SessionsSettingsPage() {
                       <div className="flex items-center gap-2 flex-wrap">
                         <p className="font-medium">
                           {parseDeviceInfo(currentSession.userAgent).label ||
-                            'Current Device'}
+                            t('common.active')}
                         </p>
                         <Badge
                           variant="default"
                           className="text-xs whitespace-nowrap"
                         >
-                          Current
+                          {t('common.active')}
                         </Badge>
                       </div>
                       <p className="text-sm text-muted-foreground truncate">
                         {currentSession.ipAddress
-                          ? `IP: ${currentSession.ipAddress}`
+                          ? t('sessions.ipLabel', { ip: currentSession.ipAddress })
                           : ''}
                       </p>
                       <p className="text-xs text-muted-foreground">
                         {formatTime(currentSession.createdAt)}
                         {currentSession.expiresAt &&
-                          ` · Expires ${formatTime(currentSession.expiresAt)}`}
+                          t('sessions.expiresLabel', { date: formatTime(currentSession.expiresAt) })}
                       </p>
                     </div>
                   </div>
@@ -131,7 +134,7 @@ export default function SessionsSettingsPage() {
 
             {otherSessions.length === 0 && currentSession && (
               <p className="text-sm text-muted-foreground text-center py-4">
-                No other active sessions.
+                {t('common.noResults')}
               </p>
             )}
 
@@ -147,17 +150,17 @@ export default function SessionsSettingsPage() {
                     <Icon className="size-5 mt-0.5 shrink-0" />
                     <div className="min-w-0">
                       <p className="font-medium truncate">
-                        {info.label || 'Unknown Device'}
+                        {info.label || t('common.notSpecified')}
                       </p>
                       <p className="text-sm text-muted-foreground truncate">
                         {session.ipAddress
-                          ? `IP: ${session.ipAddress}`
+                          ? t('sessions.ipLabel', { ip: session.ipAddress })
                           : ''}
                       </p>
                       <p className="text-xs text-muted-foreground">
                         {formatTime(session.createdAt)}
                         {session.expiresAt &&
-                          ` · Expires ${formatTime(session.expiresAt)}`}
+                          t('sessions.expiresLabel', { date: formatTime(session.expiresAt) })}
                       </p>
                     </div>
                   </div>
@@ -171,7 +174,7 @@ export default function SessionsSettingsPage() {
                     className="shrink-0"
                   >
                     <Trash className="size-4 mr-1" />
-                    Revoke
+                    {t('common.delete')}
                   </Button>
                 </div>
               );
@@ -186,7 +189,7 @@ export default function SessionsSettingsPage() {
                   disabled={isLoadingMutation}
                 >
                   <LogOut className="size-4 mr-1" />
-                  Revoke all other sessions
+                  {t('common.delete')}
                 </Button>
               </div>
             )}

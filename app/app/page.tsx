@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import React from 'react';
 import { Header } from '@/app/app/App-Header';
 import { Badge } from '@/components/ui/badge';
@@ -99,6 +100,7 @@ function WorkflowStep({
   stats?: { label: string; value: string }[];
   isLast?: boolean;
 }) {
+  const t = useTranslations();
   return (
     <div className="flex items-start gap-4 mb-4 relative">
       {/* Step number + connecting line */}
@@ -136,7 +138,7 @@ function WorkflowStep({
             </div>
             {action && (
               <Button size="sm" className="shrink-0 gap-1.5" onClick={action}>
-                {actionLabel ?? 'Go'} <ArrowRight className="size-3.5" />
+                {actionLabel ?? t('common.go')} <ArrowRight className="size-3.5" />
               </Button>
             )}
           </div>
@@ -150,6 +152,7 @@ function WorkflowStep({
 
 export default function App_Page() {
   const router = useRouter();
+  const t = useTranslations();
   const { data: sessionData } = trpc.auth.session.useQuery();
   const { data: summary } = trpc.reports.summary.useQuery();
   const { format: currencyFormat, symbol } = useCurrency();
@@ -178,7 +181,7 @@ export default function App_Page() {
 
   return (
     <div className="flex flex-col min-h-screen bg-gradient-to-b from-background to-muted/20 pb-12">
-      <Header title="Dashboard" />
+      <Header title={t('dashboard.title')} />
 
       <main className="flex-1 p-4 lg:p-8 space-y-8 max-w-360 mx-auto w-full">
         {/* Welcome Banner */}
@@ -187,17 +190,15 @@ export default function App_Page() {
           <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
               <h1 className="text-2xl lg:text-3xl font-bold tracking-tight">
-                Good{' '}
                 {new Date().getHours() < 12
-                  ? 'morning'
+                  ? t('dashboard.greetingMorning')
                   : new Date().getHours() < 17
-                    ? 'afternoon'
-                    : 'evening'}
+                    ? t('dashboard.greetingAfternoon')
+                    : t('dashboard.greetingEvening')}
                 {sessionData?.user?.name ? `, ${sessionData.user.name.split(' ')[0]}` : ''}
               </h1>
               <p className="text-primary-foreground/80 mt-1 text-sm lg:text-base max-w-xl">
-                Here&apos;s your business overview for {format(new Date(), 'EEEE, MMMM do, yyyy')}.
-                Track purchases, inventory, and sales in one place.
+                {t('dashboard.greetingDescription')}
               </p>
             </div>
             <div className="flex gap-2 shrink-0">
@@ -207,7 +208,7 @@ export default function App_Page() {
                 className="gap-1.5 bg-white/20 text-white hover:bg-white/30 border-0"
                 onClick={() => router.push('/app/purchase-orders/new')}
               >
-                <Plus className="size-4" /> New PO
+                <Plus className="size-4" /> {t('dashboard.newPO')}
               </Button>
               <Button
                 variant="secondary"
@@ -215,7 +216,7 @@ export default function App_Page() {
                 className="gap-1.5 bg-white/20 text-white hover:bg-white/30 border-0"
                 onClick={() => router.push('/app/invoices/new')}
               >
-                <Receipt className="size-4" /> New Invoice
+                <Receipt className="size-4" /> {t('dashboard.newInvoice')}
               </Button>
             </div>
           </div>
@@ -225,53 +226,53 @@ export default function App_Page() {
         <section>
           <div className="flex items-center gap-2 mb-5">
             <BarChart3 className="size-5 text-primary" />
-            <h2 className="text-lg font-bold tracking-tight">Procure-to-Sell Workflow</h2>
+            <h2 className="text-lg font-bold tracking-tight">{t('dashboard.procureToSell')}</h2>
           </div>
           <div className="space-y-0">
             <WorkflowStep
               step={1}
-              title="Create a Purchase Order"
-              description="Order stock from your suppliers. Define items, quantities, and negotiated prices. Once approved, the PO is sent to the supplier."
+              title={t('dashboard.step1Title')}
+              description={t('dashboard.step1Desc')}
               icon={<ShoppingCart className="size-5" />}
               action={() => router.push('/app/purchase-orders/new')}
-              actionLabel="New PO"
+              actionLabel={t('dashboard.newPO')}
               stats={[
-                { label: 'pending', value: String(pendingPOs) },
-                { label: 'total POs', value: String(summary?.purchases.count ?? 0) },
+                { label: t('dashboard.step1StatsPending'), value: String(pendingPOs) },
+                { label: t('dashboard.step1StatsTotalPOs'), value: String(summary?.purchases.count ?? 0) },
                 {
-                  label: 'value',
+                  label: t('dashboard.step1StatsValue'),
                   value: summary ? currencyFormat(summary.purchases.total) : '—',
                 },
               ]}
             />
             <WorkflowStep
               step={2}
-              title="Receive Stock"
-              description="When goods arrive, mark them as received. Stock is automatically updated in your warehouse and inventory levels are adjusted."
+              title={t('dashboard.step2Title')}
+              description={t('dashboard.step2Desc')}
               icon={<Package className="size-5" />}
               action={() => router.push('/app/purchase-orders')}
-              actionLabel="Receive"
+              actionLabel={t('common.receive')}
               stats={[
-                { label: 'awaiting receipt', value: String(orderedPOs) },
-                { label: 'received', value: String(receivedPOs) },
-                { label: 'items in stock', value: String(summary?.inventory.itemCount ?? 0) },
+                { label: t('dashboard.step2StatsAwaiting'), value: String(orderedPOs) },
+                { label: t('dashboard.step2StatsReceived'), value: String(receivedPOs) },
+                { label: t('dashboard.step2StatsInStock'), value: String(summary?.inventory.itemCount ?? 0) },
               ]}
             />
             <WorkflowStep
               step={3}
-              title="Sell to Customers with Margin"
-              description="Create an invoice for a customer using items from stock. Your configured sales price (with margin) is applied automatically, and stock is deducted on confirmation."
+              title={t('dashboard.step3Title')}
+              description={t('dashboard.step3Desc')}
               icon={<Receipt className="size-5" />}
               action={() => router.push('/app/invoices')}
-              actionLabel="New Invoice"
+              actionLabel={t('dashboard.newInvoice')}
               stats={[
-                { label: 'invoiced', value: String(summary?.revenue.count ?? 0) },
+                { label: t('dashboard.step3StatsInvoiced'), value: String(summary?.revenue.count ?? 0) },
                 {
-                  label: 'revenue',
+                  label: t('dashboard.step3StatsRevenue'),
                   value: summary ? currencyFormat(summary.revenue.total) : '—',
                 },
                 {
-                  label: 'outstanding',
+                  label: t('dashboard.step3StatsOutstanding'),
                   value: summary ? currencyFormat(summary.outstanding.total) : '—',
                 },
               ]}
@@ -284,35 +285,35 @@ export default function App_Page() {
         <section>
           <div className="flex items-center gap-2 mb-5">
             <BarChart3 className="size-5 text-primary" />
-            <h2 className="text-lg font-bold tracking-tight">Key Metrics</h2>
+            <h2 className="text-lg font-bold tracking-tight">{t('dashboard.keyMetrics')}</h2>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-3">
             <StatCard
-              title="Inventory"
+              title={t('dashboard.inventory')}
               value={String(summary?.inventory.itemCount ?? 0)}
-              sub={`${summary?.inventory.lowStockCount ?? 0} low stock items`}
+              sub={t('dashboard.lowStockItems', { n: summary?.inventory.lowStockCount ?? 0 })}
               icon={<Box className="size-4" />}
               trend={
                 summary?.inventory.lowStockCount
                   ? {
                       dir: 'down',
-                      label: `${summary.inventory.lowStockCount} items need reordering`,
+                      label: t('dashboard.needsReordering', { n: summary.inventory.lowStockCount }),
                     }
                   : undefined
               }
               href="/app/items"
             />
             <StatCard
-              title="Customers"
+              title={t('dashboard.customers')}
               value={String(summary?.customers.activeCount ?? 0)}
-              sub="active accounts"
+              sub={t('dashboard.activeAccounts')}
               icon={<Users className="size-4" />}
               href="/app/customers"
             />
             <StatCard
-              title="Suppliers"
+              title={t('dashboard.suppliers')}
               value={String(summary?.suppliers.activeCount ?? 0)}
-              sub="active vendors"
+              sub={t('dashboard.activeVendors')}
               icon={<Truck className="size-4" />}
               href="/app/suppliers"
             />
@@ -326,9 +327,9 @@ export default function App_Page() {
             <CardHeader className="pb-3 flex flex-row items-center justify-between">
               <div>
                 <CardTitle className="text-sm font-bold flex items-center gap-2">
-                  <ClipboardList className="size-4 text-primary" /> Recent Purchase Orders
+                  <ClipboardList className="size-4 text-primary" /> {t('dashboard.recentPOs')}
                 </CardTitle>
-                <CardDescription>Latest 5 purchase orders</CardDescription>
+                <CardDescription>{t('dashboard.recentPOsDesc')}</CardDescription>
               </div>
               <Button
                 variant="ghost"
@@ -336,16 +337,16 @@ export default function App_Page() {
                 className="text-xs gap-1"
                 onClick={() => router.push('/app/purchase-orders')}
               >
-                View all <ArrowRight className="size-3" />
+                {t('dashboard.viewAll')} <ArrowRight className="size-3" />
               </Button>
             </CardHeader>
             <CardContent className="p-0">
               {poList.length === 0 ? (
                 <div className="flex flex-col items-center py-8 text-muted-foreground">
                   <ShoppingCart className="size-8 mb-2 opacity-30" />
-                  <p className="text-sm">No purchase orders yet</p>
+                  <p className="text-sm">{t('dashboard.noPOs')}</p>
                   <Button variant="link" size="sm" onClick={() => router.push('/app/purchase-orders/new')} className="mt-1">
-                    Create your first PO
+                    {t('dashboard.createFirstPO')}
                   </Button>
                 </div>
               ) : (
@@ -386,9 +387,9 @@ export default function App_Page() {
             <CardHeader className="pb-3 flex flex-row items-center justify-between">
               <div>
                 <CardTitle className="text-sm font-bold flex items-center gap-2">
-                  <Receipt className="size-4 text-primary" /> Recent Invoices
+                  <Receipt className="size-4 text-primary" /> {t('dashboard.recentInvoices')}
                 </CardTitle>
-                <CardDescription>Latest 5 invoices</CardDescription>
+                <CardDescription>{t('dashboard.recentInvoicesDesc')}</CardDescription>
               </div>
               <Button
                 variant="ghost"
@@ -396,21 +397,21 @@ export default function App_Page() {
                 className="text-xs gap-1"
                 onClick={() => router.push('/app/invoices')}
               >
-                View all <ArrowRight className="size-3" />
+                {t('dashboard.viewAll')} <ArrowRight className="size-3" />
               </Button>
             </CardHeader>
             <CardContent className="p-0">
               {invoiceList.length === 0 ? (
                 <div className="flex flex-col items-center py-8 text-muted-foreground">
                   <Receipt className="size-8 mb-2 opacity-30" />
-                  <p className="text-sm">No invoices yet</p>
+                  <p className="text-sm">{t('dashboard.noInvoices')}</p>
                   <Button
                     variant="link"
                     size="sm"
                     className="mt-1"
                     onClick={() => router.push('/app/invoices')}
                   >
-                    Create your first invoice
+                    {t('dashboard.createFirstInvoice')}
                   </Button>
                 </div>
               ) : (
@@ -451,7 +452,7 @@ export default function App_Page() {
           <section>
             <div className="flex items-center gap-2 mb-5">
               <TrendingUp className="size-5 text-primary" />
-              <h2 className="text-lg font-bold tracking-tight">Top Selling Items</h2>
+              <h2 className="text-lg font-bold tracking-tight">{t('dashboard.topSellingItems')}</h2>
             </div>
             <Card>
               <CardContent className="p-0">
@@ -468,11 +469,11 @@ export default function App_Page() {
                       <div className="flex-1 min-w-0">
                         <p className="font-medium text-sm truncate">{item.name}</p>
                         <p className="text-xs text-muted-foreground">
-                          {item.sku ?? '—'} · {currencyFormat(item.salesPrice)}/unit
+                          {item.sku ?? '—'} · {currencyFormat(item.salesPrice)}{t('dashboard.perUnit')}
                         </p>
                       </div>
                       <div className="text-right shrink-0">
-                        <p className="text-sm font-semibold">{item.totalSold.toFixed(0)} sold</p>
+                        <p className="text-sm font-semibold">{item.totalSold.toFixed(0)} {t('dashboard.sold')}</p>
                         <p className="text-xs text-muted-foreground">
                           {currencyFormat(item.totalRevenue)}
                         </p>
@@ -489,27 +490,27 @@ export default function App_Page() {
         <Separator />
         <div className="flex flex-wrap gap-2 justify-center text-xs text-muted-foreground">
           <Link href="/app/purchase-orders" className="hover:text-foreground transition-colors">
-            Purchase Orders
+            {t('layout.purchaseOrders')}
           </Link>
           <span>·</span>
           <Link href="/app/invoices" className="hover:text-foreground transition-colors">
-            Invoices
+            {t('layout.invoices')}
           </Link>
           <span>·</span>
           <Link href="/app/items" className="hover:text-foreground transition-colors">
-            Items
+            {t('layout.items')}
           </Link>
           <span>·</span>
           <Link href="/app/customers" className="hover:text-foreground transition-colors">
-            Customers
+            {t('layout.customers')}
           </Link>
           <span>·</span>
           <Link href="/app/suppliers" className="hover:text-foreground transition-colors">
-            Suppliers
+            {t('layout.suppliers')}
           </Link>
           <span>·</span>
           <Link href="/app/stock" className="hover:text-foreground transition-colors">
-            Stock
+            {t('layout.stockLevels')}
           </Link>
         </div>
       </main>

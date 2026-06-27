@@ -23,6 +23,7 @@ import {
 import { useParams, useRouter } from 'next/navigation';
 import * as React from 'react';
 import { toast } from 'sonner';
+import { useTranslations } from 'next-intl';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -78,16 +79,6 @@ const STATUS_COLORS: Record<string, string> = {
   DELETED: 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200',
 };
 
-const PAYMENT_METHOD_LABELS: Record<string, string> = {
-  CASH: 'Cash',
-  BANK_TRANSFER: 'Bank Transfer',
-  CARD: 'Card',
-  CHEQUE: 'Cheque',
-  ONLINE: 'Online',
-  CREDIT: 'Credit',
-  OTHER: 'Other',
-};
-
 export function StatusStepper({
   status,
   type,
@@ -97,6 +88,8 @@ export function StatusStepper({
   type: string;
   paymentStatus: string;
 }) {
+  const t = useTranslations();
+
   // 1. Determine base path
   const basePath =
     type === 'INVOICE'
@@ -127,7 +120,12 @@ export function StatusStepper({
 
   // Format step labels cleanly
   const formatLabel = (step: string) => {
-    if (step === 'PENDING_APPROVAL') return 'Approval';
+    if (step === 'PENDING_APPROVAL') return t('invoices.approval');
+    if (step === 'DRAFT') return t('invoices.draft');
+    if (step === 'APPROVED') return t('invoices.approved');
+    if (step === 'SENT') return t('invoices.sent');
+    if (step === 'PAID') return t('invoices.paid');
+    if (step === 'PARTIAL') return t('invoices.partial');
     return step.charAt(0) + step.slice(1).toLowerCase().replace(/_/g, ' ');
   };
 
@@ -203,7 +201,7 @@ export function StatusStepper({
               {status === 'OVERDUE' && <AlertCircle className="size-3.5" />}
               {status === 'DISPUTED' && <AlertTriangle className="size-3.5" />}
               {(status === 'CANCELLED' || status === 'DELETED') && <XCircle className="size-3.5" />}
-              {status.replace(/_/g, ' ')}
+              {status === 'DELETED' ? t('common.deleted') : status === 'OVERDUE' ? t('invoices.overdue') : status === 'CANCELLED' ? t('invoices.cancelled') : status.replace(/_/g, ' ')}
             </Badge>
           </div>
         )}
@@ -217,6 +215,7 @@ export default function InvoiceDetailPage() {
   const router = useRouter();
   const utils = trpc.useUtils();
   const { openEdit } = useInvoiceForm();
+  const t = useTranslations();
 
   const {
     data: invoice,
@@ -263,7 +262,7 @@ export default function InvoiceDetailPage() {
     onSuccess: () => {
       setSendOpen(false);
       invalidate();
-      toast.success('Invoice sent');
+      toast.success(t('invoices.invoiceSent'));
     },
     onError: (e) => toast.error(e.message),
   });
@@ -273,7 +272,7 @@ export default function InvoiceDetailPage() {
       setCancelOpen(false);
       setCancelReason('');
       invalidate();
-      toast.success('Invoice cancelled');
+      toast.success(t('invoices.invoiceCancelled'));
     },
     onError: (e) => toast.error(e.message),
   });
@@ -281,7 +280,7 @@ export default function InvoiceDetailPage() {
   const deleteMutation = trpc.invoices.delete.useMutation({
     onSuccess: () => {
       utils.invoices.list.invalidate();
-      toast.success('Invoice deleted');
+      toast.success(t('invoices.invoiceDeleted'));
       router.push('/app/invoices');
     },
     onError: (e) => toast.error(e.message),
@@ -295,7 +294,7 @@ export default function InvoiceDetailPage() {
       setPaymentReference('');
       setPaymentNotes('');
       invalidate();
-      toast.success('Payment recorded');
+      toast.success(t('invoices.paymentRecorded'));
     },
     onError: (e) => toast.error(e.message),
   });
@@ -303,7 +302,7 @@ export default function InvoiceDetailPage() {
   const deletePaymentMutation = trpc.invoices.deletePayment.useMutation({
     onSuccess: () => {
       invalidate();
-      toast.success('Payment deleted');
+      toast.success(t('invoices.paymentDeleted'));
     },
     onError: (e) => toast.error(e.message),
   });
@@ -311,7 +310,7 @@ export default function InvoiceDetailPage() {
   const convertQuoteMutation = trpc.invoices.convertQuote.useMutation({
     onSuccess: (result) => {
       invalidate();
-      toast.success('Quote converted to invoice');
+      toast.success(t('invoices.quoteConverted'));
       router.push(`/app/invoices/${result.id}`);
     },
     onError: (e) => toast.error(e.message),
@@ -354,16 +353,16 @@ export default function InvoiceDetailPage() {
             <EmptyMedia variant="icon">
               <Receipt className="size-6" />
             </EmptyMedia>
-            <EmptyTitle>{isError ? 'Failed to load' : 'Not found'}</EmptyTitle>
+            <EmptyTitle>{isError ? t('common.errorOccurred') : t('common.notFound')}</EmptyTitle>
             <EmptyDescription>
-              {error?.message ?? 'This invoice does not exist or has been deleted.'}
+              {error?.message ?? t('errors.notFound')}
             </EmptyDescription>
           </EmptyHeader>
           <div className="flex gap-2">
             <Button variant="outline" onClick={() => router.push('/app/invoices')}>
-              <ArrowLeft className="size-4 mr-1" /> Back
+              <ArrowLeft className="size-4 mr-1" /> {t('common.back')}
             </Button>
-            {isError && <Button onClick={() => refetch()}>Retry</Button>}
+            {isError && <Button onClick={() => refetch()}>{t('common.retry')}</Button>}
           </div>
         </Empty>
       </div>
@@ -408,12 +407,15 @@ export default function InvoiceDetailPage() {
     );
   };
 
-  const typeLabel: Record<string, string> = {
-    QUOTE: 'Quote',
-    INVOICE: 'Invoice',
-    CREDIT_NOTE: 'Credit Note',
-    PROFORMA: 'Proforma',
-    DELIVERY_NOTE: 'Delivery Note',
+  const getTypeLabel = (type: string) => {
+    switch (type) {
+      case 'QUOTE': return t('invoices.quote');
+      case 'INVOICE': return t('invoices.invoice');
+      case 'CREDIT_NOTE': return t('invoices.creditNote');
+      case 'PROFORMA': return t('invoices.proforma');
+      case 'DELIVERY_NOTE': return t('invoices.deliveryNote');
+      default: return t('invoices.invoice');
+    }
   };
 
   type Action = {
@@ -431,36 +433,36 @@ export default function InvoiceDetailPage() {
   if (type === 'QUOTE') {
     if (status === 'DRAFT') {
       actions.push({
-        label: 'Edit',
+        label: t('common.edit'),
         key: 'edit',
         icon: <Edit className="size-4" />,
         variant: 'outline',
       });
       actions.push({
-        label: 'Send Quote',
+        label: t('invoices.sendQuote'),
         key: 'send',
         icon: <Send className="size-4" />,
         dialog: 'send',
       });
       actions.push({
-        label: 'Convert to Invoice',
+        label: t('invoices.convertToInvoice'),
         key: 'convertQuote',
         icon: <Receipt className="size-4" />,
       });
       actions.push({
-        label: 'Delete',
+        label: t('common.delete'),
         key: 'delete',
         icon: <Trash className="size-4" />,
         variant: 'destructive',
       });
     } else if (status === 'SENT') {
       actions.push({
-        label: 'Convert to Invoice',
+        label: t('invoices.convertToInvoice'),
         key: 'convertQuote',
         icon: <Receipt className="size-4" />,
       });
       actions.push({
-        label: 'Cancel Quote',
+        label: t('invoices.cancelQuote'),
         key: 'cancel',
         icon: <XCircle className="size-4" />,
         variant: 'destructive',
@@ -470,7 +472,7 @@ export default function InvoiceDetailPage() {
       // No actions for terminal states
     } else {
       actions.push({
-        label: 'Cancel',
+        label: t('common.cancel'),
         key: 'cancel',
         icon: <XCircle className="size-4" />,
         variant: 'destructive',
@@ -480,38 +482,38 @@ export default function InvoiceDetailPage() {
   } else if (type === 'INVOICE') {
     if (status === 'DRAFT') {
       actions.push({
-        label: 'Edit',
+        label: t('common.edit'),
         key: 'edit',
         icon: <Edit className="size-4" />,
         variant: 'outline',
       });
       actions.push({
-        label: 'Send',
+        label: t('common.send'),
         key: 'send',
         icon: <Send className="size-4" />,
         dialog: 'send',
       });
       actions.push({
-        label: 'Delete',
+        label: t('common.delete'),
         key: 'delete',
         icon: <Trash className="size-4" />,
         variant: 'destructive',
       });
     } else if (status === 'PENDING_APPROVAL') {
       actions.push({
-        label: 'Edit',
+        label: t('common.edit'),
         key: 'edit',
         icon: <Edit className="size-4" />,
         variant: 'outline',
       });
       actions.push({
-        label: 'Send',
+        label: t('common.send'),
         key: 'send',
         icon: <Send className="size-4" />,
         dialog: 'send',
       });
       actions.push({
-        label: 'Cancel',
+        label: t('common.cancel'),
         key: 'cancel',
         icon: <XCircle className="size-4" />,
         variant: 'destructive',
@@ -519,13 +521,13 @@ export default function InvoiceDetailPage() {
       });
     } else if (status === 'APPROVED') {
       actions.push({
-        label: 'Send',
+        label: t('common.send'),
         key: 'send',
         icon: <Send className="size-4" />,
         dialog: 'send',
       });
       actions.push({
-        label: 'Cancel',
+        label: t('common.cancel'),
         key: 'cancel',
         icon: <XCircle className="size-4" />,
         variant: 'destructive',
@@ -533,14 +535,14 @@ export default function InvoiceDetailPage() {
       });
     } else if (['SENT', 'PARTIAL', 'OVERDUE'].includes(status)) {
       actions.push({
-        label: 'Record Payment',
+        label: t('invoices.recordPayment'),
         key: 'payment',
         icon: <Banknote className="size-4" />,
         dialog: 'payment',
       });
       if (status !== 'OVERDUE') {
         actions.push({
-          label: 'Cancel',
+          label: t('common.cancel'),
           key: 'cancel',
           icon: <XCircle className="size-4" />,
           variant: 'destructive',
@@ -553,19 +555,19 @@ export default function InvoiceDetailPage() {
     // Credit notes are mostly read-only after creation
     if (status === 'DRAFT') {
       actions.push({
-        label: 'Edit',
+        label: t('common.edit'),
         key: 'edit',
         icon: <Edit className="size-4" />,
         variant: 'outline',
       });
       actions.push({
-        label: 'Send',
+        label: t('common.send'),
         key: 'send',
         icon: <Send className="size-4" />,
         dialog: 'send',
       });
       actions.push({
-        label: 'Delete',
+        label: t('common.delete'),
         key: 'delete',
         icon: <Trash className="size-4" />,
         variant: 'destructive',
@@ -575,26 +577,26 @@ export default function InvoiceDetailPage() {
     // PROFORMA, DELIVERY_NOTE
     if (status === 'DRAFT') {
       actions.push({
-        label: 'Edit',
+        label: t('common.edit'),
         key: 'edit',
         icon: <Edit className="size-4" />,
         variant: 'outline',
       });
       actions.push({
-        label: 'Send',
+        label: t('common.send'),
         key: 'send',
         icon: <Send className="size-4" />,
         dialog: 'send',
       });
       actions.push({
-        label: 'Delete',
+        label: t('common.delete'),
         key: 'delete',
         icon: <Trash className="size-4" />,
         variant: 'destructive',
       });
     } else if (status === 'SENT') {
       actions.push({
-        label: 'Cancel',
+        label: t('common.cancel'),
         key: 'cancel',
         icon: <XCircle className="size-4" />,
         variant: 'destructive',
@@ -627,7 +629,7 @@ export default function InvoiceDetailPage() {
                   onClick={handleEdit}
                   disabled={isPending}
                 >
-                  <Edit className="size-4 mr-1" /> Edit
+                  {icon}<span className="ml-1">{label}</span>
                 </Button>
               ) : key === 'convertQuote' ? (
                 <Button
@@ -636,9 +638,7 @@ export default function InvoiceDetailPage() {
                   size="sm"
                   onClick={() => {
                     if (
-                      window.confirm(
-                        `Convert ${invoice.serial} to invoice? A new invoice will be created.`,
-                      )
+                      window.confirm(t('invoices.convertToInvoiceTitle', { serial: invoice.serial }))
                     ) {
                       convertQuoteMutation.mutate({ quoteId: invoice.id });
                     }
@@ -657,7 +657,7 @@ export default function InvoiceDetailPage() {
                   variant={variant}
                   size="sm"
                   onClick={() => {
-                    if (window.confirm(`Delete ${invoice.serial}? This action cannot be undone.`)) {
+                    if (window.confirm(t('common.confirmDelete', { name: invoice.serial }))) {
                       deleteMutation.mutate({ id: invoice.id });
                     }
                   }}
@@ -707,7 +707,7 @@ export default function InvoiceDetailPage() {
               size="sm"
               onClick={() => router.push(`/app/invoices/${invoice.id}/print`)}
             >
-              <Printer className="size-4 mr-1" /> Print / PDF
+              <Printer className="size-4 mr-1" /> {t('invoices.printPdf')}
             </Button>
           </div>
         )}
@@ -728,9 +728,9 @@ export default function InvoiceDetailPage() {
               <div className="flex items-start gap-3">
                 <User className="size-4 text-muted-foreground shrink-0 mt-0.5" />
                 <div className="min-w-0">
-                  <p className="text-xs text-muted-foreground">Customer</p>
+                  <p className="text-xs text-muted-foreground">{t('invoices.customer')}</p>
                   <p className="text-sm font-semibold truncate">
-                    {invoice.customer?.name ?? (invoice.isWalkIn ? 'Walk-in' : '—')}
+                    {invoice.customer?.name ?? (invoice.isWalkIn ? t('invoices.walkInCustomer') : '—')}
                   </p>
                   {invoice.customer?.email && (
                     <p className="text-xs text-muted-foreground truncate">
@@ -742,14 +742,14 @@ export default function InvoiceDetailPage() {
               <div className="flex items-start gap-3">
                 <Building2 className="size-4 text-muted-foreground shrink-0 mt-0.5" />
                 <div className="min-w-0">
-                  <p className="text-xs text-muted-foreground">Warehouse</p>
+                  <p className="text-xs text-muted-foreground">{t('invoices.warehouse')}</p>
                   <p className="text-sm font-semibold truncate">{invoice.warehouse?.name ?? '—'}</p>
                 </div>
               </div>
               <div className="flex items-start gap-3">
                 <Calendar className="size-4 text-muted-foreground shrink-0 mt-0.5" />
                 <div className="min-w-0">
-                  <p className="text-xs text-muted-foreground">Date</p>
+                  <p className="text-xs text-muted-foreground">{t('invoices.date')}</p>
                   <p className="text-sm font-semibold truncate">
                     {invoice.date ? format(new Date(invoice.date), 'dd MMM yyyy') : '—'}
                   </p>
@@ -758,7 +758,7 @@ export default function InvoiceDetailPage() {
               <div className="flex items-start gap-3">
                 <Calendar className="size-4 text-muted-foreground shrink-0 mt-0.5" />
                 <div className="min-w-0">
-                  <p className="text-xs text-muted-foreground">Due Date</p>
+                  <p className="text-xs text-muted-foreground">{t('invoices.dueDate')}</p>
                   <p className="text-sm font-semibold truncate">
                     {invoice.dueDate ? format(new Date(invoice.dueDate), 'dd MMM yyyy') : '—'}
                   </p>
@@ -767,14 +767,14 @@ export default function InvoiceDetailPage() {
               <div className="flex items-start gap-3">
                 <Wallet className="size-4 text-muted-foreground shrink-0 mt-0.5" />
                 <div className="min-w-0">
-                  <p className="text-xs text-muted-foreground">Currency</p>
+                  <p className="text-xs text-muted-foreground">{t('invoices.currency')}</p>
                   <p className="text-sm font-semibold">{invoice.currency}</p>
                 </div>
               </div>
               <div className="flex items-start gap-3">
                 <Layers className="size-4 text-muted-foreground shrink-0 mt-0.5" />
                 <div className="min-w-0">
-                  <p className="text-xs text-muted-foreground">Department</p>
+                  <p className="text-xs text-muted-foreground">{t('invoices.department')}</p>
                   <p className="text-sm font-semibold truncate">
                     {invoice.department?.name ?? '—'}
                   </p>
@@ -789,7 +789,7 @@ export default function InvoiceDetailPage() {
           <Card>
             <CardContent className="py-3">
               <p className="text-sm text-muted-foreground">
-                Credit note for{' '}
+                {t('invoices.creditNoteFor')}{' '}
                 <button
                   className="font-medium text-primary hover:underline"
                   onClick={() => router.push(`/app/invoices/${invoice.parentInvoice!.id}`)}
@@ -804,19 +804,19 @@ export default function InvoiceDetailPage() {
         {/* Line items table */}
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-semibold">Line items</CardTitle>
+            <CardTitle className="text-sm font-semibold">{t('invoices.lineItems')}</CardTitle>
           </CardHeader>
           <CardContent className="p-0">
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="w-[28%]">Item</TableHead>
-                  <TableHead className="text-right">Qty</TableHead>
-                  <TableHead className="text-right">Stock</TableHead>
-                  <TableHead className="text-right">Unit Price</TableHead>
-                  <TableHead className="text-right">Discount</TableHead>
-                  <TableHead className="text-right">Tax</TableHead>
-                  <TableHead className="text-right">Total</TableHead>
+                  <TableHead className="w-[28%]">{t('invoices.item')}</TableHead>
+                  <TableHead className="text-right">{t('invoices.qty')}</TableHead>
+                  <TableHead className="text-right">{t('invoices.stock')}</TableHead>
+                  <TableHead className="text-right">{t('invoices.unitPrice')}</TableHead>
+                  <TableHead className="text-right">{t('invoices.discount')}</TableHead>
+                  <TableHead className="text-right">{t('invoices.tax')}</TableHead>
+                  <TableHead className="text-right">{t('invoices.total')}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -877,7 +877,7 @@ export default function InvoiceDetailPage() {
                 {invoice.lines.length === 0 && (
                   <TableRow>
                     <TableCell colSpan={7} className="text-center text-muted-foreground py-6">
-                      No line items
+                      {t('invoices.noLineItems')}
                     </TableCell>
                   </TableRow>
                 )}
@@ -892,31 +892,31 @@ export default function InvoiceDetailPage() {
             <div className="flex justify-end">
               <div className="w-64 space-y-1 text-sm">
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Subtotal</span>
+                  <span className="text-muted-foreground">{t('invoices.subtotal')}</span>
                   <span>{Number(invoice.subtotal).toFixed(3)}</span>
                 </div>
                 {Number(invoice.discountTotal) > 0 && (
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">Discount</span>
+                    <span className="text-muted-foreground">{t('invoices.discount')}</span>
                     <span className="text-destructive">
                       -{Number(invoice.discountTotal).toFixed(3)}
                     </span>
                   </div>
                 )}
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Tax</span>
+                  <span className="text-muted-foreground">{t('invoices.tax')}</span>
                   <span>{Number(invoice.taxTotal).toFixed(3)}</span>
                 </div>
                 <Separator />
                 <div className="flex justify-between font-bold text-base">
-                  <span>Total</span>
+                  <span>{t('invoices.total')}</span>
                   <span>
                     {Number(invoice.total).toFixed(3)} {invoice.currency}
                   </span>
                 </div>
                 {Number(invoice.amountPaid) > 0 && (
                   <div className="flex justify-between text-green-600 dark:text-green-400 font-medium">
-                    <span>Paid</span>
+                    <span>{t('invoices.amountPaid')}</span>
                     <span>
                       -{Number(invoice.amountPaid).toFixed(3)} {invoice.currency}
                     </span>
@@ -924,7 +924,7 @@ export default function InvoiceDetailPage() {
                 )}
                 {Number(invoice.amountDue) > 0 && (
                   <div className="flex justify-between text-destructive font-medium">
-                    <span>Amount Due</span>
+                    <span>{t('invoices.amountDue')}</span>
                     <span>
                       {Number(invoice.amountDue).toFixed(3)} {invoice.currency}
                     </span>
@@ -940,18 +940,18 @@ export default function InvoiceDetailPage() {
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-semibold flex items-center gap-2">
-                <HandCoins className="size-4" /> Payments
+                <HandCoins className="size-4" /> {t('invoices.payments')}
               </CardTitle>
             </CardHeader>
             <CardContent className="p-0">
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Date</TableHead>
-                    <TableHead>Method</TableHead>
-                    <TableHead className="text-right">Amount</TableHead>
-                    <TableHead>Reference</TableHead>
-                    <TableHead>Notes</TableHead>
+                    <TableHead>{t('invoices.date')}</TableHead>
+                    <TableHead>{t('invoices.paymentMethod')}</TableHead>
+                    <TableHead className="text-right">{t('invoices.amount')}</TableHead>
+                    <TableHead>{t('invoices.paymentReference')}</TableHead>
+                    <TableHead>{t('invoices.paymentNotes')}</TableHead>
                     <TableHead className="w-16"></TableHead>
                   </TableRow>
                 </TableHeader>
@@ -962,7 +962,7 @@ export default function InvoiceDetailPage() {
                         {format(new Date(payment.date), 'dd MMM yyyy')}
                       </TableCell>
                       <TableCell>
-                        {PAYMENT_METHOD_LABELS[payment.method] ?? payment.method}
+                        {t(`common.paymentMethods.${payment.method.toLowerCase().replace(/_([a-z])/g, (_: string, c: string) => c.toUpperCase())}`)}
                       </TableCell>
                       <TableCell className="text-right font-medium">
                         {Number(payment.amount).toFixed(3)}
@@ -981,7 +981,7 @@ export default function InvoiceDetailPage() {
                           disabled={isPending}
                           onClick={() => {
                             if (
-                              window.confirm('Delete this payment? This action cannot be undone.')
+                              window.confirm(t('invoices.deletePaymentConfirm'))
                             ) {
                               deletePaymentMutation.mutate({ paymentId: payment.id });
                             }
@@ -1002,15 +1002,15 @@ export default function InvoiceDetailPage() {
         {invoice.creditNotes && invoice.creditNotes.length > 0 && (
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-semibold">Credit Notes</CardTitle>
+              <CardTitle className="text-sm font-semibold">{t('invoices.creditNotes')}</CardTitle>
             </CardHeader>
             <CardContent className="p-0">
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Serial</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead className="text-right">Total</TableHead>
+                    <TableHead>{t('invoices.invoiceNumber')}</TableHead>
+                    <TableHead>{t('common.status')}</TableHead>
+                    <TableHead className="text-right">{t('invoices.total')}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -1023,7 +1023,7 @@ export default function InvoiceDetailPage() {
                       <TableCell className="font-medium">{cn.serial}</TableCell>
                       <TableCell>
                         <Badge variant="outline" className={STATUS_COLORS[cn.status] ?? ''}>
-                          {cn.status}
+                          {t('invoices.' + cn.status.toLowerCase().replace(/_([a-z])/g, (_: string, c: string) => c.toUpperCase()))}
                         </Badge>
                       </TableCell>
                       <TableCell className="text-right font-medium">
@@ -1041,7 +1041,7 @@ export default function InvoiceDetailPage() {
         {invoice.notes && (
           <Card>
             <CardHeader className="pb-1.5">
-              <CardTitle className="text-xs text-muted-foreground font-medium">Notes</CardTitle>
+              <CardTitle className="text-xs text-muted-foreground font-medium">{t('invoices.notes')}</CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-sm whitespace-pre-wrap">{invoice.notes}</p>
@@ -1054,7 +1054,7 @@ export default function InvoiceDetailPage() {
           <Card>
             <CardHeader className="pb-1.5">
               <CardTitle className="text-xs text-muted-foreground font-medium">
-                Terms & Conditions
+                {t('invoices.termsAndConditions')}
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -1069,15 +1069,20 @@ export default function InvoiceDetailPage() {
         {/* Meta info */}
         <div className="text-xs text-muted-foreground flex flex-wrap gap-x-4 gap-y-1 pb-2">
           <span>
-            {typeLabel[invoice.type] ?? 'Document'} created by {invoice.createdBy?.name ?? '—'} on{' '}
-            {invoice.createdAt ? format(new Date(invoice.createdAt), 'dd MMM yyyy HH:mm') : '—'}
+            {t('invoices.createdBy', {
+              type: getTypeLabel(invoice.type),
+              name: invoice.createdBy?.name ?? '—',
+              date: invoice.createdAt
+                ? format(new Date(invoice.createdAt), 'dd MMM yyyy HH:mm')
+                : '—',
+            })}
           </span>
-          <span>Version {invoice.version}</span>
+          <span>{t('invoices.version', { version: invoice.version })}</span>
           {invoice.sentAt && (
-            <span>Sent on {format(new Date(invoice.sentAt), 'dd MMM yyyy HH:mm')}</span>
+            <span>{t('invoices.sentOn', { date: format(new Date(invoice.sentAt), 'dd MMM yyyy HH:mm') })}</span>
           )}
           {invoice.cancelledAt && (
-            <span>Cancelled on {format(new Date(invoice.cancelledAt), 'dd MMM yyyy HH:mm')}</span>
+            <span>{t('invoices.cancelledOn', { date: format(new Date(invoice.cancelledAt), 'dd MMM yyyy HH:mm') })}</span>
           )}
         </div>
       </div>
@@ -1086,13 +1091,13 @@ export default function InvoiceDetailPage() {
       <Dialog open={sendOpen} onOpenChange={(v) => !sendMutation.isPending && setSendOpen(v)}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Send {typeLabel[invoice.type] ?? 'document'}</DialogTitle>
+            <DialogTitle>{t('invoices.sendDialogTitle', { type: getTypeLabel(invoice.type) })}</DialogTitle>
             <DialogDescription>
               {type === 'INVOICE'
-                ? 'This will mark the invoice as sent and deduct stock from the warehouse. Continue?'
+                ? t('invoices.sendDialogDesc')
                 : type === 'QUOTE'
-                  ? 'This will mark the quote as sent to the customer.'
-                  : `This will send the ${typeLabel[invoice.type]?.toLowerCase() ?? 'document'}. Continue?`}
+                  ? t('invoices.sendQuoteDialogDesc')
+                  : t('invoices.sendDialogDesc')}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
@@ -1101,14 +1106,14 @@ export default function InvoiceDetailPage() {
               onClick={() => setSendOpen(false)}
               disabled={sendMutation.isPending}
             >
-              Cancel
+              {t('common.cancel')}
             </Button>
             <Button
               onClick={() => sendMutation.mutate({ id: invoice.id, version })}
               disabled={sendMutation.isPending}
             >
               {sendMutation.isPending && <Loader2 className="size-4 mr-1 animate-spin" />}
-              Send {typeLabel[invoice.type] ?? 'document'}
+              {t('common.send')} {getTypeLabel(invoice.type)}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -1123,19 +1128,19 @@ export default function InvoiceDetailPage() {
       >
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Cancel {typeLabel[invoice.type] ?? 'document'}</DialogTitle>
+            <DialogTitle>{t('invoices.cancelDialogTitle', { type: getTypeLabel(invoice.type) })}</DialogTitle>
             <DialogDescription>
-              Provide a reason for cancelling {invoice.serial}.
+              {t('invoices.cancelDialogDesc', { serial: invoice.serial })}
               {type === 'INVOICE' &&
                 ['SENT', 'PARTIAL', 'OVERDUE'].includes(status) &&
-                ' Stock will be returned to the warehouse.'}
+                ` ${t('invoices.stockReturned')}`}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-3">
-            <Label htmlFor="cancel-reason">Reason</Label>
+            <Label htmlFor="cancel-reason">{t('common.reason')}</Label>
             <Textarea
               id="cancel-reason"
-              placeholder="Why is this being cancelled?"
+              placeholder={t('invoices.cancelReasonPlaceholder')}
               value={cancelReason}
               onChange={(e) => setCancelReason(e.target.value)}
               rows={3}
@@ -1150,7 +1155,7 @@ export default function InvoiceDetailPage() {
               }}
               disabled={cancelMutation.isPending}
             >
-              Keep
+              {t('common.keep')}
             </Button>
             <Button
               variant="destructive"
@@ -1164,7 +1169,7 @@ export default function InvoiceDetailPage() {
               disabled={cancelMutation.isPending}
             >
               {cancelMutation.isPending && <Loader2 className="size-4 mr-1 animate-spin" />}
-              Cancel {typeLabel[invoice.type] ?? 'document'}
+              {t('common.cancel')} {getTypeLabel(invoice.type)}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -1179,36 +1184,36 @@ export default function InvoiceDetailPage() {
       >
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Record Payment</DialogTitle>
+            <DialogTitle>{t('invoices.recordPayment')}</DialogTitle>
             <DialogDescription>
-              Record a payment for {invoice.serial}. Outstanding balance:{' '}
+              {invoice.serial} - {t('invoices.outstanding')}:{' '}
               {Number(invoice.amountDue).toFixed(3)} {invoice.currency}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-2">
-                <Label htmlFor="payment-amount">Amount *</Label>
+                <Label htmlFor="payment-amount">{t('invoices.paymentAmount')} *</Label>
                 <Input
                   id="payment-amount"
                   type="number"
                   step="0.001"
                   min="0"
-                  placeholder="0.000"
+                  placeholder={t('common.placeholders.amount')}
                   value={paymentAmount}
                   onChange={(e) => setPaymentAmount(e.target.value)}
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="payment-method">Method *</Label>
+                <Label htmlFor="payment-method">{t('invoices.paymentMethod')} *</Label>
                 <Select value={paymentMethod} onValueChange={setPaymentMethod}>
                   <SelectTrigger id="payment-method">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    {Object.entries(PAYMENT_METHOD_LABELS).map(([value, label]) => (
+                    {['CASH', 'BANK_TRANSFER', 'CARD', 'CHEQUE', 'ONLINE', 'CREDIT', 'OTHER'].map((value) => (
                       <SelectItem key={value} value={value}>
-                        {label}
+                        {t(`common.paymentMethods.${value.toLowerCase().replace(/_([a-z])/g, (_: string, c: string) => c.toUpperCase())}`)}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -1216,7 +1221,7 @@ export default function InvoiceDetailPage() {
               </div>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="payment-date">Date</Label>
+              <Label htmlFor="payment-date">{t('invoices.date')}</Label>
               <Input
                 id="payment-date"
                 type="date"
@@ -1225,19 +1230,19 @@ export default function InvoiceDetailPage() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="payment-reference">Reference</Label>
+              <Label htmlFor="payment-reference">{t('invoices.paymentReference')}</Label>
               <Input
                 id="payment-reference"
-                placeholder="Check number, Txn ID, etc."
+                placeholder={t('invoices.paymentReference')}
                 value={paymentReference}
                 onChange={(e) => setPaymentReference(e.target.value)}
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="payment-notes">Notes</Label>
+              <Label htmlFor="payment-notes">{t('invoices.paymentNotes')}</Label>
               <Textarea
                 id="payment-notes"
-                placeholder="Optional notes"
+                placeholder={t('common.optionalNotes')}
                 value={paymentNotes}
                 onChange={(e) => setPaymentNotes(e.target.value)}
                 rows={2}
@@ -1250,18 +1255,18 @@ export default function InvoiceDetailPage() {
               onClick={() => setPaymentOpen(false)}
               disabled={addPaymentMutation.isPending}
             >
-              Cancel
+              {t('common.cancel')}
             </Button>
             <Button
               onClick={() => {
                 const amount = parseFloat(paymentAmount);
                 if (!amount || amount <= 0) {
-                  toast.error('Please enter a valid amount');
+                  toast.error(t('invoices.enterValidAmount'));
                   return;
                 }
                 if (amount > Number(invoice.amountDue) + 0.000001) {
                   toast.error(
-                    `Amount exceeds outstanding balance of ${Number(invoice.amountDue).toFixed(3)}`,
+                    t('invoices.amountExceedsBalance', { balance: Number(invoice.amountDue).toFixed(3) }),
                   );
                   return;
                 }
@@ -1277,7 +1282,7 @@ export default function InvoiceDetailPage() {
               disabled={addPaymentMutation.isPending}
             >
               {addPaymentMutation.isPending && <Loader2 className="size-4 mr-1 animate-spin" />}
-              Record Payment
+              {t('invoices.recordPayment')}
             </Button>
           </DialogFooter>
         </DialogContent>

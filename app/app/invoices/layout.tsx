@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { Edit, Eye, Receipt, Send, Trash2, User2, XCircle } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
@@ -25,26 +26,27 @@ import { cn } from '@/lib/utils';
 import { useInvoiceForm } from '@/components/dialogs';
 import { Header } from '../App-Header';
 
-const title = 'Invoices';
-
-const DOCUMENT_TYPES = [
-  { value: 'all', label: 'All' },
-  { value: 'INVOICE', label: 'Invoice' },
-  { value: 'QUOTE', label: 'Quote' },
-  { value: 'CREDIT_NOTE', label: 'Credit Note' },
-  { value: 'DELIVERY_NOTE', label: 'Delivery Note' },
-] as const;
-
-const PAYMENT_STATUSES = [
-  { value: 'all', label: 'All' },
-  { value: 'PENDING', label: 'Pending' },
-  { value: 'PARTIAL', label: 'Partial' },
-  { value: 'PAID', label: 'Paid' },
-  { value: 'OVERDUE', label: 'Overdue' },
-] as const;
+const invoicesSegment = 'invoices';
 
 export default function InvoicesLayout({ children }: { children?: React.ReactNode }) {
+  const t = useTranslations();
   const { openCreate, openEdit } = useInvoiceForm();
+
+  const DOCUMENT_TYPES = [
+    { value: 'all', label: t('invoices.allStatuses') },
+    { value: 'INVOICE', label: t('invoices.invoice') },
+    { value: 'QUOTE', label: t('invoices.quote') },
+    { value: 'CREDIT_NOTE', label: t('invoices.creditNote') },
+    { value: 'DELIVERY_NOTE', label: t('invoices.deliveryNote') },
+  ] as const;
+
+  const PAYMENT_STATUSES = [
+    { value: 'all', label: t('common.all') },
+    { value: 'PENDING', label: t('common.pending') },
+    { value: 'PARTIAL', label: t('common.partial') },
+    { value: 'PAID', label: t('common.paid') },
+    { value: 'OVERDUE', label: t('common.overdue') },
+  ] as const;
   const utils = trpc.useUtils();
   const router = useRouter();
   const [docType, setDocType] = useState('all');
@@ -53,8 +55,8 @@ export default function InvoicesLayout({ children }: { children?: React.ReactNod
   const deleteMutation = trpc.invoices.delete.useMutation({
     onSuccess: () => {
       utils.invoices.list.invalidate();
-      toast.success('Invoice deleted');
-      if (activeItem) router.push('/app/invoices');
+      toast.success(t('invoices.invoiceDeleted'));
+      if (activeItem) router.push(`/app/${invoicesSegment}`);
     },
     onError: (e) => toast.error(e.message),
   });
@@ -66,7 +68,7 @@ export default function InvoicesLayout({ children }: { children?: React.ReactNod
   const isMobile = useIsMobile();
   const pathname = usePathname();
   const activeItem = pathname.split('/')[3];
-  const isListView = pathname === `/app/${title.toLowerCase()}`;
+  const isListView = pathname === `/app/${invoicesSegment}`;
   const isPrintRoute = pathname.endsWith('/print');
 
   const renderCard = useCallback(
@@ -78,13 +80,13 @@ export default function InvoicesLayout({ children }: { children?: React.ReactNod
       const menuItems: ContextMenuItemSchema[] = [
         {
           id: 'view',
-          label: 'View details',
+          label: t('common.viewDetails'),
           icon: Eye,
-          onClick: () => router.push(`/app/invoices/${item.id}`),
+          onClick: () => router.push(`/app/${invoicesSegment}/${item.id}`),
         },
         {
           id: 'edit',
-          label: 'Edit',
+          label: t('common.edit'),
           icon: Edit,
           onClick: () =>
             openEdit(
@@ -97,9 +99,9 @@ export default function InvoicesLayout({ children }: { children?: React.ReactNod
           ? [
               {
                 id: 'send',
-                label: 'Send',
+                label: t('common.send'),
                 icon: Send,
-                onClick: () => router.push(`/app/invoices/${item.id}`),
+                onClick: () => router.push(`/app/${invoicesSegment}/${item.id}`),
               } as ContextMenuItemSchema,
             ]
           : []),
@@ -107,23 +109,23 @@ export default function InvoicesLayout({ children }: { children?: React.ReactNod
           ? [
               {
                 id: 'cancel',
-                label: 'Cancel',
+                label: t('common.cancel'),
                 icon: XCircle,
-                onClick: () => router.push(`/app/invoices/${item.id}`),
+                onClick: () => router.push(`/app/${invoicesSegment}/${item.id}`),
               } as ContextMenuItemSchema,
             ]
           : []),
         { id: 'sep1', type: 'separator' as const },
         {
           id: 'delete',
-          label: 'Delete',
+          label: t('common.delete'),
           icon: Trash2,
           destructive: true,
           onClick: () =>
             alert.delete({
-              title: `Delete invoice ${item.serial}?`,
-              description: 'This action cannot be undone.',
-              confirmText: 'Delete',
+              title: t('common.confirmDelete', { serial: item.serial }),
+              description: t('common.thisActionCannotBeUndone'),
+              confirmText: t('common.delete'),
               onConfirm: async () => {
                 await deleteMutation.mutateAsync({ id: item.id });
               },
@@ -135,7 +137,7 @@ export default function InvoicesLayout({ children }: { children?: React.ReactNod
       return (
         <UniversalContextMenu items={menuItems}>
           <Link
-            href={`/app/${title.toLowerCase()}/${item.id}`}
+            href={`/app/${invoicesSegment}/${item.id}`}
             scroll={false}
             draggable={false}
             className="block w-full h-full"
@@ -157,22 +159,22 @@ export default function InvoicesLayout({ children }: { children?: React.ReactNod
   if (isPrintRoute) return <>{children}</>;
 
   const invoices = Array.isArray(data) ? data : (data?.data ?? []);
-  const activeLabel = PAYMENT_STATUSES.find((s) => s.value === paymentStatus)?.label ?? 'All';
+  const activeLabel = PAYMENT_STATUSES.find((s) => s.value === paymentStatus)?.label ?? t('common.all');
 
   const filterBar = (
     <div className="flex flex-col gap-2 border-b px-4 py-2">
       <Tabs value={docType} onValueChange={setDocType} className="min-w-0">
         <TabsList className="h-auto min-h-8 w-full justify-start flex-wrap">
-          {DOCUMENT_TYPES.map((t) => (
-            <TabsTrigger key={t.value} value={t.value} className="text-xs px-3 py-1 shrink-0">
-              {t.label}
+          {DOCUMENT_TYPES.map((d) => (
+            <TabsTrigger key={d.value} value={d.value} className="text-xs px-3 py-1 shrink-0">
+              {d.label}
             </TabsTrigger>
           ))}
         </TabsList>
       </Tabs>
       <Select value={paymentStatus} onValueChange={setPaymentStatus}>
         <SelectTrigger className="w-full h-8 shrink-0">
-          <SelectValue placeholder="Payment">{activeLabel}</SelectValue>
+          <SelectValue placeholder={t('common.payment')}>{activeLabel}</SelectValue>
         </SelectTrigger>
         <SelectContent>
           {PAYMENT_STATUSES.map((s) => (
@@ -187,7 +189,7 @@ export default function InvoicesLayout({ children }: { children?: React.ReactNod
 
   return (
     <div className="flex h-screen flex-col overflow-hidden">
-      <Header title={title} icon={<Receipt className="size-5" />} onCreate={() => openCreate()} createLabel="New Invoice" />
+      <Header title={t('layout.invoices')} icon={<Receipt className="size-5" />} onCreate={() => openCreate()} createLabel={t('invoices.newInvoice')} />
       <div className="flex-1 min-h-0 w-full">
         <ResizablePanelGroup className="h-full">
           {(isListView || !isMobile) && (
@@ -206,8 +208,8 @@ export default function InvoicesLayout({ children }: { children?: React.ReactNod
                     useTheme
                     searchFields={['serial'] as any}
                     rowHeight={73}
-                    emptyTitle="No invoices found"
-                    emptyDescription="Create your first invoice to see them here."
+                    emptyTitle={t('invoices.noInvoices')}
+                    emptyDescription={t('invoices.createInvoice')}
                     emptyIcon={<User2 className="size-20 text-muted-foreground" />}
                     cardRenderer={renderCard}
                   />

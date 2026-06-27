@@ -1,40 +1,42 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { Check, Monitor, Moon, Sun } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import { cn } from '@/lib/utils';
 import { SectionCard } from '../_shared';
 
-const THEMES = [
-  {
-    id: 'light' as const,
-    label: 'Light',
-    description: 'Always use light mode.',
-    icon: Sun,
-  },
-  {
-    id: 'dark' as const,
-    label: 'Dark',
-    description: 'Always use dark mode.',
-    icon: Moon,
-  },
-  {
-    id: 'system' as const,
-    label: 'System',
-    description: 'Follow your system preference.',
-    icon: Monitor,
-  },
-];
-
 export default function AppearancePage() {
+  const t = useTranslations();
   const { theme, setTheme } = useTheme();
   const resolved = theme ?? 'system';
+
+  const THEMES = [
+    {
+      id: 'light' as const,
+      label: t('settings.light'),
+      description: t('settings.light'),
+      icon: Sun,
+    },
+    {
+      id: 'dark' as const,
+      label: t('settings.dark'),
+      description: t('settings.dark'),
+      icon: Moon,
+    },
+    {
+      id: 'system' as const,
+      label: t('settings.system'),
+      description: t('settings.system'),
+      icon: Monitor,
+    },
+  ];
 
   return (
     <div className="h-full space-y-6">
       <SectionCard
-        title="Appearance"
-        description="Choose your preferred color scheme."
+        title={t('settings.appearance')}
+        description={t('settings.theme')}
       >
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           {THEMES.map(({ id, label, description, icon: Icon }) => {

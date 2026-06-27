@@ -1,10 +1,12 @@
 import type { Metadata } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
 import './globals.css';
+import { I18nProvider } from '@/components/i18n-provider';
 import { Toaster } from '@/components/sonner';
 import { ThemeProvider } from '@/components/Theme-Provider';
 import { DateFormatProvider } from '@/hooks/use-date-format';
 import TrpcProvider from '@/lib/trpc/provider';
+import { cookies } from 'next/headers';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -27,19 +29,25 @@ export const metadata: Metadata = {
 };
 
 export default async function RootLayout(props: any) {
+  const cookieStore = await cookies();
+  const locale = cookieStore.get('NEXT_LOCALE')?.value || 'en';
+  const dir = locale === 'ar' ? 'rtl' : 'ltr';
+
   return (
-    <html lang={'en'} suppressHydrationWarning>
+    <html lang={locale} dir={dir} suppressHydrationWarning>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-        <ThemeProvider
-          attribute={'class'}
-          defaultTheme={'system'}
-          enableSystem={true}
-          storageKey={'theme'}
-        >
-          <DateFormatProvider defaultFormat={'date'}>
-            <TrpcProvider>{props.children}</TrpcProvider>
-          </DateFormatProvider>
-        </ThemeProvider>
+        <I18nProvider>
+          <ThemeProvider
+            attribute={'class'}
+            defaultTheme={'system'}
+            enableSystem={true}
+            storageKey={'theme'}
+          >
+            <DateFormatProvider defaultFormat={'date'}>
+              <TrpcProvider>{props.children}</TrpcProvider>
+            </DateFormatProvider>
+          </ThemeProvider>
+        </I18nProvider>
         <Toaster position="top-center" />
       </body>
     </html>

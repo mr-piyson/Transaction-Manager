@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { Edit, Eye, ShoppingCart, Trash2, User2, XCircle } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
@@ -21,6 +22,7 @@ const title = 'Purchase Orders';
 const route = 'purchase-orders';
 
 export default function POLayout({ children }: { children?: React.ReactNode }) {
+  const t = useTranslations();
   const { openCreate, openEdit } = usePOForm();
   const utils = trpc.useUtils();
   const router = useRouter();
@@ -33,7 +35,7 @@ export default function POLayout({ children }: { children?: React.ReactNode }) {
   const deleteMutation = trpc.purchaseOrders.delete.useMutation({
     onSuccess: () => {
       utils.purchaseOrders.list.invalidate();
-      toast.success('Purchase order deleted');
+      toast.success(t('purchaseOrders.poDeleted'));
       if (activeItem) router.push('/app/purchase-orders');
     },
     onError: (e) => toast.error(e.message),
@@ -42,7 +44,7 @@ export default function POLayout({ children }: { children?: React.ReactNode }) {
   const cancelMutation = trpc.purchaseOrders.cancel.useMutation({
     onSuccess: () => {
       utils.purchaseOrders.list.invalidate();
-      toast.success('Purchase order cancelled');
+      toast.success(t('purchaseOrders.poCancelled'));
       if (activeItem) router.push('/app/purchase-orders');
     },
     onError: (e) => toast.error(e.message),
@@ -57,13 +59,13 @@ export default function POLayout({ children }: { children?: React.ReactNode }) {
       const menuItems: ContextMenuItemSchema[] = [
         {
           id: 'view',
-          label: 'View details',
+          label: t('common.viewDetails'),
           icon: Eye,
           onClick: () => router.push(`/app/${route}/${item.id}`),
         },
         {
           id: 'edit',
-          label: 'Edit',
+          label: t('common.edit'),
           icon: Edit,
           onClick: () =>
             openEdit(
@@ -76,13 +78,13 @@ export default function POLayout({ children }: { children?: React.ReactNode }) {
           ? [
               {
                 id: 'cancel',
-                label: 'Cancel',
+                label: t('common.cancel'),
                 icon: XCircle,
                 onClick: () =>
                   alert.delete({
-                    title: `Cancel purchase order ${item.serial}?`,
-                    description: 'This action cannot be undone.',
-                    confirmText: 'Cancel',
+                    title: t('common.cancel'),
+                    description: t('common.thisActionCannotBeUndone'),
+                    confirmText: t('common.cancel'),
                     onConfirm: async () => {
                       await cancelMutation.mutateAsync({ id: item.id, version: item.version });
                     },
@@ -93,13 +95,13 @@ export default function POLayout({ children }: { children?: React.ReactNode }) {
         { id: 'sep1', type: 'separator' as const },
         {
           id: 'delete',
-          label: 'Delete',
+          label: t('common.delete'),
           icon: Trash2,
           onClick: () =>
             alert.delete({
-              title: `Delete purchase order ${item.serial}?`,
-              description: 'This action cannot be undone.',
-              confirmText: 'Delete',
+              title: t('common.delete'),
+              description: t('common.thisActionCannotBeUndone'),
+              confirmText: t('common.delete'),
               onConfirm: async () => {
                 await deleteMutation.mutateAsync({ id: item.id });
               },
@@ -134,7 +136,7 @@ export default function POLayout({ children }: { children?: React.ReactNode }) {
 
   return (
     <div className="flex h-screen flex-col overflow-hidden">
-      <Header title={title} icon={<ShoppingCart className="size-5" />} onCreate={() => openCreate()} createLabel="New Purchase Order" />
+      <Header title={t('layout.purchaseOrders')} icon={<ShoppingCart className="size-5" />} onCreate={() => openCreate()} createLabel={t('purchaseOrders.createPO')} />
       <div className="flex-1 min-h-0 w-full">
         <ResizablePanelGroup className="h-full">
           {(isListView || !isMobile) && (
@@ -148,8 +150,8 @@ export default function POLayout({ children }: { children?: React.ReactNode }) {
                     useTheme
                     searchFields={['serial'] as any}
                     rowHeight={73}
-                    emptyTitle="No purchase orders found"
-                    emptyDescription="Create your first purchase order to see them here."
+                    emptyTitle={t('purchaseOrders.noPOs')}
+                    emptyDescription={t('purchaseOrders.createPO')}
                     emptyIcon={<User2 className="size-20 text-muted-foreground" />}
                     cardRenderer={renderCard}
                   />

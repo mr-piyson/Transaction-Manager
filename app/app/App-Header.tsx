@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { Plus } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { cn } from '@/lib/utils';
@@ -38,6 +39,7 @@ export function Header({
   onCreate,
   createLabel,
 }: HeaderProps) {
+  const t = useTranslations();
   return (
     <header
       className={cn(
@@ -73,7 +75,7 @@ export function Header({
       {onCreate && (
         <Button size="sm" className="gap-1.5 shrink-0" onClick={onCreate}>
           <Plus className="size-4" />
-          {createLabel ?? 'Create'}
+          {createLabel ?? t('common.create')}
         </Button>
       )}
       {children}

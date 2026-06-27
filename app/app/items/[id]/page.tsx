@@ -17,6 +17,7 @@ import {
   Truck,
   Weight,
 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { useParams, useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { alert } from '@/components/Alert-dialog';
@@ -46,6 +47,7 @@ export default function ItemDetailPage() {
   const router = useRouter();
   const utils = trpc.useUtils();
   const { openEdit } = useItemForm();
+  const t = useTranslations();
 
   const {
     data: item,
@@ -58,7 +60,7 @@ export default function ItemDetailPage() {
   const deleteMutation = trpc.items.delete.useMutation({
     onSuccess: () => {
       utils.items.list.invalidate();
-      toast.success('Item deleted');
+      toast.success(t('items.itemDeleted'));
       router.push('/app/items');
     },
     onError: (e) => toast.error(e.message),
@@ -82,16 +84,16 @@ export default function ItemDetailPage() {
             <EmptyMedia variant="icon">
               <Package className="size-6" />
             </EmptyMedia>
-            <EmptyTitle>{isError ? 'Failed to load' : 'Not found'}</EmptyTitle>
+            <EmptyTitle>{isError ? t('common.failedToLoad') : t('common.notFound')}</EmptyTitle>
             <EmptyDescription>
-              {error?.message ?? 'This item does not exist or has been deleted.'}
+              {error?.message ?? t('items.doesNotExist')}
             </EmptyDescription>
           </EmptyHeader>
           <div className="flex gap-2">
             <Button variant="outline" onClick={() => router.push('/app/items')}>
-              <ArrowLeft className="size-4 mr-1" /> Back
+              <ArrowLeft className="size-4 mr-1" /> {t('common.back')}
             </Button>
-            {isError && <Button onClick={() => refetch()}>Retry</Button>}
+            {isError && <Button onClick={() => refetch()}>{t('common.retry')}</Button>}
           </div>
         </Empty>
       </div>
@@ -127,9 +129,9 @@ export default function ItemDetailPage() {
 
   const handleDelete = () => {
     alert.delete({
-      title: `Delete "${item.name}"?`,
-      description: 'This item will be deactivated. It can be restored later.',
-      confirmText: 'Delete',
+      title: t('common.confirmDelete'),
+      description: t('items.deactivateRestoreConfirm'),
+      confirmText: t('common.delete'),
       onConfirm: async () => {
         await deleteMutation.mutateAsync({ id: item.id });
       },
@@ -150,21 +152,21 @@ export default function ItemDetailPage() {
           <Package className="size-5 text-muted-foreground shrink-0" />
           <h1 className="text-xl font-semibold truncate">{item.name}</h1>
           <Badge variant="outline" className={cn('text-xs', TYPE_VARIANTS[item.type] ?? '')}>
-            {item.type}
+            {t(`items.types.${item.type}`)}
           </Badge>
           {!item.isActive && (
             <Badge
               variant="outline"
               className="bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200"
             >
-              Inactive
+              {t('common.inactive')}
             </Badge>
           )}
         </div>
         <div className="flex items-center gap-2">
           <Button variant="outline" size="sm" className="gap-1.5" onClick={handleEdit}>
             <Edit className="size-4" />
-            Edit
+            {t('common.edit')}
           </Button>
           <Button
             variant="destructive"
@@ -174,7 +176,7 @@ export default function ItemDetailPage() {
             disabled={isPending}
           >
             {isPending ? <Loader2 className="size-4 animate-spin" /> : <Trash className="size-4" />}
-            Delete
+            {t('common.delete')}
           </Button>
         </div>
       </header>
@@ -185,7 +187,7 @@ export default function ItemDetailPage() {
           <Card>
             <CardHeader className="pb-1.5">
               <CardTitle className="text-xs text-muted-foreground font-medium flex items-center gap-1">
-                <Tag className="size-3" /> SKU & Barcode
+                <Tag className="size-3" /> {t('items.skuBarcode')}
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -202,13 +204,13 @@ export default function ItemDetailPage() {
           <Card>
             <CardHeader className="pb-1.5">
               <CardTitle className="text-xs text-muted-foreground font-medium flex items-center gap-1">
-                <Box className="size-3" /> Unit & Category
+                <Box className="size-3" /> {t('items.unitCategory')}
               </CardTitle>
             </CardHeader>
             <CardContent>
               <p className="font-semibold">{item.unit}</p>
               <p className="text-xs text-muted-foreground mt-1">
-                {item.category?.name ?? 'No category'}
+                {item.category?.name ?? t('items.noCategory')}
               </p>
             </CardContent>
           </Card>
@@ -216,17 +218,17 @@ export default function ItemDetailPage() {
           <Card>
             <CardHeader className="pb-1.5">
               <CardTitle className="text-xs text-muted-foreground font-medium flex items-center gap-1">
-                <ShoppingCart className="size-3" /> Pricing
+                <ShoppingCart className="size-3" /> {t('items.pricing')}
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="flex justify-between">
-                <span className="text-sm text-muted-foreground">Sales</span>
-                <span className="font-semibold">{Number(item.salesPrice).toFixed(3)}</span>
-              </div>
-              {!isService && (
-                <div className="flex justify-between mt-0.5">
-                  <span className="text-sm text-muted-foreground">Purchase</span>
+                  <span className="text-sm text-muted-foreground">{t('items.sales')}</span>
+                  <span className="font-semibold">{Number(item.salesPrice).toFixed(3)}</span>
+                </div>
+                {!isService && (
+                  <div className="flex justify-between mt-0.5">
+                    <span className="text-sm text-muted-foreground">{t('items.purchase')}</span>
                   <span className="font-semibold">{Number(item.purchasePrice).toFixed(3)}</span>
                 </div>
               )}
@@ -235,14 +237,14 @@ export default function ItemDetailPage() {
           <Card>
             <CardHeader className="pb-1.5">
               <CardTitle className="text-xs text-muted-foreground font-medium flex items-center gap-1">
-                <Scale className="size-3" /> Tax
+                <Scale className="size-3" /> {t('common.tax')}
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="font-semibold">{item.taxRate?.name ?? 'No tax rate'}</p>
+              <p className="font-semibold">{item.taxRate?.name ?? t('items.noTaxRate')}</p>
               {item.taxRate && (
                 <p className="text-xs text-muted-foreground mt-1">
-                  Rate: {Number(item.taxRate.rate)}%
+                  {t('items.rate')}: {Number(item.taxRate.rate)}%
                 </p>
               )}
             </CardContent>
@@ -253,21 +255,21 @@ export default function ItemDetailPage() {
         {isService ? (
           <Card>
             <CardHeader className="pb-1.5">
-              <CardTitle className="text-sm font-semibold">Stock</CardTitle>
+              <CardTitle className="text-sm font-semibold">{t('items.stock')}</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-sm text-muted-foreground">Services are not stock-tracked.</p>
+              <p className="text-sm text-muted-foreground">{t('items.notStockTracked')}</p>
             </CardContent>
           </Card>
         ) : (
           <Card>
             <CardHeader className="pb-1.5">
-              <CardTitle className="text-sm font-semibold">Stock & Reorder</CardTitle>
+              <CardTitle className="text-sm font-semibold">{t('items.stockReorder')}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-4">
                 <div>
-                  <p className="text-xs text-muted-foreground">Total stock</p>
+                  <p className="text-xs text-muted-foreground">{t('items.totalStock')}</p>
                   <p
                     className={cn(
                       'text-2xl font-bold',
@@ -282,26 +284,26 @@ export default function ItemDetailPage() {
                   </p>
                 </div>
                 <div>
-                  <p className="text-xs text-muted-foreground">Min stock</p>
+                  <p className="text-xs text-muted-foreground">{t('items.minStock')}</p>
                   <p className="text-lg font-semibold">{item.minStock}</p>
                 </div>
                 <div>
-                  <p className="text-xs text-muted-foreground">Reorder at</p>
+                  <p className="text-xs text-muted-foreground">{t('items.reorderAt')}</p>
                   <p className="text-lg font-semibold">{item.reorderPoint}</p>
                 </div>
                 <div>
-                  <p className="text-xs text-muted-foreground">Reorder qty</p>
+                  <p className="text-xs text-muted-foreground">{t('items.reorderQty')}</p>
                   <p className="text-lg font-semibold">{item.reorderQty}</p>
                 </div>
                 <div>
-                  <p className="text-xs text-muted-foreground">Avg cost</p>
+                  <p className="text-xs text-muted-foreground">{t('items.avgCost')}</p>
                   <p className="text-lg font-semibold">{Number(item.averageCost).toFixed(3)}</p>
                 </div>
               </div>
 
               {item.stock && item.stock.length > 0 && (
                 <div>
-                  <p className="text-xs text-muted-foreground mb-2">Per warehouse</p>
+                  <p className="text-xs text-muted-foreground mb-2">{t('items.perWarehouse')}</p>
                   <div className="space-y-1">
                     {item.stock.map((s: any) => (
                       <div
@@ -331,7 +333,7 @@ export default function ItemDetailPage() {
           <div className="grid grid-cols-2 gap-3">
             <Card>
               <CardHeader className="pb-1.5">
-                <CardTitle className="text-xs text-muted-foreground font-medium">Flags</CardTitle>
+                <CardTitle className="text-xs text-muted-foreground font-medium">{t('items.flags')}</CardTitle>
               </CardHeader>
               <CardContent className="flex gap-4">
                 <div className="flex items-center gap-1.5">
@@ -341,7 +343,7 @@ export default function ItemDetailPage() {
                       item.isSaleable ? 'bg-green-500' : 'bg-gray-300',
                     )}
                   />
-                  <span className="text-sm">Saleable</span>
+                  <span className="text-sm">{t('items.saleable')}</span>
                 </div>
                 <div className="flex items-center gap-1.5">
                   <div
@@ -350,14 +352,14 @@ export default function ItemDetailPage() {
                       item.isPurchasable ? 'bg-green-500' : 'bg-gray-300',
                     )}
                   />
-                  <span className="text-sm">Purchasable</span>
+                  <span className="text-sm">{t('items.purchasable')}</span>
                 </div>
               </CardContent>
             </Card>
             <Card>
               <CardHeader className="pb-1.5">
                 <CardTitle className="text-xs text-muted-foreground font-medium">
-                  Dimensions
+                  {t('items.dimensions')}
                 </CardTitle>
               </CardHeader>
               <CardContent className="flex flex-wrap gap-x-4 gap-y-1">
@@ -375,7 +377,7 @@ export default function ItemDetailPage() {
                   </div>
                 )}
                 {!item.weightKg && !item.widthCm && (
-                  <span className="text-sm text-muted-foreground">Not specified</span>
+                  <span className="text-sm text-muted-foreground">{t('common.notSpecified')}</span>
                 )}
               </CardContent>
             </Card>
@@ -387,7 +389,7 @@ export default function ItemDetailPage() {
           <Card>
             <CardHeader className="pb-1.5">
               <CardTitle className="text-sm font-semibold flex items-center gap-1">
-                <Truck className="size-4" /> Suppliers
+                <Truck className="size-4" /> {t('layout.suppliers')}
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -400,7 +402,7 @@ export default function ItemDetailPage() {
                     <div>
                       <p className="font-medium text-sm">{si.supplier.name}</p>
                       {si.supplierSku && (
-                        <p className="text-xs text-muted-foreground">SKU: {si.supplierSku}</p>
+                        <p className="text-xs text-muted-foreground">{t('common.sku')}: {si.supplierSku}</p>
                       )}
                     </div>
                     <div className="text-right text-sm">
@@ -420,7 +422,7 @@ export default function ItemDetailPage() {
         {item.bundleLines && item.bundleLines.length > 0 && (
           <Card>
             <CardHeader className="pb-1.5">
-              <CardTitle className="text-sm font-semibold">Bundle components</CardTitle>
+              <CardTitle className="text-sm font-semibold">{t('items.bundleComponents')}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-1">
@@ -445,7 +447,7 @@ export default function ItemDetailPage() {
           <Card>
             <CardHeader className="pb-1.5">
               <CardTitle className="text-xs text-muted-foreground font-medium">
-                Description
+                {t('common.description')}
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -461,11 +463,11 @@ export default function ItemDetailPage() {
             onClick={() => router.push(`/app/invoices?itemId=${item.id}`)}
           >
             <CardHeader className="pb-1.5">
-              <CardTitle className="text-xs text-muted-foreground font-medium">Invoices</CardTitle>
+              <CardTitle className="text-xs text-muted-foreground font-medium">{t('layout.invoices')}</CardTitle>
             </CardHeader>
             <CardContent className="flex items-center gap-2">
               <span className="text-2xl font-bold">{item._count?.invoiceLines ?? 0}</span>
-              <span className="text-sm text-muted-foreground">invoice lines</span>
+              <span className="text-sm text-muted-foreground">{t('items.invoiceLines')}</span>
             </CardContent>
           </Card>
           <Card
@@ -474,12 +476,12 @@ export default function ItemDetailPage() {
           >
             <CardHeader className="pb-1.5">
               <CardTitle className="text-xs text-muted-foreground font-medium">
-                Purchase Orders
+                {t('layout.purchaseOrders')}
               </CardTitle>
             </CardHeader>
             <CardContent className="flex items-center gap-2">
               <span className="text-2xl font-bold">{item._count?.purchaseLines ?? 0}</span>
-              <span className="text-sm text-muted-foreground">PO lines</span>
+              <span className="text-sm text-muted-foreground">{t('items.poLines')}</span>
             </CardContent>
           </Card>
         </div>
@@ -487,13 +489,13 @@ export default function ItemDetailPage() {
         {/* Meta info */}
         <div className="text-xs text-muted-foreground flex flex-wrap gap-x-4 gap-y-1 pb-2">
           {item.averageCost && Number(item.averageCost) > 0 && (
-            <span>Avg cost: {Number(item.averageCost).toFixed(3)}</span>
+            <span>{t('items.avgCost')}: {Number(item.averageCost).toFixed(3)}</span>
           )}
           <span>
-            Created {item.createdAt ? format(new Date(item.createdAt), 'dd MMM yyyy HH:mm') : '—'}
+            {t('items.created')} {item.createdAt ? format(new Date(item.createdAt), 'dd MMM yyyy HH:mm') : '—'}
           </span>
           <span>
-            Updated {item.updatedAt ? format(new Date(item.updatedAt), 'dd MMM yyyy HH:mm') : '—'}
+            {t('items.updated')} {item.updatedAt ? format(new Date(item.updatedAt), 'dd MMM yyyy HH:mm') : '—'}
           </span>
         </div>
       </div>

@@ -20,6 +20,7 @@ This document describes the architecture, major design decisions, module structu
 | **Charts** | Recharts |
 | **Styling** | Tailwind CSS 4 + class-variance-authority |
 | **Validation** | Zod (with t3-oss/env-core for env vars) |
+| **i18n** | next-intl v4 (fully client-side, no middleware/proxy) |
 | **Serialization** | SuperJSON (for Date/Decimal transport) |
 
 ---
@@ -39,6 +40,9 @@ Transaction-Manager/
 ├── auth/
 │   ├── auth-client.ts   # Better Auth client (browser)
 │   └── auth-server.ts   # Better Auth server config + helpers
+├── messages/            # i18n translation files
+│   ├── en.json          # English translations (~460 keys, 16 namespaces)
+│   └── ar.json          # Arabic translations (RTL)
 ├── components/          # React components
 │   ├── ui/              # Generic UI primitives (shadcn-style)
 │   ├── invoices/        # Invoice-specific components
@@ -53,6 +57,7 @@ Transaction-Manager/
 │   ├── sidebar.tsx
 │   └── ...
 ├── hooks/               # React hooks
+│   ├── use-locale.ts    # Cookie-based locale switcher
 │   ├── use-ability.tsx
 │   ├── use-currency.tsx
 │   ├── use-date-format.tsx
@@ -215,6 +220,40 @@ Shared validation patterns:
 - **API routes** in `app/api/` handle Auth (Better Auth), tRPC, and file uploads
 - **Components** organized by domain in `components/` (invoices/, customers/, etc.) with shared UI primitives in `components/ui/`
 - **Hooks** provide reusable state and utility access (ability checks, currency formatting, date formatting, mobile detection, table theming)
+- **i18n**: Fully client-side internationalization via `next-intl` (see §7a)
+
+### 7a. Internationalization (i18n)
+
+**Architecture**: Fully client-side — no middleware, no proxy routing, no next-intl plugin. This avoids Next.js 16 proxy conflicts that caused 404s with `createMiddleware()`.
+
+**Locale persistence**: `NEXT_LOCALE` cookie set by the client (JS). Server-side `cookies()` reads it in the root layout to set `<html dir="ltr|rtl" lang="en|ar">`.
+
+**Locale switching**: `useLocaleSwitcher()` hook (`hooks/use-locale.ts`) sets the cookie → calls `window.location.reload()` → server reads cookie for RTL attributes → client picks up static messages via `I18nProvider`.
+
+**Provider chain** (`components/i18n-provider.tsx`):
+```
+app/layout.tsx → I18nProvider → NextIntlClientProvider → {children}
+```
+- Statically imports both `en.json` and `ar.json` at build time (no async loading flash)
+- Reads `NEXT_LOCALE` cookie to select the active message bundle
+- Single `t` function from `useTranslations()` used across all pages and components
+
+**Translation files** (`messages/en.json`, `messages/ar.json`):
+- 16 namespaces: auth, invoices, customers, suppliers, items, purchaseOrders, contracts, warehouses, stock, reports, settings, dashboard, layout, common, locale, errors
+- ~460 keys total in each language
+- ICU message syntax for interpolation (e.g. `"{type} created by {name} on {date}"`)
+- RTL-safe English translations for embedded strings in Arabic mode
+
+**Key files**:
+| File | Purpose |
+|---|---|
+| `components/i18n-provider.tsx` | Client provider wrapping `NextIntlClientProvider` |
+| `hooks/use-locale.ts` | Cookie-based locale switcher with `window.location.reload()` |
+| `components/locale-switcher.tsx` | Dropdown submenu for language selection |
+| `messages/en.json` | English translations |
+| `messages/ar.json` | Arabic translations |
+
+**Trade-off**: `getTranslations()` unavailable in server components; locale switch triggers a full page reload instead of a smooth `router.refresh()`.
 
 ### 8. Error Handling
 

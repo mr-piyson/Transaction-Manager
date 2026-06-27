@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 import Logo from '@/components/Logo';
 import {
@@ -58,132 +59,6 @@ export type RouteConfig = {
   };
 };
 
-// Derive a type from the const
-export type Routes = typeof ROUTES;
-
-// Define the routes as a const to get literal types
-export const ROUTES = [
-  {
-    type: 'group',
-    label: 'Navigation',
-
-    children: [
-      {
-        type: 'item',
-        label: 'Dashboard',
-
-        href: '/app',
-        icon: LayoutDashboard,
-      },
-    ],
-  },
-  {
-    type: 'group',
-    label: 'Sales',
-
-    children: [
-      {
-        type: 'item',
-        label: 'Invoices',
-
-        href: '/app/invoices',
-        icon: FilePenLine,
-      },
-      {
-        type: 'item',
-        label: 'Customers',
-
-        href: '/app/customers',
-        icon: Users,
-      },
-      {
-        type: 'item',
-        label: 'Contracts',
-
-        href: '/app/contracts',
-        icon: Handshake,
-      },
-    ],
-  },
-  {
-    type: 'group',
-    label: 'Purchases',
-
-    children: [
-      {
-        type: 'item',
-        label: 'Purchase Orders',
-
-        href: '/app/purchase-orders',
-        icon: ShoppingCart,
-      },
-      {
-        type: 'item',
-        label: 'Suppliers',
-
-        href: '/app/suppliers',
-        icon: Truck,
-      },
-    ],
-  },
-  {
-    type: 'group',
-    label: 'Inventory',
-
-    children: [
-      {
-        type: 'item',
-        label: 'Stock Levels',
-
-        href: '/app/stock',
-        icon: Boxes,
-      },
-      {
-        type: 'item',
-        label: 'Items',
-
-        href: '/app/items',
-        icon: Package,
-      },
-      {
-        type: 'item',
-        label: 'Warehouses',
-
-        href: '/app/warehouses',
-        icon: Warehouse,
-      },
-    ],
-  },
-  {
-    type: 'group',
-    label: 'Analytics',
-
-    children: [
-      {
-        type: 'item',
-        label: 'Reports',
-
-        href: '/app/reports',
-        icon: BarChart3,
-      },
-    ],
-  },
-  {
-    type: 'group',
-    label: 'Configuration',
-
-    children: [
-      {
-        type: 'item',
-        label: 'Settings',
-
-        href: '/app/settings',
-        icon: Settings,
-      },
-    ],
-  },
-] as const satisfies RouteConfig[];
-
 interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {}
 
 export function AppSidebar({ ...props }: AppSidebarProps) {
@@ -191,6 +66,57 @@ export function AppSidebar({ ...props }: AppSidebarProps) {
   const { isMobile, open, setOpenMobile } = useSidebar();
   const router = useRouter();
   const [loading, setLoading] = useState('');
+  const t = useTranslations();
+
+  const ROUTES: RouteConfig[] = [
+    {
+      type: 'group',
+      label: t('layout.navigation'),
+      children: [
+        { type: 'item', label: t('layout.dashboard'), href: '/app', icon: LayoutDashboard },
+      ],
+    },
+    {
+      type: 'group',
+      label: t('layout.sales'),
+      children: [
+        { type: 'item', label: t('layout.invoices'), href: '/app/invoices', icon: FilePenLine },
+        { type: 'item', label: t('layout.customers'), href: '/app/customers', icon: Users },
+        { type: 'item', label: t('layout.contracts'), href: '/app/contracts', icon: Handshake },
+      ],
+    },
+    {
+      type: 'group',
+      label: t('layout.purchases'),
+      children: [
+        { type: 'item', label: t('layout.purchaseOrders'), href: '/app/purchase-orders', icon: ShoppingCart },
+        { type: 'item', label: t('layout.suppliers'), href: '/app/suppliers', icon: Truck },
+      ],
+    },
+    {
+      type: 'group',
+      label: t('layout.inventory'),
+      children: [
+        { type: 'item', label: t('layout.stockLevels'), href: '/app/stock', icon: Boxes },
+        { type: 'item', label: t('layout.items'), href: '/app/items', icon: Package },
+        { type: 'item', label: t('layout.warehouses'), href: '/app/warehouses', icon: Warehouse },
+      ],
+    },
+    {
+      type: 'group',
+      label: t('layout.analytics'),
+      children: [
+        { type: 'item', label: t('layout.reports'), href: '/app/reports', icon: BarChart3 },
+      ],
+    },
+    {
+      type: 'group',
+      label: t('layout.configuration'),
+      children: [
+        { type: 'item', label: t('layout.settings'), href: '/app/settings', icon: Settings },
+      ],
+    },
+  ];
 
   useEffect(() => {
     if (loading === currentPath) {
@@ -227,7 +153,7 @@ export function AppSidebar({ ...props }: AppSidebarProps) {
           route.type === 'group' ? (
             <RouteGroup
               key={route.label}
-              route={route}
+              route={route as RouteConfig & { type: 'group' }}
               isActive={isActive}
               loading={loading}
               open={open}
@@ -432,6 +358,7 @@ function RouteItem({ route, ...shared }: SharedProps & { route: RouteConfig }) {
 // ─── Logo ─────────────────────────────────────────────────────────────────────
 
 function AppLogo() {
+  const t = useTranslations();
   return (
     <SidebarMenu>
       <SidebarMenuItem>
@@ -446,7 +373,7 @@ function AppLogo() {
             </div>
 
             <div className="grid flex-1 text-left text-sm leading-tight ">
-              <span className="truncate font-semibold text-lg">Transaction Manager</span>
+              <span className="truncate font-semibold text-lg">{t('layout.appTitle')}</span>
             </div>
           </SidebarMenuButton>
         </Link>
@@ -457,12 +384,13 @@ function AppLogo() {
 
 export function SidebarToggleButton(props: React.ComponentProps<typeof Button>) {
   const { toggleSidebar } = useSidebar();
+  const t = useTranslations();
   return (
     <Button
       variant="ghost"
       size="icon"
       onClick={toggleSidebar}
-      aria-label="Toggle Sidebar"
+      aria-label={t('layout.toggleSidebar')}
       {...props}
     >
       <SidebarIcon className="size-5" />

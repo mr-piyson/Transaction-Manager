@@ -2,6 +2,7 @@
 
 import { zodResolver } from '@hookform/resolvers/zod';
 import { User } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import type React from 'react';
 import { useRef, useState } from 'react';
@@ -32,6 +33,7 @@ export const SignUpSchema = z
 
 export default function SignUpTab() {
   const router = useRouter();
+  const t = useTranslations();
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isPending, setIsPending] = useState(false);
@@ -61,12 +63,12 @@ export default function SignUpTab() {
     if (!file) return;
 
     if (file.size > 1048576) {
-      alert('Avatar image must be less than 1MB');
+      alert(t('auth.avatarSizeError'));
       return;
     }
 
     if (!file.type.startsWith('image/')) {
-      alert('Please upload an image file');
+      alert(t('auth.avatarTypeError'));
       return;
     }
 
@@ -91,10 +93,10 @@ export default function SignUpTab() {
         toast.error(error.message);
         return;
       }
-      toast.success('Account created successfully!');
+      toast.success(t('auth.signUpSuccess'));
       router.push('/app');
     } catch (err: any) {
-      toast.error(err.message ?? 'Something went wrong');
+      toast.error(err.message ?? t('errors.generic'));
     } finally {
       setIsPending(false);
     }
@@ -104,8 +106,8 @@ export default function SignUpTab() {
     <Card className="gap-0">
       <div className="flex flex-row px-6 pt-6 justify-between items-start">
         <div className="space-y-1">
-          <CardTitle className="text-2xl font-bold">Sign Up</CardTitle>
-          <CardDescription>Create an account to get started</CardDescription>
+          <CardTitle className="text-2xl font-bold">{t('auth.signUp')}</CardTitle>
+          <CardDescription>{t('auth.signUpSubtitle')}</CardDescription>
         </div>
 
         <div className="flex flex-col items-center space-y-2">
@@ -115,7 +117,7 @@ export default function SignUpTab() {
           >
             <Avatar className="w-24 h-24 border-transparent">
               {avatarPreview ? (
-                <AvatarImage src={avatarPreview} className="object-cover" alt="Avatar preview" />
+                <AvatarImage src={avatarPreview} className="object-cover" alt={t('auth.avatarPreview')} />
               ) : (
                 <AvatarFallback className="bg-card border-3 border-muted-foreground/50">
                   <User className="w-12 h-12 text-accent-foreground/50" />
@@ -137,7 +139,7 @@ export default function SignUpTab() {
             onChange={handleAvatarChange}
           />
 
-          <p className="text-xs text-center text-gray-500">Max size: 1MB</p>
+          <p className="text-xs text-center text-gray-500">{t('auth.maxSize')}</p>
         </div>
       </div>
 
@@ -145,7 +147,7 @@ export default function SignUpTab() {
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           {/* Name Field */}
           <div className="grid gap-2">
-            <Label htmlFor="name">Full Name</Label>
+            <Label htmlFor="name">{t('auth.name')}</Label>
             <Input
               id="name"
               {...register('name')}
@@ -155,7 +157,7 @@ export default function SignUpTab() {
           </div>
           {/* Email Field */}
           <div className="grid gap-2">
-            <Label htmlFor="email">Email</Label>
+            <Label htmlFor="email">{t('auth.email')}</Label>
             <Input
               id="email"
               type="email"
@@ -166,7 +168,7 @@ export default function SignUpTab() {
           </div>
           {/* Password Field */}
           <div className="grid gap-2">
-            <Label htmlFor="password">Password</Label>
+            <Label htmlFor="password">{t('auth.password')}</Label>
             <Input
               id="password"
               type="password"
@@ -177,7 +179,7 @@ export default function SignUpTab() {
           </div>
           {/* Confirm Password Field */}
           <div className="grid gap-2">
-            <Label htmlFor="confirmPassword">Confirm Password</Label>
+            <Label htmlFor="confirmPassword">{t('auth.confirmPassword')}</Label>
             <Input
               id="confirmPassword"
               type="password"
@@ -191,7 +193,7 @@ export default function SignUpTab() {
 
           <Button disabled={isPending} type="submit" className="w-full font-bold">
             {isPending && <Spinner className="ps-2 h-4 w-4 " />}
-            {!isPending && 'Sign Up'}
+            {!isPending && t('auth.signUp')}
           </Button>
         </form>
       </CardContent>

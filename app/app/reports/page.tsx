@@ -18,6 +18,7 @@ import {
   Users,
   Wallet,
 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { useTheme } from 'next-themes';
 import { Area, AreaChart, Bar, BarChart, Cell, Pie, PieChart, XAxis, YAxis } from 'recharts';
 import { useMemo, useRef, useState } from 'react';
@@ -41,21 +42,6 @@ import { trpc } from '@/lib/trpc/client';
 import { cn } from '@/lib/utils';
 
 ModuleRegistry.registerModules([AllCommunityModule]);
-
-const MONTH_LABELS: Record<string, string> = {
-  '01': 'Jan',
-  '02': 'Feb',
-  '03': 'Mar',
-  '04': 'Apr',
-  '05': 'May',
-  '06': 'Jun',
-  '07': 'Jul',
-  '08': 'Aug',
-  '09': 'Sep',
-  '10': 'Oct',
-  '11': 'Nov',
-  '12': 'Dec',
-};
 
 const CHART_COLORS = [
   'hsl(var(--chart-1))',
@@ -146,6 +132,21 @@ function ChartSkeleton() {
 // ─── Main Page ───────────────────────────────────────────────────────────────
 
 export default function ReportsPage() {
+  const t = useTranslations();
+  const MONTH_LABELS: Record<string, string> = {
+    '01': t('common.monthNames.0'),
+    '02': t('common.monthNames.1'),
+    '03': t('common.monthNames.2'),
+    '04': t('common.monthNames.3'),
+    '05': t('common.monthNames.4'),
+    '06': t('common.monthNames.5'),
+    '07': t('common.monthNames.6'),
+    '08': t('common.monthNames.7'),
+    '09': t('common.monthNames.8'),
+    '10': t('common.monthNames.9'),
+    '11': t('common.monthNames.10'),
+    '12': t('common.monthNames.11'),
+  };
   const { data: summary, isLoading: summaryLoading } = trpc.reports.summary.useQuery();
   const { data: monthlyRevenue, isLoading: monthlyLoading } =
     trpc.reports.monthlyRevenue.useQuery();
@@ -162,8 +163,8 @@ export default function ReportsPage() {
   // ── Revenue Chart Config ─────────────────────────────────────────────────
   const revenueChartConfig = useMemo(
     () => ({
-      revenue: { label: 'Revenue', color: 'hsl(var(--chart-1))' },
-      profit: { label: 'Gross Profit', color: 'hsl(var(--chart-2))' },
+      revenue: { label: t('reports.totalRevenue'), color: 'hsl(var(--chart-1))' },
+      profit: { label: t('reports.grossProfit'), color: 'hsl(var(--chart-2))' },
     }),
     [],
   );
@@ -181,8 +182,8 @@ export default function ReportsPage() {
   // ── Rev vs Exp Chart Config ──────────────────────────────────────────────
   const revExpChartConfig = useMemo(
     () => ({
-      revenue: { label: 'Revenue', color: 'hsl(var(--chart-1))' },
-      expenses: { label: 'Expenses', color: 'hsl(var(--chart-3))' },
+      revenue: { label: t('reports.totalRevenue'), color: 'hsl(var(--chart-1))' },
+      expenses: { label: t('reports.totalExpenses'), color: 'hsl(var(--chart-3))' },
     }),
     [],
   );
@@ -200,14 +201,14 @@ export default function ReportsPage() {
   // ── Status Config ────────────────────────────────────────────────────────
   const statusChartConfig = useMemo(
     () => ({
-      count: { label: 'Count', color: 'hsl(var(--chart-1))' },
-      PAID: { label: 'Paid', color: 'hsl(var(--chart-2))' },
-      SENT: { label: 'Sent', color: 'hsl(var(--chart-1))' },
-      PARTIAL: { label: 'Partial', color: 'hsl(var(--chart-4))' },
-      OVERDUE: { label: 'Overdue', color: 'hsl(var(--chart-5))' },
-      DRAFT: { label: 'Draft', color: 'hsl(var(--chart-3))' },
-      DISPUTED: { label: 'Disputed', color: 'hsl(0 70% 50%)' },
-      CANCELLED: { label: 'Cancelled', color: 'hsl(0 0% 60%)' },
+      count: { label: t('common.quantity'), color: 'hsl(var(--chart-1))' },
+      PAID: { label: t('common.paid'), color: 'hsl(var(--chart-2))' },
+      SENT: { label: t('common.sent'), color: 'hsl(var(--chart-1))' },
+      PARTIAL: { label: t('common.partial'), color: 'hsl(var(--chart-4))' },
+      OVERDUE: { label: t('common.overdue'), color: 'hsl(var(--chart-5))' },
+      DRAFT: { label: t('common.draft'), color: 'hsl(var(--chart-3))' },
+      DISPUTED: { label: t('common.rejected'), color: 'hsl(0 70% 50%)' },
+      CANCELLED: { label: t('common.cancelled'), color: 'hsl(0 0% 60%)' },
     }),
     [],
   );
@@ -215,7 +216,7 @@ export default function ReportsPage() {
   // ── AR Aging Config ──────────────────────────────────────────────────────
   const agingChartConfig = useMemo(
     () => ({
-      amount: { label: 'Amount' },
+      amount: { label: t('common.amount') },
     }),
     [],
   );
@@ -223,7 +224,7 @@ export default function ReportsPage() {
   // ── Sales by Customer Config ─────────────────────────────────────────────
   const salesChartConfig = useMemo(
     () => ({
-      totalSales: { label: 'Total Sales', color: 'hsl(var(--chart-1))' },
+      totalSales: { label: t('reports.salesReport'), color: 'hsl(var(--chart-1))' },
     }),
     [],
   );
@@ -236,7 +237,7 @@ export default function ReportsPage() {
   // ── Top Items Config ─────────────────────────────────────────────────────
   const itemsChartConfig = useMemo(
     () => ({
-      totalRevenue: { label: 'Revenue', color: 'hsl(var(--chart-2))' },
+      totalRevenue: { label: t('reports.totalRevenue'), color: 'hsl(var(--chart-2))' },
     }),
     [],
   );
@@ -255,21 +256,21 @@ export default function ReportsPage() {
         rows.push({
           id: `rev-${m.month}`,
           date: m.month,
-          type: 'Revenue',
-          description: `Invoice revenue — ${MONTH_LABELS[m.month.slice(-2)] || m.month}`,
+          type: t('reports.revenue'),
+          description: t('reports.invoiceRevenueDesc', { month: MONTH_LABELS[m.month.slice(-2)] || m.month }),
           amount: Math.round(m.revenue),
-          status: 'Posted',
-          category: 'Income',
+          status: t('common.posted'),
+          category: t('reports.income'),
         });
         if (m.cost > 0) {
           rows.push({
             id: `cogs-${m.month}`,
             date: m.month,
-            type: 'COGS',
-            description: `Cost of goods sold — ${MONTH_LABELS[m.month.slice(-2)] || m.month}`,
+            type: t('reports.cogs'),
+            description: t('reports.cogsDesc', { month: MONTH_LABELS[m.month.slice(-2)] || m.month }),
             amount: -Math.round(m.cost),
-            status: 'Posted',
-            category: 'Cost of Sales',
+            status: t('common.posted'),
+            category: t('reports.costOfSales'),
           });
         }
       }
@@ -281,11 +282,11 @@ export default function ReportsPage() {
           rows.push({
             id: `exp-${m.month}`,
             date: m.month,
-            type: 'Expense',
-            description: `Operating expenses — ${MONTH_LABELS[m.month.slice(-2)] || m.month}`,
+            type: t('reports.expense'),
+            description: t('reports.expenseDesc', { month: MONTH_LABELS[m.month.slice(-2)] || m.month }),
             amount: -Math.round(m.expenses),
-            status: 'Posted',
-            category: 'Expenses',
+            status: t('common.posted'),
+            category: t('reports.expensesCategory'),
           });
         }
       }
@@ -296,12 +297,12 @@ export default function ReportsPage() {
 
   const columnDefs = useMemo<ColDef[]>(
     () => [
-      { field: 'date', headerName: 'Period', width: 100 },
-      { field: 'type', headerName: 'Type', width: 100 },
-      { field: 'description', headerName: 'Description', flex: 1, minWidth: 200 },
+      { field: 'date', headerName: t('common.date'), width: 100 },
+      { field: 'type', headerName: t('common.type'), width: 100 },
+      { field: 'description', headerName: t('common.description'), flex: 1, minWidth: 200 },
       {
         field: 'amount',
-        headerName: 'Amount',
+        headerName: t('common.amount'),
         width: 130,
         type: 'rightAligned',
         valueFormatter: (p) => format(p.value),
@@ -310,7 +311,7 @@ export default function ReportsPage() {
       },
       {
         field: 'status',
-        headerName: 'Status',
+        headerName: t('common.status'),
         width: 100,
         cellRenderer: (p: any) => (
           <Badge variant="outline" className="text-[10px] h-5 mt-1.5">
@@ -318,7 +319,7 @@ export default function ReportsPage() {
           </Badge>
         ),
       },
-      { field: 'category', headerName: 'Category', width: 120 },
+      { field: 'category', headerName: t('items.category'), width: 120 },
     ],
     [],
   );
@@ -338,55 +339,55 @@ export default function ReportsPage() {
 
   return (
     <div className="flex flex-col min-h-screen bg-gradient-to-b from-background to-muted/20 pb-12">
-      <Header title="Reports" icon={<BarChart3 className="size-5" />} />
+      <Header title={t('reports.title')} icon={<BarChart3 className="size-5" />} />
 
       <main className="flex-1 p-4 lg:p-8 space-y-8 max-w-360 mx-auto w-full">
         {/* ── KPI Cards Row ──────────────────────────────────────────────── */}
         <section>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
             <KpiCard
-              title="Revenue"
+              title={t('reports.totalRevenue')}
               value={summary ? format(summary.revenue.total) : '-'}
-              sub={`${summary?.revenue.count ?? 0} invoices`}
+              sub={t('reports.invoiceCount', { count: summary?.revenue.count ?? 0 })}
               icon={<TrendingUp className="size-4" />}
               loading={summaryLoadingState}
             />
             <KpiCard
-              title="Gross Profit"
+              title={t('reports.grossProfit')}
               value={summary ? format(summary.grossProfit) : '-'}
-              sub={`Margin ${summary ? ((summary.grossProfit / summary.revenue.total) * 100).toFixed(1) : 0}%`}
+              sub={t('reports.marginPercent', { percent: summary ? ((summary.grossProfit / summary.revenue.total) * 100).toFixed(1) : 0 })}
               icon={<Wallet className="size-4" />}
               loading={summaryLoadingState}
               trend={
                 summary?.grossProfit
-                  ? { dir: summary.grossProfit > 0 ? 'up' : 'down', label: 'Before expenses' }
+                  ? { dir: summary.grossProfit > 0 ? 'up' : 'down', label: t('reports.beforeExpenses') }
                   : undefined
               }
             />
             <KpiCard
-              title="Net Profit"
+              title={t('reports.netProfit')}
               value={summary ? format(summary.netProfit) : '-'}
-              sub={`After ${summary ? format(summary.expenses) : 0} expenses`}
+              sub={t('reports.afterExpenses', { amount: summary ? format(summary.expenses) : 0 })}
               icon={<DollarSign className="size-4" />}
               loading={summaryLoadingState}
               trend={
                 summary?.netProfit
-                  ? { dir: summary.netProfit > 0 ? 'up' : 'down', label: 'Net result' }
+                  ? { dir: summary.netProfit > 0 ? 'up' : 'down', label: t('reports.netResult') }
                   : undefined
               }
             />
             <KpiCard
-              title="Outstanding"
+              title={t('invoices.outstanding')}
               value={summary ? format(summary.outstanding.total) : '-'}
-              sub={`${summary?.outstanding.count ?? 0} open invoices`}
+              sub={t('reports.openInvoiceCount', { count: summary?.outstanding.count ?? 0 })}
               icon={<Receipt className="size-4" />}
               loading={summaryLoadingState}
               trend={
-                summary?.outstanding.total ? { dir: 'down', label: 'Needs collection' } : undefined
+                summary?.outstanding.total ? { dir: 'down', label: t('reports.needsCollection') } : undefined
               }
             />
             <KpiCard
-              title="Expenses"
+              title={t('reports.totalExpenses')}
               value={summary ? format(summary.expenses) : '-'}
               icon={<ShoppingCart className="size-4" />}
               loading={summaryLoadingState}
@@ -394,29 +395,29 @@ export default function ReportsPage() {
           </div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-3">
             <KpiCard
-              title="Collected"
+              title={t('invoices.totalCollected')}
               value={summary ? format(summary.collected.total) : '-'}
               icon={<IndianRupee className="size-4" />}
               loading={summaryLoadingState}
             />
             <KpiCard
-              title="Purchases"
+              title={t('reports.purchaseReport')}
               value={summary ? format(summary.purchases.total) : '-'}
-              sub={`${summary?.purchases.count ?? 0} orders`}
+              sub={t('reports.orderCount', { count: summary?.purchases.count ?? 0 })}
               icon={<Package className="size-4" />}
               loading={summaryLoadingState}
             />
             <KpiCard
-              title="Inventory"
+              title={t('layout.inventory')}
               value={String(summary?.inventory.itemCount ?? '-')}
-              sub={`${summary?.inventory.lowStockCount ?? 0} low stock`}
+              sub={t('reports.lowStockCount', { count: summary?.inventory.lowStockCount ?? 0 })}
               icon={<Box className="size-4" />}
               loading={summaryLoadingState}
             />
             <KpiCard
-              title="Customers"
+              title={t('reports.customerReport')}
               value={String(summary?.customers.activeCount ?? '-')}
-              sub={`${summary?.suppliers.activeCount ?? 0} suppliers`}
+              sub={t('reports.supplierCount', { count: summary?.suppliers.activeCount ?? 0 })}
               icon={<Users className="size-4" />}
               loading={summaryLoadingState}
             />
@@ -433,19 +434,19 @@ export default function ReportsPage() {
               value="overview"
               className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary pb-3 px-4"
             >
-              Overview
+              {t('common.overview')}
             </TabsTrigger>
             <TabsTrigger
               value="financial"
               className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary pb-3 px-4"
             >
-              Financial
+              {t('settings.financial')}
             </TabsTrigger>
             <TabsTrigger
               value="details"
               className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary pb-3 px-4"
             >
-              Details
+              {t('common.details')}
             </TabsTrigger>
           </TabsList>
 
@@ -456,13 +457,13 @@ export default function ReportsPage() {
             {/* Revenue Trend */}
             <Card>
               <CardHeader>
-                <CardTitle className="text-base flex items-center gap-2">
-                  <TrendingUp className="size-4 text-primary" />
-                  Revenue Trend
-                </CardTitle>
-                <CardDescription>
-                  Monthly revenue and gross profit over the last 12 months
-                </CardDescription>
+                  <CardTitle className="text-base flex items-center gap-2">
+                    <TrendingUp className="size-4 text-primary" />
+                    {t('reports.salesReport')}
+                  </CardTitle>
+                  <CardDescription>
+                    {t('reports.grossProfit')}
+                  </CardDescription>
               </CardHeader>
               <CardContent>
                 {monthlyLoading ? (
@@ -524,16 +525,16 @@ export default function ReportsPage() {
                 <CardHeader>
                   <CardTitle className="text-base flex items-center gap-2">
                     <Users className="size-4 text-primary" />
-                    Top Customers
+                    {t('reports.customerReport')}
                   </CardTitle>
-                  <CardDescription>Highest revenue-generating customers</CardDescription>
+                  <CardDescription>{t('common.description')}</CardDescription>
                 </CardHeader>
                 <CardContent>
                   {salesLoading ? (
                     <ChartSkeleton />
                   ) : topCustomers.length === 0 ? (
                     <p className="text-sm text-muted-foreground text-center py-12">
-                      No customer sales data
+                      {t('reports.noData')}
                     </p>
                   ) : (
                     <ChartContainer
@@ -580,16 +581,16 @@ export default function ReportsPage() {
                 <CardHeader>
                   <CardTitle className="text-base flex items-center gap-2">
                     <Box className="size-4 text-primary" />
-                    Top Selling Items
+                    {t('reports.salesReport')}
                   </CardTitle>
-                  <CardDescription>Best-performing products by revenue</CardDescription>
+                  <CardDescription>{t('common.description')}</CardDescription>
                 </CardHeader>
                 <CardContent>
                   {itemsLoading ? (
                     <ChartSkeleton />
                   ) : topItemsData.length === 0 ? (
                     <p className="text-sm text-muted-foreground text-center py-12">
-                      No item sales data
+                      {t('reports.noData')}
                     </p>
                   ) : (
                     <ChartContainer
@@ -640,11 +641,11 @@ export default function ReportsPage() {
             {/* Revenue vs Expenses */}
             <Card>
               <CardHeader>
-                <CardTitle className="text-base flex items-center gap-2">
-                  <BarChart3 className="size-4 text-primary" />
-                  Revenue vs Expenses
-                </CardTitle>
-                <CardDescription>Monthly comparison of income and operating costs</CardDescription>
+                  <CardTitle className="text-base flex items-center gap-2">
+                    <BarChart3 className="size-4 text-primary" />
+                    {t('reports.totalRevenue')} vs {t('reports.totalExpenses')}
+                  </CardTitle>
+                  <CardDescription>{t('common.description')}</CardDescription>
               </CardHeader>
               <CardContent>
                 {revExpLoading ? (
@@ -691,16 +692,16 @@ export default function ReportsPage() {
                 <CardHeader>
                   <CardTitle className="text-base flex items-center gap-2">
                     <FileText className="size-4 text-primary" />
-                    Invoice Status
+                    {t('common.status')}
                   </CardTitle>
-                  <CardDescription>Distribution by current status</CardDescription>
+                  <CardDescription>{t('common.description')}</CardDescription>
                 </CardHeader>
                 <CardContent>
                   {statusLoading ? (
                     <ChartSkeleton />
                   ) : !invoiceStatusDist || invoiceStatusDist.length === 0 ? (
                     <p className="text-sm text-muted-foreground text-center py-12">
-                      No invoice data
+                      {t('reports.noData')}
                     </p>
                   ) : (
                     <ChartContainer
@@ -744,16 +745,16 @@ export default function ReportsPage() {
                 <CardHeader>
                   <CardTitle className="text-base flex items-center gap-2">
                     <Receipt className="size-4 text-primary" />
-                    AR Aging
+                    {t('invoices.outstanding')}
                   </CardTitle>
-                  <CardDescription>Accounts receivable by aging bucket</CardDescription>
+                  <CardDescription>{t('common.description')}</CardDescription>
                 </CardHeader>
                 <CardContent>
                   {agingLoading ? (
                     <ChartSkeleton />
                   ) : !arAging || arAging.length === 0 ? (
                     <p className="text-sm text-muted-foreground text-center py-12">
-                      No outstanding invoices
+                      {t('reports.noData')}
                     </p>
                   ) : (
                     <ChartContainer
@@ -806,9 +807,9 @@ export default function ReportsPage() {
                 <div>
                   <CardTitle className="text-base flex items-center gap-2">
                     <BarChart3 className="size-4 text-primary" />
-                    Financial Transactions
+                    {t('settings.financial')}
                   </CardTitle>
-                  <CardDescription>Detailed financial data across all periods</CardDescription>
+                  <CardDescription>{t('common.details')}</CardDescription>
                 </div>
                 {gridApiRef.current && (
                   <Button
@@ -817,7 +818,7 @@ export default function ReportsPage() {
                     className="text-xs gap-1"
                     onClick={() => gridApiRef.current?.exportDataAsCsv()}
                   >
-                    Export CSV
+                    {t('common.export')}
                   </Button>
                 )}
               </CardHeader>

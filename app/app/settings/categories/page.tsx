@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { Loader2, Plus, Trash } from 'lucide-react';
 import { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
@@ -10,6 +11,7 @@ import { trpc } from '@/lib/trpc/client';
 import { SectionCard } from '../_shared';
 
 export default function CategoriesPage() {
+  const t = useTranslations();
   const { data: tree, isLoading } = trpc.categories.listTree.useQuery();
   const utils = trpc.useUtils();
 
@@ -59,12 +61,12 @@ export default function CategoriesPage() {
   return (
     <div className="h-full space-y-6">
       <SectionCard
-        title="Categories"
-        description="Manage the 3-layer category hierarchy: Family → Class → Commodity."
+        title={t('items.category')}
+        description={t('common.description')}
       >
         {families.length === 0 ? (
           <p className="text-sm text-muted-foreground py-4 text-center">
-            No categories configured yet. Add a Family below.
+            {t('common.noResults')}
           </p>
         ) : null}
 
@@ -104,7 +106,7 @@ export default function CategoriesPage() {
                     <span
                       className="font-semibold cursor-pointer hover:text-primary truncate"
                       onDoubleClick={() => setEditNames({ ...editNames, [family.id]: family.name })}
-                      title="Double-click to rename"
+                      title={t('common.edit')}
                     >
                       {family.name}
                     </span>
@@ -139,7 +141,7 @@ export default function CategoriesPage() {
               <div className="divide-y">
                 {family.classes.length === 0 && (
                   <p className="text-xs text-muted-foreground px-4 py-2 italic">
-                    No classes in this family.
+                    {t('common.noResults')}
                   </p>
                 )}
                 {family.classes.map((cls) => (
@@ -173,7 +175,7 @@ export default function CategoriesPage() {
                     {/* Commodities inside this class */}
                     <div className="ml-8 mt-1 space-y-0.5">
                       {cls.commodities.length === 0 && (
-                        <p className="text-xs text-muted-foreground italic">No commodities.</p>
+                        <p className="text-xs text-muted-foreground italic">{t('common.noResults')}</p>
                       )}
                       {cls.commodities.map((com) => (
                         <div key={com.id} className="flex items-center justify-between py-0.5">
@@ -197,7 +199,7 @@ export default function CategoriesPage() {
                       ))}
                       {/* Add commodity */}
                       <AddInlineRow
-                        placeholder="New commodity code"
+                        placeholder={t('common.code')}
                         onAdd={(code) =>
                           createCommodity.mutate({ name: code, code, classId: cls.id })
                         }
@@ -209,7 +211,7 @@ export default function CategoriesPage() {
                 {/* Add class */}
                 <div className="px-4 py-2">
                   <AddInlineRow
-                    placeholder="New class code (e.g. ELEC)"
+                    placeholder={t('common.code')}
                     onAdd={(code) =>
                       createClass.mutate({ name: code, code, familyId: family.id })
                     }
@@ -225,18 +227,18 @@ export default function CategoriesPage() {
 
         {/* Add Family */}
         <div className="space-y-3">
-          <p className="text-sm font-medium">Add Family</p>
+          <p className="text-sm font-medium">{t('common.addItem')}</p>
           <div className="flex gap-3">
             <div className="flex-1">
               <Input
-                placeholder="Name"
+                placeholder={t('common.name')}
                 value={newFamily.name}
                 onChange={(e) => setNewFamily({ ...newFamily, name: e.target.value })}
               />
             </div>
             <div className="w-28">
               <Input
-                placeholder="Code"
+                placeholder={t('common.code')}
                 value={newFamily.code}
                 onChange={(e) => setNewFamily({ ...newFamily, code: e.target.value.toUpperCase() })}
               />
@@ -251,7 +253,7 @@ export default function CategoriesPage() {
               disabled={!newFamily.name || !newFamily.code || createFamily.isPending}
             >
               <Plus className="size-4 mr-1" />
-              Add
+              {t('common.addItem')}
             </Button>
           </div>
         </div>

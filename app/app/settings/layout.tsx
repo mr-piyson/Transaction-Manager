@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { Menu, Settings } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -27,6 +28,7 @@ export default function SettingsLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const t = useTranslations();
   const pathname = usePathname();
   const activeSection = pathname.split('/').pop() ?? 'general';
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -34,7 +36,7 @@ export default function SettingsLayout({
   const nav = (
     <SidebarGroup>
       <SidebarGroupLabel className="px-3 text-xs uppercase tracking-wider">
-        Settings
+        {t('settings.title')}
       </SidebarGroupLabel>
       <SidebarMenu>
         {NAV_ITEMS.map((item) => {
@@ -53,7 +55,7 @@ export default function SettingsLayout({
                 )}
               >
                 <Icon className="size-4 shrink-0" />
-                <span>{item.label}</span>
+                <span>{t(item.labelKey)}</span>
               </Link>
             </SidebarMenuItem>
           );
@@ -66,7 +68,7 @@ export default function SettingsLayout({
     <div className="flex flex-col h-screen">
       <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
         <Header
-          title="Settings"
+          title={t('settings.title')}
           icon={<Settings className="size-5" />}
         >
           <SheetTrigger asChild>
@@ -76,14 +78,15 @@ export default function SettingsLayout({
               className="md:hidden gap-2"
             >
               <Menu className="size-4" />
-              {NAV_ITEMS.find((i) => i.id === activeSection)?.label ??
-                'Settings'}
+              {t(
+                NAV_ITEMS.find((i) => i.id === activeSection)?.labelKey ?? 'settings.title',
+              )}
             </Button>
           </SheetTrigger>
         </Header>
         <SheetContent side="left" className="w-64 p-4">
           <SheetHeader>
-            <SheetTitle className="text-lg">Settings</SheetTitle>
+            <SheetTitle className="text-lg">{t('settings.title')}</SheetTitle>
           </SheetHeader>
           <nav className="mt-4">{nav}</nav>
         </SheetContent>

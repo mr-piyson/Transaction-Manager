@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { Loader2 } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
@@ -20,6 +21,7 @@ import type { CurrencyCode } from '@/lib/utils';
 import { Field, SectionCard, type OrgData } from '../_shared';
 
 export default function FinancialSettingsPage() {
+  const t = useTranslations();
   const { data: rawOrg, isLoading } = trpc.settings.getOrg.useQuery();
   const utils = trpc.useUtils();
   const updateOrg = trpc.settings.updateOrg.useMutation({
@@ -39,18 +41,13 @@ export default function FinancialSettingsPage() {
   if (!org) {
     return (
       <p className="text-muted-foreground text-sm">
-        Could not load organization data.
+        {t('errors.generic')}
       </p>
     );
   }
 
   return <FinancialForm org={org} updateOrg={updateOrg} />;
 }
-
-const MONTHS = [
-  'January', 'February', 'March', 'April', 'May', 'June',
-  'July', 'August', 'September', 'October', 'November', 'December',
-];
 
 function FinancialForm({
   org,
@@ -59,6 +56,8 @@ function FinancialForm({
   org: OrgData;
   updateOrg: ReturnType<typeof trpc.settings.updateOrg.useMutation>;
 }) {
+  const t = useTranslations();
+  const MONTHS = Array.from({ length: 12 }, (_, i) => t(`common.monthNamesFull.${i}`));
   const [form, setForm] = useState({
     currency: org.currency ?? 'BHD',
     paymentTermsDays: org.paymentTermsDays ?? 30,
@@ -82,8 +81,8 @@ function FinancialForm({
 
   return (
     <div className="h-full space-y-6">
-      <SectionCard title="Currency & Region">
-        <Field label="Default Currency">
+      <SectionCard title={t('settings.currency')}>
+        <Field label={t('settings.currency')}>
           <Select
             value={form.currency}
             onValueChange={(v) => setForm({ ...form, currency: v })}
@@ -100,7 +99,7 @@ function FinancialForm({
             </SelectContent>
           </Select>
         </Field>
-        <Field label="Fiscal Year Start Month">
+        <Field label={t('common.date')}>
           <Select
             value={String(form.fiscalYearStartMonth)}
             onValueChange={(v) =>
@@ -119,21 +118,21 @@ function FinancialForm({
             </SelectContent>
           </Select>
         </Field>
-        <Field label="VAT Registered">
+        <Field label={t('common.active')}>
           <div className="flex items-center gap-2">
             <Switch
               checked={form.vatRegistered}
               onCheckedChange={(v) => setForm({ ...form, vatRegistered: v })}
             />
             <span className="text-sm text-muted-foreground">
-              {form.vatRegistered ? 'Registered' : 'Not registered'}
+              {form.vatRegistered ? t('common.active') : t('common.inactive')}
             </span>
           </div>
         </Field>
       </SectionCard>
 
-      <SectionCard title="Payment Terms">
-        <Field label="Default Payment Terms (days)">
+      <SectionCard title={t('settings.defaultPaymentTerms')}>
+        <Field label={t('settings.defaultPaymentTerms')}>
           <Input
             type="number"
             min={0}
@@ -145,22 +144,22 @@ function FinancialForm({
         </Field>
       </SectionCard>
 
-      <SectionCard title="Terms & Conditions">
-        <Field label="Default Terms & Conditions">
+      <SectionCard title={t('invoices.termsAndConditions')}>
+        <Field label={t('invoices.termsAndConditions')}>
           <RichtextEditor
             value={form.defaultTermsText}
             onChange={(html) => setForm({ ...form, defaultTermsText: html })}
-            placeholder="e.g. Payment is due within 30 days. Late payments may incur a 2% monthly fee."
+            placeholder={t('settings.paymentTermsPlaceholder')}
             minHeight="150px"
           />
         </Field>
-        <Field label="Invoice Footer">
+        <Field label={t('invoices.invoice')}>
           <Textarea
             value={form.invoiceFooter}
             onChange={(e) =>
               setForm({ ...form, invoiceFooter: e.target.value })
             }
-            placeholder="e.g. Thank you for your business!"
+            placeholder={t('settings.termsPlaceholder')}
             rows={3}
           />
         </Field>
@@ -174,7 +173,7 @@ function FinancialForm({
           {updateOrg.isPending && (
             <Loader2 className="size-4 mr-2 animate-spin" />
           )}
-          Save Changes
+          {t('settings.saveSettings')}
         </Button>
       </div>
     </div>

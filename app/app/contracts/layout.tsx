@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { Handshake, User2 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -13,20 +14,21 @@ import { useContractForm } from '@/components/dialogs';
 import { Header } from '../App-Header';
 import { ContractListItem } from '@/components/contracts/contract-list-item';
 
-const title = 'Contracts';
+const contractsSegment = 'contracts';
 
 export default function ContractsLayout({ children }: { children?: React.ReactNode }) {
+  const t = useTranslations();
   const { openCreate } = useContractForm();
   const { data, isPending } = trpc.contracts.list.useQuery({});
   const isMobile = useIsMobile();
   const pathname = usePathname();
   const activeItem = pathname.split('/')[3];
-  const isListView = pathname === `/app/${title.toLowerCase()}`;
+  const isListView = pathname === `/app/${contractsSegment}`;
 
   const renderCard = useCallback(
     (item: any) => (
       <Link
-        href={`/app/${title.toLowerCase()}/${item.id}`}
+        href={`/app/${contractsSegment}/${item.id}`}
         scroll={false}
         draggable={false}
         className="block w-full h-full"
@@ -47,7 +49,7 @@ export default function ContractsLayout({ children }: { children?: React.ReactNo
 
   return (
     <div className="flex h-screen flex-col overflow-hidden">
-      <Header title={title} icon={<Handshake className="size-5" />} onCreate={() => openCreate()} createLabel="New Contract" />
+      <Header title={t('contracts.title')} icon={<Handshake className="size-5" />} onCreate={() => openCreate()} createLabel={t('contracts.createContract')} />
       <div className="flex-1 min-h-0 w-full">
         <ResizablePanelGroup className="h-full">
           {(isListView || !isMobile) && (
@@ -61,8 +63,8 @@ export default function ContractsLayout({ children }: { children?: React.ReactNo
                     useTheme
                     searchFields={['serial'] as any}
                     rowHeight={73}
-                    emptyTitle="No contracts found"
-                    emptyDescription="Create your first contract to see them here."
+                    emptyTitle={t('contracts.noContracts')}
+                    emptyDescription={t('contracts.createContract')}
                     emptyIcon={<User2 className="size-20 text-muted-foreground" />}
                     cardRenderer={renderCard}
                   />

@@ -1,6 +1,7 @@
 'use client';
 
 import { ArrowLeft, Edit, Loader2, Trash, Users } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { useParams, useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { alert } from '@/components/Alert-dialog';
@@ -18,6 +19,7 @@ export default function CustomerDetailPage() {
   const router = useRouter();
   const utils = trpc.useUtils();
   const { openEdit } = useCustomerForm();
+  const t = useTranslations();
 
   const { data: customer, isLoading, isError, error, refetch } = trpc.customers.byId.useQuery(
     { id: params.id },
@@ -32,7 +34,7 @@ export default function CustomerDetailPage() {
   const deleteMutation = trpc.customers.delete.useMutation({
     onSuccess: () => {
       utils.customers.list.invalidate();
-      toast.success('Customer deleted');
+      toast.success(t('customers.customerDeleted'));
       router.push('/app/customers');
     },
     onError: (e) => toast.error(e.message),
@@ -56,16 +58,16 @@ export default function CustomerDetailPage() {
             <EmptyMedia variant="icon">
               <Users className="size-6" />
             </EmptyMedia>
-            <EmptyTitle>{isError ? 'Failed to load' : 'Not found'}</EmptyTitle>
+            <EmptyTitle>{isError ? t('common.failedToLoad') : t('common.notFound')}</EmptyTitle>
             <EmptyDescription>
-              {error?.message ?? 'This customer does not exist or has been deleted.'}
+              {error?.message ?? t('customers.doesNotExist')}
             </EmptyDescription>
           </EmptyHeader>
           <div className="flex gap-2">
             <Button variant="outline" onClick={() => router.push('/app/customers')}>
-              <ArrowLeft className="size-4 mr-1" /> Back
+              <ArrowLeft className="size-4 mr-1" /> {t('common.back')}
             </Button>
-            {isError && <Button onClick={() => refetch()}>Retry</Button>}
+            {isError && <Button onClick={() => refetch()}>{t('common.retry')}</Button>}
           </div>
         </Empty>
       </div>
@@ -89,9 +91,9 @@ export default function CustomerDetailPage() {
 
   const handleDelete = () => {
     alert.delete({
-      title: `Delete "${customer.name}"?`,
-      description: 'This customer will be deactivated. You can restore it later.',
-      confirmText: 'Delete',
+      title: t('common.confirmDelete'),
+      description: t('customers.deactivateRestoreConfirm'),
+      confirmText: t('common.delete'),
       onConfirm: async () => {
         await deleteMutation.mutateAsync({ id: customer.id });
       },
@@ -114,14 +116,14 @@ export default function CustomerDetailPage() {
           <h1 className="text-xl font-semibold truncate">{customer.name}</h1>
           {!customer.isActive && (
             <Badge variant="outline" className="bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200">
-              Inactive
+              {t('common.inactive')}
             </Badge>
           )}
         </div>
         <div className="flex items-center gap-2">
           <Button variant="outline" size="sm" className="gap-1.5" onClick={handleEdit}>
             <Edit className="size-4" />
-            Edit
+            {t('common.edit')}
           </Button>
           <Button
             variant="destructive"
@@ -131,7 +133,7 @@ export default function CustomerDetailPage() {
             disabled={isPending}
           >
             {isPending ? <Loader2 className="size-4 animate-spin" /> : <Trash className="size-4" />}
-            Delete
+            {t('common.delete')}
           </Button>
         </div>
       </header>
@@ -141,7 +143,7 @@ export default function CustomerDetailPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
           <Card>
             <CardHeader className="pb-1.5">
-              <CardTitle className="text-xs text-muted-foreground font-medium">Contact</CardTitle>
+              <CardTitle className="text-xs text-muted-foreground font-medium">{t('customers.contact')}</CardTitle>
             </CardHeader>
             <CardContent>
               <p className="font-semibold">{customer.phone ?? '—'}</p>
@@ -150,34 +152,34 @@ export default function CustomerDetailPage() {
           </Card>
           <Card>
             <CardHeader className="pb-1.5">
-              <CardTitle className="text-xs text-muted-foreground font-medium">Code & Tax</CardTitle>
+              <CardTitle className="text-xs text-muted-foreground font-medium">{t('customers.codeAndTax')}</CardTitle>
             </CardHeader>
             <CardContent>
               <p className="font-semibold">{customer.code ?? '—'}</p>
               <p className="text-xs text-muted-foreground">
-                Tax: {customer.taxId ?? '—'} · CR: {customer.crNumber ?? '—'}
+                {t('common.tax')}: {customer.taxId ?? '—'} · {t('customers.crNumber')}: {customer.crNumber ?? '—'}
               </p>
             </CardContent>
           </Card>
           <Card>
             <CardHeader className="pb-1.5">
-              <CardTitle className="text-xs text-muted-foreground font-medium">Credit Terms</CardTitle>
+              <CardTitle className="text-xs text-muted-foreground font-medium">{t('customers.creditTerms')}</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="font-semibold">{customer.creditTermsDays} days</p>
+              <p className="font-semibold">{t('customers.creditTermsDays', { days: customer.creditTermsDays })}</p>
               <p className="text-xs text-muted-foreground">
-                Limit: {Number(customer.creditLimit).toFixed(3)} {customer.currencyCode ?? ''}
+                {t('customers.limit')}: {Number(customer.creditLimit).toFixed(3)} {customer.currencyCode ?? ''}
               </p>
             </CardContent>
           </Card>
           <Card>
             <CardHeader className="pb-1.5">
-              <CardTitle className="text-xs text-muted-foreground font-medium">Price List</CardTitle>
+              <CardTitle className="text-xs text-muted-foreground font-medium">{t('customers.priceList')}</CardTitle>
             </CardHeader>
             <CardContent>
               <p className="font-semibold">{customer.priceList?.name ?? '—'}</p>
               <p className="text-xs text-muted-foreground">
-                Currency: {customer.currencyCode ?? 'Org default'}
+                {t('common.currency')}: {customer.currencyCode ?? t('customers.orgDefault')}
               </p>
             </CardContent>
           </Card>
@@ -187,7 +189,7 @@ export default function CustomerDetailPage() {
         {creditData && (
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-semibold">Credit Balance</CardTitle>
+              <CardTitle className="text-sm font-semibold">{t('customers.creditBalance')}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="flex flex-col sm:flex-row sm:items-center gap-4">
@@ -196,13 +198,13 @@ export default function CustomerDetailPage() {
                     {outstandingBalance.toFixed(3)} {customer.currencyCode ?? ''}
                   </p>
                   <p className="text-xs text-muted-foreground">
-                    Outstanding across {creditData.openInvoiceCount} invoice{creditData.openInvoiceCount !== 1 ? 's' : ''}
+                    {t('customers.outstandingInvoices', { count: creditData.openInvoiceCount })}
                   </p>
                 </div>
                 {creditLimit > 0 && (
                   <div className="flex-1 max-w-xs">
                     <div className="flex justify-between text-xs mb-1">
-                      <span className="text-muted-foreground">Credit utilization</span>
+                      <span className="text-muted-foreground">{t('customers.creditUtilization')}</span>
                       <span className={creditUtilization > 80 ? 'text-destructive font-medium' : creditUtilization > 50 ? 'text-yellow-600 font-medium' : ''}>
                         {creditUtilization.toFixed(0)}%
                       </span>
@@ -216,7 +218,7 @@ export default function CustomerDetailPage() {
                       />
                     </div>
                     <p className="text-xs text-muted-foreground mt-1">
-                      Limit: {creditLimit.toFixed(3)} {customer.currencyCode ?? ''}
+                      {t('customers.limit')}: {creditLimit.toFixed(3)} {customer.currencyCode ?? ''}
                     </p>
                   </div>
                 )}
@@ -232,11 +234,11 @@ export default function CustomerDetailPage() {
             onClick={() => router.push(`/app/invoices?customerId=${customer.id}`)}
           >
             <CardHeader className="pb-1.5">
-              <CardTitle className="text-xs text-muted-foreground font-medium">Invoices</CardTitle>
+              <CardTitle className="text-xs text-muted-foreground font-medium">{t('layout.invoices')}</CardTitle>
             </CardHeader>
             <CardContent className="flex items-center gap-2">
               <span className="text-2xl font-bold">{customer._count?.invoices ?? 0}</span>
-              <span className="text-sm text-muted-foreground">active invoices</span>
+              <span className="text-sm text-muted-foreground">{t('customers.activeInvoices')}</span>
             </CardContent>
           </Card>
           <Card
@@ -244,11 +246,11 @@ export default function CustomerDetailPage() {
             onClick={() => router.push(`/app/contracts?customerId=${customer.id}`)}
           >
             <CardHeader className="pb-1.5">
-              <CardTitle className="text-xs text-muted-foreground font-medium">Contracts</CardTitle>
+              <CardTitle className="text-xs text-muted-foreground font-medium">{t('layout.contracts')}</CardTitle>
             </CardHeader>
             <CardContent className="flex items-center gap-2">
               <span className="text-2xl font-bold">{customer._count?.contracts ?? 0}</span>
-              <span className="text-sm text-muted-foreground">active contracts</span>
+              <span className="text-sm text-muted-foreground">{t('customers.activeContracts')}</span>
             </CardContent>
           </Card>
         </div>
@@ -257,7 +259,7 @@ export default function CustomerDetailPage() {
         {customer.notes && (
           <Card>
             <CardHeader className="pb-1.5">
-              <CardTitle className="text-xs text-muted-foreground font-medium">Notes</CardTitle>
+              <CardTitle className="text-xs text-muted-foreground font-medium">{t('common.notes')}</CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-sm whitespace-pre-wrap">{customer.notes}</p>
@@ -267,8 +269,8 @@ export default function CustomerDetailPage() {
 
         {/* Meta info */}
         <div className="text-xs text-muted-foreground flex flex-wrap gap-x-4 gap-y-1 pb-2">
-          <span>Created {customer.createdAt ? format(new Date(customer.createdAt), 'dd MMM yyyy HH:mm') : '—'}</span>
-          <span>Updated {customer.updatedAt ? format(new Date(customer.updatedAt), 'dd MMM yyyy HH:mm') : '—'}</span>
+          <span>{t('customers.created')} {customer.createdAt ? format(new Date(customer.createdAt), 'dd MMM yyyy HH:mm') : '—'}</span>
+          <span>{t('customers.updated')} {customer.updatedAt ? format(new Date(customer.updatedAt), 'dd MMM yyyy HH:mm') : '—'}</span>
         </div>
       </div>
 

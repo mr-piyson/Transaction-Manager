@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { Boxes, SearchX } from 'lucide-react';
 import { Header } from '@/app/app/App-Header';
 import { ListView } from '@/components/list-view';
@@ -14,13 +15,14 @@ type StockRow = {
 };
 
 export default function StockPage() {
+  const t = useTranslations();
   const { data = [], isLoading } = trpc.stock.list.useQuery({});
 
   const stock = Array.isArray(data) ? data : data?.data ?? [];
 
   return (
     <div className="flex flex-col h-screen">
-      <Header title="Stock Levels" icon={<Boxes className="size-5" />} />
+      <Header title={t('stock.title')} icon={<Boxes className="size-5" />} />
       <ListView
         cardRenderer={(s: StockRow) => (
           <div className="flex items-center gap-3 p-3">
@@ -31,7 +33,7 @@ export default function StockPage() {
             <div className="text-right">
               <p className="font-semibold">{Number(s.quantity).toFixed(3)} {s.item.unit ?? ''}</p>
               {s.isLowStock && (
-                <p className="text-xs text-destructive">Low stock</p>
+                <p className="text-xs text-destructive">{t('stock.lowStock')}</p>
               )}
             </div>
           </div>
@@ -39,9 +41,9 @@ export default function StockPage() {
         searchFields={['id' as any]}
         data={stock}
         isLoading={isLoading}
-        searchPlaceholder="Search by item name, SKU or warehouse..."
-        emptyTitle="No stock found."
-        emptyDescription="Stock will appear once you record purchases or adjustments."
+        searchPlaceholder={t('stock.searchStock')}
+        emptyTitle={t('stock.noStock')}
+        emptyDescription={t('stock.adjustStock')}
       />
     </div>
   );
