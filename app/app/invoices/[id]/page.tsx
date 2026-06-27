@@ -412,7 +412,6 @@ export default function InvoiceDetailPage() {
       case 'QUOTE': return t('invoices.quote');
       case 'INVOICE': return t('invoices.invoice');
       case 'CREDIT_NOTE': return t('invoices.creditNote');
-      case 'PROFORMA': return t('invoices.proforma');
       case 'DELIVERY_NOTE': return t('invoices.deliveryNote');
       default: return t('invoices.invoice');
     }
@@ -1069,20 +1068,15 @@ export default function InvoiceDetailPage() {
         {/* Meta info */}
         <div className="text-xs text-muted-foreground flex flex-wrap gap-x-4 gap-y-1 pb-2">
           <span>
-            {t('invoices.createdBy', {
-              type: getTypeLabel(invoice.type),
-              name: invoice.createdBy?.name ?? '—',
-              date: invoice.createdAt
-                ? format(new Date(invoice.createdAt), 'dd MMM yyyy HH:mm')
-                : '—',
-            })}
+            {getTypeLabel(invoice.type)} created by {invoice.createdBy?.name ?? '—'} on{' '}
+            {invoice.createdAt ? format(new Date(invoice.createdAt), 'dd MMM yyyy HH:mm') : '—'}
           </span>
-          <span>{t('invoices.version', { version: invoice.version })}</span>
+          <span>Version {invoice.version}</span>
           {invoice.sentAt && (
-            <span>{t('invoices.sentOn', { date: format(new Date(invoice.sentAt), 'dd MMM yyyy HH:mm') })}</span>
+            <span>Sent on {format(new Date(invoice.sentAt), 'dd MMM yyyy HH:mm')}</span>
           )}
           {invoice.cancelledAt && (
-            <span>{t('invoices.cancelledOn', { date: format(new Date(invoice.cancelledAt), 'dd MMM yyyy HH:mm') })}</span>
+            <span>Cancelled on {format(new Date(invoice.cancelledAt), 'dd MMM yyyy HH:mm')}</span>
           )}
         </div>
       </div>
@@ -1199,7 +1193,7 @@ export default function InvoiceDetailPage() {
                   type="number"
                   step="0.001"
                   min="0"
-                  placeholder={t('common.placeholders.amount')}
+                  placeholder="0.000"
                   value={paymentAmount}
                   onChange={(e) => setPaymentAmount(e.target.value)}
                 />

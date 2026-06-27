@@ -14,10 +14,11 @@ export default function InvoicePrintPage() {
   const router = useRouter();
   const t = useTranslations();
 
-  const { data: invoice, isLoading, isError } = trpc.invoices.byId.useQuery(
-    { id: params.id },
-    { enabled: !!params.id },
-  );
+  const {
+    data: invoice,
+    isLoading,
+    isError,
+  } = trpc.invoices.byId.useQuery({ id: params.id }, { enabled: !!params.id });
 
   const { data: org } = trpc.organizations.get.useQuery();
 
@@ -28,7 +29,6 @@ export default function InvoicePrintPage() {
       QUOTE: t('invoices.quote'),
       INVOICE: t('invoices.invoice'),
       CREDIT_NOTE: t('invoices.creditNote'),
-      PROFORMA: t('invoices.proforma'),
       DELIVERY_NOTE: t('invoices.deliveryNote'),
     };
     return labels[type] ?? type;
@@ -65,7 +65,8 @@ export default function InvoicePrintPage() {
     if (invoice.status === 'CANCELLED') return t('common.cancelled');
     if (invoice.status === 'DELETED') return t('common.deleted');
     if (Number(invoice.amountPaid) >= Number(invoice.total)) return t('common.paid');
-    if (Number(invoice.amountPaid) > 0) return `${t('common.partial')} (${Number(invoice.amountPaid).toFixed(3)} ${invoice.currency})`;
+    if (Number(invoice.amountPaid) > 0)
+      return `${t('common.partial')} (${Number(invoice.amountPaid).toFixed(3)} ${invoice.currency})`;
     if (invoice.dueDate && new Date(invoice.dueDate) < new Date()) return t('common.overdue');
     return t('common.unpaid');
   };
@@ -97,32 +98,26 @@ export default function InvoicePrintPage() {
         <div className="flex items-start justify-between px-8 pt-8 pb-4 border-b print:px-6 print:pt-6">
           <div className="flex items-start gap-4">
             {org?.logo && (
-              <img
-                src={org.logo}
-                alt={org.name}
-                className="size-16 object-contain rounded"
-              />
+              <img src={org.logo} alt={org.name} className="size-16 object-contain rounded" />
             )}
             <div>
               <h1 className="text-2xl font-bold">{org?.name ?? ''}</h1>
               {org?.crNumber && (
-                <p className="text-xs text-muted-foreground">{t('customers.crNumber')}: {org.crNumber}</p>
+                <p className="text-xs text-muted-foreground">
+                  {t('customers.crNumber')}: {org.crNumber}
+                </p>
               )}
               {org?.taxId && (
-                <p className="text-xs text-muted-foreground">{t('customers.taxId')}: {org.taxId}</p>
+                <p className="text-xs text-muted-foreground">
+                  {t('customers.taxId')}: {org.taxId}
+                </p>
               )}
               {org?.vatRegistered && (
                 <p className="text-xs text-muted-foreground">{t('common.vatRegistered')}</p>
               )}
-              {org?.phone && (
-                <p className="text-xs text-muted-foreground">{org.phone}</p>
-              )}
-              {org?.email && (
-                <p className="text-xs text-muted-foreground">{org.email}</p>
-              )}
-              {org?.website && (
-                <p className="text-xs text-muted-foreground">{org.website}</p>
-              )}
+              {org?.phone && <p className="text-xs text-muted-foreground">{org.phone}</p>}
+              {org?.email && <p className="text-xs text-muted-foreground">{org.email}</p>}
+              {org?.website && <p className="text-xs text-muted-foreground">{org.website}</p>}
             </div>
           </div>
           <div className="text-right">
@@ -131,9 +126,14 @@ export default function InvoicePrintPage() {
             </h2>
             <p className="text-sm font-semibold mt-1">{invoice.serial}</p>
             <div className="mt-2 text-xs text-muted-foreground space-y-0.5">
-              <p>{t('common.date')}: {invoice.date ? format(new Date(invoice.date), 'dd MMM yyyy') : '—'}</p>
+              <p>
+                {t('common.date')}:{' '}
+                {invoice.date ? format(new Date(invoice.date), 'dd MMM yyyy') : '—'}
+              </p>
               {invoice.dueDate && (
-                <p>{t('invoices.dueDate')}: {format(new Date(invoice.dueDate), 'dd MMM yyyy')}</p>
+                <p>
+                  {t('invoices.dueDate')}: {format(new Date(invoice.dueDate), 'dd MMM yyyy')}
+                </p>
               )}
             </div>
             <div className="mt-2">
@@ -159,7 +159,9 @@ export default function InvoicePrintPage() {
             <p className="text-sm text-muted-foreground">{invoice.customer.phone}</p>
           )}
           {invoice.customer?.taxId && (
-            <p className="text-sm text-muted-foreground">{t('customers.taxId')}: {invoice.customer.taxId}</p>
+            <p className="text-sm text-muted-foreground">
+              {t('customers.taxId')}: {invoice.customer.taxId}
+            </p>
           )}
         </div>
 
@@ -298,7 +300,9 @@ export default function InvoicePrintPage() {
         {/* Notes */}
         {invoice.notes && (
           <div className="px-8 py-3 border-t print:px-6">
-            <h3 className="text-xs font-semibold text-muted-foreground uppercase mb-1">{t('invoices.notes')}</h3>
+            <h3 className="text-xs font-semibold text-muted-foreground uppercase mb-1">
+              {t('invoices.notes')}
+            </h3>
             <p className="text-sm whitespace-pre-wrap">{invoice.notes}</p>
           </div>
         )}
@@ -351,7 +355,11 @@ export default function InvoicePrintPage() {
             <div className="flex items-start justify-between">
               <p className="whitespace-pre-wrap">{org.invoiceFooter}</p>
               {org.stampImage && (
-                <img src={org.stampImage} alt={t('invoices.stamp')} className="size-20 object-contain ml-4 shrink-0" />
+                <img
+                  src={org.stampImage}
+                  alt={t('invoices.stamp')}
+                  className="size-20 object-contain ml-4 shrink-0"
+                />
               )}
             </div>
           </div>

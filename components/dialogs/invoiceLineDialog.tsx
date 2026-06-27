@@ -3,6 +3,7 @@
 import { Calculator, Loader2 } from 'lucide-react';
 import * as React from 'react';
 import { useForm, useWatch } from 'react-hook-form';
+import { useTranslations } from 'next-intl';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@/components/ui/button';
@@ -65,6 +66,7 @@ export function InvoiceLineDialog({
   initial,
   onSave,
 }: InvoiceLineDialogProps) {
+  const t = useTranslations();
   const { data: itemsData } = trpc.items.list.useQuery({ isSaleable: true });
   const { data: taxRatesData } = trpc.settings.taxRates.list.useQuery();
 
@@ -153,22 +155,22 @@ export function InvoiceLineDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Line {index + 1}</DialogTitle>
+          <DialogTitle>{t('invoices.lineItemTitle', { number: index + 1 })}</DialogTitle>
         </DialogHeader>
 
         <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-4">
           {/* Item selector / Description */}
           {isManual ? (
             <div className="space-y-1.5">
-              <Label className="text-xs">Description</Label>
+              <Label className="text-xs">{t('common.description')}</Label>
               <Input
-                placeholder="Describe this line item"
+                placeholder={t('invoices.describeLineItem')}
                 {...register('description')}
               />
             </div>
           ) : (
             <div className="space-y-1.5">
-              <Label className="text-xs">Item</Label>
+              <Label className="text-xs">{t('invoices.item')}</Label>
               <Select
                 value={itemId || '__manual__'}
                 onValueChange={(v) => {
@@ -194,10 +196,10 @@ export function InvoiceLineDialog({
                 }}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Select item" />
+                  <SelectValue placeholder={t('invoices.selectItem')} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="__manual__">Manual entry</SelectItem>
+                  <SelectItem value="__manual__">{t('invoices.manualEntry')}</SelectItem>
                   <div className="border-t my-1" />
                   {items.map((i: any) => (
                     <SelectItem key={i.id} value={i.id}>
@@ -212,7 +214,7 @@ export function InvoiceLineDialog({
           {/* Numeric fields: Qty, Unit price, Discount, Unit cost */}
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <Label className="text-xs">Qty</Label>
+              <Label className="text-xs">{t('invoices.qty')}</Label>
               <Input
                 type="number"
                 min={0.001}
@@ -224,7 +226,7 @@ export function InvoiceLineDialog({
               )}
             </div>
             <div className="space-y-1.5">
-              <Label className="text-xs">Unit price</Label>
+              <Label className="text-xs">{t('invoices.unitPrice')}</Label>
               <Input
                 type="number"
                 min={0}
@@ -233,7 +235,7 @@ export function InvoiceLineDialog({
               />
             </div>
             <div className="space-y-1.5">
-              <Label className="text-xs">Discount</Label>
+              <Label className="text-xs">{t('invoices.discount')}</Label>
               <Input
                 type="number"
                 min={0}
@@ -242,7 +244,7 @@ export function InvoiceLineDialog({
               />
             </div>
             <div className="space-y-1.5">
-              <Label className="text-xs">Unit cost</Label>
+              <Label className="text-xs">{t('invoices.cost')}</Label>
               <Input
                 type="number"
                 min={0}
@@ -254,7 +256,7 @@ export function InvoiceLineDialog({
 
           {/* Tax rate */}
           <div className="space-y-1.5">
-            <Label className="text-xs">Tax rate</Label>
+            <Label className="text-xs">{t('invoices.taxRate')}</Label>
             <Select
               value={taxRateId || 'none'}
               onValueChange={(v) => {
@@ -265,10 +267,10 @@ export function InvoiceLineDialog({
               }}
             >
               <SelectTrigger>
-                <SelectValue placeholder="Tax rate" />
+                <SelectValue placeholder={t('invoices.taxRate')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="none">No tax</SelectItem>
+                <SelectItem value="none">{t('invoices.noTax')}</SelectItem>
                 {taxRates.map((tr: any) => (
                   <SelectItem key={tr.id} value={tr.id}>
                     {tr.name} ({Number(tr.rate)}%)
@@ -281,25 +283,25 @@ export function InvoiceLineDialog({
           {/* Profit preview */}
           {lineTotal > 0 && (
             <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground bg-muted/30 rounded-lg p-3">
-              <span>Subtotal: <span className="font-medium text-foreground">{lineSubtotal.toFixed(3)}</span></span>
-              <span>Discount: <span className="font-medium text-destructive">-{discount.toFixed(3)}</span></span>
-              <span>Tax: <span className="font-medium text-foreground">+{lineTax.toFixed(3)}</span></span>
-              <span>COGS: <span className="font-medium text-foreground">{lineCogs.toFixed(3)}</span></span>
+              <span>{t('invoices.subtotal')}: <span className="font-medium text-foreground">{lineSubtotal.toFixed(3)}</span></span>
+              <span>{t('invoices.discount')}: <span className="font-medium text-destructive">-{discount.toFixed(3)}</span></span>
+              <span>{t('invoices.tax')}: <span className="font-medium text-foreground">+{lineTax.toFixed(3)}</span></span>
+              <span>{t('invoices.cogs')}: <span className="font-medium text-foreground">{lineCogs.toFixed(3)}</span></span>
               <span className={grossProfit >= 0 ? 'text-green-600' : 'text-red-600'}>
-                GP: {grossProfit.toFixed(3)} ({margin.toFixed(1)}%)
+                {t('invoices.gp')}: {grossProfit.toFixed(3)} ({margin.toFixed(1)}%)
               </span>
               <span className="text-sm font-bold text-foreground border-t pt-0.5 w-full">
-                Total: {(lineTotal + lineTax).toFixed(3)}
+                {t('common.total')}: {(lineTotal + lineTax).toFixed(3)}
               </span>
             </div>
           )}
 
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-              Cancel
+              {t('common.cancel')}
             </Button>
             <Button type="submit">
-              <Calculator className="h-4 w-4 mr-1.5" /> Save line
+              <Calculator className="h-4 w-4 mr-1.5" /> {t('invoices.saveLine')}
             </Button>
           </DialogFooter>
         </form>

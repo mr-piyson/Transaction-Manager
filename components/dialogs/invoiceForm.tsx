@@ -1,9 +1,19 @@
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Calculator, Loader2, Package, Plus, Trash2, TriangleAlert, User, Pencil } from 'lucide-react';
+import {
+  Calculator,
+  Loader2,
+  Package,
+  Plus,
+  Trash2,
+  TriangleAlert,
+  User,
+  Pencil,
+} from 'lucide-react';
 import * as React from 'react';
 import { type SubmitHandler, useFieldArray, useForm, useWatch } from 'react-hook-form';
+import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 import { z } from 'zod';
 import { calculateInvoiceTotals } from '@/lib/calculator';
@@ -51,9 +61,7 @@ const invoiceLineSchema = z.object({
 });
 
 const schema = z.object({
-  type: z
-    .enum(['QUOTE', 'INVOICE', 'CREDIT_NOTE', 'PROFORMA', 'DELIVERY_NOTE'])
-    .default('INVOICE'),
+  type: z.enum(['QUOTE', 'INVOICE', 'CREDIT_NOTE', 'PROFORMA', 'DELIVERY_NOTE']).default('INVOICE'),
   date: z.string().min(1, 'Date is required'),
   dueDate: z.string().optional(),
   customerId: z.string().optional(),
@@ -79,6 +87,7 @@ interface ValidationAlertProps {
 }
 
 function ValidationAlert({ errors }: ValidationAlertProps) {
+  const t = useTranslations();
   const messages = Object.values(errors)
     .filter((e) => e?.message)
     .map((e) => e!.message!);
@@ -86,7 +95,7 @@ function ValidationAlert({ errors }: ValidationAlertProps) {
   return (
     <Alert variant="destructive" className="mb-4">
       <TriangleAlert className="h-4 w-4" />
-      <AlertTitle>Please fix the following</AlertTitle>
+      <AlertTitle>{t('invoices.fixFollowing')}</AlertTitle>
       <AlertDescription>
         <ul className="mt-1 list-disc pl-4 space-y-0.5 text-sm">
           {messages.map((msg) => (
@@ -111,6 +120,7 @@ export function InvoiceFormDialog({
   invoice,
   onSuccess,
 }: InvoiceFormDialogProps) {
+  const t = useTranslations();
   const isEdit = Boolean(invoice?.id);
   const utils = trpc.useUtils();
   const [itemPickerOpen, setItemPickerOpen] = React.useState(false);
@@ -176,24 +186,24 @@ export function InvoiceFormDialog({
   const createMutation = trpc.invoices.create.useMutation({
     onSuccess(data) {
       utils.invoices.list.invalidate();
-      toast.success('Invoice created', { description: data.serial });
+      toast.success(t('invoices.invoiceCreated'), { description: data.serial });
       onSuccess?.(data.id);
       onOpenChange(false);
     },
     onError(err) {
-      toast.error('Failed to create invoice', { description: err.message });
+      toast.error(t('invoices.failedToCreate'), { description: err.message });
     },
   });
 
   const updateMutation = trpc.invoices.update.useMutation({
     onSuccess(data) {
       utils.invoices.list.invalidate();
-      toast.success('Invoice updated', { description: data.serial });
+      toast.success(t('invoices.invoiceUpdated'), { description: data.serial });
       onSuccess?.(data.id);
       onOpenChange(false);
     },
     onError(err) {
-      toast.error('Failed to update invoice', { description: err.message });
+      toast.error(t('invoices.failedToUpdate'), { description: err.message });
     },
   });
 
@@ -215,21 +225,20 @@ export function InvoiceFormDialog({
       internalNotes: values.internalNotes || undefined,
       isWalkIn: values.isWalkIn,
       parentInvoiceId: values.parentInvoiceId || undefined,
-      lines: values.lines
-        .map((l, idx) => ({
-          id: l.id || undefined,
-          itemId: l.itemId || undefined,
-          description: l.description || undefined,
-          quantity: Number(l.quantity),
-          unitPrice: Number(l.unitPrice),
-          discountAmt: Number(l.discountAmt) || 0,
-          purchasePrice: Number(l.purchasePrice) || undefined,
-          taxRateId: l.taxRateId || undefined,
-          taxRateSnapshot: l.taxRateSnapshot ? Number(l.taxRateSnapshot) : undefined,
-          taxRateName: l.taxRateName || undefined,
-          sortOrder: idx,
-          departmentId: l.departmentId || undefined,
-        })),
+      lines: values.lines.map((l, idx) => ({
+        id: l.id || undefined,
+        itemId: l.itemId || undefined,
+        description: l.description || undefined,
+        quantity: Number(l.quantity),
+        unitPrice: Number(l.unitPrice),
+        discountAmt: Number(l.discountAmt) || 0,
+        purchasePrice: Number(l.purchasePrice) || undefined,
+        taxRateId: l.taxRateId || undefined,
+        taxRateSnapshot: l.taxRateSnapshot ? Number(l.taxRateSnapshot) : undefined,
+        taxRateName: l.taxRateName || undefined,
+        sortOrder: idx,
+        departmentId: l.departmentId || undefined,
+      })),
     };
 
     if (isEdit && invoice?.id) {
@@ -302,11 +311,10 @@ export function InvoiceFormDialog({
   };
 
   const invoiceTypeOptions = [
-    { value: 'INVOICE', label: 'Invoice' },
-    { value: 'QUOTE', label: 'Quote' },
-    { value: 'CREDIT_NOTE', label: 'Credit Note' },
-    { value: 'PROFORMA', label: 'Proforma' },
-    { value: 'DELIVERY_NOTE', label: 'Delivery Note' },
+    { value: 'INVOICE', label: t('invoices.invoice') },
+    { value: 'QUOTE', label: t('invoices.quote') },
+    { value: 'CREDIT_NOTE', label: t('invoices.creditNote') },
+    { value: 'DELIVERY_NOTE', label: t('invoices.deliveryNote') },
   ];
 
   return (
@@ -314,11 +322,11 @@ export function InvoiceFormDialog({
       <Dialog open={open} onOpenChange={(v) => !isPending && onOpenChange(v)}>
         <DialogContent className="sm:max-w-200">
           <DialogHeader>
-            <DialogTitle>{isEdit ? 'Edit invoice' : 'New invoice'}</DialogTitle>
+            <DialogTitle>
+              {isEdit ? t('invoices.editInvoice') : t('invoices.createInvoice')}
+            </DialogTitle>
             <DialogDescription>
-              {isEdit
-                ? 'Update the details below and save.'
-                : 'Fill in the details to create a new invoice.'}
+              {isEdit ? t('invoices.editInvoiceDesc') : t('invoices.createInvoiceDesc')}
             </DialogDescription>
           </DialogHeader>
 
@@ -329,11 +337,8 @@ export function InvoiceFormDialog({
               {/* Type + Currency + Exchange Rate */}
               <div className="grid grid-cols-3 gap-3">
                 <Field>
-                  <Label htmlFor="type">Type *</Label>
-                  <Select
-                    value={watch('type')}
-                    onValueChange={(v) => setValue('type', v as any)}
-                  >
+                  <Label htmlFor="type">{t('invoices.type')} *</Label>
+                  <Select value={watch('type')} onValueChange={(v) => setValue('type', v as any)}>
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
@@ -347,7 +352,7 @@ export function InvoiceFormDialog({
                   </Select>
                 </Field>
                 <Field>
-                  <Label htmlFor="currency">Currency</Label>
+                  <Label htmlFor="currency">{t('invoices.currency')}</Label>
                   <Select
                     value={watch('currency')}
                     onValueChange={(v) => setValue('currency', v as any)}
@@ -356,18 +361,16 @@ export function InvoiceFormDialog({
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      {['BHD', 'USD', 'EUR', 'GBP', 'AED', 'SAR', 'KWD', 'QAR', 'OMR'].map(
-                        (c) => (
-                          <SelectItem key={c} value={c}>
-                            {c}
-                          </SelectItem>
-                        ),
-                      )}
+                      {['BHD', 'USD', 'EUR', 'GBP', 'AED', 'SAR', 'KWD', 'QAR', 'OMR'].map((c) => (
+                        <SelectItem key={c} value={c}>
+                          {c}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </Field>
                 <Field>
-                  <Label htmlFor="exchangeRate">Exchange rate</Label>
+                  <Label htmlFor="exchangeRate">{t('invoices.exchangeRate')}</Label>
                   <Input
                     id="exchangeRate"
                     type="number"
@@ -381,11 +384,11 @@ export function InvoiceFormDialog({
               {/* Dates */}
               <div className="grid grid-cols-2 gap-3">
                 <Field>
-                  <Label htmlFor="date">Date *</Label>
+                  <Label htmlFor="date">{t('invoices.issueDate')} *</Label>
                   <Input id="date" type="date" {...register('date')} />
                 </Field>
                 <Field>
-                  <Label htmlFor="dueDate">Due date</Label>
+                  <Label htmlFor="dueDate">{t('invoices.dueDate')}</Label>
                   <Input id="dueDate" type="date" {...register('dueDate')} />
                 </Field>
               </div>
@@ -397,12 +400,12 @@ export function InvoiceFormDialog({
                     <div className="flex-1">
                       <Field>
                         <Label htmlFor="customerId">
-                          {isWalkIn ? 'Customer name' : 'Customer'}
+                          {isWalkIn ? t('invoices.walkInCustomerName') : t('invoices.customer')}
                         </Label>
                         {isWalkIn ? (
                           <Input
                             id="customerId"
-                            placeholder="Walk-in customer name"
+                            placeholder={t('invoices.walkInCustomerPlaceholder')}
                             {...register('customerId')}
                           />
                         ) : (
@@ -411,7 +414,7 @@ export function InvoiceFormDialog({
                             onValueChange={(v) => setValue('customerId', v)}
                           >
                             <SelectTrigger>
-                              <SelectValue placeholder="Select customer" />
+                              <SelectValue placeholder={t('invoices.selectCustomer')} />
                             </SelectTrigger>
                             <SelectContent>
                               {customers.map((c: any) => (
@@ -434,7 +437,7 @@ export function InvoiceFormDialog({
                         }}
                       />
                       <Label htmlFor="isWalkIn" className="text-sm font-normal cursor-pointer">
-                        Walk-in
+                        {t('invoices.walkInCustomer')}
                       </Label>
                     </div>
                   </div>
@@ -444,13 +447,13 @@ export function InvoiceFormDialog({
               {/* Warehouse (for INVOICE type) */}
               {needsWarehouse && (
                 <Field>
-                  <Label htmlFor="warehouseId">Warehouse</Label>
+                  <Label htmlFor="warehouseId">{t('invoices.warehouse')}</Label>
                   <Select
                     value={watch('warehouseId') || ''}
                     onValueChange={(v) => setValue('warehouseId', v)}
                   >
                     <SelectTrigger>
-                      <SelectValue placeholder="Select warehouse" />
+                      <SelectValue placeholder={t('invoices.selectWarehouse')} />
                     </SelectTrigger>
                     <SelectContent>
                       {warehouses.map((w: any) => (
@@ -465,26 +468,21 @@ export function InvoiceFormDialog({
 
               {/* Description + Notes */}
               <Field>
-                <Label htmlFor="description">Description</Label>
+                <Label htmlFor="description">{t('common.description')}</Label>
                 <Input
                   id="description"
-                  placeholder="Invoice description / subject"
+                  placeholder={t('invoices.descriptionPlaceholder')}
                   {...register('description')}
                 />
               </Field>
 
               <div className="grid grid-cols-2 gap-3">
                 <Field>
-                  <Label htmlFor="notes">Notes (printed)</Label>
-                  <Textarea
-                    id="notes"
-                    className="resize-none"
-                    rows={2}
-                    {...register('notes')}
-                  />
+                  <Label htmlFor="notes">{t('invoices.notesPrinted')}</Label>
+                  <Textarea id="notes" className="resize-none" rows={2} {...register('notes')} />
                 </Field>
                 <Field>
-                  <Label htmlFor="internalNotes">Internal notes</Label>
+                  <Label htmlFor="internalNotes">{t('invoices.internalNotes')}</Label>
                   <Textarea
                     id="internalNotes"
                     className="resize-none"
@@ -497,7 +495,7 @@ export function InvoiceFormDialog({
               {/* Line Items */}
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <Label className="text-base font-semibold">Line Items *</Label>
+                  <Label className="text-base font-semibold">{t('invoices.lineItems')} *</Label>
                   <div className="flex gap-2">
                     <Button
                       type="button"
@@ -506,7 +504,7 @@ export function InvoiceFormDialog({
                       onClick={() => setEditingLineIndex(fields.length)}
                     >
                       <Plus className="h-4 w-4 sm:mr-1" />
-                      <span className="hidden sm:inline">Add line</span>
+                      <span className="hidden sm:inline">{t('invoices.addLine')}</span>
                     </Button>
                     <Button
                       type="button"
@@ -515,7 +513,7 @@ export function InvoiceFormDialog({
                       onClick={() => setItemPickerOpen(true)}
                     >
                       <Package className="h-4 w-4 sm:mr-1" />
-                      <span className="hidden sm:inline">Browse</span>
+                      <span className="hidden sm:inline">{t('invoices.browse')}</span>
                     </Button>
                   </div>
                 </div>
@@ -538,27 +536,28 @@ export function InvoiceFormDialog({
                   const margin = lineTotal > 0 ? (grossProfit / lineTotal) * 100 : 0;
 
                   return (
-                    <div
-                      key={field.id}
-                      className="border rounded-lg p-3 bg-muted/20 space-y-2"
-                    >
+                    <div key={field.id} className="border rounded-lg p-3 bg-muted/20 space-y-2">
                       {/* Compact card header */}
                       <div className="flex items-center justify-between gap-2">
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-medium truncate">
                             {isManual
-                              ? (lineWatch?.description || 'Manual entry')
-                              : (item?.name || field.itemId)}
+                              ? lineWatch?.description || t('invoices.manualEntry')
+                              : item?.name || field.itemId}
                           </p>
                           <p className="text-xs text-muted-foreground">
                             {qty} × {price.toFixed(3)}
                             {discount > 0 && (
-                              <span className="text-destructive ml-1">(-{discount.toFixed(3)})</span>
+                              <span className="text-destructive ml-1">
+                                (-{discount.toFixed(3)})
+                              </span>
                             )}
                           </p>
                         </div>
                         <div className="text-right shrink-0">
-                          <p className="text-sm font-semibold">{(lineTotal + lineTax).toFixed(3)}</p>
+                          <p className="text-sm font-semibold">
+                            {(lineTotal + lineTax).toFixed(3)}
+                          </p>
                         </div>
                         <div className="flex items-center gap-0.5 shrink-0">
                           <Button
@@ -590,15 +589,18 @@ export function InvoiceFormDialog({
                             onValueChange={(v) => {
                               const tr = v === 'none' ? undefined : (taxRatesMap[v] as any);
                               setValue(`lines.${index}.taxRateId`, v === 'none' ? undefined : v);
-                              setValue(`lines.${index}.taxRateSnapshot`, tr ? Number(tr.rate) : undefined);
+                              setValue(
+                                `lines.${index}.taxRateSnapshot`,
+                                tr ? Number(tr.rate) : undefined,
+                              );
                               setValue(`lines.${index}.taxRateName`, tr?.name || undefined);
                             }}
                           >
                             <SelectTrigger>
-                              <SelectValue placeholder="Tax rate" />
+                              <SelectValue placeholder={t('invoices.taxRate')} />
                             </SelectTrigger>
                             <SelectContent>
-                              <SelectItem value="none">No tax</SelectItem>
+                              <SelectItem value="none">{t('invoices.noTax')}</SelectItem>
                               {taxRates.map((tr: any) => (
                                 <SelectItem key={tr.id} value={tr.id}>
                                   {tr.name} ({Number(tr.rate)}%)
@@ -609,7 +611,7 @@ export function InvoiceFormDialog({
                         </div>
                         {taxRate && (
                           <span className="text-xs text-muted-foreground">
-                            Tax: {lineTax.toFixed(3)} {currency}
+                            {t('invoices.tax')}: {lineTax.toFixed(3)} {currency}
                           </span>
                         )}
                       </div>
@@ -617,10 +619,20 @@ export function InvoiceFormDialog({
                       {/* Profit info */}
                       {lineTotal > 0 && (
                         <div className="flex items-center gap-3 text-xs text-muted-foreground border-t pt-1.5">
-                          <span>Revenue: <span className="font-medium text-foreground">{lineTotal.toFixed(3)}</span></span>
-                          <span>COGS: <span className="font-medium text-foreground">{lineCogs.toFixed(3)}</span></span>
+                          <span>
+                            {t('invoices.revenue')}:{' '}
+                            <span className="font-medium text-foreground">
+                              {lineTotal.toFixed(3)}
+                            </span>
+                          </span>
+                          <span>
+                            {t('invoices.cogs')}:{' '}
+                            <span className="font-medium text-foreground">
+                              {lineCogs.toFixed(3)}
+                            </span>
+                          </span>
                           <span className={grossProfit >= 0 ? 'text-green-600' : 'text-red-600'}>
-                            GP: {grossProfit.toFixed(3)} ({margin.toFixed(1)}%)
+                            {t('invoices.gp')}: {grossProfit.toFixed(3)} ({margin.toFixed(1)}%)
                           </span>
                         </div>
                       )}
@@ -631,7 +643,7 @@ export function InvoiceFormDialog({
                 {fields.length === 0 && (
                   <div className="text-sm text-muted-foreground text-center py-8 space-y-2 border rounded-lg">
                     <Package className="h-8 w-8 mx-auto opacity-30" />
-                    <p>No items yet.</p>
+                    <p>{t('invoices.noLineItems')}</p>
                     <div className="flex gap-2 justify-center">
                       <Button
                         type="button"
@@ -640,7 +652,7 @@ export function InvoiceFormDialog({
                         onClick={() => setEditingLineIndex(fields.length)}
                       >
                         <Plus className="h-4 w-4 sm:mr-1" />
-                        <span className="hidden sm:inline">Add line</span>
+                        <span className="hidden sm:inline">{t('invoices.addLine')}</span>
                       </Button>
                       <Button
                         type="button"
@@ -649,7 +661,7 @@ export function InvoiceFormDialog({
                         onClick={() => setItemPickerOpen(true)}
                       >
                         <Package className="h-4 w-4 sm:mr-1" />
-                        <span className="hidden sm:inline">Browse catalogue</span>
+                        <span className="hidden sm:inline">{t('invoices.browseCatalogue')}</span>
                       </Button>
                     </div>
                   </div>
@@ -661,42 +673,49 @@ export function InvoiceFormDialog({
                 <div className="flex justify-end border-t pt-3">
                   <div className="text-right space-y-1 min-w-60">
                     <div className="flex justify-between gap-8 text-sm">
-                      <span className="text-muted-foreground">Subtotal</span>
+                      <span className="text-muted-foreground">{t('invoices.subtotal')}</span>
                       <span className="font-medium">
                         {totals.subtotal.toFixed(3)} {currency}
                       </span>
                     </div>
                     <div className="flex justify-between gap-8 text-sm">
-                      <span className="text-muted-foreground">Discount</span>
+                      <span className="text-muted-foreground">{t('invoices.discount')}</span>
                       <span className="font-medium text-destructive">
                         -{totals.discountTotal.toFixed(3)} {currency}
                       </span>
                     </div>
                     <div className="flex justify-between gap-8 text-sm">
-                      <span className="text-muted-foreground">Tax</span>
+                      <span className="text-muted-foreground">{t('invoices.tax')}</span>
                       <span className="font-medium">
                         +{totals.taxTotal.toFixed(3)} {currency}
                       </span>
                     </div>
                     <div className="flex justify-between gap-8 text-sm">
-                      <span className="text-muted-foreground">COGS</span>
+                      <span className="text-muted-foreground">{t('invoices.cogs')}</span>
                       <span className="font-medium">
                         {totals.costTotal.toFixed(3)} {currency}
                       </span>
                     </div>
                     <div className="flex justify-between gap-8 text-sm border-t pt-1">
-                      <span>Gross Profit</span>
-                      <span className={totals.total - totals.costTotal >= 0 ? 'text-green-600 font-medium' : 'text-red-600 font-medium'}>
+                      <span>{t('invoices.grossProfit')}</span>
+                      <span
+                        className={
+                          totals.total - totals.costTotal >= 0
+                            ? 'text-green-600 font-medium'
+                            : 'text-red-600 font-medium'
+                        }
+                      >
                         {(totals.total - totals.costTotal).toFixed(3)} {currency}
                         {totals.total > 0 && (
-                          <span className="text-xs ml-1">
-                            ({((totals.total - totals.costTotal) / totals.total * 100).toFixed(1)}%)
+                          <span className="text-xs ms-1">
+                            ({(((totals.total - totals.costTotal) / totals.total) * 100).toFixed(1)}
+                            %)
                           </span>
                         )}
                       </span>
                     </div>
                     <div className="flex justify-between gap-8 text-base font-bold border-t pt-1">
-                      <span>Total</span>
+                      <span>{t('invoices.total')}</span>
                       <span>
                         {totals.total.toFixed(3)} {currency}
                       </span>
@@ -707,11 +726,11 @@ export function InvoiceFormDialog({
 
               {/* Terms */}
               <Field>
-                <Label htmlFor="termsText">Terms & conditions</Label>
+                <Label htmlFor="termsText">{t('invoices.termsAndConditions')}</Label>
                 <RichtextEditor
                   value={watch('termsText')}
                   onChange={(html) => setValue('termsText', html)}
-                  placeholder="e.g. Payment is due within 30 days. Late payments may incur a 2% monthly fee."
+                  placeholder={t('invoices.termsPlaceholder')}
                   minHeight="100px"
                 />
               </Field>
@@ -724,11 +743,17 @@ export function InvoiceFormDialog({
                 onClick={() => onOpenChange(false)}
                 disabled={isPending}
               >
-                Cancel
+                {t('common.cancel')}
               </Button>
               <Button type="submit" disabled={isPending}>
-                {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                {isEdit ? 'Save changes' : `Create ${invoiceTypeOptions.find((o) => o.value === invoiceType)?.label ?? 'invoice'}`}
+                {isPending && <Loader2 className="me-2 h-4 w-4 animate-spin" />}
+                {isEdit
+                  ? t('invoices.saveChanges')
+                  : t('invoices.createType', {
+                      type:
+                        invoiceTypeOptions.find((o) => o.value === invoiceType)?.label ??
+                        t('invoices.invoice'),
+                    })}
               </Button>
             </DialogFooter>
           </form>
@@ -737,7 +762,9 @@ export function InvoiceFormDialog({
           {editingLineIndex !== null && (
             <InvoiceLineDialog
               open={editingLineIndex !== null}
-              onOpenChange={(v) => { if (!v) setEditingLineIndex(null); }}
+              onOpenChange={(v) => {
+                if (!v) setEditingLineIndex(null);
+              }}
               index={editingLineIndex}
               initial={
                 editingLineIndex < fields.length
@@ -764,8 +791,8 @@ export function InvoiceFormDialog({
       <SelectionDialog
         open={itemPickerOpen}
         onOpenChange={setItemPickerOpen}
-        title="Select items"
-        description="Choose items to add to this document."
+        title={t('invoices.selectItemsTitle')}
+        description={t('invoices.selectItemsDesc')}
         data={items.filter((i: any) => i.isSaleable)}
         mode="multi"
         getItemId={(i: any) => i.id}
@@ -784,18 +811,19 @@ export function InvoiceFormDialog({
                 </Badge>
               </div>
               <p className="text-xs text-muted-foreground">
-                Unit: {item.unit} · Price: {Number(item.salesPrice).toFixed(3)}
+                {t('invoices.unit')}: {item.unit} · {t('invoices.price')}:{' '}
+                {Number(item.salesPrice).toFixed(3)}
               </p>
             </div>
             {selected && (
               <Badge className="shrink-0 bg-primary text-primary-foreground text-xs">
-                Selected
+                {t('invoices.selected')}
               </Badge>
             )}
           </div>
         )}
-        itemName="items"
-        confirmLabel="Add to invoice"
+        itemName={t('invoices.itemsLower')}
+        confirmLabel={t('invoices.addToInvoice')}
       />
     </>
   );
@@ -831,7 +859,10 @@ export function InvoiceFormProvider({ children }: { children?: React.ReactNode }
   }, []);
 
   const openEdit = React.useCallback(
-    (invoice: { id: string; version?: number } & Partial<InvoiceFormValues>, options?: OpenOptions) => {
+    (
+      invoice: { id: string; version?: number } & Partial<InvoiceFormValues>,
+      options?: OpenOptions,
+    ) => {
       setState({ open: true, invoice, onSuccess: options?.onSuccess });
     },
     [],

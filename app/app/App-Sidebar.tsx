@@ -19,7 +19,7 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 import Logo from '@/components/Logo';
 import {
@@ -66,7 +66,9 @@ export function AppSidebar({ ...props }: AppSidebarProps) {
   const { isMobile, open, setOpenMobile } = useSidebar();
   const router = useRouter();
   const [loading, setLoading] = useState('');
+  const locale = useLocale();
   const t = useTranslations();
+  const isRtl = locale === 'ar';
 
   const ROUTES: RouteConfig[] = [
     {
@@ -141,7 +143,7 @@ export function AppSidebar({ ...props }: AppSidebarProps) {
   const showSpinnerFor = (href: string) => loading === href && (!open || isMobile);
 
   return (
-    <Sidebar collapsible="icon" type="Drawer" {...props}>
+    <Sidebar side={isRtl ? 'right' : 'left'} collapsible="icon" type="Drawer" {...props}>
       <SidebarHeader>
         <div className="flex items-center gap-1">
           <AppLogo />
