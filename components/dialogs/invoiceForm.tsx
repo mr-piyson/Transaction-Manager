@@ -1,7 +1,7 @@
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Calculator, Loader2, Package, Plus, Trash2, TriangleAlert, User } from 'lucide-react';
+import { Calculator, Loader2, Package, Plus, Trash2, TriangleAlert, User, PenLine } from 'lucide-react';
 import * as React from 'react';
 import { type SubmitHandler, useFieldArray, useForm, useWatch } from 'react-hook-form';
 import { toast } from 'sonner';
@@ -214,10 +214,9 @@ export function InvoiceFormDialog({
       isWalkIn: values.isWalkIn,
       parentInvoiceId: values.parentInvoiceId || undefined,
       lines: values.lines
-        .filter((l) => l.itemId)
         .map((l, idx) => ({
           id: l.id || undefined,
-          itemId: l.itemId,
+          itemId: l.itemId || undefined,
           description: l.description || undefined,
           quantity: Number(l.quantity),
           unitPrice: Number(l.unitPrice),
@@ -495,19 +494,43 @@ export function InvoiceFormDialog({
                     >
                       <Package className="h-4 w-4 mr-1" /> Browse
                     </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        append({
+                          itemId: '',
+                          description: '',
+                          quantity: 1,
+                          unitPrice: 0,
+                          discountAmt: 0,
+                          purchasePrice: 0,
+                          sortOrder: 0,
+                        });
+                      }}
+                    >
+                      <PenLine className="h-4 w-4 mr-1" /> Manual
+                    </Button>
                   </div>
                 </div>
 
                 {fields.map((field, index) => {
+                  const isManual = !field.itemId;
                   const item = itemsMap[field.itemId || ''] as any;
                   const lineWatch = watch(`lines.${index}`);
                   const lineTaxRateId = watch(`lines.${index}.taxRateId`);
                   const taxRate = taxRatesMap[lineTaxRateId || ''] as any;
                   const qty = Number(lineWatch?.quantity) || 0;
                   const price = Number(lineWatch?.unitPrice) || 0;
+                  const costBasis = Number(lineWatch?.purchasePrice) || 0;
                   const discount = Number(lineWatch?.discountAmt) || 0;
-                  const lineTotal = qty * price - discount;
+                  const lineSubtotal = qty * price;
+                  const lineTotal = lineSubtotal - discount;
                   const lineTax = taxRate ? lineTotal * (Number(taxRate.rate) / 100) : 0;
+                  const lineCogs = qty * costBasis;
+                  const grossProfit = lineTotal - lineCogs;
+                  const margin = lineTotal > 0 ? (grossProfit / lineTotal) * 100 : 0;
 
                   return (
                     <div
@@ -516,39 +539,62 @@ export function InvoiceFormDialog({
                     >
                       <div className="flex items-start gap-2">
                         <div className="flex-1 grid grid-cols-12 gap-2">
-                          {/* Item selector */}
-                          <div className="col-span-4">
-                            <Label className="text-xs">Item</Label>
-                            <Select
-                              value={field.itemId || ''}
-                              onValueChange={(v) => {
-                                const selected = itemsMap[v] as any;
-                                const tr = taxRatesMap[selected?.taxRate?.id] as any;
-                                setValue(`lines.${index}.itemId`, v);
-                                if (selected) {
-                                  setValue(`lines.${index}.unitPrice`, Number(selected.salesPrice) || 0);
-                                  setValue(`lines.${index}.purchasePrice`, Number(selected.purchasePrice) || 0);
-                                  setValue(`lines.${index}.taxRateId`, selected.taxRate?.id);
-                                  setValue(`lines.${index}.taxRateSnapshot`, tr ? Number(tr.rate) : undefined);
-                                  setValue(`lines.${index}.taxRateName`, tr?.name || undefined);
-                                }
-                              }}
-                            >
-                              <SelectTrigger>
-                                <SelectValue placeholder="Select item" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                {items.map((i: any) => (
-                                  <SelectItem key={i.id} value={i.id}>
-                                    {i.sku} — {i.name}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
+                          {/* Item selector (item mode) or Description (manual mode) */}
+                          <div className="col-span-3">
+                            {isManual ? (
+                              <>
+                                <Label className="text-xs">Description</Label>
+                                <Input
+                                  placeholder="Describe this line item"
+                                  {...register(`lines.${index}.description` as const)}
+                                />
+                              </>
+                            ) : (
+                              <>
+                                <Label className="text-xs">Item</Label>
+                                <Select
+                                  value={field.itemId || '__manual__'}
+                                  onValueChange={(v) => {
+                                    if (v === '__manual__') {
+                                      setValue(`lines.${index}.itemId`, undefined);
+                                      setValue(`lines.${index}.unitPrice`, 0);
+                                      setValue(`lines.${index}.purchasePrice`, 0);
+                                      setValue(`lines.${index}.taxRateId`, undefined);
+                                      setValue(`lines.${index}.taxRateSnapshot`, undefined);
+                                      setValue(`lines.${index}.taxRateName`, undefined);
+                                      return;
+                                    }
+                                    const selected = itemsMap[v] as any;
+                                    const tr = taxRatesMap[selected?.taxRate?.id] as any;
+                                    setValue(`lines.${index}.itemId`, v);
+                                    if (selected) {
+                                      setValue(`lines.${index}.unitPrice`, Number(selected.salesPrice) || 0);
+                                      setValue(`lines.${index}.purchasePrice`, Number(selected.purchasePrice) || 0);
+                                      setValue(`lines.${index}.taxRateId`, selected.taxRate?.id);
+                                      setValue(`lines.${index}.taxRateSnapshot`, tr ? Number(tr.rate) : undefined);
+                                      setValue(`lines.${index}.taxRateName`, tr?.name || undefined);
+                                    }
+                                  }}
+                                >
+                                  <SelectTrigger>
+                                    <SelectValue placeholder="Select item" />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value="__manual__">Manual entry</SelectItem>
+                                    <div className="border-t my-1" />
+                                    {items.map((i: any) => (
+                                      <SelectItem key={i.id} value={i.id}>
+                                        {i.sku} — {i.name}
+                                      </SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                              </>
+                            )}
                           </div>
 
                           {/* Qty */}
-                          <div className="col-span-2">
+                          <div className="col-span-1">
                             <Label className="text-xs">Qty</Label>
                             <Input
                               type="number"
@@ -577,6 +623,17 @@ export function InvoiceFormDialog({
                               min={0}
                               step="0.001"
                               {...register(`lines.${index}.discountAmt` as const)}
+                            />
+                          </div>
+
+                          {/* Unit cost (costBasis) */}
+                          <div className="col-span-2">
+                            <Label className="text-xs">Unit cost</Label>
+                            <Input
+                              type="number"
+                              min={0}
+                              step="0.001"
+                              {...register(`lines.${index}.purchasePrice` as const)}
                             />
                           </div>
 
@@ -633,6 +690,17 @@ export function InvoiceFormDialog({
                           </span>
                         )}
                       </div>
+
+                      {/* Profit info */}
+                      {lineTotal > 0 && (
+                        <div className="flex items-center gap-3 text-xs text-muted-foreground border-t pt-1.5">
+                          <span>Revenue: <span className="font-medium text-foreground">{lineTotal.toFixed(3)}</span></span>
+                          <span>COGS: <span className="font-medium text-foreground">{lineCogs.toFixed(3)}</span></span>
+                          <span className={grossProfit >= 0 ? 'text-green-600' : 'text-red-600'}>
+                            GP: {grossProfit.toFixed(3)} ({margin.toFixed(1)}%)
+                          </span>
+                        </div>
+                      )}
                     </div>
                   );
                 })}
@@ -652,6 +720,7 @@ export function InvoiceFormDialog({
                             quantity: 1,
                             unitPrice: 0,
                             discountAmt: 0,
+                            purchasePrice: 0,
                             sortOrder: 0,
                           });
                         }}
@@ -665,6 +734,24 @@ export function InvoiceFormDialog({
                         onClick={() => setItemPickerOpen(true)}
                       >
                         <Package className="h-4 w-4 mr-1" /> Browse catalogue
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        size="sm"
+                        onClick={() => {
+                          append({
+                            itemId: '',
+                            description: '',
+                            quantity: 1,
+                            unitPrice: 0,
+                            discountAmt: 0,
+                            purchasePrice: 0,
+                            sortOrder: 0,
+                          });
+                        }}
+                      >
+                        <PenLine className="h-4 w-4 mr-1" /> Manual
                       </Button>
                     </div>
                   </div>
@@ -691,6 +778,23 @@ export function InvoiceFormDialog({
                       <span className="text-muted-foreground">Tax</span>
                       <span className="font-medium">
                         +{totals.taxTotal.toFixed(3)} {currency}
+                      </span>
+                    </div>
+                    <div className="flex justify-between gap-8 text-sm">
+                      <span className="text-muted-foreground">COGS</span>
+                      <span className="font-medium">
+                        {totals.costTotal.toFixed(3)} {currency}
+                      </span>
+                    </div>
+                    <div className="flex justify-between gap-8 text-sm border-t pt-1">
+                      <span>Gross Profit</span>
+                      <span className={totals.total - totals.costTotal >= 0 ? 'text-green-600 font-medium' : 'text-red-600 font-medium'}>
+                        {(totals.total - totals.costTotal).toFixed(3)} {currency}
+                        {totals.total > 0 && (
+                          <span className="text-xs ml-1">
+                            ({((totals.total - totals.costTotal) / totals.total * 100).toFixed(1)}%)
+                          </span>
+                        )}
                       </span>
                     </div>
                     <div className="flex justify-between gap-8 text-base font-bold border-t pt-1">
