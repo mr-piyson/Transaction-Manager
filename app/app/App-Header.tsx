@@ -71,13 +71,13 @@ export function Header({
           </div>
         )}
       </div>
-      {rightContent}
       {onCreate && (
         <Button size="sm" className="gap-1.5 shrink-0" onClick={onCreate}>
           <Plus className="size-4" />
           {createLabel ?? t('common.create')}
         </Button>
       )}
+      {rightContent}
       {children}
     </header>
   );

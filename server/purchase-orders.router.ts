@@ -11,6 +11,7 @@ import {
   toPrismaPage,
 } from '@/lib/validations';
 import { writeAuditLog } from './audit.service';
+import { createNotification, NOTIFICATION_SETTINGS_KEYS, NOTIFICATION_TYPES } from './notifications.shared';
 
 const purchaseLineInputSchema = z.object({
   itemId: z.string().cuid(),
@@ -349,13 +350,18 @@ export const purchaseOrdersRouter = router({
 
       const po = await ctx.db.purchaseOrder.findFirst({
         where: { id: input.id, organizationId: orgId, deletedAt: null },
-        select: { id: true, status: true, version: true },
+        select: { id: true, status: true, version: true, serial: true },
       });
       if (!po) throw new NotFoundError('PurchaseOrder', input.id);
       assertCan(ctx.ability, 'po:update', 'PurchaseOrder', po as Record<string, unknown>);
       if (po.status !== 'DRAFT')
         throw new UnprocessableError(`Only DRAFT POs can be submitted. Current: ${po.status}`);
       if (po.version !== input.version) throw new StaleDataError('PurchaseOrder');
+
+      const notifApprovalReq = await ctx.db.organizationSetting.findFirst({
+        where: { organizationId: orgId, key: NOTIFICATION_SETTINGS_KEYS[NOTIFICATION_TYPES.APPROVAL_REQUEST] },
+        select: { value: true },
+      });
 
       return ctx.db.$transaction(async (tx) => {
         const updated = await tx.purchaseOrder.update({
@@ -366,6 +372,16 @@ export const purchaseOrdersRouter = router({
             version: { increment: 1 },
             updatedById: ctx.user.id,
           },
+        });
+
+        await createNotification(tx, notifApprovalReq?.value === 'true', {
+          title: 'PO Submitted for Approval',
+          body: `${po.serial} has been submitted for approval.`,
+          type: NOTIFICATION_TYPES.APPROVAL_REQUEST,
+          entityType: 'PurchaseOrder',
+          entityId: input.id,
+          userId: ctx.user.id,
+          organizationId: orgId,
         });
 
         await writeAuditLog(
@@ -392,7 +408,7 @@ export const purchaseOrdersRouter = router({
 
       const po = await ctx.db.purchaseOrder.findFirst({
         where: { id: input.id, organizationId: orgId, deletedAt: null },
-        select: { id: true, status: true, version: true },
+        select: { id: true, status: true, version: true, serial: true, createdById: true },
       });
       if (!po) throw new NotFoundError('PurchaseOrder', input.id);
       assertCan(ctx.ability, 'po:approve', 'PurchaseOrder', po as Record<string, unknown>);
@@ -401,6 +417,11 @@ export const purchaseOrdersRouter = router({
           `PO must be PENDING_APPROVAL to approve. Current: ${po.status}`,
         );
       if (po.version !== input.version) throw new StaleDataError('PurchaseOrder');
+
+      const notifApproved = await ctx.db.organizationSetting.findFirst({
+        where: { organizationId: orgId, key: NOTIFICATION_SETTINGS_KEYS[NOTIFICATION_TYPES.PO_APPROVED] },
+        select: { value: true },
+      });
 
       return ctx.db.$transaction(async (tx) => {
         const updated = await tx.purchaseOrder.update({
@@ -411,6 +432,16 @@ export const purchaseOrdersRouter = router({
             version: { increment: 1 },
             updatedById: ctx.user.id,
           },
+        });
+
+        await createNotification(tx, notifApproved?.value === 'true', {
+          title: 'PO Approved',
+          body: `${po.serial} has been approved.`,
+          type: NOTIFICATION_TYPES.PO_APPROVED,
+          entityType: 'PurchaseOrder',
+          entityId: input.id,
+          userId: po.createdById,
+          organizationId: orgId,
         });
 
         await writeAuditLog(
@@ -439,13 +470,18 @@ export const purchaseOrdersRouter = router({
 
       const po = await ctx.db.purchaseOrder.findFirst({
         where: { id: input.id, organizationId: orgId, deletedAt: null },
-        select: { id: true, status: true, version: true },
+        select: { id: true, status: true, version: true, serial: true, createdById: true },
       });
       if (!po) throw new NotFoundError('PurchaseOrder', input.id);
       assertCan(ctx.ability, 'po:approve', 'PurchaseOrder', po as Record<string, unknown>);
       if (po.status !== 'PENDING_APPROVAL')
         throw new UnprocessableError(`PO must be PENDING_APPROVAL to reject. Current: ${po.status}`);
       if (po.version !== input.version) throw new StaleDataError('PurchaseOrder');
+
+      const notifRejected = await ctx.db.organizationSetting.findFirst({
+        where: { organizationId: orgId, key: NOTIFICATION_SETTINGS_KEYS[NOTIFICATION_TYPES.PO_REJECTED] },
+        select: { value: true },
+      });
 
       return ctx.db.$transaction(async (tx) => {
         const updated = await tx.purchaseOrder.update({
@@ -456,6 +492,16 @@ export const purchaseOrdersRouter = router({
             version: { increment: 1 },
             updatedById: ctx.user.id,
           },
+        });
+
+        await createNotification(tx, notifRejected?.value === 'true', {
+          title: 'PO Rejected',
+          body: `${po.serial} was rejected.${input.reason ? ` Reason: ${input.reason}` : ''}`,
+          type: NOTIFICATION_TYPES.PO_REJECTED,
+          entityType: 'PurchaseOrder',
+          entityId: input.id,
+          userId: po.createdById,
+          organizationId: orgId,
         });
 
         await writeAuditLog(
@@ -489,10 +535,25 @@ export const purchaseOrdersRouter = router({
         throw new UnprocessableError(`PO must be APPROVED before ordering. Current: ${po.status}`);
       if (po.version !== input.version) throw new StaleDataError('PurchaseOrder');
 
+      const notifOrdered = await ctx.db.organizationSetting.findFirst({
+        where: { organizationId: orgId, key: NOTIFICATION_SETTINGS_KEYS[NOTIFICATION_TYPES.PO_ORDERED] },
+        select: { value: true },
+      });
+
       return ctx.db.$transaction(async (tx) => {
         const updated = await tx.purchaseOrder.update({
           where: { id: input.id },
           data: { status: 'ORDERED', version: { increment: 1 }, updatedById: ctx.user.id },
+        });
+
+        await createNotification(tx, notifOrdered?.value === 'true', {
+          title: 'PO Ordered',
+          body: `${po.serial} has been ordered.`,
+          type: NOTIFICATION_TYPES.PO_ORDERED,
+          entityType: 'PurchaseOrder',
+          entityId: input.id,
+          userId: ctx.user.id,
+          organizationId: orgId,
         });
 
         await writeAuditLog(
@@ -526,6 +587,11 @@ export const purchaseOrdersRouter = router({
       if (!['ORDERED', 'PARTIAL_RECEIVED'].includes(po.status))
         throw new UnprocessableError(`PO must be ORDERED to receive.`);
       if (po.version !== input.version) throw new StaleDataError('PurchaseOrder');
+
+      const notifReceived = await ctx.db.organizationSetting.findFirst({
+        where: { organizationId: orgId, key: NOTIFICATION_SETTINGS_KEYS[NOTIFICATION_TYPES.PO_RECEIVED] },
+        select: { value: true },
+      });
 
       return ctx.db.$transaction(async (tx) => {
         let allFullyReceived = true;
@@ -615,6 +681,17 @@ export const purchaseOrdersRouter = router({
           tx,
         );
 
+        const statusLabel = newStatus === 'RECEIVED' ? 'fully received' : 'partially received';
+        await createNotification(tx, notifReceived?.value === 'true', {
+          title: 'PO Received',
+          body: `${po.serial} has been ${statusLabel}.`,
+          type: NOTIFICATION_TYPES.PO_RECEIVED,
+          entityType: 'PurchaseOrder',
+          entityId: input.id,
+          userId: ctx.user.id,
+          organizationId: orgId,
+        });
+
         return updated;
       });
     }),
@@ -636,6 +713,11 @@ export const purchaseOrdersRouter = router({
       }
       if (po.version !== input.version) throw new StaleDataError('PurchaseOrder');
 
+      const notifCancelled = await ctx.db.organizationSetting.findFirst({
+        where: { organizationId: orgId, key: NOTIFICATION_SETTINGS_KEYS[NOTIFICATION_TYPES.PO_CANCELLED] },
+        select: { value: true },
+      });
+
       return ctx.db.$transaction(async (tx) => {
         const updated = await tx.purchaseOrder.update({
           where: { id: input.id },
@@ -645,6 +727,16 @@ export const purchaseOrdersRouter = router({
             version: { increment: 1 },
             updatedById: ctx.user.id,
           },
+        });
+
+        await createNotification(tx, notifCancelled?.value === 'true', {
+          title: 'PO Cancelled',
+          body: `${po.serial} has been cancelled.${input.reason ? ` Reason: ${input.reason}` : ''}`,
+          type: NOTIFICATION_TYPES.PO_CANCELLED,
+          entityType: 'PurchaseOrder',
+          entityId: input.id,
+          userId: ctx.user.id,
+          organizationId: orgId,
         });
 
         await writeAuditLog(

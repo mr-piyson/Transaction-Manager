@@ -2,6 +2,7 @@
 
 import {
   BarChart3,
+  Bell,
   Boxes,
   ChevronDown,
   FilePenLine,
@@ -109,6 +110,13 @@ export function AppSidebar({ ...props }: AppSidebarProps) {
       label: t('layout.analytics'),
       children: [
         { type: 'item', label: t('layout.reports'), href: '/app/reports', icon: BarChart3 },
+      ],
+    },
+    {
+      type: 'group',
+      label: t('layout.notifications' as any),
+      children: [
+        { type: 'item', label: t('layout.notifications' as any), href: '/app/notifications', icon: Bell },
       ],
     },
     {

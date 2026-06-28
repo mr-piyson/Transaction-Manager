@@ -10,6 +10,7 @@ import { reportsRouter } from './reports.router';
 import { categoriesRouter } from './categories';
 import { settingsRouter } from './settings.router';
 import { stockRouter } from './stock.router';
+import { notificationsRouter } from './notifications.router';
 import { suppliersRouter } from './suppliers.router';
 import { warehousesRouter } from './warehouses.router';
 
@@ -19,6 +20,7 @@ export const appRouter = t.router({
   customers: customersRouter,
   invoices: invoicesRouter,
   items: itemsRouter,
+  notifications: notificationsRouter,
   organizations: organizationsRouter,
   purchaseOrders: purchaseOrdersRouter,
   reports: reportsRouter,

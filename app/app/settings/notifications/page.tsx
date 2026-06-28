@@ -15,11 +15,21 @@ export default function NotificationsPage() {
   });
 
   const NOTIFICATION_KEYS = [
-    { key: 'notify_invoice_created', label: t('invoices.createInvoice'), description: t('invoices.issueDate') },
-    { key: 'notify_invoice_paid', label: t('invoices.paid'), description: t('common.paid') },
-    { key: 'notify_invoice_overdue', label: t('invoices.overdue'), description: t('common.overdue') },
-    { key: 'notify_payment_received', label: t('invoices.paymentReceived'), description: t('invoices.payments') },
-    { key: 'notify_low_stock', label: t('items.lowStock'), description: t('items.minStock') },
+    { key: 'notify_approval_request', label: t('settings.notifApprovalRequest'), description: t('settings.notifApprovalRequestDesc') },
+    { key: 'notify_invoice_sent', label: t('settings.notifInvoiceSent'), description: t('settings.notifInvoiceSentDesc') },
+    { key: 'notify_invoice_approved', label: t('settings.notifInvoiceApproved'), description: t('settings.notifInvoiceApprovedDesc') },
+    { key: 'notify_invoice_rejected', label: t('settings.notifInvoiceRejected'), description: t('settings.notifInvoiceRejectedDesc') },
+    { key: 'notify_invoice_cancelled', label: t('settings.notifInvoiceCancelled'), description: t('settings.notifInvoiceCancelledDesc') },
+    { key: 'notify_invoice_converted', label: t('settings.notifInvoiceConverted'), description: t('settings.notifInvoiceConvertedDesc') },
+    { key: 'notify_payment_received', label: t('settings.notifPaymentReceived'), description: t('settings.notifPaymentReceivedDesc') },
+    { key: 'notify_payment_deleted', label: t('settings.notifPaymentDeleted'), description: t('settings.notifPaymentDeletedDesc') },
+    { key: 'notify_po_approved', label: t('settings.notifPOApproved'), description: t('settings.notifPOApprovedDesc') },
+    { key: 'notify_po_rejected', label: t('settings.notifPORejected'), description: t('settings.notifPORejectedDesc') },
+    { key: 'notify_po_ordered', label: t('settings.notifPOOrdered'), description: t('settings.notifPOOrderedDesc') },
+    { key: 'notify_po_received', label: t('settings.notifPOReceived'), description: t('settings.notifPOReceivedDesc') },
+    { key: 'notify_po_cancelled', label: t('settings.notifPOCancelled'), description: t('settings.notifPOCancelledDesc') },
+    { key: 'notify_low_stock', label: t('settings.notifLowStock'), description: t('settings.notifLowStockDesc') },
+    { key: 'notify_overdue', label: t('settings.notifOverdue'), description: t('settings.notifOverdueDesc') },
   ];
 
   const getValue = (key: string) => settings?.[key] === 'true';

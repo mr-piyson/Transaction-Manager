@@ -13,6 +13,7 @@ import { cn } from '@/lib/utils';
 import { useContractForm } from '@/components/dialogs';
 import { Header } from '../App-Header';
 import { ContractListItem } from '@/components/contracts/contract-list-item';
+import { NotificationBell } from '../NotificationBell';
 
 const contractsSegment = 'contracts';
 
@@ -45,15 +46,25 @@ export default function ContractsLayout({ children }: { children?: React.ReactNo
     [activeItem],
   );
 
-  const contracts = Array.isArray(data) ? data : data?.data ?? [];
+  const contracts = Array.isArray(data) ? data : (data?.data ?? []);
 
   return (
     <div className="flex h-screen flex-col overflow-hidden">
-      <Header title={t('contracts.title')} icon={<Handshake className="size-5" />} onCreate={() => openCreate()} createLabel={t('contracts.createContract')} />
+      <Header
+        title={t('contracts.title')}
+        rightContent={<NotificationBell />}
+        icon={<Handshake className="size-5" />}
+        onCreate={() => openCreate()}
+        createLabel={t('contracts.createContract')}
+      />
       <div className="flex-1 min-h-0 w-full">
         <ResizablePanelGroup className="h-full">
           {(isListView || !isMobile) && (
-            <ResizablePanel minSize={20} defaultSize={30} className={cn('h-full', !isListView ? 'hidden md:block' : 'block')}>
+            <ResizablePanel
+              minSize={20}
+              defaultSize={30}
+              className={cn('h-full', !isListView ? 'hidden md:block' : 'block')}
+            >
               <aside className="flex h-full flex-col overflow-hidden border-r">
                 <div className="flex-1 overflow-y-auto">
                   <ListView
@@ -76,7 +87,10 @@ export default function ContractsLayout({ children }: { children?: React.ReactNo
           <ResizableHandle className={cn('hidden md:flex', !isListView && 'hidden md:flex')} />
 
           {(!isListView || !isMobile) && (
-            <ResizablePanel defaultSize={70} className={cn('h-full w-full', isListView ? 'hidden md:block' : 'flex flex-col')}>
+            <ResizablePanel
+              defaultSize={70}
+              className={cn('h-full w-full', isListView ? 'hidden md:block' : 'flex flex-col')}
+            >
               {children}
             </ResizablePanel>
           )}

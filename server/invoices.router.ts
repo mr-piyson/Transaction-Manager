@@ -48,6 +48,7 @@ import {
 } from '@/lib/validations';
 import { writeAuditLog } from './audit.service';
 import { deductStockForInvoice, returnStockForCancelledInvoice } from './invoices.service';
+import { createNotification, NOTIFICATION_SETTINGS_KEYS, NOTIFICATION_TYPES } from './notifications.shared';
 import { addPayment, deletePayment } from './payments.service';
 
 // ---------------------------------------------------------------------------
@@ -613,6 +614,11 @@ export const invoicesRouter = router({
         throw new UnprocessableError('A warehouse must be assigned before sending an invoice.');
       }
 
+      const notifSent = await ctx.db.organizationSetting.findFirst({
+        where: { organizationId: orgId, key: NOTIFICATION_SETTINGS_KEYS[NOTIFICATION_TYPES.INVOICE_SENT] },
+        select: { value: true },
+      });
+
       const result = await ctx.db.$transaction(async (tx) => {
         // Deduct stock if this is an INVOICE (not QUOTE/PROFORMA)
         if (invoice.type === 'INVOICE' && invoice.warehouseId) {
@@ -671,6 +677,16 @@ export const invoicesRouter = router({
           tx,
         );
 
+        await createNotification(tx, notifSent?.value === 'true', {
+          title: 'Invoice Sent',
+          body: `${invoice.serial} has been sent${invoice.customer ? ` to ${invoice.customer.name}` : ''}.`,
+          type: NOTIFICATION_TYPES.INVOICE_SENT,
+          entityType: 'Invoice',
+          entityId: input.id,
+          userId: ctx.user.id,
+          organizationId: orgId,
+        });
+
         return updated;
       });
 
@@ -696,6 +712,11 @@ export const invoicesRouter = router({
           `Only DRAFT invoices can be submitted for approval. Current: ${invoice.status}`,
         );
       if (invoice.version !== input.version) throw new StaleDataError('Invoice');
+
+      const notifApprovalReq = await ctx.db.organizationSetting.findFirst({
+        where: { organizationId: orgId, key: NOTIFICATION_SETTINGS_KEYS[NOTIFICATION_TYPES.APPROVAL_REQUEST] },
+        select: { value: true },
+      });
 
       return ctx.db.$transaction(async (tx) => {
         const updated = await tx.invoice.update({
@@ -727,16 +748,14 @@ export const invoicesRouter = router({
           });
         }
 
-        await tx.notification.create({
-          data: {
-            title: 'Invoice Submitted for Approval',
-            body: `${invoice.serial} has been submitted for approval.`,
-            type: 'approval_request',
-            entityType: 'Invoice',
-            entityId: input.id,
-            userId: ctx.user.id,
-            organizationId: orgId,
-          },
+        await createNotification(tx, notifApprovalReq?.value === 'true', {
+          title: 'Invoice Submitted for Approval',
+          body: `${invoice.serial} has been submitted for approval.`,
+          type: NOTIFICATION_TYPES.APPROVAL_REQUEST,
+          entityType: 'Invoice',
+          entityId: input.id,
+          userId: ctx.user.id,
+          organizationId: orgId,
         });
 
         await writeAuditLog(
@@ -776,6 +795,11 @@ export const invoicesRouter = router({
         );
       if (invoice.version !== input.version) throw new StaleDataError('Invoice');
 
+      const notifInvoiceApproved = await ctx.db.organizationSetting.findFirst({
+        where: { organizationId: orgId, key: NOTIFICATION_SETTINGS_KEYS[NOTIFICATION_TYPES.INVOICE_APPROVED] },
+        select: { value: true },
+      });
+
       return ctx.db.$transaction(async (tx) => {
         const updated = await tx.invoice.update({
           where: { id: input.id },
@@ -806,16 +830,14 @@ export const invoicesRouter = router({
           });
         }
 
-        await tx.notification.create({
-          data: {
-            title: 'Invoice Approved',
-            body: `${invoice.serial} has been approved.`,
-            type: 'invoice_approved',
-            entityType: 'Invoice',
-            entityId: input.id,
-            userId: invoice.createdById,
-            organizationId: orgId,
-          },
+        await createNotification(tx, notifInvoiceApproved?.value === 'true', {
+          title: 'Invoice Approved',
+          body: `${invoice.serial} has been approved.`,
+          type: NOTIFICATION_TYPES.INVOICE_APPROVED,
+          entityType: 'Invoice',
+          entityId: input.id,
+          userId: invoice.createdById,
+          organizationId: orgId,
         });
 
         await writeAuditLog(
@@ -857,6 +879,11 @@ export const invoicesRouter = router({
         );
       if (invoice.version !== input.version) throw new StaleDataError('Invoice');
 
+      const notifInvoiceRejected = await ctx.db.organizationSetting.findFirst({
+        where: { organizationId: orgId, key: NOTIFICATION_SETTINGS_KEYS[NOTIFICATION_TYPES.INVOICE_REJECTED] },
+        select: { value: true },
+      });
+
       return ctx.db.$transaction(async (tx) => {
         const updated = await tx.invoice.update({
           where: { id: input.id },
@@ -888,16 +915,14 @@ export const invoicesRouter = router({
           });
         }
 
-        await tx.notification.create({
-          data: {
-            title: 'Invoice Rejected',
-            body: `${invoice.serial} was rejected.${input.reason ? ` Reason: ${input.reason}` : ''}`,
-            type: 'invoice_rejected',
-            entityType: 'Invoice',
-            entityId: input.id,
-            userId: invoice.createdById,
-            organizationId: orgId,
-          },
+        await createNotification(tx, notifInvoiceRejected?.value === 'true', {
+          title: 'Invoice Rejected',
+          body: `${invoice.serial} was rejected.${input.reason ? ` Reason: ${input.reason}` : ''}`,
+          type: NOTIFICATION_TYPES.INVOICE_REJECTED,
+          entityType: 'Invoice',
+          entityId: input.id,
+          userId: invoice.createdById,
+          organizationId: orgId,
         });
 
         await writeAuditLog(
@@ -963,6 +988,11 @@ export const invoicesRouter = router({
         );
       }
 
+      const notifCancelled = await ctx.db.organizationSetting.findFirst({
+        where: { organizationId: orgId, key: NOTIFICATION_SETTINGS_KEYS[NOTIFICATION_TYPES.INVOICE_CANCELLED] },
+        select: { value: true },
+      });
+
       await ctx.db.$transaction(async (tx) => {
         // Return stock if invoice was SENT (stock was committed)
         if (
@@ -1015,6 +1045,16 @@ export const invoicesRouter = router({
           },
           tx,
         );
+
+        await createNotification(tx, notifCancelled?.value === 'true', {
+          title: 'Invoice Cancelled',
+          body: `${invoice.serial} has been cancelled.${input.reason ? ` Reason: ${input.reason}` : ''}`,
+          type: NOTIFICATION_TYPES.INVOICE_CANCELLED,
+          entityType: 'Invoice',
+          entityId: input.id,
+          userId: ctx.user.id,
+          organizationId: orgId,
+        });
       });
 
       return { success: true };
@@ -1060,6 +1100,11 @@ export const invoicesRouter = router({
           `This quote was already converted to invoice ${existingConversion.serial}.`,
         );
       }
+
+      const notifConverted = await ctx.db.organizationSetting.findFirst({
+        where: { organizationId: orgId, key: NOTIFICATION_SETTINGS_KEYS[NOTIFICATION_TYPES.INVOICE_CONVERTED] },
+        select: { value: true },
+      });
 
       const invoice = await ctx.db.$transaction(async (tx) => {
         const serial = await generateSerial({
@@ -1120,6 +1165,16 @@ export const invoicesRouter = router({
               })),
             },
           },
+        });
+
+        await createNotification(tx, notifConverted?.value === 'true', {
+          title: 'Quote Converted',
+          body: `Quote ${quote.serial} has been converted to invoice ${serial}.`,
+          type: NOTIFICATION_TYPES.INVOICE_CONVERTED,
+          entityType: 'Invoice',
+          entityId: created.id,
+          userId: quote.createdById,
+          organizationId: orgId,
         });
 
         await writeAuditLog(
@@ -1209,7 +1264,7 @@ export const invoicesRouter = router({
       // Verify invoice access
       const invoice = await ctx.db.invoice.findFirst({
         where: { id: invoiceId, organizationId: orgId, deletedAt: null },
-        select: { id: true, organizationId: true },
+        select: { id: true, organizationId: true, serial: true },
       });
       if (!invoice) throw new NotFoundError('Invoice', invoiceId);
 
@@ -1220,8 +1275,13 @@ export const invoicesRouter = router({
         invoice as Record<string, unknown>,
       );
 
+      const notifPayment = await ctx.db.organizationSetting.findFirst({
+        where: { organizationId: orgId, key: NOTIFICATION_SETTINGS_KEYS[NOTIFICATION_TYPES.PAYMENT_RECEIVED] },
+        select: { value: true },
+      });
+
       return ctx.db.$transaction(async (tx) => {
-        return addPayment({
+        const payment = await addPayment({
           tx,
           invoiceId,
           organizationId: orgId,
@@ -1229,6 +1289,18 @@ export const invoicesRouter = router({
           ipAddress: ctx.ipAddress,
           ...paymentData,
         });
+
+        await createNotification(tx, notifPayment?.value === 'true', {
+          title: 'Payment Received',
+          body: `${paymentData.method} payment of ${paymentData.amount} received for ${invoice.serial}.`,
+          type: NOTIFICATION_TYPES.PAYMENT_RECEIVED,
+          entityType: 'Invoice',
+          entityId: invoiceId,
+          userId: ctx.user.id,
+          organizationId: orgId,
+        });
+
+        return payment;
       });
     }),
 
@@ -1239,6 +1311,23 @@ export const invoicesRouter = router({
 
       assertCan(ctx.ability, 'invoice:payment:delete', 'Invoice');
 
+      const payment = await ctx.db.payment.findFirst({
+        where: { id: input.paymentId, organizationId: orgId },
+        select: {
+          id: true,
+          amount: true,
+          method: true,
+          invoiceId: true,
+          invoice: { select: { serial: true, createdById: true } },
+        },
+      });
+      if (!payment) throw new NotFoundError('Payment', input.paymentId);
+
+      const notifPaymentDeleted = await ctx.db.organizationSetting.findFirst({
+        where: { organizationId: orgId, key: NOTIFICATION_SETTINGS_KEYS[NOTIFICATION_TYPES.PAYMENT_DELETED] },
+        select: { value: true },
+      });
+
       await ctx.db.$transaction(async (tx) => {
         await deletePayment({
           tx,
@@ -1246,6 +1335,16 @@ export const invoicesRouter = router({
           organizationId: orgId,
           userId: ctx.user.id,
           ipAddress: ctx.ipAddress,
+        });
+
+        await createNotification(tx, notifPaymentDeleted?.value === 'true', {
+          title: 'Payment Removed',
+          body: `${payment.method} payment of ${payment.amount} removed from ${payment.invoice.serial}.`,
+          type: NOTIFICATION_TYPES.PAYMENT_DELETED,
+          entityType: 'Invoice',
+          entityId: payment.invoiceId,
+          userId: payment.invoice.createdById,
+          organizationId: orgId,
         });
       });
 
