@@ -326,6 +326,7 @@ model Organization {
   categoryFamilies      CategoryFamily[]
   categoryClasses       CategoryClass[]
   categoryCommodities   CategoryCommodity[]
+  roles                 Role[]
 
   @@index([slug])
   @@index([deletedAt])
@@ -407,7 +408,10 @@ model User {
 /// not hard-coded capability sets.
 model UserOrganizationRole {
   id   String  @id @default(cuid())
-  role OrgRole @default(VIEWER)
+  role OrgRole @default(VIEWER) // ⚠️ kept for migration — will be removed after data migration
+
+  roleId      String?
+  customRole  Role?   @relation(fields: [roleId], references: [id])
 
   // Custom display name for this user in the org context
   jobTitle String?
@@ -431,6 +435,7 @@ model UserOrganizationRole {
   @@index([organizationId])
   @@index([userId])
   @@index([role])
+  @@index([roleId])
 }
 
 // =============================================================================
@@ -448,17 +453,49 @@ model Permission {
   rolePermissions RolePermission[]
 }
 
-/// Maps an OrgRole to a set of permissions.
-/// Application resolves: user's OrgRole → RolePermission rows → Permission.code set.
+/// Dynamic role — system roles (OWNER, ADMIN…) are seeded globally;
+/// custom roles are created per-org by the OWNER.
+model Role {
+  id          String    @id @default(cuid())
+  name        String
+  description String?
+  icon        String?
+  color       String?
+
+  /// true for system roles (OWNER, ADMIN, MANAGER, etc.)
+  isSystem  Boolean  @default(false)
+  /// Machine key for system roles: "OWNER", "ADMIN", "MANAGER", etc.
+  /// Null for custom roles.
+  systemKey String?  @unique
+
+  organizationId String?
+  organization   Organization? @relation(fields: [organizationId], references: [id])
+
+  deletedAt DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  userOrganizationRoles UserOrganizationRole[]
+  rolePermissions       RolePermission[]
+  approvalSteps         ApprovalStep[]
+
+  @@index([organizationId])
+}
+
+/// Maps a Role to a set of permissions.
 model RolePermission {
   id   String  @id @default(cuid())
-  role OrgRole
+  role OrgRole // ⚠️ kept for migration — will be removed after data migration
+
+  roleId      String?
+  customRole  Role?   @relation(fields: [roleId], references: [id])
 
   permissionId String
   permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
 
   @@unique([role, permissionId])
   @@index([role])
+  @@index([roleId])
 }
 
 // =============================================================================
@@ -769,14 +806,18 @@ model ApprovalWorkflow {
 model ApprovalStep {
   id        String  @id @default(cuid())
   stepOrder Int
-  role      OrgRole // Which role must approve this step
+  role      OrgRole // ⚠️ kept for migration — will be removed after data migration
   required  Boolean @default(true)
+
+  roleId      String?
+  customRole  Role?   @relation(fields: [roleId], references: [id])
 
   workflowId String
   workflow   ApprovalWorkflow @relation(fields: [workflowId], references: [id], onDelete: Cascade)
 
   @@unique([workflowId, stepOrder])
   @@index([workflowId])
+  @@index([roleId])
 }
 
 /// An approval request raised for a specific document.

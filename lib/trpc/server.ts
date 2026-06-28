@@ -19,7 +19,7 @@ const userSelect = {
       isActive: true,
       deletedAt: null,
     },
-    select: { role: true },
+    select: { role: true, roleId: true, customRole: { select: { systemKey: true } } },
     take: 1,
   },
 } as const;
@@ -30,7 +30,7 @@ const userSelect = {
 type DbUserPayload = Prisma.UserGetPayload<{ select: typeof userSelect }>;
 
 export type ContextUser = Omit<DbUserPayload, 'userOrganizationRoles'> & {
-  orgRole: import('@prisma/client').OrgRole | null;
+  orgRole: string | null;
   permissions: string[];
 };
 
@@ -113,13 +113,14 @@ export async function createContext(opts: FetchCreateContextFnOptions): Promise<
     };
   }
 
-  const orgRole = dbUser.userOrganizationRoles[0]?.role ?? null;
+  const uor = dbUser.userOrganizationRoles[0];
+  const orgRole = uor?.customRole?.systemKey ?? uor?.role ?? null;
+  const roleId = uor?.roleId ?? null;
   let permissionCodes: string[] = [];
 
-  // Load Permissions synchronously into context to prevent N+1 queries downstream
-  if (orgRole && dbUser.platformRole !== 'SUPER_ADMIN') {
+  if (roleId && dbUser.platformRole !== 'SUPER_ADMIN') {
     const rolePerms = await db.rolePermission.findMany({
-      where: { role: orgRole },
+      where: { roleId },
       select: { permission: { select: { code: true } } },
     });
     permissionCodes = rolePerms.map((rp) => rp.permission.code);

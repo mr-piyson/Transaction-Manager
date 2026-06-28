@@ -14,7 +14,7 @@
 
 import type { MongoAbility, RawRuleOf } from '@casl/ability';
 import { AbilityBuilder, createMongoAbility } from '@casl/ability';
-import type { OrgRole, PlatformRole } from '@prisma/client';
+import type { PlatformRole } from '@prisma/client';
 
 // ---------------------------------------------------------------------------
 // Actions — mirrors the Permission.code column values in the DB.
@@ -112,7 +112,7 @@ export const createAppAbility = (rules?: RawRuleOf<AppAbilityType>[]) =>
 export interface AbilityUser {
   id: string;
   platformRole: PlatformRole;
-  orgRole?: OrgRole;
+  orgRole?: string;
   organizationId?: string;
   /** Pre-loaded permission codes from RolePermission table. */
   permissions: Action[];

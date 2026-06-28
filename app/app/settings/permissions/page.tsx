@@ -1,13 +1,14 @@
 'use client';
 
-import { AllCommunityModule, ModuleRegistry, type ColDef } from 'ag-grid-community';
-import { AgGridReact } from 'ag-grid-react';
 import {
   ChevronDown,
   ChevronUp,
   Loader2,
+  MoreHorizontal,
   Pencil,
+  Plus,
   Shield,
+  Trash2,
   UserPlus,
   Users,
 } from 'lucide-react';
@@ -15,10 +16,17 @@ import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 import { useMemo, useRef, useState } from 'react';
 import { toast } from 'sonner';
+import { alert } from '@/components/Alert-dialog';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import {
   Dialog,
   DialogContent,
@@ -27,25 +35,64 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
-import { useTableTheme } from '@/hooks/use-table-theme';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 import { trpc } from '@/lib/trpc/client';
 
-ModuleRegistry.registerModules([AllCommunityModule]);
+function RoleIcon({ name, icon, color }: { name: string; icon: string | null; color: string | null }) {
+  const bg = color ?? '#6b7280';
+  const iconMap: Record<string, string> = {
+    shield: '🛡', crown: '👑', eye: '👁', briefcase: '💼',
+    calculator: '📊', package: '📦', 'trending-up': '📈',
+  };
+  return (
+    <div className="size-8 rounded-lg flex items-center justify-center text-white text-sm font-bold shrink-0" style={{ backgroundColor: bg }}>
+      {icon ? iconMap[icon] ?? '⚙' : name.charAt(0).toUpperCase()}
+    </div>
+  );
+}
 
-type OrgRole = 'OWNER' | 'ADMIN' | 'MANAGER' | 'ACCOUNTANT' | 'SALES' | 'WAREHOUSE' | 'VIEWER';
+type RoleRow = {
+  id: string;
+  name: string;
+  systemKey: string | null;
+  description: string | null;
+  icon: string | null;
+  color: string | null;
+  isSystem: boolean;
+};
 
 export default function PermissionsPage() {
   const t = useTranslations();
-  const theme = useTableTheme();
   const utils = trpc.useUtils();
 
   const { data: allPermissions, isLoading: permsLoading } = trpc.users.permissions.listAll.useQuery();
   const { data: permissionsByModule } = trpc.users.permissions.list.useQuery();
   const { data: roleCounts } = trpc.users.countByRole.useQuery();
   const { data: users } = trpc.users.list.useQuery();
-  const orgRoles = trpc.users.orgRoles.useQuery();
+  const { data: roles = [], isLoading: rolesLoading } = trpc.users.orgRoles.useQuery();
 
+  const createRole = trpc.users.roles.create.useMutation({
+    onSuccess: () => { utils.users.orgRoles.invalidate(); toast.success(t('users.roleCreated')); },
+    onError: (e) => toast.error(e.message),
+  });
+  const updateRole = trpc.users.roles.update.useMutation({
+    onSuccess: () => { utils.users.orgRoles.invalidate(); toast.success(t('users.roleUpdated')); },
+    onError: (e) => toast.error(e.message),
+  });
+  const deleteRole = trpc.users.roles.delete.useMutation({
+    onSuccess: () => { utils.users.orgRoles.invalidate(); utils.users.rolePermissions.list.invalidate(); utils.users.permissions.list.invalidate(); toast.success(t('users.roleDeleted')); },
+    onError: (e) => toast.error(e.message),
+  });
   const rolePermsUpdateMutation = trpc.users.rolePermissions.update.useMutation({
     onSuccess: () => {
       utils.users.rolePermissions.list.invalidate();
@@ -56,20 +103,77 @@ export default function PermissionsPage() {
     onError: (e) => toast.error(e.message),
   });
 
-  // ── Role Permissions Editor State ────────────────────────────────────────
+  // ── Create Role Dialog ─────────────────────────────────
+  const [createDialogOpen, setCreateDialogOpen] = useState(false);
+  const [newRole, setNewRole] = useState({ name: '', description: '', icon: '', color: '#6366f1' });
+
+  const openCreateDialog = () => {
+    setNewRole({ name: '', description: '', icon: '', color: '#6366f1' });
+    setCreateDialogOpen(true);
+  };
+
+  const handleCreateRole = () => {
+    if (!newRole.name.trim()) return;
+    createRole.mutate({
+      name: newRole.name.trim(),
+      description: newRole.description || undefined,
+      icon: newRole.icon || undefined,
+      color: newRole.color || undefined,
+    });
+    setCreateDialogOpen(false);
+  };
+
+  // ── Edit Role Dialog ───────────────────────────────────
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [editingRoleMeta, setEditingRoleMeta] = useState<RoleRow | null>(null);
+  const [editRoleForm, setEditRoleForm] = useState({ name: '', description: '', icon: '', color: '#6366f1' });
+
+  const openEditRoleDialog = (role: RoleRow) => {
+    setEditingRoleMeta(role);
+    setEditRoleForm({
+      name: role.name,
+      description: role.description ?? '',
+      icon: role.icon ?? '',
+      color: role.color ?? '#6366f1',
+    });
+    setEditDialogOpen(true);
+  };
+
+  const handleEditRole = () => {
+    if (!editingRoleMeta || !editRoleForm.name.trim()) return;
+    updateRole.mutate({
+      id: editingRoleMeta.id,
+      name: editRoleForm.name.trim(),
+      description: editRoleForm.description || undefined,
+      icon: editRoleForm.icon || undefined,
+      color: editRoleForm.color || undefined,
+    });
+    setEditDialogOpen(false);
+  };
+
+  const handleDeleteRole = (role: RoleRow) => {
+    alert.delete({
+      title: t('users.deleteRole'),
+      description: t('users.deleteRoleConfirm', { name: role.name }),
+      confirmText: t('common.delete'),
+      onConfirm: async () => { await deleteRole.mutateAsync({ id: role.id }); },
+    });
+  };
+
+  // ── Role Permissions Editor State ────────────────────────
   const [rolePermsDialogOpen, setRolePermsDialogOpen] = useState(false);
-  const [editingRole, setEditingRole] = useState<OrgRole | null>(null);
+  const [editingRole, setEditingRole] = useState<RoleRow | null>(null);
   const [selectedPermIds, setSelectedPermIds] = useState<string[]>([]);
   const [rolePermsDirty, setRolePermsDirty] = useState(false);
 
   const { data: editingRolePerms, isLoading: permsForRoleLoading } = trpc.users.rolePermissions.list.useQuery(
-    { role: editingRole ?? 'MANAGER' },
+    { roleId: editingRole?.id ?? '' },
     { enabled: rolePermsDialogOpen && !!editingRole },
   );
 
-  const prevRoleRef = useRef<OrgRole | null>(null);
-  if (rolePermsDialogOpen && editingRolePerms && editingRole !== prevRoleRef.current) {
-    prevRoleRef.current = editingRole;
+  const prevRoleRef = useRef<string | null>(null);
+  if (rolePermsDialogOpen && editingRolePerms && editingRole && editingRole.id !== prevRoleRef.current) {
+    prevRoleRef.current = editingRole.id;
     setSelectedPermIds(editingRolePerms.map((p) => p.id));
     setRolePermsDirty(false);
   }
@@ -78,7 +182,7 @@ export default function PermissionsPage() {
     prevRoleRef.current = null;
   }
 
-  const openRolePermsDialog = (role: OrgRole) => {
+  const openRolePermsDialog = (role: RoleRow) => {
     setEditingRole(role);
     setRolePermsDialogOpen(true);
   };
@@ -102,94 +206,18 @@ export default function PermissionsPage() {
 
   const handleSaveRolePerms = () => {
     if (!editingRole) return;
-    rolePermsUpdateMutation.mutate({ role: editingRole, permissionIds: selectedPermIds });
+    rolePermsUpdateMutation.mutate({ roleId: editingRole.id, permissionIds: selectedPermIds });
   };
 
-  // ── Stats ────────────────────────────────────────────────────────────────
-  const roles = orgRoles.data ?? [];
+  // ── Stats ────────────────────────────────────────────────
   const totalPermissions = allPermissions?.length ?? 0;
   const totalUsers = users?.length ?? 0;
 
-  const columnDefs = useMemo<ColDef[]>(
-    () => [
-      {
-        field: 'role',
-        headerName: t('users.role'),
-        width: 160,
-        cellRenderer: (p: any) => (
-          <div className="flex items-center gap-2 py-2">
-            <Shield className="size-4 text-primary shrink-0" />
-            <span className="text-sm font-medium">{t(`users.roles.${p.value as OrgRole}`)}</span>
-          </div>
-        ),
-      },
-      {
-        headerName: t('users.totalUsers'),
-        width: 120,
-        cellRenderer: (p: any) => {
-          const count = roleCounts?.[p.data.role as OrgRole] ?? 0;
-          return (
-            <div className="flex items-center gap-2 py-1">
-              <Users className="size-4 text-muted-foreground" />
-              <span className="text-sm tabular-nums font-medium">{count}</span>
-            </div>
-          );
-        },
-      },
-      {
-        field: 'permissions',
-        headerName: t('users.permissions'),
-        minWidth: 300,
-        flex: 1,
-        sortable: false,
-        filter: false,
-        cellRenderer: (p: any) => {
-          const role = p.data.role as OrgRole;
-          return <PermissionBadges role={role} t={t} />;
-        },
-      },
-      {
-        headerName: t('common.actions'),
-        width: 220,
-        pinned: 'right',
-        sortable: false,
-        filter: false,
-        cellRenderer: (p: any) => (
-          <div className="flex items-center gap-2 py-1">
-            <Button
-              variant="outline"
-              size="sm"
-              className="h-8 text-xs gap-1.5"
-              onClick={() => openRolePermsDialog(p.data.role as OrgRole)}
-            >
-              <Pencil className="size-3.5" />
-              {t('users.editPermissions')}
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-8 text-xs gap-1.5"
-              asChild
-            >
-              <Link href="/app/settings/users">
-                <Users className="size-3.5" />
-                {t('users.viewUsers')}
-              </Link>
-            </Button>
-          </div>
-        ),
-      },
-    ],
-    [],
-  );
-
-  const defaultColDef = useMemo(
-    () => ({ resizable: true, sortable: true }),
-    [],
-  );
-
-  const rowData = useMemo(
-    () => roles.map((role) => ({ role })),
+  const rows: RoleRow[] = useMemo(
+    () => roles.map((role) => ({
+      id: role.id, name: role.name, systemKey: role.systemKey,
+      description: role.description, icon: role.icon, color: role.color, isSystem: role.isSystem,
+    })),
     [roles],
   );
 
@@ -201,22 +229,27 @@ export default function PermissionsPage() {
           <h2 className="text-xl font-semibold tracking-tight">{t('users.permissionsPageTitle')}</h2>
           <p className="text-sm text-muted-foreground">{t('users.permissionsPageDesc')}</p>
         </div>
-        <Button className="gap-2 shrink-0" asChild>
-          <Link href="/app/settings/users">
-            <UserPlus className="size-4" />
-            <span className="hidden sm:inline">{t('users.createUser')}</span>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" className="gap-2 shrink-0" onClick={openCreateDialog}>
+            <Plus className="size-4" />
+            <span className="hidden sm:inline">{t('users.createRole')}</span>
             <span className="sm:hidden">{t('common.new')}</span>
-          </Link>
-        </Button>
+          </Button>
+          <Button className="gap-2 shrink-0" asChild>
+            <Link href="/app/settings/users">
+              <UserPlus className="size-4" />
+              <span className="hidden sm:inline">{t('users.createUser')}</span>
+              <span className="sm:hidden">{t('common.new')}</span>
+            </Link>
+          </Button>
+        </div>
       </div>
 
       {/* Overview Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              {t('users.totalRoles')}
-            </CardTitle>
+            <CardTitle className="text-sm font-medium text-muted-foreground">{t('users.totalRoles')}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="flex items-center gap-2">
@@ -227,9 +260,7 @@ export default function PermissionsPage() {
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              {t('users.totalPermissions')}
-            </CardTitle>
+            <CardTitle className="text-sm font-medium text-muted-foreground">{t('users.totalPermissions')}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="flex items-center gap-2">
@@ -240,9 +271,7 @@ export default function PermissionsPage() {
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              {t('users.totalUsers')}
-            </CardTitle>
+            <CardTitle className="text-sm font-medium text-muted-foreground">{t('users.totalUsers')}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="flex items-center gap-2">
@@ -253,27 +282,174 @@ export default function PermissionsPage() {
         </Card>
       </div>
 
-      {/* Roles Table */}
-      <div className="flex-1 min-h-0 rounded-lg border overflow-hidden">
-        {permsLoading ? (
-          <div className="flex items-center justify-center h-full min-h-[300px]">
+      {/* Create Role Dialog */}
+      <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>{t('users.createRole')}</DialogTitle>
+            <DialogDescription>{t('users.createRoleDesc')}</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <div className="space-y-1.5">
+              <Label htmlFor="role-name">{t('users.roleName')}</Label>
+              <Input id="role-name" value={newRole.name} onChange={(e) => setNewRole({ ...newRole, name: e.target.value })} placeholder={t('users.roleNamePlaceholder')} />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="role-desc">{t('users.roleDescription')}</Label>
+              <Input id="role-desc" value={newRole.description} onChange={(e) => setNewRole({ ...newRole, description: e.target.value })} placeholder={t('users.roleDescriptionPlaceholder')} />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <Label htmlFor="role-icon">{t('users.roleIcon')}</Label>
+                <Input id="role-icon" value={newRole.icon} onChange={(e) => setNewRole({ ...newRole, icon: e.target.value })} placeholder="briefcase" />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="role-color">{t('users.roleColor')}</Label>
+                <input id="role-color" type="color" value={newRole.color} onChange={(e) => setNewRole({ ...newRole, color: e.target.value })} className="h-9 w-full rounded-md border border-input bg-background px-2" />
+              </div>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setCreateDialogOpen(false)}>{t('common.cancel')}</Button>
+            <Button onClick={handleCreateRole} disabled={!newRole.name.trim() || createRole.isPending}>
+              {createRole.isPending && <Loader2 className="size-4 mr-2 animate-spin" />}
+              {t('users.createRole')}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Role Dialog */}
+      <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>{t('users.editRole')}</DialogTitle>
+            <DialogDescription>{t('users.editRoleDesc')}</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <div className="space-y-1.5">
+              <Label htmlFor="edit-role-name">{t('users.roleName')}</Label>
+              <Input id="edit-role-name" value={editRoleForm.name} onChange={(e) => setEditRoleForm({ ...editRoleForm, name: e.target.value })} placeholder={t('users.roleNamePlaceholder')} />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="edit-role-desc">{t('users.roleDescription')}</Label>
+              <Input id="edit-role-desc" value={editRoleForm.description} onChange={(e) => setEditRoleForm({ ...editRoleForm, description: e.target.value })} placeholder={t('users.roleDescriptionPlaceholder')} />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <Label htmlFor="edit-role-icon">{t('users.roleIcon')}</Label>
+                <Input id="edit-role-icon" value={editRoleForm.icon} onChange={(e) => setEditRoleForm({ ...editRoleForm, icon: e.target.value })} placeholder="briefcase" />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="edit-role-color">{t('users.roleColor')}</Label>
+                <input id="edit-role-color" type="color" value={editRoleForm.color} onChange={(e) => setEditRoleForm({ ...editRoleForm, color: e.target.value })} className="h-9 w-full rounded-md border border-input bg-background px-2" />
+              </div>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditDialogOpen(false)}>{t('common.cancel')}</Button>
+            <Button onClick={handleEditRole} disabled={!editRoleForm.name.trim() || updateRole.isPending}>
+              {updateRole.isPending && <Loader2 className="size-4 mr-2 animate-spin" />}
+              {t('common.save')}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Roles Table (shadcn/ui) */}
+      <div className="rounded-lg border overflow-hidden">
+        {permsLoading || rolesLoading ? (
+          <div className="flex items-center justify-center py-16">
             <Spinner />
           </div>
         ) : (
-          <div className="h-full w-full" style={{ minHeight: 400 }}>
-            <AgGridReact
-              rowData={rowData}
-              columnDefs={columnDefs}
-              defaultColDef={defaultColDef}
-              theme={theme}
-              animateRows
-              domLayout="normal"
-              getRowId={(params) => params.data.role}
-              suppressScrollOnNewData
-              enableCellTextSelection
-              ensureDomOrder
-            />
-          </div>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="w-[220px]">{t('users.role')}</TableHead>
+                <TableHead className="w-[100px]">{t('users.totalUsers')}</TableHead>
+                <TableHead>{t('users.permissions')}</TableHead>
+                <TableHead className="w-[180px] text-right">{t('common.actions')}</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {rows.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={4} className="h-32 text-center text-muted-foreground">
+                    {t('common.noResults')}
+                  </TableCell>
+                </TableRow>
+              ) : (
+                rows.map((role) => {
+                  const key = role.systemKey ?? role.name;
+                  const userCount = roleCounts?.[key] ?? 0;
+                  return (
+                    <TableRow key={role.id}>
+                      {/* Role name + icon */}
+                      <TableCell>
+                        <div className="flex items-center gap-3">
+                          <RoleIcon name={role.name} icon={role.icon} color={role.color} />
+                          <div className="min-w-0">
+                            <div className="flex items-center gap-2">
+                              <span className="text-sm font-medium">{role.name}</span>
+                              {role.isSystem && (
+                                <Badge variant="secondary" className="text-[10px] px-1.5 py-0 leading-4">{t('common.system')}</Badge>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </TableCell>
+
+                      {/* User count */}
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <Users className="size-4 text-muted-foreground shrink-0" />
+                          <span className="text-sm tabular-nums font-medium">{userCount}</span>
+                        </div>
+                      </TableCell>
+
+                      {/* Permission badges */}
+                      <TableCell>
+                        <PermissionBadges roleId={role.id} t={t} />
+                      </TableCell>
+
+                      {/* Actions */}
+                      <TableCell className="text-right">
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon" className="size-8">
+                              <MoreHorizontal className="size-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end" className="min-w-44">
+                            <DropdownMenuItem onClick={() => openRolePermsDialog(role)}>
+                              <Shield className="size-4 mr-2" />
+                              {t('users.editPermissions')}
+                            </DropdownMenuItem>
+                            {!role.isSystem && (
+                              <>
+                                <DropdownMenuItem onClick={() => openEditRoleDialog(role)}>
+                                  <Pencil className="size-4 mr-2" />
+                                  {t('common.edit')}
+                                </DropdownMenuItem>
+                                <DropdownMenuItem
+                                  onClick={() => handleDeleteRole(role)}
+                                  className="text-destructive"
+                                >
+                                  <Trash2 className="size-4 mr-2" />
+                                  {t('common.delete')}
+                                </DropdownMenuItem>
+                              </>
+                            )}
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })
+              )}
+            </TableBody>
+          </Table>
         )}
       </div>
 
@@ -283,7 +459,7 @@ export default function PermissionsPage() {
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Shield className="size-5 text-primary" />
-              {editingRole && t('users.permissionsForRole', { role: t(`users.roles.${editingRole}`) })}
+              {editingRole && t('users.permissionsForRole', { role: editingRole.name })}
             </DialogTitle>
             <DialogDescription>{t('users.permissionsByModule')}</DialogDescription>
           </DialogHeader>
@@ -293,6 +469,16 @@ export default function PermissionsPage() {
               <div className="flex justify-center py-8">
                 <Spinner />
               </div>
+            ) : Object.keys(permissionsByModule ?? {}).length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-12 text-center">
+                <Shield className="size-10 text-muted-foreground/40 mb-3" />
+                <p className="text-sm font-medium text-muted-foreground">
+                  {t('users.noPermissions')}
+                </p>
+                <p className="text-xs text-muted-foreground/60 mt-1">
+                  {t('users.noPermissionsDesc')}
+                </p>
+              </div>
             ) : (
               Object.entries(permissionsByModule ?? {}).map(([module, perms]) => (
                 <div key={module} className="space-y-1">
@@ -300,7 +486,7 @@ export default function PermissionsPage() {
                     {module}
                   </h4>
                   <div className="space-y-0.5">
-                    {perms.map((perm: any) => {
+                    {(perms as any[]).map((perm: any) => {
                       const permId = allPermissions?.find((p) => p.code === perm.code)?.id ?? '';
                       return (
                         <label
@@ -350,8 +536,8 @@ export default function PermissionsPage() {
 
 // ── Permission Badges ────────────────────────────────────────────────────────
 
-function PermissionBadges({ role, t }: { role: OrgRole; t: any }) {
-  const { data: perms, isLoading } = trpc.users.rolePermissions.list.useQuery({ role });
+function PermissionBadges({ roleId, t }: { roleId: string; t: any }) {
+  const { data: perms, isLoading } = trpc.users.rolePermissions.list.useQuery({ roleId });
   const [expanded, setExpanded] = useState(false);
 
   const grouped = useMemo(() => {

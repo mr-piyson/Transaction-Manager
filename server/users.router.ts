@@ -11,24 +11,23 @@ const userBaseSchema = z.object({
   lastName: z.string().max(255).optional(),
 });
 
-const orgRoleEnum = z.enum(['OWNER', 'ADMIN', 'MANAGER', 'ACCOUNTANT', 'SALES', 'WAREHOUSE', 'VIEWER']);
+const roleSelect = { id: true, name: true, description: true, icon: true, color: true, isSystem: true, systemKey: true, organizationId: true };
+
+const userRoleInclude = (orgId: string) => ({
+  userOrganizationRoles: {
+    where: { organizationId: orgId, deletedAt: null },
+    select: { id: true, role: true, jobTitle: true, isActive: true, roleId: true, customRole: { select: { id: true, name: true, icon: true, color: true, systemKey: true } } },
+  },
+});
 
 export const usersRouter = router({
   list: orgProcedure.query(async ({ ctx }) => {
     assertCan(ctx.ability, 'user:manage', 'User');
+    const orgId = ctx.user.organizationId!;
 
     return ctx.db.user.findMany({
-      where: { organizationId: ctx.user.organizationId, deletedAt: null },
-      include: {
-        userOrganizationRoles: {
-          where: { organizationId: ctx.user.organizationId, deletedAt: null },
-          select: { id: true, role: true, jobTitle: true, isActive: true },
-        },
-        accounts: {
-          where: { providerId: 'credential' },
-          select: { id: true },
-        },
-      },
+      where: { organizationId: orgId, deletedAt: null },
+      include: userRoleInclude(orgId),
       orderBy: { createdAt: 'desc' },
     });
   }),
@@ -36,15 +35,14 @@ export const usersRouter = router({
   create: orgProcedure
     .input(
       userBaseSchema.extend({
-        role: orgRoleEnum,
+        roleId: z.string().cuid(),
         isActive: z.boolean().default(true),
         password: z.string().min(6).max(100).optional(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
       assertCan(ctx.ability, 'user:manage', 'User');
-      const orgId = ctx.user.organizationId;
-      const { password, ...userData } = input;
+      const orgId = ctx.user.organizationId!;
 
       const existingUser = await ctx.db.user.findFirst({
         where: { email: input.email },
@@ -67,45 +65,35 @@ export const usersRouter = router({
           user = await tx.user.update({
             where: { id: existingUser.id },
             data: {
-              name: userData.name,
-              firstName: userData.firstName,
-              lastName: userData.lastName,
-              isActive: userData.isActive,
+              name: input.name,
+              firstName: input.firstName,
+              lastName: input.lastName,
+              isActive: input.isActive,
               organizationId: orgId,
               locale: 'en',
             },
-            include: {
-              userOrganizationRoles: {
-                where: { organizationId: orgId, deletedAt: null },
-                select: { id: true, role: true, jobTitle: true, isActive: true },
-              },
-            },
+            include: userRoleInclude(orgId),
           });
         } else {
           user = await tx.user.create({
             data: {
-              name: userData.name,
+              name: input.name,
               email: input.email,
-              firstName: userData.firstName,
-              lastName: userData.lastName,
-              isActive: userData.isActive,
+              firstName: input.firstName,
+              lastName: input.lastName,
+              isActive: input.isActive,
               organizationId: orgId,
               locale: 'en',
               userOrganizationRoles: {
-                create: { role: input.role, organizationId: orgId },
+                create: { roleId: input.roleId, organizationId: orgId },
               },
             },
-            include: {
-              userOrganizationRoles: {
-                where: { organizationId: orgId, deletedAt: null },
-                select: { id: true, role: true, jobTitle: true, isActive: true },
-              },
-            },
+            include: userRoleInclude(orgId),
           });
         }
 
-        if (password) {
-          const hashed = await hashPassword(password);
+        if (input.password) {
+          const hashed = await hashPassword(input.password);
           const existingAccount = existingUser
             ? await tx.account.findFirst({ where: { userId: existingUser.id, providerId: 'credential' }, select: { id: true } })
             : null;
@@ -124,10 +112,7 @@ export const usersRouter = router({
         return tx.user.findUnique({
           where: { id: user.id },
           include: {
-            userOrganizationRoles: {
-              where: { organizationId: orgId, deletedAt: null },
-              select: { id: true, role: true, jobTitle: true, isActive: true },
-            },
+            ...userRoleInclude(orgId),
             accounts: {
               where: { providerId: 'credential' },
               select: { id: true },
@@ -145,21 +130,21 @@ export const usersRouter = router({
         email: z.string().email().optional(),
         firstName: z.string().max(255).optional(),
         lastName: z.string().max(255).optional(),
-        role: orgRoleEnum.optional(),
+        roleId: z.string().cuid().optional(),
         isActive: z.boolean().optional(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
       assertCan(ctx.ability, 'user:manage', 'User');
-      const orgId = ctx.user.organizationId;
-      const { id, role, ...data } = input;
+      const orgId = ctx.user.organizationId!;
+      const { id, roleId, ...data } = input;
 
       const existing = await ctx.db.user.findFirst({
         where: { id, organizationId: orgId, deletedAt: null },
         include: {
           userOrganizationRoles: {
             where: { organizationId: orgId, deletedAt: null },
-            select: { id: true, role: true },
+            select: { id: true, roleId: true },
           },
         },
       });
@@ -169,14 +154,14 @@ export const usersRouter = router({
       return ctx.db.$transaction(async (tx) => {
         await tx.user.update({ where: { id }, data });
 
-        if (role) {
+        if (roleId) {
           const existingRole = existing.userOrganizationRoles[0];
           if (existingRole) {
-            if (existingRole.role !== role) {
-              await tx.userOrganizationRole.update({ where: { id: existingRole.id }, data: { role } });
+            if (existingRole.roleId !== roleId) {
+              await tx.userOrganizationRole.update({ where: { id: existingRole.id }, data: { roleId } });
             }
           } else {
-            await tx.userOrganizationRole.create({ data: { userId: id, organizationId: orgId, role } });
+            await tx.userOrganizationRole.create({ data: { userId: id, organizationId: orgId, roleId } });
           }
         }
 
@@ -188,10 +173,7 @@ export const usersRouter = router({
         return tx.user.findUnique({
           where: { id },
           include: {
-            userOrganizationRoles: {
-              where: { organizationId: orgId, deletedAt: null },
-              select: { id: true, role: true, jobTitle: true, isActive: true },
-            },
+            ...userRoleInclude(orgId),
             accounts: {
               where: { providerId: 'credential' },
               select: { id: true },
@@ -242,7 +224,7 @@ export const usersRouter = router({
         }
 
         await writeAuditLog(
-          { entityType: 'User', entityId: user.id,           action: 'UPDATE', organizationId: ctx.user.organizationId, userId: ctx.user.id, ipAddress: ctx.ipAddress },
+          { entityType: 'User', entityId: user.id, action: 'UPDATE', organizationId: ctx.user.organizationId!, userId: ctx.user.id, ipAddress: ctx.ipAddress },
           tx,
         );
       });
@@ -314,13 +296,99 @@ export const usersRouter = router({
           data: { deletedAt: new Date(), isActive: false },
         });
         await writeAuditLog(
-          { entityType: 'User', entityId: input.id, action: 'DELETE', organizationId: ctx.user.organizationId, userId: ctx.user.id, ipAddress: ctx.ipAddress },
+          { entityType: 'User', entityId: input.id, action: 'DELETE', organizationId: ctx.user.organizationId!, userId: ctx.user.id, ipAddress: ctx.ipAddress },
           tx,
         );
       });
 
       return { success: true };
     }),
+
+  // ── Dynamic Roles CRUD ──────────────────────────────────────────────────
+
+  roles: {
+    list: orgProcedure.query(async ({ ctx }) => {
+      assertCan(ctx.ability, 'user:manage', 'User');
+      const orgId = ctx.user.organizationId!;
+
+      return ctx.db.role.findMany({
+        where: {
+          OR: [
+            { isSystem: true },
+            { organizationId: orgId },
+          ],
+          deletedAt: null,
+        },
+        select: roleSelect,
+        orderBy: [{ isSystem: 'desc' }, { name: 'asc' }],
+      });
+    }),
+
+    create: orgProcedure
+      .input(
+        z.object({
+          name: z.string().min(1).max(100),
+          description: z.string().max(500).optional(),
+          icon: z.string().max(50).optional(),
+          color: z.string().max(7).optional(),
+        }),
+      )
+      .mutation(async ({ ctx, input }) => {
+        assertCan(ctx.ability, 'role:manage', 'all');
+
+        return ctx.db.role.create({
+          data: {
+            name: input.name,
+            description: input.description,
+            icon: input.icon,
+            color: input.color,
+            organizationId: ctx.user.organizationId!,
+          },
+        });
+      }),
+
+    update: orgProcedure
+      .input(
+        z.object({
+          id: z.string().cuid(),
+          name: z.string().min(1).max(100).optional(),
+          description: z.string().max(500).optional(),
+          icon: z.string().max(50).optional(),
+          color: z.string().max(7).optional(),
+        }),
+      )
+      .mutation(async ({ ctx, input }) => {
+        assertCan(ctx.ability, 'role:manage', 'all');
+        const { id, ...data } = input;
+
+        const role = await ctx.db.role.findFirst({
+          where: { id, organizationId: ctx.user.organizationId, deletedAt: null },
+        });
+        if (!role) throw new NotFoundError('Role', id);
+        if (role.isSystem) throw new ForbiddenError('update', 'Cannot modify system roles.');
+
+        return ctx.db.role.update({ where: { id }, data });
+      }),
+
+    delete: orgProcedure
+      .input(z.object({ id: z.string().cuid() }))
+      .mutation(async ({ ctx, input }) => {
+        assertCan(ctx.ability, 'role:manage', 'all');
+
+        const role = await ctx.db.role.findFirst({
+          where: { id: input.id, organizationId: ctx.user.organizationId, deletedAt: null },
+        });
+        if (!role) throw new NotFoundError('Role', input.id);
+        if (role.isSystem) throw new ForbiddenError('delete', 'Cannot delete system roles.');
+
+        await ctx.db.$transaction(async (tx) => {
+          await tx.rolePermission.deleteMany({ where: { roleId: input.id } });
+          await tx.role.update({ where: { id: input.id }, data: { deletedAt: new Date() } });
+        });
+
+        return { success: true };
+      }),
+  },
 
   // ── Permissions ──────────────────────────────────────────────────────────
 
@@ -351,34 +419,52 @@ export const usersRouter = router({
 
   orgRoles: orgProcedure.query(async ({ ctx }) => {
     assertCan(ctx.ability, 'user:manage', 'User');
-    return ['OWNER', 'ADMIN', 'MANAGER', 'ACCOUNTANT', 'SALES', 'WAREHOUSE', 'VIEWER'] as const;
+    const orgId = ctx.user.organizationId!;
+
+    return ctx.db.role.findMany({
+      where: {
+        OR: [
+          { isSystem: true },
+          { organizationId: orgId },
+        ],
+        deletedAt: null,
+      },
+      select: roleSelect,
+      orderBy: [{ isSystem: 'desc' }, { name: 'asc' }],
+    });
   }),
 
   // ── Role Permissions ────────────────────────────────────────────────────
 
   rolePermissions: {
     list: orgProcedure
-      .input(z.object({ role: orgRoleEnum }))
+      .input(z.object({ roleId: z.string().cuid() }))
       .query(async ({ ctx, input }) => {
         assertCan(ctx.ability, 'user:manage', 'User');
 
         const rolePerms = await ctx.db.rolePermission.findMany({
-          where: { role: input.role },
+          where: { roleId: input.roleId },
           include: { permission: true },
         });
         return rolePerms.map((rp) => rp.permission);
       }),
 
     update: orgProcedure
-      .input(z.object({ role: orgRoleEnum, permissionIds: z.array(z.string().cuid()) }))
+      .input(z.object({ roleId: z.string().cuid(), permissionIds: z.array(z.string().cuid()) }))
       .mutation(async ({ ctx, input }) => {
         assertCan(ctx.ability, 'role:manage', 'all');
 
+        const role = await ctx.db.role.findUnique({ where: { id: input.roleId }, select: { systemKey: true } });
+
         await ctx.db.$transaction(async (tx) => {
-          await tx.rolePermission.deleteMany({ where: { role: input.role } });
+          await tx.rolePermission.deleteMany({ where: { roleId: input.roleId } });
           if (input.permissionIds.length > 0) {
             await tx.rolePermission.createMany({
-              data: input.permissionIds.map((permissionId) => ({ role: input.role, permissionId })),
+              data: input.permissionIds.map((permissionId) => ({
+                roleId: input.roleId,
+                role: (role?.systemKey ?? 'VIEWER') as any,
+                permissionId,
+              })),
             });
           }
         });
@@ -389,18 +475,25 @@ export const usersRouter = router({
 
   countByRole: orgProcedure.query(async ({ ctx }) => {
     assertCan(ctx.ability, 'user:manage', 'User');
+    const orgId = ctx.user.organizationId!;
 
     const counts = await ctx.db.userOrganizationRole.groupBy({
-      by: ['role'],
-      where: { organizationId: ctx.user.organizationId, deletedAt: null },
+      by: ['roleId'],
+      where: { organizationId: orgId, deletedAt: null, roleId: { not: null } },
       _count: { userId: true },
     });
 
-    const roleCounts: Record<string, number> = {};
-    for (const c of counts) {
-      roleCounts[c.role] = c._count.userId;
-    }
+    const roles = await ctx.db.role.findMany({
+      where: { id: { in: counts.map((c) => c.roleId!).filter(Boolean) } },
+      select: { id: true, name: true, systemKey: true },
+    });
 
-    return roleCounts;
+    const roleMap = new Map(roles.map((r) => [r.id, r]));
+    const result: Record<string, number> = {};
+    for (const c of counts) {
+      const key = roleMap.get(c.roleId!)?.systemKey ?? roleMap.get(c.roleId!)?.name ?? c.roleId!;
+      result[key] = c._count.userId;
+    }
+    return result;
   }),
 });
