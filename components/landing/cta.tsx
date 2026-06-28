@@ -24,19 +24,19 @@ export default function CTA() {
             Ready to streamline your operations?
           </h2>
           <p className="mx-auto mt-4 max-w-xl text-muted-foreground">
-            Join thousands of businesses that trust Transaction Manager to handle their
-            invoicing, inventory, and financial workflows.
+            Get started with Transaction Manager — invoices, inventory, purchasing, and
+            financial reports in one platform.
           </p>
           <div className="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row">
             <Link href="/auth">
               <Button size="lg" className="gap-2 text-base">
-                Start Free Trial
+                Get Started
                 <ArrowRight className="size-4" />
               </Button>
             </Link>
-            <Link href="/auth">
+            <Link href="/app">
               <Button variant="outline" size="lg" className="text-base">
-                Book a Demo
+                View Dashboard
               </Button>
             </Link>
           </div>

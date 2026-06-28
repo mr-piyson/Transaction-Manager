@@ -19,6 +19,17 @@ const itemVariants = {
   visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: 'easeOut' as const } },
 };
 
+const routes = [
+  { label: 'Invoices', href: '/app/invoices' },
+  { label: 'Customers', href: '/app/customers' },
+  { label: 'Suppliers', href: '/app/suppliers' },
+  { label: 'Stock', href: '/app/stock' },
+  { label: 'Reports', href: '/app/reports' },
+  { label: 'Purchase Orders', href: '/app/purchase-orders' },
+  { label: 'Contracts', href: '/app/contracts' },
+  { label: 'Warehouses', href: '/app/warehouses' },
+];
+
 export default function Hero() {
   return (
     <section className="relative isolate flex min-h-[calc(100vh-4rem)] items-center overflow-hidden pt-24">
@@ -35,7 +46,7 @@ export default function Hero() {
           <motion.div variants={itemVariants} className="mb-6 flex justify-center">
             <Badge variant="outline" className="gap-1.5 px-4 py-1.5 text-xs">
               <Sparkles className="size-3.5 text-info" />
-              Enterprise-grade ERP for modern businesses
+              Open-source ERP — Invoices, Inventory, Purchasing & Reports
             </Badge>
           </motion.div>
 
@@ -64,7 +75,7 @@ export default function Hero() {
           >
             <Link href="/auth">
               <Button size="lg" className="gap-2 text-base">
-                Get Started Free
+                Get Started
                 <ArrowRight className="size-4" />
               </Button>
             </Link>
@@ -78,21 +89,17 @@ export default function Hero() {
 
         <motion.div
           variants={itemVariants}
-          className="mx-auto mt-16 grid max-w-5xl grid-cols-2 gap-4 sm:grid-cols-4"
+          className="mx-auto mt-16 flex max-w-4xl flex-wrap justify-center gap-2"
         >
-          {[
-            { label: 'Invoices', value: '10K+' },
-            { label: 'Users', value: '5K+' },
-            { label: 'Countries', value: '40+' },
-            { label: 'Uptime', value: '99.9%' },
-          ].map((stat) => (
-            <div
-              key={stat.label}
-              className="rounded-xl border border-border/50 bg-card/50 p-4 text-center backdrop-blur-sm"
-            >
-              <div className="text-2xl font-bold text-primary">{stat.value}</div>
-              <div className="text-xs text-muted-foreground">{stat.label}</div>
-            </div>
+          {routes.map((route) => (
+            <Link key={route.href} href={route.href}>
+              <Badge
+                variant="secondary"
+                className="px-3 py-1.5 text-xs transition-colors hover:bg-primary hover:text-primary-foreground"
+              >
+                {route.label}
+              </Badge>
+            </Link>
           ))}
         </motion.div>
       </motion.div>

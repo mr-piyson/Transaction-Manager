@@ -6,16 +6,32 @@ import Logo from '@/components/Logo';
 
 const footerLinks = [
   {
-    title: 'Product',
-    links: ['Features', 'Pricing', 'Integrations', 'Changelog'],
+    title: 'App',
+    links: [
+      { label: 'Dashboard', href: '/app' },
+      { label: 'Invoices', href: '/app/invoices' },
+      { label: 'Customers', href: '/app/customers' },
+      { label: 'Suppliers', href: '/app/suppliers' },
+      { label: 'Stock', href: '/app/stock' },
+    ],
   },
   {
-    title: 'Company',
-    links: ['About', 'Blog', 'Careers', 'Contact'],
+    title: 'More',
+    links: [
+      { label: 'Purchase Orders', href: '/app/purchase-orders' },
+      { label: 'Contracts', href: '/app/contracts' },
+      { label: 'Reports', href: '/app/reports' },
+      { label: 'Settings', href: '/app/settings' },
+      { label: 'Warehouses', href: '/app/warehouses' },
+    ],
   },
   {
-    title: 'Legal',
-    links: ['Privacy', 'Terms', 'Security', 'Cookies'],
+    title: 'Account',
+    links: [
+      { label: 'Sign In', href: '/auth' },
+      { label: 'Get Started', href: '/auth' },
+      { label: 'Setup Wizard', href: '/setup' },
+    ],
   },
 ];
 
@@ -30,8 +46,7 @@ export default function Footer() {
               <span className="text-sm font-semibold">Transaction Manager</span>
             </Link>
             <p className="text-sm leading-relaxed text-muted-foreground">
-              Enterprise-grade ERP for modern businesses. Manage transactions, inventory, and
-              finances in one place.
+              Open-source ERP for invoicing, inventory, purchasing, and financial reporting.
             </p>
           </div>
 
@@ -40,12 +55,12 @@ export default function Footer() {
               <h4 className="mb-3 text-sm font-semibold">{group.title}</h4>
               <ul className="space-y-2">
                 {group.links.map((link) => (
-                  <li key={link}>
+                  <li key={link.label}>
                     <Link
-                      href="#"
+                      href={link.href}
                       className="text-sm text-muted-foreground transition-colors hover:text-foreground"
                     >
-                      {link}
+                      {link.label}
                     </Link>
                   </li>
                 ))}
@@ -57,18 +72,7 @@ export default function Footer() {
         <Separator className="my-8" />
 
         <div className="flex flex-col items-center justify-between gap-4 text-sm text-muted-foreground sm:flex-row">
-          <p>&copy; {new Date().getFullYear()} Transaction Manager. All rights reserved.</p>
-          <div className="flex gap-6">
-            <Link href="#" className="hover:text-foreground">
-              Twitter
-            </Link>
-            <Link href="#" className="hover:text-foreground">
-              LinkedIn
-            </Link>
-            <Link href="#" className="hover:text-foreground">
-              GitHub
-            </Link>
-          </div>
+          <p>&copy; {new Date().getFullYear()} Transaction Manager.</p>
         </div>
       </div>
     </footer>
