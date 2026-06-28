@@ -22,7 +22,7 @@ const userRoleInclude = (orgId: string) => ({
 
 export const usersRouter = router({
   list: orgProcedure.query(async ({ ctx }) => {
-    assertCan(ctx.ability, 'user:manage', 'User');
+    assertCan(ctx.ability, 'user:manage', 'User', { organizationId: ctx.user.organizationId });
     const orgId = ctx.user.organizationId!;
 
     return ctx.db.user.findMany({
@@ -41,7 +41,7 @@ export const usersRouter = router({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      assertCan(ctx.ability, 'user:manage', 'User');
+      assertCan(ctx.ability, 'user:manage', 'User', { organizationId: ctx.user.organizationId });
       const orgId = ctx.user.organizationId!;
 
       const existingUser = await ctx.db.user.findFirst({
@@ -135,7 +135,7 @@ export const usersRouter = router({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      assertCan(ctx.ability, 'user:manage', 'User');
+      assertCan(ctx.ability, 'user:manage', 'User', { organizationId: ctx.user.organizationId });
       const orgId = ctx.user.organizationId!;
       const { id, roleId, ...data } = input;
 
@@ -191,7 +191,7 @@ export const usersRouter = router({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      assertCan(ctx.ability, 'user:manage', 'User');
+      assertCan(ctx.ability, 'user:manage', 'User', { organizationId: ctx.user.organizationId });
 
       const user = await ctx.db.user.findFirst({
         where: { id: input.id, organizationId: ctx.user.organizationId, deletedAt: null },
@@ -235,7 +235,7 @@ export const usersRouter = router({
   sendPasswordReset: orgProcedure
     .input(z.object({ id: z.string().cuid() }))
     .mutation(async ({ ctx, input }) => {
-      assertCan(ctx.ability, 'user:manage', 'User');
+      assertCan(ctx.ability, 'user:manage', 'User', { organizationId: ctx.user.organizationId });
 
       const user = await ctx.db.user.findFirst({
         where: { id: input.id, organizationId: ctx.user.organizationId, deletedAt: null },
@@ -257,7 +257,7 @@ export const usersRouter = router({
   toggleActive: orgProcedure
     .input(z.object({ id: z.string().cuid() }))
     .mutation(async ({ ctx, input }) => {
-      assertCan(ctx.ability, 'user:manage', 'User');
+      assertCan(ctx.ability, 'user:manage', 'User', { organizationId: ctx.user.organizationId });
 
       const user = await ctx.db.user.findFirst({
         where: { id: input.id, organizationId: ctx.user.organizationId, deletedAt: null },
@@ -276,7 +276,7 @@ export const usersRouter = router({
   delete: orgProcedure
     .input(z.object({ id: z.string().cuid() }))
     .mutation(async ({ ctx, input }) => {
-      assertCan(ctx.ability, 'user:manage', 'User');
+      assertCan(ctx.ability, 'user:manage', 'User', { organizationId: ctx.user.organizationId });
 
       const user = await ctx.db.user.findFirst({
         where: { id: input.id, organizationId: ctx.user.organizationId, deletedAt: null },
@@ -308,7 +308,7 @@ export const usersRouter = router({
 
   roles: {
     list: orgProcedure.query(async ({ ctx }) => {
-      assertCan(ctx.ability, 'user:manage', 'User');
+      assertCan(ctx.ability, 'user:manage', 'User', { organizationId: ctx.user.organizationId });
       const orgId = ctx.user.organizationId!;
 
       return ctx.db.role.findMany({
@@ -334,7 +334,7 @@ export const usersRouter = router({
         }),
       )
       .mutation(async ({ ctx, input }) => {
-        assertCan(ctx.ability, 'role:manage', 'all');
+        assertCan(ctx.ability, 'role:manage', 'all', { organizationId: ctx.user.organizationId });
 
         return ctx.db.role.create({
           data: {
@@ -358,7 +358,7 @@ export const usersRouter = router({
         }),
       )
       .mutation(async ({ ctx, input }) => {
-        assertCan(ctx.ability, 'role:manage', 'all');
+        assertCan(ctx.ability, 'role:manage', 'all', { organizationId: ctx.user.organizationId });
         const { id, ...data } = input;
 
         const role = await ctx.db.role.findFirst({
@@ -373,7 +373,7 @@ export const usersRouter = router({
     delete: orgProcedure
       .input(z.object({ id: z.string().cuid() }))
       .mutation(async ({ ctx, input }) => {
-        assertCan(ctx.ability, 'role:manage', 'all');
+        assertCan(ctx.ability, 'role:manage', 'all', { organizationId: ctx.user.organizationId });
 
         const role = await ctx.db.role.findFirst({
           where: { id: input.id, organizationId: ctx.user.organizationId, deletedAt: null },
@@ -394,7 +394,7 @@ export const usersRouter = router({
 
   permissions: {
     list: orgProcedure.query(async ({ ctx }) => {
-      assertCan(ctx.ability, 'user:manage', 'User');
+      assertCan(ctx.ability, 'user:manage', 'User', { organizationId: ctx.user.organizationId });
 
       const permissions = await ctx.db.permission.findMany({
         orderBy: [{ module: 'asc' }, { code: 'asc' }],
@@ -412,13 +412,13 @@ export const usersRouter = router({
     }),
 
     listAll: orgProcedure.query(async ({ ctx }) => {
-      assertCan(ctx.ability, 'user:manage', 'User');
+      assertCan(ctx.ability, 'user:manage', 'User', { organizationId: ctx.user.organizationId });
       return ctx.db.permission.findMany({ orderBy: [{ module: 'asc' }, { code: 'asc' }] });
     }),
   },
 
   orgRoles: orgProcedure.query(async ({ ctx }) => {
-    assertCan(ctx.ability, 'user:manage', 'User');
+    assertCan(ctx.ability, 'user:manage', 'User', { organizationId: ctx.user.organizationId });
     const orgId = ctx.user.organizationId!;
 
     return ctx.db.role.findMany({
@@ -440,7 +440,7 @@ export const usersRouter = router({
     list: orgProcedure
       .input(z.object({ roleId: z.string().cuid() }))
       .query(async ({ ctx, input }) => {
-        assertCan(ctx.ability, 'user:manage', 'User');
+        assertCan(ctx.ability, 'user:manage', 'User', { organizationId: ctx.user.organizationId });
 
         const rolePerms = await ctx.db.rolePermission.findMany({
           where: { roleId: input.roleId },
@@ -452,7 +452,7 @@ export const usersRouter = router({
     update: orgProcedure
       .input(z.object({ roleId: z.string().cuid(), permissionIds: z.array(z.string().cuid()) }))
       .mutation(async ({ ctx, input }) => {
-        assertCan(ctx.ability, 'role:manage', 'all');
+        assertCan(ctx.ability, 'role:manage', 'all', { organizationId: ctx.user.organizationId });
 
         const role = await ctx.db.role.findUnique({ where: { id: input.roleId }, select: { systemKey: true } });
 
@@ -474,7 +474,7 @@ export const usersRouter = router({
   },
 
   countByRole: orgProcedure.query(async ({ ctx }) => {
-    assertCan(ctx.ability, 'user:manage', 'User');
+    assertCan(ctx.ability, 'user:manage', 'User', { organizationId: ctx.user.organizationId });
     const orgId = ctx.user.organizationId!;
 
     const counts = await ctx.db.userOrganizationRole.groupBy({
