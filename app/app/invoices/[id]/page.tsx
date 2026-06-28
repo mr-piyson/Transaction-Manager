@@ -8,6 +8,7 @@ import {
   Building2,
   Calendar,
   Check,
+  CheckCircle,
   Edit,
   HandCoins,
   Layers,
@@ -15,6 +16,7 @@ import {
   Printer,
   Receipt,
   Send,
+  ThumbsDown,
   Trash,
   User,
   Wallet,
@@ -257,12 +259,40 @@ export default function InvoiceDetailPage() {
   const [sendOpen, setSendOpen] = React.useState(false);
   const [cancelOpen, setCancelOpen] = React.useState(false);
   const [cancelReason, setCancelReason] = React.useState('');
+  const [rejectOpen, setRejectOpen] = React.useState(false);
+  const [rejectReason, setRejectReason] = React.useState('');
   const [paymentOpen, setPaymentOpen] = React.useState(false);
   const [paymentAmount, setPaymentAmount] = React.useState('');
   const [paymentMethod, setPaymentMethod] = React.useState('CASH');
   const [paymentDate, setPaymentDate] = React.useState(() => new Date().toISOString().slice(0, 10));
   const [paymentReference, setPaymentReference] = React.useState('');
   const [paymentNotes, setPaymentNotes] = React.useState('');
+
+  const submitForApprovalMutation = trpc.invoices.submitForApproval.useMutation({
+    onSuccess: () => {
+      invalidate();
+      toast.success(t('invoices.submittedForApproval'));
+    },
+    onError: (e) => toast.error(e.message),
+  });
+
+  const approveMutation = trpc.invoices.approve.useMutation({
+    onSuccess: () => {
+      invalidate();
+      toast.success(t('invoices.invoiceApproved'));
+    },
+    onError: (e) => toast.error(e.message),
+  });
+
+  const rejectMutation = trpc.invoices.reject.useMutation({
+    onSuccess: () => {
+      setRejectOpen(false);
+      setRejectReason('');
+      invalidate();
+      toast.success(t('invoices.invoiceRejected'));
+    },
+    onError: (e) => toast.error(e.message),
+  });
 
   const sendMutation = trpc.invoices.send.useMutation({
     onSuccess: () => {
@@ -328,6 +358,9 @@ export default function InvoiceDetailPage() {
   }
 
   const isPending =
+    submitForApprovalMutation.isPending ||
+    approveMutation.isPending ||
+    rejectMutation.isPending ||
     sendMutation.isPending ||
     cancelMutation.isPending ||
     deleteMutation.isPending ||
@@ -374,6 +407,18 @@ export default function InvoiceDetailPage() {
   }
 
   const version = invoice.version ?? 0;
+
+  const handleConfirmAction = (action: string, msg: string) => {
+    if (!window.confirm(msg)) return;
+    switch (action) {
+      case 'submit':
+        submitForApprovalMutation.mutate({ id: invoice.id, version });
+        break;
+      case 'approve':
+        approveMutation.mutate({ id: invoice.id, version });
+        break;
+    }
+  };
 
   const handleEdit = () => {
     openEdit(
@@ -431,7 +476,7 @@ export default function InvoiceDetailPage() {
     key: string;
     icon: React.ReactNode;
     variant?: 'default' | 'destructive' | 'outline';
-    dialog?: 'send' | 'cancel' | 'payment';
+    dialog?: 'send' | 'cancel' | 'payment' | 'reject';
   };
 
   const actions: Action[] = [];
@@ -496,6 +541,11 @@ export default function InvoiceDetailPage() {
         variant: 'outline',
       });
       actions.push({
+        label: t('invoices.submitForApproval'),
+        key: 'submit',
+        icon: <Send className="size-4" />,
+      });
+      actions.push({
         label: t('common.send'),
         key: 'send',
         icon: <Send className="size-4" />,
@@ -509,16 +559,16 @@ export default function InvoiceDetailPage() {
       });
     } else if (status === 'PENDING_APPROVAL') {
       actions.push({
-        label: t('common.edit'),
-        key: 'edit',
-        icon: <Edit className="size-4" />,
-        variant: 'outline',
+        label: t('common.approve'),
+        key: 'approve',
+        icon: <CheckCircle className="size-4" />,
       });
       actions.push({
-        label: t('common.send'),
-        key: 'send',
-        icon: <Send className="size-4" />,
-        dialog: 'send',
+        label: t('common.reject'),
+        key: 'reject',
+        icon: <ThumbsDown className="size-4" />,
+        variant: 'destructive',
+        dialog: 'reject',
       });
       actions.push({
         label: t('common.cancel'),
@@ -628,57 +678,76 @@ export default function InvoiceDetailPage() {
         </div>
         {showActions && (
           <div className="flex items-center gap-2">
-            {actions.map(({ label, key, icon, variant = 'default', dialog }) =>
-              key === 'edit' ? (
-                <Button
-                  key={key}
-                  variant={variant}
-                  size="sm"
-                  onClick={handleEdit}
-                  disabled={isPending}
-                >
-                  {icon}
-                  <span className="ml-1">{label}</span>
-                </Button>
-              ) : key === 'convertQuote' ? (
-                <Button
-                  key={key}
-                  variant={variant}
-                  size="sm"
-                  onClick={() => {
-                    if (
-                      window.confirm(
-                        t('invoices.convertToInvoiceTitle', { serial: invoice.serial }),
+              {actions.map(({ label, key, icon, variant = 'default', dialog }) =>
+                key === 'edit' ? (
+                  <Button
+                    key={key}
+                    variant={variant}
+                    size="sm"
+                    onClick={handleEdit}
+                    disabled={isPending}
+                  >
+                    {icon}
+                    <span className="ml-1">{label}</span>
+                  </Button>
+                ) : key === 'submit' || key === 'approve' ? (
+                  <Button
+                    key={key}
+                    variant={variant}
+                    size="sm"
+                    onClick={() =>
+                      handleConfirmAction(
+                        key,
+                        t('invoices.confirmAction', {
+                          action: label.toLowerCase(),
+                        }),
                       )
-                    ) {
-                      convertQuoteMutation.mutate({ quoteId: invoice.id });
                     }
-                  }}
-                  disabled={isPending}
-                >
-                  {convertQuoteMutation.isPending && (
-                    <Loader2 className="size-4 mr-1 animate-spin" />
-                  )}
-                  {!convertQuoteMutation.isPending && icon}
-                  <span className="ml-1">{label}</span>
-                </Button>
-              ) : key === 'delete' ? (
-                <Button
-                  key={key}
-                  variant={variant}
-                  size="sm"
-                  onClick={() => {
-                    if (window.confirm(t('common.confirmDelete', { name: invoice.serial }))) {
-                      deleteMutation.mutate({ id: invoice.id });
-                    }
-                  }}
-                  disabled={isPending}
-                >
-                  {deleteMutation.isPending && <Loader2 className="size-4 mr-1 animate-spin" />}
-                  {!deleteMutation.isPending && icon}
-                  <span className="ml-1">{label}</span>
-                </Button>
-              ) : dialog === 'send' ? (
+                    disabled={isPending}
+                  >
+                    {isPending && <Loader2 className="size-4 mr-1 animate-spin" />}
+                    {!isPending && icon}
+                    <span className="ml-1">{label}</span>
+                  </Button>
+                ) : key === 'convertQuote' ? (
+                  <Button
+                    key={key}
+                    variant={variant}
+                    size="sm"
+                    onClick={() => {
+                      if (
+                        window.confirm(
+                          t('invoices.convertToInvoiceTitle', { serial: invoice.serial }),
+                        )
+                      ) {
+                        convertQuoteMutation.mutate({ quoteId: invoice.id });
+                      }
+                    }}
+                    disabled={isPending}
+                  >
+                    {convertQuoteMutation.isPending && (
+                      <Loader2 className="size-4 mr-1 animate-spin" />
+                    )}
+                    {!convertQuoteMutation.isPending && icon}
+                    <span className="ml-1">{label}</span>
+                  </Button>
+                ) : key === 'delete' ? (
+                  <Button
+                    key={key}
+                    variant={variant}
+                    size="sm"
+                    onClick={() => {
+                      if (window.confirm(t('common.confirmDelete', { name: invoice.serial }))) {
+                        deleteMutation.mutate({ id: invoice.id });
+                      }
+                    }}
+                    disabled={isPending}
+                  >
+                    {deleteMutation.isPending && <Loader2 className="size-4 mr-1 animate-spin" />}
+                    {!deleteMutation.isPending && icon}
+                    <span className="ml-1">{label}</span>
+                  </Button>
+                ) : dialog === 'send' ? (
                 <Button
                   key={key}
                   variant={variant}
@@ -687,6 +756,16 @@ export default function InvoiceDetailPage() {
                   disabled={isPending}
                 >
                   <Send className="size-4 mr-1" /> {label}
+                </Button>
+              ) : dialog === 'reject' ? (
+                <Button
+                  key={key}
+                  variant={variant}
+                  size="sm"
+                  onClick={() => setRejectOpen(true)}
+                  disabled={isPending}
+                >
+                  <ThumbsDown className="size-4 mr-1" /> {label}
                 </Button>
               ) : dialog === 'cancel' ? (
                 <Button
@@ -1203,6 +1282,59 @@ export default function InvoiceDetailPage() {
             >
               {cancelMutation.isPending && <Loader2 className="size-4 mr-1 animate-spin" />}
               {t('common.cancel')} {getTypeLabel(invoice.type)}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Reject dialog */}
+      <Dialog
+        open={rejectOpen}
+        onOpenChange={(v) => {
+          if (!rejectMutation.isPending) setRejectOpen(v);
+        }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{t('invoices.rejectInvoiceTitle')}</DialogTitle>
+            <DialogDescription>
+              {t('invoices.rejectInvoiceDesc', { serial: invoice.serial })}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3">
+            <Label htmlFor="reject-reason">{t('common.reason')}</Label>
+            <Textarea
+              id="reject-reason"
+              placeholder={t('invoices.rejectReasonPlaceholder')}
+              value={rejectReason}
+              onChange={(e) => setRejectReason(e.target.value)}
+              rows={3}
+            />
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setRejectOpen(false);
+                setRejectReason('');
+              }}
+              disabled={rejectMutation.isPending}
+            >
+              {t('common.cancel')}
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={() =>
+                rejectMutation.mutate({
+                  id: invoice.id,
+                  version,
+                  reason: rejectReason || undefined,
+                })
+              }
+              disabled={rejectMutation.isPending}
+            >
+              {rejectMutation.isPending && <Loader2 className="size-4 mr-1 animate-spin" />}
+              {t('invoices.rejectInvoice')}
             </Button>
           </DialogFooter>
         </DialogContent>

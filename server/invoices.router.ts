@@ -675,6 +675,155 @@ export const invoicesRouter = router({
       return result;
     }),
 
+  // ── SUBMIT FOR APPROVAL (DRAFT → PENDING_APPROVAL) ────────────────────────
+  submitForApproval: orgProcedure
+    .input(z.object({ id: z.string().cuid(), version: z.number().int() }))
+    .mutation(async ({ ctx, input }) => {
+      const orgId = ctx.user.organizationId;
+
+      const invoice = await ctx.db.invoice.findFirst({
+        where: { id: input.id, organizationId: orgId, deletedAt: null },
+        select: { id: true, status: true, version: true },
+      });
+      if (!invoice) throw new NotFoundError('Invoice', input.id);
+
+      assertCan(ctx.ability, 'invoice:update', 'Invoice', invoice as Record<string, unknown>);
+
+      if (invoice.status !== 'DRAFT')
+        throw new UnprocessableError(
+          `Only DRAFT invoices can be submitted for approval. Current: ${invoice.status}`,
+        );
+      if (invoice.version !== input.version) throw new StaleDataError('Invoice');
+
+      return ctx.db.$transaction(async (tx) => {
+        const updated = await tx.invoice.update({
+          where: { id: input.id },
+          data: {
+            status: 'PENDING_APPROVAL',
+            approvalStatus: 'PENDING',
+            version: { increment: 1 },
+            updatedById: ctx.user.id,
+          },
+        });
+
+        await writeAuditLog(
+          {
+            entityType: 'Invoice',
+            entityId: input.id,
+            action: 'STATUS_CHANGE',
+            diff: { status: { before: invoice.status, after: 'PENDING_APPROVAL' } },
+            organizationId: orgId,
+            userId: ctx.user.id,
+            ipAddress: ctx.ipAddress,
+          },
+          tx,
+        );
+
+        return updated;
+      });
+    }),
+
+  // ── APPROVE (PENDING_APPROVAL → APPROVED) ─────────────────────────────────
+  approve: orgProcedure
+    .input(z.object({ id: z.string().cuid(), version: z.number().int() }))
+    .mutation(async ({ ctx, input }) => {
+      const orgId = ctx.user.organizationId;
+
+      const invoice = await ctx.db.invoice.findFirst({
+        where: { id: input.id, organizationId: orgId, deletedAt: null },
+        select: { id: true, status: true, version: true },
+      });
+      if (!invoice) throw new NotFoundError('Invoice', input.id);
+
+      assertCan(ctx.ability, 'invoice:approve', 'Invoice', invoice as Record<string, unknown>);
+
+      if (invoice.status !== 'PENDING_APPROVAL')
+        throw new UnprocessableError(
+          `Invoice must be PENDING_APPROVAL to approve. Current: ${invoice.status}`,
+        );
+      if (invoice.version !== input.version) throw new StaleDataError('Invoice');
+
+      return ctx.db.$transaction(async (tx) => {
+        const updated = await tx.invoice.update({
+          where: { id: input.id },
+          data: {
+            status: 'APPROVED',
+            approvalStatus: 'APPROVED',
+            version: { increment: 1 },
+            updatedById: ctx.user.id,
+          },
+        });
+
+        await writeAuditLog(
+          {
+            entityType: 'Invoice',
+            entityId: input.id,
+            action: 'STATUS_CHANGE',
+            diff: { status: { before: invoice.status, after: 'APPROVED' } },
+            organizationId: orgId,
+            userId: ctx.user.id,
+            ipAddress: ctx.ipAddress,
+          },
+          tx,
+        );
+
+        return updated;
+      });
+    }),
+
+  // ── REJECT (PENDING_APPROVAL → DRAFT) ─────────────────────────────────────
+  reject: orgProcedure
+    .input(
+      z.object({ id: z.string().cuid(), version: z.number().int(), reason: z.string().optional() }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const orgId = ctx.user.organizationId;
+
+      const invoice = await ctx.db.invoice.findFirst({
+        where: { id: input.id, organizationId: orgId, deletedAt: null },
+        select: { id: true, status: true, version: true },
+      });
+      if (!invoice) throw new NotFoundError('Invoice', input.id);
+
+      assertCan(ctx.ability, 'invoice:approve', 'Invoice', invoice as Record<string, unknown>);
+
+      if (invoice.status !== 'PENDING_APPROVAL')
+        throw new UnprocessableError(
+          `Invoice must be PENDING_APPROVAL to reject. Current: ${invoice.status}`,
+        );
+      if (invoice.version !== input.version) throw new StaleDataError('Invoice');
+
+      return ctx.db.$transaction(async (tx) => {
+        const updated = await tx.invoice.update({
+          where: { id: input.id },
+          data: {
+            status: 'DRAFT',
+            approvalStatus: 'REJECTED',
+            version: { increment: 1 },
+            updatedById: ctx.user.id,
+          },
+        });
+
+        await writeAuditLog(
+          {
+            entityType: 'Invoice',
+            entityId: input.id,
+            action: 'STATUS_CHANGE',
+            diff: {
+              status: { before: invoice.status, after: 'DRAFT' },
+              reason: { before: null, after: input.reason },
+            },
+            organizationId: orgId,
+            userId: ctx.user.id,
+            ipAddress: ctx.ipAddress,
+          },
+          tx,
+        );
+
+        return updated;
+      });
+    }),
+
   // ── CANCEL ────────────────────────────────────────────────────────────────
   cancel: orgProcedure
     .input(
