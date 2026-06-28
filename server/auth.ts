@@ -12,20 +12,18 @@ export const authRouter = t.router({
         password: z.string(),
       }),
     )
-    .mutation(async ({ input }) => {
+    .mutation(async ({ ctx, input }) => {
       try {
         const { email, password } = input;
         const user = await auth.api.signInEmail({
-          body: {
-            email,
-            password,
-          },
+          body: { email, password },
+          headers: ctx.req.headers,
         });
         return user;
       } catch (error: any) {
         throw new TRPCError({
           code: 'BAD_REQUEST',
-          message: error.message || 'Failed to create account',
+          message: error.message || 'Failed to sign in',
         });
       }
     }),
@@ -51,8 +49,7 @@ export const authRouter = t.router({
             firstName: nameParts[0] ?? name,
             lastName: nameParts.slice(1).join(' ') || '',
             isActive: true,
-            organizationId: '',
-          },
+          } as any,
           headers: ctx.req.headers,
         });
         return result;

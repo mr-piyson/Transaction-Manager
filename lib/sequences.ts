@@ -27,12 +27,14 @@
  * Omit it for continuous numbering across years.
  */
 
-import type { PrismaClient } from '@prisma/client';
+import type { Prisma } from '@prisma/client';
 
 export type DocumentPrefix = 'INV' | 'QTE' | 'CN' | 'PFI' | 'DN' | 'PO' | 'JE' | 'EXP';
 
+type TransactionClient = Prisma.TransactionClient;
+
 interface GenerateSerialOptions {
-  db: PrismaClient;
+  db: TransactionClient;
   organizationId: string;
   prefix: DocumentPrefix;
   /** Pad the numeric part to this many digits. Default: 5 */

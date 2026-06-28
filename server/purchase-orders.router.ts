@@ -204,7 +204,7 @@ export const purchaseOrdersRouter = router({
 
     const order = await ctx.db.$transaction(async (tx) => {
       const serial = await generateSerial({
-        db: tx as never,
+        db: tx,
         organizationId: orgId,
         prefix: 'PO',
       });

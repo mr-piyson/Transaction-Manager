@@ -261,6 +261,12 @@ export default function InvoiceDetailPage() {
   const [cancelReason, setCancelReason] = React.useState('');
   const [rejectOpen, setRejectOpen] = React.useState(false);
   const [rejectReason, setRejectReason] = React.useState('');
+  const [confirmDialog, setConfirmDialog] = React.useState<{
+    open: boolean;
+    action: string;
+    title: string;
+    description: string;
+  }>({ open: false, action: '', title: '', description: '' });
   const [paymentOpen, setPaymentOpen] = React.useState(false);
   const [paymentAmount, setPaymentAmount] = React.useState('');
   const [paymentMethod, setPaymentMethod] = React.useState('CASH');
@@ -408,8 +414,7 @@ export default function InvoiceDetailPage() {
 
   const version = invoice.version ?? 0;
 
-  const handleConfirmAction = (action: string, msg: string) => {
-    if (!window.confirm(msg)) return;
+  const handleConfirmAction = (action: string) => {
     switch (action) {
       case 'submit':
         submitForApprovalMutation.mutate({ id: invoice.id, version });
@@ -418,6 +423,22 @@ export default function InvoiceDetailPage() {
         approveMutation.mutate({ id: invoice.id, version });
         break;
     }
+  };
+
+  const openConfirmDialog = (action: string) => {
+    const labels: Record<string, { title: string; description: string }> = {
+      submit: {
+        title: t('invoices.submitForApproval'),
+        description: t('invoices.confirmSubmitForApproval', { serial: invoice.serial }),
+      },
+      approve: {
+        title: t('invoices.approveInvoiceTitle'),
+        description: t('invoices.confirmApproveInvoice', { serial: invoice.serial }),
+      },
+    };
+    const config = labels[action];
+    if (!config) return;
+    setConfirmDialog({ open: true, action, ...config });
   };
 
   const handleEdit = () => {
@@ -695,14 +716,7 @@ export default function InvoiceDetailPage() {
                     key={key}
                     variant={variant}
                     size="sm"
-                    onClick={() =>
-                      handleConfirmAction(
-                        key,
-                        t('invoices.confirmAction', {
-                          action: label.toLowerCase(),
-                        }),
-                      )
-                    }
+                    onClick={() => openConfirmDialog(key)}
                     disabled={isPending}
                   >
                     {isPending && <Loader2 className="size-4 mr-1 animate-spin" />}
@@ -1282,6 +1296,41 @@ export default function InvoiceDetailPage() {
             >
               {cancelMutation.isPending && <Loader2 className="size-4 mr-1 animate-spin" />}
               {t('common.cancel')} {getTypeLabel(invoice.type)}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Confirm action dialog (submit for approval / approve) */}
+      <Dialog
+        open={confirmDialog.open}
+        onOpenChange={(v) => {
+          if (!submitForApprovalMutation.isPending && !approveMutation.isPending)
+            setConfirmDialog((prev) => ({ ...prev, open: v }));
+        }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{confirmDialog.title}</DialogTitle>
+            <DialogDescription>{confirmDialog.description}</DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setConfirmDialog({ open: false, action: '', title: '', description: '' })}
+              disabled={isPending}
+            >
+              {t('common.cancel')}
+            </Button>
+            <Button
+              onClick={() => {
+                handleConfirmAction(confirmDialog.action);
+                setConfirmDialog({ open: false, action: '', title: '', description: '' });
+              }}
+              disabled={isPending}
+            >
+              {isPending && <Loader2 className="size-4 mr-1 animate-spin" />}
+              {confirmDialog.action === 'approve' ? t('common.approve') : t('invoices.submitForApproval')}
             </Button>
           </DialogFooter>
         </DialogContent>

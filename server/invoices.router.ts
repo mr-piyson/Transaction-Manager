@@ -368,7 +368,7 @@ export const invoicesRouter = router({
           const prefix = prefixMap[invoiceData.type ?? 'INVOICE'] ?? 'INV';
 
           const serial = await generateSerial({
-            db: tx as never,
+            db: tx,
             organizationId: orgId,
             prefix: prefix as DocumentPrefix,
           });
@@ -466,8 +466,8 @@ export const invoicesRouter = router({
 
     assertCan(ctx.ability, 'invoice:update', 'Invoice', existing as Record<string, unknown>);
 
-    // Only DRAFT invoices are fully editable
-    if (!['DRAFT', 'PENDING_APPROVAL'].includes(existing.status)) {
+    // Only DRAFT invoices are editable (PENDING_APPROVAL must be rejected first)
+    if (existing.status !== 'DRAFT') {
       throw new UnprocessableError(
         `Invoice in status "${existing.status}" cannot be edited. Cancel it first.`,
       );
@@ -482,26 +482,28 @@ export const invoicesRouter = router({
       let totalsData = {};
 
       if (lineInputs && lineInputs.length > 0) {
-        // Enrich lines with item data
-        const enrichedLines = await Promise.all(
-          lineInputs.map(async (line) => {
-            if (!line.itemId) return line;
-            const item = await tx.item.findFirst({
-              where: { id: line.itemId, organizationId: orgId },
-              select: {
-                purchasePrice: true,
-                taxRate: { select: { rate: true, name: true, id: true } },
-              },
-            });
-            return {
-              ...line,
-              purchasePrice: line.purchasePrice ?? Number(item?.purchasePrice ?? 0),
-              taxRateId: line.taxRateId ?? item?.taxRate?.id,
-              taxRateSnapshot: line.taxRateSnapshot ?? Number(item?.taxRate?.rate ?? 0),
-              taxRateName: line.taxRateName ?? item?.taxRate?.name,
-            };
-          }),
-        );
+        // Enrich lines with item data (sequential to stay inside tx context)
+        const enrichedLines: Array<Record<string, any>> = [];
+        for (const line of lineInputs) {
+          if (!line.itemId) {
+            enrichedLines.push(line);
+            continue;
+          }
+          const item = await tx.item.findFirst({
+            where: { id: line.itemId, organizationId: orgId },
+            select: {
+              purchasePrice: true,
+              taxRate: { select: { rate: true, name: true, id: true } },
+            },
+          });
+          enrichedLines.push({
+            ...line,
+            purchasePrice: line.purchasePrice ?? Number(item?.purchasePrice ?? 0),
+            taxRateId: line.taxRateId ?? item?.taxRate?.id,
+            taxRateSnapshot: line.taxRateSnapshot ?? Number(item?.taxRate?.rate ?? 0),
+            taxRateName: line.taxRateName ?? item?.taxRate?.name,
+          });
+        }
 
         const totals = calculateInvoiceTotals(
           enrichedLines.map((l) => ({
@@ -683,7 +685,7 @@ export const invoicesRouter = router({
 
       const invoice = await ctx.db.invoice.findFirst({
         where: { id: input.id, organizationId: orgId, deletedAt: null },
-        select: { id: true, status: true, version: true },
+        select: { id: true, status: true, version: true, serial: true },
       });
       if (!invoice) throw new NotFoundError('Invoice', input.id);
 
@@ -703,6 +705,37 @@ export const invoicesRouter = router({
             approvalStatus: 'PENDING',
             version: { increment: 1 },
             updatedById: ctx.user.id,
+          },
+        });
+
+        const workflow = await tx.approvalWorkflow.findFirst({
+          where: { entityType: 'Invoice', organizationId: orgId, isActive: true },
+          select: { id: true },
+        });
+
+        if (workflow) {
+          await tx.approvalRequest.create({
+            data: {
+              entityType: 'Invoice',
+              entityId: input.id,
+              status: 'PENDING',
+              currentStep: 1,
+              workflowId: workflow.id,
+              requestedById: ctx.user.id,
+              organizationId: orgId,
+            },
+          });
+        }
+
+        await tx.notification.create({
+          data: {
+            title: 'Invoice Submitted for Approval',
+            body: `${invoice.serial} has been submitted for approval.`,
+            type: 'approval_request',
+            entityType: 'Invoice',
+            entityId: input.id,
+            userId: ctx.user.id,
+            organizationId: orgId,
           },
         });
 
@@ -731,7 +764,7 @@ export const invoicesRouter = router({
 
       const invoice = await ctx.db.invoice.findFirst({
         where: { id: input.id, organizationId: orgId, deletedAt: null },
-        select: { id: true, status: true, version: true },
+        select: { id: true, status: true, version: true, serial: true, createdById: true },
       });
       if (!invoice) throw new NotFoundError('Invoice', input.id);
 
@@ -751,6 +784,37 @@ export const invoicesRouter = router({
             approvalStatus: 'APPROVED',
             version: { increment: 1 },
             updatedById: ctx.user.id,
+          },
+        });
+
+        const request = await tx.approvalRequest.findFirst({
+          where: { entityType: 'Invoice', entityId: input.id, organizationId: orgId },
+          select: { id: true },
+        });
+        if (request) {
+          await tx.approvalDecision.create({
+            data: {
+              requestId: request.id,
+              stepOrder: 1,
+              status: 'APPROVED',
+              decidedById: ctx.user.id,
+            },
+          });
+          await tx.approvalRequest.update({
+            where: { id: request.id },
+            data: { status: 'APPROVED' },
+          });
+        }
+
+        await tx.notification.create({
+          data: {
+            title: 'Invoice Approved',
+            body: `${invoice.serial} has been approved.`,
+            type: 'invoice_approved',
+            entityType: 'Invoice',
+            entityId: input.id,
+            userId: invoice.createdById,
+            organizationId: orgId,
           },
         });
 
@@ -781,7 +845,7 @@ export const invoicesRouter = router({
 
       const invoice = await ctx.db.invoice.findFirst({
         where: { id: input.id, organizationId: orgId, deletedAt: null },
-        select: { id: true, status: true, version: true },
+        select: { id: true, status: true, version: true, serial: true, createdById: true },
       });
       if (!invoice) throw new NotFoundError('Invoice', input.id);
 
@@ -801,6 +865,38 @@ export const invoicesRouter = router({
             approvalStatus: 'REJECTED',
             version: { increment: 1 },
             updatedById: ctx.user.id,
+          },
+        });
+
+        const request = await tx.approvalRequest.findFirst({
+          where: { entityType: 'Invoice', entityId: input.id, organizationId: orgId },
+          select: { id: true },
+        });
+        if (request) {
+          await tx.approvalDecision.create({
+            data: {
+              requestId: request.id,
+              stepOrder: 1,
+              status: 'REJECTED',
+              notes: input.reason,
+              decidedById: ctx.user.id,
+            },
+          });
+          await tx.approvalRequest.update({
+            where: { id: request.id },
+            data: { status: 'REJECTED' },
+          });
+        }
+
+        await tx.notification.create({
+          data: {
+            title: 'Invoice Rejected',
+            body: `${invoice.serial} was rejected.${input.reason ? ` Reason: ${input.reason}` : ''}`,
+            type: 'invoice_rejected',
+            entityType: 'Invoice',
+            entityId: input.id,
+            userId: invoice.createdById,
+            organizationId: orgId,
           },
         });
 
@@ -967,7 +1063,7 @@ export const invoicesRouter = router({
 
       const invoice = await ctx.db.$transaction(async (tx) => {
         const serial = await generateSerial({
-          db: tx as never,
+          db: tx,
           organizationId: orgId,
           prefix: 'INV',
         });
@@ -995,7 +1091,9 @@ export const invoicesRouter = router({
             exchangeRate: quote.exchangeRate,
             description: quote.description,
             notes: quote.notes,
+            internalNotes: quote.internalNotes,
             termsText: quote.termsText,
+            isWalkIn: quote.isWalkIn,
             subtotal: quote.subtotal,
             discountTotal: quote.discountTotal,
             taxTotal: quote.taxTotal,
