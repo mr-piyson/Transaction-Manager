@@ -8,7 +8,9 @@ import {
   LogOut,
   Palette,
   Percent,
+  Shield,
   User,
+  Users,
 } from 'lucide-react';
 import {
   Card,
@@ -26,14 +28,16 @@ export const NAV_ITEMS = [
   { id: 'categories', labelKey: 'items.category', href: '/app/settings/categories', icon: Layers },
   {
     id: 'chart-of-accounts',
-    labelKey: 'settings.general',
+    labelKey: 'settings.chartOfAccounts',
     href: '/app/settings/chart-of-accounts',
     icon: BookType,
   },
-  { id: 'sessions', labelKey: 'settings.general', href: '/app/settings/sessions', icon: LogOut },
+  { id: 'sessions', labelKey: 'settings.sessions', href: '/app/settings/sessions', icon: LogOut },
   { id: 'appearance', labelKey: 'settings.appearance', href: '/app/settings/appearance', icon: Palette },
   { id: 'notifications', labelKey: 'settings.notifications', href: '/app/settings/notifications', icon: Bell },
   { id: 'user', labelKey: 'auth.name', href: '/app/settings/user', icon: User },
+  { id: 'users', labelKey: 'users.title', href: '/app/settings/users', icon: Users },
+  { id: 'permissions', labelKey: 'users.permissionsPageTitle', href: '/app/settings/permissions', icon: Shield },
 ] as const satisfies {
   id: string;
   labelKey: string;

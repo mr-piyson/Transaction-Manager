@@ -2,6 +2,7 @@
 
 import { useTranslations } from 'next-intl';
 import { Loader2 } from 'lucide-react';
+import { toast } from 'sonner';
 import { Switch } from '@/components/ui/switch';
 import { trpc } from '@/lib/trpc/client';
 import { SectionCard } from '../_shared';
@@ -12,6 +13,7 @@ export default function NotificationsPage() {
   const utils = trpc.useUtils();
   const updateSetting = trpc.settings.updateSetting.useMutation({
     onSuccess: () => utils.settings.getSettings.invalidate(),
+    onError: (e) => toast.error(e.message),
   });
 
   const NOTIFICATION_KEYS = [

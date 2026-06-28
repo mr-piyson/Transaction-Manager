@@ -3,6 +3,7 @@
 import { useTranslations } from 'next-intl';
 import { Loader2 } from 'lucide-react';
 import { useState } from 'react';
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -26,6 +27,7 @@ export default function FinancialSettingsPage() {
   const utils = trpc.useUtils();
   const updateOrg = trpc.settings.updateOrg.useMutation({
     onSuccess: () => utils.settings.getOrg.invalidate(),
+    onError: (e) => toast.error(e.message),
   });
 
   const org = rawOrg as OrgData | null | undefined;

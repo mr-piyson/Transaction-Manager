@@ -1,51 +1,64 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { Loader2, Plus, Trash } from 'lucide-react';
+import { Loader2, Plus, Trash, X } from 'lucide-react';
 import { useState } from 'react';
+import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { Separator } from '@/components/ui/separator';
 import { trpc } from '@/lib/trpc/client';
-import { SectionCard } from '../_shared';
+import { Field, SectionCard } from '../_shared';
 
 export default function CategoriesPage() {
   const t = useTranslations();
   const { data: tree, isLoading } = trpc.categories.listTree.useQuery();
   const utils = trpc.useUtils();
 
+  const handleError = (e: any) => toast.error(e.message);
+
   const createFamily = trpc.categories.createFamily.useMutation({
     onSuccess: () => utils.categories.listTree.invalidate(),
+    onError: handleError,
   });
   const updateFamily = trpc.categories.updateFamily.useMutation({
     onSuccess: () => utils.categories.listTree.invalidate(),
+    onError: handleError,
   });
   const deleteFamily = trpc.categories.deleteFamily.useMutation({
     onSuccess: () => utils.categories.listTree.invalidate(),
+    onError: handleError,
   });
 
   const createClass = trpc.categories.createClass.useMutation({
     onSuccess: () => utils.categories.listTree.invalidate(),
+    onError: handleError,
   });
   const updateClass = trpc.categories.updateClass.useMutation({
     onSuccess: () => utils.categories.listTree.invalidate(),
+    onError: handleError,
   });
   const deleteClass = trpc.categories.deleteClass.useMutation({
     onSuccess: () => utils.categories.listTree.invalidate(),
+    onError: handleError,
   });
 
   const createCommodity = trpc.categories.createCommodity.useMutation({
     onSuccess: () => utils.categories.listTree.invalidate(),
+    onError: handleError,
   });
   const updateCommodity = trpc.categories.updateCommodity.useMutation({
     onSuccess: () => utils.categories.listTree.invalidate(),
+    onError: handleError,
   });
   const deleteCommodity = trpc.categories.deleteCommodity.useMutation({
     onSuccess: () => utils.categories.listTree.invalidate(),
+    onError: handleError,
   });
 
-  const [newFamily, setNewFamily] = useState({ name: '', code: '' });
+  const [newFamily, setNewFamily] = useState({ name: '', code: '', color: '#000000', description: '', icon: '' });
   const [editNames, setEditNames] = useState<Record<string, string>>({});
 
   if (isLoading) {
@@ -199,9 +212,8 @@ export default function CategoriesPage() {
                       ))}
                       {/* Add commodity */}
                       <AddInlineRow
-                        placeholder={t('common.code')}
-                        onAdd={(code) =>
-                          createCommodity.mutate({ name: code, code, classId: cls.id })
+                        onAdd={(name, code) =>
+                          createCommodity.mutate({ name, code, classId: cls.id })
                         }
                         isPending={createCommodity.isPending}
                       />
@@ -211,9 +223,8 @@ export default function CategoriesPage() {
                 {/* Add class */}
                 <div className="px-4 py-2">
                   <AddInlineRow
-                    placeholder={t('common.code')}
-                    onAdd={(code) =>
-                      createClass.mutate({ name: code, code, familyId: family.id })
+                    onAdd={(name, code) =>
+                      createClass.mutate({ name, code, familyId: family.id })
                     }
                     isPending={createClass.isPending}
                   />
@@ -228,26 +239,75 @@ export default function CategoriesPage() {
         {/* Add Family */}
         <div className="space-y-3">
           <p className="text-sm font-medium">{t('common.addItem')}</p>
-          <div className="flex gap-3">
-            <div className="flex-1">
+          <div className="grid grid-cols-2 gap-4">
+            <Field label={t('common.name')}>
               <Input
                 placeholder={t('common.name')}
                 value={newFamily.name}
                 onChange={(e) => setNewFamily({ ...newFamily, name: e.target.value })}
               />
-            </div>
-            <div className="w-28">
+            </Field>
+            <Field label={t('common.code')}>
               <Input
                 placeholder={t('common.code')}
                 value={newFamily.code}
                 onChange={(e) => setNewFamily({ ...newFamily, code: e.target.value.toUpperCase() })}
               />
+            </Field>
+            <Field label="Color">
+              <div className="flex items-center gap-2">
+                <input
+                  type="color"
+                  className="size-8 cursor-pointer rounded border"
+                  value={newFamily.color}
+                  onChange={(e) => setNewFamily({ ...newFamily, color: e.target.value })}
+                />
+                {newFamily.color !== '#000000' && (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="size-7"
+                    onClick={() => setNewFamily({ ...newFamily, color: '#000000' })}
+                  >
+                    <X className="size-3.5" />
+                  </Button>
+                )}
+              </div>
+            </Field>
+            <Field label="Icon">
+              <Input
+                placeholder="e.g. electronics"
+                maxLength={50}
+                value={newFamily.icon}
+                onChange={(e) => setNewFamily({ ...newFamily, icon: e.target.value })}
+              />
+            </Field>
+            <div className="col-span-2">
+              <Field label={t('common.description')}>
+                <Textarea
+                  placeholder={t('common.optionalNotes')}
+                  maxLength={500}
+                  value={newFamily.description}
+                  onChange={(e) => setNewFamily({ ...newFamily, description: e.target.value })}
+                />
+              </Field>
             </div>
+          </div>
+          <div className="flex justify-end">
             <Button
               onClick={() => {
                 createFamily.mutate(
-                  { name: newFamily.name, code: newFamily.code },
-                  { onSuccess: () => setNewFamily({ name: '', code: '' }) },
+                  {
+                    name: newFamily.name,
+                    code: newFamily.code,
+                    ...(newFamily.color && newFamily.color !== '#000000' ? { color: newFamily.color } : {}),
+                    ...(newFamily.description ? { description: newFamily.description } : {}),
+                    ...(newFamily.icon ? { icon: newFamily.icon } : {}),
+                  },
+                  {
+                    onSuccess: () =>
+                      setNewFamily({ name: '', code: '', color: '#000000', description: '', icon: '' }),
+                  },
                 );
               }}
               disabled={!newFamily.name || !newFamily.code || createFamily.isPending}
@@ -263,29 +323,38 @@ export default function CategoriesPage() {
 }
 
 function AddInlineRow({
-  placeholder,
   onAdd,
   isPending,
 }: {
-  placeholder: string;
-  onAdd: (code: string) => void;
+  onAdd: (name: string, code: string) => void;
   isPending: boolean;
 }) {
-  const [value, setValue] = useState('');
+  const [name, setName] = useState('');
+  const [code, setCode] = useState('');
 
   const handleAdd = () => {
-    if (!value.trim()) return;
-    onAdd(value.trim().toUpperCase());
-    setValue('');
+    if (!name.trim() || !code.trim()) return;
+    onAdd(name.trim(), code.trim().toUpperCase());
+    setName('');
+    setCode('');
   };
 
   return (
     <div className="flex items-center gap-2 mt-1">
       <Input
-        className="h-7 text-xs"
-        placeholder={placeholder}
-        value={value}
-        onChange={(e) => setValue(e.target.value)}
+        className="h-7 text-xs flex-1 min-w-0"
+        placeholder="Name"
+        value={name}
+        onChange={(e) => setName(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter') handleAdd();
+        }}
+      />
+      <Input
+        className="h-7 text-xs w-24 shrink-0"
+        placeholder="Code"
+        value={code}
+        onChange={(e) => setCode(e.target.value)}
         onKeyDown={(e) => {
           if (e.key === 'Enter') handleAdd();
         }}
@@ -295,7 +364,7 @@ function AddInlineRow({
         size="icon"
         className="size-7 shrink-0"
         onClick={handleAdd}
-        disabled={!value.trim() || isPending}
+        disabled={!name.trim() || !code.trim() || isPending}
       >
         <Plus className="size-3.5" />
       </Button>

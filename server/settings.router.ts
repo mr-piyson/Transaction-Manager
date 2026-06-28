@@ -184,6 +184,27 @@ export const settingsRouter = router({
           return updated;
         });
       }),
+
+    delete: orgProcedure
+      .input(z.object({ id: z.string().cuid() }))
+      .mutation(async ({ ctx, input }) => {
+        const existing = await ctx.db.ledgerAccount.findFirst({
+          where: { id: input.id, organizationId: ctx.user.organizationId },
+          include: { children: { select: { id: true } } },
+        });
+        if (!existing) throw new NotFoundError('LedgerAccount', input.id);
+        if (existing.children.length > 0) throw new ConflictError('Cannot delete an account with sub-accounts.');
+
+        await ctx.db.$transaction(async (tx) => {
+          await tx.ledgerAccount.update({ where: { id: input.id }, data: { isActive: false } });
+          await writeAuditLog(
+            { entityType: 'LedgerAccount', entityId: input.id, action: 'DELETE', organizationId: ctx.user.organizationId, userId: ctx.user.id, ipAddress: ctx.ipAddress },
+            tx,
+          );
+        });
+
+        return { success: true };
+      }),
   },
 
   // Organization settings (key-value)

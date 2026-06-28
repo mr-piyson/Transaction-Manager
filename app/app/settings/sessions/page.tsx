@@ -2,8 +2,10 @@
 
 import { useTranslations } from 'next-intl';
 import { LogOut, Monitor, Smartphone, Trash, Globe, Loader2 } from 'lucide-react';
+import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
 import { useSession } from '@/auth/auth-client';
+import { alert } from '@/components/Alert-dialog';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { trpc } from '@/lib/trpc/client';
@@ -59,10 +61,12 @@ export default function SessionsSettingsPage() {
   const { data: sessionsData, isLoading, refetch } =
     trpc.auth.listSessions.useQuery();
   const revokeSession = trpc.auth.revokeSession.useMutation({
-    onSuccess: () => refetch(),
+    onSuccess: () => { refetch(); toast.success(t('sessions.revoked')); },
+    onError: (e) => toast.error(e.message),
   });
   const revokeOther = trpc.auth.revokeOtherSessions.useMutation({
-    onSuccess: () => refetch(),
+    onSuccess: () => { refetch(); toast.success(t('sessions.revokedAll')); },
+    onError: (e) => toast.error(e.message),
   });
 
   const session = useSession();
@@ -83,7 +87,7 @@ export default function SessionsSettingsPage() {
   return (
     <div className="h-full space-y-6">
       <SectionCard
-        title={t('settings.notifications')}
+        title={t('sessions.title')}
         description={t('common.details')}
       >
         {isLoading ? (
@@ -113,7 +117,7 @@ export default function SessionsSettingsPage() {
                           variant="default"
                           className="text-xs whitespace-nowrap"
                         >
-                          {t('common.active')}
+                          {t('sessions.currentSession')}
                         </Badge>
                       </div>
                       <p className="text-sm text-muted-foreground truncate">
@@ -185,11 +189,18 @@ export default function SessionsSettingsPage() {
                 <Button
                   variant="destructive"
                   size="sm"
-                  onClick={() => revokeOther.mutate()}
+                  onClick={() => {
+                    alert.delete({
+                      title: t('sessions.revokeAll'),
+                      description: t('sessions.revokeAllConfirm'),
+                      confirmText: t('common.delete'),
+                      onConfirm: async () => { await revokeOther.mutateAsync(); },
+                    });
+                  }}
                   disabled={isLoadingMutation}
                 >
                   <LogOut className="size-4 mr-1" />
-                  {t('common.delete')}
+                  {t('sessions.revokeAll')}
                 </Button>
               </div>
             )}

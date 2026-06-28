@@ -3,6 +3,7 @@ import { authRouter } from './auth';
 import { contractsRouter } from './contracts.router';
 import { customersRouter } from './customers.router';
 import { invoicesRouter } from './invoices.router';
+import { usersRouter } from './users.router';
 import { itemsRouter } from './items';
 import { organizationsRouter } from './organizations.router';
 import { purchaseOrdersRouter } from './purchase-orders.router';
@@ -29,6 +30,7 @@ export const appRouter = t.router({
   suppliers: suppliersRouter,
   warehouses: warehousesRouter,
   contracts: contractsRouter,
+  users: usersRouter,
 });
 
 export type AppRouter = typeof appRouter;
