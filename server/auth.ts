@@ -69,6 +69,76 @@ export const authRouter = t.router({
     return session;
   }),
 
+  me: protectedProcedure.query(async ({ ctx }) => {
+    const orgId = ctx.user.organizationId;
+    if (!orgId) {
+      return {
+        ...ctx.user,
+        roleDetails: null,
+        roleName: ctx.user.platformRole === 'SUPER_ADMIN' ? 'Platform Admin' : 'None',
+        permissionsList: [],
+      };
+    }
+
+    const uor = await ctx.db.userOrganizationRole.findFirst({
+      where: {
+        userId: ctx.user.id,
+        organizationId: orgId,
+        isActive: true,
+        deletedAt: null,
+      },
+      include: {
+        customRole: {
+          select: {
+            id: true,
+            name: true,
+            description: true,
+            icon: true,
+            color: true,
+            isSystem: true,
+            systemKey: true,
+          },
+        },
+      },
+    });
+
+    let permissions;
+    if (ctx.user.platformRole === 'SUPER_ADMIN' || ctx.user.orgRole === 'OWNER') {
+      permissions = await ctx.db.permission.findMany({
+        select: {
+          id: true,
+          code: true,
+          label: true,
+          description: true,
+          module: true,
+        },
+        orderBy: [{ module: 'asc' }, { code: 'asc' }],
+      });
+    } else {
+      permissions = await ctx.db.permission.findMany({
+        where: {
+          code: { in: ctx.user.permissions },
+        },
+        select: {
+          id: true,
+          code: true,
+          label: true,
+          description: true,
+          module: true,
+        },
+        orderBy: [{ module: 'asc' }, { code: 'asc' }],
+      });
+    }
+
+    return {
+      ...ctx.user,
+      roleDetails: uor?.customRole ?? null,
+      roleName: uor?.customRole?.name ?? uor?.role ?? (ctx.user.platformRole === 'SUPER_ADMIN' ? 'Platform Admin' : 'None'),
+      permissionsList: permissions,
+    };
+  }),
+
+
   // ── SIGN OUT ───────────────────────────────────────────────────────────
   signOut: protectedProcedure.mutation(async ({ ctx }) => {
     // Invalidate the session in Better Auth
