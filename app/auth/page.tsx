@@ -1,18 +1,25 @@
-'use server';
+'use client';
+
+import { useTranslations } from 'next-intl';
+import { useRouter } from 'next/navigation';
+import { useEffect } from 'react';
 import SignInTab from '@/app/auth/SignIn';
 import SignUpTab from '@/app/auth/SignUp';
 import Logo from '@/components/Logo';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { getSession } from '@/auth/auth-server';
-import { getTranslations } from 'next-intl/server';
-import { redirect } from 'next/navigation';
+import { useSession } from '@/auth/auth-client';
 
-export default async function Auth() {
-  const session = await getSession();
-  const t = await getTranslations();
-  if (session) {
-    redirect('/app');
-  }
+export default function Auth() {
+  const router = useRouter();
+  const t = useTranslations();
+  const { data: session } = useSession();
+
+  useEffect(() => {
+    if (session) {
+      router.push('/app');
+    }
+  }, [session, router]);
+
   return (
     <div className="relative items-center p-4 ">
       <div className=" relative flex items-center max-sm:justify-center max-[375]:justify-start! text-3xl font-medium gap-2">

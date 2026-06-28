@@ -3,6 +3,7 @@
 import { ChevronsUpDown, LogOut, Moon, Settings, Sun } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import { useTranslations } from 'next-intl';
+import { useRouter } from 'next/navigation';
 import { signOut, useSession } from '@/auth/auth-client';
 import { LocaleSwitcherMenu } from '@/components/locale-switcher';
 import { SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/sidebar';
@@ -20,9 +21,15 @@ import {
 import { Switch } from '@/components/ui/switch';
 
 export function NavUser() {
+  const router = useRouter();
   const t = useTranslations();
   const { theme, setTheme } = useTheme();
   const user = useSession().data?.user;
+
+  const handleSignOut = async () => {
+    await signOut();
+    router.push('/auth');
+  };
 
   const toggleTheme = (e: React.MouseEvent | React.BaseSyntheticEvent) => {
     setTheme(theme === 'dark' ? 'light' : 'dark');
@@ -85,7 +92,7 @@ export function NavUser() {
               <span>{t('layout.settings')}</span>
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem variant="destructive" onClick={() => signOut()}>
+            <DropdownMenuItem variant="destructive" onClick={handleSignOut}>
               <LogOut />
               {t('layout.logOut')}
             </DropdownMenuItem>
