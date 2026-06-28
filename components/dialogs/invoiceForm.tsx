@@ -749,7 +749,7 @@ export function InvoiceFormDialog({
                 {isPending && <Loader2 className="me-2 h-4 w-4 animate-spin" />}
                 {isEdit
                   ? t('invoices.saveChanges')
-                  : t('invoices.createType', {
+                  : t('common.create', {
                       type:
                         invoiceTypeOptions.find((o) => o.value === invoiceType)?.label ??
                         t('invoices.invoice'),

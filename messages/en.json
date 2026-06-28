@@ -9,6 +9,8 @@
     "payment": "Payment",
     "saving": "Saving...",
     "cancel": "Cancel",
+    "warehouse": "Warehouse",
+    "department": "Department",
     "delete": "Delete",
     "edit": "Edit",
     "create": "Create",
@@ -307,6 +309,7 @@
   },
   "invoices": {
     "title": "Invoices",
+    "type": "Type",
     "newInvoice": "New Invoice",
     "createInvoice": "Create Invoice",
     "editInvoice": "Edit Invoice",
@@ -461,7 +464,14 @@
     "price": "Price",
     "selected": "Selected",
     "itemsLower": "items",
-    "addToInvoice": "Add to invoice"
+    "addToInvoice": "Add to invoice",
+    "warehouse": "Warehouse",
+    "date": "Date",
+    "currency": "Currency",
+    "department": "Department",
+    "stock": "Stock",
+    "amount": "Amount",
+    "paymentReceived": "Payment received"
   },
   "customers": {
     "title": "Customers",
@@ -514,8 +524,7 @@
     "deactivateRestoreConfirm": "This customer will be deactivated. You can restore it later.",
     "crNumber": "CR",
     "creditTermsDays": "{days} days",
-    "outstandingInvoices_one": "Outstanding across {count} invoice",
-    "outstandingInvoices_other": "Outstanding across {count} invoices"
+    "outstandingInvoices": "Outstanding across {count, plural, one {# invoice} other {# invoices}}"
   },
   "suppliers": {
     "title": "Suppliers",
@@ -616,9 +625,13 @@
     "failedToLoad": "Failed to load",
     "doesNotExist": "This item does not exist or has been deleted.",
     "deactivateRestoreConfirm": "This item will be deactivated. It can be restored later.",
+    "notStockTracked": "Not stock tracked",
+    "created": "Created",
+    "updated": "Updated",
     "types": {
       "PRODUCT": "Product",
-      "SERVICE": "Service"
+      "SERVICE": "Service",
+      "BUNDLE": "Bundle"
     }
   },
   "purchaseOrders": {
@@ -666,17 +679,8 @@
     "stockMovements": "Stock movements",
     "noLineItems": "No line items",
     "allReceived": "All line items have already been fully received.",
-    "pendingReceipt_one": "{count} line item pending receipt.",
-    "pendingReceipt_other": "{count} line items pending receipt.",
     "toReceive": "To receive",
     "receiveAll": "Receive all ({qty})",
-    "rejectPOTitle": "Reject purchase order",
-    "rejectPODesc": "Provide a reason for rejecting {serial}.",
-    "rejectReasonPlaceholder": "Why is this PO being rejected?",
-    "createdBy": "Created by {name} on {date}",
-    "version": "Version {version}",
-    "receivedOn": "Received on {date}",
-    "cancelledOn": "Cancelled on {date}",
     "confirmAction": "Are you sure you want to {action}?",
     "statuses": {
       "DRAFT": "Draft",
@@ -688,7 +692,17 @@
       "INVOICED": "Invoiced",
       "CANCELLED": "Cancelled",
       "CLOSED": "Closed"
-    }
+    },
+    "metaCreated": "{type} created by {name} on {date}",
+    "metaVersion": "Version {version}",
+    "metaReceivedOn": "Received on {date}",
+    "metaCancelledOn": "Cancelled on {date}",
+    "rejectTitle": "Reject Purchase Order",
+    "rejectDesc": "Provide a reason for rejecting {serial}.",
+    "rejectPlaceholder": "Why is this being rejected?",
+    "rejectPO": "Reject PO",
+    "pendingReceipt": "{count, plural, one {# line item pending receipt} other {# line items pending receipt}}",
+    "warehouse": "Warehouse"
   },
   "contracts": {
     "title": "Contracts",

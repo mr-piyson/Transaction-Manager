@@ -6,7 +6,33 @@
   },
   "common": {
     "save": "حفظ",
-
+    "paymentMethods": {
+      "cash": "نقدي",
+      "card": "بطاقة",
+      "online": "أونلاين",
+      "cheque": "شيك",
+      "other": "أخرى",
+      "credit": "دائن",
+      "bankTransfer": "تحويل بنكي"
+    },
+    "keep": "الاحتفاظ",
+    "discardChanges": "تجاهل التغييرات",
+    "department": "قسم",
+    "warehouse": "المستودع",
+    "monthNames": [
+      "يناير",
+      "فبراير",
+      "مارس",
+      "أبريل",
+      "مايو",
+      "يونيو",
+      "يوليو",
+      "أغسطس",
+      "سبتمبر",
+      "أكتوبر",
+      "نوفمبر",
+      "ديسمبر"
+    ],
     "viewDetails": "عرض التفاصيل",
     "payment": "دفع",
     "saving": "جارٍ الحفظ...",
@@ -244,6 +270,9 @@
     "department": "قسم",
     "stock": "المخزون",
     "paymentMethod": "طريقة الدفع",
+    "paymentAmount": "مبلغ الدفع",
+    "paymentNotes": "ملاحظات الدفع",
+    "approval": "الموافقة",
     "amount": "المبلغ",
     "paymentReference": "رقم المعاملة",
     "quote": "تسفيرة",
@@ -366,7 +395,14 @@
     "price": "السعر",
     "selected": "محدد",
     "itemsLower": "منتجات",
-    "addToInvoice": "إضافة إلى الفاتورة"
+    "addToInvoice": "إضافة إلى الفاتورة",
+    "paymentReceived": "تم استلام الدفعة",
+    "sendDialogTitle": "إرسال الفاتورة",
+    "sendDialogDesc": "يرجى إدخال تفاصيل البريد الإلكتروني لإرسال الفاتورة إلى العميل. يمكنك مراجعة المرفقات ورسالة البريد قبل الإرسال",
+    "amountDue": "المبلغ المستحق",
+    "cancelDialogTitle": "إلغاء الفاتورة",
+    "cancelDialogDesc": "هل أنت متأكد من إلغاء هذه الفاتورة؟",
+    "cancelReasonPlaceholder": "أسباب الإلغاء"
   },
   "customers": {
     "title": "العملاء",
@@ -394,7 +430,8 @@
     "outstandingBalance": "الرصيد المستحق",
     "searchCustomers": "بحث في العملاء...",
     "contactInfo": "معلومات الاتصال",
-    "billingAddress": "عنوان الفوترة"
+    "billingAddress": "عنوان الفوترة",
+    "outstandingInvoices": "المستحق عبر {count, plural, one {# فاتورة} other {# فواتير}}"
   },
   "suppliers": {
     "title": "الموردون",
@@ -454,7 +491,15 @@
     "trackInventory": "تتبع المخزون",
     "brand": "العلامة التجارية",
     "weight": "الوزن",
-    "dimensions": "الأبعاد"
+    "dimensions": "الأبعاد",
+    "notStockTracked": "غير متتبع المخزون",
+    "created": "تم الإنشاء",
+    "updated": "تم التحديث",
+    "types": {
+      "PRODUCT": "منتج",
+      "SERVICE": "خدمة",
+      "BUNDLE": "حزمة"
+    }
   },
   "purchaseOrders": {
     "title": "أوامر الشراء",
@@ -482,7 +527,49 @@
     "poUpdated": "تم تحديث أمر الشراء بنجاح",
     "poDeleted": "تم حذف أمر الشراء بنجاح",
     "searchPOs": "بحث في أوامر الشراء...",
-    "markAsReceived": "تحديد كمستلم"
+    "markAsReceived": "تحديد كمستلم",
+    "failedToLoad": "فشل التحميل",
+    "doesNotExist": "أمر الشراء هذا غير موجود أو تم حذفه.",
+    "submitForApproval": "تقديم للموافقة",
+    "placeOrder": "تقديم الطلب",
+    "receiveStock": "استلام المخزون",
+    "submittedForApproval": "تم تقديم للموافقة",
+    "poApproved": "تمت الموافقة على أمر الشراء",
+    "poRejected": "تم رفض أمر الشراء",
+    "poPlaced": "تم تقديم الطلب — أُرسل إلى المورد",
+    "stockReceived": "تم استلام المخزون",
+    "poCancelled": "تم إلغاء أمر الشراء",
+    "ordered": "مُطلب",
+    "remaining": "المتبقي",
+    "unitCost": "تكلفة الوحدة",
+    "amountOwed": "المبلغ المستحق",
+    "stockMovements": "حركات المخزون",
+    "noLineItems": "لا توجد بنود",
+    "allReceived": "جميع البنود تم استلامها بالكامل.",
+    "toReceive": "للاستلام",
+    "receiveAll": "استلام الكل ({qty})",
+    "confirmAction": "هل أنت متأكد من أنك تريد {action}؟",
+    "statuses": {
+      "DRAFT": "مسودة",
+      "PENDING_APPROVAL": "قيد الموافقة",
+      "APPROVED": "معتمد",
+      "ORDERED": "مُطلب",
+      "PARTIAL_RECEIVED": "مستلم جزئياً",
+      "RECEIVED": "مستلم",
+      "INVOICED": "تمت الفوترة",
+      "CANCELLED": "ملغي",
+      "CLOSED": "مغلق"
+    },
+    "metaCreated": "{type} تم إنشاؤه بواسطة {name} في {date}",
+    "metaVersion": "إصدار {version}",
+    "metaReceivedOn": "تم الاستلام في {date}",
+    "metaCancelledOn": "أُلغي في {date}",
+    "rejectTitle": "رفض أمر الشراء",
+    "rejectDesc": "قدم سبباً لرفض {serial}.",
+    "rejectPlaceholder": "لماذا يتم رفض هذا الأمر؟",
+    "rejectPO": "رفض أمر الشراء",
+    "pendingReceipt": "{count, plural, one {# بند قيد الاستلام} other {# بنود قيد الاستلام}}",
+    "warehouse": "المستودع"
   },
   "contracts": {
     "title": "العقود",

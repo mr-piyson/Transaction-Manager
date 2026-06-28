@@ -314,7 +314,7 @@ export default function InvoicePrintPage() {
               {t('invoices.termsAndConditions')}
             </h3>
             <div
-              className="text-sm [&_ol]:list-decimal [&_ul]:list-disc [&_ol,_&_ul]:pl-5 [&_li]:mb-0.5"
+              className="text-sm [&_ol]:list-decimal [&_ul]:list-disc [&_ol,&_ul]:pl-5 [&_li]:mb-0.5"
               dangerouslySetInnerHTML={{ __html: invoice.termsText || org?.defaultTermsText || '' }}
             />
           </div>

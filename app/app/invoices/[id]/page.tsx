@@ -201,7 +201,13 @@ export function StatusStepper({
               {status === 'OVERDUE' && <AlertCircle className="size-3.5" />}
               {status === 'DISPUTED' && <AlertTriangle className="size-3.5" />}
               {(status === 'CANCELLED' || status === 'DELETED') && <XCircle className="size-3.5" />}
-              {status === 'DELETED' ? t('common.deleted') : status === 'OVERDUE' ? t('invoices.overdue') : status === 'CANCELLED' ? t('invoices.cancelled') : status.replace(/_/g, ' ')}
+              {status === 'DELETED'
+                ? t('common.deleted')
+                : status === 'OVERDUE'
+                  ? t('invoices.overdue')
+                  : status === 'CANCELLED'
+                    ? t('invoices.cancelled')
+                    : status.replace(/_/g, ' ')}
             </Badge>
           </div>
         )}
@@ -354,9 +360,7 @@ export default function InvoiceDetailPage() {
               <Receipt className="size-6" />
             </EmptyMedia>
             <EmptyTitle>{isError ? t('common.errorOccurred') : t('common.notFound')}</EmptyTitle>
-            <EmptyDescription>
-              {error?.message ?? t('errors.notFound')}
-            </EmptyDescription>
+            <EmptyDescription>{error?.message ?? t('errors.notFound')}</EmptyDescription>
           </EmptyHeader>
           <div className="flex gap-2">
             <Button variant="outline" onClick={() => router.push('/app/invoices')}>
@@ -409,11 +413,16 @@ export default function InvoiceDetailPage() {
 
   const getTypeLabel = (type: string) => {
     switch (type) {
-      case 'QUOTE': return t('invoices.quote');
-      case 'INVOICE': return t('invoices.invoice');
-      case 'CREDIT_NOTE': return t('invoices.creditNote');
-      case 'DELIVERY_NOTE': return t('invoices.deliveryNote');
-      default: return t('invoices.invoice');
+      case 'QUOTE':
+        return t('invoices.quote');
+      case 'INVOICE':
+        return t('invoices.invoice');
+      case 'CREDIT_NOTE':
+        return t('invoices.creditNote');
+      case 'DELIVERY_NOTE':
+        return t('invoices.deliveryNote');
+      default:
+        return t('invoices.invoice');
     }
   };
 
@@ -628,7 +637,8 @@ export default function InvoiceDetailPage() {
                   onClick={handleEdit}
                   disabled={isPending}
                 >
-                  {icon}<span className="ml-1">{label}</span>
+                  {icon}
+                  <span className="ml-1">{label}</span>
                 </Button>
               ) : key === 'convertQuote' ? (
                 <Button
@@ -637,7 +647,9 @@ export default function InvoiceDetailPage() {
                   size="sm"
                   onClick={() => {
                     if (
-                      window.confirm(t('invoices.convertToInvoiceTitle', { serial: invoice.serial }))
+                      window.confirm(
+                        t('invoices.convertToInvoiceTitle', { serial: invoice.serial }),
+                      )
                     ) {
                       convertQuoteMutation.mutate({ quoteId: invoice.id });
                     }
@@ -729,7 +741,8 @@ export default function InvoiceDetailPage() {
                 <div className="min-w-0">
                   <p className="text-xs text-muted-foreground">{t('invoices.customer')}</p>
                   <p className="text-sm font-semibold truncate">
-                    {invoice.customer?.name ?? (invoice.isWalkIn ? t('invoices.walkInCustomer') : '—')}
+                    {invoice.customer?.name ??
+                      (invoice.isWalkIn ? t('invoices.walkInCustomer') : '—')}
                   </p>
                   {invoice.customer?.email && (
                     <p className="text-xs text-muted-foreground truncate">
@@ -741,14 +754,14 @@ export default function InvoiceDetailPage() {
               <div className="flex items-start gap-3">
                 <Building2 className="size-4 text-muted-foreground shrink-0 mt-0.5" />
                 <div className="min-w-0">
-                  <p className="text-xs text-muted-foreground">{t('invoices.warehouse')}</p>
+                  <p className="text-xs text-muted-foreground">{t('common.warehouse')}</p>
                   <p className="text-sm font-semibold truncate">{invoice.warehouse?.name ?? '—'}</p>
                 </div>
               </div>
               <div className="flex items-start gap-3">
                 <Calendar className="size-4 text-muted-foreground shrink-0 mt-0.5" />
                 <div className="min-w-0">
-                  <p className="text-xs text-muted-foreground">{t('invoices.date')}</p>
+                  <p className="text-xs text-muted-foreground">{t('common.date')}</p>
                   <p className="text-sm font-semibold truncate">
                     {invoice.date ? format(new Date(invoice.date), 'dd MMM yyyy') : '—'}
                   </p>
@@ -766,14 +779,14 @@ export default function InvoiceDetailPage() {
               <div className="flex items-start gap-3">
                 <Wallet className="size-4 text-muted-foreground shrink-0 mt-0.5" />
                 <div className="min-w-0">
-                  <p className="text-xs text-muted-foreground">{t('invoices.currency')}</p>
+                  <p className="text-xs text-muted-foreground">{t('common.currency')}</p>
                   <p className="text-sm font-semibold">{invoice.currency}</p>
                 </div>
               </div>
               <div className="flex items-start gap-3">
                 <Layers className="size-4 text-muted-foreground shrink-0 mt-0.5" />
                 <div className="min-w-0">
-                  <p className="text-xs text-muted-foreground">{t('invoices.department')}</p>
+                  <p className="text-xs text-muted-foreground">{t('common.department')}</p>
                   <p className="text-sm font-semibold truncate">
                     {invoice.department?.name ?? '—'}
                   </p>
@@ -961,7 +974,9 @@ export default function InvoiceDetailPage() {
                         {format(new Date(payment.date), 'dd MMM yyyy')}
                       </TableCell>
                       <TableCell>
-                        {t(`common.paymentMethods.${payment.method.toLowerCase().replace(/_([a-z])/g, (_: string, c: string) => c.toUpperCase())}`)}
+                        {t(
+                          `common.paymentMethods.${payment.method.toLowerCase().replace(/_([a-z])/g, (_: string, c: string) => c.toUpperCase())}`,
+                        )}
                       </TableCell>
                       <TableCell className="text-right font-medium">
                         {Number(payment.amount).toFixed(3)}
@@ -969,7 +984,7 @@ export default function InvoiceDetailPage() {
                       <TableCell className="text-sm text-muted-foreground">
                         {payment.reference ?? '—'}
                       </TableCell>
-                      <TableCell className="text-sm text-muted-foreground max-w-[200px] truncate">
+                      <TableCell className="text-sm text-muted-foreground max-w-50 truncate">
                         {payment.notes ?? '—'}
                       </TableCell>
                       <TableCell>
@@ -979,9 +994,7 @@ export default function InvoiceDetailPage() {
                           className="size-7 text-muted-foreground hover:text-destructive"
                           disabled={isPending}
                           onClick={() => {
-                            if (
-                              window.confirm(t('invoices.deletePaymentConfirm'))
-                            ) {
+                            if (window.confirm(t('invoices.deletePaymentConfirm'))) {
                               deletePaymentMutation.mutate({ paymentId: payment.id });
                             }
                           }}
@@ -1022,7 +1035,14 @@ export default function InvoiceDetailPage() {
                       <TableCell className="font-medium">{cn.serial}</TableCell>
                       <TableCell>
                         <Badge variant="outline" className={STATUS_COLORS[cn.status] ?? ''}>
-                          {t('invoices.' + cn.status.toLowerCase().replace(/_([a-z])/g, (_: string, c: string) => c.toUpperCase()))}
+                          {t(
+                            ('invoices.' +
+                              cn.status
+                                .toLowerCase()
+                                .replace(/_([a-z])/g, (_: string, c: string) =>
+                                  c.toUpperCase(),
+                                )) as any,
+                          )}
                         </Badge>
                       </TableCell>
                       <TableCell className="text-right font-medium">
@@ -1040,7 +1060,9 @@ export default function InvoiceDetailPage() {
         {invoice.notes && (
           <Card>
             <CardHeader className="pb-1.5">
-              <CardTitle className="text-xs text-muted-foreground font-medium">{t('invoices.notes')}</CardTitle>
+              <CardTitle className="text-xs text-muted-foreground font-medium">
+                {t('invoices.notes')}
+              </CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-sm whitespace-pre-wrap">{invoice.notes}</p>
@@ -1068,15 +1090,28 @@ export default function InvoiceDetailPage() {
         {/* Meta info */}
         <div className="text-xs text-muted-foreground flex flex-wrap gap-x-4 gap-y-1 pb-2">
           <span>
-            {getTypeLabel(invoice.type)} created by {invoice.createdBy?.name ?? '—'} on{' '}
-            {invoice.createdAt ? format(new Date(invoice.createdAt), 'dd MMM yyyy HH:mm') : '—'}
+            {t('invoices.createdBy', {
+              type: getTypeLabel(invoice.type),
+              name: invoice.createdBy?.name ?? '—',
+              date: invoice.createdAt
+                ? format(new Date(invoice.createdAt), 'dd MMM yyyy HH:mm')
+                : '—',
+            })}
           </span>
-          <span>Version {invoice.version}</span>
+          <span>{t('invoices.version', { version: invoice.version })}</span>
           {invoice.sentAt && (
-            <span>Sent on {format(new Date(invoice.sentAt), 'dd MMM yyyy HH:mm')}</span>
+            <span>
+              {t('invoices.sentOn', {
+                date: format(new Date(invoice.sentAt), 'dd MMM yyyy HH:mm'),
+              })}
+            </span>
           )}
           {invoice.cancelledAt && (
-            <span>Cancelled on {format(new Date(invoice.cancelledAt), 'dd MMM yyyy HH:mm')}</span>
+            <span>
+              {t('invoices.cancelledOn', {
+                date: format(new Date(invoice.cancelledAt), 'dd MMM yyyy HH:mm'),
+              })}
+            </span>
           )}
         </div>
       </div>
@@ -1085,7 +1120,9 @@ export default function InvoiceDetailPage() {
       <Dialog open={sendOpen} onOpenChange={(v) => !sendMutation.isPending && setSendOpen(v)}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{t('invoices.sendDialogTitle', { type: getTypeLabel(invoice.type) })}</DialogTitle>
+            <DialogTitle>
+              {t('invoices.sendDialogTitle', { type: getTypeLabel(invoice.type) })}
+            </DialogTitle>
             <DialogDescription>
               {type === 'INVOICE'
                 ? t('invoices.sendDialogDesc')
@@ -1122,7 +1159,9 @@ export default function InvoiceDetailPage() {
       >
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{t('invoices.cancelDialogTitle', { type: getTypeLabel(invoice.type) })}</DialogTitle>
+            <DialogTitle>
+              {t('invoices.cancelDialogTitle', { type: getTypeLabel(invoice.type) })}
+            </DialogTitle>
             <DialogDescription>
               {t('invoices.cancelDialogDesc', { serial: invoice.serial })}
               {type === 'INVOICE' &&
@@ -1180,8 +1219,8 @@ export default function InvoiceDetailPage() {
           <DialogHeader>
             <DialogTitle>{t('invoices.recordPayment')}</DialogTitle>
             <DialogDescription>
-              {invoice.serial} - {t('invoices.outstanding')}:{' '}
-              {Number(invoice.amountDue).toFixed(3)} {invoice.currency}
+              {invoice.serial} - {t('invoices.outstanding')}: {Number(invoice.amountDue).toFixed(3)}{' '}
+              {invoice.currency}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
@@ -1205,11 +1244,15 @@ export default function InvoiceDetailPage() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    {['CASH', 'BANK_TRANSFER', 'CARD', 'CHEQUE', 'ONLINE', 'CREDIT', 'OTHER'].map((value) => (
-                      <SelectItem key={value} value={value}>
-                        {t(`common.paymentMethods.${value.toLowerCase().replace(/_([a-z])/g, (_: string, c: string) => c.toUpperCase())}`)}
-                      </SelectItem>
-                    ))}
+                    {['CASH', 'BANK_TRANSFER', 'CARD', 'CHEQUE', 'ONLINE', 'CREDIT', 'OTHER'].map(
+                      (value) => (
+                        <SelectItem key={value} value={value}>
+                          {t(
+                            `common.paymentMethods.${value.toLowerCase().replace(/_([a-z])/g, (_: string, c: string) => c.toUpperCase())}`,
+                          )}
+                        </SelectItem>
+                      ),
+                    )}
                   </SelectContent>
                 </Select>
               </div>
@@ -1260,7 +1303,9 @@ export default function InvoiceDetailPage() {
                 }
                 if (amount > Number(invoice.amountDue) + 0.000001) {
                   toast.error(
-                    t('invoices.amountExceedsBalance', { balance: Number(invoice.amountDue).toFixed(3) }),
+                    t('invoices.amountExceedsBalance', {
+                      balance: Number(invoice.amountDue).toFixed(3),
+                    }),
                   );
                   return;
                 }

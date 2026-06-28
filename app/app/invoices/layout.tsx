@@ -36,8 +36,6 @@ export default function InvoicesLayout({ children }: { children?: React.ReactNod
     { value: 'all', label: t('invoices.allStatuses') },
     { value: 'INVOICE', label: t('invoices.invoice') },
     { value: 'QUOTE', label: t('invoices.quote') },
-    { value: 'CREDIT_NOTE', label: t('invoices.creditNote') },
-    { value: 'DELIVERY_NOTE', label: t('invoices.deliveryNote') },
   ] as const;
 
   const PAYMENT_STATUSES = [
@@ -159,7 +157,8 @@ export default function InvoicesLayout({ children }: { children?: React.ReactNod
   if (isPrintRoute) return <>{children}</>;
 
   const invoices = Array.isArray(data) ? data : (data?.data ?? []);
-  const activeLabel = PAYMENT_STATUSES.find((s) => s.value === paymentStatus)?.label ?? t('common.all');
+  const activeLabel =
+    PAYMENT_STATUSES.find((s) => s.value === paymentStatus)?.label ?? t('common.all');
 
   const filterBar = (
     <div className="flex flex-col gap-2 border-b px-4 py-2">
@@ -189,7 +188,12 @@ export default function InvoicesLayout({ children }: { children?: React.ReactNod
 
   return (
     <div className="flex h-screen flex-col overflow-hidden">
-      <Header title={t('layout.invoices')} icon={<Receipt className="size-5" />} onCreate={() => openCreate()} createLabel={t('invoices.newInvoice')} />
+      <Header
+        title={t('layout.invoices')}
+        icon={<Receipt className="size-5" />}
+        onCreate={() => openCreate()}
+        createLabel={t('invoices.newInvoice')}
+      />
       <div className="flex-1 min-h-0 w-full">
         <ResizablePanelGroup className="h-full">
           {(isListView || !isMobile) && (
