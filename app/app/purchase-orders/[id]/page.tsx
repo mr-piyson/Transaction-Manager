@@ -267,7 +267,11 @@ export default function PurchaseOrderDetailPage() {
       variant: 'destructive',
     });
   } else if (po.status === 'PENDING_APPROVAL') {
-    actions.push({ label: t('common.approve'), key: 'approve', icon: <CheckCircle className="size-4" /> });
+    actions.push({
+      label: t('common.approve'),
+      key: 'approve',
+      icon: <CheckCircle className="size-4" />,
+    });
     actions.push({
       label: t('common.reject'),
       key: 'reject',
@@ -282,7 +286,11 @@ export default function PurchaseOrderDetailPage() {
       variant: 'destructive',
     });
   } else if (po.status === 'APPROVED') {
-    actions.push({ label: t('purchaseOrders.placeOrder'), key: 'order', icon: <FileDown className="size-4" /> });
+    actions.push({
+      label: t('purchaseOrders.placeOrder'),
+      key: 'order',
+      icon: <FileDown className="size-4" />,
+    });
     actions.push({
       label: t('common.cancel'),
       key: 'cancel',
@@ -335,7 +343,13 @@ export default function PurchaseOrderDetailPage() {
           <div className="flex items-center gap-2">
             {actions.map(({ label, key, icon, variant = 'default', dialog }) =>
               key === 'edit' ? (
-                <Button key={key} variant={variant} size="sm" onClick={handleEdit} disabled={isPending}>
+                <Button
+                  key={key}
+                  variant={variant}
+                  size="sm"
+                  onClick={handleEdit}
+                  disabled={isPending}
+                >
                   <Edit className="size-4 mr-1" /> {label}
                 </Button>
               ) : dialog === 'receive' ? (
@@ -364,7 +378,10 @@ export default function PurchaseOrderDetailPage() {
                   variant={variant}
                   size="sm"
                   onClick={() =>
-                    handleConfirmAction(key, t('purchaseOrders.confirmAction', { action: label.toLowerCase() }))
+                    handleConfirmAction(
+                      key,
+                      t('purchaseOrders.confirmAction', { action: label.toLowerCase() }),
+                    )
                   }
                   disabled={isPending}
                 >
@@ -383,7 +400,9 @@ export default function PurchaseOrderDetailPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
           <Card>
             <CardHeader className="pb-1.5">
-              <CardTitle className="text-xs text-muted-foreground font-medium">{t('purchaseOrders.supplier')}</CardTitle>
+              <CardTitle className="text-xs text-muted-foreground font-medium">
+                {t('purchaseOrders.supplier')}
+              </CardTitle>
             </CardHeader>
             <CardContent>
               <p className="font-semibold">{po.supplier?.name ?? '—'}</p>
@@ -395,7 +414,9 @@ export default function PurchaseOrderDetailPage() {
           </Card>
           <Card>
             <CardHeader className="pb-1.5">
-              <CardTitle className="text-xs text-muted-foreground font-medium">{t('purchaseOrders.warehouse')}</CardTitle>
+              <CardTitle className="text-xs text-muted-foreground font-medium">
+                {t('purchaseOrders.warehouse')}
+              </CardTitle>
             </CardHeader>
             <CardContent>
               <p className="font-semibold">{po.warehouse?.name ?? '—'}</p>
@@ -403,7 +424,9 @@ export default function PurchaseOrderDetailPage() {
           </Card>
           <Card>
             <CardHeader className="pb-1.5">
-              <CardTitle className="text-xs text-muted-foreground font-medium">{t('common.date')}</CardTitle>
+              <CardTitle className="text-xs text-muted-foreground font-medium">
+                {t('common.date')}
+              </CardTitle>
             </CardHeader>
             <CardContent>
               <p className="font-semibold">
@@ -521,7 +544,9 @@ export default function PurchaseOrderDetailPage() {
         {po.notes && (
           <Card>
             <CardHeader className="pb-1.5">
-              <CardTitle className="text-xs text-muted-foreground font-medium">{t('common.notes')}</CardTitle>
+              <CardTitle className="text-xs text-muted-foreground font-medium">
+                {t('common.notes')}
+              </CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-sm whitespace-pre-wrap">{po.notes}</p>
@@ -579,16 +604,25 @@ export default function PurchaseOrderDetailPage() {
         <div className="text-xs text-muted-foreground flex flex-wrap gap-x-4 gap-y-1 pb-2">
           <span>
             {t('purchaseOrders.metaCreated', {
+              type: po.status,
               name: po.createdBy?.name ?? '—',
               date: po.createdAt ? format(new Date(po.createdAt), 'dd MMM yyyy HH:mm') : '—',
             })}
           </span>
           <span>{t('purchaseOrders.metaVersion', { version: po.version })}</span>
           {po.receivedAt && (
-            <span>{t('purchaseOrders.metaReceivedOn', { date: format(new Date(po.receivedAt), 'dd MMM yyyy HH:mm') })}</span>
+            <span>
+              {t('purchaseOrders.metaReceivedOn', {
+                date: format(new Date(po.receivedAt), 'dd MMM yyyy HH:mm'),
+              })}
+            </span>
           )}
           {po.cancelledAt && (
-            <span>{t('purchaseOrders.metaCancelledOn', { date: format(new Date(po.cancelledAt), 'dd MMM yyyy HH:mm') })}</span>
+            <span>
+              {t('purchaseOrders.metaCancelledOn', {
+                date: format(new Date(po.cancelledAt), 'dd MMM yyyy HH:mm'),
+              })}
+            </span>
           )}
         </div>
       </div>
@@ -612,7 +646,9 @@ export default function PurchaseOrderDetailPage() {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>{t('purchaseOrders.rejectTitle')}</DialogTitle>
-            <DialogDescription>{t('purchaseOrders.rejectDesc', { serial: po.serial })}</DialogDescription>
+            <DialogDescription>
+              {t('purchaseOrders.rejectDesc', { serial: po.serial })}
+            </DialogDescription>
           </DialogHeader>
           <div className="space-y-3">
             <Label htmlFor="reject-reason">{t('common.reason')}</Label>
@@ -730,7 +766,12 @@ function ReceiveDialog({
             {allAlreadyReceived
               ? tr('common.close')
               : tr('purchaseOrders.receiveAll', {
-                  qty: remaining.reduce((s: number, l: any) => s + Number(l.quantity) - Number(l.receivedQty), 0).toFixed(3),
+                  qty: remaining
+                    .reduce(
+                      (s: number, l: any) => s + Number(l.quantity) - Number(l.receivedQty),
+                      0,
+                    )
+                    .toFixed(3),
                 })}
           </Button>
         </DialogFooter>
