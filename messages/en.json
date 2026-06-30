@@ -1159,5 +1159,32 @@
     "minutesAgo": "{minutes}m ago",
     "hoursAgo": "{hours}h ago",
     "daysAgo": "{days}d ago"
+  },
+  "apps": {
+    "erp": "ERP",
+    "hr": "HR Management",
+    "switchApp": "Switch App"
+  },
+  "hr": {
+    "title": "Human Resources",
+    "welcome": "HR Management",
+    "welcomeDescription": "Manage your workforce, track attendance, handle leave requests, and process payroll — all in one place.",
+    "dashboard": "Dashboard",
+    "workforce": "Workforce",
+    "employees": "Employees",
+    "departments": "Departments",
+    "timeManagement": "Time & Attendance",
+    "attendance": "Attendance",
+    "leave": "Leave Management",
+    "compensation": "Compensation",
+    "payroll": "Payroll",
+    "recruitment": "Recruitment",
+    "employeesDescription": "Manage employee records and profiles",
+    "departmentsDescription": "Organize teams and departments",
+    "attendanceDescription": "Track daily attendance and hours",
+    "leaveDescription": "Handle leave requests and balances",
+    "payrollDescription": "Process salaries and compensation",
+    "comingSoon": "HR Modules Coming Soon",
+    "comingSoonDescription": "Each HR module will be fully featured with create, read, update, and delete capabilities."
   }
 }

@@ -34,7 +34,11 @@ Transaction-Manager/
 │   │   ├── auth/        # Better Auth API handlers
 │   │   ├── trpc/        # tRPC HTTP adapter (fetch)
 │   │   └── uploads/     # File upload endpoint
-│   ├── app/             # Main dashboard pages
+│   ├── app/             # Main dashboard pages (multi-app)
+│   │   ├── hr/          # HRMS module pages
+│   │   ├── invoices/
+│   │   ├── customers/
+│   │   └── ...
 │   ├── auth/            # Sign-in / sign-up pages
 │   └── setup/           # Org onboarding wizard
 ├── auth/
@@ -74,7 +78,7 @@ Transaction-Manager/
 │   ├── env.ts           # Zod-validated env vars
 │   ├── error.ts         # Typed error hierarchy (AppError base)
 │   ├── files.ts         # File utilities
-│   ├── nav.ts           # Navigation configuration
+│   ├── apps.ts          # Multi-app registry (ERP, HR, ...)
 │   ├── permissions.ts   # Re-exports for type convenience
 │   ├── sequences.ts     # Race-safe document serial generation
 │   ├── upload.ts        # Upload utilities
@@ -82,6 +86,7 @@ Transaction-Manager/
 │   └── validations.ts   # Shared Zod schemas (pagination, etc.)
 ├── server/              # tRPC server routers & services
 │   ├── _root.ts         # App router composition
+│   ├── hr/              # HRMS routers (placeholder)
 │   ├── auth.ts          # Auth router (signIn, signUp, session)
 │   ├── invoices.router.ts
 │   ├── invoices.service.ts   # Stock deduction/return for invoices
@@ -313,6 +318,36 @@ Document serials (e.g. `INV-2025-00042`) use `DocumentSequence` table with `SELE
 ### Multi-tenancy
 
 Every query injects `organizationId` from context (never from client input). All Prisma queries filter by `organizationId` and `deletedAt: null` as baseline guards.
+
+### 9. Multi-App Architecture
+
+The platform supports multiple business applications (ERP, HRMS, etc.) within a single codebase. Each app shares authentication, organization context, and the sidebar layout but has its own routes, sidebar navigation, and tRPC routers.
+
+**App registry** (`lib/apps.ts`):
+- Central `AppInfo[]` array defining each app's slug, name, icon, and routes
+- Each app provides a `getRoutes(t)` function that returns its sidebar `RouteConfig[]`
+- `getAppFromPath(pathname)` detects the active app from the URL path (e.g., `/app/hr/*` → HR, everything else → ERP)
+
+**URL routing**:
+- `/app/*` — ERP module pages (backward compatible, no changes to existing URLs)
+- `/app/hr/*` — HR module pages
+
+**Sidebar** (`app/app/App-Sidebar.tsx`):
+- Dynamically renders routes from the currently active app
+- `AppSwitcher` dropdown in the sidebar header lets users switch between apps
+- Existing route rendering logic (`RouteGroup`, `RouteItem`) is reused across all apps
+
+**i18n namespaces**:
+- `apps.*` — App names and switcher labels
+- `hr.*` — HR module translations (employees, departments, attendance, leave, payroll)
+- Existing `layout.*`, `invoices.*`, etc. remain for ERP
+
+**Adding a new app**:
+1. Define routes in `lib/apps.ts` via a new `getRoutes()` function
+2. Add the app entry to the `apps` array with slug, name key, and icon
+3. Create page components under `app/app/{slug}/`
+4. Add tRPC routers under `server/{slug}/` and wire into `_root.ts`
+5. Add i18n keys to `messages/en.json` and `messages/ar.json`
 
 ---
 

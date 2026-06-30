@@ -1,23 +1,6 @@
 'use client';
 
-import {
-  BarChart3,
-  Bell,
-  Boxes,
-  ChevronDown,
-  FilePenLine,
-  Handshake,
-  LayoutDashboard,
-  type LucideIcon,
-  Package,
-  Settings,
-  ShoppingCart,
-  SidebarIcon,
-  Truck,
-  User,
-  Users,
-  Warehouse,
-} from 'lucide-react';
+import { ChevronDown, SidebarIcon, type LucideIcon } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
@@ -39,9 +22,16 @@ import {
   SidebarRail,
   useSidebar,
 } from '@/components/sidebar';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
 import { Spinner } from '@/components/ui/spinner';
 import type { AppActions, AppSubjects } from '@/lib/permissions';
+import { apps, getAppFromPath } from '@/lib/apps';
 import { cn } from '@/lib/utils';
 import { NavUser } from './User-Options';
 
@@ -71,62 +61,8 @@ export function AppSidebar({ ...props }: AppSidebarProps) {
   const t = useTranslations();
   const isRtl = locale === 'ar';
 
-  const ROUTES: RouteConfig[] = [
-    {
-      type: 'group',
-      label: t('layout.navigation'),
-      children: [
-        { type: 'item', label: t('layout.dashboard'), href: '/app', icon: LayoutDashboard },
-      ],
-    },
-    {
-      type: 'group',
-      label: t('layout.sales'),
-      children: [
-        { type: 'item', label: t('layout.invoices'), href: '/app/invoices', icon: FilePenLine },
-        { type: 'item', label: t('layout.customers'), href: '/app/customers', icon: Users },
-        { type: 'item', label: t('layout.contracts'), href: '/app/contracts', icon: Handshake },
-      ],
-    },
-    {
-      type: 'group',
-      label: t('layout.purchases'),
-      children: [
-        { type: 'item', label: t('layout.purchaseOrders'), href: '/app/purchase-orders', icon: ShoppingCart },
-        { type: 'item', label: t('layout.suppliers'), href: '/app/suppliers', icon: Truck },
-      ],
-    },
-    {
-      type: 'group',
-      label: t('layout.inventory'),
-      children: [
-        { type: 'item', label: t('layout.stockLevels'), href: '/app/stock', icon: Boxes },
-        { type: 'item', label: t('layout.items'), href: '/app/items', icon: Package },
-        { type: 'item', label: t('layout.warehouses'), href: '/app/warehouses', icon: Warehouse },
-      ],
-    },
-    {
-      type: 'group',
-      label: t('layout.analytics'),
-      children: [
-        { type: 'item', label: t('layout.reports'), href: '/app/reports', icon: BarChart3 },
-      ],
-    },
-    {
-      type: 'group',
-      label: t('layout.notifications' as any),
-      children: [
-        { type: 'item', label: t('layout.notifications' as any), href: '/app/notifications', icon: Bell },
-      ],
-    },
-    {
-      type: 'group',
-      label: t('layout.configuration'),
-      children: [
-        { type: 'item', label: t('layout.settings'), href: '/app/settings', icon: Settings },
-      ],
-    },
-  ];
+  const currentApp = getAppFromPath(currentPath);
+  const ROUTES = currentApp.getRoutes(t as (key: string) => string);
 
   useEffect(() => {
     if (loading === currentPath) {
@@ -153,9 +89,7 @@ export function AppSidebar({ ...props }: AppSidebarProps) {
   return (
     <Sidebar side={isRtl ? 'right' : 'left'} collapsible="icon" type="Drawer" {...props}>
       <SidebarHeader>
-        <div className="flex items-center gap-1">
-          <AppLogo />
-        </div>
+        <AppSidebarHeader currentApp={currentApp} t={t as (key: string) => string} isRtl={isRtl} />
       </SidebarHeader>
 
       <SidebarContent>
@@ -365,28 +299,91 @@ function RouteItem({ route, ...shared }: SharedProps & { route: RouteConfig }) {
   );
 }
 
-// ─── Logo ─────────────────────────────────────────────────────────────────────
+// ─── App Switcher ────────────────────────────────────────────────────────────
 
-function AppLogo() {
-  const t = useTranslations();
+function AppSwitcher({
+  currentApp,
+  t,
+}: {
+  currentApp: { slug: string; nameKey: string; icon: LucideIcon };
+  t: (key: string) => string;
+}) {
+  const router = useRouter();
+  const Icon = currentApp.icon;
+
+  const handleSwitch = (slug: string) => {
+    if (slug === currentApp.slug) return;
+    if (slug === 'hr') router.push('/app/hr');
+    else router.push('/app');
+  };
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button
+          variant="ghost"
+          size="sm"
+          className="w-full flex items-center gap-2 px-2 justify-start h-9 data-[state=open]:bg-accent"
+        >
+          <Icon className="size-4 shrink-0" />
+          <span className="text-sm font-medium truncate flex-1 text-left">
+            {t(currentApp.nameKey)}
+          </span>
+          <ChevronDown className="size-3 shrink-0 opacity-50" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="start" side="right" className="w-48">
+        {apps
+          .filter((a) => a.isActive)
+          .map((app) => {
+            const AppIcon = app.icon;
+            return (
+              <DropdownMenuItem
+                key={app.slug}
+                onClick={() => handleSwitch(app.slug)}
+                className={app.slug === currentApp.slug ? 'bg-accent font-medium' : ''}
+              >
+                <AppIcon className="size-4 mr-2" />
+                <span>{t(app.nameKey)}</span>
+              </DropdownMenuItem>
+            );
+          })}
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
+
+// ─── Sidebar Header ─────────────────────────────────────────────────────────
+
+function AppSidebarHeader({
+  currentApp,
+  t,
+  isRtl,
+}: {
+  currentApp: { slug: string; nameKey: string; icon: LucideIcon };
+  t: (key: string) => string;
+  isRtl: boolean;
+}) {
   return (
     <SidebarMenu>
       <SidebarMenuItem>
-        <Link href={'/app'}>
+        <Link href={currentApp.slug === 'hr' ? '/app/hr' : '/app'}>
           <SidebarMenuButton
             size="lg"
-            dir="ltr"
+            dir={isRtl ? 'rtl' : 'ltr'}
             className="flex flex-row opacity-100! data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
           >
             <div className="flex aspect-square size-8 items-center justify-center rounded-lg text-sidebar-primary-foreground">
               <Logo className="size-7!" />
             </div>
-
-            <div className="grid flex-1 text-left text-sm leading-tight ">
+            <div className="grid flex-1 text-left text-sm leading-tight">
               <span className="truncate font-semibold text-lg">{t('layout.appTitle')}</span>
             </div>
           </SidebarMenuButton>
         </Link>
+      </SidebarMenuItem>
+      <SidebarMenuItem>
+        <AppSwitcher currentApp={currentApp} t={t} />
       </SidebarMenuItem>
     </SidebarMenu>
   );

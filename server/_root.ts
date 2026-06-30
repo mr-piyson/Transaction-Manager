@@ -2,6 +2,7 @@ import { t } from '@/lib/trpc/context';
 import { authRouter } from './auth';
 import { contractsRouter } from './contracts.router';
 import { customersRouter } from './customers.router';
+import { hrRouter } from './hr';
 import { invoicesRouter } from './invoices.router';
 import { usersRouter } from './users.router';
 import { itemsRouter } from './items';
@@ -19,6 +20,7 @@ export const appRouter = t.router({
   auth: authRouter,
   categories: categoriesRouter,
   customers: customersRouter,
+  hr: hrRouter,
   invoices: invoicesRouter,
   items: itemsRouter,
   notifications: notificationsRouter,
