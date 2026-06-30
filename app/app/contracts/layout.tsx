@@ -35,7 +35,7 @@ export default function ContractsLayout({ children }: { children?: React.ReactNo
   const activeCustomerId = searchParams.get('customerId') ?? undefined;
 
   const { data, isPending } = trpc.contracts.list.useQuery({
-    status: activeStatus && activeStatus !== 'expiringSoon' ? activeStatus as any : undefined,
+    status: activeStatus && activeStatus !== 'expiringSoon' ? (activeStatus as any) : undefined,
     expiringSoon: activeStatus === 'expiringSoon' ? true : undefined,
     customerId: activeCustomerId,
   });
@@ -116,7 +116,7 @@ export default function ContractsLayout({ children }: { children?: React.ReactNo
                     className="h-full"
                     useTheme
                     searchFields={['serial', 'title'] as any}
-                    rowHeight={73}
+                    rowHeight={80}
                     emptyTitle={t('contracts.noContracts')}
                     emptyDescription={t('contracts.createContract')}
                     emptyIcon={<User2 className="size-20 text-muted-foreground" />}

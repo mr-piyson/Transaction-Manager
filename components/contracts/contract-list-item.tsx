@@ -3,6 +3,7 @@ import type { HTMLAttributes } from 'react';
 import { cn } from '@/lib/utils';
 import { format, isAfter, differenceInDays } from 'date-fns';
 import { ContractStatusBadge } from './contract-status-badge';
+import { Progress } from '@/components/ui/progress';
 
 interface ContractListItemProps extends HTMLAttributes<HTMLDivElement> {
   data?: any;
@@ -12,6 +13,10 @@ export function ContractListItem({ data, className, ...props }: ContractListItem
   const { customer, serial, title, startDate, endDate, contractValue, currency, status, renewalAlertDays, renewalDate } = data || {};
   const expired = status === 'EXPIRED' || status === 'TERMINATED';
   const isActive = status === 'ACTIVE';
+
+  const totalDays = startDate && endDate ? differenceInDays(new Date(endDate), new Date(startDate)) : 0;
+  const daysRemaining = endDate ? differenceInDays(new Date(endDate), new Date()) : 0;
+  const progressPct = totalDays > 0 ? Math.max(0, Math.min(100, ((totalDays - Math.max(0, daysRemaining)) / totalDays) * 100)) : 0;
 
   const daysUntilRenewal = renewalDate && isActive
     ? differenceInDays(new Date(renewalDate), new Date())
@@ -39,6 +44,7 @@ export function ContractListItem({ data, className, ...props }: ContractListItem
           {startDate ? format(new Date(startDate), 'dd MMM yyyy') : '—'}
           {endDate ? ` → ${format(new Date(endDate), 'dd MMM yyyy')}` : ''}
         </p>
+        <Progress value={progressPct} className="h-1.5 mt-1" />
       </div>
       <div className="text-right shrink-0">
         <p className="font-semibold">{Number(contractValue ?? 0).toFixed(3)} {currency}</p>
