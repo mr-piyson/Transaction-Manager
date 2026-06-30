@@ -12,7 +12,7 @@ This document describes the architecture, major design decisions, module structu
 | **Language** | TypeScript 5.9 |
 | **API Layer** | tRPC v11 (end-to-end typesafe RPC) |
 | **ORM** | Prisma 7 (PostgreSQL provider) |
-| **Auth** | Better Auth v1.6 (email/password + JWT plugin) |
+| **Auth** | Better Auth v1.6 (email/password + JWT plugin + admin plugin) |
 | **Authorization** | CASL (ability-based permissions) |
 | **Forms** | React Hook Form + Zod |
 | **UI** | Radix UI / Base UI + Tailwind CSS 4 + Framer Motion |
@@ -171,9 +171,28 @@ Browser → Next.js App Router → tRPC fetch adapter → createContext → midd
 
 ### 3. Authentication (Better Auth)
 
-- `auth/auth-server.ts`: Configures Better Auth with Prisma adapter, email/password, and JWT plugin. Defines custom user fields: `organizationId`, `firstName`, `lastName`, `isActive`.
+- `auth/auth-server.ts`: Configures Better Auth with Prisma adapter, email/password, JWT plugin, and admin plugin. Defines custom user fields: `organizationId`, `firstName`, `lastName`, `isActive`.
 - `auth/auth-client.ts`: Creates browser client with dynamic `baseURL` detection.
-- `server/auth.ts`: tRPC router wrapping `auth.api.signInEmail`, `auth.api.signUpEmail`, `getSession`.
+- `server/auth.ts`: tRPC router wrapping `auth.api.signInEmail`, `auth.api.signUpEmail`, `getSession`, and other session/password management endpoints.
+
+**Admin plugin** (`better-auth/plugins/admin`):
+- Configured with `defaultRole: 'admin'` and `adminRoles: ['admin']` (permissive — all users get full admin-level access to better-auth's built-in permissions).
+- Adds a `role` column to the `User` table with default `'admin'`.
+- Enables admin API endpoints: `createUser`, `setUserPassword`, `adminUpdateUser`, `banUser`, `unbanUser`, `listUsers`, `removeUser`, etc.
+- Permission checks (`hasPermission`) use the user's `role` field against the admin plugin's access control; since default roles grant `'admin'` access to all `user` and `session` statements, every user can perform admin operations.
+
+**User management flows**:
+
+| Flow | Mechanism |
+|------|-----------|
+| **Org setup** (`organizations.router.ts:setup`) | `auth.api.signUpEmail()` creates the initial SUPER_ADMIN user with a credential account and session. The user is then updated via Prisma to set `platformRole: 'SUPER_ADMIN'`, `role: 'admin'`, and an `OWNER` org membership. |
+| **Create user** (`users.router.ts:create`) | Uses `auth.api.createUser()` (admin plugin) for new users with a password — no session created, handles hashing and account creation internally. Custom fields (`firstName`, `lastName`, `organizationId`, `isActive`) are passed in the `data` object. Users without a password are created directly via Prisma with `role: 'admin'`. |
+| **Update user** (`users.router.ts:update`) | Direct Prisma update for profile fields + `UserOrganizationRole` for role assignments. When email changes, the credential account's `accountId` is also updated to stay in sync. |
+| **Set password** (`users.router.ts:setPassword`) | `auth.api.setUserPassword()` (admin plugin) — delegates hashing and account management to better-auth. |
+| **Send password reset** (`users.router.ts:sendPasswordReset`) | `auth.api.requestPasswordReset()` — triggers better-auth's email-based reset flow. |
+| **Toggle active** / **Delete** | Direct Prisma soft-delete / `isActive` toggle (better-auth has no equivalent for our custom `isActive` field or soft-delete pattern). |
+
+**Note on role separation**: Better Auth's admin plugin `role` field controls access to better-auth admin endpoints only. Application-level authorization (per-module permissions like `invoice:create`) is handled separately via CASL and the `UserOrganizationRole` / `Permission` tables — the admin plugin role does not affect CASL ability checks.
 
 ### 4. Authorization (CASL)
 
@@ -200,7 +219,8 @@ Each domain has a tRPC router following consistent patterns:
 
 | Module | Router File | Key Operations |
 |---|---|---|
-| Auth | `auth.ts` | signIn, signUp, getSession |
+| Auth | `auth.ts` | signIn, signUp, session, me, signOut, updateProfile, changePassword, listSessions, revokeSession, revokeOtherSessions |
+| Users | `users.router.ts` | list, create, update, setPassword, sendPasswordReset, toggleActive, delete; roles CRUD; permissions list; rolePermissions list/update |
 | Invoices | `invoices.router.ts` | list, byId, create, update, send, cancel, convertQuote, delete, addPayment, deletePayment, arAging |
 | Customers | `customers.router.ts` | list, byId, create, update, delete |
 | Suppliers | `suppliers.router.ts` | list, byId, create, update, delete, addItem, updateItem, removeItem |
@@ -209,7 +229,7 @@ Each domain has a tRPC router following consistent patterns:
 | Warehouses | `warehouses.router.ts` | list, byId, create, update, delete |
 | Purchase Orders | `purchase-orders.router.ts` | list, byId, create, update, order, receive, cancel, addPayment, deletePayment |
 | Contracts | `contracts.router.ts` | list, byId, create, update, delete |
-| Organizations | `organizations.router.ts` | setup (onboarding wizard) |
+| Organizations | `organizations.router.ts` | setup (onboarding — creates org + SUPER_ADMIN via `auth.api.signUpEmail`) |
 | Settings | `settings.router.ts` | getOrg, updateOrg, taxRates CRUD, ledgerAccounts CRUD |
 | Reports | `reports.router.ts` | summary (dashboard), sales, inventory |
 
