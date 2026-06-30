@@ -1,5 +1,6 @@
 import { hashPassword } from 'better-auth/crypto';
 import { z } from 'zod';
+import { auth } from '@/auth/auth-server';
 import { ForbiddenError, NotFoundError } from '@/lib/error';
 import { assertCan, orgProcedure, router } from '@/lib/trpc/context';
 import { writeAuditLog } from './audit.service';
@@ -58,51 +59,104 @@ export const usersRouter = router({
         }
       }
 
-      return ctx.db.$transaction(async (tx) => {
-        let user;
-
-        if (existingUser) {
-          user = await tx.user.update({
+      if (existingUser) {
+        return ctx.db.$transaction(async (tx) => {
+          const user = await tx.user.update({
             where: { id: existingUser.id },
             data: {
               name: input.name,
-              firstName: input.firstName,
-              lastName: input.lastName,
+            firstName: input.firstName ?? '',
+            lastName: input.lastName ?? '',
               isActive: input.isActive,
               organizationId: orgId,
               locale: 'en',
             },
             include: userRoleInclude(orgId),
           });
-        } else {
-          user = await tx.user.create({
-            data: {
-              name: input.name,
-              email: input.email,
-              firstName: input.firstName,
-              lastName: input.lastName,
-              isActive: input.isActive,
-              organizationId: orgId,
-              locale: 'en',
-              userOrganizationRoles: {
-                create: { roleId: input.roleId, organizationId: orgId },
+
+          if (input.password) {
+            const hashed = await hashPassword(input.password);
+            const existingAccount = existingUser
+              ? await tx.account.findFirst({ where: { userId: existingUser.id, providerId: 'credential' }, select: { id: true } })
+              : null;
+            await tx.account.upsert({
+              where: { id: existingAccount?.id ?? '' },
+              create: { userId: user.id, providerId: 'credential', accountId: input.email, password: hashed },
+              update: { password: hashed },
+            });
+          }
+
+          await writeAuditLog(
+            { entityType: 'User', entityId: user.id, action: 'CREATE', organizationId: orgId, userId: ctx.user.id, ipAddress: ctx.ipAddress },
+            tx,
+          );
+
+          return tx.user.findUnique({
+            where: { id: user.id },
+            include: {
+              ...userRoleInclude(orgId),
+              accounts: {
+                where: { providerId: 'credential' },
+                select: { id: true },
               },
             },
-            include: userRoleInclude(orgId),
           });
-        }
+        });
+      }
 
-        if (input.password) {
-          const hashed = await hashPassword(input.password);
-          const existingAccount = existingUser
-            ? await tx.account.findFirst({ where: { userId: existingUser.id, providerId: 'credential' }, select: { id: true } })
-            : null;
-          await tx.account.upsert({
-            where: { id: existingAccount?.id ?? '' },
-            create: { userId: user.id, providerId: 'credential', accountId: input.email, password: hashed },
-            update: { password: hashed },
+      if (input.password) {
+        const { user } = await auth.api.signUpEmail({
+          body: {
+            name: input.name,
+            email: input.email,
+            password: input.password,
+            firstName: input.firstName ?? '',
+            lastName: input.lastName ?? '',
+            organizationId: orgId,
+            isActive: input.isActive,
+          },
+          headers: ctx.req.headers,
+        });
+
+        return ctx.db.$transaction(async (tx) => {
+          await tx.userOrganizationRole.create({
+            data: { userId: user.id, organizationId: orgId, roleId: input.roleId },
           });
-        }
+
+          await writeAuditLog(
+            { entityType: 'User', entityId: user.id, action: 'CREATE', organizationId: orgId, userId: ctx.user.id, ipAddress: ctx.ipAddress },
+            tx,
+          );
+
+          return tx.user.findUnique({
+            where: { id: user.id },
+            include: {
+              ...userRoleInclude(orgId),
+              accounts: {
+                where: { providerId: 'credential' },
+                select: { id: true },
+              },
+            },
+          });
+        });
+      }
+
+      return ctx.db.$transaction(async (tx) => {
+        const user = await tx.user.create({
+          data: {
+            name: input.name,
+            email: input.email,
+            firstName: input.firstName,
+            lastName: input.lastName,
+            isActive: input.isActive,
+            organizationId: orgId,
+            locale: 'en',
+            userOrganizationRoles: {
+              create: { roleId: input.roleId, organizationId: orgId },
+            },
+          },
+          include: userRoleInclude(orgId),
+        });
 
         await writeAuditLog(
           { entityType: 'User', entityId: user.id, action: 'CREATE', organizationId: orgId, userId: ctx.user.id, ipAddress: ctx.ipAddress },
