@@ -20,7 +20,7 @@ export default function UserSettingsPage() {
 
   const groupedPermissions = useMemo(() => {
     if (!me?.permissionsList) return {};
-    return me.permissionsList.reduce<Record<string, typeof me.permissionsList>>((acc, p) => {
+    return (me.permissionsList as any[]).reduce<Record<string, any[]>>((acc, p: any) => {
       const module = p.module || 'Other';
       if (!acc[module]) acc[module] = [];
       acc[module].push(p);
