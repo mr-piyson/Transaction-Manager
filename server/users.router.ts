@@ -246,12 +246,6 @@ export const usersRouter = router({
 
       const existing = await ctx.db.user.findFirst({
         where: { id, organizationId: orgId, deletedAt: null },
-        include: {
-          userOrganizationRoles: {
-            where: { organizationId: orgId, deletedAt: null },
-            select: { id: true, roleId: true },
-          },
-        },
       });
       if (!existing) throw new NotFoundError('User', id);
       if (existing.platformRole === 'SUPER_ADMIN')
@@ -261,12 +255,15 @@ export const usersRouter = router({
         await tx.user.update({ where: { id }, data });
 
         if (roleId) {
-          const existingRole = existing.userOrganizationRoles[0];
+          const existingRole = await tx.userOrganizationRole.findFirst({
+            where: { userId: id, organizationId: orgId },
+            select: { id: true, roleId: true, deletedAt: true },
+          });
           if (existingRole) {
-            if (existingRole.roleId !== roleId) {
+            if (existingRole.roleId !== roleId || existingRole.deletedAt) {
               await tx.userOrganizationRole.update({
                 where: { id: existingRole.id },
-                data: { roleId },
+                data: { roleId, deletedAt: null, isActive: true },
               });
             }
           } else {
