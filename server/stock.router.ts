@@ -12,33 +12,33 @@ import { writeAuditLog } from './audit.service';
 const listStockSchema = z.object({
   ...offsetPaginationSchema.shape,
   search: z.string().optional(),
-  warehouseId: z.string().cuid().optional(),
-  categoryId: z.string().cuid().optional(),
+  warehouseId: z.cuid2().optional(),
+  categoryId: z.cuid2().optional(),
   lowStock: z.boolean().optional(),
   sortBy: z.enum(['itemName', 'warehouseName', 'quantity', 'updatedAt']).default('itemName'),
   sortOrder: sortOrderSchema,
 });
 
 const adjustStockSchema = z.object({
-  itemId: z.string().cuid(),
-  warehouseId: z.string().cuid(),
+  itemId: z.cuid2(),
+  warehouseId: z.cuid2(),
   quantity: z.number().min(0, 'Quantity must be 0 or greater'),
   reason: z.string().max(500).optional(),
 });
 
 const transferStockSchema = z.object({
-  itemId: z.string().cuid(),
-  fromWarehouseId: z.string().cuid(),
-  toWarehouseId: z.string().cuid(),
+  itemId: z.cuid2(),
+  fromWarehouseId: z.cuid2(),
+  toWarehouseId: z.cuid2(),
   quantity: z.number().positive('Quantity must be positive'),
   notes: z.string().max(500).optional(),
 });
 
 const listMovementsSchema = z.object({
   ...offsetPaginationSchema.shape,
-  itemId: z.string().cuid().optional(),
+  itemId: z.cuid2().optional(),
   type: z.string().optional(),
-  warehouseId: z.string().cuid().optional(),
+  warehouseId: z.cuid2().optional(),
   dateFrom: z.coerce.date().optional(),
   dateTo: z.coerce.date().optional(),
   sortBy: z.enum(['createdAt', 'type']).default('createdAt'),
@@ -58,7 +58,12 @@ export const stockRouter = router({
       deletedAt: null,
       ...(categoryId ? { categoryId } : {}),
       ...(search
-        ? { OR: [{ name: { contains: search, mode: 'insensitive' as const } }, { sku: { contains: search, mode: 'insensitive' as const } }] }
+        ? {
+            OR: [
+              { name: { contains: search, mode: 'insensitive' as const } },
+              { sku: { contains: search, mode: 'insensitive' as const } },
+            ],
+          }
         : {}),
     };
 
@@ -73,13 +78,23 @@ export const stockRouter = router({
         where: stockWhere,
         skip,
         take,
-        orderBy: sortBy === 'itemName'
-          ? { item: { name: sortOrder } }
-          : sortBy === 'warehouseName'
-            ? { warehouse: { name: sortOrder } }
-            : { [sortBy]: sortOrder },
+        orderBy:
+          sortBy === 'itemName'
+            ? { item: { name: sortOrder } }
+            : sortBy === 'warehouseName'
+              ? { warehouse: { name: sortOrder } }
+              : { [sortBy]: sortOrder },
         include: {
-          item: { select: { id: true, sku: true, name: true, unit: true, reorderPoint: true, image: true } },
+          item: {
+            select: {
+              id: true,
+              sku: true,
+              name: true,
+              unit: true,
+              reorderPoint: true,
+              image: true,
+            },
+          },
           warehouse: { select: { id: true, name: true } },
         },
       }),
@@ -97,18 +112,16 @@ export const stockRouter = router({
     return paginatedResponse(enriched, total, pagination);
   }),
 
-  byItem: orgProcedure
-    .input(z.object({ itemId: z.string().cuid() }))
-    .query(async ({ ctx, input }) => {
-      assertCan(ctx.ability, 'stock:read', 'Stock');
+  byItem: orgProcedure.input(z.object({ itemId: z.cuid2() })).query(async ({ ctx, input }) => {
+    assertCan(ctx.ability, 'stock:read', 'Stock');
 
-      const stocks = await ctx.db.stock.findMany({
-        where: { itemId: input.itemId, organizationId: ctx.user.organizationId },
-        include: { warehouse: { select: { id: true, name: true, isDefault: true } } },
-      });
+    const stocks = await ctx.db.stock.findMany({
+      where: { itemId: input.itemId, organizationId: ctx.user.organizationId },
+      include: { warehouse: { select: { id: true, name: true, isDefault: true } } },
+    });
 
-      return { stocks, totalQuantity: stocks.reduce((s, r) => s + Number(r.quantity), 0) };
-    }),
+    return { stocks, totalQuantity: stocks.reduce((s, r) => s + Number(r.quantity), 0) };
+  }),
 
   movements: orgProcedure.input(listMovementsSchema).query(async ({ ctx, input }) => {
     assertCan(ctx.ability, 'stock:read', 'Stock');
@@ -121,9 +134,16 @@ export const stockRouter = router({
       organizationId: orgId,
       ...(itemId ? { itemId } : {}),
       ...(type ? { type } : {}),
-      ...(warehouseId ? { OR: [{ fromWarehouseId: warehouseId }, { toWarehouseId: warehouseId }] } : {}),
+      ...(warehouseId
+        ? { OR: [{ fromWarehouseId: warehouseId }, { toWarehouseId: warehouseId }] }
+        : {}),
       ...(dateFrom || dateTo
-        ? { createdAt: { ...(dateFrom ? { gte: dateFrom } : {}), ...(dateTo ? { lte: dateTo } : {}) } }
+        ? {
+            createdAt: {
+              ...(dateFrom ? { gte: dateFrom } : {}),
+              ...(dateTo ? { lte: dateTo } : {}),
+            },
+          }
         : {}),
     };
 
@@ -185,7 +205,12 @@ export const stockRouter = router({
 
       const updated = await tx.stock.upsert({
         where: { itemId_warehouseId: { itemId: input.itemId, warehouseId: input.warehouseId } },
-        create: { itemId: input.itemId, warehouseId: input.warehouseId, organizationId: orgId, quantity: input.quantity },
+        create: {
+          itemId: input.itemId,
+          warehouseId: input.warehouseId,
+          organizationId: orgId,
+          quantity: input.quantity,
+        },
         update: { quantity: input.quantity, version: { increment: 1 } },
       });
 
@@ -194,7 +219,10 @@ export const stockRouter = router({
           entityType: 'Stock',
           entityId: `${input.itemId}_${input.warehouseId}`,
           action: 'UPDATE',
-          diff: { quantity: { before: currentQty, after: input.quantity }, reason: { before: null, after: input.reason } },
+          diff: {
+            quantity: { before: currentQty, after: input.quantity },
+            reason: { before: null, after: input.reason },
+          },
           organizationId: orgId,
           userId: ctx.user.id,
           ipAddress: ctx.ipAddress,
@@ -224,7 +252,9 @@ export const stockRouter = router({
 
       const available = Number(sourceStock?.quantity ?? 0);
       if (available < input.quantity) {
-        throw new UnprocessableError(`Insufficient stock: have ${available}, need ${input.quantity}.`);
+        throw new UnprocessableError(
+          `Insufficient stock: have ${available}, need ${input.quantity}.`,
+        );
       }
 
       const outMovement = await tx.stockMovement.create({
@@ -266,7 +296,12 @@ export const stockRouter = router({
 
       await tx.stock.upsert({
         where: { itemId_warehouseId: { itemId: input.itemId, warehouseId: input.toWarehouseId } },
-        create: { itemId: input.itemId, warehouseId: input.toWarehouseId, organizationId: orgId, quantity: input.quantity },
+        create: {
+          itemId: input.itemId,
+          warehouseId: input.toWarehouseId,
+          organizationId: orgId,
+          quantity: input.quantity,
+        },
         update: { quantity: { increment: input.quantity }, version: { increment: 1 } },
       });
 
@@ -275,7 +310,11 @@ export const stockRouter = router({
           entityType: 'Stock',
           entityId: `${input.itemId}_TRANSFER`,
           action: 'UPDATE',
-          diff: { fromWarehouseId: { before: null, after: input.fromWarehouseId }, toWarehouseId: { before: null, after: input.toWarehouseId }, quantity: { before: null, after: input.quantity } },
+          diff: {
+            fromWarehouseId: { before: null, after: input.fromWarehouseId },
+            toWarehouseId: { before: null, after: input.toWarehouseId },
+            quantity: { before: null, after: input.quantity },
+          },
           organizationId: orgId,
           userId: ctx.user.id,
           ipAddress: ctx.ipAddress,
@@ -293,8 +332,8 @@ export const stockRouter = router({
   forItems: orgProcedure
     .input(
       z.object({
-        itemIds: z.array(z.string().cuid()),
-        warehouseId: z.string().cuid(),
+        itemIds: z.array(z.cuid2()),
+        warehouseId: z.cuid2(),
       }),
     )
     .query(async ({ ctx, input }) => {

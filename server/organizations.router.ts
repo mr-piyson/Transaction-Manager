@@ -99,7 +99,7 @@ export const organizationsRouter = router({
       z.object({
         name: z.string().min(2).optional(),
         phone: z.string().optional(),
-        email: z.string().email().optional().or(z.literal('')).optional(),
+        email: z.email().optional().or(z.literal('')).optional(),
         website: z.string().optional().or(z.literal('')).optional(),
         taxId: z.string().optional(),
         crNumber: z.string().optional(),

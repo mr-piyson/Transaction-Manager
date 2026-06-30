@@ -31,7 +31,7 @@ import { writeAuditLog } from './audit.service';
 // ---------------------------------------------------------------------------
 
 const bundleLineSchema = z.object({
-  componentItemId: z.string().cuid(),
+  componentItemId: z.cuid2(),
   quantity: decimalSchema,
 });
 
@@ -49,14 +49,14 @@ const itemBaseSchema = z.object({
   minStock: z.number().int().min(0).default(0),
   reorderPoint: z.number().int().min(0).default(0),
   reorderQty: z.number().int().min(0).default(0),
-  categoryId: z.string().cuid().optional(),
-  familyId: z.string().cuid().optional(),
-  classId: z.string().cuid().optional(),
-  commodityId: z.string().cuid().optional(),
-  taxRateId: z.string().cuid().optional(),
-  revenueAccountId: z.string().cuid().optional(),
-  cogsAccountId: z.string().cuid().optional(),
-  inventoryAccountId: z.string().cuid().optional(),
+  categoryId: z.cuid2().optional(),
+  familyId: z.cuid2().optional(),
+  classId: z.cuid2().optional(),
+  commodityId: z.cuid2().optional(),
+  taxRateId: z.cuid2().optional(),
+  revenueAccountId: z.cuid2().optional(),
+  cogsAccountId: z.cuid2().optional(),
+  inventoryAccountId: z.cuid2().optional(),
   bundleLines: z.array(bundleLineSchema).optional(),
 });
 
@@ -69,9 +69,9 @@ const listItemsSchema = z.object({
   ...offsetPaginationSchema.shape,
   search: z.string().optional(),
   type: z.enum(['PRODUCT', 'SERVICE', 'BUNDLE']).optional(),
-  categoryId: z.string().cuid().optional(),
+  categoryId: z.cuid2().optional(),
   isActive: z.boolean().optional(),
-  supplierId: z.string().cuid().optional(),
+  supplierId: z.cuid2().optional(),
   isSaleable: z.boolean().optional(),
   lowStock: z.boolean().optional(), // Filter items below reorderPoint
   sortBy: z.enum(['name', 'sku', 'salesPrice', 'createdAt']).default('name'),
@@ -203,7 +203,7 @@ export const itemsRouter = router({
 
   // ── GET BY ID ─────────────────────────────────────────────────────────────
   byId: orgProcedure
-    .input(z.object({ id: z.string().cuid(), withStock: z.boolean().default(true) }))
+    .input(z.object({ id: z.cuid2(), withStock: z.boolean().default(true) }))
     .query(async ({ ctx, input }) => {
       assertCan(ctx.ability, 'item:read', 'Item');
 
@@ -282,8 +282,8 @@ export const itemsRouter = router({
   resolvePrice: orgProcedure
     .input(
       z.object({
-        itemId: z.string().cuid(),
-        customerId: z.string().cuid().optional(),
+        itemId: z.cuid2(),
+        customerId: z.cuid2().optional(),
         quantity: z.number().positive().default(1),
       }),
     )
@@ -479,64 +479,62 @@ export const itemsRouter = router({
   }),
 
   // ── SOFT DELETE ───────────────────────────────────────────────────────────
-  delete: orgProcedure
-    .input(z.object({ id: z.string().cuid() }))
-    .mutation(async ({ ctx, input }) => {
-      const existing = await ctx.db.item.findFirst({
-        where: {
-          id: input.id,
+  delete: orgProcedure.input(z.object({ id: z.cuid2() })).mutation(async ({ ctx, input }) => {
+    const existing = await ctx.db.item.findFirst({
+      where: {
+        id: input.id,
+        organizationId: ctx.user.organizationId,
+        deletedAt: null,
+      },
+      select: {
+        id: true,
+        organizationId: true,
+        _count: {
+          select: {
+            stock: { where: { quantity: { gt: 0 } } },
+          },
+        },
+      },
+    });
+    if (!existing) throw new NotFoundError('Item', input.id);
+
+    assertCan(ctx.ability, 'item:delete', 'Item', existing as Record<string, unknown>);
+
+    if (existing._count.stock > 0) {
+      throw new ConflictError(
+        'Cannot delete item: it has stock on hand. Adjust stock to zero first.',
+      );
+    }
+
+    await ctx.db.$transaction(async (tx) => {
+      await tx.item.update({
+        where: { id: input.id },
+        data: {
+          deletedAt: new Date(),
+          isActive: false,
+          updatedById: ctx.user.id,
+        },
+      });
+
+      await writeAuditLog(
+        {
+          entityType: 'Item',
+          entityId: input.id,
+          action: 'DELETE',
           organizationId: ctx.user.organizationId,
-          deletedAt: null,
+          userId: ctx.user.id,
+          ipAddress: ctx.ipAddress,
         },
-        select: {
-          id: true,
-          organizationId: true,
-          _count: {
-            select: {
-              stock: { where: { quantity: { gt: 0 } } },
-            },
-          },
-        },
-      });
-      if (!existing) throw new NotFoundError('Item', input.id);
+        tx,
+      );
+    });
 
-      assertCan(ctx.ability, 'item:delete', 'Item', existing as Record<string, unknown>);
-
-      if (existing._count.stock > 0) {
-        throw new ConflictError(
-          'Cannot delete item: it has stock on hand. Adjust stock to zero first.',
-        );
-      }
-
-      await ctx.db.$transaction(async (tx) => {
-        await tx.item.update({
-          where: { id: input.id },
-          data: {
-            deletedAt: new Date(),
-            isActive: false,
-            updatedById: ctx.user.id,
-          },
-        });
-
-        await writeAuditLog(
-          {
-            entityType: 'Item',
-            entityId: input.id,
-            action: 'DELETE',
-            organizationId: ctx.user.organizationId,
-            userId: ctx.user.id,
-            ipAddress: ctx.ipAddress,
-          },
-          tx,
-        );
-      });
-
-      return { success: true };
-    }),
+    return { success: true };
+  }),
 
   // ── STOCK SUMMARY ─────────────────────────────────────────────────────────
   stockSummary: orgProcedure
-    .input(z.object({ itemId: z.string().cuid() }))
+    .input(z.object({ itemId: z.cuid2() }))
     .query(async ({ ctx, input }) => {
       assertCan(ctx.ability, 'stock:read', 'Stock');
 

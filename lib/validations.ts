@@ -165,7 +165,7 @@ export const offsetPaginationSchema = z.object({
 });
 
 export const cursorPaginationSchema = z.object({
-  cursor: z.string().cuid().optional(),
+  cursor: z.cuid2().optional(),
   limit: z.number().int().min(1).max(200).default(25),
 });
 
@@ -203,7 +203,7 @@ export type SortOrder = z.infer<typeof sortOrderSchema>;
 // Common field schemas
 // ---------------------------------------------------------------------------
 
-export const cuidSchema = z.string().cuid();
+export const cuidSchema = z.cuid2();
 export const decimalSchema = z
   .number()
   .or(z.string().regex(/^\d+(\.\d+)?$/))

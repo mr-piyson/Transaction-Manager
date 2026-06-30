@@ -11,15 +11,19 @@ import {
   toPrismaPage,
 } from '@/lib/validations';
 import { writeAuditLog } from './audit.service';
-import { createNotification, NOTIFICATION_SETTINGS_KEYS, NOTIFICATION_TYPES } from './notifications.shared';
+import {
+  createNotification,
+  NOTIFICATION_SETTINGS_KEYS,
+  NOTIFICATION_TYPES,
+} from './notifications.shared';
 
 const purchaseLineInputSchema = z.object({
-  itemId: z.string().cuid(),
+  itemId: z.cuid2(),
   description: z.string().max(1000).optional(),
   quantity: z.number().positive(),
   unitCost: z.number().min(0),
   taxAmt: z.number().min(0).default(0),
-  taxRateId: z.string().cuid().optional(),
+  taxRateId: z.cuid2().optional(),
   taxRateSnapshot: z.number().min(0).optional(),
   taxRateName: z.string().optional(),
 });
@@ -40,7 +44,7 @@ const purchaseOrderBaseSchema = z.object({
 const createPurchaseOrderSchema = purchaseOrderBaseSchema;
 
 const updatePurchaseOrderSchema = purchaseOrderBaseSchema.partial().extend({
-  id: z.string().cuid(),
+  id: z.cuid2(),
   version: z.number().int(),
   lines: z.array(purchaseLineInputSchema).min(1).optional(),
 });
@@ -61,7 +65,7 @@ const listPurchaseOrdersSchema = z.object({
       'CLOSED',
     ])
     .optional(),
-  supplierId: z.string().cuid().optional(),
+  supplierId: z.cuid2().optional(),
   sortBy: z.enum(['date', 'serial', 'total', 'createdAt', 'expectedDate']).default('date'),
   sortOrder: sortOrderSchema,
 });
@@ -117,7 +121,7 @@ export const purchaseOrdersRouter = router({
     return paginatedResponse(orders, total, pagination);
   }),
 
-  byId: orgProcedure.input(z.object({ id: z.string().cuid() })).query(async ({ ctx, input }) => {
+  byId: orgProcedure.input(z.object({ id: z.cuid2() })).query(async ({ ctx, input }) => {
     assertCan(ctx.ability, 'po:read', 'PurchaseOrder');
 
     const order = await ctx.db.purchaseOrder.findFirst({
@@ -142,24 +146,22 @@ export const purchaseOrdersRouter = router({
     return order;
   }),
 
-  stockMovements: orgProcedure
-    .input(z.object({ id: z.string().cuid() }))
-    .query(async ({ ctx, input }) => {
-      assertCan(ctx.ability, 'stock:read', 'StockMovement');
-      return ctx.db.stockMovement.findMany({
-        where: {
-          purchaseLine: { purchaseOrderId: input.id },
-          organizationId: ctx.user.organizationId,
-        },
-        include: {
-          item: { select: { id: true, sku: true, name: true } },
-          toWarehouse: { select: { id: true, name: true } },
-          user: { select: { id: true, name: true } },
-        },
-        orderBy: { createdAt: 'desc' },
-        take: 200,
-      });
-    }),
+  stockMovements: orgProcedure.input(z.object({ id: z.cuid2() })).query(async ({ ctx, input }) => {
+    assertCan(ctx.ability, 'stock:read', 'StockMovement');
+    return ctx.db.stockMovement.findMany({
+      where: {
+        purchaseLine: { purchaseOrderId: input.id },
+        organizationId: ctx.user.organizationId,
+      },
+      include: {
+        item: { select: { id: true, sku: true, name: true } },
+        toWarehouse: { select: { id: true, name: true } },
+        user: { select: { id: true, name: true } },
+      },
+      orderBy: { createdAt: 'desc' },
+      take: 200,
+    });
+  }),
 
   create: orgProcedure.input(createPurchaseOrderSchema).mutation(async ({ ctx, input }) => {
     assertCan(ctx.ability, 'po:create', 'PurchaseOrder');
@@ -344,7 +346,7 @@ export const purchaseOrdersRouter = router({
   }),
 
   submitForApproval: orgProcedure
-    .input(z.object({ id: z.string().cuid(), version: z.number().int() }))
+    .input(z.object({ id: z.cuid2(), version: z.number().int() }))
     .mutation(async ({ ctx, input }) => {
       const orgId = ctx.user.organizationId;
 
@@ -359,7 +361,10 @@ export const purchaseOrdersRouter = router({
       if (po.version !== input.version) throw new StaleDataError('PurchaseOrder');
 
       const notifApprovalReq = await ctx.db.organizationSetting.findFirst({
-        where: { organizationId: orgId, key: NOTIFICATION_SETTINGS_KEYS[NOTIFICATION_TYPES.APPROVAL_REQUEST] },
+        where: {
+          organizationId: orgId,
+          key: NOTIFICATION_SETTINGS_KEYS[NOTIFICATION_TYPES.APPROVAL_REQUEST],
+        },
         select: { value: true },
       });
 
@@ -402,7 +407,7 @@ export const purchaseOrdersRouter = router({
     }),
 
   approve: orgProcedure
-    .input(z.object({ id: z.string().cuid(), version: z.number().int() }))
+    .input(z.object({ id: z.cuid2(), version: z.number().int() }))
     .mutation(async ({ ctx, input }) => {
       const orgId = ctx.user.organizationId;
 
@@ -419,7 +424,10 @@ export const purchaseOrdersRouter = router({
       if (po.version !== input.version) throw new StaleDataError('PurchaseOrder');
 
       const notifApproved = await ctx.db.organizationSetting.findFirst({
-        where: { organizationId: orgId, key: NOTIFICATION_SETTINGS_KEYS[NOTIFICATION_TYPES.PO_APPROVED] },
+        where: {
+          organizationId: orgId,
+          key: NOTIFICATION_SETTINGS_KEYS[NOTIFICATION_TYPES.PO_APPROVED],
+        },
         select: { value: true },
       });
 
@@ -462,9 +470,7 @@ export const purchaseOrdersRouter = router({
     }),
 
   reject: orgProcedure
-    .input(
-      z.object({ id: z.string().cuid(), version: z.number().int(), reason: z.string().optional() }),
-    )
+    .input(z.object({ id: z.cuid2(), version: z.number().int(), reason: z.string().optional() }))
     .mutation(async ({ ctx, input }) => {
       const orgId = ctx.user.organizationId;
 
@@ -475,11 +481,16 @@ export const purchaseOrdersRouter = router({
       if (!po) throw new NotFoundError('PurchaseOrder', input.id);
       assertCan(ctx.ability, 'po:approve', 'PurchaseOrder', po as Record<string, unknown>);
       if (po.status !== 'PENDING_APPROVAL')
-        throw new UnprocessableError(`PO must be PENDING_APPROVAL to reject. Current: ${po.status}`);
+        throw new UnprocessableError(
+          `PO must be PENDING_APPROVAL to reject. Current: ${po.status}`,
+        );
       if (po.version !== input.version) throw new StaleDataError('PurchaseOrder');
 
       const notifRejected = await ctx.db.organizationSetting.findFirst({
-        where: { organizationId: orgId, key: NOTIFICATION_SETTINGS_KEYS[NOTIFICATION_TYPES.PO_REJECTED] },
+        where: {
+          organizationId: orgId,
+          key: NOTIFICATION_SETTINGS_KEYS[NOTIFICATION_TYPES.PO_REJECTED],
+        },
         select: { value: true },
       });
 
@@ -509,7 +520,10 @@ export const purchaseOrdersRouter = router({
             entityType: 'PurchaseOrder',
             entityId: input.id,
             action: 'STATUS_CHANGE',
-            diff: { status: { before: po.status, after: 'DRAFT' }, reason: { before: null, after: input.reason } },
+            diff: {
+              status: { before: po.status, after: 'DRAFT' },
+              reason: { before: null, after: input.reason },
+            },
             organizationId: orgId,
             userId: ctx.user.id,
             ipAddress: ctx.ipAddress,
@@ -522,7 +536,7 @@ export const purchaseOrdersRouter = router({
     }),
 
   order: orgProcedure
-    .input(z.object({ id: z.string().cuid(), version: z.number().int() }))
+    .input(z.object({ id: z.cuid2(), version: z.number().int() }))
     .mutation(async ({ ctx, input }) => {
       const orgId = ctx.user.organizationId;
 
@@ -536,7 +550,10 @@ export const purchaseOrdersRouter = router({
       if (po.version !== input.version) throw new StaleDataError('PurchaseOrder');
 
       const notifOrdered = await ctx.db.organizationSetting.findFirst({
-        where: { organizationId: orgId, key: NOTIFICATION_SETTINGS_KEYS[NOTIFICATION_TYPES.PO_ORDERED] },
+        where: {
+          organizationId: orgId,
+          key: NOTIFICATION_SETTINGS_KEYS[NOTIFICATION_TYPES.PO_ORDERED],
+        },
         select: { value: true },
       });
 
@@ -574,7 +591,7 @@ export const purchaseOrdersRouter = router({
     }),
 
   receive: orgProcedure
-    .input(z.object({ id: z.string().cuid(), version: z.number().int() }))
+    .input(z.object({ id: z.cuid2(), version: z.number().int() }))
     .mutation(async ({ ctx, input }) => {
       const orgId = ctx.user.organizationId;
 
@@ -589,7 +606,10 @@ export const purchaseOrdersRouter = router({
       if (po.version !== input.version) throw new StaleDataError('PurchaseOrder');
 
       const notifReceived = await ctx.db.organizationSetting.findFirst({
-        where: { organizationId: orgId, key: NOTIFICATION_SETTINGS_KEYS[NOTIFICATION_TYPES.PO_RECEIVED] },
+        where: {
+          organizationId: orgId,
+          key: NOTIFICATION_SETTINGS_KEYS[NOTIFICATION_TYPES.PO_RECEIVED],
+        },
         select: { value: true },
       });
 
@@ -697,9 +717,7 @@ export const purchaseOrdersRouter = router({
     }),
 
   cancel: orgProcedure
-    .input(
-      z.object({ id: z.string().cuid(), version: z.number().int(), reason: z.string().optional() }),
-    )
+    .input(z.object({ id: z.cuid2(), version: z.number().int(), reason: z.string().optional() }))
     .mutation(async ({ ctx, input }) => {
       const orgId = ctx.user.organizationId;
 
@@ -714,7 +732,10 @@ export const purchaseOrdersRouter = router({
       if (po.version !== input.version) throw new StaleDataError('PurchaseOrder');
 
       const notifCancelled = await ctx.db.organizationSetting.findFirst({
-        where: { organizationId: orgId, key: NOTIFICATION_SETTINGS_KEYS[NOTIFICATION_TYPES.PO_CANCELLED] },
+        where: {
+          organizationId: orgId,
+          key: NOTIFICATION_SETTINGS_KEYS[NOTIFICATION_TYPES.PO_CANCELLED],
+        },
         select: { value: true },
       });
 
@@ -756,36 +777,33 @@ export const purchaseOrdersRouter = router({
       });
     }),
 
-  delete: orgProcedure
-    .input(z.object({ id: z.string().cuid() }))
-    .mutation(async ({ ctx, input }) => {
-      const existing = await ctx.db.purchaseOrder.findFirst({
-        where: { id: input.id, organizationId: ctx.user.organizationId, deletedAt: null },
-        select: { id: true, status: true },
-      });
-      if (!existing) throw new NotFoundError('PurchaseOrder', input.id);
-      assertCan(ctx.ability, 'po:delete', 'PurchaseOrder', existing as Record<string, unknown>);
-      if (existing.status !== 'DRAFT')
-        throw new UnprocessableError('Only DRAFT POs can be deleted.');
+  delete: orgProcedure.input(z.object({ id: z.cuid2() })).mutation(async ({ ctx, input }) => {
+    const existing = await ctx.db.purchaseOrder.findFirst({
+      where: { id: input.id, organizationId: ctx.user.organizationId, deletedAt: null },
+      select: { id: true, status: true },
+    });
+    if (!existing) throw new NotFoundError('PurchaseOrder', input.id);
+    assertCan(ctx.ability, 'po:delete', 'PurchaseOrder', existing as Record<string, unknown>);
+    if (existing.status !== 'DRAFT') throw new UnprocessableError('Only DRAFT POs can be deleted.');
 
-      await ctx.db.$transaction(async (tx) => {
-        await tx.purchaseOrder.update({
-          where: { id: input.id },
-          data: { deletedAt: new Date(), status: 'CANCELLED' },
-        });
-        await writeAuditLog(
-          {
-            entityType: 'PurchaseOrder',
-            entityId: input.id,
-            action: 'DELETE',
-            organizationId: ctx.user.organizationId,
-            userId: ctx.user.id,
-            ipAddress: ctx.ipAddress,
-          },
-          tx,
-        );
+    await ctx.db.$transaction(async (tx) => {
+      await tx.purchaseOrder.update({
+        where: { id: input.id },
+        data: { deletedAt: new Date(), status: 'CANCELLED' },
       });
+      await writeAuditLog(
+        {
+          entityType: 'PurchaseOrder',
+          entityId: input.id,
+          action: 'DELETE',
+          organizationId: ctx.user.organizationId,
+          userId: ctx.user.id,
+          ipAddress: ctx.ipAddress,
+        },
+        tx,
+      );
+    });
 
-      return { success: true };
-    }),
+    return { success: true };
+  }),
 });

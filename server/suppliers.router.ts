@@ -15,7 +15,7 @@ const supplierBaseSchema = z.object({
   name: z.string().min(1).max(255),
   code: z.string().max(50).optional(),
   phone: z.string().max(50).optional(),
-  email: z.string().email().optional().or(z.literal('')).optional(),
+  email: z.email().optional().or(z.literal('')).optional(),
   contactName: z.string().max(255).optional(),
   website: z.string().max(255).optional(),
   taxId: z.string().max(100).optional(),
@@ -27,7 +27,7 @@ const supplierBaseSchema = z.object({
 
 const createSupplierSchema = supplierBaseSchema;
 const updateSupplierSchema = supplierBaseSchema.partial().extend({
-  id: z.string().cuid(),
+  id: z.cuid2(),
 });
 
 const listSuppliersSchema = z.object({
@@ -72,7 +72,7 @@ export const suppliersRouter = router({
     return paginatedResponse(suppliers, total, pagination);
   }),
 
-  byId: orgProcedure.input(z.object({ id: z.string().cuid() })).query(async ({ ctx, input }) => {
+  byId: orgProcedure.input(z.object({ id: z.cuid2() })).query(async ({ ctx, input }) => {
     assertCan(ctx.ability, 'po:read', 'all');
 
     const supplier = await ctx.db.supplier.findFirst({
@@ -157,7 +157,12 @@ export const suppliersRouter = router({
 
     if (data.code && data.code !== existing.code) {
       const conflict = await ctx.db.supplier.findFirst({
-        where: { code: data.code, organizationId: ctx.user.organizationId, deletedAt: null, NOT: { id } },
+        where: {
+          code: data.code,
+          organizationId: ctx.user.organizationId,
+          deletedAt: null,
+          NOT: { id },
+        },
         select: { id: true },
       });
       if (conflict) throw new ConflictError(`Supplier code "${data.code}" is already in use.`);
@@ -182,12 +187,18 @@ export const suppliersRouter = router({
     });
   }),
 
-  delete: orgProcedure.input(z.object({ id: z.string().cuid() })).mutation(async ({ ctx, input }) => {
+  delete: orgProcedure.input(z.object({ id: z.cuid2() })).mutation(async ({ ctx, input }) => {
     const existing = await ctx.db.supplier.findFirst({
       where: { id: input.id, organizationId: ctx.user.organizationId, deletedAt: null },
       select: {
         id: true,
-        _count: { select: { purchaseOrders: { where: { deletedAt: null, status: { notIn: ['CANCELLED', 'CLOSED'] } } } } },
+        _count: {
+          select: {
+            purchaseOrders: {
+              where: { deletedAt: null, status: { notIn: ['CANCELLED', 'CLOSED'] } },
+            },
+          },
+        },
       },
     });
     if (!existing) throw new NotFoundError('Supplier', input.id);
@@ -199,7 +210,10 @@ export const suppliersRouter = router({
     }
 
     await ctx.db.$transaction(async (tx) => {
-      await tx.supplier.update({ where: { id: input.id }, data: { deletedAt: new Date(), isActive: false } });
+      await tx.supplier.update({
+        where: { id: input.id },
+        data: { deletedAt: new Date(), isActive: false },
+      });
 
       await writeAuditLog(
         {
@@ -222,8 +236,8 @@ export const suppliersRouter = router({
   addSupplierItem: orgProcedure
     .input(
       z.object({
-        supplierId: z.string().cuid(),
-        itemId: z.string().cuid(),
+        supplierId: z.cuid2(),
+        itemId: z.cuid2(),
         supplierSku: z.string().max(100).optional(),
         supplierName: z.string().max(255).optional(),
         basePrice: decimalSchema,
@@ -289,7 +303,7 @@ export const suppliersRouter = router({
   updateSupplierItem: orgProcedure
     .input(
       z.object({
-        id: z.string().cuid(),
+        id: z.cuid2(),
         supplierSku: z.string().max(100).optional(),
         supplierName: z.string().max(255).optional(),
         basePrice: decimalSchema.optional(),
@@ -329,7 +343,7 @@ export const suppliersRouter = router({
     }),
 
   deleteSupplierItem: orgProcedure
-    .input(z.object({ id: z.string().cuid() }))
+    .input(z.object({ id: z.cuid2() }))
     .mutation(async ({ ctx, input }) => {
       const existing = await ctx.db.supplierItem.findFirst({
         where: { id: input.id, organizationId: ctx.user.organizationId, deletedAt: null },

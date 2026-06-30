@@ -8,7 +8,14 @@ import { toast } from 'sonner';
 import { z } from 'zod';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { Field } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -19,7 +26,7 @@ const schema = z.object({
   name: z.string().min(1, 'Name is required'),
   code: z.string().optional(),
   phone: z.string().optional(),
-  email: z.string().email().or(z.literal('')).optional(),
+  email: z.email().or(z.literal('')).optional(),
   contactName: z.string().optional(),
   website: z.string().optional(),
   taxId: z.string().optional(),
@@ -35,7 +42,9 @@ interface ValidationAlertProps {
 }
 
 function ValidationAlert({ errors }: ValidationAlertProps) {
-  const messages = Object.values(errors).map((e) => e?.message).filter(Boolean) as string[];
+  const messages = Object.values(errors)
+    .map((e) => e?.message)
+    .filter(Boolean) as string[];
   if (messages.length === 0) return null;
   return (
     <Alert variant="destructive" className="mb-4">
@@ -43,7 +52,9 @@ function ValidationAlert({ errors }: ValidationAlertProps) {
       <AlertTitle>Please fix the following</AlertTitle>
       <AlertDescription>
         <ul className="mt-1 list-disc pl-4 space-y-0.5 text-sm">
-          {messages.map((msg) => <li key={msg}>{msg}</li>)}
+          {messages.map((msg) => (
+            <li key={msg}>{msg}</li>
+          ))}
         </ul>
       </AlertDescription>
     </Alert>
@@ -57,11 +68,21 @@ export interface SupplierFormDialogProps {
   onSuccess?: (supplierId: string) => void;
 }
 
-export function SupplierFormDialog({ open, onOpenChange, supplier, onSuccess }: SupplierFormDialogProps) {
+export function SupplierFormDialog({
+  open,
+  onOpenChange,
+  supplier,
+  onSuccess,
+}: SupplierFormDialogProps) {
   const isEdit = Boolean(supplier?.id);
   const utils = trpc.useUtils();
 
-  const { register, handleSubmit, reset, formState: { errors, isSubmitting } } = useForm<SupplierFormValues>({
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors, isSubmitting },
+  } = useForm<SupplierFormValues>({
     resolver: zodResolver(schema) as any,
     defaultValues: defaults(supplier),
   });
@@ -77,7 +98,9 @@ export function SupplierFormDialog({ open, onOpenChange, supplier, onSuccess }: 
       onSuccess?.(data.id);
       onOpenChange(false);
     },
-    onError(err) { toast.error('Failed to create supplier', { description: err.message }); },
+    onError(err) {
+      toast.error('Failed to create supplier', { description: err.message });
+    },
   });
 
   const updateMutation = trpc.suppliers.update.useMutation({
@@ -87,7 +110,9 @@ export function SupplierFormDialog({ open, onOpenChange, supplier, onSuccess }: 
       onSuccess?.(data.id);
       onOpenChange(false);
     },
-    onError(err) { toast.error('Failed to update supplier', { description: err.message }); },
+    onError(err) {
+      toast.error('Failed to update supplier', { description: err.message });
+    },
   });
 
   const isPending = isSubmitting || createMutation.isPending || updateMutation.isPending;
@@ -106,7 +131,9 @@ export function SupplierFormDialog({ open, onOpenChange, supplier, onSuccess }: 
         <DialogHeader>
           <DialogTitle>{isEdit ? 'Edit supplier' : 'New supplier'}</DialogTitle>
           <DialogDescription>
-            {isEdit ? 'Update the details below and save.' : 'Fill in the details to create a new supplier.'}
+            {isEdit
+              ? 'Update the details below and save.'
+              : 'Fill in the details to create a new supplier.'}
           </DialogDescription>
         </DialogHeader>
 
@@ -116,7 +143,12 @@ export function SupplierFormDialog({ open, onOpenChange, supplier, onSuccess }: 
           <div className="space-y-4">
             <Field>
               <Label htmlFor="name">Name *</Label>
-              <Input id="name" placeholder="Supplier name" aria-invalid={!!errors.name} {...register('name')} />
+              <Input
+                id="name"
+                placeholder="Supplier name"
+                aria-invalid={!!errors.name}
+                {...register('name')}
+              />
             </Field>
 
             <div className="grid grid-cols-2 gap-3">
@@ -126,7 +158,13 @@ export function SupplierFormDialog({ open, onOpenChange, supplier, onSuccess }: 
               </Field>
               <Field>
                 <Label htmlFor="paymentTermsDays">Payment terms (days)</Label>
-                <Input id="paymentTermsDays" type="number" min={0} max={365} {...register('paymentTermsDays')} />
+                <Input
+                  id="paymentTermsDays"
+                  type="number"
+                  min={0}
+                  max={365}
+                  {...register('paymentTermsDays')}
+                />
               </Field>
             </div>
 
@@ -137,7 +175,12 @@ export function SupplierFormDialog({ open, onOpenChange, supplier, onSuccess }: 
               </Field>
               <Field>
                 <Label htmlFor="email">Email</Label>
-                <Input id="email" type="email" placeholder="supplier@example.com" {...register('email')} />
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="supplier@example.com"
+                  {...register('email')}
+                />
               </Field>
             </div>
 
@@ -165,12 +208,25 @@ export function SupplierFormDialog({ open, onOpenChange, supplier, onSuccess }: 
 
             <Field>
               <Label htmlFor="notes">Notes</Label>
-              <Textarea id="notes" placeholder="Internal notes..." className="resize-none" rows={3} {...register('notes')} />
+              <Textarea
+                id="notes"
+                placeholder="Internal notes..."
+                className="resize-none"
+                rows={3}
+                {...register('notes')}
+              />
             </Field>
           </div>
 
           <DialogFooter className="mt-6">
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={isPending}>Cancel</Button>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => onOpenChange(false)}
+              disabled={isPending}
+            >
+              Cancel
+            </Button>
             <Button type="submit" disabled={isPending}>
               {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               {isEdit ? 'Save changes' : 'Create supplier'}
@@ -184,7 +240,9 @@ export function SupplierFormDialog({ open, onOpenChange, supplier, onSuccess }: 
 
 // Provider + Hook
 
-interface OpenOptions { onSuccess?: (id: string) => void; }
+interface OpenOptions {
+  onSuccess?: (id: string) => void;
+}
 
 interface SupplierFormContextValue {
   openCreate: (options?: OpenOptions) => void;
@@ -206,9 +264,12 @@ export function SupplierFormProvider({ children }: { children?: React.ReactNode 
     setState({ open: true, supplier: undefined, onSuccess: options?.onSuccess });
   }, []);
 
-  const openEdit = React.useCallback((supplier: { id: string } & Partial<SupplierFormValues>, options?: OpenOptions) => {
-    setState({ open: true, supplier, onSuccess: options?.onSuccess });
-  }, []);
+  const openEdit = React.useCallback(
+    (supplier: { id: string } & Partial<SupplierFormValues>, options?: OpenOptions) => {
+      setState({ open: true, supplier, onSuccess: options?.onSuccess });
+    },
+    [],
+  );
 
   const handleOpenChange = React.useCallback((open: boolean) => {
     setState((prev) => ({ ...prev, open }));
@@ -217,7 +278,12 @@ export function SupplierFormProvider({ children }: { children?: React.ReactNode 
   return (
     <SupplierFormContext.Provider value={{ openCreate, openEdit }}>
       {children}
-      <SupplierFormDialog open={state.open} onOpenChange={handleOpenChange} supplier={state.supplier} onSuccess={state.onSuccess} />
+      <SupplierFormDialog
+        open={state.open}
+        onOpenChange={handleOpenChange}
+        supplier={state.supplier}
+        onSuccess={state.onSuccess}
+      />
     </SupplierFormContext.Provider>
   );
 }
@@ -239,6 +305,7 @@ function defaults(supplier?: { id: string } & Partial<SupplierFormValues>): Supp
     taxId: supplier?.taxId ?? undefined,
     crNumber: supplier?.crNumber ?? undefined,
     notes: supplier?.notes ?? undefined,
-    paymentTermsDays: typeof supplier?.paymentTermsDays === 'number' ? supplier.paymentTermsDays : 30,
+    paymentTermsDays:
+      typeof supplier?.paymentTermsDays === 'number' ? supplier.paymentTermsDays : 30,
   };
 }

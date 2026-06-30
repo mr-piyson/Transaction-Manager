@@ -15,9 +15,17 @@ const ledgerAccountBaseSchema = z.object({
   code: z.string().min(1).max(20),
   name: z.string().min(1).max(255),
   description: z.string().max(500).optional(),
-  type: z.enum(['ASSET', 'LIABILITY', 'EQUITY', 'REVENUE', 'EXPENSE', 'CONTRA_ASSET', 'CONTRA_REVENUE']),
+  type: z.enum([
+    'ASSET',
+    'LIABILITY',
+    'EQUITY',
+    'REVENUE',
+    'EXPENSE',
+    'CONTRA_ASSET',
+    'CONTRA_REVENUE',
+  ]),
   normalBalance: z.enum(['DEBIT', 'CREDIT']),
-  parentId: z.string().cuid().optional(),
+  parentId: z.cuid2().optional(),
   isActive: z.boolean().default(true),
 });
 
@@ -74,7 +82,10 @@ export const settingsRouter = router({
 
       return ctx.db.$transaction(async (tx) => {
         if (input.isDefault) {
-          await tx.taxRate.updateMany({ where: { organizationId: orgId, isDefault: true }, data: { isDefault: false } });
+          await tx.taxRate.updateMany({
+            where: { organizationId: orgId, isDefault: true },
+            data: { isDefault: false },
+          });
         }
 
         const created = await tx.taxRate.create({
@@ -82,7 +93,14 @@ export const settingsRouter = router({
         });
 
         await writeAuditLog(
-          { entityType: 'TaxRate', entityId: created.id, action: 'CREATE', organizationId: orgId, userId: ctx.user.id, ipAddress: ctx.ipAddress },
+          {
+            entityType: 'TaxRate',
+            entityId: created.id,
+            action: 'CREATE',
+            organizationId: orgId,
+            userId: ctx.user.id,
+            ipAddress: ctx.ipAddress,
+          },
           tx,
         );
 
@@ -91,7 +109,7 @@ export const settingsRouter = router({
     }),
 
     update: orgProcedure
-      .input(taxRateBaseSchema.partial().extend({ id: z.string().cuid() }))
+      .input(taxRateBaseSchema.partial().extend({ id: z.cuid2() }))
       .mutation(async ({ ctx, input }) => {
         const { id, ...data } = input;
         const orgId = ctx.user.organizationId;
@@ -101,13 +119,23 @@ export const settingsRouter = router({
 
         return ctx.db.$transaction(async (tx) => {
           if (data.isDefault) {
-            await tx.taxRate.updateMany({ where: { organizationId: orgId, isDefault: true, NOT: { id } }, data: { isDefault: false } });
+            await tx.taxRate.updateMany({
+              where: { organizationId: orgId, isDefault: true, NOT: { id } },
+              data: { isDefault: false },
+            });
           }
 
           const updated = await tx.taxRate.update({ where: { id }, data });
 
           await writeAuditLog(
-            { entityType: 'TaxRate', entityId: id, action: 'UPDATE', organizationId: orgId, userId: ctx.user.id, ipAddress: ctx.ipAddress },
+            {
+              entityType: 'TaxRate',
+              entityId: id,
+              action: 'UPDATE',
+              organizationId: orgId,
+              userId: ctx.user.id,
+              ipAddress: ctx.ipAddress,
+            },
             tx,
           );
 
@@ -115,7 +143,7 @@ export const settingsRouter = router({
         });
       }),
 
-    delete: orgProcedure.input(z.object({ id: z.string().cuid() })).mutation(async ({ ctx, input }) => {
+    delete: orgProcedure.input(z.object({ id: z.cuid2() })).mutation(async ({ ctx, input }) => {
       const existing = await ctx.db.taxRate.findFirst({
         where: { id: input.id, organizationId: ctx.user.organizationId },
         select: { id: true, isDefault: true },
@@ -126,7 +154,14 @@ export const settingsRouter = router({
       await ctx.db.$transaction(async (tx) => {
         await tx.taxRate.update({ where: { id: input.id }, data: { isActive: false } });
         await writeAuditLog(
-          { entityType: 'TaxRate', entityId: input.id, action: 'DELETE', organizationId: ctx.user.organizationId, userId: ctx.user.id, ipAddress: ctx.ipAddress },
+          {
+            entityType: 'TaxRate',
+            entityId: input.id,
+            action: 'DELETE',
+            organizationId: ctx.user.organizationId,
+            userId: ctx.user.id,
+            ipAddress: ctx.ipAddress,
+          },
           tx,
         );
       });
@@ -155,10 +190,19 @@ export const settingsRouter = router({
       if (existing) throw new ConflictError(`Account code "${input.code}" already exists.`);
 
       return ctx.db.$transaction(async (tx) => {
-        const created = await tx.ledgerAccount.create({ data: { ...input, organizationId: orgId } });
+        const created = await tx.ledgerAccount.create({
+          data: { ...input, organizationId: orgId },
+        });
 
         await writeAuditLog(
-          { entityType: 'LedgerAccount', entityId: created.id, action: 'CREATE', organizationId: orgId, userId: ctx.user.id, ipAddress: ctx.ipAddress },
+          {
+            entityType: 'LedgerAccount',
+            entityId: created.id,
+            action: 'CREATE',
+            organizationId: orgId,
+            userId: ctx.user.id,
+            ipAddress: ctx.ipAddress,
+          },
           tx,
         );
 
@@ -167,17 +211,26 @@ export const settingsRouter = router({
     }),
 
     update: orgProcedure
-      .input(ledgerAccountBaseSchema.partial().extend({ id: z.string().cuid() }))
+      .input(ledgerAccountBaseSchema.partial().extend({ id: z.cuid2() }))
       .mutation(async ({ ctx, input }) => {
         const { id, ...data } = input;
-        const existing = await ctx.db.ledgerAccount.findFirst({ where: { id, organizationId: ctx.user.organizationId } });
+        const existing = await ctx.db.ledgerAccount.findFirst({
+          where: { id, organizationId: ctx.user.organizationId },
+        });
         if (!existing) throw new NotFoundError('LedgerAccount', id);
 
         return ctx.db.$transaction(async (tx) => {
           const updated = await tx.ledgerAccount.update({ where: { id }, data });
 
           await writeAuditLog(
-            { entityType: 'LedgerAccount', entityId: id, action: 'UPDATE', organizationId: ctx.user.organizationId, userId: ctx.user.id, ipAddress: ctx.ipAddress },
+            {
+              entityType: 'LedgerAccount',
+              entityId: id,
+              action: 'UPDATE',
+              organizationId: ctx.user.organizationId,
+              userId: ctx.user.id,
+              ipAddress: ctx.ipAddress,
+            },
             tx,
           );
 
@@ -185,26 +238,32 @@ export const settingsRouter = router({
         });
       }),
 
-    delete: orgProcedure
-      .input(z.object({ id: z.string().cuid() }))
-      .mutation(async ({ ctx, input }) => {
-        const existing = await ctx.db.ledgerAccount.findFirst({
-          where: { id: input.id, organizationId: ctx.user.organizationId },
-          include: { children: { select: { id: true } } },
-        });
-        if (!existing) throw new NotFoundError('LedgerAccount', input.id);
-        if (existing.children.length > 0) throw new ConflictError('Cannot delete an account with sub-accounts.');
+    delete: orgProcedure.input(z.object({ id: z.cuid2() })).mutation(async ({ ctx, input }) => {
+      const existing = await ctx.db.ledgerAccount.findFirst({
+        where: { id: input.id, organizationId: ctx.user.organizationId },
+        include: { children: { select: { id: true } } },
+      });
+      if (!existing) throw new NotFoundError('LedgerAccount', input.id);
+      if (existing.children.length > 0)
+        throw new ConflictError('Cannot delete an account with sub-accounts.');
 
-        await ctx.db.$transaction(async (tx) => {
-          await tx.ledgerAccount.update({ where: { id: input.id }, data: { isActive: false } });
-          await writeAuditLog(
-            { entityType: 'LedgerAccount', entityId: input.id, action: 'DELETE', organizationId: ctx.user.organizationId, userId: ctx.user.id, ipAddress: ctx.ipAddress },
-            tx,
-          );
-        });
+      await ctx.db.$transaction(async (tx) => {
+        await tx.ledgerAccount.update({ where: { id: input.id }, data: { isActive: false } });
+        await writeAuditLog(
+          {
+            entityType: 'LedgerAccount',
+            entityId: input.id,
+            action: 'DELETE',
+            organizationId: ctx.user.organizationId,
+            userId: ctx.user.id,
+            ipAddress: ctx.ipAddress,
+          },
+          tx,
+        );
+      });
 
-        return { success: true };
-      }),
+      return { success: true };
+    }),
   },
 
   // Organization settings (key-value)

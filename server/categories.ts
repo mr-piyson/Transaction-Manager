@@ -17,7 +17,7 @@ const classSchema = z.object({
   description: z.string().max(500).optional(),
   color: z.string().max(7).optional(),
   icon: z.string().max(50).optional(),
-  familyId: z.string().cuid(),
+  familyId: z.cuid2(),
 });
 
 const commoditySchema = z.object({
@@ -26,7 +26,7 @@ const commoditySchema = z.object({
   description: z.string().max(500).optional(),
   color: z.string().max(7).optional(),
   icon: z.string().max(50).optional(),
-  classId: z.string().cuid(),
+  classId: z.cuid2(),
 });
 
 export const categoriesRouter = router({
@@ -72,7 +72,14 @@ export const categoriesRouter = router({
         data: { ...input, organizationId: orgId },
       });
       await writeAuditLog(
-        { entityType: 'CategoryFamily', entityId: created.id, action: 'CREATE', organizationId: orgId, userId: ctx.user.id, ipAddress: ctx.ipAddress },
+        {
+          entityType: 'CategoryFamily',
+          entityId: created.id,
+          action: 'CREATE',
+          organizationId: orgId,
+          userId: ctx.user.id,
+          ipAddress: ctx.ipAddress,
+        },
         tx,
       );
       return created;
@@ -80,12 +87,14 @@ export const categoriesRouter = router({
   }),
 
   updateFamily: orgProcedure
-    .input(familySchema.partial().extend({ id: z.string().cuid() }))
+    .input(familySchema.partial().extend({ id: z.cuid2() }))
     .mutation(async ({ ctx, input }) => {
       const { id, ...data } = input;
       const orgId = ctx.user.organizationId;
 
-      const existing = await ctx.db.categoryFamily.findFirst({ where: { id, organizationId: orgId } });
+      const existing = await ctx.db.categoryFamily.findFirst({
+        where: { id, organizationId: orgId },
+      });
       if (!existing) throw new NotFoundError('CategoryFamily', id);
 
       if (data.code && data.code !== existing.code) {
@@ -99,14 +108,21 @@ export const categoriesRouter = router({
       return ctx.db.$transaction(async (tx) => {
         const updated = await tx.categoryFamily.update({ where: { id }, data });
         await writeAuditLog(
-          { entityType: 'CategoryFamily', entityId: id, action: 'UPDATE', organizationId: orgId, userId: ctx.user.id, ipAddress: ctx.ipAddress },
+          {
+            entityType: 'CategoryFamily',
+            entityId: id,
+            action: 'UPDATE',
+            organizationId: orgId,
+            userId: ctx.user.id,
+            ipAddress: ctx.ipAddress,
+          },
           tx,
         );
         return updated;
       });
     }),
 
-  deleteFamily: orgProcedure.input(z.object({ id: z.string().cuid() })).mutation(async ({ ctx, input }) => {
+  deleteFamily: orgProcedure.input(z.object({ id: z.cuid2() })).mutation(async ({ ctx, input }) => {
     const orgId = ctx.user.organizationId;
     const existing = await ctx.db.categoryFamily.findFirst({
       where: { id: input.id, organizationId: orgId },
@@ -114,13 +130,26 @@ export const categoriesRouter = router({
     });
     if (!existing) throw new NotFoundError('CategoryFamily', input.id);
 
-    const hasClasses = await ctx.db.categoryClass.count({ where: { familyId: input.id, deletedAt: null } });
-    if (hasClasses > 0) throw new ConflictError('Cannot delete family with active classes. Remove classes first.');
+    const hasClasses = await ctx.db.categoryClass.count({
+      where: { familyId: input.id, deletedAt: null },
+    });
+    if (hasClasses > 0)
+      throw new ConflictError('Cannot delete family with active classes. Remove classes first.');
 
     return ctx.db.$transaction(async (tx) => {
-      await tx.categoryFamily.update({ where: { id: input.id }, data: { deletedAt: new Date(), isActive: false } });
+      await tx.categoryFamily.update({
+        where: { id: input.id },
+        data: { deletedAt: new Date(), isActive: false },
+      });
       await writeAuditLog(
-        { entityType: 'CategoryFamily', entityId: input.id, action: 'DELETE', organizationId: orgId, userId: ctx.user.id, ipAddress: ctx.ipAddress },
+        {
+          entityType: 'CategoryFamily',
+          entityId: input.id,
+          action: 'DELETE',
+          organizationId: orgId,
+          userId: ctx.user.id,
+          ipAddress: ctx.ipAddress,
+        },
         tx,
       );
       return { success: true };
@@ -143,14 +172,22 @@ export const categoriesRouter = router({
       where: { code: input.code, familyId: input.familyId, organizationId: orgId },
       select: { id: true },
     });
-    if (existing) throw new ConflictError(`Class code "${input.code}" already exists in this family.`);
+    if (existing)
+      throw new ConflictError(`Class code "${input.code}" already exists in this family.`);
 
     return ctx.db.$transaction(async (tx) => {
       const created = await tx.categoryClass.create({
         data: { ...input, organizationId: orgId },
       });
       await writeAuditLog(
-        { entityType: 'CategoryClass', entityId: created.id, action: 'CREATE', organizationId: orgId, userId: ctx.user.id, ipAddress: ctx.ipAddress },
+        {
+          entityType: 'CategoryClass',
+          entityId: created.id,
+          action: 'CREATE',
+          organizationId: orgId,
+          userId: ctx.user.id,
+          ipAddress: ctx.ipAddress,
+        },
         tx,
       );
       return created;
@@ -158,44 +195,76 @@ export const categoriesRouter = router({
   }),
 
   updateClass: orgProcedure
-    .input(classSchema.partial().extend({ id: z.string().cuid() }))
+    .input(classSchema.partial().extend({ id: z.cuid2() }))
     .mutation(async ({ ctx, input }) => {
       const { id, ...data } = input;
       const orgId = ctx.user.organizationId;
 
-      const existing = await ctx.db.categoryClass.findFirst({ where: { id, organizationId: orgId } });
+      const existing = await ctx.db.categoryClass.findFirst({
+        where: { id, organizationId: orgId },
+      });
       if (!existing) throw new NotFoundError('CategoryClass', id);
 
       if (data.code && (data.code !== existing.code || data.familyId !== existing.familyId)) {
         const conflict = await ctx.db.categoryClass.findFirst({
-          where: { code: data.code, familyId: data.familyId ?? existing.familyId, organizationId: orgId, NOT: { id } },
+          where: {
+            code: data.code,
+            familyId: data.familyId ?? existing.familyId,
+            organizationId: orgId,
+            NOT: { id },
+          },
           select: { id: true },
         });
-        if (conflict) throw new ConflictError(`Class code "${data.code}" already exists in this family.`);
+        if (conflict)
+          throw new ConflictError(`Class code "${data.code}" already exists in this family.`);
       }
 
       return ctx.db.$transaction(async (tx) => {
         const updated = await tx.categoryClass.update({ where: { id }, data });
         await writeAuditLog(
-          { entityType: 'CategoryClass', entityId: id, action: 'UPDATE', organizationId: orgId, userId: ctx.user.id, ipAddress: ctx.ipAddress },
+          {
+            entityType: 'CategoryClass',
+            entityId: id,
+            action: 'UPDATE',
+            organizationId: orgId,
+            userId: ctx.user.id,
+            ipAddress: ctx.ipAddress,
+          },
           tx,
         );
         return updated;
       });
     }),
 
-  deleteClass: orgProcedure.input(z.object({ id: z.string().cuid() })).mutation(async ({ ctx, input }) => {
+  deleteClass: orgProcedure.input(z.object({ id: z.cuid2() })).mutation(async ({ ctx, input }) => {
     const orgId = ctx.user.organizationId;
-    const existing = await ctx.db.categoryClass.findFirst({ where: { id: input.id, organizationId: orgId } });
+    const existing = await ctx.db.categoryClass.findFirst({
+      where: { id: input.id, organizationId: orgId },
+    });
     if (!existing) throw new NotFoundError('CategoryClass', input.id);
 
-    const hasCommodities = await ctx.db.categoryCommodity.count({ where: { classId: input.id, deletedAt: null } });
-    if (hasCommodities > 0) throw new ConflictError('Cannot delete class with active commodities. Remove commodities first.');
+    const hasCommodities = await ctx.db.categoryCommodity.count({
+      where: { classId: input.id, deletedAt: null },
+    });
+    if (hasCommodities > 0)
+      throw new ConflictError(
+        'Cannot delete class with active commodities. Remove commodities first.',
+      );
 
     return ctx.db.$transaction(async (tx) => {
-      await tx.categoryClass.update({ where: { id: input.id }, data: { deletedAt: new Date(), isActive: false } });
+      await tx.categoryClass.update({
+        where: { id: input.id },
+        data: { deletedAt: new Date(), isActive: false },
+      });
       await writeAuditLog(
-        { entityType: 'CategoryClass', entityId: input.id, action: 'DELETE', organizationId: orgId, userId: ctx.user.id, ipAddress: ctx.ipAddress },
+        {
+          entityType: 'CategoryClass',
+          entityId: input.id,
+          action: 'DELETE',
+          organizationId: orgId,
+          userId: ctx.user.id,
+          ipAddress: ctx.ipAddress,
+        },
         tx,
       );
       return { success: true };
@@ -218,14 +287,22 @@ export const categoriesRouter = router({
       where: { code: input.code, classId: input.classId, organizationId: orgId },
       select: { id: true },
     });
-    if (existing) throw new ConflictError(`Commodity code "${input.code}" already exists in this class.`);
+    if (existing)
+      throw new ConflictError(`Commodity code "${input.code}" already exists in this class.`);
 
     return ctx.db.$transaction(async (tx) => {
       const created = await tx.categoryCommodity.create({
         data: { ...input, organizationId: orgId },
       });
       await writeAuditLog(
-        { entityType: 'CategoryCommodity', entityId: created.id, action: 'CREATE', organizationId: orgId, userId: ctx.user.id, ipAddress: ctx.ipAddress },
+        {
+          entityType: 'CategoryCommodity',
+          entityId: created.id,
+          action: 'CREATE',
+          organizationId: orgId,
+          userId: ctx.user.id,
+          ipAddress: ctx.ipAddress,
+        },
         tx,
       );
       return created;
@@ -233,49 +310,80 @@ export const categoriesRouter = router({
   }),
 
   updateCommodity: orgProcedure
-    .input(commoditySchema.partial().extend({ id: z.string().cuid() }))
+    .input(commoditySchema.partial().extend({ id: z.cuid2() }))
     .mutation(async ({ ctx, input }) => {
       const { id, ...data } = input;
       const orgId = ctx.user.organizationId;
 
-      const existing = await ctx.db.categoryCommodity.findFirst({ where: { id, organizationId: orgId } });
+      const existing = await ctx.db.categoryCommodity.findFirst({
+        where: { id, organizationId: orgId },
+      });
       if (!existing) throw new NotFoundError('CategoryCommodity', id);
 
       if (data.code && (data.code !== existing.code || data.classId !== existing.classId)) {
         const conflict = await ctx.db.categoryCommodity.findFirst({
-          where: { code: data.code, classId: data.classId ?? existing.classId, organizationId: orgId, NOT: { id } },
+          where: {
+            code: data.code,
+            classId: data.classId ?? existing.classId,
+            organizationId: orgId,
+            NOT: { id },
+          },
           select: { id: true },
         });
-        if (conflict) throw new ConflictError(`Commodity code "${data.code}" already exists in this class.`);
+        if (conflict)
+          throw new ConflictError(`Commodity code "${data.code}" already exists in this class.`);
       }
 
       return ctx.db.$transaction(async (tx) => {
         const updated = await tx.categoryCommodity.update({ where: { id }, data });
         await writeAuditLog(
-          { entityType: 'CategoryCommodity', entityId: id, action: 'UPDATE', organizationId: orgId, userId: ctx.user.id, ipAddress: ctx.ipAddress },
+          {
+            entityType: 'CategoryCommodity',
+            entityId: id,
+            action: 'UPDATE',
+            organizationId: orgId,
+            userId: ctx.user.id,
+            ipAddress: ctx.ipAddress,
+          },
           tx,
         );
         return updated;
       });
     }),
 
-  deleteCommodity: orgProcedure.input(z.object({ id: z.string().cuid() })).mutation(async ({ ctx, input }) => {
-    const orgId = ctx.user.organizationId;
-    const existing = await ctx.db.categoryCommodity.findFirst({ where: { id: input.id, organizationId: orgId } });
-    if (!existing) throw new NotFoundError('CategoryCommodity', input.id);
+  deleteCommodity: orgProcedure
+    .input(z.object({ id: z.cuid2() }))
+    .mutation(async ({ ctx, input }) => {
+      const orgId = ctx.user.organizationId;
+      const existing = await ctx.db.categoryCommodity.findFirst({
+        where: { id: input.id, organizationId: orgId },
+      });
+      if (!existing) throw new NotFoundError('CategoryCommodity', input.id);
 
-    const hasItems = await ctx.db.item.count({ where: { commodityId: input.id, deletedAt: null } });
-    if (hasItems > 0) throw new ConflictError('Cannot delete commodity linked to active items.');
+      const hasItems = await ctx.db.item.count({
+        where: { commodityId: input.id, deletedAt: null },
+      });
+      if (hasItems > 0) throw new ConflictError('Cannot delete commodity linked to active items.');
 
-    return ctx.db.$transaction(async (tx) => {
-      await tx.categoryCommodity.update({ where: { id: input.id }, data: { deletedAt: new Date(), isActive: false } });
-      await writeAuditLog(
-        { entityType: 'CategoryCommodity', entityId: input.id, action: 'DELETE', organizationId: orgId, userId: ctx.user.id, ipAddress: ctx.ipAddress },
-        tx,
-      );
-      return { success: true };
-    });
-  }),
+      return ctx.db.$transaction(async (tx) => {
+        await tx.categoryCommodity.update({
+          where: { id: input.id },
+          data: { deletedAt: new Date(), isActive: false },
+        });
+        await writeAuditLog(
+          {
+            entityType: 'CategoryCommodity',
+            entityId: input.id,
+            action: 'DELETE',
+            organizationId: orgId,
+            userId: ctx.user.id,
+            ipAddress: ctx.ipAddress,
+          },
+          tx,
+        );
+        return { success: true };
+      });
+    }),
 
   // ── SKU AUTO-GENERATION ───────────────────────────────────────────────────
   generateSku: orgProcedure

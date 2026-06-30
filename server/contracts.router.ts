@@ -22,21 +22,23 @@ const contractBaseSchema = z.object({
   renewalDate: z.coerce.date().optional(),
   renewalAlertDays: z.number().int().min(0).max(365).default(30),
   notes: z.string().max(5000).optional(),
-  customerId: z.string().cuid().optional(),
+  customerId: z.cuid2().optional(),
 });
 
 const createContractSchema = contractBaseSchema;
 const updateContractSchema = contractBaseSchema.partial().extend({
-  id: z.string().cuid(),
+  id: z.cuid2(),
 });
 
 const listContractsSchema = z.object({
   ...offsetPaginationSchema.shape,
   search: z.string().optional(),
   status: z.enum(['DRAFT', 'ACTIVE', 'EXPIRED', 'TERMINATED']).optional(),
-  customerId: z.string().cuid().optional(),
+  customerId: z.cuid2().optional(),
   expiringSoon: z.boolean().optional(),
-  sortBy: z.enum(['title', 'startDate', 'endDate', 'contractValue', 'createdAt']).default('endDate'),
+  sortBy: z
+    .enum(['title', 'startDate', 'endDate', 'contractValue', 'createdAt'])
+    .default('endDate'),
   sortOrder: sortOrderSchema,
 });
 
@@ -94,7 +96,7 @@ export const contractsRouter = router({
     return paginatedResponse(contracts, total, pagination);
   }),
 
-  byId: orgProcedure.input(z.object({ id: z.string().cuid() })).query(async ({ ctx, input }) => {
+  byId: orgProcedure.input(z.object({ id: z.cuid2() })).query(async ({ ctx, input }) => {
     assertCan(ctx.ability, 'invoice:read', 'Invoice');
 
     const contract = await ctx.db.contract.findFirst({
@@ -193,7 +195,7 @@ export const contractsRouter = router({
     });
   }),
 
-  delete: orgProcedure.input(z.object({ id: z.string().cuid() })).mutation(async ({ ctx, input }) => {
+  delete: orgProcedure.input(z.object({ id: z.cuid2() })).mutation(async ({ ctx, input }) => {
     const existing = await ctx.db.contract.findFirst({
       where: { id: input.id, organizationId: ctx.user.organizationId, deletedAt: null },
       select: { id: true, status: true },
@@ -228,92 +230,92 @@ export const contractsRouter = router({
     return { success: true };
   }),
 
-  activate: orgProcedure
-    .input(z.object({ id: z.string().cuid() }))
-    .mutation(async ({ ctx, input }) => {
-      const orgId = ctx.user.organizationId;
+  activate: orgProcedure.input(z.object({ id: z.cuid2() })).mutation(async ({ ctx, input }) => {
+    const orgId = ctx.user.organizationId;
 
-      const contract = await ctx.db.contract.findFirst({
-        where: { id: input.id, organizationId: orgId, deletedAt: null },
-        select: { id: true, status: true, serial: true, startDate: true, endDate: true },
+    const contract = await ctx.db.contract.findFirst({
+      where: { id: input.id, organizationId: orgId, deletedAt: null },
+      select: { id: true, status: true, serial: true, startDate: true, endDate: true },
+    });
+    if (!contract) throw new NotFoundError('Contract', input.id);
+
+    assertCan(ctx.ability, 'invoice:update', 'Invoice', contract as Record<string, unknown>);
+
+    if (contract.status !== 'DRAFT') {
+      throw new UnprocessableError(
+        `Only DRAFT contracts can be activated. Current: ${contract.status}`,
+      );
+    }
+
+    if (new Date(contract.endDate) <= new Date()) {
+      throw new UnprocessableError('Cannot activate a contract whose end date is in the past.');
+    }
+
+    return ctx.db.$transaction(async (tx) => {
+      const updated = await tx.contract.update({
+        where: { id: input.id },
+        data: { status: 'ACTIVE', version: { increment: 1 }, updatedById: ctx.user.id },
       });
-      if (!contract) throw new NotFoundError('Contract', input.id);
 
-      assertCan(ctx.ability, 'invoice:update', 'Invoice', contract as Record<string, unknown>);
+      await writeAuditLog(
+        {
+          entityType: 'Contract',
+          entityId: input.id,
+          action: 'STATUS_CHANGE',
+          diff: { status: { before: contract.status, after: 'ACTIVE' } },
+          organizationId: orgId,
+          userId: ctx.user.id,
+          ipAddress: ctx.ipAddress,
+        },
+        tx,
+      );
 
-      if (contract.status !== 'DRAFT') {
-        throw new UnprocessableError(`Only DRAFT contracts can be activated. Current: ${contract.status}`);
-      }
+      return updated;
+    });
+  }),
 
-      if (new Date(contract.endDate) <= new Date()) {
-        throw new UnprocessableError('Cannot activate a contract whose end date is in the past.');
-      }
+  expire: orgProcedure.input(z.object({ id: z.cuid2() })).mutation(async ({ ctx, input }) => {
+    const orgId = ctx.user.organizationId;
 
-      return ctx.db.$transaction(async (tx) => {
-        const updated = await tx.contract.update({
-          where: { id: input.id },
-          data: { status: 'ACTIVE', version: { increment: 1 }, updatedById: ctx.user.id },
-        });
+    const contract = await ctx.db.contract.findFirst({
+      where: { id: input.id, organizationId: orgId, deletedAt: null },
+      select: { id: true, status: true, serial: true },
+    });
+    if (!contract) throw new NotFoundError('Contract', input.id);
 
-        await writeAuditLog(
-          {
-            entityType: 'Contract',
-            entityId: input.id,
-            action: 'STATUS_CHANGE',
-            diff: { status: { before: contract.status, after: 'ACTIVE' } },
-            organizationId: orgId,
-            userId: ctx.user.id,
-            ipAddress: ctx.ipAddress,
-          },
-          tx,
-        );
+    assertCan(ctx.ability, 'invoice:update', 'Invoice', contract as Record<string, unknown>);
 
-        return updated;
+    if (contract.status !== 'ACTIVE') {
+      throw new UnprocessableError(
+        `Only ACTIVE contracts can be expired. Current: ${contract.status}`,
+      );
+    }
+
+    return ctx.db.$transaction(async (tx) => {
+      const updated = await tx.contract.update({
+        where: { id: input.id },
+        data: { status: 'EXPIRED', version: { increment: 1 }, updatedById: ctx.user.id },
       });
-    }),
 
-  expire: orgProcedure
-    .input(z.object({ id: z.string().cuid() }))
-    .mutation(async ({ ctx, input }) => {
-      const orgId = ctx.user.organizationId;
+      await writeAuditLog(
+        {
+          entityType: 'Contract',
+          entityId: input.id,
+          action: 'STATUS_CHANGE',
+          diff: { status: { before: contract.status, after: 'EXPIRED' } },
+          organizationId: orgId,
+          userId: ctx.user.id,
+          ipAddress: ctx.ipAddress,
+        },
+        tx,
+      );
 
-      const contract = await ctx.db.contract.findFirst({
-        where: { id: input.id, organizationId: orgId, deletedAt: null },
-        select: { id: true, status: true, serial: true },
-      });
-      if (!contract) throw new NotFoundError('Contract', input.id);
-
-      assertCan(ctx.ability, 'invoice:update', 'Invoice', contract as Record<string, unknown>);
-
-      if (contract.status !== 'ACTIVE') {
-        throw new UnprocessableError(`Only ACTIVE contracts can be expired. Current: ${contract.status}`);
-      }
-
-      return ctx.db.$transaction(async (tx) => {
-        const updated = await tx.contract.update({
-          where: { id: input.id },
-          data: { status: 'EXPIRED', version: { increment: 1 }, updatedById: ctx.user.id },
-        });
-
-        await writeAuditLog(
-          {
-            entityType: 'Contract',
-            entityId: input.id,
-            action: 'STATUS_CHANGE',
-            diff: { status: { before: contract.status, after: 'EXPIRED' } },
-            organizationId: orgId,
-            userId: ctx.user.id,
-            ipAddress: ctx.ipAddress,
-          },
-          tx,
-        );
-
-        return updated;
-      });
-    }),
+      return updated;
+    });
+  }),
 
   terminate: orgProcedure
-    .input(z.object({ id: z.string().cuid(), reason: z.string().optional() }))
+    .input(z.object({ id: z.cuid2(), reason: z.string().optional() }))
     .mutation(async ({ ctx, input }) => {
       const orgId = ctx.user.organizationId;
 
@@ -326,7 +328,9 @@ export const contractsRouter = router({
       assertCan(ctx.ability, 'invoice:update', 'Invoice', contract as Record<string, unknown>);
 
       if (!['ACTIVE', 'DRAFT'].includes(contract.status)) {
-        throw new UnprocessableError(`Contract in status "${contract.status}" cannot be terminated.`);
+        throw new UnprocessableError(
+          `Contract in status "${contract.status}" cannot be terminated.`,
+        );
       }
 
       return ctx.db.$transaction(async (tx) => {
@@ -362,75 +366,75 @@ export const contractsRouter = router({
       });
     }),
 
-  renew: orgProcedure
-    .input(z.object({ id: z.string().cuid() }))
-    .mutation(async ({ ctx, input }) => {
-      const orgId = ctx.user.organizationId;
+  renew: orgProcedure.input(z.object({ id: z.cuid2() })).mutation(async ({ ctx, input }) => {
+    const orgId = ctx.user.organizationId;
 
-      const contract = await ctx.db.contract.findFirst({
-        where: { id: input.id, organizationId: orgId, deletedAt: null },
-        include: {
-          customer: { select: { id: true, name: true } },
+    const contract = await ctx.db.contract.findFirst({
+      where: { id: input.id, organizationId: orgId, deletedAt: null },
+      include: {
+        customer: { select: { id: true, name: true } },
+      },
+    });
+    if (!contract) throw new NotFoundError('Contract', input.id);
+
+    assertCan(ctx.ability, 'invoice:create', 'Invoice');
+
+    if (!['ACTIVE', 'EXPIRED'].includes(contract.status)) {
+      throw new UnprocessableError(
+        `Only ACTIVE or EXPIRED contracts can be renewed. Current: ${contract.status}`,
+      );
+    }
+
+    const oldEnd = new Date(contract.endDate);
+    const newStart = new Date(oldEnd.getTime() + 86_400_000);
+    const duration = oldEnd.getTime() - new Date(contract.startDate).getTime();
+    const newEnd = new Date(newStart.getTime() + duration);
+
+    return ctx.db.$transaction(async (tx) => {
+      const serial = await generateSerial({
+        db: tx,
+        organizationId: orgId,
+        prefix: 'CTR',
+      });
+
+      const created = await tx.contract.create({
+        data: {
+          serial,
+          title: contract.title,
+          description: contract.description,
+          status: 'DRAFT',
+          contractValue: contract.contractValue,
+          currency: contract.currency,
+          startDate: newStart,
+          endDate: newEnd,
+          renewalDate: contract.renewalDate,
+          renewalAlertDays: contract.renewalAlertDays,
+          notes: contract.notes,
+          customerId: contract.customerId,
+          organizationId: orgId,
+          createdById: ctx.user.id,
         },
       });
-      if (!contract) throw new NotFoundError('Contract', input.id);
 
-      assertCan(ctx.ability, 'invoice:create', 'Invoice');
-
-      if (!['ACTIVE', 'EXPIRED'].includes(contract.status)) {
-        throw new UnprocessableError(`Only ACTIVE or EXPIRED contracts can be renewed. Current: ${contract.status}`);
-      }
-
-      const oldEnd = new Date(contract.endDate);
-      const newStart = new Date(oldEnd.getTime() + 86_400_000);
-      const duration = oldEnd.getTime() - new Date(contract.startDate).getTime();
-      const newEnd = new Date(newStart.getTime() + duration);
-
-      return ctx.db.$transaction(async (tx) => {
-        const serial = await generateSerial({
-          db: tx,
+      await writeAuditLog(
+        {
+          entityType: 'Contract',
+          entityId: created.id,
+          action: 'CREATE',
+          diff: {
+            serial: { before: null, after: serial },
+            renewedFrom: { before: null, after: input.id },
+          },
           organizationId: orgId,
-          prefix: 'CTR',
-        });
+          userId: ctx.user.id,
+          ipAddress: ctx.ipAddress,
+        },
+        tx,
+      );
 
-        const created = await tx.contract.create({
-          data: {
-            serial,
-            title: contract.title,
-            description: contract.description,
-            status: 'DRAFT',
-            contractValue: contract.contractValue,
-            currency: contract.currency,
-            startDate: newStart,
-            endDate: newEnd,
-            renewalDate: contract.renewalDate,
-            renewalAlertDays: contract.renewalAlertDays,
-            notes: contract.notes,
-            customerId: contract.customerId,
-            organizationId: orgId,
-            createdById: ctx.user.id,
-          },
-        });
-
-        await writeAuditLog(
-          {
-            entityType: 'Contract',
-            entityId: created.id,
-            action: 'CREATE',
-            diff: {
-              serial: { before: null, after: serial },
-              renewedFrom: { before: null, after: input.id },
-            },
-            organizationId: orgId,
-            userId: ctx.user.id,
-            ipAddress: ctx.ipAddress,
-          },
-          tx,
-        );
-
-        return created;
-      });
-    }),
+      return created;
+    });
+  }),
 
   stats: orgProcedure.query(async ({ ctx }) => {
     const orgId = ctx.user.organizationId;

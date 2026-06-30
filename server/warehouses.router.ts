@@ -18,7 +18,7 @@ const warehouseBaseSchema = z.object({
 
 const createWarehouseSchema = warehouseBaseSchema;
 const updateWarehouseSchema = warehouseBaseSchema.partial().extend({
-  id: z.string().cuid(),
+  id: z.cuid2(),
 });
 
 const listWarehousesSchema = z.object({
@@ -65,7 +65,7 @@ export const warehousesRouter = router({
     return paginatedResponse(warehouses, total, pagination);
   }),
 
-  byId: orgProcedure.input(z.object({ id: z.string().cuid() })).query(async ({ ctx, input }) => {
+  byId: orgProcedure.input(z.object({ id: z.cuid2() })).query(async ({ ctx, input }) => {
     assertCan(ctx.ability, 'stock:read', 'all');
 
     const warehouse = await ctx.db.warehouse.findFirst({
@@ -154,10 +154,14 @@ export const warehousesRouter = router({
     });
   }),
 
-  delete: orgProcedure.input(z.object({ id: z.string().cuid() })).mutation(async ({ ctx, input }) => {
+  delete: orgProcedure.input(z.object({ id: z.cuid2() })).mutation(async ({ ctx, input }) => {
     const existing = await ctx.db.warehouse.findFirst({
       where: { id: input.id, organizationId: ctx.user.organizationId, deletedAt: null },
-      select: { id: true, isDefault: true, _count: { select: { stock: { where: { quantity: { gt: 0 } } } } } },
+      select: {
+        id: true,
+        isDefault: true,
+        _count: { select: { stock: { where: { quantity: { gt: 0 } } } } },
+      },
     });
     if (!existing) throw new NotFoundError('Warehouse', input.id);
 
@@ -171,7 +175,10 @@ export const warehousesRouter = router({
     }
 
     await ctx.db.$transaction(async (tx) => {
-      await tx.warehouse.update({ where: { id: input.id }, data: { deletedAt: new Date(), isActive: false } });
+      await tx.warehouse.update({
+        where: { id: input.id },
+        data: { deletedAt: new Date(), isActive: false },
+      });
 
       await writeAuditLog(
         {

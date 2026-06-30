@@ -40,19 +40,19 @@ const customerBaseSchema = z.object({
   name: z.string().min(1).max(255),
   code: z.string().max(50).optional(),
   phone: z.string().max(50).optional(),
-  email: z.string().email().optional().or(z.literal('')),
+  email: z.email().optional().or(z.literal('')),
   taxId: z.string().max(100).optional(),
   crNumber: z.string().max(100).optional(),
   notes: z.string().max(5000).optional(),
   creditLimit: decimalSchema.optional(),
   creditTermsDays: z.number().int().min(0).max(365).optional(),
   currencyCode: currencyCodeSchema.optional(),
-  priceListId: z.string().cuid().optional(),
+  priceListId: z.cuid2().optional(),
 });
 
 const createCustomerSchema = customerBaseSchema;
 const updateCustomerSchema = customerBaseSchema.partial().extend({
-  id: z.string().cuid(),
+  id: z.cuid2(),
 });
 
 const listCustomersSchema = z.object({
@@ -119,7 +119,7 @@ export const customersRouter = router({
   }),
 
   // ── GET BY ID ─────────────────────────────────────────────────────────────
-  byId: orgProcedure.input(z.object({ id: z.string().cuid() })).query(async ({ ctx, input }) => {
+  byId: orgProcedure.input(z.object({ id: z.cuid2() })).query(async ({ ctx, input }) => {
     assertCan(ctx.ability, 'customer:read', 'Customer');
 
     const customer = await ctx.db.customer.findFirst({
@@ -254,69 +254,67 @@ export const customersRouter = router({
   }),
 
   // ── SOFT DELETE ───────────────────────────────────────────────────────────
-  delete: orgProcedure
-    .input(z.object({ id: z.string().cuid() }))
-    .mutation(async ({ ctx, input }) => {
-      const existing = await ctx.db.customer.findFirst({
-        where: {
-          id: input.id,
+  delete: orgProcedure.input(z.object({ id: z.cuid2() })).mutation(async ({ ctx, input }) => {
+    const existing = await ctx.db.customer.findFirst({
+      where: {
+        id: input.id,
+        organizationId: ctx.user.organizationId,
+        deletedAt: null,
+      },
+      select: {
+        id: true,
+        organizationId: true,
+        _count: {
+          select: {
+            invoices: { where: { deletedAt: null } },
+            contracts: { where: { deletedAt: null } },
+          },
+        },
+      },
+    });
+    if (!existing) throw new NotFoundError('Customer', input.id);
+
+    assertCan(ctx.ability, 'customer:delete', 'Customer', existing as Record<string, unknown>);
+
+    // Block delete if active invoices or contracts exist
+    if (existing._count.invoices > 0) {
+      throw new ConflictError(
+        `Cannot delete customer: ${existing._count.invoices} active invoice(s) exist.`,
+        { entityId: input.id },
+      );
+    }
+    if (existing._count.contracts > 0) {
+      throw new ConflictError(
+        `Cannot delete customer: ${existing._count.contracts} active contract(s) exist.`,
+        { entityId: input.id },
+      );
+    }
+
+    await ctx.db.$transaction(async (tx) => {
+      await tx.customer.update({
+        where: { id: input.id },
+        data: { deletedAt: new Date(), isActive: false },
+      });
+
+      await writeAuditLog(
+        {
+          entityType: 'Customer',
+          entityId: input.id,
+          action: 'DELETE',
           organizationId: ctx.user.organizationId,
-          deletedAt: null,
+          userId: ctx.user.id,
+          ipAddress: ctx.ipAddress,
         },
-        select: {
-          id: true,
-          organizationId: true,
-          _count: {
-            select: {
-              invoices: { where: { deletedAt: null } },
-              contracts: { where: { deletedAt: null } },
-            },
-          },
-        },
-      });
-      if (!existing) throw new NotFoundError('Customer', input.id);
+        tx,
+      );
+    });
 
-      assertCan(ctx.ability, 'customer:delete', 'Customer', existing as Record<string, unknown>);
-
-      // Block delete if active invoices or contracts exist
-      if (existing._count.invoices > 0) {
-        throw new ConflictError(
-          `Cannot delete customer: ${existing._count.invoices} active invoice(s) exist.`,
-          { entityId: input.id },
-        );
-      }
-      if (existing._count.contracts > 0) {
-        throw new ConflictError(
-          `Cannot delete customer: ${existing._count.contracts} active contract(s) exist.`,
-          { entityId: input.id },
-        );
-      }
-
-      await ctx.db.$transaction(async (tx) => {
-        await tx.customer.update({
-          where: { id: input.id },
-          data: { deletedAt: new Date(), isActive: false },
-        });
-
-        await writeAuditLog(
-          {
-            entityType: 'Customer',
-            entityId: input.id,
-            action: 'DELETE',
-            organizationId: ctx.user.organizationId,
-            userId: ctx.user.id,
-            ipAddress: ctx.ipAddress,
-          },
-          tx,
-        );
-      });
-
-      return { success: true };
-    }),
+    return { success: true };
+  }),
 
   // ── TOGGLE ACTIVE ─────────────────────────────────────────────────────────
   setActive: orgProcedure
-    .input(z.object({ id: z.string().cuid(), isActive: z.boolean() }))
+    .input(z.object({ id: z.cuid2(), isActive: z.boolean() }))
     .mutation(async ({ ctx, input }) => {
       const existing = await ctx.db.customer.findFirst({
         where: {
@@ -337,38 +335,36 @@ export const customersRouter = router({
 
   // ── CREDIT BALANCE ────────────────────────────────────────────────────────
   // Returns outstanding AR balance for a customer (sum of unpaid invoices)
-  creditBalance: orgProcedure
-    .input(z.object({ id: z.string().cuid() }))
-    .query(async ({ ctx, input }) => {
-      assertCan(ctx.ability, 'customer:read', 'Customer');
+  creditBalance: orgProcedure.input(z.object({ id: z.cuid2() })).query(async ({ ctx, input }) => {
+    assertCan(ctx.ability, 'customer:read', 'Customer');
 
-      const [customer, invoiceAggregate] = await ctx.db.$transaction([
-        ctx.db.customer.findFirst({
-          where: {
-            id: input.id,
-            organizationId: ctx.user.organizationId,
-            deletedAt: null,
-          },
-          select: { id: true, name: true, creditLimit: true },
-        }),
-        ctx.db.invoice.aggregate({
-          where: {
-            customerId: input.id,
-            organizationId: ctx.user.organizationId,
-            status: { in: ['SENT', 'PARTIAL', 'OVERDUE'] },
-            deletedAt: null,
-          },
-          _sum: { amountDue: true },
-          _count: true,
-        }),
-      ]);
+    const [customer, invoiceAggregate] = await ctx.db.$transaction([
+      ctx.db.customer.findFirst({
+        where: {
+          id: input.id,
+          organizationId: ctx.user.organizationId,
+          deletedAt: null,
+        },
+        select: { id: true, name: true, creditLimit: true },
+      }),
+      ctx.db.invoice.aggregate({
+        where: {
+          customerId: input.id,
+          organizationId: ctx.user.organizationId,
+          status: { in: ['SENT', 'PARTIAL', 'OVERDUE'] },
+          deletedAt: null,
+        },
+        _sum: { amountDue: true },
+        _count: true,
+      }),
+    ]);
 
-      if (!customer) throw new NotFoundError('Customer', input.id);
+    if (!customer) throw new NotFoundError('Customer', input.id);
 
-      return {
-        customer,
-        outstandingBalance: invoiceAggregate._sum.amountDue ?? 0,
-        openInvoiceCount: invoiceAggregate._count,
-      };
-    }),
+    return {
+      customer,
+      outstandingBalance: invoiceAggregate._sum.amountDue ?? 0,
+      openInvoiceCount: invoiceAggregate._count,
+    };
+  }),
 });

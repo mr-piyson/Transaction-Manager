@@ -7,17 +7,33 @@ import { writeAuditLog } from './audit.service';
 
 const userBaseSchema = z.object({
   name: z.string().min(1).max(255),
-  email: z.string().email(),
+  email: z.email(),
   firstName: z.string().max(255).optional(),
   lastName: z.string().max(255).optional(),
 });
 
-const roleSelect = { id: true, name: true, description: true, icon: true, color: true, isSystem: true, systemKey: true, organizationId: true };
+const roleSelect = {
+  id: true,
+  name: true,
+  description: true,
+  icon: true,
+  color: true,
+  isSystem: true,
+  systemKey: true,
+  organizationId: true,
+};
 
 const userRoleInclude = (orgId: string) => ({
   userOrganizationRoles: {
     where: { organizationId: orgId, deletedAt: null },
-    select: { id: true, role: true, jobTitle: true, isActive: true, roleId: true, customRole: { select: { id: true, name: true, icon: true, color: true, systemKey: true } } },
+    select: {
+      id: true,
+      role: true,
+      jobTitle: true,
+      isActive: true,
+      roleId: true,
+      customRole: { select: { id: true, name: true, icon: true, color: true, systemKey: true } },
+    },
   },
 });
 
@@ -36,7 +52,7 @@ export const usersRouter = router({
   create: orgProcedure
     .input(
       userBaseSchema.extend({
-        roleId: z.string().cuid(),
+        roleId: z.cuid2(),
         isActive: z.boolean().default(true),
         password: z.string().min(6).max(100).optional(),
       }),
@@ -52,10 +68,16 @@ export const usersRouter = router({
 
       if (existingUser) {
         if (existingUser.deletedAt) {
-          throw new ForbiddenError('create', `User with email "${input.email}" was previously deleted. Contact support to restore.`);
+          throw new ForbiddenError(
+            'create',
+            `User with email "${input.email}" was previously deleted. Contact support to restore.`,
+          );
         }
         if (existingUser.organizationId) {
-          throw new ForbiddenError('create', `User with email "${input.email}" already belongs to an organization.`);
+          throw new ForbiddenError(
+            'create',
+            `User with email "${input.email}" already belongs to an organization.`,
+          );
         }
       }
 
@@ -65,8 +87,8 @@ export const usersRouter = router({
             where: { id: existingUser.id },
             data: {
               name: input.name,
-            firstName: input.firstName ?? '',
-            lastName: input.lastName ?? '',
+              firstName: input.firstName ?? '',
+              lastName: input.lastName ?? '',
               isActive: input.isActive,
               organizationId: orgId,
               locale: 'en',
@@ -77,17 +99,32 @@ export const usersRouter = router({
           if (input.password) {
             const hashed = await hashPassword(input.password);
             const existingAccount = existingUser
-              ? await tx.account.findFirst({ where: { userId: existingUser.id, providerId: 'credential' }, select: { id: true } })
+              ? await tx.account.findFirst({
+                  where: { userId: existingUser.id, providerId: 'credential' },
+                  select: { id: true },
+                })
               : null;
             await tx.account.upsert({
               where: { id: existingAccount?.id ?? '' },
-              create: { userId: user.id, providerId: 'credential', accountId: input.email, password: hashed },
+              create: {
+                userId: user.id,
+                providerId: 'credential',
+                accountId: input.email,
+                password: hashed,
+              },
               update: { password: hashed },
             });
           }
 
           await writeAuditLog(
-            { entityType: 'User', entityId: user.id, action: 'CREATE', organizationId: orgId, userId: ctx.user.id, ipAddress: ctx.ipAddress },
+            {
+              entityType: 'User',
+              entityId: user.id,
+              action: 'CREATE',
+              organizationId: orgId,
+              userId: ctx.user.id,
+              ipAddress: ctx.ipAddress,
+            },
             tx,
           );
 
@@ -124,7 +161,14 @@ export const usersRouter = router({
           });
 
           await writeAuditLog(
-            { entityType: 'User', entityId: user.id, action: 'CREATE', organizationId: orgId, userId: ctx.user.id, ipAddress: ctx.ipAddress },
+            {
+              entityType: 'User',
+              entityId: user.id,
+              action: 'CREATE',
+              organizationId: orgId,
+              userId: ctx.user.id,
+              ipAddress: ctx.ipAddress,
+            },
             tx,
           );
 
@@ -159,7 +203,14 @@ export const usersRouter = router({
         });
 
         await writeAuditLog(
-          { entityType: 'User', entityId: user.id, action: 'CREATE', organizationId: orgId, userId: ctx.user.id, ipAddress: ctx.ipAddress },
+          {
+            entityType: 'User',
+            entityId: user.id,
+            action: 'CREATE',
+            organizationId: orgId,
+            userId: ctx.user.id,
+            ipAddress: ctx.ipAddress,
+          },
           tx,
         );
 
@@ -179,12 +230,12 @@ export const usersRouter = router({
   update: orgProcedure
     .input(
       z.object({
-        id: z.string().cuid(),
+        id: z.cuid2(),
         name: z.string().min(1).max(255).optional(),
-        email: z.string().email().optional(),
+        email: z.email().optional(),
         firstName: z.string().max(255).optional(),
         lastName: z.string().max(255).optional(),
-        roleId: z.string().cuid().optional(),
+        roleId: z.cuid2().optional(),
         isActive: z.boolean().optional(),
       }),
     )
@@ -203,7 +254,8 @@ export const usersRouter = router({
         },
       });
       if (!existing) throw new NotFoundError('User', id);
-      if (existing.platformRole === 'SUPER_ADMIN') throw new ForbiddenError('update', 'Cannot modify SUPER_ADMIN users.');
+      if (existing.platformRole === 'SUPER_ADMIN')
+        throw new ForbiddenError('update', 'Cannot modify SUPER_ADMIN users.');
 
       return ctx.db.$transaction(async (tx) => {
         await tx.user.update({ where: { id }, data });
@@ -212,15 +264,27 @@ export const usersRouter = router({
           const existingRole = existing.userOrganizationRoles[0];
           if (existingRole) {
             if (existingRole.roleId !== roleId) {
-              await tx.userOrganizationRole.update({ where: { id: existingRole.id }, data: { roleId } });
+              await tx.userOrganizationRole.update({
+                where: { id: existingRole.id },
+                data: { roleId },
+              });
             }
           } else {
-            await tx.userOrganizationRole.create({ data: { userId: id, organizationId: orgId, roleId } });
+            await tx.userOrganizationRole.create({
+              data: { userId: id, organizationId: orgId, roleId },
+            });
           }
         }
 
         await writeAuditLog(
-          { entityType: 'User', entityId: id, action: 'UPDATE', organizationId: orgId, userId: ctx.user.id, ipAddress: ctx.ipAddress },
+          {
+            entityType: 'User',
+            entityId: id,
+            action: 'UPDATE',
+            organizationId: orgId,
+            userId: ctx.user.id,
+            ipAddress: ctx.ipAddress,
+          },
           tx,
         );
 
@@ -240,7 +304,7 @@ export const usersRouter = router({
   setPassword: orgProcedure
     .input(
       z.object({
-        id: z.string().cuid(),
+        id: z.cuid2(),
         newPassword: z.string().min(6).max(100),
       }),
     )
@@ -278,7 +342,14 @@ export const usersRouter = router({
         }
 
         await writeAuditLog(
-          { entityType: 'User', entityId: user.id, action: 'UPDATE', organizationId: ctx.user.organizationId!, userId: ctx.user.id, ipAddress: ctx.ipAddress },
+          {
+            entityType: 'User',
+            entityId: user.id,
+            action: 'UPDATE',
+            organizationId: ctx.user.organizationId!,
+            userId: ctx.user.id,
+            ipAddress: ctx.ipAddress,
+          },
           tx,
         );
       });
@@ -287,7 +358,7 @@ export const usersRouter = router({
     }),
 
   sendPasswordReset: orgProcedure
-    .input(z.object({ id: z.string().cuid() }))
+    .input(z.object({ id: z.cuid2() }))
     .mutation(async ({ ctx, input }) => {
       assertCan(ctx.ability, 'user:manage', 'User', { organizationId: ctx.user.organizationId });
 
@@ -308,55 +379,60 @@ export const usersRouter = router({
       return { success: true };
     }),
 
-  toggleActive: orgProcedure
-    .input(z.object({ id: z.string().cuid() }))
-    .mutation(async ({ ctx, input }) => {
-      assertCan(ctx.ability, 'user:manage', 'User', { organizationId: ctx.user.organizationId });
+  toggleActive: orgProcedure.input(z.object({ id: z.cuid2() })).mutation(async ({ ctx, input }) => {
+    assertCan(ctx.ability, 'user:manage', 'User', { organizationId: ctx.user.organizationId });
 
-      const user = await ctx.db.user.findFirst({
-        where: { id: input.id, organizationId: ctx.user.organizationId, deletedAt: null },
-        select: { id: true, isActive: true, platformRole: true },
-      });
-      if (!user) throw new NotFoundError('User', input.id);
-      if (user.platformRole === 'SUPER_ADMIN') throw new ForbiddenError('toggle', 'Cannot toggle SUPER_ADMIN users.');
+    const user = await ctx.db.user.findFirst({
+      where: { id: input.id, organizationId: ctx.user.organizationId, deletedAt: null },
+      select: { id: true, isActive: true, platformRole: true },
+    });
+    if (!user) throw new NotFoundError('User', input.id);
+    if (user.platformRole === 'SUPER_ADMIN')
+      throw new ForbiddenError('toggle', 'Cannot toggle SUPER_ADMIN users.');
 
-      return ctx.db.user.update({
+    return ctx.db.user.update({
+      where: { id: input.id },
+      data: { isActive: !user.isActive },
+      select: { id: true, isActive: true },
+    });
+  }),
+
+  delete: orgProcedure.input(z.object({ id: z.cuid2() })).mutation(async ({ ctx, input }) => {
+    assertCan(ctx.ability, 'user:manage', 'User', { organizationId: ctx.user.organizationId });
+
+    const user = await ctx.db.user.findFirst({
+      where: { id: input.id, organizationId: ctx.user.organizationId, deletedAt: null },
+      select: { id: true, platformRole: true },
+    });
+    if (!user) throw new NotFoundError('User', input.id);
+    if (user.platformRole === 'SUPER_ADMIN')
+      throw new ForbiddenError('delete', 'Cannot delete SUPER_ADMIN users.');
+    if (input.id === ctx.user.id) throw new ForbiddenError('delete', 'Cannot delete yourself.');
+
+    await ctx.db.$transaction(async (tx) => {
+      await tx.user.update({
         where: { id: input.id },
-        data: { isActive: !user.isActive },
-        select: { id: true, isActive: true },
+        data: { deletedAt: new Date(), isActive: false, organizationId: null },
       });
-    }),
-
-  delete: orgProcedure
-    .input(z.object({ id: z.string().cuid() }))
-    .mutation(async ({ ctx, input }) => {
-      assertCan(ctx.ability, 'user:manage', 'User', { organizationId: ctx.user.organizationId });
-
-      const user = await ctx.db.user.findFirst({
-        where: { id: input.id, organizationId: ctx.user.organizationId, deletedAt: null },
-        select: { id: true, platformRole: true },
+      await tx.userOrganizationRole.updateMany({
+        where: { userId: input.id, organizationId: ctx.user.organizationId },
+        data: { deletedAt: new Date(), isActive: false },
       });
-      if (!user) throw new NotFoundError('User', input.id);
-      if (user.platformRole === 'SUPER_ADMIN') throw new ForbiddenError('delete', 'Cannot delete SUPER_ADMIN users.');
-      if (input.id === ctx.user.id) throw new ForbiddenError('delete', 'Cannot delete yourself.');
+      await writeAuditLog(
+        {
+          entityType: 'User',
+          entityId: input.id,
+          action: 'DELETE',
+          organizationId: ctx.user.organizationId!,
+          userId: ctx.user.id,
+          ipAddress: ctx.ipAddress,
+        },
+        tx,
+      );
+    });
 
-      await ctx.db.$transaction(async (tx) => {
-        await tx.user.update({
-          where: { id: input.id },
-          data: { deletedAt: new Date(), isActive: false, organizationId: null },
-        });
-        await tx.userOrganizationRole.updateMany({
-          where: { userId: input.id, organizationId: ctx.user.organizationId },
-          data: { deletedAt: new Date(), isActive: false },
-        });
-        await writeAuditLog(
-          { entityType: 'User', entityId: input.id, action: 'DELETE', organizationId: ctx.user.organizationId!, userId: ctx.user.id, ipAddress: ctx.ipAddress },
-          tx,
-        );
-      });
-
-      return { success: true };
-    }),
+    return { success: true };
+  }),
 
   // ── Dynamic Roles CRUD ──────────────────────────────────────────────────
 
@@ -367,10 +443,7 @@ export const usersRouter = router({
 
       return ctx.db.role.findMany({
         where: {
-          OR: [
-            { isSystem: true },
-            { organizationId: orgId },
-          ],
+          OR: [{ isSystem: true }, { organizationId: orgId }],
           deletedAt: null,
         },
         select: roleSelect,
@@ -404,7 +477,7 @@ export const usersRouter = router({
     update: orgProcedure
       .input(
         z.object({
-          id: z.string().cuid(),
+          id: z.cuid2(),
           name: z.string().min(1).max(100).optional(),
           description: z.string().max(500).optional(),
           icon: z.string().max(50).optional(),
@@ -424,24 +497,22 @@ export const usersRouter = router({
         return ctx.db.role.update({ where: { id }, data });
       }),
 
-    delete: orgProcedure
-      .input(z.object({ id: z.string().cuid() }))
-      .mutation(async ({ ctx, input }) => {
-        assertCan(ctx.ability, 'role:manage', 'all', { organizationId: ctx.user.organizationId });
+    delete: orgProcedure.input(z.object({ id: z.cuid2() })).mutation(async ({ ctx, input }) => {
+      assertCan(ctx.ability, 'role:manage', 'all', { organizationId: ctx.user.organizationId });
 
-        const role = await ctx.db.role.findFirst({
-          where: { id: input.id, organizationId: ctx.user.organizationId, deletedAt: null },
-        });
-        if (!role) throw new NotFoundError('Role', input.id);
-        if (role.isSystem) throw new ForbiddenError('delete', 'Cannot delete system roles.');
+      const role = await ctx.db.role.findFirst({
+        where: { id: input.id, organizationId: ctx.user.organizationId, deletedAt: null },
+      });
+      if (!role) throw new NotFoundError('Role', input.id);
+      if (role.isSystem) throw new ForbiddenError('delete', 'Cannot delete system roles.');
 
-        await ctx.db.$transaction(async (tx) => {
-          await tx.rolePermission.deleteMany({ where: { roleId: input.id } });
-          await tx.role.update({ where: { id: input.id }, data: { deletedAt: new Date() } });
-        });
+      await ctx.db.$transaction(async (tx) => {
+        await tx.rolePermission.deleteMany({ where: { roleId: input.id } });
+        await tx.role.update({ where: { id: input.id }, data: { deletedAt: new Date() } });
+      });
 
-        return { success: true };
-      }),
+      return { success: true };
+    }),
   },
 
   // ── Permissions ──────────────────────────────────────────────────────────
@@ -454,15 +525,14 @@ export const usersRouter = router({
         orderBy: [{ module: 'asc' }, { code: 'asc' }],
       });
 
-      return permissions.reduce<Record<string, { code: string; label: string; description: string | null }[]>>(
-        (acc, p) => {
-          const module = p.module || 'Other';
-          if (!acc[module]) acc[module] = [];
-          acc[module].push({ code: p.code, label: p.label, description: p.description });
-          return acc;
-        },
-        {},
-      );
+      return permissions.reduce<
+        Record<string, { code: string; label: string; description: string | null }[]>
+      >((acc, p) => {
+        const module = p.module || 'Other';
+        if (!acc[module]) acc[module] = [];
+        acc[module].push({ code: p.code, label: p.label, description: p.description });
+        return acc;
+      }, {});
     }),
 
     listAll: orgProcedure.query(async ({ ctx }) => {
@@ -477,10 +547,7 @@ export const usersRouter = router({
 
     return ctx.db.role.findMany({
       where: {
-        OR: [
-          { isSystem: true },
-          { organizationId: orgId },
-        ],
+        OR: [{ isSystem: true }, { organizationId: orgId }],
         deletedAt: null,
       },
       select: roleSelect,
@@ -491,24 +558,25 @@ export const usersRouter = router({
   // ── Role Permissions ────────────────────────────────────────────────────
 
   rolePermissions: {
-    list: orgProcedure
-      .input(z.object({ roleId: z.string().cuid() }))
-      .query(async ({ ctx, input }) => {
-        assertCan(ctx.ability, 'user:manage', 'User', { organizationId: ctx.user.organizationId });
+    list: orgProcedure.input(z.object({ roleId: z.cuid2() })).query(async ({ ctx, input }) => {
+      assertCan(ctx.ability, 'user:manage', 'User', { organizationId: ctx.user.organizationId });
 
-        const rolePerms = await ctx.db.rolePermission.findMany({
-          where: { roleId: input.roleId },
-          include: { permission: true },
-        });
-        return rolePerms.map((rp) => rp.permission);
-      }),
+      const rolePerms = await ctx.db.rolePermission.findMany({
+        where: { roleId: input.roleId },
+        include: { permission: true },
+      });
+      return rolePerms.map((rp) => rp.permission);
+    }),
 
     update: orgProcedure
-      .input(z.object({ roleId: z.string().cuid(), permissionIds: z.array(z.string().cuid()) }))
+      .input(z.object({ roleId: z.cuid2(), permissionIds: z.array(z.cuid2()) }))
       .mutation(async ({ ctx, input }) => {
         assertCan(ctx.ability, 'role:manage', 'all', { organizationId: ctx.user.organizationId });
 
-        const role = await ctx.db.role.findUnique({ where: { id: input.roleId }, select: { systemKey: true } });
+        const role = await ctx.db.role.findUnique({
+          where: { id: input.roleId },
+          select: { systemKey: true },
+        });
 
         await ctx.db.$transaction(async (tx) => {
           await tx.rolePermission.deleteMany({ where: { roleId: input.roleId } });
