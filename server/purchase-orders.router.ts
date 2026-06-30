@@ -18,12 +18,12 @@ import {
 } from './notifications.shared';
 
 const purchaseLineInputSchema = z.object({
-  itemId: z.cuid2(),
+  itemId: z.string(),
   description: z.string().max(1000).optional(),
   quantity: z.number().positive(),
   unitCost: z.number().min(0),
   taxAmt: z.number().min(0).default(0),
-  taxRateId: z.cuid2().optional(),
+  taxRateId: z.string().optional(),
   taxRateSnapshot: z.number().min(0).optional(),
   taxRateName: z.string().optional(),
 });
@@ -31,9 +31,9 @@ const purchaseLineInputSchema = z.object({
 const purchaseOrderBaseSchema = z.object({
   date: z.coerce.date().default(() => new Date()),
   expectedDate: z.coerce.date().optional(),
-  supplierId: z.cuid2(),
-  warehouseId: z.cuid2(),
-  departmentId: z.cuid2().optional(),
+  supplierId: z.string(),
+  warehouseId: z.string(),
+  departmentId: z.string().optional(),
   currency: currencyCodeSchema.default('BHD'),
   exchangeRate: z.number().positive().default(1),
   notes: z.string().max(5000).optional(),
@@ -44,7 +44,7 @@ const purchaseOrderBaseSchema = z.object({
 const createPurchaseOrderSchema = purchaseOrderBaseSchema;
 
 const updatePurchaseOrderSchema = purchaseOrderBaseSchema.partial().extend({
-  id: z.cuid2(),
+  id: z.string(),
   version: z.number().int(),
   lines: z.array(purchaseLineInputSchema).min(1).optional(),
 });
@@ -65,7 +65,7 @@ const listPurchaseOrdersSchema = z.object({
       'CLOSED',
     ])
     .optional(),
-  supplierId: z.cuid2().optional(),
+  supplierId: z.string().optional(),
   sortBy: z.enum(['date', 'serial', 'total', 'createdAt', 'expectedDate']).default('date'),
   sortOrder: sortOrderSchema,
 });
@@ -121,7 +121,7 @@ export const purchaseOrdersRouter = router({
     return paginatedResponse(orders, total, pagination);
   }),
 
-  byId: orgProcedure.input(z.object({ id: z.cuid2() })).query(async ({ ctx, input }) => {
+  byId: orgProcedure.input(z.object({ id: z.string() })).query(async ({ ctx, input }) => {
     assertCan(ctx.ability, 'po:read', 'PurchaseOrder');
 
     const order = await ctx.db.purchaseOrder.findFirst({
@@ -146,7 +146,7 @@ export const purchaseOrdersRouter = router({
     return order;
   }),
 
-  stockMovements: orgProcedure.input(z.object({ id: z.cuid2() })).query(async ({ ctx, input }) => {
+  stockMovements: orgProcedure.input(z.object({ id: z.string() })).query(async ({ ctx, input }) => {
     assertCan(ctx.ability, 'stock:read', 'StockMovement');
     return ctx.db.stockMovement.findMany({
       where: {
@@ -346,7 +346,7 @@ export const purchaseOrdersRouter = router({
   }),
 
   submitForApproval: orgProcedure
-    .input(z.object({ id: z.cuid2(), version: z.number().int() }))
+    .input(z.object({ id: z.string(), version: z.number().int() }))
     .mutation(async ({ ctx, input }) => {
       const orgId = ctx.user.organizationId;
 
@@ -407,7 +407,7 @@ export const purchaseOrdersRouter = router({
     }),
 
   approve: orgProcedure
-    .input(z.object({ id: z.cuid2(), version: z.number().int() }))
+    .input(z.object({ id: z.string(), version: z.number().int() }))
     .mutation(async ({ ctx, input }) => {
       const orgId = ctx.user.organizationId;
 
@@ -470,7 +470,7 @@ export const purchaseOrdersRouter = router({
     }),
 
   reject: orgProcedure
-    .input(z.object({ id: z.cuid2(), version: z.number().int(), reason: z.string().optional() }))
+    .input(z.object({ id: z.string(), version: z.number().int(), reason: z.string().optional() }))
     .mutation(async ({ ctx, input }) => {
       const orgId = ctx.user.organizationId;
 
@@ -536,7 +536,7 @@ export const purchaseOrdersRouter = router({
     }),
 
   order: orgProcedure
-    .input(z.object({ id: z.cuid2(), version: z.number().int() }))
+    .input(z.object({ id: z.string(), version: z.number().int() }))
     .mutation(async ({ ctx, input }) => {
       const orgId = ctx.user.organizationId;
 
@@ -591,7 +591,7 @@ export const purchaseOrdersRouter = router({
     }),
 
   receive: orgProcedure
-    .input(z.object({ id: z.cuid2(), version: z.number().int() }))
+    .input(z.object({ id: z.string(), version: z.number().int() }))
     .mutation(async ({ ctx, input }) => {
       const orgId = ctx.user.organizationId;
 
@@ -717,7 +717,7 @@ export const purchaseOrdersRouter = router({
     }),
 
   cancel: orgProcedure
-    .input(z.object({ id: z.cuid2(), version: z.number().int(), reason: z.string().optional() }))
+    .input(z.object({ id: z.string(), version: z.number().int(), reason: z.string().optional() }))
     .mutation(async ({ ctx, input }) => {
       const orgId = ctx.user.organizationId;
 
@@ -777,7 +777,7 @@ export const purchaseOrdersRouter = router({
       });
     }),
 
-  delete: orgProcedure.input(z.object({ id: z.cuid2() })).mutation(async ({ ctx, input }) => {
+  delete: orgProcedure.input(z.object({ id: z.string() })).mutation(async ({ ctx, input }) => {
     const existing = await ctx.db.purchaseOrder.findFirst({
       where: { id: input.id, organizationId: ctx.user.organizationId, deletedAt: null },
       select: { id: true, status: true },

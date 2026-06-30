@@ -18,7 +18,7 @@ const warehouseBaseSchema = z.object({
 
 const createWarehouseSchema = warehouseBaseSchema;
 const updateWarehouseSchema = warehouseBaseSchema.partial().extend({
-  id: z.cuid2(),
+  id: z.string(),
 });
 
 const listWarehousesSchema = z.object({
@@ -65,7 +65,7 @@ export const warehousesRouter = router({
     return paginatedResponse(warehouses, total, pagination);
   }),
 
-  byId: orgProcedure.input(z.object({ id: z.cuid2() })).query(async ({ ctx, input }) => {
+  byId: orgProcedure.input(z.object({ id: z.string() })).query(async ({ ctx, input }) => {
     assertCan(ctx.ability, 'stock:read', 'all');
 
     const warehouse = await ctx.db.warehouse.findFirst({
@@ -154,7 +154,7 @@ export const warehousesRouter = router({
     });
   }),
 
-  delete: orgProcedure.input(z.object({ id: z.cuid2() })).mutation(async ({ ctx, input }) => {
+  delete: orgProcedure.input(z.object({ id: z.string() })).mutation(async ({ ctx, input }) => {
     const existing = await ctx.db.warehouse.findFirst({
       where: { id: input.id, organizationId: ctx.user.organizationId, deletedAt: null },
       select: {

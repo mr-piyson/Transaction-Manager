@@ -17,7 +17,7 @@ const classSchema = z.object({
   description: z.string().max(500).optional(),
   color: z.string().max(7).optional(),
   icon: z.string().max(50).optional(),
-  familyId: z.cuid2(),
+  familyId: z.string(),
 });
 
 const commoditySchema = z.object({
@@ -26,7 +26,7 @@ const commoditySchema = z.object({
   description: z.string().max(500).optional(),
   color: z.string().max(7).optional(),
   icon: z.string().max(50).optional(),
-  classId: z.cuid2(),
+  classId: z.string(),
 });
 
 export const categoriesRouter = router({
@@ -87,7 +87,7 @@ export const categoriesRouter = router({
   }),
 
   updateFamily: orgProcedure
-    .input(familySchema.partial().extend({ id: z.cuid2() }))
+    .input(familySchema.partial().extend({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
       const { id, ...data } = input;
       const orgId = ctx.user.organizationId;
@@ -122,39 +122,41 @@ export const categoriesRouter = router({
       });
     }),
 
-  deleteFamily: orgProcedure.input(z.object({ id: z.cuid2() })).mutation(async ({ ctx, input }) => {
-    const orgId = ctx.user.organizationId;
-    const existing = await ctx.db.categoryFamily.findFirst({
-      where: { id: input.id, organizationId: orgId },
-      select: { id: true },
-    });
-    if (!existing) throw new NotFoundError('CategoryFamily', input.id);
-
-    const hasClasses = await ctx.db.categoryClass.count({
-      where: { familyId: input.id, deletedAt: null },
-    });
-    if (hasClasses > 0)
-      throw new ConflictError('Cannot delete family with active classes. Remove classes first.');
-
-    return ctx.db.$transaction(async (tx) => {
-      await tx.categoryFamily.update({
-        where: { id: input.id },
-        data: { deletedAt: new Date(), isActive: false },
+  deleteFamily: orgProcedure
+    .input(z.object({ id: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      const orgId = ctx.user.organizationId;
+      const existing = await ctx.db.categoryFamily.findFirst({
+        where: { id: input.id, organizationId: orgId },
+        select: { id: true },
       });
-      await writeAuditLog(
-        {
-          entityType: 'CategoryFamily',
-          entityId: input.id,
-          action: 'DELETE',
-          organizationId: orgId,
-          userId: ctx.user.id,
-          ipAddress: ctx.ipAddress,
-        },
-        tx,
-      );
-      return { success: true };
-    });
-  }),
+      if (!existing) throw new NotFoundError('CategoryFamily', input.id);
+
+      const hasClasses = await ctx.db.categoryClass.count({
+        where: { familyId: input.id, deletedAt: null },
+      });
+      if (hasClasses > 0)
+        throw new ConflictError('Cannot delete family with active classes. Remove classes first.');
+
+      return ctx.db.$transaction(async (tx) => {
+        await tx.categoryFamily.update({
+          where: { id: input.id },
+          data: { deletedAt: new Date(), isActive: false },
+        });
+        await writeAuditLog(
+          {
+            entityType: 'CategoryFamily',
+            entityId: input.id,
+            action: 'DELETE',
+            organizationId: orgId,
+            userId: ctx.user.id,
+            ipAddress: ctx.ipAddress,
+          },
+          tx,
+        );
+        return { success: true };
+      });
+    }),
 
   // ── CLASS CRUD ────────────────────────────────────────────────────────────
 
@@ -195,7 +197,7 @@ export const categoriesRouter = router({
   }),
 
   updateClass: orgProcedure
-    .input(classSchema.partial().extend({ id: z.cuid2() }))
+    .input(classSchema.partial().extend({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
       const { id, ...data } = input;
       const orgId = ctx.user.organizationId;
@@ -236,7 +238,7 @@ export const categoriesRouter = router({
       });
     }),
 
-  deleteClass: orgProcedure.input(z.object({ id: z.cuid2() })).mutation(async ({ ctx, input }) => {
+  deleteClass: orgProcedure.input(z.object({ id: z.string() })).mutation(async ({ ctx, input }) => {
     const orgId = ctx.user.organizationId;
     const existing = await ctx.db.categoryClass.findFirst({
       where: { id: input.id, organizationId: orgId },
@@ -310,7 +312,7 @@ export const categoriesRouter = router({
   }),
 
   updateCommodity: orgProcedure
-    .input(commoditySchema.partial().extend({ id: z.cuid2() }))
+    .input(commoditySchema.partial().extend({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
       const { id, ...data } = input;
       const orgId = ctx.user.organizationId;
@@ -352,7 +354,7 @@ export const categoriesRouter = router({
     }),
 
   deleteCommodity: orgProcedure
-    .input(z.object({ id: z.cuid2() }))
+    .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
       const orgId = ctx.user.organizationId;
       const existing = await ctx.db.categoryCommodity.findFirst({

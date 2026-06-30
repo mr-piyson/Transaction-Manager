@@ -12,33 +12,33 @@ import { writeAuditLog } from './audit.service';
 const listStockSchema = z.object({
   ...offsetPaginationSchema.shape,
   search: z.string().optional(),
-  warehouseId: z.cuid2().optional(),
-  categoryId: z.cuid2().optional(),
+  warehouseId: z.string().optional(),
+  categoryId: z.string().optional(),
   lowStock: z.boolean().optional(),
   sortBy: z.enum(['itemName', 'warehouseName', 'quantity', 'updatedAt']).default('itemName'),
   sortOrder: sortOrderSchema,
 });
 
 const adjustStockSchema = z.object({
-  itemId: z.cuid2(),
-  warehouseId: z.cuid2(),
+  itemId: z.string(),
+  warehouseId: z.string(),
   quantity: z.number().min(0, 'Quantity must be 0 or greater'),
   reason: z.string().max(500).optional(),
 });
 
 const transferStockSchema = z.object({
-  itemId: z.cuid2(),
-  fromWarehouseId: z.cuid2(),
-  toWarehouseId: z.cuid2(),
+  itemId: z.string(),
+  fromWarehouseId: z.string(),
+  toWarehouseId: z.string(),
   quantity: z.number().positive('Quantity must be positive'),
   notes: z.string().max(500).optional(),
 });
 
 const listMovementsSchema = z.object({
   ...offsetPaginationSchema.shape,
-  itemId: z.cuid2().optional(),
+  itemId: z.string().optional(),
   type: z.string().optional(),
-  warehouseId: z.cuid2().optional(),
+  warehouseId: z.string().optional(),
   dateFrom: z.coerce.date().optional(),
   dateTo: z.coerce.date().optional(),
   sortBy: z.enum(['createdAt', 'type']).default('createdAt'),
@@ -112,7 +112,7 @@ export const stockRouter = router({
     return paginatedResponse(enriched, total, pagination);
   }),
 
-  byItem: orgProcedure.input(z.object({ itemId: z.cuid2() })).query(async ({ ctx, input }) => {
+  byItem: orgProcedure.input(z.object({ itemId: z.string() })).query(async ({ ctx, input }) => {
     assertCan(ctx.ability, 'stock:read', 'Stock');
 
     const stocks = await ctx.db.stock.findMany({
@@ -332,8 +332,8 @@ export const stockRouter = router({
   forItems: orgProcedure
     .input(
       z.object({
-        itemIds: z.array(z.cuid2()),
-        warehouseId: z.cuid2(),
+        itemIds: z.array(z.string()),
+        warehouseId: z.string(),
       }),
     )
     .query(async ({ ctx, input }) => {

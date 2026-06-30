@@ -60,18 +60,18 @@ import { addPayment, deletePayment } from './payments.service';
 // ---------------------------------------------------------------------------
 
 const invoiceLineInputSchema = z.object({
-  id: z.cuid2().optional(), // Present on update (existing line)
-  itemId: z.cuid2().optional(),
+  id: z.string().optional(), // Present on update (existing line)
+  itemId: z.string().optional(),
   description: z.string().max(1000).optional(),
   quantity: z.number().positive(),
   unitPrice: z.number().min(0),
   discountAmt: z.number().min(0).default(0),
   purchasePrice: z.number().min(0).optional(),
-  taxRateId: z.cuid2().optional(),
+  taxRateId: z.string().optional(),
   taxRateSnapshot: z.number().min(0).optional(),
   taxRateName: z.string().optional(),
   sortOrder: z.number().int().default(0),
-  departmentId: z.cuid2().optional(),
+  departmentId: z.string().optional(),
 });
 
 // ---------------------------------------------------------------------------
@@ -82,9 +82,9 @@ const invoiceBaseSchema = z.object({
   type: z.enum(['QUOTE', 'INVOICE', 'CREDIT_NOTE', 'PROFORMA', 'DELIVERY_NOTE']).default('INVOICE'),
   date: z.coerce.date().default(() => new Date()),
   dueDate: z.coerce.date().optional(),
-  customerId: z.cuid2().optional(),
-  warehouseId: z.cuid2().optional(),
-  departmentId: z.cuid2().optional(),
+  customerId: z.string().optional(),
+  warehouseId: z.string().optional(),
+  departmentId: z.string().optional(),
   currency: currencyCodeSchema.default('BHD'),
   exchangeRate: z.number().positive().default(1),
   description: z.string().max(2000).optional(),
@@ -92,14 +92,14 @@ const invoiceBaseSchema = z.object({
   termsText: z.string().max(50000).optional(),
   internalNotes: z.string().max(5000).optional(),
   isWalkIn: z.boolean().default(false),
-  parentInvoiceId: z.cuid2().optional(), // Required for CREDIT_NOTE
+  parentInvoiceId: z.string().optional(), // Required for CREDIT_NOTE
   lines: z.array(invoiceLineInputSchema).min(1, 'At least one line is required'),
 });
 
 const createInvoiceSchema = invoiceBaseSchema;
 
 const updateInvoiceSchema = invoiceBaseSchema.partial().extend({
-  id: z.cuid2(),
+  id: z.string(),
   version: z.number().int(), // Optimistic lock
   lines: z.array(invoiceLineInputSchema).min(1).optional(),
 });
@@ -122,7 +122,7 @@ const listInvoicesSchema = z.object({
     ])
     .optional(),
   paymentStatus: z.enum(['PENDING', 'PARTIAL', 'PAID', 'OVERDUE', 'CANCELLED']).optional(),
-  customerId: z.cuid2().optional(),
+  customerId: z.string().optional(),
   dateRange: dateRangeSchema,
   dueDateRange: dateRangeSchema,
   sortBy: z.enum(['date', 'dueDate', 'total', 'serial', 'createdAt']).default('date'),
@@ -211,7 +211,7 @@ export const invoicesRouter = router({
   }),
 
   // ── GET BY ID (full detail) ───────────────────────────────────────────────
-  byId: orgProcedure.input(z.object({ id: z.cuid2() })).query(async ({ ctx, input }) => {
+  byId: orgProcedure.input(z.object({ id: z.string() })).query(async ({ ctx, input }) => {
     assertCan(ctx.ability, 'invoice:read', 'Invoice');
 
     const invoice = await ctx.db.invoice.findFirst({
@@ -582,7 +582,7 @@ export const invoicesRouter = router({
 
   // ── SEND (DRAFT → SENT + stock deduction) ────────────────────────────────
   send: orgProcedure
-    .input(z.object({ id: z.cuid2(), version: z.number().int() }))
+    .input(z.object({ id: z.string(), version: z.number().int() }))
     .mutation(async ({ ctx, input }) => {
       const orgId = ctx.user.organizationId;
 
@@ -702,7 +702,7 @@ export const invoicesRouter = router({
 
   // ── SUBMIT FOR APPROVAL (DRAFT → PENDING_APPROVAL) ────────────────────────
   submitForApproval: orgProcedure
-    .input(z.object({ id: z.cuid2(), version: z.number().int() }))
+    .input(z.object({ id: z.string(), version: z.number().int() }))
     .mutation(async ({ ctx, input }) => {
       const orgId = ctx.user.organizationId;
 
@@ -787,7 +787,7 @@ export const invoicesRouter = router({
 
   // ── APPROVE (PENDING_APPROVAL → APPROVED) ─────────────────────────────────
   approve: orgProcedure
-    .input(z.object({ id: z.cuid2(), version: z.number().int() }))
+    .input(z.object({ id: z.string(), version: z.number().int() }))
     .mutation(async ({ ctx, input }) => {
       const orgId = ctx.user.organizationId;
 
@@ -872,7 +872,7 @@ export const invoicesRouter = router({
 
   // ── REJECT (PENDING_APPROVAL → DRAFT) ─────────────────────────────────────
   reject: orgProcedure
-    .input(z.object({ id: z.cuid2(), version: z.number().int(), reason: z.string().optional() }))
+    .input(z.object({ id: z.string(), version: z.number().int(), reason: z.string().optional() }))
     .mutation(async ({ ctx, input }) => {
       const orgId = ctx.user.organizationId;
 
@@ -963,7 +963,7 @@ export const invoicesRouter = router({
   cancel: orgProcedure
     .input(
       z.object({
-        id: z.cuid2(),
+        id: z.string(),
         version: z.number().int(),
         reason: z.string().optional(),
       }),
@@ -1079,7 +1079,7 @@ export const invoicesRouter = router({
 
   // ── CONVERT QUOTE TO INVOICE ──────────────────────────────────────────────
   convertQuote: orgProcedure
-    .input(z.object({ quoteId: z.cuid2() }))
+    .input(z.object({ quoteId: z.string() }))
     .mutation(async ({ ctx, input }) => {
       assertCan(ctx.ability, 'invoice:create', 'Invoice');
 
@@ -1217,7 +1217,7 @@ export const invoicesRouter = router({
     }),
 
   // ── SOFT DELETE (DRAFT only) ──────────────────────────────────────────────
-  delete: orgProcedure.input(z.object({ id: z.cuid2() })).mutation(async ({ ctx, input }) => {
+  delete: orgProcedure.input(z.object({ id: z.string() })).mutation(async ({ ctx, input }) => {
     const orgId = ctx.user.organizationId;
 
     const invoice = await ctx.db.invoice.findFirst({
@@ -1264,7 +1264,7 @@ export const invoicesRouter = router({
   addPayment: orgProcedure
     .input(
       z.object({
-        invoiceId: z.cuid2(),
+        invoiceId: z.string(),
         amount: z.number().positive(),
         method: paymentMethodSchema,
         date: z.coerce.date().default(() => new Date()),
@@ -1324,7 +1324,7 @@ export const invoicesRouter = router({
     }),
 
   deletePayment: orgProcedure
-    .input(z.object({ paymentId: z.cuid2() }))
+    .input(z.object({ paymentId: z.string() }))
     .mutation(async ({ ctx, input }) => {
       const orgId = ctx.user.organizationId;
 

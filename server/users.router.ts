@@ -52,7 +52,7 @@ export const usersRouter = router({
   create: orgProcedure
     .input(
       userBaseSchema.extend({
-        roleId: z.cuid2(),
+        roleId: z.string(),
         isActive: z.boolean().default(true),
         password: z.string().min(6).max(100).optional(),
       }),
@@ -230,12 +230,12 @@ export const usersRouter = router({
   update: orgProcedure
     .input(
       z.object({
-        id: z.cuid2(),
+        id: z.string().min(1),
         name: z.string().min(1).max(255).optional(),
         email: z.email().optional(),
         firstName: z.string().max(255).optional(),
         lastName: z.string().max(255).optional(),
-        roleId: z.cuid2().optional(),
+        roleId: z.string().optional(),
         isActive: z.boolean().optional(),
       }),
     )
@@ -304,7 +304,7 @@ export const usersRouter = router({
   setPassword: orgProcedure
     .input(
       z.object({
-        id: z.cuid2(),
+        id: z.string().min(1),
         newPassword: z.string().min(6).max(100),
       }),
     )
@@ -358,7 +358,7 @@ export const usersRouter = router({
     }),
 
   sendPasswordReset: orgProcedure
-    .input(z.object({ id: z.cuid2() }))
+    .input(z.object({ id: z.string().min(1) }))
     .mutation(async ({ ctx, input }) => {
       assertCan(ctx.ability, 'user:manage', 'User', { organizationId: ctx.user.organizationId });
 
@@ -379,60 +379,64 @@ export const usersRouter = router({
       return { success: true };
     }),
 
-  toggleActive: orgProcedure.input(z.object({ id: z.cuid2() })).mutation(async ({ ctx, input }) => {
-    assertCan(ctx.ability, 'user:manage', 'User', { organizationId: ctx.user.organizationId });
+  toggleActive: orgProcedure
+    .input(z.object({ id: z.string().min(1) }))
+    .mutation(async ({ ctx, input }) => {
+      assertCan(ctx.ability, 'user:manage', 'User', { organizationId: ctx.user.organizationId });
 
-    const user = await ctx.db.user.findFirst({
-      where: { id: input.id, organizationId: ctx.user.organizationId, deletedAt: null },
-      select: { id: true, isActive: true, platformRole: true },
-    });
-    if (!user) throw new NotFoundError('User', input.id);
-    if (user.platformRole === 'SUPER_ADMIN')
-      throw new ForbiddenError('toggle', 'Cannot toggle SUPER_ADMIN users.');
+      const user = await ctx.db.user.findFirst({
+        where: { id: input.id, organizationId: ctx.user.organizationId, deletedAt: null },
+        select: { id: true, isActive: true, platformRole: true },
+      });
+      if (!user) throw new NotFoundError('User', input.id);
+      if (user.platformRole === 'SUPER_ADMIN')
+        throw new ForbiddenError('toggle', 'Cannot toggle SUPER_ADMIN users.');
 
-    return ctx.db.user.update({
-      where: { id: input.id },
-      data: { isActive: !user.isActive },
-      select: { id: true, isActive: true },
-    });
-  }),
-
-  delete: orgProcedure.input(z.object({ id: z.cuid2() })).mutation(async ({ ctx, input }) => {
-    assertCan(ctx.ability, 'user:manage', 'User', { organizationId: ctx.user.organizationId });
-
-    const user = await ctx.db.user.findFirst({
-      where: { id: input.id, organizationId: ctx.user.organizationId, deletedAt: null },
-      select: { id: true, platformRole: true },
-    });
-    if (!user) throw new NotFoundError('User', input.id);
-    if (user.platformRole === 'SUPER_ADMIN')
-      throw new ForbiddenError('delete', 'Cannot delete SUPER_ADMIN users.');
-    if (input.id === ctx.user.id) throw new ForbiddenError('delete', 'Cannot delete yourself.');
-
-    await ctx.db.$transaction(async (tx) => {
-      await tx.user.update({
+      return ctx.db.user.update({
         where: { id: input.id },
-        data: { deletedAt: new Date(), isActive: false, organizationId: null },
+        data: { isActive: !user.isActive },
+        select: { id: true, isActive: true },
       });
-      await tx.userOrganizationRole.updateMany({
-        where: { userId: input.id, organizationId: ctx.user.organizationId },
-        data: { deletedAt: new Date(), isActive: false },
-      });
-      await writeAuditLog(
-        {
-          entityType: 'User',
-          entityId: input.id,
-          action: 'DELETE',
-          organizationId: ctx.user.organizationId!,
-          userId: ctx.user.id,
-          ipAddress: ctx.ipAddress,
-        },
-        tx,
-      );
-    });
+    }),
 
-    return { success: true };
-  }),
+  delete: orgProcedure
+    .input(z.object({ id: z.string().min(1) }))
+    .mutation(async ({ ctx, input }) => {
+      assertCan(ctx.ability, 'user:manage', 'User', { organizationId: ctx.user.organizationId });
+
+      const user = await ctx.db.user.findFirst({
+        where: { id: input.id, organizationId: ctx.user.organizationId, deletedAt: null },
+        select: { id: true, platformRole: true },
+      });
+      if (!user) throw new NotFoundError('User', input.id);
+      if (user.platformRole === 'SUPER_ADMIN')
+        throw new ForbiddenError('delete', 'Cannot delete SUPER_ADMIN users.');
+      if (input.id === ctx.user.id) throw new ForbiddenError('delete', 'Cannot delete yourself.');
+
+      await ctx.db.$transaction(async (tx) => {
+        await tx.user.update({
+          where: { id: input.id },
+          data: { deletedAt: new Date(), isActive: false, organizationId: null },
+        });
+        await tx.userOrganizationRole.updateMany({
+          where: { userId: input.id, organizationId: ctx.user.organizationId },
+          data: { deletedAt: new Date(), isActive: false },
+        });
+        await writeAuditLog(
+          {
+            entityType: 'User',
+            entityId: input.id,
+            action: 'DELETE',
+            organizationId: ctx.user.organizationId!,
+            userId: ctx.user.id,
+            ipAddress: ctx.ipAddress,
+          },
+          tx,
+        );
+      });
+
+      return { success: true };
+    }),
 
   // ── Dynamic Roles CRUD ──────────────────────────────────────────────────
 
@@ -477,7 +481,7 @@ export const usersRouter = router({
     update: orgProcedure
       .input(
         z.object({
-          id: z.cuid2(),
+          id: z.string(),
           name: z.string().min(1).max(100).optional(),
           description: z.string().max(500).optional(),
           icon: z.string().max(50).optional(),
@@ -497,22 +501,24 @@ export const usersRouter = router({
         return ctx.db.role.update({ where: { id }, data });
       }),
 
-    delete: orgProcedure.input(z.object({ id: z.cuid2() })).mutation(async ({ ctx, input }) => {
-      assertCan(ctx.ability, 'role:manage', 'all', { organizationId: ctx.user.organizationId });
+    delete: orgProcedure
+      .input(z.object({ id: z.string().min(1) }))
+      .mutation(async ({ ctx, input }) => {
+        assertCan(ctx.ability, 'role:manage', 'all', { organizationId: ctx.user.organizationId });
 
-      const role = await ctx.db.role.findFirst({
-        where: { id: input.id, organizationId: ctx.user.organizationId, deletedAt: null },
-      });
-      if (!role) throw new NotFoundError('Role', input.id);
-      if (role.isSystem) throw new ForbiddenError('delete', 'Cannot delete system roles.');
+        const role = await ctx.db.role.findFirst({
+          where: { id: input.id, organizationId: ctx.user.organizationId, deletedAt: null },
+        });
+        if (!role) throw new NotFoundError('Role', input.id);
+        if (role.isSystem) throw new ForbiddenError('delete', 'Cannot delete system roles.');
 
-      await ctx.db.$transaction(async (tx) => {
-        await tx.rolePermission.deleteMany({ where: { roleId: input.id } });
-        await tx.role.update({ where: { id: input.id }, data: { deletedAt: new Date() } });
-      });
+        await ctx.db.$transaction(async (tx) => {
+          await tx.rolePermission.deleteMany({ where: { roleId: input.id } });
+          await tx.role.update({ where: { id: input.id }, data: { deletedAt: new Date() } });
+        });
 
-      return { success: true };
-    }),
+        return { success: true };
+      }),
   },
 
   // ── Permissions ──────────────────────────────────────────────────────────
@@ -558,7 +564,7 @@ export const usersRouter = router({
   // ── Role Permissions ────────────────────────────────────────────────────
 
   rolePermissions: {
-    list: orgProcedure.input(z.object({ roleId: z.cuid2() })).query(async ({ ctx, input }) => {
+    list: orgProcedure.input(z.object({ roleId: z.string() })).query(async ({ ctx, input }) => {
       assertCan(ctx.ability, 'user:manage', 'User', { organizationId: ctx.user.organizationId });
 
       const rolePerms = await ctx.db.rolePermission.findMany({
@@ -569,7 +575,7 @@ export const usersRouter = router({
     }),
 
     update: orgProcedure
-      .input(z.object({ roleId: z.cuid2(), permissionIds: z.array(z.cuid2()) }))
+      .input(z.object({ roleId: z.string(), permissionIds: z.array(z.string()) }))
       .mutation(async ({ ctx, input }) => {
         assertCan(ctx.ability, 'role:manage', 'all', { organizationId: ctx.user.organizationId });
 

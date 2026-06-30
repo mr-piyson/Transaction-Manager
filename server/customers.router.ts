@@ -47,12 +47,12 @@ const customerBaseSchema = z.object({
   creditLimit: decimalSchema.optional(),
   creditTermsDays: z.number().int().min(0).max(365).optional(),
   currencyCode: currencyCodeSchema.optional(),
-  priceListId: z.cuid2().optional(),
+  priceListId: z.string().optional(),
 });
 
 const createCustomerSchema = customerBaseSchema;
 const updateCustomerSchema = customerBaseSchema.partial().extend({
-  id: z.cuid2(),
+  id: z.string(),
 });
 
 const listCustomersSchema = z.object({
@@ -119,7 +119,7 @@ export const customersRouter = router({
   }),
 
   // ── GET BY ID ─────────────────────────────────────────────────────────────
-  byId: orgProcedure.input(z.object({ id: z.cuid2() })).query(async ({ ctx, input }) => {
+  byId: orgProcedure.input(z.object({ id: z.string() })).query(async ({ ctx, input }) => {
     assertCan(ctx.ability, 'customer:read', 'Customer');
 
     const customer = await ctx.db.customer.findFirst({
@@ -254,7 +254,7 @@ export const customersRouter = router({
   }),
 
   // ── SOFT DELETE ───────────────────────────────────────────────────────────
-  delete: orgProcedure.input(z.object({ id: z.cuid2() })).mutation(async ({ ctx, input }) => {
+  delete: orgProcedure.input(z.object({ id: z.string() })).mutation(async ({ ctx, input }) => {
     const existing = await ctx.db.customer.findFirst({
       where: {
         id: input.id,
@@ -314,7 +314,7 @@ export const customersRouter = router({
 
   // ── TOGGLE ACTIVE ─────────────────────────────────────────────────────────
   setActive: orgProcedure
-    .input(z.object({ id: z.cuid2(), isActive: z.boolean() }))
+    .input(z.object({ id: z.string(), isActive: z.boolean() }))
     .mutation(async ({ ctx, input }) => {
       const existing = await ctx.db.customer.findFirst({
         where: {
@@ -335,7 +335,7 @@ export const customersRouter = router({
 
   // ── CREDIT BALANCE ────────────────────────────────────────────────────────
   // Returns outstanding AR balance for a customer (sum of unpaid invoices)
-  creditBalance: orgProcedure.input(z.object({ id: z.cuid2() })).query(async ({ ctx, input }) => {
+  creditBalance: orgProcedure.input(z.object({ id: z.string() })).query(async ({ ctx, input }) => {
     assertCan(ctx.ability, 'customer:read', 'Customer');
 
     const [customer, invoiceAggregate] = await ctx.db.$transaction([

@@ -25,7 +25,7 @@ const ledgerAccountBaseSchema = z.object({
     'CONTRA_REVENUE',
   ]),
   normalBalance: z.enum(['DEBIT', 'CREDIT']),
-  parentId: z.cuid2().optional(),
+  parentId: z.string().optional(),
   isActive: z.boolean().default(true),
 });
 
@@ -109,7 +109,7 @@ export const settingsRouter = router({
     }),
 
     update: orgProcedure
-      .input(taxRateBaseSchema.partial().extend({ id: z.cuid2() }))
+      .input(taxRateBaseSchema.partial().extend({ id: z.string() }))
       .mutation(async ({ ctx, input }) => {
         const { id, ...data } = input;
         const orgId = ctx.user.organizationId;
@@ -143,7 +143,7 @@ export const settingsRouter = router({
         });
       }),
 
-    delete: orgProcedure.input(z.object({ id: z.cuid2() })).mutation(async ({ ctx, input }) => {
+    delete: orgProcedure.input(z.object({ id: z.string() })).mutation(async ({ ctx, input }) => {
       const existing = await ctx.db.taxRate.findFirst({
         where: { id: input.id, organizationId: ctx.user.organizationId },
         select: { id: true, isDefault: true },
@@ -211,7 +211,7 @@ export const settingsRouter = router({
     }),
 
     update: orgProcedure
-      .input(ledgerAccountBaseSchema.partial().extend({ id: z.cuid2() }))
+      .input(ledgerAccountBaseSchema.partial().extend({ id: z.string() }))
       .mutation(async ({ ctx, input }) => {
         const { id, ...data } = input;
         const existing = await ctx.db.ledgerAccount.findFirst({
@@ -238,7 +238,7 @@ export const settingsRouter = router({
         });
       }),
 
-    delete: orgProcedure.input(z.object({ id: z.cuid2() })).mutation(async ({ ctx, input }) => {
+    delete: orgProcedure.input(z.object({ id: z.string() })).mutation(async ({ ctx, input }) => {
       const existing = await ctx.db.ledgerAccount.findFirst({
         where: { id: input.id, organizationId: ctx.user.organizationId },
         include: { children: { select: { id: true } } },

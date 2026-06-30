@@ -27,7 +27,7 @@ const supplierBaseSchema = z.object({
 
 const createSupplierSchema = supplierBaseSchema;
 const updateSupplierSchema = supplierBaseSchema.partial().extend({
-  id: z.cuid2(),
+  id: z.string(),
 });
 
 const listSuppliersSchema = z.object({
@@ -72,7 +72,7 @@ export const suppliersRouter = router({
     return paginatedResponse(suppliers, total, pagination);
   }),
 
-  byId: orgProcedure.input(z.object({ id: z.cuid2() })).query(async ({ ctx, input }) => {
+  byId: orgProcedure.input(z.object({ id: z.string() })).query(async ({ ctx, input }) => {
     assertCan(ctx.ability, 'po:read', 'all');
 
     const supplier = await ctx.db.supplier.findFirst({
@@ -187,7 +187,7 @@ export const suppliersRouter = router({
     });
   }),
 
-  delete: orgProcedure.input(z.object({ id: z.cuid2() })).mutation(async ({ ctx, input }) => {
+  delete: orgProcedure.input(z.object({ id: z.string() })).mutation(async ({ ctx, input }) => {
     const existing = await ctx.db.supplier.findFirst({
       where: { id: input.id, organizationId: ctx.user.organizationId, deletedAt: null },
       select: {
@@ -236,8 +236,8 @@ export const suppliersRouter = router({
   addSupplierItem: orgProcedure
     .input(
       z.object({
-        supplierId: z.cuid2(),
-        itemId: z.cuid2(),
+        supplierId: z.string(),
+        itemId: z.string(),
         supplierSku: z.string().max(100).optional(),
         supplierName: z.string().max(255).optional(),
         basePrice: decimalSchema,
@@ -303,7 +303,7 @@ export const suppliersRouter = router({
   updateSupplierItem: orgProcedure
     .input(
       z.object({
-        id: z.cuid2(),
+        id: z.string(),
         supplierSku: z.string().max(100).optional(),
         supplierName: z.string().max(255).optional(),
         basePrice: decimalSchema.optional(),
@@ -343,7 +343,7 @@ export const suppliersRouter = router({
     }),
 
   deleteSupplierItem: orgProcedure
-    .input(z.object({ id: z.cuid2() }))
+    .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
       const existing = await ctx.db.supplierItem.findFirst({
         where: { id: input.id, organizationId: ctx.user.organizationId, deletedAt: null },

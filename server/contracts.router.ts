@@ -22,19 +22,19 @@ const contractBaseSchema = z.object({
   renewalDate: z.coerce.date().optional(),
   renewalAlertDays: z.number().int().min(0).max(365).default(30),
   notes: z.string().max(5000).optional(),
-  customerId: z.cuid2().optional(),
+  customerId: z.string().optional(),
 });
 
 const createContractSchema = contractBaseSchema;
 const updateContractSchema = contractBaseSchema.partial().extend({
-  id: z.cuid2(),
+  id: z.string(),
 });
 
 const listContractsSchema = z.object({
   ...offsetPaginationSchema.shape,
   search: z.string().optional(),
   status: z.enum(['DRAFT', 'ACTIVE', 'EXPIRED', 'TERMINATED']).optional(),
-  customerId: z.cuid2().optional(),
+  customerId: z.string().optional(),
   expiringSoon: z.boolean().optional(),
   sortBy: z
     .enum(['title', 'startDate', 'endDate', 'contractValue', 'createdAt'])
@@ -96,7 +96,7 @@ export const contractsRouter = router({
     return paginatedResponse(contracts, total, pagination);
   }),
 
-  byId: orgProcedure.input(z.object({ id: z.cuid2() })).query(async ({ ctx, input }) => {
+  byId: orgProcedure.input(z.object({ id: z.string() })).query(async ({ ctx, input }) => {
     assertCan(ctx.ability, 'invoice:read', 'Invoice');
 
     const contract = await ctx.db.contract.findFirst({
@@ -195,7 +195,7 @@ export const contractsRouter = router({
     });
   }),
 
-  delete: orgProcedure.input(z.object({ id: z.cuid2() })).mutation(async ({ ctx, input }) => {
+  delete: orgProcedure.input(z.object({ id: z.string() })).mutation(async ({ ctx, input }) => {
     const existing = await ctx.db.contract.findFirst({
       where: { id: input.id, organizationId: ctx.user.organizationId, deletedAt: null },
       select: { id: true, status: true },
@@ -230,7 +230,7 @@ export const contractsRouter = router({
     return { success: true };
   }),
 
-  activate: orgProcedure.input(z.object({ id: z.cuid2() })).mutation(async ({ ctx, input }) => {
+  activate: orgProcedure.input(z.object({ id: z.string() })).mutation(async ({ ctx, input }) => {
     const orgId = ctx.user.organizationId;
 
     const contract = await ctx.db.contract.findFirst({
@@ -274,7 +274,7 @@ export const contractsRouter = router({
     });
   }),
 
-  expire: orgProcedure.input(z.object({ id: z.cuid2() })).mutation(async ({ ctx, input }) => {
+  expire: orgProcedure.input(z.object({ id: z.string() })).mutation(async ({ ctx, input }) => {
     const orgId = ctx.user.organizationId;
 
     const contract = await ctx.db.contract.findFirst({
@@ -315,7 +315,7 @@ export const contractsRouter = router({
   }),
 
   terminate: orgProcedure
-    .input(z.object({ id: z.cuid2(), reason: z.string().optional() }))
+    .input(z.object({ id: z.string(), reason: z.string().optional() }))
     .mutation(async ({ ctx, input }) => {
       const orgId = ctx.user.organizationId;
 
@@ -366,7 +366,7 @@ export const contractsRouter = router({
       });
     }),
 
-  renew: orgProcedure.input(z.object({ id: z.cuid2() })).mutation(async ({ ctx, input }) => {
+  renew: orgProcedure.input(z.object({ id: z.string() })).mutation(async ({ ctx, input }) => {
     const orgId = ctx.user.organizationId;
 
     const contract = await ctx.db.contract.findFirst({
