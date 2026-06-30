@@ -1,4 +1,6 @@
 export async function register() {
-  const { registerCronJobs } = await import('./server/cron');
-  registerCronJobs();
+  if (process.env.NEXT_RUNTIME === 'nodejs' || process.env.NEXT_RUNTIME === 'bun') {
+    const { registerCronJobs } = await import('./server/cron');
+    registerCronJobs();
+  }
 }

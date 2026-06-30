@@ -4,7 +4,6 @@ import { z } from 'zod';
 export const env = createEnv({
   server: {
     DATABASE_URL: z.string(),
-    DATABASE_PROVIDER: z.enum(['sqlite', 'postgresql', 'mysql']).default('postgresql'),
     BETTER_AUTH_SECRET: z.string(),
     NODE_ENV: z.enum(['development', 'production']).optional(),
   },
@@ -30,11 +29,11 @@ export const env = createEnv({
     });
 
     console.log('\n\x1b[41m\x1b[37m%s\x1b[0m', ' FATAL: Fix your .env file to continue. ');
-    process.exit(1);
+    throw new Error('Invalid environment variables. Fix your .env file to continue.');
   },
 
   onInvalidAccess(variable) {
     console.error('\x1b[31m%s\x1b[0m \x1b[1m%s\x1b[0m', '❌ Invalid access to:', variable);
-    process.exit(1);
+    throw new Error(`Invalid access to server-side environment variable: ${variable}`);
   },
 });
