@@ -92,6 +92,7 @@ export const usersRouter = router({
               isActive: input.isActive,
               organizationId: orgId,
               locale: 'en',
+              role: 'admin',
             },
             include: userRoleInclude(orgId),
           });
@@ -197,6 +198,7 @@ export const usersRouter = router({
             isActive: input.isActive,
             organizationId: orgId,
             locale: 'en',
+            role: 'admin',
             userOrganizationRoles: {
               create: { roleId: input.roleId, organizationId: orgId },
             },

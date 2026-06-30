@@ -67,7 +67,7 @@ export const organizationsRouter = router({
     await ctx.db.$transaction(async (tx) => {
       await tx.user.update({
         where: { id: user.id },
-        data: { platformRole: 'SUPER_ADMIN' },
+        data: { platformRole: 'SUPER_ADMIN', role: 'admin' },
       });
 
       await tx.userOrganizationRole.create({

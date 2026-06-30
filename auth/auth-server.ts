@@ -20,8 +20,8 @@ export const auth = betterAuth({
   plugins: [
     jwt(),
     admin({
-      defaultRole: 'user',
-      adminRoles: ['user'],
+      defaultRole: 'admin',
+      adminRoles: ['admin'],
     }),
   ],
   user: {
