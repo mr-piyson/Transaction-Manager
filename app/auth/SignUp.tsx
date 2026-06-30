@@ -94,7 +94,7 @@ export default function SignUpTab() {
         return;
       }
       toast.success(t('auth.signUpSuccess'));
-      router.push('/app');
+      router.push('/erp');
     } catch (err: any) {
       toast.error(err.message ?? t('errors.generic'));
     } finally {

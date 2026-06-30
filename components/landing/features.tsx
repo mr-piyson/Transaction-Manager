@@ -22,7 +22,7 @@ const features = [
     description:
       'Full invoice lifecycle — create, send, track, cancel. AR aging reports and payment reconciliation built in.',
     icon: FileText,
-    href: '/app/invoices',
+    href: '/erp/invoices',
     color: 'blue',
   },
   {
@@ -30,7 +30,7 @@ const features = [
     description:
       'Manage customer contacts, transaction history, and outstanding balances in one place.',
     icon: Users,
-    href: '/app/customers',
+    href: '/erp/customers',
     color: 'emerald',
   },
   {
@@ -38,7 +38,7 @@ const features = [
     description:
       'Supplier directory with item assignments, purchase history, and payment tracking.',
     icon: Building2,
-    href: '/app/suppliers',
+    href: '/erp/suppliers',
     color: 'violet',
   },
   {
@@ -46,7 +46,7 @@ const features = [
     description:
       'Real-time stock levels per warehouse with movements, adjustments, transfers, and low-stock tracking.',
     icon: Package,
-    href: '/app/stock',
+    href: '/erp/stock',
     color: 'amber',
   },
   {
@@ -54,7 +54,7 @@ const features = [
     description:
       'Multi-warehouse inventory management with per-location stock visibility.',
     icon: Warehouse,
-    href: '/app/warehouses',
+    href: '/erp/warehouses',
     color: 'cyan',
   },
   {
@@ -62,7 +62,7 @@ const features = [
     description:
       'End-to-end procurement from PO creation through receiving, payments, and cancellation.',
     icon: ShoppingCart,
-    href: '/app/purchase-orders',
+    href: '/erp/purchase-orders',
     color: 'rose',
   },
   {
@@ -70,7 +70,7 @@ const features = [
     description:
       'Customer and supplier contract management with renewal tracking.',
     icon: FileCheck,
-    href: '/app/contracts',
+    href: '/erp/contracts',
     color: 'indigo',
   },
   {
@@ -78,7 +78,7 @@ const features = [
     description:
       'Dashboard summaries, sales analytics, inventory reports, and AR aging at a glance.',
     icon: BarChart3,
-    href: '/app/reports',
+    href: '/erp/reports',
     color: 'orange',
   },
   {
@@ -86,7 +86,7 @@ const features = [
     description:
       'Full English and Arabic support with RTL layout and multi-currency transaction handling.',
     icon: Globe,
-    href: '/app/settings/general',
+    href: '/settings/general',
     color: 'teal',
   },
   {
@@ -94,7 +94,7 @@ const features = [
     description:
       'Tax rates, chart of accounts, categories, financial settings, appearance, and user preferences.',
     icon: Settings,
-    href: '/app/settings',
+    href: '/settings',
     color: 'slate',
   },
 ];

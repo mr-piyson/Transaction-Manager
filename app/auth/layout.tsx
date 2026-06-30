@@ -7,7 +7,7 @@ type AuthLayoutProps = {
 
 export default async function AuthLayout(props: AuthLayoutProps) {
   const session = await getSession();
-  if (session) redirect('/app');
+  if (session) redirect('/erp');
 
   return <div>{props.children}</div>;
 }

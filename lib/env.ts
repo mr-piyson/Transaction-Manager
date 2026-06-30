@@ -4,6 +4,7 @@ import { z } from 'zod';
 export const env = createEnv({
   server: {
     DATABASE_URL: z.string(),
+    DATABASE_PROVIDER: z.enum(['sqlite', 'postgresql', 'mysql', 'sqlserver', 'cockroachdb', 'mongodb']).default('postgresql'),
     BETTER_AUTH_SECRET: z.string(),
     NODE_ENV: z.enum(['development', 'production']).optional(),
   },

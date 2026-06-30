@@ -1,4 +1,13 @@
 {
+  "app": {
+    "nameKey": "Transaction Manager",
+    "crm": "CRM",
+    "procure": "Procure",
+    "inventory": "Inventory",
+    "analytics": "Analytics",
+    "accounting": "Accounting",
+    "configuration": "Configuration"
+  },
   "locale": {
     "en": "English",
     "ar": "العربية",

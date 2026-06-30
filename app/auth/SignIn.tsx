@@ -39,7 +39,7 @@ export default function SignInTab() {
     setIsLoading(false);
 
     if (data) {
-      router.push('/app');
+      router.push('/erp');
     }
 
     if (error) toast.error(error.message);

@@ -112,7 +112,7 @@ export default function SetupWizard() {
         router.push('/auth');
         return;
       }
-      router.push('/app');
+      router.push('/erp');
     } catch (error: any) {
       toast.error(error.message ?? 'Setup failed. Please try again.');
     }

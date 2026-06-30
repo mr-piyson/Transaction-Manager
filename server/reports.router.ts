@@ -47,7 +47,7 @@ export const reportsRouter = router({
         _count: true,
       }),
       ctx.db.contract.count({
-        where: { organizationId: orgId, isActive: true, deletedAt: null },
+        where: { organizationId: orgId, deletedAt: null },
       }),
       ctx.db.customer.count({
         where: { organizationId: orgId, isActive: true, deletedAt: null },

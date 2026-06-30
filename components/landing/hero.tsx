@@ -20,14 +20,14 @@ const itemVariants = {
 };
 
 const routes = [
-  { label: 'Invoices', href: '/app/invoices' },
-  { label: 'Customers', href: '/app/customers' },
-  { label: 'Suppliers', href: '/app/suppliers' },
-  { label: 'Stock', href: '/app/stock' },
-  { label: 'Reports', href: '/app/reports' },
-  { label: 'Purchase Orders', href: '/app/purchase-orders' },
-  { label: 'Contracts', href: '/app/contracts' },
-  { label: 'Warehouses', href: '/app/warehouses' },
+  { label: 'Invoices', href: '/erp/invoices' },
+  { label: 'Customers', href: '/erp/customers' },
+  { label: 'Suppliers', href: '/erp/suppliers' },
+  { label: 'Stock', href: '/erp/stock' },
+  { label: 'Reports', href: '/erp/reports' },
+  { label: 'Purchase Orders', href: '/erp/purchase-orders' },
+  { label: 'Contracts', href: '/erp/contracts' },
+  { label: 'Warehouses', href: '/erp/warehouses' },
 ];
 
 export default function Hero() {
