@@ -133,7 +133,7 @@ export const customersRouter = router({
         _count: {
           select: {
             invoices: { where: { deletedAt: null } },
-            contracts: { where: { deletedAt: null, isActive: true } },
+            contracts: { where: { deletedAt: null, status: 'ACTIVE' } },
           },
         },
       },

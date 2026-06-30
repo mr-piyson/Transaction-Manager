@@ -177,7 +177,7 @@ export default function CustomerDetailPage() {
               <CardTitle className="text-xs text-muted-foreground font-medium">{t('customers.priceList')}</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="font-semibold">{customer.priceList?.name ?? '—'}</p>
+              <p className="font-semibold">{customer.priceListId ?? '—'}</p>
               <p className="text-xs text-muted-foreground">
                 {t('common.currency')}: {customer.currencyCode ?? t('customers.orgDefault')}
               </p>
@@ -237,7 +237,7 @@ export default function CustomerDetailPage() {
               <CardTitle className="text-xs text-muted-foreground font-medium">{t('layout.invoices')}</CardTitle>
             </CardHeader>
             <CardContent className="flex items-center gap-2">
-              <span className="text-2xl font-bold">{customer._count?.invoices ?? 0}</span>
+              <span className="text-2xl font-bold">{(customer as any)._count?.invoices ?? 0}</span>
               <span className="text-sm text-muted-foreground">{t('customers.activeInvoices')}</span>
             </CardContent>
           </Card>
@@ -249,7 +249,7 @@ export default function CustomerDetailPage() {
               <CardTitle className="text-xs text-muted-foreground font-medium">{t('layout.contracts')}</CardTitle>
             </CardHeader>
             <CardContent className="flex items-center gap-2">
-              <span className="text-2xl font-bold">{customer._count?.contracts ?? 0}</span>
+              <span className="text-2xl font-bold">{(customer as any)._count?.contracts ?? 0}</span>
               <span className="text-sm text-muted-foreground">{t('customers.activeContracts')}</span>
             </CardContent>
           </Card>

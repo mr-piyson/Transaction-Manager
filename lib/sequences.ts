@@ -29,7 +29,7 @@
 
 import type { Prisma } from '@prisma/client';
 
-export type DocumentPrefix = 'INV' | 'QTE' | 'CN' | 'PFI' | 'DN' | 'PO' | 'JE' | 'EXP';
+export type DocumentPrefix = 'INV' | 'QTE' | 'CN' | 'PFI' | 'DN' | 'PO' | 'JE' | 'EXP' | 'CTR';
 
 type TransactionClient = Prisma.TransactionClient;
 

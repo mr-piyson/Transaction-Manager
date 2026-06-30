@@ -3,9 +3,10 @@
 import { useTranslations } from 'next-intl';
 import { Handshake, User2 } from 'lucide-react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useSearchParams, useRouter } from 'next/navigation';
 import { useCallback } from 'react';
 import { ListView } from '@/components/list-view';
+import { Button } from '@/components/ui/button';
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@/components/ui/resizable';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { trpc } from '@/lib/trpc/client';
@@ -17,14 +18,42 @@ import { NotificationBell } from '../NotificationBell';
 
 const contractsSegment = 'contracts';
 
+const statusFilters = [
+  { label: 'All', value: '' },
+  { label: 'Active', value: 'ACTIVE' },
+  { label: 'Expiring', value: 'expiringSoon' },
+  { label: 'Expired', value: 'EXPIRED' },
+];
+
 export default function ContractsLayout({ children }: { children?: React.ReactNode }) {
   const t = useTranslations();
   const { openCreate } = useContractForm();
-  const { data, isPending } = trpc.contracts.list.useQuery({});
-  const isMobile = useIsMobile();
+  const searchParams = useSearchParams();
+  const router = useRouter();
   const pathname = usePathname();
+  const activeStatus = searchParams.get('status') ?? '';
+  const activeCustomerId = searchParams.get('customerId') ?? undefined;
+
+  const { data, isPending } = trpc.contracts.list.useQuery({
+    status: activeStatus && activeStatus !== 'expiringSoon' ? activeStatus as any : undefined,
+    expiringSoon: activeStatus === 'expiringSoon' ? true : undefined,
+    customerId: activeCustomerId,
+  });
+
+  const isMobile = useIsMobile();
   const activeItem = pathname.split('/')[3];
   const isListView = pathname === `/app/${contractsSegment}`;
+
+  const setStatusFilter = (value: string) => {
+    const params = new URLSearchParams(searchParams.toString());
+    if (value) {
+      params.set('status', value);
+    } else {
+      params.delete('status');
+    }
+    params.delete('customerId');
+    router.push(`/app/${contractsSegment}?${params.toString()}`);
+  };
 
   const renderCard = useCallback(
     (item: any) => (
@@ -66,13 +95,27 @@ export default function ContractsLayout({ children }: { children?: React.ReactNo
               className={cn('h-full', !isListView ? 'hidden md:block' : 'block')}
             >
               <aside className="flex h-full flex-col overflow-hidden border-r">
+                {/* Status filter chips */}
+                <div className="flex gap-1.5 px-3 py-2 border-b overflow-x-auto shrink-0">
+                  {statusFilters.map((f) => (
+                    <Button
+                      key={f.value}
+                      variant={activeStatus === f.value ? 'default' : 'outline'}
+                      size="sm"
+                      className="h-7 text-xs px-2.5 whitespace-nowrap"
+                      onClick={() => setStatusFilter(f.value)}
+                    >
+                      {f.label}
+                    </Button>
+                  ))}
+                </div>
                 <div className="flex-1 overflow-y-auto">
                   <ListView
                     data={contracts}
                     isLoading={isPending}
                     className="h-full"
                     useTheme
-                    searchFields={['serial'] as any}
+                    searchFields={['serial', 'title'] as any}
                     rowHeight={73}
                     emptyTitle={t('contracts.noContracts')}
                     emptyDescription={t('contracts.createContract')}

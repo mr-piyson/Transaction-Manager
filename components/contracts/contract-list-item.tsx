@@ -1,16 +1,23 @@
 import { Handshake } from 'lucide-react';
 import type { HTMLAttributes } from 'react';
-import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
-import { format, isAfter } from 'date-fns';
+import { format, isAfter, differenceInDays } from 'date-fns';
+import { ContractStatusBadge } from './contract-status-badge';
 
 interface ContractListItemProps extends HTMLAttributes<HTMLDivElement> {
   data?: any;
 }
 
 export function ContractListItem({ data, className, ...props }: ContractListItemProps) {
-  const { customer, serial, startDate, endDate, contractValue, currency } = data || {};
-  const expired = endDate && !isAfter(new Date(endDate), new Date());
+  const { customer, serial, title, startDate, endDate, contractValue, currency, status, renewalAlertDays, renewalDate } = data || {};
+  const expired = status === 'EXPIRED' || status === 'TERMINATED';
+  const isActive = status === 'ACTIVE';
+
+  const daysUntilRenewal = renewalDate && isActive
+    ? differenceInDays(new Date(renewalDate), new Date())
+    : null;
+
+  const showRenewalWarning = daysUntilRenewal !== null && daysUntilRenewal >= 0 && daysUntilRenewal <= (renewalAlertDays ?? 30);
 
   return (
     <div className={cn('flex items-center gap-3 p-3', className)} {...props}>
@@ -19,16 +26,22 @@ export function ContractListItem({ data, className, ...props }: ContractListItem
       </div>
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
-          <p className="font-semibold truncate">{customer?.name ?? serial}</p>
-          {expired && <Badge variant="destructive" className="text-xs">Expired</Badge>}
+          <p className="font-semibold truncate">{serial ?? title}</p>
+          <ContractStatusBadge status={status} />
+          {showRenewalWarning && (
+            <span className="text-yellow-600 dark:text-yellow-400 shrink-0" title={`Renewal in ${daysUntilRenewal} days`}>
+              ⚠️
+            </span>
+          )}
         </div>
         <p className="text-sm text-muted-foreground truncate">
-          {serial} · {startDate ? format(new Date(startDate), 'dd MMM yyyy') : '—'}
+          {customer?.name ? `${customer.name} · ` : ''}
+          {startDate ? format(new Date(startDate), 'dd MMM yyyy') : '—'}
           {endDate ? ` → ${format(new Date(endDate), 'dd MMM yyyy')}` : ''}
         </p>
       </div>
-      <div className="text-right">
-        <p className="font-semibold">{Number(contractValue).toFixed(3)} {currency}</p>
+      <div className="text-right shrink-0">
+        <p className="font-semibold">{Number(contractValue ?? 0).toFixed(3)} {currency}</p>
       </div>
     </div>
   );

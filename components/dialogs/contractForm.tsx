@@ -20,6 +20,7 @@ import { Label } from '@/components/ui/label';
 const schema = z.object({
   title: z.string().min(1, 'Title is required'),
   description: z.string().optional(),
+  status: z.enum(['DRAFT', 'ACTIVE', 'EXPIRED', 'TERMINATED']).default('DRAFT'),
   contractValue: z.coerce.number().min(0),
   currency: z.enum(['BHD', 'USD', 'EUR', 'GBP', 'JPY', 'AED', 'SAR', 'KWD', 'QAR', 'OMR']),
   startDate: z.string().min(1, 'Start date is required'),
@@ -73,6 +74,10 @@ export function ContractFormDialog({ open, onOpenChange, contract, onSuccess }: 
   React.useEffect(() => {
     if (open) reset(defaults(contract, orgCurrency));
   }, [open, contract, orgCurrency, reset]);
+
+  const watchCustomerId = watch('customerId');
+  const watchCurrency = watch('currency');
+  const watchStatus = watch('status');
 
   const createMutation = trpc.contracts.create.useMutation({
     onSuccess(data) {
@@ -136,15 +141,33 @@ export function ContractFormDialog({ open, onOpenChange, contract, onSuccess }: 
               <Textarea id="description" className="resize-none" rows={2} {...register('description')} />
             </Field>
 
-            <Field>
-              <Label htmlFor="customerId">Customer</Label>
-              <Select onValueChange={(v) => setValue('customerId', v)}>
-                <SelectTrigger><SelectValue placeholder="Select customer" /></SelectTrigger>
-                <SelectContent>
-                  {customers.map((c: any) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
-                </SelectContent>
-              </Select>
-            </Field>
+            <div className="grid grid-cols-2 gap-3">
+              <Field>
+                <Label htmlFor="status">Status</Label>
+                <Select
+                  value={watchStatus}
+                  onValueChange={(v) => setValue('status', v as any)}
+                >
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="DRAFT">Draft</SelectItem>
+                    <SelectItem value="ACTIVE">Active</SelectItem>
+                  </SelectContent>
+                </Select>
+              </Field>
+              <Field>
+                <Label htmlFor="customerId">Customer</Label>
+                <Select
+                  value={watchCustomerId ?? ''}
+                  onValueChange={(v) => setValue('customerId', v || undefined)}
+                >
+                  <SelectTrigger><SelectValue placeholder="Select customer" /></SelectTrigger>
+                  <SelectContent>
+                    {customers.map((c: any) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </Field>
+            </div>
 
             <div className="grid grid-cols-2 gap-3">
               <Field>
@@ -153,7 +176,7 @@ export function ContractFormDialog({ open, onOpenChange, contract, onSuccess }: 
               </Field>
               <Field>
                 <Label htmlFor="currency">Currency</Label>
-                <Select defaultValue="BHD" onValueChange={(v) => setValue('currency', v as any)}>
+                <Select value={watchCurrency} onValueChange={(v) => setValue('currency', v as any)}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
                     {['BHD', 'USD', 'EUR', 'GBP', 'AED', 'SAR', 'KWD', 'QAR', 'OMR'].map((c) => (
@@ -255,6 +278,7 @@ function defaults(contract?: { id: string } & Partial<ContractFormValues>, orgCu
   return {
     title: contract?.title ?? '',
     description: contract?.description ?? undefined,
+    status: (contract?.status ?? 'DRAFT') as any,
     contractValue: typeof contract?.contractValue === 'number' ? contract.contractValue : 0,
     currency: (contract?.currency ?? orgCurrency ?? 'BHD') as any,
     startDate: contract?.startDate ?? '',

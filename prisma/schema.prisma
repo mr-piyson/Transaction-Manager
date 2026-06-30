@@ -128,6 +128,14 @@ enum PaymentMethod {
   OTHER
 }
 
+/// Contract lifecycle.
+enum ContractStatus {
+  DRAFT
+  ACTIVE
+  EXPIRED
+  TERMINATED
+}
+
 /// Purchase order lifecycle.
 enum PurchaseStatus {
   DRAFT
@@ -396,6 +404,8 @@ model User {
   notifications         Notification[]
   auditLogs             AuditLog[]
   createdJournalEntries JournalEntry[]     @relation("JournalCreatedBy")
+  createdContracts      Contract[]         @relation("ContractCreatedBy")
+  updatedContracts      Contract[]         @relation("ContractUpdatedBy")
 
   @@index([email])
   @@index([organizationId])
@@ -1814,12 +1824,13 @@ model PurchasePayment {
 // =============================================================================
 
 model Contract {
-  id            String       @id @default(cuid())
+  id            String         @id @default(cuid())
+  serial        String         // e.g. "CTR-2026-00001"
   title         String
   description   String?
-  isActive      Boolean      @default(true)
-  contractValue Decimal?     @db.Decimal(20, 6)
-  currency      CurrencyCode @default(BHD)
+  status        ContractStatus @default(DRAFT)
+  contractValue Decimal?       @db.Decimal(20, 6)
+  currency      CurrencyCode   @default(BHD)
 
   startDate        DateTime
   endDate          DateTime
@@ -1840,21 +1851,24 @@ model Contract {
   organization   Organization @relation(fields: [organizationId], references: [id])
 
   createdById String?
+  createdBy   User?   @relation("ContractCreatedBy", fields: [createdById], references: [id])
   updatedById String?
+  updatedBy   User?   @relation("ContractUpdatedBy", fields: [updatedById], references: [id])
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  @@unique([serial, organizationId])
   @@index([organizationId])
-  @@index([isActive])
+  @@index([status])
   @@index([endDate])
   @@index([customerId])
   @@index([deletedAt])
   @@index([organizationId, endDate])
-  @@index([organizationId, isActive])
-  @@index([isActive, endDate])
+  @@index([organizationId, status])
+  @@index([status, endDate])
   @@index([organizationId, renewalDate])
-  @@index([customerId, isActive])
+  @@index([customerId, status])
 }
 
 // =============================================================================
