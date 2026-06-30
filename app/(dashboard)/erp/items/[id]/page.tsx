@@ -85,9 +85,7 @@ export default function ItemDetailPage() {
               <Package className="size-6" />
             </EmptyMedia>
             <EmptyTitle>{isError ? t('common.failedToLoad') : t('common.notFound')}</EmptyTitle>
-            <EmptyDescription>
-              {error?.message ?? t('items.doesNotExist')}
-            </EmptyDescription>
+            <EmptyDescription>{error?.message ?? t('items.doesNotExist')}</EmptyDescription>
           </EmptyHeader>
           <div className="flex gap-2">
             <Button variant="outline" onClick={() => router.push('/erp/items')}>
@@ -223,12 +221,12 @@ export default function ItemDetailPage() {
             </CardHeader>
             <CardContent>
               <div className="flex justify-between">
-                  <span className="text-sm text-muted-foreground">{t('items.sales')}</span>
-                  <span className="font-semibold">{Number(item.salesPrice).toFixed(3)}</span>
-                </div>
-                {!isService && (
-                  <div className="flex justify-between mt-0.5">
-                    <span className="text-sm text-muted-foreground">{t('items.purchase')}</span>
+                <span className="text-sm text-muted-foreground">{t('items.sales')}</span>
+                <span className="font-semibold">{Number(item.salesPrice).toFixed(3)}</span>
+              </div>
+              {!isService && (
+                <div className="flex justify-between mt-0.5">
+                  <span className="text-sm text-muted-foreground">{t('items.purchase')}</span>
                   <span className="font-semibold">{Number(item.purchasePrice).toFixed(3)}</span>
                 </div>
               )}
@@ -333,7 +331,9 @@ export default function ItemDetailPage() {
           <div className="grid grid-cols-2 gap-3">
             <Card>
               <CardHeader className="pb-1.5">
-                <CardTitle className="text-xs text-muted-foreground font-medium">{t('items.flags')}</CardTitle>
+                <CardTitle className="text-xs text-muted-foreground font-medium">
+                  {t('items.flags')}
+                </CardTitle>
               </CardHeader>
               <CardContent className="flex gap-4">
                 <div className="flex items-center gap-1.5">
@@ -402,7 +402,9 @@ export default function ItemDetailPage() {
                     <div>
                       <p className="font-medium text-sm">{si.supplier.name}</p>
                       {si.supplierSku && (
-                        <p className="text-xs text-muted-foreground">{t('common.sku')}: {si.supplierSku}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {t('common.sku')}: {si.supplierSku}
+                        </p>
                       )}
                     </div>
                     <div className="text-right text-sm">
@@ -463,7 +465,9 @@ export default function ItemDetailPage() {
             onClick={() => router.push(`/erp/invoices?itemId=${item.id}`)}
           >
             <CardHeader className="pb-1.5">
-              <CardTitle className="text-xs text-muted-foreground font-medium">{t('layout.invoices')}</CardTitle>
+              <CardTitle className="text-xs text-muted-foreground font-medium">
+                {t('layout.invoices')}
+              </CardTitle>
             </CardHeader>
             <CardContent className="flex items-center gap-2">
               <span className="text-2xl font-bold">{item._count?.invoiceLines ?? 0}</span>
@@ -489,13 +493,17 @@ export default function ItemDetailPage() {
         {/* Meta info */}
         <div className="text-xs text-muted-foreground flex flex-wrap gap-x-4 gap-y-1 pb-2">
           {item.averageCost && Number(item.averageCost) > 0 && (
-            <span>{t('items.avgCost')}: {Number(item.averageCost).toFixed(3)}</span>
+            <span>
+              {t('items.avgCost')}: {Number(item.averageCost).toFixed(3)}
+            </span>
           )}
           <span>
-            {t('items.created')} {item.createdAt ? format(new Date(item.createdAt), 'dd MMM yyyy HH:mm') : '—'}
+            {t('items.created')}{' '}
+            {item.createdAt ? format(new Date(item.createdAt), 'dd MMM yyyy HH:mm') : '—'}
           </span>
           <span>
-            {t('items.updated')} {item.updatedAt ? format(new Date(item.updatedAt), 'dd MMM yyyy HH:mm') : '—'}
+            {t('items.updated')}{' '}
+            {item.updatedAt ? format(new Date(item.updatedAt), 'dd MMM yyyy HH:mm') : '—'}
           </span>
         </div>
       </div>
