@@ -8,7 +8,7 @@ export const authRouter = t.router({
   signIn: publicProcedure
     .input(
       z.object({
-        email: z.email(),
+        email: z.email().transform((e) => e.toLowerCase()),
         password: z.string(),
       }),
     )
@@ -31,7 +31,7 @@ export const authRouter = t.router({
     .input(
       z.object({
         name: z.string(),
-        email: z.email(),
+        email: z.email().transform((e) => e.toLowerCase()),
         password: z.string(),
         image: z.string().optional(),
       }),

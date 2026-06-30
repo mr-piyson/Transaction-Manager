@@ -58,7 +58,7 @@ export default function SignInTab() {
   });
 
   async function onSubmit(data: z.infer<typeof SignInSchema>) {
-    await login(data.email, data.password);
+    await login(data.email.toLowerCase(), data.password);
   }
 
   return (

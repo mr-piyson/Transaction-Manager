@@ -7,7 +7,7 @@ import { writeAuditLog } from './audit.service';
 
 const userBaseSchema = z.object({
   name: z.string().min(1).max(255),
-  email: z.email(),
+  email: z.email().transform((e) => e.toLowerCase()),
   firstName: z.string().max(255).optional(),
   lastName: z.string().max(255).optional(),
 });
@@ -142,15 +142,17 @@ export const usersRouter = router({
       }
 
       if (input.password) {
-        const { user } = await auth.api.signUpEmail({
+        const { user } = await auth.api.createUser({
           body: {
             name: input.name,
             email: input.email,
             password: input.password,
-            firstName: input.firstName ?? '',
-            lastName: input.lastName ?? '',
-            organizationId: orgId,
-            isActive: input.isActive,
+            data: {
+              firstName: input.firstName ?? '',
+              lastName: input.lastName ?? '',
+              organizationId: orgId,
+              isActive: input.isActive,
+            },
           },
           headers: ctx.req.headers,
         });
@@ -232,7 +234,7 @@ export const usersRouter = router({
       z.object({
         id: z.string().min(1),
         name: z.string().min(1).max(255).optional(),
-        email: z.email().optional(),
+        email: z.email().transform((e) => e.toLowerCase()).optional(),
         firstName: z.string().max(255).optional(),
         lastName: z.string().max(255).optional(),
         roleId: z.string().optional(),
@@ -253,6 +255,19 @@ export const usersRouter = router({
 
       return ctx.db.$transaction(async (tx) => {
         await tx.user.update({ where: { id }, data });
+
+        if (data.email) {
+          const credAccount = await tx.account.findFirst({
+            where: { userId: id, providerId: 'credential' },
+            select: { id: true },
+          });
+          if (credAccount) {
+            await tx.account.update({
+              where: { id: credAccount.id },
+              data: { accountId: data.email },
+            });
+          }
+        }
 
         if (roleId) {
           const existingRole = await tx.userOrganizationRole.findFirst({
@@ -314,42 +329,22 @@ export const usersRouter = router({
       });
       if (!user) throw new NotFoundError('User', input.id);
 
-      const hashed = await hashPassword(input.newPassword);
-
-      await ctx.db.$transaction(async (tx) => {
-        const existingAccount = await tx.account.findFirst({
-          where: { userId: user.id, providerId: 'credential' },
-          select: { id: true },
-        });
-
-        if (existingAccount) {
-          await tx.account.update({
-            where: { id: existingAccount.id },
-            data: { password: hashed },
-          });
-        } else {
-          await tx.account.create({
-            data: {
-              userId: user.id,
-              providerId: 'credential',
-              accountId: user.email ?? user.id,
-              password: hashed,
-            },
-          });
-        }
-
-        await writeAuditLog(
-          {
-            entityType: 'User',
-            entityId: user.id,
-            action: 'UPDATE',
-            organizationId: ctx.user.organizationId!,
-            userId: ctx.user.id,
-            ipAddress: ctx.ipAddress,
-          },
-          tx,
-        );
+      await auth.api.setUserPassword({
+        body: { userId: user.id, newPassword: input.newPassword },
+        headers: ctx.req.headers,
       });
+
+      await writeAuditLog(
+        {
+          entityType: 'User',
+          entityId: user.id,
+          action: 'UPDATE',
+          organizationId: ctx.user.organizationId!,
+          userId: ctx.user.id,
+          ipAddress: ctx.ipAddress,
+        },
+        ctx.db,
+      );
 
       return { success: true };
     }),
@@ -365,7 +360,6 @@ export const usersRouter = router({
       });
       if (!user) throw new NotFoundError('User', input.id);
 
-      const { auth } = await import('@/auth/auth-server');
       await auth.api.requestPasswordReset({
         body: {
           email: user.email!,

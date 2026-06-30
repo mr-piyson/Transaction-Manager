@@ -86,7 +86,7 @@ export default function SignUpTab() {
     try {
       const { error } = await authClient.signUp.email({
         name: data.name,
-        email: data.email,
+        email: data.email.toLowerCase(),
         password: data.password,
       });
       if (error) {

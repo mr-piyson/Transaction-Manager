@@ -278,7 +278,7 @@ export default function UsersSettingsPage() {
       name: form.name.trim(),
       firstName: form.firstName.trim() || undefined,
       lastName: form.lastName.trim() || undefined,
-      email: form.email.trim(),
+      email: form.email.trim().toLowerCase(),
       roleId: form.roleId,
       isActive: form.isActive,
     };

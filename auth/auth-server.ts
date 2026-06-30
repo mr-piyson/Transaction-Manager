@@ -1,5 +1,6 @@
 import { betterAuth } from 'better-auth';
 import { prismaAdapter } from 'better-auth/adapters/prisma';
+import { admin } from 'better-auth/plugins/admin';
 import { jwt } from 'better-auth/plugins';
 import { headers } from 'next/headers';
 import db from '@/lib/db';
@@ -16,7 +17,13 @@ export const auth = betterAuth({
   emailAndPassword: {
     enabled: true,
   },
-  plugins: [jwt()],
+  plugins: [
+    jwt(),
+    admin({
+      defaultRole: 'user',
+      adminRoles: ['user'],
+    }),
+  ],
   user: {
     additionalFields: {
       organizationId: {
