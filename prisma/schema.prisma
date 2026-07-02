@@ -1,5 +1,5 @@
 // =============================================================================
-// ENTERPRISE ERP SCHEMA  — Prisma 5.x
+// ENTERPRISE ERP SCHEMA  — Prisma 7.x
 //
 // Key design principles applied across this schema:
 //   1. All monetary values stored as Decimal (never Int/Float) with explicit
@@ -29,13 +29,8 @@ generator client {
 }
 
 datasource db {
-  // Switch to "postgresql" for production.
-  // PostgreSQL is strongly recommended for:
-  //   - Proper Decimal(precision, scale) enforcement
-  //   - Row-level locking (SELECT FOR UPDATE) needed by DocumentSequence
-  //   - Partial indexes, JSONB, advisory locks
-  //   - Read replicas
   provider = "postgresql"
+  schemas  = ["public", "hrms", "crm"]
 }
 
 // =============================================================================
@@ -55,6 +50,8 @@ enum CurrencyCode {
   KWD
   QAR
   OMR
+
+  @@schema("public")
 }
 
 /// Platform-wide role. Fine-grained permissions live in Permission / RolePermission.
@@ -62,6 +59,8 @@ enum CurrencyCode {
 enum PlatformRole {
   SUPER_ADMIN
   USER
+
+  @@schema("public")
 }
 
 /// Org-scoped role assigned via UserOrganizationRole.
@@ -75,6 +74,8 @@ enum OrgRole {
   SALES
   WAREHOUSE
   VIEWER
+
+  @@schema("public")
 }
 
 /// Whether a catalogue item is a physical product or an intangible service.
@@ -82,6 +83,8 @@ enum ItemType {
   PRODUCT
   SERVICE
   BUNDLE // Kit / assembly — composed of other items via BundleLine
+
+  @@schema("public")
 }
 
 /// Document types issued to customers.
@@ -91,6 +94,8 @@ enum InvoiceType {
   CREDIT_NOTE
   PROFORMA // Proforma invoice — not a legal tax document
   DELIVERY_NOTE // Packing slip — no financials
+
+  @@schema("public")
 }
 
 /// Lifecycle of a customer-facing document.
@@ -105,6 +110,8 @@ enum InvoiceStatus {
   CANCELLED
   DISPUTED // Customer raised a dispute
   DELETED
+
+  @@schema("public")
 }
 
 /// Accounts Receivable payment status — denormalised for fast AR aging queries.
@@ -115,6 +122,8 @@ enum PaymentStatus {
   OVERDUE
   CANCELLED
   REFUNDED
+
+  @@schema("public")
 }
 
 /// Payment methods.
@@ -126,6 +135,8 @@ enum PaymentMethod {
   ONLINE // Payment gateway (Stripe, Tap, etc.)
   CREDIT // Applied customer credit note
   OTHER
+
+  @@schema("public")
 }
 
 /// Contract lifecycle.
@@ -134,6 +145,8 @@ enum ContractStatus {
   ACTIVE
   EXPIRED
   TERMINATED
+
+  @@schema("public")
 }
 
 /// Purchase order lifecycle.
@@ -147,6 +160,8 @@ enum PurchaseStatus {
   INVOICED // Supplier invoice received and matched
   CANCELLED
   CLOSED // Fully settled, archived
+
+  @@schema("public")
 }
 
 /// Every reason a stock quantity can change. Each StockMovement must carry one.
@@ -163,12 +178,16 @@ enum StockMovementType {
   DAMAGE // Damaged goods write-off
   ASSEMBLY_CONSUME // Raw material consumed in bundle assembly
   ASSEMBLY_PRODUCE // Finished bundle added to stock
+
+  @@schema("public")
 }
 
 /// Double-entry bookkeeping — normal balance side of an account.
 enum AccountNormalBalance {
   DEBIT
   CREDIT
+
+  @@schema("public")
 }
 
 /// Standard chart-of-accounts classification.
@@ -180,6 +199,8 @@ enum AccountType {
   EXPENSE
   CONTRA_ASSET
   CONTRA_REVENUE
+
+  @@schema("public")
 }
 
 /// Journal entry status — posted entries are immutable.
@@ -188,6 +209,8 @@ enum JournalStatus {
   POSTED // Balanced, immutable
   REVERSED // A reversing entry has been created
   VOID // Voided before posting
+
+  @@schema("public")
 }
 
 /// Approval workflow status.
@@ -196,6 +219,8 @@ enum ApprovalStatus {
   APPROVED
   REJECTED
   ESCALATED
+
+  @@schema("public")
 }
 
 /// Notification delivery status.
@@ -204,6 +229,8 @@ enum NotificationStatus {
   READ
   ARCHIVED
   DISMISSED
+
+  @@schema("public")
 }
 
 // =============================================================================
@@ -227,6 +254,7 @@ model DocumentSequence {
 
   @@unique([organizationId, prefix, fiscalYear])
   @@index([organizationId])
+  @@schema("public")
 }
 
 // =============================================================================
@@ -258,6 +286,7 @@ model Address {
 
   @@index([entityType, entityId])
   @@index([entityId])
+  @@schema("public")
 }
 
 // =============================================================================
@@ -336,8 +365,37 @@ model Organization {
   categoryCommodities   CategoryCommodity[]
   roles                 Role[]
 
+  // HRMS relations
+  employees           Employee[]
+  employeeDocuments   EmployeeDocument[]
+  jobPositions        JobPosition[]
+  leaveTypes          LeaveType[]
+  leaveRequests       LeaveRequest[]
+  attendanceRecords   AttendanceRecord[]
+  payrollRuns         PayrollRun[]
+  payrollItems        PayrollItem[]
+  salaryComponents    SalaryComponent[]
+  performanceReviews  PerformanceReview[]
+  candidates          Candidate[]
+  jobPostings         JobPosting[]
+  trainings           Training[]
+  trainingEnrollments TrainingEnrollment[]
+  shifts              Shift[]
+  employeeShifts      EmployeeShift[]
+
+  // CRM relations
+  leads          Lead[]
+  opportunities  Opportunity[]
+  pipelines      Pipeline[]
+  activities     Activity[]
+  campaigns      Campaign[]
+  contacts       Contact[]
+  emailTemplates EmailTemplate[]
+  crmTasks       Task[]
+
   @@index([slug])
   @@index([deletedAt])
+  @@schema("public")
 }
 
 /// Per-org feature flags and configuration.
@@ -354,6 +412,7 @@ model OrganizationSetting {
 
   @@unique([organizationId, key])
   @@index([organizationId])
+  @@schema("public")
 }
 
 // =============================================================================
@@ -410,10 +469,24 @@ model User {
   createdContracts      Contract[]         @relation("ContractCreatedBy")
   updatedContracts      Contract[]         @relation("ContractUpdatedBy")
 
+  // HRMS
+  employee              Employee?
+  approvedLeaveRequests LeaveRequest[]
+  processedPayrollRuns  PayrollRun[]
+  reviewedPerformances  PerformanceReview[]
+  uploadedDocuments     EmployeeDocument[]
+
+  // CRM
+  assignedLeads         Lead[]
+  assignedOpportunities Opportunity[]
+  assignedActivities    Activity[]
+  assignedCrmTasks      Task[]
+
   @@index([email])
   @@index([organizationId])
   @@index([deletedAt])
   @@map("user")
+  @@schema("public")
 }
 
 /// Grants a user a specific role within one org.
@@ -423,8 +496,8 @@ model UserOrganizationRole {
   id   String  @id @default(cuid())
   role OrgRole @default(VIEWER) // ⚠️ kept for migration — will be removed after data migration
 
-  roleId      String?
-  customRole  Role?   @relation(fields: [roleId], references: [id])
+  roleId     String?
+  customRole Role?   @relation(fields: [roleId], references: [id])
 
   // Custom display name for this user in the org context
   jobTitle String?
@@ -449,6 +522,7 @@ model UserOrganizationRole {
   @@index([userId])
   @@index([role])
   @@index([roleId])
+  @@schema("public")
 }
 
 // =============================================================================
@@ -464,22 +538,24 @@ model Permission {
   module      String // Grouping: "Invoicing", "Inventory", "Purchasing"
 
   rolePermissions RolePermission[]
+
+  @@schema("public")
 }
 
 /// Dynamic role — system roles (OWNER, ADMIN…) are seeded globally;
 /// custom roles are created per-org by the OWNER.
 model Role {
-  id          String    @id @default(cuid())
+  id          String  @id @default(cuid())
   name        String
   description String?
   icon        String?
   color       String?
 
   /// true for system roles (OWNER, ADMIN, MANAGER, etc.)
-  isSystem  Boolean  @default(false)
+  isSystem  Boolean @default(false)
   /// Machine key for system roles: "OWNER", "ADMIN", "MANAGER", etc.
   /// Null for custom roles.
-  systemKey String?  @unique
+  systemKey String? @unique
 
   organizationId String?
   organization   Organization? @relation(fields: [organizationId], references: [id])
@@ -493,6 +569,7 @@ model Role {
   approvalSteps         ApprovalStep[]
 
   @@index([organizationId])
+  @@schema("public")
 }
 
 /// Maps a Role to a set of permissions.
@@ -500,8 +577,8 @@ model RolePermission {
   id   String  @id @default(cuid())
   role OrgRole // ⚠️ kept for migration — will be removed after data migration
 
-  roleId      String?
-  customRole  Role?   @relation(fields: [roleId], references: [id])
+  roleId     String?
+  customRole Role?   @relation(fields: [roleId], references: [id])
 
   permissionId String
   permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
@@ -509,6 +586,7 @@ model RolePermission {
   @@unique([role, permissionId])
   @@index([role])
   @@index([roleId])
+  @@schema("public")
 }
 
 // =============================================================================
@@ -540,9 +618,13 @@ model Department {
   invoices              Invoice[]
   purchaseOrders        PurchaseOrder[]
 
+  // HRMS
+  employees Employee[]
+
   @@unique([name, organizationId])
   @@index([organizationId])
   @@index([parentId])
+  @@schema("public")
 }
 
 // =============================================================================
@@ -564,6 +646,7 @@ model Session {
 
   @@index([userId])
   @@map("session")
+  @@schema("public")
 }
 
 model Account {
@@ -586,6 +669,7 @@ model Account {
 
   @@index([userId])
   @@map("account")
+  @@schema("public")
 }
 
 model Verification {
@@ -599,6 +683,7 @@ model Verification {
 
   @@index([identifier])
   @@map("verification")
+  @@schema("public")
 }
 
 model Jwks {
@@ -609,6 +694,7 @@ model Jwks {
   expiresAt  DateTime?
 
   @@map("jwks")
+  @@schema("public")
 }
 
 // =============================================================================
@@ -641,6 +727,7 @@ model TaxRate {
   @@unique([name, organizationId])
   @@index([organizationId])
   @@index([isActive, organizationId])
+  @@schema("public")
 }
 
 // =============================================================================
@@ -666,6 +753,7 @@ model ExchangeRate {
   @@unique([organizationId, fromCurrency, toCurrency, effectiveDate])
   @@index([organizationId, effectiveDate])
   @@index([fromCurrency, toCurrency, effectiveDate])
+  @@schema("public")
 }
 
 // =============================================================================
@@ -708,6 +796,7 @@ model LedgerAccount {
   @@index([organizationId])
   @@index([type, organizationId])
   @@index([parentId])
+  @@schema("public")
 }
 
 // =============================================================================
@@ -757,6 +846,7 @@ model JournalEntry {
   @@index([invoiceId])
   @@index([purchaseOrderId])
   @@index([status, organizationId])
+  @@schema("public")
 }
 
 /// One debit or credit line within a journal entry.
@@ -788,6 +878,7 @@ model JournalLine {
   @@index([accountId])
   @@index([organizationId, accountId])
   @@index([departmentId])
+  @@schema("public")
 }
 
 // =============================================================================
@@ -814,6 +905,7 @@ model ApprovalWorkflow {
 
   @@unique([entityType, organizationId])
   @@index([organizationId])
+  @@schema("public")
 }
 
 model ApprovalStep {
@@ -822,8 +914,8 @@ model ApprovalStep {
   role      OrgRole // ⚠️ kept for migration — will be removed after data migration
   required  Boolean @default(true)
 
-  roleId      String?
-  customRole  Role?   @relation(fields: [roleId], references: [id])
+  roleId     String?
+  customRole Role?   @relation(fields: [roleId], references: [id])
 
   workflowId String
   workflow   ApprovalWorkflow @relation(fields: [workflowId], references: [id], onDelete: Cascade)
@@ -831,6 +923,7 @@ model ApprovalStep {
   @@unique([workflowId, stepOrder])
   @@index([workflowId])
   @@index([roleId])
+  @@schema("public")
 }
 
 /// An approval request raised for a specific document.
@@ -858,6 +951,7 @@ model ApprovalRequest {
   @@index([entityType, entityId])
   @@index([organizationId, status])
   @@index([workflowId])
+  @@schema("public")
 }
 
 model ApprovalDecision {
@@ -875,6 +969,7 @@ model ApprovalDecision {
   createdAt DateTime @default(now())
 
   @@index([requestId])
+  @@schema("public")
 }
 
 // =============================================================================
@@ -893,6 +988,7 @@ model Tag {
 
   @@unique([name, organizationId])
   @@index([organizationId])
+  @@schema("public")
 }
 
 /// Polymorphic join: a tag applied to any entity.
@@ -909,6 +1005,7 @@ model Tagging {
   @@unique([entityType, entityId, tagId])
   @@index([entityType, entityId])
   @@index([tagId])
+  @@schema("public")
 }
 
 // =============================================================================
@@ -938,6 +1035,7 @@ model Notification {
   @@index([userId, status])
   @@index([organizationId])
   @@index([entityType, entityId])
+  @@schema("public")
 }
 
 // =============================================================================
@@ -966,6 +1064,7 @@ model AuditLog {
   @@index([entityType, entityId])
   @@index([organizationId, createdAt])
   @@index([userId])
+  @@schema("public")
 }
 
 // =============================================================================
@@ -988,6 +1087,7 @@ model Attachment {
 
   @@index([entityType, entityId])
   @@index([organizationId])
+  @@schema("public")
 }
 
 // =============================================================================
@@ -1020,6 +1120,7 @@ model ItemCategory {
   @@index([deletedAt])
   @@index([parentId])
   @@map("Category")
+  @@schema("public")
 }
 
 // =============================================================================
@@ -1030,12 +1131,12 @@ model ItemCategory {
 
 /// Layer 1 — "What is it?"  e.g. RAW, FIN, MRO, WIP, SVC
 model CategoryFamily {
-  id          String   @id @default(cuid())
+  id          String  @id @default(cuid())
   name        String
-  code        String   // Short code, unique per org (e.g. "RAW", "FIN")
+  code        String // Short code, unique per org (e.g. "RAW", "FIN")
   description String?
-  color       String?  // Hex colour for UI badges
-  icon        String?  // Icon identifier for UI
+  color       String? // Hex colour for UI badges
+  icon        String? // Icon identifier for UI
 
   isActive  Boolean   @default(true)
   deletedAt DateTime?
@@ -1046,19 +1147,20 @@ model CategoryFamily {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  classes    CategoryClass[]
-  items      Item[]
+  classes CategoryClass[]
+  items   Item[]
 
   @@unique([code, organizationId])
   @@index([organizationId])
   @@index([deletedAt])
+  @@schema("public")
 }
 
 /// Layer 2 — "What does it do?"  e.g. ELEC, METL, FURN
 model CategoryClass {
-  id          String   @id @default(cuid())
+  id          String  @id @default(cuid())
   name        String
-  code        String   // Short code, unique per family + org (e.g. "ELEC")
+  code        String // Short code, unique per family + org (e.g. "ELEC")
   description String?
   color       String?
   icon        String?
@@ -1082,13 +1184,14 @@ model CategoryClass {
   @@index([organizationId])
   @@index([familyId])
   @@index([deletedAt])
+  @@schema("public")
 }
 
 /// Layer 3 — "Which specific one?"  e.g. CABLE, SWITCH, CAMERA
 model CategoryCommodity {
-  id          String   @id @default(cuid())
+  id          String  @id @default(cuid())
   name        String
-  code        String   // Short code, unique per class + org (e.g. "CABLE")
+  code        String // Short code, unique per class + org (e.g. "CABLE")
   description String?
   color       String?
   icon        String?
@@ -1111,6 +1214,7 @@ model CategoryCommodity {
   @@index([organizationId])
   @@index([classId])
   @@index([deletedAt])
+  @@schema("public")
 }
 
 // =============================================================================
@@ -1141,6 +1245,7 @@ model PriceList {
 
   @@unique([name, organizationId])
   @@index([organizationId])
+  @@schema("public")
 }
 
 model PriceListLine {
@@ -1159,6 +1264,7 @@ model PriceListLine {
   @@unique([priceListId, itemId, minQty])
   @@index([priceListId])
   @@index([itemId])
+  @@schema("public")
 }
 
 // =============================================================================
@@ -1203,11 +1309,17 @@ model Customer {
   contracts Contract[]
   incomes   Income[]
 
+  // CRM
+  leadConversions  Lead[]
+  crmOpportunities Opportunity[]
+  crmContacts      Contact[]
+
   @@index([organizationId])
   @@index([email])
   @@index([deletedAt])
   @@index([organizationId, isActive])
   @@index([code, organizationId])
+  @@schema("public")
 }
 
 // =============================================================================
@@ -1251,6 +1363,7 @@ model Supplier {
   @@index([deletedAt])
   @@index([organizationId, isActive])
   @@index([code, organizationId])
+  @@schema("public")
 }
 
 /// Supplier-specific pricing for a catalogue item.
@@ -1283,6 +1396,7 @@ model SupplierItem {
   @@index([itemId])
   @@index([organizationId])
   @@index([supplierId])
+  @@schema("public")
 }
 
 // =============================================================================
@@ -1334,11 +1448,11 @@ model Item {
   category   ItemCategory? @relation(fields: [categoryId], references: [id])
 
   // 3-Layer Universal Categorization (nullable for backward compatibility)
-  familyId    String?
-  family      CategoryFamily?    @relation(fields: [familyId], references: [id])
+  familyId String?
+  family   CategoryFamily? @relation(fields: [familyId], references: [id])
 
-  classId     String?
-  class       CategoryClass?     @relation(fields: [classId], references: [id])
+  classId String?
+  class   CategoryClass? @relation(fields: [classId], references: [id])
 
   commodityId String?
   commodity   CategoryCommodity? @relation(fields: [commodityId], references: [id])
@@ -1372,6 +1486,7 @@ model Item {
   @@index([organizationId, type, isActive])
   @@index([organizationId, isSaleable, isActive])
   @@index([barcode, organizationId])
+  @@schema("public")
 }
 
 /// Bundle (kit) composition — defines which components make up a BUNDLE item.
@@ -1393,6 +1508,7 @@ model BundleLine {
   @@unique([bundleItemId, componentItemId])
   @@index([bundleItemId])
   @@index([componentItemId])
+  @@schema("public")
 }
 
 // =============================================================================
@@ -1422,6 +1538,7 @@ model Warehouse {
   @@unique([name, organizationId])
   @@index([organizationId])
   @@index([deletedAt])
+  @@schema("public")
 }
 
 /// Per-item, per-warehouse stock level.
@@ -1449,6 +1566,7 @@ model Stock {
   @@index([organizationId])
   @@index([warehouseId])
   @@index([organizationId, itemId])
+  @@schema("public")
 }
 
 /// Immutable audit trail for every stock quantity change.
@@ -1498,6 +1616,7 @@ model StockMovement {
   @@index([fromWarehouseId])
   @@index([toWarehouseId])
   @@index([organizationId, itemId, createdAt])
+  @@schema("public")
 }
 
 // =============================================================================
@@ -1596,6 +1715,7 @@ model Invoice {
   @@index([organizationId, dueDate])
   @@index([deletedAt])
   @@index([departmentId])
+  @@schema("public")
 }
 
 model InvoiceLine {
@@ -1641,6 +1761,7 @@ model InvoiceLine {
   @@index([itemId])
   @@index([invoiceId, sortOrder])
   @@index([departmentId])
+  @@schema("public")
 }
 
 /// Tracks allocation of credit notes against specific invoices.
@@ -1665,6 +1786,7 @@ model CreditNoteAllocation {
   @@index([creditNoteId])
   @@index([invoiceId])
   @@index([organizationId])
+  @@schema("public")
 }
 
 /// Customer payment against an invoice.
@@ -1697,6 +1819,7 @@ model Payment {
   @@index([organizationId, date])
   @@index([organizationId, method])
   @@index([gatewayTxnId])
+  @@schema("public")
 }
 
 // =============================================================================
@@ -1767,6 +1890,7 @@ model PurchaseOrder {
   @@index([createdById])
   @@index([deletedAt])
   @@index([departmentId])
+  @@schema("public")
 }
 
 model PurchaseLine {
@@ -1795,6 +1919,7 @@ model PurchaseLine {
 
   @@index([purchaseOrderId])
   @@index([itemId])
+  @@schema("public")
 }
 
 /// Payment made to a supplier against a purchase order.
@@ -1820,6 +1945,7 @@ model PurchasePayment {
   @@index([purchaseOrderId])
   @@index([organizationId])
   @@index([organizationId, date])
+  @@schema("public")
 }
 
 // =============================================================================
@@ -1828,7 +1954,7 @@ model PurchasePayment {
 
 model Contract {
   id            String         @id @default(cuid())
-  serial        String         // e.g. "CTR-2026-00001"
+  serial        String // e.g. "CTR-2026-00001"
   title         String
   description   String?
   status        ContractStatus @default(DRAFT)
@@ -1872,6 +1998,7 @@ model Contract {
   @@index([status, endDate])
   @@index([organizationId, renewalDate])
   @@index([customerId, status])
+  @@schema("public")
 }
 
 // =============================================================================
@@ -1898,6 +2025,7 @@ model ExpenseCategory {
 
   @@unique([name, organizationId])
   @@index([organizationId])
+  @@schema("public")
 }
 
 model Expense {
@@ -1939,6 +2067,7 @@ model Expense {
   @@index([deletedAt])
   @@index([departmentId])
   @@index([journalEntryId])
+  @@schema("public")
 }
 
 model Income {
@@ -1969,6 +2098,7 @@ model Income {
   @@index([invoiceId])
   @@index([organizationId, date])
   @@index([deletedAt])
+  @@schema("public")
 }
 
 // =============================================================================
@@ -1977,3 +2107,937 @@ model Income {
 // =============================================================================
 // Note: Department.invoiceLines, .expenses already declared via relation fields
 // on InvoiceLine and Expense. No additional model needed here.
+// =============================================================================
+// HRMS — Human Resource Management System  (hrms schema)
+// All models integrate with ERP core via Organization (org-scoped) and User.
+// =============================================================================
+
+// ── HRMS Enums ───────────────────────────────────────────────────────────────
+
+enum EmploymentType {
+  FULL_TIME
+  PART_TIME
+  CONTRACT
+  INTERN
+  FREELANCE
+
+  @@schema("hrms")
+}
+
+enum EmployeeStatus {
+  ACTIVE
+  ON_LEAVE
+  TERMINATED
+  RESIGNED
+  SUSPENDED
+
+  @@schema("hrms")
+}
+
+enum LeaveStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  CANCELLED
+
+  @@schema("hrms")
+}
+
+enum PayrollStatus {
+  DRAFT
+  PROCESSING
+  COMPLETED
+  CANCELLED
+
+  @@schema("hrms")
+}
+
+enum PerformanceRating {
+  EXCEEDS_EXPECTATIONS
+  MEETS_EXPECTATIONS
+  NEEDS_IMPROVEMENT
+  BELOW_EXPECTATIONS
+
+  @@schema("hrms")
+}
+
+enum CandidateStatus {
+  NEW
+  SCREENING
+  INTERVIEW
+  OFFERED
+  HIRED
+  REJECTED
+  WITHDRAWN
+
+  @@schema("hrms")
+}
+
+enum TrainingStatus {
+  PLANNED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+
+  @@schema("hrms")
+}
+
+// ── HRMS Models ──────────────────────────────────────────────────────────────
+
+/// Core employee record linked to a User account for authentication.
+model Employee {
+  id           String @id @default(cuid())
+  employeeCode String // "EMP-00001"
+
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id])
+
+  hireDate       DateTime
+  employmentType EmploymentType @default(FULL_TIME)
+  status         EmployeeStatus @default(ACTIVE)
+
+  phone            String?
+  emergencyContact String?
+  emergencyPhone   String?
+  bankAccount      String?
+  bankName         String?
+
+  jobPositionId String?
+  jobPosition   JobPosition? @relation(fields: [jobPositionId], references: [id])
+
+  departmentId String?
+  department   Department? @relation(fields: [departmentId], references: [id])
+
+  reportsToId   String?
+  reportsTo     Employee?  @relation("EmployeeSupervision", fields: [reportsToId], references: [id])
+  directReports Employee[] @relation("EmployeeSupervision")
+
+  salaryAmount   Decimal?      @db.Decimal(20, 6)
+  salaryCurrency CurrencyCode?
+
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+
+  deletedAt DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  leaveRequests       LeaveRequest[]
+  attendanceRecords   AttendanceRecord[]
+  payrollItems        PayrollItem[]
+  salaryComponents    SalaryComponent[]
+  performanceReviews  PerformanceReview[]
+  employeeDocuments   EmployeeDocument[]
+  trainingEnrollments TrainingEnrollment[]
+  employeeShifts      EmployeeShift[]
+
+  @@unique([employeeCode, organizationId])
+  @@index([organizationId])
+  @@index([userId])
+  @@index([departmentId])
+  @@index([status])
+  @@index([reportsToId])
+  @@schema("hrms")
+}
+
+/// Job positions / roles within the organization.
+model JobPosition {
+  id           String  @id @default(cuid())
+  name         String
+  code         String?
+  description  String?
+  requirements String?
+
+  isActive  Boolean   @default(true)
+  deletedAt DateTime?
+
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+
+  parentId String?
+  parent   JobPosition?  @relation("JobPositionHierarchy", fields: [parentId], references: [id])
+  children JobPosition[] @relation("JobPositionHierarchy")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  employees Employee[]
+
+  @@unique([name, organizationId])
+  @@index([organizationId])
+  @@index([parentId])
+  @@schema("hrms")
+}
+
+/// Types of leave (Annual, Sick, Emergency, etc.).
+model LeaveType {
+  id          String  @id @default(cuid())
+  name        String
+  code        String // "ANNUAL" | "SICK" | "EMERGENCY" | "MATERNITY" | "PERSONAL"
+  description String?
+  daysPerYear Int     @default(30)
+  isPaid      Boolean @default(true)
+  isActive    Boolean @default(true)
+
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  leaveRequests LeaveRequest[]
+
+  @@unique([code, organizationId])
+  @@index([organizationId])
+  @@schema("hrms")
+}
+
+/// Leave request submitted by an employee with approval workflow.
+model LeaveRequest {
+  id           String      @id @default(cuid())
+  startDate    DateTime
+  endDate      DateTime
+  durationDays Int
+  reason       String?
+  status       LeaveStatus @default(PENDING)
+  notes        String?
+
+  employeeId String
+  employee   Employee @relation(fields: [employeeId], references: [id])
+
+  leaveTypeId String
+  leaveType   LeaveType @relation(fields: [leaveTypeId], references: [id])
+
+  approvedById String?
+  approvedBy   User?     @relation(fields: [approvedById], references: [id])
+  approvedAt   DateTime?
+
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([employeeId])
+  @@index([organizationId])
+  @@index([status])
+  @@index([startDate, endDate])
+  @@schema("hrms")
+}
+
+/// Daily attendance check-in/out records.
+model AttendanceRecord {
+  id         String    @id @default(cuid())
+  date       DateTime  @default(now())
+  checkIn    DateTime
+  checkOut   DateTime?
+  breakStart DateTime?
+  breakEnd   DateTime?
+  totalHours Decimal?  @db.Decimal(6, 2)
+  notes      String?
+
+  employeeId String
+  employee   Employee @relation(fields: [employeeId], references: [id])
+
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([employeeId, date])
+  @@index([employeeId])
+  @@index([organizationId])
+  @@index([organizationId, date])
+  @@schema("hrms")
+}
+
+/// Monthly payroll run batch.
+model PayrollRun {
+  id              String        @id @default(cuid())
+  name            String // "Payroll June 2026"
+  periodStart     DateTime
+  periodEnd       DateTime
+  status          PayrollStatus @default(DRAFT)
+  totalSalaries   Decimal       @default(0) @db.Decimal(20, 6)
+  totalDeductions Decimal       @default(0) @db.Decimal(20, 6)
+  totalNetPay     Decimal       @default(0) @db.Decimal(20, 6)
+  processedAt     DateTime?
+  notes           String?
+
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+
+  processedById String?
+  processedBy   User?   @relation(fields: [processedById], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  items PayrollItem[]
+
+  @@unique([name, organizationId])
+  @@index([organizationId])
+  @@index([status])
+  @@schema("hrms")
+}
+
+/// Per-employee payroll line within a payroll run.
+model PayrollItem {
+  id          String    @id @default(cuid())
+  baseSalary  Decimal   @db.Decimal(20, 6)
+  allowances  Decimal   @default(0) @db.Decimal(20, 6)
+  deductions  Decimal   @default(0) @db.Decimal(20, 6)
+  bonus       Decimal   @default(0) @db.Decimal(20, 6)
+  overtime    Decimal   @default(0) @db.Decimal(20, 6)
+  tax         Decimal   @default(0) @db.Decimal(20, 6)
+  netPay      Decimal   @db.Decimal(20, 6)
+  bankAccount String?
+  bankName    String?
+  paymentDate DateTime?
+  notes       String?
+
+  payrollRunId String
+  payrollRun   PayrollRun @relation(fields: [payrollRunId], references: [id], onDelete: Cascade)
+
+  employeeId String
+  employee   Employee @relation(fields: [employeeId], references: [id])
+
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([payrollRunId, employeeId])
+  @@index([payrollRunId])
+  @@index([employeeId])
+  @@index([organizationId])
+  @@schema("hrms")
+}
+
+/// Employee salary components (basic, housing, transport, etc.).
+model SalaryComponent {
+  id          String  @id @default(cuid())
+  name        String // "Basic", "Housing", "Transport", "Food"
+  type        String // "ALLOWANCE" | "DEDUCTION"
+  amount      Decimal @db.Decimal(20, 6)
+  isRecurring Boolean @default(true)
+
+  employeeId String
+  employee   Employee @relation(fields: [employeeId], references: [id])
+
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([employeeId])
+  @@index([organizationId])
+  @@schema("hrms")
+}
+
+/// Employee performance review / appraisal.
+model PerformanceReview {
+  id           String            @id @default(cuid())
+  reviewPeriod String // "Q1 2026", "Annual 2026"
+  reviewDate   DateTime          @default(now())
+  rating       PerformanceRating
+  comments     String?
+  goals        String?
+  strengths    String?
+  weaknesses   String?
+  status       String            @default("DRAFT") // DRAFT | SUBMITTED | ACKNOWLEDGED
+
+  employeeId String
+  employee   Employee @relation(fields: [employeeId], references: [id])
+
+  reviewerId String
+  reviewer   User   @relation(fields: [reviewerId], references: [id])
+
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([employeeId])
+  @@index([organizationId])
+  @@index([reviewerId])
+  @@schema("hrms")
+}
+
+/// Employee documents (contract, ID, certificates, etc.).
+model EmployeeDocument {
+  id         String    @id @default(cuid())
+  name       String
+  type       String // "CONTRACT" | "ID" | "CERTIFICATE" | "EDUCATION" | "OTHER"
+  fileUrl    String
+  mimeType   String?
+  sizeBytes  Int?
+  expiryDate DateTime?
+  notes      String?
+
+  employeeId String
+  employee   Employee @relation(fields: [employeeId], references: [id])
+
+  uploadedById String?
+  uploadedBy   User?   @relation(fields: [uploadedById], references: [id])
+
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([employeeId])
+  @@index([organizationId])
+  @@index([type])
+  @@schema("hrms")
+}
+
+/// Job posting for recruitment.
+model JobPosting {
+  id             String         @id @default(cuid())
+  title          String
+  description    String?
+  requirements   String?
+  location       String?
+  employmentType EmploymentType @default(FULL_TIME)
+  salaryMin      Decimal?       @db.Decimal(20, 6)
+  salaryMax      Decimal?       @db.Decimal(20, 6)
+  currency       CurrencyCode   @default(BHD)
+  isActive       Boolean        @default(true)
+  closingDate    DateTime?
+  publishedAt    DateTime?
+
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  candidates Candidate[]
+
+  @@index([organizationId])
+  @@index([isActive])
+  @@schema("hrms")
+}
+
+/// Job candidate / applicant.
+model Candidate {
+  id            String          @id @default(cuid())
+  firstName     String
+  lastName      String
+  email         String
+  phone         String?
+  resumeUrl     String?
+  coverLetter   String?
+  status        CandidateStatus @default(NEW)
+  source        String? // "LinkedIn" | "Referral" | "Job Portal"
+  notes         String?
+  interviewDate DateTime?
+  offerAmount   Decimal?        @db.Decimal(20, 6)
+
+  jobPostingId String?
+  jobPosting   JobPosting? @relation(fields: [jobPostingId], references: [id])
+
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([jobPostingId])
+  @@index([organizationId])
+  @@index([email])
+  @@index([status])
+  @@schema("hrms")
+}
+
+/// Training / course programs.
+model Training {
+  id            String         @id @default(cuid())
+  name          String
+  description   String?
+  provider      String?
+  durationHours Int?
+  cost          Decimal?       @db.Decimal(20, 6)
+  currency      CurrencyCode   @default(BHD)
+  startDate     DateTime?
+  endDate       DateTime?
+  isMandatory   Boolean        @default(false)
+  status        TrainingStatus @default(PLANNED)
+
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  enrollments TrainingEnrollment[]
+
+  @@index([organizationId])
+  @@schema("hrms")
+}
+
+/// Employee enrollment in a training program.
+model TrainingEnrollment {
+  id          String         @id @default(cuid())
+  status      TrainingStatus @default(PLANNED)
+  score       Decimal?       @db.Decimal(5, 2)
+  completedAt DateTime?
+  notes       String?
+
+  trainingId String
+  training   Training @relation(fields: [trainingId], references: [id])
+
+  employeeId String
+  employee   Employee @relation(fields: [employeeId], references: [id])
+
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([trainingId, employeeId])
+  @@index([trainingId])
+  @@index([employeeId])
+  @@index([organizationId])
+  @@schema("hrms")
+}
+
+/// Work shift definitions.
+model Shift {
+  id        String  @id @default(cuid())
+  name      String // "Morning", "Evening", "Night"
+  startTime String // "08:00"
+  endTime   String // "16:00"
+  color     String? // Hex for calendar display
+  isActive  Boolean @default(true)
+
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  employeeShifts EmployeeShift[]
+
+  @@unique([name, organizationId])
+  @@index([organizationId])
+  @@schema("hrms")
+}
+
+/// Employee shift assignments.
+model EmployeeShift {
+  id        String   @id @default(cuid())
+  date      DateTime
+  startTime String? // Override shift default
+  endTime   String? // Override shift default
+  notes     String?
+
+  employeeId String
+  employee   Employee @relation(fields: [employeeId], references: [id])
+
+  shiftId String
+  shift   Shift  @relation(fields: [shiftId], references: [id])
+
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([employeeId, shiftId, date])
+  @@index([employeeId])
+  @@index([shiftId])
+  @@index([organizationId])
+  @@schema("hrms")
+}
+
+// =============================================================================
+// CRM — Customer Relationship Management  (crm schema)
+// All models integrate with ERP core via Organization, User, and Customer.
+// =============================================================================
+
+// ── CRM Enums ────────────────────────────────────────────────────────────────
+
+enum LeadStatus {
+  NEW
+  CONTACTED
+  QUALIFIED
+  DISQUALIFIED
+  CONVERTED
+
+  @@schema("crm")
+}
+
+enum OpportunityStatus {
+  OPEN
+  WON
+  LOST
+  ABANDONED
+
+  @@schema("crm")
+}
+
+enum CampaignStatus {
+  DRAFT
+  ACTIVE
+  PAUSED
+  COMPLETED
+  CANCELLED
+
+  @@schema("crm")
+}
+
+enum TaskPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+
+  @@schema("crm")
+}
+
+enum TaskStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+
+  @@schema("crm")
+}
+
+// ── CRM Models ───────────────────────────────────────────────────────────────
+
+/// Marketing lead / prospect.
+model Lead {
+  id          String     @id @default(cuid())
+  firstName   String
+  lastName    String
+  email       String?
+  phone       String?
+  company     String?
+  jobTitle    String?
+  source      String? // "Website" | "Referral" | "LinkedIn" | "Event"
+  status      LeadStatus @default(NEW)
+  score       Int        @default(0)
+  notes       String?
+  convertedAt DateTime?
+
+  // Converted to ERP Customer
+  convertedToCustomerId String?
+  convertedToCustomer   Customer? @relation(fields: [convertedToCustomerId], references: [id])
+
+  assignedToId String?
+  assignedTo   User?   @relation(fields: [assignedToId], references: [id])
+
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+
+  deletedAt DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  opportunities Opportunity[]
+  activities    Activity[]
+  campaigns     CampaignMember[]
+  tasks         Task[]
+
+  @@index([organizationId])
+  @@index([assignedToId])
+  @@index([status])
+  @@index([email])
+  @@index([organizationId, status])
+  @@schema("crm")
+}
+
+/// Lead source tracking.
+model LeadSource {
+  id       String  @id @default(cuid())
+  name     String // "Website", "Referral", "Cold Call", "Event"
+  code     String  @unique
+  isActive Boolean @default(true)
+
+  @@schema("crm")
+}
+
+/// Sales opportunity with pipeline tracking.
+model Opportunity {
+  id              String            @id @default(cuid())
+  name            String
+  description     String?
+  amount          Decimal?          @db.Decimal(20, 6)
+  currency        CurrencyCode      @default(BHD)
+  probability     Int               @default(50) // 0-100
+  expectedCloseAt DateTime?
+  status          OpportunityStatus @default(OPEN)
+  closedAt        DateTime?
+  closedReason    String?
+  notes           String?
+
+  leadId String?
+  lead   Lead?   @relation(fields: [leadId], references: [id])
+
+  customerId String?
+  customer   Customer? @relation(fields: [customerId], references: [id])
+
+  pipelineId String?
+  pipeline   Pipeline? @relation(fields: [pipelineId], references: [id])
+
+  pipelineStageId String?
+  pipelineStage   PipelineStage? @relation(fields: [pipelineStageId], references: [id])
+
+  assignedToId String?
+  assignedTo   User?   @relation(fields: [assignedToId], references: [id])
+
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+
+  deletedAt DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  activities Activity[]
+  tasks      Task[]
+
+  @@index([organizationId])
+  @@index([leadId])
+  @@index([customerId])
+  @@index([pipelineId])
+  @@index([pipelineStageId])
+  @@index([assignedToId])
+  @@index([status])
+  @@schema("crm")
+}
+
+/// Sales pipeline definition.
+model Pipeline {
+  id          String  @id @default(cuid())
+  name        String
+  description String?
+
+  isActive  Boolean @default(true)
+  isDefault Boolean @default(false)
+
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  stages        PipelineStage[]
+  opportunities Opportunity[]
+
+  @@unique([name, organizationId])
+  @@index([organizationId])
+  @@schema("crm")
+}
+
+/// Stage within a sales pipeline.
+model PipelineStage {
+  id          String @id @default(cuid())
+  name        String // "Prospecting", "Qualification", "Proposal", "Negotiation"
+  order       Int
+  probability Int    @default(50) // Default probability for this stage
+
+  pipelineId String
+  pipeline   Pipeline @relation(fields: [pipelineId], references: [id], onDelete: Cascade)
+
+  opportunities Opportunity[]
+
+  @@unique([pipelineId, order])
+  @@unique([pipelineId, name])
+  @@index([pipelineId])
+  @@schema("crm")
+}
+
+/// CRM activity (call, email, meeting, note).
+model Activity {
+  id          String   @id @default(cuid())
+  type        String // "CALL" | "EMAIL" | "MEETING" | "NOTE" | "DEMO"
+  subject     String
+  description String?
+  date        DateTime @default(now())
+  durationMin Int?
+  outcome     String?
+  notes       String?
+
+  leadId String?
+  lead   Lead?   @relation(fields: [leadId], references: [id])
+
+  opportunityId String?
+  opportunity   Opportunity? @relation(fields: [opportunityId], references: [id])
+
+  contactId String?
+  contact   Contact? @relation(fields: [contactId], references: [id])
+
+  assignedToId String?
+  assignedTo   User?   @relation(fields: [assignedToId], references: [id])
+
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([leadId])
+  @@index([opportunityId])
+  @@index([contactId])
+  @@index([assignedToId])
+  @@index([organizationId])
+  @@index([organizationId, date])
+  @@schema("crm")
+}
+
+/// Activity type configuration.
+model ActivityType {
+  id       String  @id @default(cuid())
+  name     String // "Call", "Email", "Meeting", "Demo"
+  icon     String?
+  color    String?
+  isActive Boolean @default(true)
+
+  @@schema("crm")
+}
+
+/// Marketing campaign.
+model Campaign {
+  id             String         @id @default(cuid())
+  name           String
+  description    String?
+  type           String // "EMAIL" | "SOCIAL" | "EVENT" | "REFERRAL"
+  status         CampaignStatus @default(DRAFT)
+  budget         Decimal?       @db.Decimal(20, 6)
+  currency       CurrencyCode   @default(BHD)
+  startDate      DateTime?
+  endDate        DateTime?
+  targetAudience String?
+  notes          String?
+
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  members CampaignMember[]
+
+  @@index([organizationId])
+  @@index([status])
+  @@schema("crm")
+}
+
+/// Campaign member (lead/contact in a campaign).
+model CampaignMember {
+  id          String    @id @default(cuid())
+  status      String    @default("SENT") // "SENT" | "OPENED" | "CLICKED" | "REPLIED" | "BOUNCED"
+  respondedAt DateTime?
+
+  campaignId String
+  campaign   Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+
+  leadId String?
+  lead   Lead?   @relation(fields: [leadId], references: [id])
+
+  contactId String?
+  contact   Contact? @relation(fields: [contactId], references: [id])
+
+  @@unique([campaignId, leadId])
+  @@unique([campaignId, contactId])
+  @@index([campaignId])
+  @@index([leadId])
+  @@index([contactId])
+  @@schema("crm")
+}
+
+/// CRM contact (person at a company, separate from ERP Customer entity).
+model Contact {
+  id        String  @id @default(cuid())
+  firstName String
+  lastName  String
+  email     String?
+  phone     String?
+  jobTitle  String?
+  isPrimary Boolean @default(false)
+  notes     String?
+
+  customerId String?
+  customer   Customer? @relation(fields: [customerId], references: [id])
+
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  activities Activity[]
+  campaigns  CampaignMember[]
+  tasks      Task[]
+
+  @@index([organizationId])
+  @@index([customerId])
+  @@index([email])
+  @@schema("crm")
+}
+
+/// Email template for CRM communications.
+model EmailTemplate {
+  id       String  @id @default(cuid())
+  name     String
+  subject  String
+  body     String
+  category String? // "FOLLOW_UP" | "WELCOME" | "PROMOTION" | "GENERAL"
+  isActive Boolean @default(true)
+
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([name, organizationId])
+  @@index([organizationId])
+  @@schema("crm")
+}
+
+/// CRM follow-up task.
+model Task {
+  id          String       @id @default(cuid())
+  title       String
+  description String?
+  dueDate     DateTime?
+  priority    TaskPriority @default(MEDIUM)
+  status      TaskStatus   @default(PENDING)
+  completedAt DateTime?
+
+  leadId String?
+  lead   Lead?   @relation(fields: [leadId], references: [id])
+
+  opportunityId String?
+  opportunity   Opportunity? @relation(fields: [opportunityId], references: [id])
+
+  contactId String?
+  contact   Contact? @relation(fields: [contactId], references: [id])
+
+  assignedToId String?
+  assignedTo   User?   @relation(fields: [assignedToId], references: [id])
+
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([leadId])
+  @@index([opportunityId])
+  @@index([contactId])
+  @@index([assignedToId])
+  @@index([organizationId])
+  @@index([status])
+  @@schema("crm")
+}

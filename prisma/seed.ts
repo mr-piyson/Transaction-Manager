@@ -65,6 +65,29 @@ const permissions = [
   // ── Tax ───────────────────────────────────────────────────
   { code: 'tax:manage', label: 'Manage Tax Rates',          module: 'Tax' },
   { code: 'tax:view',   label: 'View Tax Rates',            module: 'Tax' },
+
+  // ── HRMS ──────────────────────────────────────────────────
+  { code: 'hr:employee:create', label: 'Create Employees',        module: 'HRMS' },
+  { code: 'hr:employee:view',   label: 'View Employees',          module: 'HRMS' },
+  { code: 'hr:employee:edit',   label: 'Edit Employees',          module: 'HRMS' },
+  { code: 'hr:leave:manage',    label: 'Manage Leave Requests',    module: 'HRMS' },
+  { code: 'hr:attendance:view', label: 'View Attendance',         module: 'HRMS' },
+  { code: 'hr:payroll:manage',  label: 'Manage Payroll',          module: 'HRMS' },
+  { code: 'hr:recruitment:manage', label: 'Manage Recruitment',   module: 'HRMS' },
+  { code: 'hr:training:manage', label: 'Manage Training',         module: 'HRMS' },
+  { code: 'hr:performance:manage', label: 'Manage Performance',   module: 'HRMS' },
+
+  // ── CRM ───────────────────────────────────────────────────
+  { code: 'crm:lead:create',  label: 'Create Leads',             module: 'CRM' },
+  { code: 'crm:lead:view',    label: 'View Leads',               module: 'CRM' },
+  { code: 'crm:lead:edit',    label: 'Edit Leads',               module: 'CRM' },
+  { code: 'crm:lead:delete',  label: 'Delete Leads',             module: 'CRM' },
+  { code: 'crm:opportunity:create', label: 'Create Opportunities', module: 'CRM' },
+  { code: 'crm:opportunity:view',   label: 'View Opportunities',   module: 'CRM' },
+  { code: 'crm:opportunity:edit',   label: 'Edit Opportunities',   module: 'CRM' },
+  { code: 'crm:campaign:manage', label: 'Manage Campaigns',       module: 'CRM' },
+  { code: 'crm:contact:manage', label: 'Manage Contacts',         module: 'CRM' },
+  { code: 'crm:pipeline:manage', label: 'Manage Pipelines',       module: 'CRM' },
 ];
 
 const SYSTEM_ROLES = [

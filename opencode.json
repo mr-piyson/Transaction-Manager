@@ -5,11 +5,6 @@
       "type": "local",
       "command": ["bun", "shadcn@latest", "mcp"],
       "description": "Add and manage shadcn/ui components"
-    },
-    "prisma": {
-      "type": "local",
-      "command": ["npx", "-y", "prisma", "mcp"],
-      "description": "Database schema management, migrations, and Prisma Studio. Run migrations, check status, open Studio, reset DB."
     }
   }
 }

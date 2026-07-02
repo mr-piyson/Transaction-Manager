@@ -1,6 +1,9 @@
 {
   "$schema": "https://ui.shadcn.com/schema.json",
   "style": "new-york",
+  "registries": {
+    "@reui": "https://reui.io/r/{style}/{name}.json"
+  },
   "rsc": true,
   "tsx": true,
   "tailwind": {

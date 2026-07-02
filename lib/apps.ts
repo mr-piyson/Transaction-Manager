@@ -95,6 +95,23 @@ function getCrmRoutes(t: (key: string) => string): RouteConfig[] {
         { type: 'item', label: t('crm.dashboard'), href: '/crm', icon: LayoutDashboard },
       ],
     },
+    {
+      type: 'group',
+      label: t('crm.sales'),
+      children: [
+        { type: 'item', label: t('crm.leads'), href: '/crm/leads', icon: Users },
+        { type: 'item', label: t('crm.opportunities'), href: '/crm/opportunities', icon: BarChart3 },
+        { type: 'item', label: t('crm.pipelines'), href: '/crm/pipelines', icon: LayoutDashboard },
+      ],
+    },
+    {
+      type: 'group',
+      label: t('crm.marketing'),
+      children: [
+        { type: 'item', label: t('crm.campaigns'), href: '/crm/campaigns', icon: Calendar },
+        { type: 'item', label: t('crm.contacts'), href: '/crm/contacts', icon: Users },
+      ],
+    },
   ];
 }
 
