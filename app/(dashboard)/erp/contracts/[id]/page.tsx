@@ -1,6 +1,6 @@
 'use client';
 
-import { ArrowLeft, Edit, Loader2, Play, Trash, Handshake, Ban } from 'lucide-react';
+import { ArrowLeft, Ban, Edit, Handshake, MoreHorizontal, Play, Trash, type LucideIcon } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useParams, useRouter } from 'next/navigation';
 import { toast } from 'sonner';
@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '@/components/ui/empty';
 import { Spinner } from '@/components/ui/spinner';
+import { UniversalDropdownMenu } from '@/components/dropdown';
 import { useContractForm } from '@/components/dialogs';
 import { ContractDetail } from '@/components/contracts/contract-detail';
 import { ContractStatusBadge } from '@/components/contracts/contract-status-badge';
@@ -153,28 +154,41 @@ export default function ContractDetailPage() {
           <ContractStatusBadge status={contract.status} />
         </div>
         <div className="flex items-center gap-2">
-          {contract.status === 'DRAFT' && (
-            <Button variant="outline" size="sm" className="gap-1.5" onClick={handleActivate} disabled={isPending}>
-              {activateMutation.isPending ? <Loader2 className="size-4 animate-spin" /> : <Play className="size-4" />}
-              {t('contracts.activate')}
-            </Button>
-          )}
-          <Button variant="outline" size="sm" className="gap-1.5" onClick={handleEdit}>
-            <Edit className="size-4" />
-            {t('common.edit')}
-          </Button>
-          {(contract.status === 'ACTIVE' || contract.status === 'DRAFT') && (
-            <Button variant="outline" size="sm" className="gap-1.5 text-destructive" onClick={handleTerminate} disabled={isPending}>
-              {terminateMutation.isPending ? <Loader2 className="size-4 animate-spin" /> : <Ban className="size-4" />}
-              {t('contracts.terminate')}
-            </Button>
-          )}
-          {contract.status !== 'ACTIVE' && (
-            <Button variant="destructive" size="sm" className="gap-1.5" onClick={handleDelete} disabled={isPending}>
-              {deleteMutation.isPending ? <Loader2 className="size-4 animate-spin" /> : <Trash className="size-4" />}
-              {t('common.delete')}
-            </Button>
-          )}
+          <UniversalDropdownMenu
+            trigger={<MoreHorizontal className="size-4" />}
+            items={[
+              ...(contract.status === 'DRAFT'
+                ? [{
+                    id: 'activate' as const,
+                    label: t('contracts.activate'),
+                    icon: Play,
+                    disabled: isPending,
+                    onClick: handleActivate,
+                  }]
+                : []),
+              { id: 'edit', label: t('common.edit'), icon: Edit, onClick: handleEdit },
+              ...(contract.status === 'ACTIVE' || contract.status === 'DRAFT'
+                ? [{
+                    id: 'terminate' as const,
+                    label: t('contracts.terminate'),
+                    icon: Ban,
+                    destructive: true as const,
+                    disabled: isPending,
+                    onClick: handleTerminate,
+                  }]
+                : []),
+              ...(contract.status !== 'ACTIVE'
+                ? [{
+                    id: 'delete' as const,
+                    label: t('common.delete'),
+                    icon: Trash,
+                    destructive: true as const,
+                    disabled: isPending,
+                    onClick: handleDelete,
+                  }]
+                : []),
+            ]}
+          />
         </div>
       </header>
 

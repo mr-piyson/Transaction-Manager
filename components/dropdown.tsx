@@ -457,16 +457,11 @@ export function UniversalDropdownMenu({
     );
   }
 
-  // ─── Desktop: Radix DropdownMenu ────────────────────────────────────────────
+  // ─── Desktop: Radix DropdownMenu (uncontrolled — Radix manages open/close) ─
   return (
-    <DropdownMenu open={open} onOpenChange={setOpen}>
+    <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button
-          type="button"
-          className={cn('cursor-pointer', className)}
-          aria-haspopup="menu"
-          aria-expanded={open}
-        >
+        <Button type="button" className={cn('cursor-pointer', className)}>
           {resolvedTrigger}
         </Button>
       </DropdownMenuTrigger>

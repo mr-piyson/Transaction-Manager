@@ -1,6 +1,6 @@
 'use client';
 
-import { ArrowLeft, Edit, Loader2, MoveRight, Package, Trash, Warehouse as WarehouseIcon } from 'lucide-react';
+import { ArrowLeft, Edit, Loader2, MoreHorizontal, MoveRight, Package, Trash, Warehouse as WarehouseIcon, type LucideIcon } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useParams, useRouter } from 'next/navigation';
 import * as React from 'react';
@@ -44,6 +44,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { UniversalDropdownMenu } from '@/components/dropdown';
 import { useWarehouseForm } from '@/components/dialogs';
 import { trpc } from '@/lib/trpc/client';
 import { format } from 'date-fns';
@@ -207,30 +208,27 @@ export default function WarehouseDetailPage() {
           )}
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" className="gap-1.5" onClick={handleEdit}>
-            <Edit className="size-4" />
-            {t('common.edit')}
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            className="gap-1.5"
-            onClick={() => setTransferOpen(true)}
-            disabled={stockItems.length === 0}
-          >
-            <MoveRight className="size-4" />
-            {t('common.transfer')}
-          </Button>
-          <Button
-            variant="destructive"
-            size="sm"
-            className="gap-1.5"
-            onClick={handleDelete}
-            disabled={deleteMutation.isPending}
-          >
-            {deleteMutation.isPending ? <Loader2 className="size-4 animate-spin" /> : <Trash className="size-4" />}
-            {t('common.delete')}
-          </Button>
+          <UniversalDropdownMenu
+            trigger={<MoreHorizontal className="size-4" />}
+            items={[
+              { id: 'edit', label: t('common.edit'), icon: Edit, onClick: handleEdit },
+              {
+                id: 'transfer',
+                label: t('common.transfer'),
+                icon: MoveRight,
+                disabled: stockItems.length === 0,
+                onClick: () => setTransferOpen(true),
+              },
+              {
+                id: 'delete',
+                label: t('common.delete'),
+                icon: Trash,
+                destructive: true,
+                disabled: deleteMutation.isPending,
+                onClick: handleDelete,
+              },
+            ]}
+          />
         </div>
       </header>
 

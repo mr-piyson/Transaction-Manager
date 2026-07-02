@@ -1,6 +1,6 @@
 'use client';
 
-import { ArrowLeft, Edit, Loader2, Trash, Users } from 'lucide-react';
+import { ArrowLeft, Edit, MoreHorizontal, Trash, Users, type LucideIcon } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useParams, useRouter } from 'next/navigation';
 import { toast } from 'sonner';
@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '@/components/ui/empty';
 import { Spinner } from '@/components/ui/spinner';
+import { UniversalDropdownMenu } from '@/components/dropdown';
 import { useCustomerForm } from '@/components/dialogs';
 import { trpc } from '@/lib/trpc/client';
 import { format } from 'date-fns';
@@ -121,20 +122,20 @@ export default function CustomerDetailPage() {
           )}
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" className="gap-1.5" onClick={handleEdit}>
-            <Edit className="size-4" />
-            {t('common.edit')}
-          </Button>
-          <Button
-            variant="destructive"
-            size="sm"
-            className="gap-1.5"
-            onClick={handleDelete}
-            disabled={isPending}
-          >
-            {isPending ? <Loader2 className="size-4 animate-spin" /> : <Trash className="size-4" />}
-            {t('common.delete')}
-          </Button>
+          <UniversalDropdownMenu
+            trigger={<MoreHorizontal className="size-4" />}
+            items={[
+              { id: 'edit', label: t('common.edit'), icon: Edit, onClick: handleEdit },
+              {
+                id: 'delete',
+                label: t('common.delete'),
+                icon: Trash,
+                destructive: true,
+                disabled: isPending,
+                onClick: handleDelete,
+              },
+            ]}
+          />
         </div>
       </header>
 

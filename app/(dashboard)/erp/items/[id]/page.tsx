@@ -8,7 +8,7 @@ import {
   Edit,
   Hash,
   Layers,
-  Loader2,
+  MoreHorizontal,
   Package,
   Scale,
   ShoppingCart,
@@ -16,6 +16,7 @@ import {
   Trash,
   Truck,
   Weight,
+  type LucideIcon,
 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useParams, useRouter } from 'next/navigation';
@@ -32,6 +33,7 @@ import {
   EmptyTitle,
 } from '@/components/ui/empty';
 import { Spinner } from '@/components/ui/spinner';
+import { UniversalDropdownMenu } from '@/components/dropdown';
 import { useItemForm } from '@/components/dialogs';
 import { trpc } from '@/lib/trpc/client';
 import { cn } from '@/lib/utils';
@@ -162,26 +164,26 @@ export default function ItemDetailPage() {
           )}
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" className="gap-1.5" onClick={handleEdit}>
-            <Edit className="size-4" />
-            {t('common.edit')}
-          </Button>
-          <Button
-            variant="destructive"
-            size="sm"
-            className="gap-1.5"
-            onClick={handleDelete}
-            disabled={isPending}
-          >
-            {isPending ? <Loader2 className="size-4 animate-spin" /> : <Trash className="size-4" />}
-            {t('common.delete')}
-          </Button>
+          <UniversalDropdownMenu
+            trigger={<MoreHorizontal className="size-4" />}
+            items={[
+              { id: 'edit', label: t('common.edit'), icon: Edit, onClick: handleEdit },
+              {
+                id: 'delete',
+                label: t('common.delete'),
+                icon: Trash,
+                destructive: true,
+                disabled: isPending,
+                onClick: handleDelete,
+              },
+            ]}
+          />
         </div>
       </header>
 
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
         {/* Info cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
           <Card>
             <CardHeader className="pb-1.5">
               <CardTitle className="text-xs text-muted-foreground font-medium flex items-center gap-1">
