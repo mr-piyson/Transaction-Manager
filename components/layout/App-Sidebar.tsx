@@ -1,24 +1,25 @@
 'use client';
 
-import { ChevronDown, SidebarIcon, type LucideIcon } from 'lucide-react';
-import Link from 'next/link';
+import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
+import Fuse from 'fuse.js';
 import { usePathname, useRouter } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
-import { useEffect, useState } from 'react';
-import Logo from '@/components/Logo';
+import { Search, X, SidebarIcon, ChevronDown, type LucideIcon } from 'lucide-react';
+import Link from 'next/link';
+
+import { Tree, TreeItem, TreeItemLabel } from '@/components/reui/tree';
+import { hotkeysCoreFeature, syncDataLoaderFeature, searchFeature } from '@headless-tree/core';
+import { useTree } from '@headless-tree/react';
+
 import {
   Sidebar,
   SidebarContent,
   SidebarFooter,
-  SidebarGroup,
-  SidebarGroupLabel,
   SidebarHeader,
+  SidebarInput,
   SidebarMenu,
-  SidebarMenuButton,
   SidebarMenuItem,
-  SidebarMenuSub,
-  SidebarMenuSubButton,
-  SidebarMenuSubItem,
+  SidebarMenuButton,
   SidebarRail,
   useSidebar,
 } from '@/components/sidebar';
@@ -30,25 +31,105 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
 import { Spinner } from '@/components/ui/spinner';
+import Logo from '@/components/Logo';
 import type { AppActions, AppSubjects } from '@/lib/permissions';
 import { apps, getAppFromPath } from '@/lib/apps';
 import { cn } from '@/lib/utils';
 import { NavUser } from './User-Options';
 
-// 1. Define what a single route looks like
 export type RouteConfig = {
   type: 'item' | 'group';
-  label: string; // optional fallback
+  label: string;
   href?: string;
   icon?: LucideIcon;
   children?: RouteConfig[];
   auth?: { action: AppActions; subject: AppSubjects };
-  // 🔍 search metadata
   search?: {
-    keywords?: string[]; // additional keywords for search
-    hidden?: boolean; // exclude from search
+    keywords?: string[];
+    hidden?: boolean;
   };
 };
+
+interface TreeItemData {
+  name: string;
+  href?: string;
+  icon?: LucideIcon;
+  children?: string[];
+  keywords?: string[];
+  appSlug?: string;
+  type: 'app' | 'group' | 'item';
+}
+
+function buildSidebarItems(t: (key: string) => string): Record<string, TreeItemData> {
+  const items: Record<string, TreeItemData> = {};
+  const rootChildren: string[] = [];
+
+  for (const app of apps.filter((a) => a.isActive)) {
+    const appId = app.slug;
+    const appChildren: string[] = [];
+    rootChildren.push(appId);
+
+    const routes = app.getRoutes(t);
+
+    items[appId] = {
+      name: t(app.nameKey),
+      icon: app.icon,
+      children: appChildren,
+      type: 'app',
+      appSlug: app.slug,
+    };
+
+    for (const route of routes) {
+      if (route.children && route.children.length > 0) {
+        const groupId = `${appId}::${route.label}`;
+        const groupChildren: string[] = [];
+        appChildren.push(groupId);
+
+        items[groupId] = {
+          name: route.label,
+          children: groupChildren,
+          type: 'group',
+        };
+
+        for (const child of route.children) {
+          const childId = child.href
+            ? child.href.replace(/\//g, '::')
+            : `${groupId}::${child.label}`;
+          groupChildren.push(childId);
+
+          items[childId] = {
+            name: child.label,
+            href: child.href ?? undefined,
+            icon: child.icon,
+            keywords: child.search?.keywords,
+            type: 'item',
+          };
+        }
+      } else {
+        const itemId = route.href ? route.href.replace(/\//g, '::') : `${appId}::${route.label}`;
+        appChildren.push(itemId);
+
+        items[itemId] = {
+          name: route.label,
+          href: route.href ?? undefined,
+          icon: route.icon,
+          keywords: route.search?.keywords,
+          type: 'item',
+        };
+      }
+    }
+  }
+
+  items['__root__'] = {
+    name: 'Root',
+    children: rootChildren,
+    type: 'group',
+  };
+
+  return items;
+}
+
+const indent = 20;
 
 interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {}
 
@@ -57,12 +138,124 @@ export function AppSidebar({ ...props }: AppSidebarProps) {
   const { isMobile, open, setOpenMobile } = useSidebar();
   const router = useRouter();
   const [loading, setLoading] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
   const locale = useLocale();
   const t = useTranslations();
   const isRtl = locale === 'ar';
 
   const currentApp = getAppFromPath(currentPath);
-  const ROUTES = currentApp.getRoutes(t as (key: string) => string);
+
+  const items = useMemo(() => buildSidebarItems(t as (key: string) => string), [t]);
+  const itemsRef = useRef(items);
+  itemsRef.current = items;
+
+  const fuse = useMemo(() => {
+    const searchable = Object.entries(items)
+      .filter(([id]) => id !== '__root__')
+      .map(([id, data]) => ({
+        id,
+        name: data.name,
+        keywords: data.keywords ?? [],
+      }));
+    return new Fuse(searchable, {
+      keys: ['name', 'keywords'],
+      threshold: 0.4,
+      includeScore: true,
+    });
+  }, [items]);
+
+  const parentMap = useMemo(() => {
+    const map: Record<string, string> = {};
+    for (const [id, data] of Object.entries(items)) {
+      for (const childId of data.children ?? []) {
+        map[childId] = id;
+      }
+    }
+    return map;
+  }, [items]);
+
+  const getAncestors = useCallback(
+    (id: string): string[] => {
+      const ancestors: string[] = [];
+      let current = id;
+      while (parentMap[current] && current !== '__root__') {
+        current = parentMap[current];
+        if (current !== '__root__') ancestors.push(current);
+      }
+      return ancestors;
+    },
+    [parentMap],
+  );
+
+  const matchingIds = useMemo(() => {
+    if (!searchQuery.trim()) return null;
+
+    const results = fuse.search(searchQuery.trim());
+    const matchedLeafIds = new Set(results.map((r) => r.item.id));
+
+    const allIds = new Set<string>(matchedLeafIds);
+    for (const id of matchedLeafIds) {
+      for (const ancestor of getAncestors(id)) {
+        allIds.add(ancestor);
+      }
+    }
+
+    return allIds;
+  }, [searchQuery, fuse, getAncestors]);
+
+  const matchingIdsRef = useRef<typeof matchingIds>(null);
+  matchingIdsRef.current = matchingIds;
+
+  const handleNavigate = useCallback(
+    (href: string) => {
+      if (currentPath === href) return;
+      setLoading(href);
+      router.push(href);
+    },
+    [currentPath, router],
+  );
+
+  const tree = useTree<TreeItemData>({
+    initialState: {
+      expandedItems: currentApp ? [currentApp.slug] : ['erp'],
+      search: null,
+    },
+    indent,
+    rootItemId: '__root__',
+    getItemName: (item) => item.getItemData().name,
+    isItemFolder: (item) => {
+      const data = item.getItemData();
+      return (data.children?.length ?? 0) > 0;
+    },
+    dataLoader: {
+      getItem: (itemId) => itemsRef.current[itemId],
+      getChildren: (itemId) => itemsRef.current[itemId]?.children ?? [],
+    },
+    features: [syncDataLoaderFeature, hotkeysCoreFeature, searchFeature],
+    isSearchMatchingItem: (_search, item) => {
+      const set = matchingIdsRef.current;
+      if (!set) return true;
+      return set.has(item.getId());
+    },
+    onPrimaryAction: (item) => {
+      const data = item.getItemData();
+      if (data.href) {
+        handleNavigate(data.href);
+      }
+    },
+  });
+
+  useEffect(() => {
+    if (searchQuery.trim() && matchingIds) {
+      for (const id of matchingIds) {
+        if (id !== '__root__') {
+          try {
+            tree.getItemInstance(id).expand();
+          } catch {}
+        }
+      }
+    }
+  }, [searchQuery, matchingIds, tree]);
 
   useEffect(() => {
     if (loading === currentPath) {
@@ -71,20 +264,16 @@ export function AppSidebar({ ...props }: AppSidebarProps) {
     }
   }, [currentPath, setOpenMobile, loading]);
 
-  /** Match /erp/customers regardless of sub-paths */
+  const handleSearchChange = (value: string) => {
+    setSearchQuery(value);
+    tree.setSearch(value || null);
+  };
+
   const isActive = (href?: string) => {
     if (!href) return false;
     const prefix = currentPath.split('/').slice(0, 3).join('/');
     return prefix === href || currentPath === href;
   };
-
-  const handleNavigate = (href: string) => {
-    if (currentPath === href) return;
-    setLoading(href);
-    router.push(href);
-  };
-
-  const showSpinnerFor = (href: string) => loading === href && (!open || isMobile);
 
   return (
     <Sidebar side={isRtl ? 'right' : 'left'} collapsible="icon" type="Drawer" {...props}>
@@ -93,213 +282,76 @@ export function AppSidebar({ ...props }: AppSidebarProps) {
       </SidebarHeader>
 
       <SidebarContent>
-        {ROUTES.map((route) =>
-          route.type === 'group' ? (
-            <RouteGroup
-              key={route.label}
-              route={route as RouteConfig & { type: 'group' }}
-              isActive={isActive}
-              loading={loading}
-              open={open}
-              isMobile={isMobile}
-              showSpinnerFor={showSpinnerFor}
-              onNavigate={handleNavigate}
-            />
-          ) : (
-            // Top-level items without a group wrapper
-            <SidebarGroup key={route.label}>
-              <SidebarMenu>
-                <RouteItem
-                  route={route}
-                  isActive={isActive}
-                  loading={loading}
-                  open={open}
-                  isMobile={isMobile}
-                  showSpinnerFor={showSpinnerFor}
-                  onNavigate={handleNavigate}
-                />
-              </SidebarMenu>
-            </SidebarGroup>
-          ),
-        )}
+        <div className="relative px-2 pb-1">
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground pointer-events-none" />
+          <SidebarInput
+            placeholder="Search..."
+            value={searchQuery}
+            onChange={(e) => handleSearchChange(e.target.value)}
+            className="pl-8 pr-7"
+          />
+          {searchQuery && (
+            <button
+              onClick={() => handleSearchChange('')}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+            >
+              <X className="size-3.5" />
+            </button>
+          )}
+        </div>
+
+        <div className="overflow-auto">
+          <Tree tree={tree} indent={indent} toggleIconType="chevron">
+            {tree.getItems().map((item) => {
+              const itemData = item.getItemData();
+              const isFolder = item.isFolder();
+              const active = !isFolder && itemData.href ? isActive(itemData.href) : false;
+              const showSpinner = !isFolder && !!itemData.href && loading === itemData.href;
+
+              if (searchQuery && matchingIds && !matchingIds.has(item.getId())) return null;
+
+              return (
+                <TreeItem
+                  key={item.getId()}
+                  item={item}
+                  className={cn(active && 'bg-primary! text-primary-foreground!')}
+                >
+                  <TreeItemLabel
+                    className={cn(
+                      'w-full gap-2 bg-transparent',
+                      active && 'text-primary-foreground! bg-primary! ',
+                    )}
+                  >
+                    {itemData.icon && (
+                      <itemData.icon
+                        className={cn(
+                          'size-4 shrink-0',
+                          active ? 'text-primary-foreground' : 'text-foreground/80',
+                        )}
+                      />
+                    )}
+                    <span className="flex-1 truncate">{item.getItemName()}</span>
+                    {showSpinner && <Spinner className="size-3 ml-auto shrink-0" />}
+                  </TreeItemLabel>
+                </TreeItem>
+              );
+            })}
+
+            {searchQuery &&
+              tree.getItems().filter((item) => matchingIds?.has(item.getId())).length === 0 && (
+                <div className="px-3 py-4 text-sm text-muted-foreground text-center">
+                  No results found
+                </div>
+              )}
+          </Tree>
+        </div>
       </SidebarContent>
 
       <SidebarFooter>{!isMobile && <NavUser />}</SidebarFooter>
-
       <SidebarRail />
     </Sidebar>
   );
 }
-
-// ─── Route Group ─────────────────────────────────────────────────────────────
-
-interface SharedProps {
-  isActive: (href?: string) => boolean;
-  loading: string;
-  open: boolean;
-  isMobile: boolean;
-  showSpinnerFor: (href: string) => boolean;
-  onNavigate: (href: string) => void;
-}
-
-function RouteGroup({
-  route,
-  ...shared
-}: SharedProps & { route: RouteConfig & { type: 'group' } }) {
-  const [open, setOpen] = useState(true);
-
-  return (
-    <SidebarGroup>
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-        }}
-      >
-        {/* LABEL = navigation */}
-        <SidebarGroupLabel style={{ flex: 1 }}>{route.label}</SidebarGroupLabel>
-
-        {/* ARROW = toggle */}
-        <ChevronDown
-          size={16}
-          onClick={(e) => {
-            e.stopPropagation();
-            setOpen((prev) => !prev);
-          }}
-          style={{
-            transition: 'transform 0.2s',
-            transform: open ? 'rotate(0deg)' : 'rotate(-90deg)',
-          }}
-        />
-      </div>
-
-      {/* COLLAPSIBLE CONTENT */}
-      {open && (
-        <SidebarMenu>
-          {route.children?.map((child) => (
-            <RouteItem key={child.label} route={child} {...shared} />
-          ))}
-        </SidebarMenu>
-      )}
-    </SidebarGroup>
-  );
-}
-
-// ─── Route Item (leaf or nested) ─────────────────────────────────────────────
-
-function RouteItem({ route, ...shared }: SharedProps & { route: RouteConfig }) {
-  const { isActive, loading, showSpinnerFor, onNavigate } = shared;
-
-  const active = isActive(route.href);
-  const href = route.href as string | undefined;
-  const Icon = route.icon;
-
-  const hasChildren = route.children && route.children.length > 0;
-
-  if (hasChildren) {
-    return (
-      <SidebarMenuItem>
-        {/* Parent button – navigates if it has an href, otherwise just a label */}
-        <SidebarMenuButton
-          isActive={active}
-          tooltip={route.label}
-          className={cn('flex', active && 'bg-primary!')}
-          onClick={() => href && onNavigate(href)}
-        >
-          {Icon && (
-            <Icon
-              className={cn(
-                'ms-1 size-5 shrink-0',
-                active ? 'text-white' : 'text-foreground/92',
-                href && showSpinnerFor(href) ? 'hidden' : '',
-              )}
-            />
-          )}
-          <div className="flex items-center justify-between w-full">
-            <span
-              className={cn(
-                'text-base',
-                active ? 'text-white' : 'text-foreground/92',
-                href && showSpinnerFor(href) ? 'hidden' : '',
-              )}
-            >
-              {route.label}
-            </span>
-            {href && loading === href && <Spinner />}
-          </div>
-        </SidebarMenuButton>
-
-        {/* Sub-items */}
-        <SidebarMenuSub>
-          {route.children?.map((child) => {
-            const childHref = child.href as string | undefined;
-            const childActive = isActive(childHref);
-            const childLabel = child.label;
-            const ChildIcon = child.icon;
-
-            return (
-              <SidebarMenuSubItem key={child.label}>
-                <SidebarMenuSubButton
-                  isActive={childActive}
-                  className={cn(childActive && 'bg-primary! text-white')}
-                  onClick={() => childHref && onNavigate(childHref)}
-                >
-                  {ChildIcon && (
-                    <ChildIcon
-                      className={cn(
-                        'size-4 shrink-0',
-                        childActive ? 'text-white' : 'text-foreground/80',
-                      )}
-                    />
-                  )}
-                  <span>{childLabel}</span>
-                  {childHref && loading === childHref && <Spinner />}
-                </SidebarMenuSubButton>
-              </SidebarMenuSubItem>
-            );
-          })}
-        </SidebarMenuSub>
-      </SidebarMenuItem>
-    );
-  }
-
-  // Leaf item
-  return (
-    <SidebarMenuItem>
-      <SidebarMenuButton
-        isActive={active}
-        className={cn('flex', active && 'bg-primary!')}
-        tooltip={route.label}
-        onClick={() => href && onNavigate(href)}
-      >
-        {Icon && (
-          <Icon
-            className={cn(
-              'size-5 shrink-0',
-              active ? 'text-white' : 'text-foreground/92',
-              href && showSpinnerFor(href) ? 'hidden' : '',
-            )}
-          />
-        )}
-        <div className="flex items-center justify-between w-full">
-          <span
-            className={cn(
-              'text-base',
-              active ? 'text-white' : 'text-foreground/92',
-              href && showSpinnerFor(href) ? 'hidden' : '',
-            )}
-          >
-            {route.label}
-          </span>
-          {href && loading === href && <Spinner />}
-        </div>
-      </SidebarMenuButton>
-    </SidebarMenuItem>
-  );
-}
-
-// ─── App Switcher ────────────────────────────────────────────────────────────
 
 function AppSwitcher({
   currentApp,
@@ -309,7 +361,6 @@ function AppSwitcher({
   t: (key: string) => string;
 }) {
   const router = useRouter();
-  const Icon = currentApp.icon;
 
   const handleSwitch = (slug: string) => {
     if (slug === currentApp.slug) return;
@@ -324,7 +375,7 @@ function AppSwitcher({
           size="sm"
           className="w-full flex items-center gap-2 px-2 justify-start h-9 data-[state=open]:bg-accent"
         >
-          <Icon className="size-4 shrink-0" />
+          <currentApp.icon className="size-4 shrink-0" />
           <span className="text-sm font-medium truncate flex-1 text-left">
             {t(currentApp.nameKey)}
           </span>
@@ -351,8 +402,6 @@ function AppSwitcher({
     </DropdownMenu>
   );
 }
-
-// ─── Sidebar Header ─────────────────────────────────────────────────────────
 
 function AppSidebarHeader({
   currentApp,
