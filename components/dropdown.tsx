@@ -301,8 +301,10 @@ const MobileDrawerItems = React.memo(function MobileDrawerItems({
             key={item.id}
             disabled={item.disabled}
             onClick={() => {
-              actionItem.onClick?.(item);
               onClose();
+              requestAnimationFrame(() => {
+                actionItem.onClick?.(item);
+              });
             }}
             className={cn(
               'flex w-full items-center justify-between gap-4 rounded-lg px-3 py-3 text-sm transition-colors',
