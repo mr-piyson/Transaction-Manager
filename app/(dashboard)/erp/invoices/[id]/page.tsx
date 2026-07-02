@@ -13,6 +13,7 @@ import {
   HandCoins,
   Layers,
   Loader2,
+  MoreHorizontal,
   Printer,
   Receipt,
   Send,
@@ -21,6 +22,7 @@ import {
   User,
   Wallet,
   XCircle,
+  type LucideIcon,
 } from 'lucide-react';
 import { useParams, useRouter } from 'next/navigation';
 import * as React from 'react';
@@ -64,6 +66,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { UniversalDropdownMenu } from '@/components/dropdown';
 import { useInvoiceForm } from '@/components/dialogs/invoiceForm';
 import { trpc } from '@/lib/trpc/client';
 import { format } from 'date-fns';
@@ -477,6 +480,48 @@ export default function InvoiceDetailPage() {
     );
   };
 
+  const handleActionClick = (action: Action) => {
+    switch (action.key) {
+      case 'edit':
+        handleEdit();
+        break;
+      case 'submit':
+      case 'approve':
+        openConfirmDialog(action.key);
+        break;
+      case 'convertQuote':
+        if (
+          window.confirm(
+            t('invoices.convertToInvoiceTitle', { serial: invoice.serial }),
+          )
+        ) {
+          convertQuoteMutation.mutate({ quoteId: invoice.id });
+        }
+        break;
+      case 'delete':
+        if (window.confirm(t('common.confirmDelete', { name: invoice.serial }))) {
+          deleteMutation.mutate({ id: invoice.id });
+        }
+        break;
+      default:
+        switch (action.dialog) {
+          case 'send':
+            setSendOpen(true);
+            break;
+          case 'reject':
+            setRejectOpen(true);
+            break;
+          case 'cancel':
+            setCancelOpen(true);
+            break;
+          case 'payment':
+            resetPaymentForm();
+            setPaymentOpen(true);
+            break;
+        }
+    }
+  };
+
   const getTypeLabel = (type: string) => {
     switch (type) {
       case 'QUOTE':
@@ -495,7 +540,7 @@ export default function InvoiceDetailPage() {
   type Action = {
     label: string;
     key: string;
-    icon: React.ReactNode;
+    icon: LucideIcon;
     variant?: 'default' | 'destructive' | 'outline';
     dialog?: 'send' | 'cancel' | 'payment' | 'reject';
   };
@@ -509,36 +554,36 @@ export default function InvoiceDetailPage() {
       actions.push({
         label: t('common.edit'),
         key: 'edit',
-        icon: <Edit className="size-4" />,
+        icon: Edit,
         variant: 'outline',
       });
       actions.push({
         label: t('invoices.sendQuote'),
         key: 'send',
-        icon: <Send className="size-4" />,
+        icon: Send,
         dialog: 'send',
       });
       actions.push({
         label: t('invoices.convertToInvoice'),
         key: 'convertQuote',
-        icon: <Receipt className="size-4" />,
+        icon: Receipt,
       });
       actions.push({
         label: t('common.delete'),
         key: 'delete',
-        icon: <Trash className="size-4" />,
+        icon: Trash,
         variant: 'destructive',
       });
     } else if (status === 'SENT') {
       actions.push({
         label: t('invoices.convertToInvoice'),
         key: 'convertQuote',
-        icon: <Receipt className="size-4" />,
+        icon: Receipt,
       });
       actions.push({
         label: t('invoices.cancelQuote'),
         key: 'cancel',
-        icon: <XCircle className="size-4" />,
+        icon: XCircle,
         variant: 'destructive',
         dialog: 'cancel',
       });
@@ -548,7 +593,7 @@ export default function InvoiceDetailPage() {
       actions.push({
         label: t('common.cancel'),
         key: 'cancel',
-        icon: <XCircle className="size-4" />,
+        icon: XCircle,
         variant: 'destructive',
         dialog: 'cancel',
       });
@@ -558,43 +603,43 @@ export default function InvoiceDetailPage() {
       actions.push({
         label: t('common.edit'),
         key: 'edit',
-        icon: <Edit className="size-4" />,
+        icon: Edit,
         variant: 'outline',
       });
       actions.push({
         label: t('invoices.submitForApproval'),
         key: 'submit',
-        icon: <Send className="size-4" />,
+        icon: Send,
       });
       actions.push({
         label: t('common.send'),
         key: 'send',
-        icon: <Send className="size-4" />,
+        icon: Send,
         dialog: 'send',
       });
       actions.push({
         label: t('common.delete'),
         key: 'delete',
-        icon: <Trash className="size-4" />,
+        icon: Trash,
         variant: 'destructive',
       });
     } else if (status === 'PENDING_APPROVAL') {
       actions.push({
         label: t('common.approve'),
         key: 'approve',
-        icon: <CheckCircle className="size-4" />,
+        icon: CheckCircle,
       });
       actions.push({
         label: t('common.reject'),
         key: 'reject',
-        icon: <ThumbsDown className="size-4" />,
+        icon: ThumbsDown,
         variant: 'destructive',
         dialog: 'reject',
       });
       actions.push({
         label: t('common.cancel'),
         key: 'cancel',
-        icon: <XCircle className="size-4" />,
+        icon: XCircle,
         variant: 'destructive',
         dialog: 'cancel',
       });
@@ -602,13 +647,13 @@ export default function InvoiceDetailPage() {
       actions.push({
         label: t('common.send'),
         key: 'send',
-        icon: <Send className="size-4" />,
+        icon: Send,
         dialog: 'send',
       });
       actions.push({
         label: t('common.cancel'),
         key: 'cancel',
-        icon: <XCircle className="size-4" />,
+        icon: XCircle,
         variant: 'destructive',
         dialog: 'cancel',
       });
@@ -616,14 +661,14 @@ export default function InvoiceDetailPage() {
       actions.push({
         label: t('invoices.recordPayment'),
         key: 'payment',
-        icon: <Banknote className="size-4" />,
+        icon: Banknote,
         dialog: 'payment',
       });
       if (status !== 'OVERDUE') {
         actions.push({
           label: t('common.cancel'),
           key: 'cancel',
-          icon: <XCircle className="size-4" />,
+          icon: XCircle,
           variant: 'destructive',
           dialog: 'cancel',
         });
@@ -636,19 +681,19 @@ export default function InvoiceDetailPage() {
       actions.push({
         label: t('common.edit'),
         key: 'edit',
-        icon: <Edit className="size-4" />,
+        icon: Edit,
         variant: 'outline',
       });
       actions.push({
         label: t('common.send'),
         key: 'send',
-        icon: <Send className="size-4" />,
+        icon: Send,
         dialog: 'send',
       });
       actions.push({
         label: t('common.delete'),
         key: 'delete',
-        icon: <Trash className="size-4" />,
+        icon: Trash,
         variant: 'destructive',
       });
     }
@@ -658,26 +703,26 @@ export default function InvoiceDetailPage() {
       actions.push({
         label: t('common.edit'),
         key: 'edit',
-        icon: <Edit className="size-4" />,
+        icon: Edit,
         variant: 'outline',
       });
       actions.push({
         label: t('common.send'),
         key: 'send',
-        icon: <Send className="size-4" />,
+        icon: Send,
         dialog: 'send',
       });
       actions.push({
         label: t('common.delete'),
         key: 'delete',
-        icon: <Trash className="size-4" />,
+        icon: Trash,
         variant: 'destructive',
       });
     } else if (status === 'SENT') {
       actions.push({
         label: t('common.cancel'),
         key: 'cancel',
-        icon: <XCircle className="size-4" />,
+        icon: XCircle,
         variant: 'destructive',
         dialog: 'cancel',
       });
@@ -699,113 +744,6 @@ export default function InvoiceDetailPage() {
         </div>
         {showActions && (
           <div className="flex items-center gap-2">
-            {actions.map(({ label, key, icon, variant = 'default', dialog }) =>
-              key === 'edit' ? (
-                <Button
-                  key={key}
-                  variant={variant}
-                  size="sm"
-                  onClick={handleEdit}
-                  disabled={isPending}
-                >
-                  {icon}
-                  <span className="ml-1">{label}</span>
-                </Button>
-              ) : key === 'submit' || key === 'approve' ? (
-                <Button
-                  key={key}
-                  variant={variant}
-                  size="sm"
-                  onClick={() => openConfirmDialog(key)}
-                  disabled={isPending}
-                >
-                  {isPending && <Loader2 className="size-4 mr-1 animate-spin" />}
-                  {!isPending && icon}
-                  <span className="ml-1">{label}</span>
-                </Button>
-              ) : key === 'convertQuote' ? (
-                <Button
-                  key={key}
-                  variant={variant}
-                  size="sm"
-                  onClick={() => {
-                    if (
-                      window.confirm(
-                        t('invoices.convertToInvoiceTitle', { serial: invoice.serial }),
-                      )
-                    ) {
-                      convertQuoteMutation.mutate({ quoteId: invoice.id });
-                    }
-                  }}
-                  disabled={isPending}
-                >
-                  {convertQuoteMutation.isPending && (
-                    <Loader2 className="size-4 mr-1 animate-spin" />
-                  )}
-                  {!convertQuoteMutation.isPending && icon}
-                  <span className="ml-1">{label}</span>
-                </Button>
-              ) : key === 'delete' ? (
-                <Button
-                  key={key}
-                  variant={variant}
-                  size="sm"
-                  onClick={() => {
-                    if (window.confirm(t('common.confirmDelete', { name: invoice.serial }))) {
-                      deleteMutation.mutate({ id: invoice.id });
-                    }
-                  }}
-                  disabled={isPending}
-                >
-                  {deleteMutation.isPending && <Loader2 className="size-4 mr-1 animate-spin" />}
-                  {!deleteMutation.isPending && icon}
-                  <span className="ml-1">{label}</span>
-                </Button>
-              ) : dialog === 'send' ? (
-                <Button
-                  key={key}
-                  variant={variant}
-                  size="sm"
-                  onClick={() => setSendOpen(true)}
-                  disabled={isPending}
-                >
-                  <Send className="size-4 mr-1" /> {label}
-                </Button>
-              ) : dialog === 'reject' ? (
-                <Button
-                  key={key}
-                  variant={variant}
-                  size="sm"
-                  onClick={() => setRejectOpen(true)}
-                  disabled={isPending}
-                >
-                  <ThumbsDown className="size-4 mr-1" /> {label}
-                </Button>
-              ) : dialog === 'cancel' ? (
-                <Button
-                  key={key}
-                  variant={variant}
-                  size="sm"
-                  onClick={() => setCancelOpen(true)}
-                  disabled={isPending}
-                >
-                  <XCircle className="size-4 mr-1" /> {label}
-                </Button>
-              ) : dialog === 'payment' ? (
-                <Button
-                  key={key}
-                  variant={variant}
-                  size="sm"
-                  onClick={() => {
-                    resetPaymentForm();
-                    setPaymentOpen(true);
-                  }}
-                  disabled={isPending}
-                >
-                  <Banknote className="size-4 mr-1" /> {label}
-                </Button>
-              ) : null,
-            )}
             <Button
               variant="outline"
               size="sm"
@@ -813,6 +751,17 @@ export default function InvoiceDetailPage() {
             >
               <Printer className="size-4 mr-1" /> {t('invoices.printPdf')}
             </Button>
+            <UniversalDropdownMenu
+              trigger={<MoreHorizontal className="size-4" />}
+              items={actions.map((a) => ({
+                id: a.key,
+                label: a.label,
+                icon: a.icon,
+                destructive: a.variant === 'destructive',
+                disabled: isPending,
+                onClick: () => handleActionClick(a),
+              }))}
+            />
           </div>
         )}
       </header>

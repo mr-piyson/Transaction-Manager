@@ -5,14 +5,16 @@ import {
   CheckCircle,
   Edit,
   FileDown,
+  History,
   Loader2,
+  MoreHorizontal,
   Package,
   Send,
   ShoppingCart,
+  ThumbsDown,
   Trash,
   XCircle,
-  History,
-  ThumbsDown,
+  type LucideIcon,
 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useParams, useRouter } from 'next/navigation';
@@ -49,6 +51,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { UniversalDropdownMenu } from '@/components/dropdown';
 import { usePOForm } from '@/components/dialogs/poForm';
 import { trpc } from '@/lib/trpc/client';
 import { format } from 'date-fns';
@@ -218,9 +221,11 @@ export default function PurchaseOrderDetailPage() {
     );
   };
 
-  const handleConfirmAction = (action: string, msg: string) => {
-    if (!window.confirm(msg)) return;
-    switch (action) {
+  const handleActionClick = (action: Action) => {
+    switch (action.key) {
+      case 'edit':
+        handleEdit();
+        break;
       case 'submit':
         submitMutation.mutate({ id: po.id, version });
         break;
@@ -236,13 +241,22 @@ export default function PurchaseOrderDetailPage() {
       case 'delete':
         deleteMutation.mutate({ id: po.id });
         break;
+      default:
+        switch (action.dialog) {
+          case 'receive':
+            setReceiveOpen(true);
+            break;
+          case 'reject':
+            setRejectOpen(true);
+            break;
+        }
     }
   };
 
   type Action = {
     label: string;
     key: string;
-    icon: React.ReactNode;
+    icon: LucideIcon;
     variant?: 'default' | 'destructive' | 'outline';
     dialog?: 'receive' | 'reject';
   };
@@ -252,62 +266,62 @@ export default function PurchaseOrderDetailPage() {
     actions.push({
       label: t('purchaseOrders.submitForApproval'),
       key: 'submit',
-      icon: <Send className="size-4" />,
+      icon: Send,
     });
     actions.push({
       label: t('common.edit'),
       key: 'edit',
-      icon: <Edit className="size-4" />,
+      icon: Edit,
       variant: 'outline',
     });
     actions.push({
       label: t('common.delete'),
       key: 'delete',
-      icon: <Trash className="size-4" />,
+      icon: Trash,
       variant: 'destructive',
     });
   } else if (po.status === 'PENDING_APPROVAL') {
     actions.push({
       label: t('common.approve'),
       key: 'approve',
-      icon: <CheckCircle className="size-4" />,
+      icon: CheckCircle,
     });
     actions.push({
       label: t('common.reject'),
       key: 'reject',
-      icon: <ThumbsDown className="size-4" />,
+      icon: ThumbsDown,
       variant: 'destructive',
       dialog: 'reject',
     });
     actions.push({
       label: t('common.cancel'),
       key: 'cancel',
-      icon: <XCircle className="size-4" />,
+      icon: XCircle,
       variant: 'destructive',
     });
   } else if (po.status === 'APPROVED') {
     actions.push({
       label: t('purchaseOrders.placeOrder'),
       key: 'order',
-      icon: <FileDown className="size-4" />,
+      icon: FileDown,
     });
     actions.push({
       label: t('common.cancel'),
       key: 'cancel',
-      icon: <XCircle className="size-4" />,
+      icon: XCircle,
       variant: 'destructive',
     });
   } else if (po.status === 'ORDERED' || po.status === 'PARTIAL_RECEIVED') {
     actions.push({
       label: t('purchaseOrders.receiveStock'),
       key: 'receive',
-      icon: <Package className="size-4" />,
+      icon: Package,
       dialog: 'receive',
     });
     actions.push({
       label: t('common.cancel'),
       key: 'cancel',
-      icon: <XCircle className="size-4" />,
+      icon: XCircle,
       variant: 'destructive',
     });
   }
@@ -341,56 +355,17 @@ export default function PurchaseOrderDetailPage() {
         </div>
         {showActions && (
           <div className="flex items-center gap-2">
-            {actions.map(({ label, key, icon, variant = 'default', dialog }) =>
-              key === 'edit' ? (
-                <Button
-                  key={key}
-                  variant={variant}
-                  size="sm"
-                  onClick={handleEdit}
-                  disabled={isPending}
-                >
-                  <Edit className="size-4 mr-1" /> {label}
-                </Button>
-              ) : dialog === 'receive' ? (
-                <Button
-                  key={key}
-                  variant={variant}
-                  size="sm"
-                  onClick={() => setReceiveOpen(true)}
-                  disabled={isPending}
-                >
-                  <Package className="size-4 mr-1" /> {label}
-                </Button>
-              ) : dialog === 'reject' ? (
-                <Button
-                  key={key}
-                  variant={variant}
-                  size="sm"
-                  onClick={() => setRejectOpen(true)}
-                  disabled={isPending}
-                >
-                  <ThumbsDown className="size-4 mr-1" /> {label}
-                </Button>
-              ) : (
-                <Button
-                  key={key}
-                  variant={variant}
-                  size="sm"
-                  onClick={() =>
-                    handleConfirmAction(
-                      key,
-                      t('purchaseOrders.confirmAction', { action: label.toLowerCase() }),
-                    )
-                  }
-                  disabled={isPending}
-                >
-                  {isPending && <Loader2 className="size-4 mr-1 animate-spin" />}
-                  {!isPending && icon}
-                  <span className="ml-1">{label}</span>
-                </Button>
-              ),
-            )}
+            <UniversalDropdownMenu
+              trigger={<MoreHorizontal className="size-4" />}
+              items={actions.map((a) => ({
+                id: a.key,
+                label: a.label,
+                icon: a.icon,
+                destructive: a.variant === 'destructive',
+                disabled: isPending,
+                onClick: () => handleActionClick(a),
+              }))}
+            />
           </div>
         )}
       </header>
