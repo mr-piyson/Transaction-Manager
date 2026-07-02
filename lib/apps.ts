@@ -75,11 +75,6 @@ function getErpRoutes(t: (key: string) => string): RouteConfig[] {
         { type: 'item', label: t('layout.notifications'), href: '/notifications', icon: Bell },
       ],
     },
-    {
-      type: 'group',
-      label: t('layout.configuration'),
-      children: [{ type: 'item', label: t('layout.settings'), href: '/settings', icon: Settings }],
-    },
   ];
 }
 

@@ -386,7 +386,7 @@ export function AppSidebar({ ...props }: AppSidebarProps) {
                 <TreeItem key={item.getId()} item={item} className={cn(active && 'bg-primary/10!')}>
                   <TreeItemLabel
                     className={cn(
-                      'w-full gap-2 bg-transparent relative text-start',
+                      'w-full gap-2 bg-transparent! relative text-start! data-[search-match=true]:bg-transparent!',
                       active && 'text-primary font-semibold',
                     )}
                   >
@@ -446,9 +446,8 @@ function AppSwitcher({
               dir={isRtl ? 'rtl' : 'ltr'}
               className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
             >
-              <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-                <Logo className="size-5" />
-              </div>
+              <Logo className="size-8!" />
+
               <div className="grid flex-1 text-left text-sm leading-tight">
                 <span className="truncate font-semibold text-lg">{t(currentApp.nameKey)}</span>
               </div>
