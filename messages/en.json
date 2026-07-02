@@ -1188,5 +1188,8 @@
     "payrollDescription": "Process salaries and compensation",
     "comingSoon": "HR Modules Coming Soon",
     "comingSoonDescription": "Each HR module will be fully featured with create, read, update, and delete capabilities."
+  },
+  "crm": {
+    "dashboard": "Dashboard"
   }
 }
