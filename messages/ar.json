@@ -995,7 +995,9 @@
   "apps": {
     "erp": "ERP",
     "hr": "إدارة الموارد البشرية",
-    "switchApp": "تبديل التطبيق"
+    "switchApp": "تبديل التطبيق",
+    "nameKey": "Transaction Manager",
+    "crm": "CRM"
   },
   "hr": {
     "title": "الموارد البشرية",

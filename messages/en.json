@@ -1,13 +1,4 @@
 {
-  "app": {
-    "nameKey": "Transaction Manager",
-    "crm": "CRM",
-    "procure": "Procure",
-    "inventory": "Inventory",
-    "analytics": "Analytics",
-    "accounting": "Accounting",
-    "configuration": "Configuration"
-  },
   "locale": {
     "en": "English",
     "ar": "العربية",
@@ -1171,6 +1162,8 @@
   },
   "apps": {
     "erp": "ERP",
+    "nameKey": "Transaction Manager",
+    "crm": "CRM",
     "hr": "HR Management",
     "switchApp": "Switch App"
   },
