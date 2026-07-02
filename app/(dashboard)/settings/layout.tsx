@@ -6,7 +6,6 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
 import { Header } from '@/components/layout/App-Header';
-import { SidebarProvider } from '@/components/sidebar';
 import {
   SidebarGroup,
   SidebarGroupLabel,
@@ -66,44 +65,40 @@ export default function SettingsLayout({
   );
 
   return (
-    <div className="flex flex-col h-screen">
-      <SidebarProvider className="flex flex-col flex-1">
-        <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
-          <Header
-            title={t('settings.title')}
-            icon={<Settings className="size-5" />}
-          >
-            <SheetTrigger asChild>
-              <Button
-                variant="outline"
-                size="sm"
-                className="md:hidden gap-2"
-              >
-                <Menu className="size-4" />
-                {t(
-                  NAV_ITEMS.find((i) => i.id === activeSection)?.labelKey ?? 'settings.title',
-                )}
-              </Button>
-            </SheetTrigger>
-          </Header>
-          <SheetContent side="left" className="w-64 p-4">
-            <SheetHeader>
-              <SheetTitle className="text-lg">{t('settings.title')}</SheetTitle>
-            </SheetHeader>
-            <nav className="mt-4">{nav}</nav>
-          </SheetContent>
-        </Sheet>
+    <>
+      <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
+        <Header
+          title={t('settings.title')}
+          icon={<Settings className="size-5" />}
+        >
+          <SheetTrigger asChild>
+            <Button
+              variant="outline"
+              size="sm"
+              className="md:hidden gap-2"
+            >
+              <Menu className="size-4" />
+              {t(
+                NAV_ITEMS.find((i) => i.id === activeSection)?.labelKey ?? 'settings.title',
+              )}
+            </Button>
+          </SheetTrigger>
+        </Header>
+        <SheetContent side="left" className="w-64 p-4">
+          <SheetHeader>
+            <SheetTitle className="text-lg">{t('settings.title')}</SheetTitle>
+          </SheetHeader>
+          <nav className="mt-4">{nav}</nav>
+        </SheetContent>
+      </Sheet>
 
-        <div className="flex flex-1 min-h-0">
-          {/* Desktop sidebar */}
-          <aside className="w-56 shrink-0 border-r border-sidebar-border bg-sidebar hidden md:flex flex-col py-4">
-            {nav}
-          </aside>
+      <div className="flex flex-1 min-h-0">
+        <aside className="w-56 shrink-0 border-r border-sidebar-border bg-sidebar hidden md:flex flex-col py-4">
+          {nav}
+        </aside>
 
-          {/* Content */}
-          <div className="flex-1 overflow-y-auto p-6">{children}</div>
-        </div>
-      </SidebarProvider>
-    </div>
+        <div className="flex-1 overflow-y-auto p-6">{children}</div>
+      </div>
+    </>
   );
 }

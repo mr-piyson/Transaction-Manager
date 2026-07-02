@@ -2,7 +2,7 @@ import { redirect } from 'next/navigation';
 import { getCurrentUser } from '@/auth/auth-server';
 import { AlertProvider } from '@/components/Alert-dialog';
 import { SplashScreen } from '@/components/Splash-Screen';
-import { SidebarProvider } from '@/components/sidebar';
+import { DashboardShell } from '@/components/layout/Dashboard-Shell';
 import { CurrencyProvider } from '@/hooks/use-currency';
 import db from '@/lib/db';
 
@@ -19,9 +19,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
     <SplashScreen>
       <AlertProvider>
         <CurrencyProvider>
-          <SidebarProvider className="flex flex-col">
-            {children}
-          </SidebarProvider>
+          <DashboardShell>{children}</DashboardShell>
         </CurrencyProvider>
       </AlertProvider>
     </SplashScreen>

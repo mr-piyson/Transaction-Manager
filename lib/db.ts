@@ -11,8 +11,8 @@ const adapter = new PrismaPg({
 });
 
 const db = new PrismaClient({
-  log: process.env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error'],
-  errorFormat: 'minimal',
+  log: process.env.NODE_ENV === 'development' ? ['error', 'warn'] : ['error'],
+  errorFormat: 'pretty',
   adapter,
 });
 
