@@ -699,69 +699,69 @@ export default function InvoiceDetailPage() {
         </div>
         {showActions && (
           <div className="flex items-center gap-2">
-              {actions.map(({ label, key, icon, variant = 'default', dialog }) =>
-                key === 'edit' ? (
-                  <Button
-                    key={key}
-                    variant={variant}
-                    size="sm"
-                    onClick={handleEdit}
-                    disabled={isPending}
-                  >
-                    {icon}
-                    <span className="ml-1">{label}</span>
-                  </Button>
-                ) : key === 'submit' || key === 'approve' ? (
-                  <Button
-                    key={key}
-                    variant={variant}
-                    size="sm"
-                    onClick={() => openConfirmDialog(key)}
-                    disabled={isPending}
-                  >
-                    {isPending && <Loader2 className="size-4 mr-1 animate-spin" />}
-                    {!isPending && icon}
-                    <span className="ml-1">{label}</span>
-                  </Button>
-                ) : key === 'convertQuote' ? (
-                  <Button
-                    key={key}
-                    variant={variant}
-                    size="sm"
-                    onClick={() => {
-                      if (
-                        window.confirm(
-                          t('invoices.convertToInvoiceTitle', { serial: invoice.serial }),
-                        )
-                      ) {
-                        convertQuoteMutation.mutate({ quoteId: invoice.id });
-                      }
-                    }}
-                    disabled={isPending}
-                  >
-                    {convertQuoteMutation.isPending && (
-                      <Loader2 className="size-4 mr-1 animate-spin" />
-                    )}
-                    {!convertQuoteMutation.isPending && icon}
-                    <span className="ml-1">{label}</span>
-                  </Button>
-                ) : key === 'delete' ? (
-                  <Button
-                    key={key}
-                    variant={variant}
-                    size="sm"
-                    onClick={() => {
-                      if (window.confirm(t('common.confirmDelete', { name: invoice.serial }))) {
-                        deleteMutation.mutate({ id: invoice.id });
-                      }
-                    }}
-                    disabled={isPending}
-                  >
-                    {deleteMutation.isPending && <Loader2 className="size-4 mr-1 animate-spin" />}
-                    {!deleteMutation.isPending && icon}
-                    <span className="ml-1">{label}</span>
-                  </Button>
-                ) : dialog === 'send' ? (
+            {actions.map(({ label, key, icon, variant = 'default', dialog }) =>
+              key === 'edit' ? (
+                <Button
+                  key={key}
+                  variant={variant}
+                  size="sm"
+                  onClick={handleEdit}
+                  disabled={isPending}
+                >
+                  {icon}
+                  <span className="ml-1">{label}</span>
+                </Button>
+              ) : key === 'submit' || key === 'approve' ? (
+                <Button
+                  key={key}
+                  variant={variant}
+                  size="sm"
+                  onClick={() => openConfirmDialog(key)}
+                  disabled={isPending}
+                >
+                  {isPending && <Loader2 className="size-4 mr-1 animate-spin" />}
+                  {!isPending && icon}
+                  <span className="ml-1">{label}</span>
+                </Button>
+              ) : key === 'convertQuote' ? (
+                <Button
+                  key={key}
+                  variant={variant}
+                  size="sm"
+                  onClick={() => {
+                    if (
+                      window.confirm(
+                        t('invoices.convertToInvoiceTitle', { serial: invoice.serial }),
+                      )
+                    ) {
+                      convertQuoteMutation.mutate({ quoteId: invoice.id });
+                    }
+                  }}
+                  disabled={isPending}
+                >
+                  {convertQuoteMutation.isPending && (
+                    <Loader2 className="size-4 mr-1 animate-spin" />
+                  )}
+                  {!convertQuoteMutation.isPending && icon}
+                  <span className="ml-1">{label}</span>
+                </Button>
+              ) : key === 'delete' ? (
+                <Button
+                  key={key}
+                  variant={variant}
+                  size="sm"
+                  onClick={() => {
+                    if (window.confirm(t('common.confirmDelete', { name: invoice.serial }))) {
+                      deleteMutation.mutate({ id: invoice.id });
+                    }
+                  }}
+                  disabled={isPending}
+                >
+                  {deleteMutation.isPending && <Loader2 className="size-4 mr-1 animate-spin" />}
+                  {!deleteMutation.isPending && icon}
+                  <span className="ml-1">{label}</span>
+                </Button>
+              ) : dialog === 'send' ? (
                 <Button
                   key={key}
                   variant={variant}
@@ -906,7 +906,7 @@ export default function InvoiceDetailPage() {
           </Card>
         )}
 
-        {/* Line items table */}
+        {/* Line items table with totals */}
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-semibold">{t('invoices.lineItems')}</CardTitle>
@@ -988,13 +988,8 @@ export default function InvoiceDetailPage() {
                 )}
               </TableBody>
             </Table>
-          </CardContent>
-        </Card>
-
-        {/* Totals */}
-        <Card>
-          <CardContent className="pt-4">
-            <div className="flex justify-end">
+            <Separator className="mt-10" />
+            <div className="flex justify-end px-4 py-3">
               <div className="w-64 space-y-1 text-sm">
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">{t('invoices.subtotal')}</span>
@@ -1317,7 +1312,9 @@ export default function InvoiceDetailPage() {
           <DialogFooter>
             <Button
               variant="outline"
-              onClick={() => setConfirmDialog({ open: false, action: '', title: '', description: '' })}
+              onClick={() =>
+                setConfirmDialog({ open: false, action: '', title: '', description: '' })
+              }
               disabled={isPending}
             >
               {t('common.cancel')}
@@ -1330,7 +1327,9 @@ export default function InvoiceDetailPage() {
               disabled={isPending}
             >
               {isPending && <Loader2 className="size-4 mr-1 animate-spin" />}
-              {confirmDialog.action === 'approve' ? t('common.approve') : t('invoices.submitForApproval')}
+              {confirmDialog.action === 'approve'
+                ? t('common.approve')
+                : t('invoices.submitForApproval')}
             </Button>
           </DialogFooter>
         </DialogContent>

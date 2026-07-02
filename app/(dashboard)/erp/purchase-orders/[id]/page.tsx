@@ -448,7 +448,7 @@ export default function PurchaseOrderDetailPage() {
           </Card>
         </div>
 
-        {/* Line items table */}
+        {/* Line items table with totals */}
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-semibold">{t('purchaseOrders.lineItems')}</CardTitle>
@@ -504,13 +504,8 @@ export default function PurchaseOrderDetailPage() {
                 )}
               </TableBody>
             </Table>
-          </CardContent>
-        </Card>
-
-        {/* Totals */}
-        <Card>
-          <CardContent className="pt-4">
-            <div className="flex justify-end">
+            <Separator />
+            <div className="flex justify-end px-4 py-3">
               <div className="w-64 space-y-1 text-sm">
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">{t('common.subtotal')}</span>
