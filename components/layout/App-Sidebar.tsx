@@ -4,8 +4,7 @@ import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import Fuse from 'fuse.js';
 import { usePathname, useRouter } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
-import { Search, X, SidebarIcon, ChevronDown, type LucideIcon } from 'lucide-react';
-import Link from 'next/link';
+import { Search, X, Check, ChevronDown, SidebarIcon, type LucideIcon } from 'lucide-react';
 
 import { Tree, TreeItem, TreeItemLabel } from '@/components/reui/tree';
 import { hotkeysCoreFeature, syncDataLoaderFeature, searchFeature } from '@headless-tree/core';
@@ -27,7 +26,9 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
+  DropdownMenuLabel,
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
 import { Spinner } from '@/components/ui/spinner';
@@ -135,13 +136,14 @@ interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {}
 
 export function AppSidebar({ ...props }: AppSidebarProps) {
   const currentPath = usePathname();
-  const { isMobile, open, setOpenMobile } = useSidebar();
+  const { isMobile, setOpen, setOpenMobile } = useSidebar();
   const router = useRouter();
   const [loading, setLoading] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const locale = useLocale();
   const t = useTranslations();
   const isRtl = locale === 'ar';
+  const searchInputRef = useRef<HTMLInputElement>(null);
 
   const currentApp = getAppFromPath(currentPath);
 
@@ -187,6 +189,24 @@ export function AppSidebar({ ...props }: AppSidebarProps) {
     [parentMap],
   );
 
+  const itemIdByHref = useMemo(() => {
+    const map: Record<string, string> = {};
+    for (const [id, data] of Object.entries(items)) {
+      if (data.href) map[data.href] = id;
+    }
+    return map;
+  }, [items]);
+
+  const getItemIdForPath = useCallback(
+    (path: string): string | undefined => {
+      const exact = itemIdByHref[path];
+      if (exact) return exact;
+      const prefix = path.split('/').slice(0, 3).join('/');
+      return itemIdByHref[prefix];
+    },
+    [itemIdByHref],
+  );
+
   const matchingIds = useMemo(() => {
     if (!searchQuery.trim()) return null;
 
@@ -213,6 +233,14 @@ export function AppSidebar({ ...props }: AppSidebarProps) {
       router.push(href);
     },
     [currentPath, router],
+  );
+
+  const handleAppSwitch = useCallback(
+    (slug: string) => {
+      if (slug === currentApp?.slug) return;
+      router.push(`/${slug}`);
+    },
+    [currentApp, router],
   );
 
   const tree = useTree<TreeItemData>({
@@ -245,6 +273,14 @@ export function AppSidebar({ ...props }: AppSidebarProps) {
     },
   });
 
+  const handleSearchChange = useCallback(
+    (value: string) => {
+      setSearchQuery(value);
+      tree.setSearch(value || null);
+    },
+    [tree],
+  );
+
   useEffect(() => {
     if (searchQuery.trim() && matchingIds) {
       for (const id of matchingIds) {
@@ -264,10 +300,34 @@ export function AppSidebar({ ...props }: AppSidebarProps) {
     }
   }, [currentPath, setOpenMobile, loading]);
 
-  const handleSearchChange = (value: string) => {
-    setSearchQuery(value);
-    tree.setSearch(value || null);
-  };
+  useEffect(() => {
+    if (searchQuery) return;
+    const itemId = getItemIdForPath(currentPath);
+    if (!itemId) return;
+    for (const ancestor of getAncestors(itemId)) {
+      try {
+        tree.getItemInstance(ancestor).expand();
+      } catch {}
+    }
+  }, [currentPath, getItemIdForPath, getAncestors, tree, searchQuery]);
+
+  // Cmd/Ctrl + K: focus search input (expand sidebar if collapsed)
+  // Escape: clear search and blur input
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        setOpen(true);
+        setTimeout(() => searchInputRef.current?.focus(), 50);
+      }
+      if (e.key === 'Escape' && document.activeElement === searchInputRef.current) {
+        handleSearchChange('');
+        searchInputRef.current?.blur();
+      }
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [setOpen, handleSearchChange]);
 
   const isActive = (href?: string) => {
     if (!href) return false;
@@ -278,28 +338,40 @@ export function AppSidebar({ ...props }: AppSidebarProps) {
   return (
     <Sidebar side={isRtl ? 'right' : 'left'} collapsible="icon" type="Drawer" {...props}>
       <SidebarHeader>
-        <AppSidebarHeader currentApp={currentApp} t={t as (key: string) => string} isRtl={isRtl} />
+        <AppSwitcher
+          currentApp={currentApp}
+          t={t as (key: string) => string}
+          onAppSwitch={handleAppSwitch}
+          isRtl={isRtl}
+        />
       </SidebarHeader>
 
       <SidebarContent>
-        <div className="relative px-2 pb-1">
+        {/* Search */}
+        <div className="relative mx-4">
           <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground pointer-events-none" />
           <SidebarInput
+            ref={searchInputRef}
             placeholder="Search..."
             value={searchQuery}
             onChange={(e) => handleSearchChange(e.target.value)}
             className="pl-8 pr-7"
           />
-          {searchQuery && (
+          {searchQuery ? (
             <button
               onClick={() => handleSearchChange('')}
               className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
             >
               <X className="size-3.5" />
             </button>
+          ) : (
+            <kbd className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none inline-flex h-5 select-none items-center gap-0.5 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground">
+              <span className="text-xs">⌘</span>K
+            </kbd>
           )}
         </div>
 
+        {/* Navigation */}
         <div className="overflow-auto">
           <Tree tree={tree} indent={indent} toggleIconType="chevron">
             {tree.getItems().map((item) => {
@@ -311,22 +383,22 @@ export function AppSidebar({ ...props }: AppSidebarProps) {
               if (searchQuery && matchingIds && !matchingIds.has(item.getId())) return null;
 
               return (
-                <TreeItem
-                  key={item.getId()}
-                  item={item}
-                  className={cn(active && 'bg-primary! text-primary-foreground!')}
-                >
+                <TreeItem key={item.getId()} item={item} className={cn(active && 'bg-primary/10!')}>
                   <TreeItemLabel
                     className={cn(
-                      'w-full gap-2 bg-transparent',
-                      active && 'text-primary-foreground! bg-primary! ',
+                      'w-full gap-2 bg-transparent relative text-start',
+                      active && 'text-primary font-semibold',
                     )}
                   >
+                    {/* Active indicator: 3px colored bar on left edge */}
+                    {active && (
+                      <div className="absolute left-0 top-1/2 -translate-y-1/2 h-5 w-[3px] rounded-r-full bg-primary" />
+                    )}
                     {itemData.icon && (
                       <itemData.icon
                         className={cn(
                           'size-4 shrink-0',
-                          active ? 'text-primary-foreground' : 'text-foreground/80',
+                          active ? 'text-primary' : 'text-foreground/80',
                         )}
                       />
                     )}
@@ -356,82 +428,62 @@ export function AppSidebar({ ...props }: AppSidebarProps) {
 function AppSwitcher({
   currentApp,
   t,
-}: {
-  currentApp: { slug: string; nameKey: string; icon: LucideIcon };
-  t: (key: string) => string;
-}) {
-  const router = useRouter();
-
-  const handleSwitch = (slug: string) => {
-    if (slug === currentApp.slug) return;
-    router.push(`/${slug}`);
-  };
-
-  return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button
-          variant="ghost"
-          size="sm"
-          className="w-full flex items-center gap-2 px-2 justify-start h-9 data-[state=open]:bg-accent"
-        >
-          <currentApp.icon className="size-4 shrink-0" />
-          <span className="text-sm font-medium truncate flex-1 text-left">
-            {t(currentApp.nameKey)}
-          </span>
-          <ChevronDown className="size-3 shrink-0 opacity-50" />
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="start" side="right" className="w-48">
-        {apps
-          .filter((a) => a.isActive)
-          .map((app) => {
-            const AppIcon = app.icon;
-            return (
-              <DropdownMenuItem
-                key={app.slug}
-                onClick={() => handleSwitch(app.slug)}
-                className={app.slug === currentApp.slug ? 'bg-accent font-medium' : ''}
-              >
-                <AppIcon className="size-4 mr-2" />
-                <span>{t(app.nameKey)}</span>
-              </DropdownMenuItem>
-            );
-          })}
-      </DropdownMenuContent>
-    </DropdownMenu>
-  );
-}
-
-function AppSidebarHeader({
-  currentApp,
-  t,
+  onAppSwitch,
   isRtl,
 }: {
   currentApp: { slug: string; nameKey: string; icon: LucideIcon };
   t: (key: string) => string;
+  onAppSwitch: (slug: string) => void;
   isRtl: boolean;
 }) {
   return (
     <SidebarMenu>
       <SidebarMenuItem>
-        <Link href={`/${currentApp.slug}`}>
-          <SidebarMenuButton
-            size="lg"
-            dir={isRtl ? 'rtl' : 'ltr'}
-            className="flex flex-row opacity-100! data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <SidebarMenuButton
+              size="lg"
+              dir={isRtl ? 'rtl' : 'ltr'}
+              className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+            >
+              <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+                <Logo className="size-5" />
+              </div>
+              <div className="grid flex-1 text-left text-sm leading-tight">
+                <span className="truncate font-semibold text-lg">{t(currentApp.nameKey)}</span>
+              </div>
+              <ChevronDown className="ml-auto size-4 text-muted-foreground" />
+            </SidebarMenuButton>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent
+            className="w-[--radix-dropdown-menu-trigger-width] min-w-56 rounded-lg"
+            side={'bottom'}
+            align="start"
           >
-            <div className="flex aspect-square size-8 items-center justify-center rounded-lg text-sidebar-primary-foreground">
-              <Logo className="size-7!" />
-            </div>
-            <div className="grid flex-1 text-left text-sm leading-tight">
-              <span className="truncate font-semibold text-lg">{t('layout.appTitle')}</span>
-            </div>
-          </SidebarMenuButton>
-        </Link>
-      </SidebarMenuItem>
-      <SidebarMenuItem>
-        <AppSwitcher currentApp={currentApp} t={t} />
+            <DropdownMenuLabel className="text-xs text-muted-foreground">
+              Switch Application
+            </DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            {apps
+              .filter((a) => a.isActive)
+              .map((app) => (
+                <DropdownMenuItem
+                  key={app.slug}
+                  onClick={() => onAppSwitch(app.slug)}
+                  className={cn(
+                    'gap-2 p-2 cursor-pointer',
+                    app.slug === currentApp.slug && 'bg-accent',
+                  )}
+                >
+                  <div className="flex size-6 items-center justify-center rounded-md bg-primary/10">
+                    <app.icon className="size-3.5 text-primary" />
+                  </div>
+                  <span className="flex-1">{t(app.nameKey)}</span>
+                  {app.slug === currentApp.slug && <Check className="size-4 text-primary" />}
+                </DropdownMenuItem>
+              ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
       </SidebarMenuItem>
     </SidebarMenu>
   );

@@ -1190,6 +1190,25 @@
     "comingSoonDescription": "Each HR module will be fully featured with create, read, update, and delete capabilities."
   },
   "crm": {
-    "dashboard": "Dashboard"
+    "dashboard": "Dashboard",
+    "sales": "Sales",
+    "leads": "Leads",
+    "opportunities": "Opportunities",
+    "pipeline": "Pipeline",
+    "pipelines": "Pipelines",
+    "marketing": "Marketing",
+    "campaigns": "Campaigns",
+    "campaign": "Campaign",
+    "contacts": "Contacts",
+    "contracts": "Contracts",
+    "customers": "Customers",
+    "quotations": "Quotations",
+    "salesOrders": "Sales Orders",
+    "invoices": "Invoices",
+    "payments": "Payments",
+    "customersDescription": "Manage your customers and their information",
+    "salesOrdersDescription": "Manage your sales orders and their information",
+    "invoicesDescription": "Manage your invoices and their information",
+    "paymentsDescription": "Manage your payments and their information"
   }
 }

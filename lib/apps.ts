@@ -29,13 +29,7 @@ export type AppInfo = {
 
 function getErpRoutes(t: (key: string) => string): RouteConfig[] {
   return [
-    {
-      type: 'group',
-      label: t('layout.navigation'),
-      children: [
-        { type: 'item', label: t('layout.dashboard'), href: '/erp', icon: LayoutDashboard },
-      ],
-    },
+    { type: 'item', label: t('layout.dashboard'), href: '/erp', icon: LayoutDashboard },
     {
       type: 'group',
       label: t('layout.sales'),
@@ -49,7 +43,12 @@ function getErpRoutes(t: (key: string) => string): RouteConfig[] {
       type: 'group',
       label: t('layout.purchases'),
       children: [
-        { type: 'item', label: t('layout.purchaseOrders'), href: '/erp/purchase-orders', icon: ShoppingCart },
+        {
+          type: 'item',
+          label: t('layout.purchaseOrders'),
+          href: '/erp/purchase-orders',
+          icon: ShoppingCart,
+        },
         { type: 'item', label: t('layout.suppliers'), href: '/erp/suppliers', icon: Truck },
       ],
     },
@@ -79,28 +78,25 @@ function getErpRoutes(t: (key: string) => string): RouteConfig[] {
     {
       type: 'group',
       label: t('layout.configuration'),
-      children: [
-        { type: 'item', label: t('layout.settings'), href: '/settings', icon: Settings },
-      ],
+      children: [{ type: 'item', label: t('layout.settings'), href: '/settings', icon: Settings }],
     },
   ];
 }
 
 function getCrmRoutes(t: (key: string) => string): RouteConfig[] {
   return [
-    {
-      type: 'group',
-      label: t('layout.navigation'),
-      children: [
-        { type: 'item', label: t('crm.dashboard'), href: '/crm', icon: LayoutDashboard },
-      ],
-    },
+    { type: 'item', label: t('crm.dashboard'), href: '/crm', icon: LayoutDashboard },
     {
       type: 'group',
       label: t('crm.sales'),
       children: [
         { type: 'item', label: t('crm.leads'), href: '/crm/leads', icon: Users },
-        { type: 'item', label: t('crm.opportunities'), href: '/crm/opportunities', icon: BarChart3 },
+        {
+          type: 'item',
+          label: t('crm.opportunities'),
+          href: '/crm/opportunities',
+          icon: BarChart3,
+        },
         { type: 'item', label: t('crm.pipelines'), href: '/crm/pipelines', icon: LayoutDashboard },
       ],
     },
@@ -117,13 +113,7 @@ function getCrmRoutes(t: (key: string) => string): RouteConfig[] {
 
 function getHrRoutes(t: (key: string) => string): RouteConfig[] {
   return [
-    {
-      type: 'group',
-      label: t('layout.navigation'),
-      children: [
-        { type: 'item', label: t('hr.dashboard'), href: '/hrms', icon: LayoutDashboard },
-      ],
-    },
+    { type: 'item', label: t('hr.dashboard'), href: '/hrms', icon: LayoutDashboard },
     {
       type: 'group',
       label: t('hr.workforce'),
@@ -143,9 +133,7 @@ function getHrRoutes(t: (key: string) => string): RouteConfig[] {
     {
       type: 'group',
       label: t('hr.compensation'),
-      children: [
-        { type: 'item', label: t('hr.payroll'), href: '/hrms/payroll', icon: Wallet },
-      ],
+      children: [{ type: 'item', label: t('hr.payroll'), href: '/hrms/payroll', icon: Wallet }],
     },
   ];
 }
