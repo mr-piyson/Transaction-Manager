@@ -298,6 +298,13 @@ export function AppSidebar({ ...props }: AppSidebarProps) {
     setFocusedIndex(-1);
   }, [searchQuery]);
 
+  // Scroll the focused item into view when arrow keys change selection
+  useEffect(() => {
+    if (focusedIndex < 0) return;
+    const el = document.querySelector('[data-sidebar-focused="true"]');
+    el?.scrollIntoView({ block: 'nearest' });
+  }, [focusedIndex]);
+
   const handleSearchKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
       if (e.key === 'ArrowDown') {
@@ -448,6 +455,7 @@ export function AppSidebar({ ...props }: AppSidebarProps) {
                   key={item.getId()}
                   item={item}
                   className={cn(active && 'bg-primary/10!', isFocused && 'bg-accent!')}
+                  data-sidebar-focused={isFocused || undefined}
                 >
                   <TreeItemLabel
                     className={cn(
