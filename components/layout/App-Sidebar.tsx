@@ -16,7 +16,6 @@ import {
   SidebarContent,
   SidebarFooter,
   SidebarHeader,
-  SidebarInput,
   SidebarMenu,
   SidebarMenuItem,
   SidebarMenuButton,
@@ -38,6 +37,8 @@ import type { AppActions, AppSubjects } from '@/lib/permissions';
 import { apps, getAppFromPath } from '@/lib/apps';
 import { cn } from '@/lib/utils';
 import { NavUser } from './User-Options';
+import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput } from '../ui/input-group';
+import { Kbd } from '../ui/kbd';
 
 export type RouteConfig = {
   type: 'item' | 'group';
@@ -284,14 +285,12 @@ export function AppSidebar({ ...props }: AppSidebarProps) {
   );
 
   const visibleItems = useMemo(() => {
-    return tree
-      .getItems()
-      .filter((item) => {
-        const itemData = item.getItemData();
-        if (!itemData.href) return false;
-        if (searchQuery && matchingIds && !matchingIds.has(item.getId())) return false;
-        return true;
-      });
+    return tree.getItems().filter((item) => {
+      const itemData = item.getItemData();
+      if (!itemData.href) return false;
+      if (searchQuery && matchingIds && !matchingIds.has(item.getId())) return false;
+      return true;
+    });
   }, [tree, searchQuery, matchingIds]);
 
   useEffect(() => {
@@ -393,28 +392,34 @@ export function AppSidebar({ ...props }: AppSidebarProps) {
 
       <SidebarContent>
         {/* Search */}
-        <div className="relative mx-4">
-          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground pointer-events-none" />
-          <SidebarInput
-            ref={searchInputRef}
-            placeholder="Search..."
-            value={searchQuery}
-            onChange={(e) => handleSearchChange(e.target.value)}
-            onKeyDown={handleSearchKeyDown}
-            className="pl-8 pr-7"
-          />
-          {searchQuery ? (
-            <button
-              onClick={() => handleSearchChange('')}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-            >
-              <X className="size-3.5" />
-            </button>
-          ) : (
-            <kbd className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none inline-flex h-5 select-none items-center gap-0.5 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground">
-              <span className="text-xs">⌘</span>K
-            </kbd>
-          )}
+        <div className="relative w-full px-4">
+          <InputGroup className="w-full">
+            <InputGroupAddon align="inline-start">
+              <Search className="size-3.5" />
+            </InputGroupAddon>
+            <InputGroupInput
+              ref={searchInputRef}
+              placeholder="Search..."
+              value={searchQuery}
+              onChange={(e) => handleSearchChange(e.target.value)}
+              onKeyDown={handleSearchKeyDown}
+            />
+            <InputGroupAddon align="inline-end">
+              {searchQuery ? (
+                <InputGroupButton
+                  variant="ghost"
+                  size="icon-xs"
+                  onClick={() => handleSearchChange('')}
+                >
+                  <X className="size-3.5" />
+                </InputGroupButton>
+              ) : (
+                <Kbd>
+                  <span className="text-xs">⌘</span>K
+                </Kbd>
+              )}
+            </InputGroupAddon>
+          </InputGroup>
         </div>
 
         {/* Navigation */}
@@ -434,9 +439,7 @@ export function AppSidebar({ ...props }: AppSidebarProps) {
               const labelContent = (
                 <>
                   {/* Active indicator: 3px colored bar on left edge */}
-                  {active && (
-                    <div className="absolute left-0 top-1/2 -translate-y-1/2 h-5 w-[3px] rounded-r-full bg-primary" />
-                  )}
+                  {active && <div className="absolute inset-s-0 h-6 w-1 rounded-sm bg-primary" />}
                   {itemData.icon && (
                     <itemData.icon
                       className={cn(
