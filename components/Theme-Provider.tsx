@@ -10,23 +10,3 @@ export function ThemeProvider({
 }: React.ComponentProps<typeof NextThemesProvider>) {
   return <NextThemesProvider {...props}>{children}</NextThemesProvider>;
 }
-
-export const ThemeSwitcher = (props: any) => {
-  const theme = useTheme();
-  const [mounted, setMounted] = React.useState(false);
-
-  React.useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  if (!mounted) return null;
-
-  return (
-    <Switch
-      checked={theme.resolvedTheme === 'dark'}
-      onCheckedChange={() => {
-        theme.setTheme(theme.resolvedTheme === 'dark' ? 'light' : 'dark');
-      }}
-    />
-  );
-};
