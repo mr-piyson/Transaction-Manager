@@ -1,17 +1,23 @@
 interface UploadResponse {
-  path: string;
-  name: string;
+  id: string;
+  storagePath: string;
+  originalName: string;
+  mime: string;
+  extension: string;
+  size: number;
+  width: number | null;
+  height: number | null;
 }
 
 interface HandleImageUploadOptions<T> {
   file: File | any;
-  onMutation: (imagePath?: string) => Promise<T> | void;
+  onMutation: (uploadResult?: UploadResponse) => Promise<T> | void;
   onSuccess?: () => void;
   onError?: (error: any) => void;
 }
 
 /**
- * Handles image uploading, mutation execution, and automatic cleanup on failure.
+ * Handles file uploading, mutation execution, and automatic cleanup on failure.
  */
 export async function uploadImage<T>({
   file,
@@ -19,8 +25,7 @@ export async function uploadImage<T>({
   onSuccess,
   onError,
 }: HandleImageUploadOptions<T>) {
-  let uploadedImagePath: string | undefined = undefined;
-  let uploadedFileName: string | undefined = undefined;
+  let uploadResult: UploadResponse | undefined = undefined;
 
   try {
     // 1. Upload if it's a file
@@ -35,31 +40,19 @@ export async function uploadImage<T>({
 
       if (!res.ok) throw new Error('UPLOAD_FAILED');
 
-      const uploadData: UploadResponse = await res.json();
-      uploadedImagePath = uploadData.path;
-      uploadedFileName = uploadData.name;
+      uploadResult = await res.json();
     }
 
     // 2. Execute Mutation
-    // We wrap this in a promise if it's not already to handle the cleanup catch
-    await onMutation(uploadedImagePath);
+    await onMutation(uploadResult);
 
     // 3. Success Callback
     onSuccess?.();
   } catch (error) {
-    // 4. Cleanup: If mutation failed but file was uploaded, delete it
-    if (uploadedFileName) {
-      await fetch('/api/uploads', {
-        method: 'DELETE',
-        body: JSON.stringify({ fileName: uploadedFileName }),
-        headers: { 'Content-Type': 'application/json' },
-      });
-    }
-
-    // 5. User Feedback
+    // 4. User Feedback
     const message =
       error instanceof Error && error.message === 'UPLOAD_FAILED'
-        ? 'Failed to upload image'
+        ? 'Failed to upload file'
         : 'Failed to process request';
 
     onError?.(message);

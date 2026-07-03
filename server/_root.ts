@@ -1,4 +1,5 @@
 import { t } from '@/lib/trpc/context';
+import { attachmentsRouter } from './attachments/attachments.router';
 import { authRouter } from './auth/auth.router';
 import { categoriesRouter } from './categories/categories.router';
 import { contractsRouter } from './contracts/contracts.router';
@@ -17,6 +18,7 @@ import { usersRouter } from './users/users.router';
 import { warehousesRouter } from './warehouses/warehouses.router';
 
 export const appRouter = t.router({
+  attachments: attachmentsRouter,
   auth: authRouter,
   categories: categoriesRouter,
   customers: customersRouter,

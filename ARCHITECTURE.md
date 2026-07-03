@@ -121,6 +121,16 @@ Transaction-Manager/
 │   │   └── notifications.shared.ts    # Notification types, settings keys, create helper
 │   ├── hr/
 │   │   └── hr.router.ts         # HRMS module (placeholder)
+│   ├── attachments/
+│   │   └── attachments.router.ts # Attachment CRUD (tRPC — links Files to entities)
+│   ├── services/
+│   │   └── file/
+│   │       ├── file.repository.ts   # Prisma File/Attachment queries
+│   │       ├── upload.service.ts    # Upload pipeline orchestrator
+│   │       ├── attachment.service.ts # Attachment CRUD + reference counting
+│   │       ├── hash.service.ts      # SHA-256 computation
+│   │       ├── image.service.ts     # Sharp compression + thumbnails
+│   │       └── storage.service.ts   # Disk write/read/delete (S3-abstractable)
 │   └── shared/
 │       ├── audit.service.ts     # Audit log writer (called inside $transaction)
 │       └── cron.ts              # Scheduled jobs (overdue invoices, low stock alerts)
@@ -257,6 +267,7 @@ Each domain has its own module directory under `server/` with a tRPC router foll
 | Notifications | `server/notifications/notifications.router.ts` | list, getUnreadCount, markRead, markAllRead, archive, dismiss |
 | Organizations | `server/organizations/organizations.router.ts` | setup (onboarding — creates org + SUPER_ADMIN via `auth.api.signUpEmail`), get, update |
 | Settings | `server/settings/settings.router.ts` | getOrg, updateOrg, taxRates CRUD, ledgerAccounts CRUD, updateSetting, getSetting, getSettings |
+| Attachments | `server/attachments/attachments.router.ts` | create, listByEntity, byId, delete, deleteByEntity |
 
 Shared validation patterns:
 - `assertCan()` before every mutation
@@ -445,3 +456,161 @@ The platform supports multiple business applications (ERP, HRMS, etc.) within a 
        │                     │  PostgreSQL (via Prisma)  │
        │                     └──────────────────────────┘
 ```
+
+---
+
+## Enterprise File Storage Architecture
+
+### Goal
+
+An enterprise-grade, local-first file management system with deduplication, MIME validation, image optimization, and a generic attachment model. Designed to allow future S3/R2 migration by abstracting physical storage behind a service layer.
+
+### Principles
+
+- Uploads use a dedicated Route Handler (`/api/upload`) with `multipart/form-data`.
+- tRPC handles metadata CRUD only (via the Attachment router).
+- Files are stored in `public/uploads/YYYY/MM/` (date-partitioned).
+- Physical storage is independent from ERP entities — the `Attachment` table provides a polymorphic join.
+- Deduplication via SHA-256 hashes — identical files are not stored twice.
+- Images are optimized with Sharp (lossless where appropriate) and thumbnails are generated.
+- MIME signatures are validated with `file-type` (binary magic bytes, not just the extension).
+- Storage abstraction allows future S3/R2 migration without changing consumers.
+
+### Libraries
+
+| Library | Purpose |
+|---|---|
+| `sharp` | Image compression, resizing, thumbnail generation |
+| `file-type` | MIME signature validation via binary magic bytes |
+| `@paralleldrive/cuid2` | Collision-resistant unique IDs for filenames |
+| `pdf-lib` | PDF stream optimization (already used in `lib/files.ts`) |
+
+### Architecture Flow
+
+```
+Browser
+  │
+POST /api/upload  (multipart/form-data)
+  │
+UploadService
+ ├─ Validate size, MIME, and binary signature (file-type)
+ ├─ Read buffer → compute SHA-256 (HashService)
+ ├─ Check for existing file with same hash → return if duplicate
+ ├─ Compress/convert images with Sharp (ImageService)
+ ├─ Write to disk via StorageService → public/uploads/YYYY/MM/
+ ├─ Create File record in DB (FileRepository)
+ └─ Return file metadata
+  │
+tRPC (AttachmentRouter)
+  │
+AttachmentService
+ ├─ Create: link File → Entity (entityType + entityId)
+ ├─ Read: query Attachments with File metadata
+ ├─ Delete: remove Attachment; delete physical File only if no remaining references
+  │
+Employee / Customer / Invoice / ...
+```
+
+### Prisma Models
+
+```prisma
+model File {
+  id           String   @id @default(cuid())
+  filename     String   // UUID-based storage filename
+  originalName String   // User's original filename
+  hash         String   @unique // SHA-256 hex digest
+  storagePath  String   @unique // e.g. /uploads/2025/07/abc123.jpg
+  mime         String   // Resolved MIME type (from file-type, not user-supplied)
+  extension    String   // Canonical extension (e.g. jpg, pdf, png)
+  size         Int      // File size in bytes (after optimization)
+  width        Int?     // Image width in pixels (null for non-images)
+  height       Int?     // Image height in pixels (null for non-images)
+  createdAt    DateTime @default(now())
+  attachments  Attachment[]
+  @@schema("public")
+}
+
+model Attachment {
+  id             String   @id @default(cuid())
+  fileId         String
+  file           File     @relation(fields: [fileId], references: [id])
+  entityType     String   // e.g. "Invoice", "Customer", "Employee"
+  entityId       String   // The ID of the related entity
+  field          String?  // Optional field name (e.g. "signature", "profilePhoto")
+  label          String?  // Display label (e.g. "Supplier Invoice", "Delivery Note")
+  uploadedById   String?
+  organizationId String
+  createdAt      DateTime @default(now())
+  @@index([entityType, entityId])
+  @@index([organizationId])
+  @@schema("public")
+}
+```
+
+**Key differences from the legacy Attachment model**:
+- `File` is now a separate entity with deduplication (`hash @unique`).
+- `Attachment.fileId` is a foreign key to `File` (replacing inline `fileName`/`mimeType`/`sizeBytes`/`storageKey`).
+- `Attachment.field` allows multiple attachments per entity with different semantic roles.
+
+### Folder Structure
+
+```
+server/services/file/
+  ├── file.repository.ts   # Prisma File/Attachment queries
+  ├── upload.service.ts    # Upload pipeline orchestrator
+  ├── attachment.service.ts # Attachment CRUD + reference counting
+  ├── hash.service.ts      # SHA-256 computation
+  ├── image.service.ts     # Sharp compression + thumbnail generation
+  └── storage.service.ts   # Disk write/read/delete (abstracted for future S3)
+
+server/attachments/
+  └── attachments.router.ts # tRPC router (create, listByEntity, byId, delete)
+
+app/api/uploads/
+  └── route.ts             # POST handler (multipart → UploadService)
+
+public/uploads/
+  └── YYYY/MM/             # Date-partitioned storage
+```
+
+### Upload Pipeline
+
+1. Receive multipart request via Next.js `req.formData()`.
+2. Validate file size against configurable limits (default: 10 MB).
+3. Validate MIME type using `file-type` (reads binary magic bytes — not the user-supplied Content-Type).
+4. Read file into a Buffer.
+5. Compute SHA-256 hash of the raw buffer.
+6. Check `File` table for an existing record with the same hash → return existing if found (deduplication).
+7. For images: compress with Sharp and generate a thumbnail (`128x128` WebP).
+8. Generate a UUID-based filename to avoid collisions.
+9. Determine storage path: `public/uploads/YYYY/MM/<uuid>.<ext>`.
+10. Write file to disk via `StorageService`.
+11. Create `File` record in DB (with width/height for images).
+12. Return file metadata (`id`, `storagePath`, `mime`, `size`, `width`, `height`).
+
+### CRUD Operations
+
+| Operation | Mechanism |
+|---|---|
+| **Create** | `POST /api/upload` → `UploadService` → returns `File` metadata. Then `tRPC attachment.create` links the file to an entity. |
+| **Read** | `tRPC attachment.list` queries by `entityType + entityId`, joining `File` for metadata. |
+| **Update** | Replace attachment's `field`/`label` via tRPC. Physical file is immutable. |
+| **Delete** | Remove `Attachment` row. If `File` has no remaining `Attachment` references, delete the physical file and `File` record. |
+
+### Storage Abstraction
+
+`StorageService` wraps all disk operations (`write`, `read`, `delete`, `exists`). To migrate to S3/R2:
+
+1. Create `S3StorageService` implementing the same interface.
+2. Change the single factory instantiation in `upload.service.ts`.
+3. No changes to consumers (`UploadService`, `AttachmentService`, or tRPC routers).
+
+### Non-functional Requirements
+
+- Single upload endpoint for all file types.
+- Generic polymorphic attachment model (one model serves all entities).
+- Transactional DB updates (File + Attachment created in `$transaction`).
+- Reference-counted garbage collection on delete.
+- Authorization check before upload (via `assertCan`).
+- Configurable size limits per MIME category.
+- Organized storage paths (`YYYY/MM/`) for filesystem performance at scale.

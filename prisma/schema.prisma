@@ -1068,25 +1068,48 @@ model AuditLog {
 }
 
 // =============================================================================
+// FILES  (deduplicated physical file records)
+// SHA-256 hash ensures identical content is stored only once.
+// =============================================================================
+
+model File {
+  id           String   @id @default(cuid())
+  filename     String   // UUID-based storage filename
+  originalName String   // User's original filename
+  hash         String   @unique // SHA-256 hex digest
+  storagePath  String   @unique // e.g. /uploads/2025/07/abc123.jpg
+  mime         String   // Resolved MIME type (from file-type, not user-supplied)
+  extension    String   // Canonical extension (e.g. jpg, pdf, png)
+  size         Int      // File size in bytes (after optimization)
+  width        Int?     // Image width in pixels (null for non-images)
+  height       Int?     // Image height in pixels (null for non-images)
+  createdAt    DateTime @default(now())
+  attachments  Attachment[]
+
+  @@schema("public")
+}
+
+// =============================================================================
 // ATTACHMENTS  (polymorphic file references)
-// One model instead of optional attachment columns on each entity.
+// Links a File to any ERP entity (Invoice, Customer, Employee, etc.)
+// Reference-counted: File is only deleted when all Attachments are removed.
 // =============================================================================
 
 model Attachment {
   id             String   @id @default(cuid())
-  entityType     String
-  entityId       String
-  fileName       String
-  mimeType       String
-  sizeBytes      Int
-  storageKey     String // S3 key / storage path
-  label          String? // "Supplier Invoice", "Delivery Note", "Contract PDF"
+  fileId         String
+  file           File     @relation(fields: [fileId], references: [id])
+  entityType     String   // e.g. "Invoice", "Customer", "Employee"
+  entityId       String   // The ID of the related entity
+  field          String?  // Optional semantic role (e.g. "signature", "profilePhoto")
+  label          String?  // Display label (e.g. "Supplier Invoice", "Delivery Note")
   uploadedById   String?
   organizationId String
   createdAt      DateTime @default(now())
 
   @@index([entityType, entityId])
   @@index([organizationId])
+  @@index([fileId])
   @@schema("public")
 }
 
