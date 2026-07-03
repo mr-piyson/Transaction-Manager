@@ -7,7 +7,6 @@ import {
   Cuboid,
   Edit,
   Hash,
-  Layers,
   MoreHorizontal,
   Package,
   Scale,
@@ -17,7 +16,6 @@ import {
   Truck,
   Weight,
   Wrench,
-  type LucideIcon,
 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useParams, useRouter } from 'next/navigation';
@@ -34,7 +32,12 @@ import {
   EmptyTitle,
 } from '@/components/ui/empty';
 import { Spinner } from '@/components/ui/spinner';
-import { UniversalDropdownMenu } from '@/components/dropdown';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { useItemForm } from '@/components/dialogs';
 import { trpc } from '@/lib/trpc/client';
 import { cn } from '@/lib/utils';
@@ -180,20 +183,27 @@ export default function ItemDetailPage() {
           )}
         </div>
         <div className="flex items-center gap-2">
-          <UniversalDropdownMenu
-            trigger={<MoreHorizontal className="size-4" />}
-            items={[
-              { id: 'edit', label: t('common.edit'), icon: Edit, onClick: handleEdit },
-              {
-                id: 'delete',
-                label: t('common.delete'),
-                icon: Trash,
-                destructive: true,
-                disabled: isPending,
-                onClick: handleDelete,
-              },
-            ]}
-          />
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon">
+                <MoreHorizontal className="size-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={handleEdit}>
+                <Edit className="size-4" />
+                {t('common.edit')}
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                variant="destructive"
+                disabled={isPending}
+                onClick={handleDelete}
+              >
+                <Trash className="size-4" />
+                {t('common.delete')}
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </header>
 
