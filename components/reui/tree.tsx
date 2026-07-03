@@ -4,7 +4,6 @@ import {
   ButtonHTMLAttributes,
   createContext,
   CSSProperties,
-  Fragment,
   HTMLAttributes,
   useContext,
 } from 'react';
@@ -167,27 +166,31 @@ function TreeItemLabel<T = any>({
       )}
       {...props}
     >
-      <Fragment>
-        {item.isFolder() &&
-          (toggleIconType === 'plus-minus' ? (
-            item.isExpanded() ? (
-              <MinusIcon
-                className="text-muted-foreground size-3.5"
-                stroke="currentColor"
-                strokeWidth="1"
-              />
+      {asChild ? (
+        children
+      ) : (
+        <>
+          {item.isFolder() &&
+            (toggleIconType === 'plus-minus' ? (
+              item.isExpanded() ? (
+                <MinusIcon
+                  className="text-muted-foreground size-3.5"
+                  stroke="currentColor"
+                  strokeWidth="1"
+                />
+              ) : (
+                <PlusIcon
+                  className="text-muted-foreground size-3.5"
+                  stroke="currentColor"
+                  strokeWidth="1"
+                />
+              )
             ) : (
-              <PlusIcon
-                className="text-muted-foreground size-3.5"
-                stroke="currentColor"
-                strokeWidth="1"
-              />
-            )
-          ) : (
-            <ChevronDownIcon className="text-muted-foreground size-4 in-aria-[expanded=false]:-rotate-90" />
-          ))}
-        {children || (typeof item.getItemName === 'function' ? item.getItemName() : null)}
-      </Fragment>
+              <ChevronDownIcon className="text-muted-foreground size-4 in-aria-[expanded=false]:-rotate-90" />
+            ))}
+          {children || (typeof item.getItemName === 'function' ? item.getItemName() : null)}
+        </>
+      )}
     </Comp>
   );
 }

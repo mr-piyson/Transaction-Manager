@@ -3,6 +3,7 @@
 import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import Fuse from 'fuse.js';
 import { usePathname, useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { useLocale, useTranslations } from 'next-intl';
 import { Search, X, Check, ChevronDown, SidebarIcon, type LucideIcon } from 'lucide-react';
 
@@ -140,6 +141,7 @@ export function AppSidebar({ ...props }: AppSidebarProps) {
   const router = useRouter();
   const [loading, setLoading] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
+  const [focusedIndex, setFocusedIndex] = useState(-1);
   const locale = useLocale();
   const t = useTranslations();
   const isRtl = locale === 'ar';
@@ -281,6 +283,42 @@ export function AppSidebar({ ...props }: AppSidebarProps) {
     [tree],
   );
 
+  const visibleItems = useMemo(() => {
+    return tree
+      .getItems()
+      .filter((item) => {
+        const itemData = item.getItemData();
+        if (!itemData.href) return false;
+        if (searchQuery && matchingIds && !matchingIds.has(item.getId())) return false;
+        return true;
+      });
+  }, [tree, searchQuery, matchingIds]);
+
+  useEffect(() => {
+    setFocusedIndex(-1);
+  }, [searchQuery]);
+
+  const handleSearchKeyDown = useCallback(
+    (e: React.KeyboardEvent) => {
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        setFocusedIndex((prev) => (prev < visibleItems.length - 1 ? prev + 1 : 0));
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        setFocusedIndex((prev) => (prev > 0 ? prev - 1 : visibleItems.length - 1));
+      } else if (e.key === 'Enter') {
+        e.preventDefault();
+        if (focusedIndex >= 0 && focusedIndex < visibleItems.length) {
+          const itemData = visibleItems[focusedIndex].getItemData();
+          if (itemData.href) {
+            handleNavigate(itemData.href);
+          }
+        }
+      }
+    },
+    [visibleItems, focusedIndex, handleNavigate],
+  );
+
   useEffect(() => {
     if (searchQuery.trim() && matchingIds) {
       for (const id of matchingIds) {
@@ -355,6 +393,7 @@ export function AppSidebar({ ...props }: AppSidebarProps) {
             placeholder="Search..."
             value={searchQuery}
             onChange={(e) => handleSearchChange(e.target.value)}
+            onKeyDown={handleSearchKeyDown}
             className="pl-8 pr-7"
           />
           {searchQuery ? (
@@ -374,7 +413,7 @@ export function AppSidebar({ ...props }: AppSidebarProps) {
         {/* Navigation */}
         <div className="overflow-auto">
           <Tree tree={tree} indent={indent} toggleIconType="chevron">
-            {tree.getItems().map((item) => {
+            {tree.getItems().map((item, itemIndex) => {
               const itemData = item.getItemData();
               const isFolder = item.isFolder();
               const active = !isFolder && itemData.href ? isActive(itemData.href) : false;
@@ -382,28 +421,56 @@ export function AppSidebar({ ...props }: AppSidebarProps) {
 
               if (searchQuery && matchingIds && !matchingIds.has(item.getId())) return null;
 
+              const focusedItemIndex = visibleItems.findIndex((vi) => vi.getId() === item.getId());
+              const isFocused = focusedItemIndex === focusedIndex && focusedIndex >= 0;
+
+              const labelContent = (
+                <>
+                  {/* Active indicator: 3px colored bar on left edge */}
+                  {active && (
+                    <div className="absolute left-0 top-1/2 -translate-y-1/2 h-5 w-[3px] rounded-r-full bg-primary" />
+                  )}
+                  {itemData.icon && (
+                    <itemData.icon
+                      className={cn(
+                        'size-4 shrink-0',
+                        active ? 'text-primary' : 'text-foreground/80',
+                      )}
+                    />
+                  )}
+                  <span className="flex-1 truncate">{item.getItemName()}</span>
+                  {showSpinner && <Spinner className="size-3 ml-auto shrink-0" />}
+                </>
+              );
+
               return (
-                <TreeItem key={item.getId()} item={item} className={cn(active && 'bg-primary/10!')}>
+                <TreeItem
+                  key={item.getId()}
+                  item={item}
+                  className={cn(active && 'bg-primary/10!', isFocused && 'bg-accent!')}
+                >
                   <TreeItemLabel
                     className={cn(
                       'w-full gap-2 bg-transparent! relative text-start! data-[search-match=true]:bg-transparent!',
                       active && 'text-primary font-semibold',
+                      isFocused && 'bg-accent!',
                     )}
+                    asChild={!isFolder && !!itemData.href}
                   >
-                    {/* Active indicator: 3px colored bar on left edge */}
-                    {active && (
-                      <div className="absolute left-0 top-1/2 -translate-y-1/2 h-5 w-[3px] rounded-r-full bg-primary" />
+                    {!isFolder && itemData.href ? (
+                      <Link
+                        href={itemData.href}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          handleNavigate(itemData.href!);
+                        }}
+                        className="flex items-center gap-1 rounded-md py-1.5 px-2 text-sm"
+                      >
+                        {labelContent}
+                      </Link>
+                    ) : (
+                      labelContent
                     )}
-                    {itemData.icon && (
-                      <itemData.icon
-                        className={cn(
-                          'size-4 shrink-0',
-                          active ? 'text-primary' : 'text-foreground/80',
-                        )}
-                      />
-                    )}
-                    <span className="flex-1 truncate">{item.getItemName()}</span>
-                    {showSpinner && <Spinner className="size-3 ml-auto shrink-0" />}
                   </TreeItemLabel>
                 </TreeItem>
               );
