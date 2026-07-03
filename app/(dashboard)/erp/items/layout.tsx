@@ -70,6 +70,7 @@ export default function ItemsLayout({ children }: { children?: React.ReactNode }
                 sku: item.sku,
                 barcode: item.barcode ?? undefined,
                 name: item.name,
+                image: item.image ?? undefined,
                 unit: item.unit,
                 isSaleable: item.isSaleable,
                 isPurchasable: item.isPurchasable,

@@ -16,6 +16,7 @@ import {
   Trash,
   Truck,
   Weight,
+  Wrench,
   type LucideIcon,
 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
@@ -42,6 +43,11 @@ import { format } from 'date-fns';
 const TYPE_VARIANTS: Record<string, string> = {
   PRODUCT: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200',
   SERVICE: 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200',
+};
+
+const TYPE_ICONS: Record<string, typeof Package> = {
+  PRODUCT: Box,
+  SERVICE: Wrench,
 };
 
 export default function ItemDetailPage() {
@@ -109,6 +115,7 @@ export default function ItemDetailPage() {
         barcode: item.barcode ?? undefined,
         name: item.name,
         description: item.description ?? undefined,
+        image: item.image ?? undefined,
         unit: item.unit,
         isSaleable: item.isSaleable,
         isPurchasable: item.isPurchasable,
@@ -149,7 +156,16 @@ export default function ItemDetailPage() {
         </Button>
         <span className="text-muted-foreground">|</span>
         <div className="flex items-center gap-2 flex-1 min-w-0">
-          <Package className="size-5 text-muted-foreground shrink-0" />
+          <div className="size-8 rounded-md flex items-center justify-center shrink-0 overflow-hidden bg-muted">
+            {item.image ? (
+              <img src={item.image} alt={item.name} className="size-full object-cover" />
+            ) : (
+              (() => {
+                const FallbackIcon = TYPE_ICONS[item.type as string] ?? Package;
+                return <FallbackIcon className="size-4 text-muted-foreground" />;
+              })()
+            )}
+          </div>
           <h1 className="text-xl font-semibold truncate">{item.name}</h1>
           <Badge variant="outline" className={cn('text-xs', TYPE_VARIANTS[item.type] ?? '')}>
             {t(`items.types.${item.type}`)}

@@ -1,7 +1,7 @@
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Loader2, TriangleAlert, Wand2 } from 'lucide-react';
+import { Loader2, TriangleAlert, Upload, Wand2, X } from 'lucide-react';
 import * as React from 'react';
 import { type SubmitHandler, useForm } from 'react-hook-form';
 import { toast } from 'sonner';
@@ -36,6 +36,7 @@ const schema = z.object({
   barcode: z.string().optional(),
   name: z.string().min(1, 'Name is required'),
   description: z.string().optional(),
+  image: z.string().optional(),
   unit: z.string().min(1, 'Unit is required'),
   isSaleable: z.boolean(),
   isPurchasable: z.boolean(),
@@ -91,6 +92,8 @@ export function ItemFormDialog({ open, onOpenChange, item, onSuccess }: ItemForm
   const { data: categoryTree } = trpc.categories.listTree.useQuery();
   const { data: taxRates } = trpc.settings.taxRates.list.useQuery();
   const generateSku = trpc.categories.generateSku.useMutation();
+  const [uploading, setUploading] = React.useState(false);
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
 
   const families = categoryTree ?? [];
 
@@ -162,6 +165,37 @@ export function ItemFormDialog({ open, onOpenChange, item, onSuccess }: ItemForm
         onError: (err) => toast.error('Failed to generate SKU', { description: err.message }),
       },
     );
+  };
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('Image must be under 5 MB');
+      return;
+    }
+
+    setUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const res = await fetch('/api/uploads', { method: 'POST', body: formData });
+      if (!res.ok) throw new Error('Upload failed');
+
+      const data = await res.json();
+      setValue('image', data.storagePath);
+    } catch {
+      toast.error('Failed to upload image');
+    } finally {
+      setUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
+
+  const handleRemoveImage = () => {
+    setValue('image', undefined);
   };
 
   const createMutation = trpc.items.create.useMutation({
@@ -253,6 +287,50 @@ export function ItemFormDialog({ open, onOpenChange, item, onSuccess }: ItemForm
                 aria-invalid={!!errors.name}
                 {...register('name')}
               />
+            </Field>
+
+            {/* Image */}
+            <Field>
+              <Label>Image</Label>
+              <div className="flex items-start gap-3">
+                {watch('image') ? (
+                  <div className="relative size-20 shrink-0 rounded-md border overflow-hidden">
+                    <img
+                      src={watch('image')}
+                      alt="Item image"
+                      className="size-full object-cover"
+                    />
+                    <button
+                      type="button"
+                      onClick={handleRemoveImage}
+                      className="absolute top-0.5 right-0.5 size-5 rounded-full bg-background/80 backdrop-blur-sm flex items-center justify-center hover:bg-background"
+                    >
+                      <X className="size-3" />
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={uploading}
+                    className="size-20 shrink-0 rounded-md border border-dashed flex flex-col items-center justify-center gap-1 text-muted-foreground hover:bg-muted/50 transition-colors"
+                  >
+                    {uploading ? (
+                      <Loader2 className="size-5 animate-spin" />
+                    ) : (
+                      <Upload className="size-5" />
+                    )}
+                    <span className="text-[10px]">Upload</span>
+                  </button>
+                )}
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={handleImageUpload}
+                />
+              </div>
             </Field>
 
             {/* SKU + Barcode */}
@@ -559,6 +637,7 @@ function defaults(item?: { id: string } & Partial<ItemFormValues>): ItemFormValu
     barcode: item?.barcode ?? undefined,
     name: item?.name ?? '',
     description: item?.description ?? undefined,
+    image: item?.image ?? undefined,
     unit: item?.unit ?? 'pcs',
     isSaleable: item?.isSaleable ?? true,
     isPurchasable: item?.isPurchasable ?? true,

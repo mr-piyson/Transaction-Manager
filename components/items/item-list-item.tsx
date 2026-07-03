@@ -21,14 +21,18 @@ const TYPE_STYLES: Record<string, { icon: typeof Package; bg: string; fg: string
 };
 
 export function ItemListItem({ data, className, ...props }: ItemListItemProps) {
-  const { name, sku, type } = data || {};
+  const { name, sku, type, image } = data || {};
   const style = TYPE_STYLES[type as string] ?? TYPE_STYLES.PRODUCT;
   const Icon = style.icon;
 
   return (
     <div className={cn('flex h-18 items-center gap-3 p-3', className)} {...props}>
-      <div className={cn('size-11 rounded-lg flex items-center justify-center shrink-0', style.bg)}>
-        <Icon className={cn('size-5', style.fg)} />
+      <div className={cn('size-11 rounded-lg flex items-center justify-center shrink-0 overflow-hidden', style.bg)}>
+        {image ? (
+          <img src={image} alt={name} className="size-full object-cover" />
+        ) : (
+          <Icon className={cn('size-5', style.fg)} />
+        )}
       </div>
       <div className="flex-1 min-w-0">
         <div className="flex items-center justify-between gap-2">
