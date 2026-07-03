@@ -92,8 +92,22 @@ export default function InvoicePrintPage() {
         </Button>
       </div>
 
-      {/* Document */}
-      <div className="mx-auto max-w-[210mm] bg-white shadow-sm print:shadow-none print:mx-0 print:max-w-none">
+      {/* Document — always light theme regardless of system theme */}
+      <div
+        className="mx-auto max-w-[210mm] bg-white shadow-sm print:shadow-none print:mx-0 print:max-w-none"
+        style={{
+          colorScheme: 'light',
+          color: 'var(--foreground)',
+          '--background': '#ffffff',
+          '--foreground': '#17141d',
+          '--muted': '#dddddd',
+          '--muted-foreground': '#606060',
+          '--border': '#cccccc',
+          '--primary': '#2c2742',
+          '--primary-foreground': '#fbfbfb',
+          '--destructive': '#a82b2b',
+        } as React.CSSProperties}
+      >
         {/* Header */}
         <div className="flex items-start justify-between px-8 pt-8 pb-4 border-b print:px-6 print:pt-6">
           <div className="flex items-start gap-4">
@@ -373,6 +387,8 @@ export default function InvoicePrintPage() {
             size: A4;
           }
           body {
+            background: white !important;
+            color: #17141d !important;
             -webkit-print-color-adjust: exact;
             print-color-adjust: exact;
           }

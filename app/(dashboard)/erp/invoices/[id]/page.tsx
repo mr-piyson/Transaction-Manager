@@ -490,11 +490,7 @@ export default function InvoiceDetailPage() {
         openConfirmDialog(action.key);
         break;
       case 'convertQuote':
-        if (
-          window.confirm(
-            t('invoices.convertToInvoiceTitle', { serial: invoice.serial }),
-          )
-        ) {
+        if (window.confirm(t('invoices.convertToInvoiceTitle', { serial: invoice.serial }))) {
           convertQuoteMutation.mutate({ quoteId: invoice.id });
         }
         break;
@@ -1117,7 +1113,7 @@ export default function InvoiceDetailPage() {
             </CardHeader>
             <CardContent>
               <div
-                className="prose prose-sm max-w-none [&_ol]:list-decimal [&_ul]:list-disc"
+                className="prose prose-sm max-w-none dark:prose-invert text-foreground [&_ol]:list-decimal [&_ul]:list-disc"
                 dangerouslySetInnerHTML={{ __html: invoice.termsText }}
               />
             </CardContent>
