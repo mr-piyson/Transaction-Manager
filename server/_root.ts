@@ -1,20 +1,20 @@
 import { t } from '@/lib/trpc/context';
-import { authRouter } from './auth';
-import { contractsRouter } from './contracts.router';
-import { customersRouter } from './customers.router';
-import { hrRouter } from './hr';
-import { invoicesRouter } from './invoices.router';
-import { usersRouter } from './users.router';
-import { itemsRouter } from './items';
-import { organizationsRouter } from './organizations.router';
-import { purchaseOrdersRouter } from './purchase-orders.router';
-import { reportsRouter } from './reports.router';
-import { categoriesRouter } from './categories';
-import { settingsRouter } from './settings.router';
-import { stockRouter } from './stock.router';
-import { notificationsRouter } from './notifications.router';
-import { suppliersRouter } from './suppliers.router';
-import { warehousesRouter } from './warehouses.router';
+import { authRouter } from './auth/auth.router';
+import { categoriesRouter } from './categories/categories.router';
+import { contractsRouter } from './contracts/contracts.router';
+import { customersRouter } from './customers/customers.router';
+import { hrRouter } from './hr/hr.router';
+import { invoicesRouter } from './invoices/invoices.router';
+import { itemsRouter } from './items/items.router';
+import { notificationsRouter } from './notifications/notifications.router';
+import { organizationsRouter } from './organizations/organizations.router';
+import { purchaseOrdersRouter } from './purchase-orders/purchase-orders.router';
+import { reportsRouter } from './reports/reports.router';
+import { settingsRouter } from './settings/settings.router';
+import { stockRouter } from './stock/stock.router';
+import { suppliersRouter } from './suppliers/suppliers.router';
+import { usersRouter } from './users/users.router';
+import { warehousesRouter } from './warehouses/warehouses.router';
 
 export const appRouter = t.router({
   auth: authRouter,

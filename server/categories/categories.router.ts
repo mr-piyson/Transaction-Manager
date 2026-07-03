@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { ConflictError, NotFoundError } from '@/lib/error';
 import { assertCan, orgProcedure, router } from '@/lib/trpc/context';
-import { writeAuditLog } from './audit.service';
+import { writeAuditLog } from '../shared/audit.service';
 
 const familySchema = z.object({
   name: z.string().min(1).max(100),

@@ -1,5 +1,4 @@
 /**
- * src/server/modules/invoices/calculator.ts
  *
  * Pure invoice totals calculation — no side effects, no DB calls.
  *

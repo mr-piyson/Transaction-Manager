@@ -1,6 +1,6 @@
 import * as cron from 'node-cron';
 import db from '@/lib/db';
-import { createNotification, NOTIFICATION_SETTINGS_KEYS, NOTIFICATION_TYPES } from './notifications.shared';
+import { createNotification, NOTIFICATION_SETTINGS_KEYS, NOTIFICATION_TYPES } from '../notifications/notifications.shared';
 
 function shouldRun(jobName: string): boolean {
   return process.env[`CRON_${jobName.toUpperCase().replace(/-/g, '_')}_DISABLED`] !== 'true';

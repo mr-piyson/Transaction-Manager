@@ -1,5 +1,4 @@
 /**
- * src/server/modules/items/router.ts
  *
  * Item catalogue router (products, services, bundles).
  *
@@ -24,7 +23,7 @@ import {
   sortOrderSchema,
   toPrismaPage,
 } from '@/lib/validations';
-import { writeAuditLog } from './audit.service';
+import { writeAuditLog } from '../shared/audit.service';
 
 // ---------------------------------------------------------------------------
 // Input schemas

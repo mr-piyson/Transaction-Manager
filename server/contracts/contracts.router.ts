@@ -9,7 +9,7 @@ import {
   sortOrderSchema,
   toPrismaPage,
 } from '@/lib/validations';
-import { writeAuditLog } from './audit.service';
+import { writeAuditLog } from '../shared/audit.service';
 
 const contractBaseSchema = z.object({
   title: z.string().min(1).max(255),

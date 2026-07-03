@@ -1,5 +1,4 @@
 /**
- * src/server/modules/invoices/stock.service.ts
  *
  * Handles stock movements triggered by invoice status transitions.
  *

@@ -84,24 +84,46 @@ Transaction-Manager/
 │   ├── upload.ts        # Upload utilities
 │   ├── utils.ts         # General utilities
 │   └── validations.ts   # Shared Zod schemas (pagination, etc.)
-├── server/              # tRPC server routers & services
-│   ├── _root.ts         # App router composition
-│   ├── hr/              # HRMS routers (placeholder)
-│   ├── auth.ts          # Auth router (signIn, signUp, session)
-│   ├── invoices.router.ts
-│   ├── invoices.service.ts   # Stock deduction/return for invoices
-│   ├── customers.router.ts
-│   ├── suppliers.router.ts
-│   ├── items.ts         # Item catalogue router
-│   ├── stock.router.ts  # Stock levels, movements, adjustments
-│   ├── warehouses.router.ts
-│   ├── purchase-orders.router.ts
-│   ├── contracts.router.ts
-│   ├── payments.service.ts   # Payment CRUD + invoice payment sync
-│   ├── reports.router.ts     # Dashboard summary, AR aging
-│   ├── organizations.router.ts
-│   ├── settings.router.ts    # Org settings, tax rates, chart of accounts
-│   └── audit.service.ts      # Audit log writer
+├── server/              # tRPC server routers & services (domain modules)
+│   ├── _root.ts         # App router composition — wires all domain routers
+│   ├── auth/
+│   │   └── auth.router.ts       # signIn, signUp, session, profile, password
+│   ├── users/
+│   │   └── users.router.ts      # User CRUD, roles, permissions, rolePermissions
+│   ├── organizations/
+│   │   └── organizations.router.ts  # Org setup (onboarding), get, update
+│   ├── settings/
+│   │   └── settings.router.ts   # Org settings, tax rates, chart of accounts, key-value settings
+│   ├── invoices/
+│   │   ├── invoices.router.ts   # Invoice lifecycle (CRUD, send, approve, cancel, payments)
+│   │   ├── invoices.service.ts  # Stock deduction/return for invoice transitions
+│   │   └── payments.service.ts  # Payment CRUD + invoice payment status sync
+│   ├── customers/
+│   │   └── customers.router.ts  # Customer CRUD, credit balance
+│   ├── suppliers/
+│   │   └── suppliers.router.ts  # Supplier CRUD, supplier-item linking
+│   ├── items/
+│   │   └── items.router.ts      # Item catalogue, price resolution, stock summary
+│   ├── categories/
+│   │   └── categories.router.ts # Family → Class → Commodity hierarchy, SKU generation
+│   ├── stock/
+│   │   └── stock.router.ts      # Stock levels, adjustments, transfers, movements
+│   ├── warehouses/
+│   │   └── warehouses.router.ts # Warehouse CRUD
+│   ├── purchase-orders/
+│   │   └── purchase-orders.router.ts  # PO lifecycle (CRUD, approve, order, receive)
+│   ├── contracts/
+│   │   └── contracts.router.ts  # Contract lifecycle (CRUD, activate, expire, renew)
+│   ├── reports/
+│   │   └── reports.router.ts    # Dashboard summary, revenue, AR aging, sales reports
+│   ├── notifications/
+│   │   ├── notifications.router.ts    # Notification list, mark read, archive
+│   │   └── notifications.shared.ts    # Notification types, settings keys, create helper
+│   ├── hr/
+│   │   └── hr.router.ts         # HRMS module (placeholder)
+│   └── shared/
+│       ├── audit.service.ts     # Audit log writer (called inside $transaction)
+│       └── cron.ts              # Scheduled jobs (overdue invoices, low stock alerts)
 ├── prisma/
 │   ├── schema.prisma    # Full database schema (1783 lines)
 │   └── ...migrations
@@ -173,7 +195,7 @@ Browser → Next.js App Router → tRPC fetch adapter → createContext → midd
 
 - `auth/auth-server.ts`: Configures Better Auth with Prisma adapter, email/password, JWT plugin, and admin plugin. Defines custom user fields: `organizationId`, `firstName`, `lastName`, `isActive`.
 - `auth/auth-client.ts`: Creates browser client with dynamic `baseURL` detection.
-- `server/auth.ts`: tRPC router wrapping `auth.api.signInEmail`, `auth.api.signUpEmail`, `getSession`, and other session/password management endpoints.
+- `server/auth/auth.router.ts`: tRPC router wrapping `auth.api.signInEmail`, `auth.api.signUpEmail`, `getSession`, and other session/password management endpoints.
 
 **Admin plugin** (`better-auth/plugins/admin`):
 - Configured with `defaultRole: 'admin'` and `adminRoles: ['admin']` (permissive — all users get full admin-level access to better-auth's built-in permissions).
@@ -206,32 +228,35 @@ Browser → Next.js App Router → tRPC fetch adapter → createContext → midd
 
 ### 5. Service Layer / Business Logic
 
-Services live in `server/*.service.ts` files:
+Services are co-located with their domain module or placed in `server/shared/` for cross-cutting concerns:
 
-- **`invoices.service.ts`**: Stock deduction (`deductStockForInvoice`) and return (`returnStockForCancelledInvoice`, `returnStockForCreditNote`). Guards against negative stock with detailed error messages.
-- **`payments.service.ts`**: Payment CRUD with denormalized invoice payment totals. Uses `resolvePaymentStatus` and `resolveInvoiceStatus` to update `Invoice.amountPaid`, `amountDue`, `paymentStatus`, `status`.
-- **`audit.service.ts`**: Thin wrapper creating `AuditLog` rows. Designed to be called inside the same `$transaction` as the mutation.
+- **`server/invoices/invoices.service.ts`**: Stock deduction (`deductStockForInvoice`) and return (`returnStockForCancelledInvoice`, `returnStockForCreditNote`). Guards against negative stock with detailed error messages.
+- **`server/invoices/payments.service.ts`**: Payment CRUD with denormalized invoice payment totals. Uses `resolvePaymentStatus` and `resolveInvoiceStatus` to update `Invoice.amountPaid`, `amountDue`, `paymentStatus`, `status`.
+- **`server/shared/audit.service.ts`**: Thin wrapper creating `AuditLog` rows. Designed to be called inside the same `$transaction` as the mutation.
+- **`server/shared/cron.ts`**: Scheduled jobs — overdue invoice detection (hourly) and low-stock alerts (every 6 hours).
 - **`lib/calculator.ts`**: Pure function `calculateInvoiceTotals()` — no side effects, no DB calls. Computes per-line subtotals, tax (per-line rounding), totals, and COGS.
 
 ### 6. Module Routers
 
-Each domain has a tRPC router following consistent patterns:
+Each domain has its own module directory under `server/` with a tRPC router following consistent patterns:
 
-| Module | Router File | Key Operations |
+| Module | Router Path | Key Operations |
 |---|---|---|
-| Auth | `auth.ts` | signIn, signUp, session, me, signOut, updateProfile, changePassword, listSessions, revokeSession, revokeOtherSessions |
-| Users | `users.router.ts` | list, create, update, setPassword, sendPasswordReset, toggleActive, delete; roles CRUD; permissions list; rolePermissions list/update |
-| Invoices | `invoices.router.ts` | list, byId, create, update, send, cancel, convertQuote, delete, addPayment, deletePayment, arAging |
-| Customers | `customers.router.ts` | list, byId, create, update, delete |
-| Suppliers | `suppliers.router.ts` | list, byId, create, update, delete, addItem, updateItem, removeItem |
-| Items | `items.ts` | list, byId, create, update, delete, withStock |
-| Stock | `stock.router.ts` | list (with search/filter), adjust, transfer, movements |
-| Warehouses | `warehouses.router.ts` | list, byId, create, update, delete |
-| Purchase Orders | `purchase-orders.router.ts` | list, byId, create, update, order, receive, cancel, addPayment, deletePayment |
-| Contracts | `contracts.router.ts` | list, byId, create, update, delete |
-| Organizations | `organizations.router.ts` | setup (onboarding — creates org + SUPER_ADMIN via `auth.api.signUpEmail`) |
-| Settings | `settings.router.ts` | getOrg, updateOrg, taxRates CRUD, ledgerAccounts CRUD |
-| Reports | `reports.router.ts` | summary (dashboard), sales, inventory |
+| Auth | `server/auth/auth.router.ts` | signIn, signUp, session, me, signOut, updateProfile, changePassword, listSessions, revokeSession, revokeOtherSessions |
+| Users | `server/users/users.router.ts` | list, create, update, setPassword, sendPasswordReset, toggleActive, delete; roles CRUD; permissions list; rolePermissions list/update |
+| Invoices | `server/invoices/invoices.router.ts` | list, byId, create, update, send, cancel, convertQuote, delete, addPayment, deletePayment, arAging, submitForApproval, approve, reject |
+| Customers | `server/customers/customers.router.ts` | list, byId, create, update, delete, setActive, creditBalance |
+| Suppliers | `server/suppliers/suppliers.router.ts` | list, byId, create, update, delete, addSupplierItem, updateSupplierItem, deleteSupplierItem |
+| Items | `server/items/items.router.ts` | list, byId, bySku, resolvePrice, create, update, delete, stockSummary |
+| Categories | `server/categories/categories.router.ts` | listTree, family/class/commodity CRUD, generateSku |
+| Stock | `server/stock/stock.router.ts` | list (with search/filter), byItem, adjust, transfer, movements, forItems |
+| Warehouses | `server/warehouses/warehouses.router.ts` | list, byId, create, update, delete |
+| Purchase Orders | `server/purchase-orders/purchase-orders.router.ts` | list, byId, create, update, submitForApproval, approve, reject, order, receive, cancel, delete, stockMovements |
+| Contracts | `server/contracts/contracts.router.ts` | list, byId, create, update, delete, activate, expire, terminate, renew, stats |
+| Reports | `server/reports/reports.router.ts` | summary, monthlyRevenue, invoiceStatusDistribution, arAging, revenueVsExpenses, salesByCustomer, topItems |
+| Notifications | `server/notifications/notifications.router.ts` | list, getUnreadCount, markRead, markAllRead, archive, dismiss |
+| Organizations | `server/organizations/organizations.router.ts` | setup (onboarding — creates org + SUPER_ADMIN via `auth.api.signUpEmail`), get, update |
+| Settings | `server/settings/settings.router.ts` | getOrg, updateOrg, taxRates CRUD, ledgerAccounts CRUD, updateSetting, getSetting, getSettings |
 
 Shared validation patterns:
 - `assertCan()` before every mutation

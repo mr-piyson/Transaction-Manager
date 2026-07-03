@@ -1,5 +1,4 @@
 /**
- * src/server/modules/invoices/payment.service.ts
  *
  * Invoice payment lifecycle service.
  *
@@ -25,7 +24,7 @@
 
 import type { PaymentMethod, Prisma } from '@prisma/client';
 import { NotFoundError, UnprocessableError } from '@/lib/error';
-import { writeAuditLog } from './audit.service';
+import { writeAuditLog } from '../shared/audit.service';
 
 type TransactionClient = Prisma.TransactionClient;
 

@@ -7,7 +7,7 @@ import {
   sortOrderSchema,
   toPrismaPage,
 } from '@/lib/validations';
-import { writeAuditLog } from './audit.service';
+import { writeAuditLog } from '../shared/audit.service';
 
 const warehouseBaseSchema = z.object({
   name: z.string().min(1).max(255),

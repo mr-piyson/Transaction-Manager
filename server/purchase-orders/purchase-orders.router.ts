@@ -10,12 +10,12 @@ import {
   sortOrderSchema,
   toPrismaPage,
 } from '@/lib/validations';
-import { writeAuditLog } from './audit.service';
+import { writeAuditLog } from '../shared/audit.service';
 import {
   createNotification,
   NOTIFICATION_SETTINGS_KEYS,
   NOTIFICATION_TYPES,
-} from './notifications.shared';
+} from '../notifications/notifications.shared';
 
 const purchaseLineInputSchema = z.object({
   itemId: z.string(),

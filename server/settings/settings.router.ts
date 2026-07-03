@@ -2,7 +2,7 @@ import { z } from 'zod';
 import { ConflictError, NotFoundError } from '@/lib/error';
 import { orgProcedure, router } from '@/lib/trpc/context';
 import { currencyCodeSchema } from '@/lib/validations';
-import { writeAuditLog } from './audit.service';
+import { writeAuditLog } from '../shared/audit.service';
 
 const taxRateBaseSchema = z.object({
   name: z.string().min(1).max(100),

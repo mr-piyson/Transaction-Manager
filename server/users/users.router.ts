@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { auth } from '@/auth/auth-server';
 import { ForbiddenError, NotFoundError } from '@/lib/error';
 import { assertCan, orgProcedure, router } from '@/lib/trpc/context';
-import { writeAuditLog } from './audit.service';
+import { writeAuditLog } from '../shared/audit.service';
 
 const userBaseSchema = z.object({
   name: z.string().min(1).max(255),
