@@ -1073,17 +1073,17 @@ model AuditLog {
 // =============================================================================
 
 model File {
-  id           String   @id @default(cuid())
-  filename     String   // UUID-based storage filename
-  originalName String   // User's original filename
-  hash         String   @unique // SHA-256 hex digest
-  storagePath  String   @unique // e.g. /uploads/2025/07/abc123.jpg
-  mime         String   // Resolved MIME type (from file-type, not user-supplied)
-  extension    String   // Canonical extension (e.g. jpg, pdf, png)
-  size         Int      // File size in bytes (after optimization)
-  width        Int?     // Image width in pixels (null for non-images)
-  height       Int?     // Image height in pixels (null for non-images)
-  createdAt    DateTime @default(now())
+  id           String       @id @default(cuid())
+  filename     String // UUID-based storage filename
+  originalName String // User's original filename
+  hash         String       @unique // SHA-256 hex digest
+  storagePath  String       @unique // e.g. /uploads/2025/07/abc123.jpg
+  mime         String // Resolved MIME type (from file-type, not user-supplied)
+  extension    String // Canonical extension (e.g. jpg, pdf, png)
+  size         Int // File size in bytes (after optimization)
+  width        Int? // Image width in pixels (null for non-images)
+  height       Int? // Image height in pixels (null for non-images)
+  createdAt    DateTime     @default(now())
   attachments  Attachment[]
 
   @@schema("public")
@@ -1099,10 +1099,10 @@ model Attachment {
   id             String   @id @default(cuid())
   fileId         String
   file           File     @relation(fields: [fileId], references: [id])
-  entityType     String   // e.g. "Invoice", "Customer", "Employee"
-  entityId       String   // The ID of the related entity
-  field          String?  // Optional semantic role (e.g. "signature", "profilePhoto")
-  label          String?  // Display label (e.g. "Supplier Invoice", "Delivery Note")
+  entityType     String // e.g. "Invoice", "Customer", "Employee"
+  entityId       String // The ID of the related entity
+  field          String? // Optional semantic role (e.g. "signature", "profilePhoto")
+  label          String? // Display label (e.g. "Supplier Invoice", "Delivery Note")
   uploadedById   String?
   organizationId String
   createdAt      DateTime @default(now())
@@ -1110,39 +1110,6 @@ model Attachment {
   @@index([entityType, entityId])
   @@index([organizationId])
   @@index([fileId])
-  @@schema("public")
-}
-
-// =============================================================================
-// ITEM CATEGORIES
-// =============================================================================
-
-model ItemCategory {
-  id    String  @id @default(cuid())
-  name  String
-  color String?
-  icon  String? // Icon identifier for UI
-
-  parentId String?
-  parent   ItemCategory?  @relation("CategoryHierarchy", fields: [parentId], references: [id])
-  children ItemCategory[] @relation("CategoryHierarchy")
-
-  isActive  Boolean   @default(true)
-  deletedAt DateTime?
-
-  organizationId String
-  organization   Organization @relation(fields: [organizationId], references: [id])
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  items Item[]
-
-  @@unique([name, organizationId])
-  @@index([organizationId])
-  @@index([deletedAt])
-  @@index([parentId])
-  @@map("Category")
   @@schema("public")
 }
 
@@ -1509,6 +1476,39 @@ model Item {
   @@index([organizationId, type, isActive])
   @@index([organizationId, isSaleable, isActive])
   @@index([barcode, organizationId])
+  @@schema("public")
+}
+
+// =============================================================================
+// ITEM CATEGORIES
+// =============================================================================
+
+model ItemCategory {
+  id    String  @id @default(cuid())
+  name  String
+  color String?
+  icon  String? // Icon identifier for UI
+
+  parentId String?
+  parent   ItemCategory?  @relation("CategoryHierarchy", fields: [parentId], references: [id])
+  children ItemCategory[] @relation("CategoryHierarchy")
+
+  isActive  Boolean   @default(true)
+  deletedAt DateTime?
+
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  items Item[]
+
+  @@unique([name, organizationId])
+  @@index([organizationId])
+  @@index([deletedAt])
+  @@index([parentId])
+  @@map("Category")
   @@schema("public")
 }
 

@@ -7,6 +7,7 @@ import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { SidebarToggleButton } from './App-Sidebar';
+import { NavUser } from '@/components/layout/User-Options';
 
 interface HeaderProps {
   title?: ReactNode;
@@ -77,8 +78,7 @@ export function Header({
           {createLabel ?? t('common.create')}
         </Button>
       )}
-      {rightContent}
-      {children}
+      <NavUser />
     </header>
   );
 }

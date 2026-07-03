@@ -336,7 +336,7 @@ export function AppSidebar({ ...props }: AppSidebarProps) {
   };
 
   return (
-    <Sidebar side={isRtl ? 'right' : 'left'} collapsible="icon" type="Drawer" {...props}>
+    <Sidebar side={isRtl ? 'right' : 'left'} collapsible="offcanvas" type="Drawer" {...props}>
       <SidebarHeader>
         <AppSwitcher
           currentApp={currentApp}
@@ -418,8 +418,6 @@ export function AppSidebar({ ...props }: AppSidebarProps) {
           </Tree>
         </div>
       </SidebarContent>
-
-      <SidebarFooter>{!isMobile && <NavUser />}</SidebarFooter>
       <SidebarRail />
     </Sidebar>
   );
