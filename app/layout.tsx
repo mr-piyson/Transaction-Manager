@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
 import './globals.css';
+import { DirectionProvider } from '@/components/ui/direction';
 import { I18nProvider } from '@/components/i18n-provider';
 import { Toaster } from '@/components/sonner';
 import { ThemeProvider } from '@/components/Theme-Provider';
@@ -43,9 +44,11 @@ export default async function RootLayout(props: any) {
             enableSystem={true}
             storageKey={'theme'}
           >
-            <DateFormatProvider defaultFormat={'date'}>
-              <TrpcProvider>{props.children}</TrpcProvider>
-            </DateFormatProvider>
+            <DirectionProvider direction={dir} dir={dir}>
+              <DateFormatProvider defaultFormat={'date'}>
+                <TrpcProvider>{props.children}</TrpcProvider>
+              </DateFormatProvider>
+            </DirectionProvider>
           </ThemeProvider>
         </I18nProvider>
         <Toaster position="top-center" />
