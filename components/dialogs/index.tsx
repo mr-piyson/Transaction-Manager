@@ -23,7 +23,7 @@ export { WarehouseFormProvider, useWarehouseForm, WarehouseFormDialog } from './
 export type { WarehouseFormValues } from './warehouseForm';
 
 export { ItemFormProvider, useItemForm, ItemFormDialog } from './itemForm';
-export type { ItemFormValues } from './itemForm';
+export type { ItemFormValues } from '@/lib/validations/item';
 
 export { ContractFormProvider, useContractForm, ContractFormDialog } from './contractForm';
 export type { ContractFormValues } from './contractForm';

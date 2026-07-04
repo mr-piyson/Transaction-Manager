@@ -2,11 +2,11 @@
 
 import { useTranslations } from 'next-intl';
 import { Package } from 'lucide-react';
-import { useItemForm } from '@/components/dialogs';
+import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 
 export default function ItemsPage() {
-  const { openCreate } = useItemForm();
+  const router = useRouter();
   const t = useTranslations();
 
   return (
@@ -18,7 +18,7 @@ export default function ItemsPage() {
         <h2 className="text-xl font-semibold">{t('items.title')}</h2>
         <p className="text-muted-foreground mt-1">{t('items.selectDescription')}</p>
       </div>
-      <Button onClick={() => openCreate()}>
+      <Button onClick={() => router.push('/erp/items/new')}>
         {t('items.createItem')}
       </Button>
     </div>

@@ -1,7 +1,7 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { Download, Edit, Eye, FileText, Package, Trash2, User2 } from 'lucide-react';
+import { Download, Edit, Eye, Package, Trash2, User2 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import * as React from 'react';
@@ -10,7 +10,6 @@ import { toast } from 'sonner';
 import { alert } from '@/components/Alert-dialog';
 import { UniversalContextMenu } from '@/components/context-menu';
 import type { ContextMenuItemSchema } from '@/components/context-menu';
-import { useItemForm } from '@/components/dialogs';
 import { Button } from '@/components/ui/button';
 import { ListView } from '@/components/list-view';
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@/components/ui/resizable';
@@ -32,7 +31,6 @@ export default function ItemsLayout({ children }: { children?: React.ReactNode }
     { value: 'SERVICE', label: t('items.types.SERVICE') },
   ];
 
-  const { openCreate, openEdit } = useItemForm();
   const [typeFilter, setTypeFilter] = React.useState('');
   const { data, isPending } = trpc.items.list.useQuery({ type: (typeFilter || undefined) as 'PRODUCT' | 'SERVICE' | undefined });
   const utils = trpc.useUtils();
@@ -63,31 +61,7 @@ export default function ItemsLayout({ children }: { children?: React.ReactNode }
           id: 'edit',
           label: t('common.edit'),
           icon: Edit,
-          onClick: () =>
-            openEdit(
-              {
-                id: item.id,
-                type: item.type,
-                sku: item.sku,
-                barcode: item.barcode ?? undefined,
-                name: item.name,
-                image: item.image ?? undefined,
-                unit: item.unit,
-                isSaleable: item.isSaleable,
-                isPurchasable: item.isPurchasable,
-                purchasePrice: Number(item.purchasePrice),
-                salesPrice: Number(item.salesPrice),
-                minStock: item.minStock,
-                reorderPoint: item.reorderPoint,
-                reorderQty: item.reorderQty,
-                categoryId: item.category?.id ?? undefined,
-                familyId: (item as any).family?.id ?? undefined,
-                classId: (item as any).class?.id ?? undefined,
-                commodityId: (item as any).commodity?.id ?? undefined,
-                taxRateId: item.taxRate?.id ?? undefined,
-              },
-              { onSuccess: () => utils.items.byId.invalidate({ id: item.id }) },
-            ),
+          onClick: () => router.push(`/erp/items/${item.id}?edit=true`),
         },
         { id: 'sep1', type: 'separator' },
         {
@@ -126,14 +100,14 @@ export default function ItemsLayout({ children }: { children?: React.ReactNode }
         </UniversalContextMenu>
       );
     },
-    [activeItem, openEdit, deleteMutation, utils, router],
+    [activeItem, deleteMutation, utils, router],
   );
 
   const items = Array.isArray(data) ? data : data?.data ?? [];
 
   return (
     <div className="flex h-screen flex-col overflow-hidden">
-      <Header title={t('layout.items')} icon={<Package className="size-5" />} onCreate={() => openCreate()} createLabel={t('items.createItem')} actions={<Link href="/erp/items/import"><Button variant="outline" size="sm"><Download className="size-3.5 mr-1" />Import</Button></Link>} />
+      <Header title={t('layout.items')} icon={<Package className="size-5" />} onCreate={() => router.push('/erp/items/new')} createLabel={t('items.createItem')} actions={<Link href="/erp/items/import"><Button variant="outline" size="sm"><Download className="size-3.5 mr-1" />Import</Button></Link>} />
       <div className="flex-1 min-h-0 w-full">
         <ResizablePanelGroup className="h-full">
           {(isListView || !isMobile) && (
