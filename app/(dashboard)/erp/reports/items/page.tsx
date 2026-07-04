@@ -3,13 +3,10 @@
 import { AllCommunityModule, ModuleRegistry, type ColDef, type GridApi } from 'ag-grid-community';
 import { AgGridReact } from 'ag-grid-react';
 import {
-  ArrowLeft,
   Box,
   Columns3,
   Download,
   Eye,
-  FileText,
-  Filter,
   Layers,
   Maximize2,
   Minimize2,
@@ -36,7 +33,6 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import {
@@ -47,22 +43,15 @@ import {
   ChartTooltipContent,
 } from '@/components/ui/chart';
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/input-group';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { Skeleton } from '@/components/ui/skeleton';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { useCurrency } from '@/hooks/use-currency';
 import { useTableTheme } from '@/hooks/use-table-theme';
 import { trpc } from '@/lib/trpc/client';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 ModuleRegistry.registerModules([AllCommunityModule]);
 
@@ -107,18 +96,6 @@ const CHART_COLORS = [
   'hsl(var(--chart-3))',
   'hsl(var(--chart-4))',
   'hsl(var(--chart-5))',
-];
-
-const STOCK_STATUS_OPTIONS = [
-  { value: 'in_stock', label: 'In Stock' },
-  { value: 'low', label: 'Low Stock' },
-  { value: 'out', label: 'Out of Stock' },
-];
-
-const TYPE_OPTIONS = [
-  { value: 'PRODUCT', label: 'Product' },
-  { value: 'SERVICE', label: 'Service' },
-  { value: 'BUNDLE', label: 'Bundle' },
 ];
 
 const QUICK_FILTERS = [
@@ -353,326 +330,6 @@ function DetailRow({ label, value, mono }: { label: string; value: string; mono?
   );
 }
 
-// ─── Filter Sidebar ────────────────────────────────────────────────────────────
-
-function FilterSidebar({
-  items,
-  filters,
-  onFilterChange,
-}: {
-  items: ItemRow[];
-  filters: FilterState;
-  onFilterChange: (filters: Partial<FilterState>) => void;
-}) {
-  const t = useTranslations();
-
-  const categories = useMemo(() => {
-    const map = new Map<string, number>();
-    for (const item of items) {
-      if (item.categoryName) {
-        map.set(item.categoryName, (map.get(item.categoryName) ?? 0) + 1);
-      }
-    }
-    return Array.from(map.entries())
-      .sort((a, b) => b[1] - a[1])
-      .map(([name, count]) => ({ name, count }));
-  }, [items]);
-
-  const warehouses = useMemo(() => {
-    const map = new Map<string, number>();
-    for (const item of items) {
-      for (const wh of item.warehouseNames) {
-        map.set(wh, (map.get(wh) ?? 0) + 1);
-      }
-    }
-    return Array.from(map.entries())
-      .sort((a, b) => b[1] - a[1])
-      .map(([name, count]) => ({ name, count }));
-  }, [items]);
-
-  const [categorySearch, setCategorySearch] = useState('');
-  const [warehouseSearch, setWarehouseSearch] = useState('');
-
-  const filteredCategories = categories.filter((c) =>
-    c.name.toLowerCase().includes(categorySearch.toLowerCase()),
-  );
-  const filteredWarehouses = warehouses.filter((w) =>
-    w.name.toLowerCase().includes(warehouseSearch.toLowerCase()),
-  );
-
-  return (
-    <div className="w-64 shrink-0 hidden lg:block">
-      <Card className="sticky top-18">
-        <CardHeader className="pb-3">
-          <div className="flex items-center justify-between">
-            <CardTitle className="text-sm flex items-center gap-2">
-              <Filter className="size-4" />
-              {t('common.filter')}
-            </CardTitle>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="text-xs h-7"
-              onClick={() =>
-                onFilterChange({
-                  categories: [],
-                  types: [],
-                  stockStatuses: [],
-                  warehouses: [],
-                  priceMin: null,
-                  priceMax: null,
-                })
-              }
-            >
-              {t('common.clear')}
-            </Button>
-          </div>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {/* Type Filter */}
-          <FilterSection title={t('common.type')}>
-            {TYPE_OPTIONS.map((opt) => (
-              <label
-                key={opt.value}
-                className="flex items-center gap-2 text-sm py-1 px-1 rounded hover:bg-muted cursor-pointer"
-              >
-                <input
-                  type="checkbox"
-                  checked={filters.types.includes(opt.value)}
-                  onChange={(e) => {
-                    const next = e.target.checked
-                      ? [...filters.types, opt.value]
-                      : filters.types.filter((t) => t !== opt.value);
-                    onFilterChange({ types: next });
-                  }}
-                  className="size-3.5 accent-primary"
-                />
-                <span className="flex-1">{opt.label}</span>
-              </label>
-            ))}
-          </FilterSection>
-
-          {/* Category Filter */}
-          <FilterSection title={t('items.category')}>
-            <div className="relative mb-2">
-              <Search className="absolute left-2 top-1/2 -translate-y-1/2 size-3 text-muted-foreground" />
-              <input
-                type="text"
-                placeholder={`${t('common.search')}...`}
-                value={categorySearch}
-                onChange={(e) => setCategorySearch(e.target.value)}
-                className="w-full pl-7 pr-2 py-1.5 text-xs border rounded-md bg-background"
-              />
-            </div>
-            <ScrollArea className="max-h-[140px]">
-              {filteredCategories.map((cat) => (
-                <label
-                  key={cat.name}
-                  className="flex items-center gap-2 text-sm py-1 px-1 rounded hover:bg-muted cursor-pointer"
-                >
-                  <input
-                    type="checkbox"
-                    checked={filters.categories.includes(cat.name)}
-                    onChange={(e) => {
-                      const next = e.target.checked
-                        ? [...filters.categories, cat.name]
-                        : filters.categories.filter((c) => c !== cat.name);
-                      onFilterChange({ categories: next });
-                    }}
-                    className="size-3.5 accent-primary"
-                  />
-                  <span className="flex-1 truncate">{cat.name}</span>
-                  <span className="text-xs text-muted-foreground">({cat.count})</span>
-                </label>
-              ))}
-            </ScrollArea>
-          </FilterSection>
-
-          {/* Stock Status Filter */}
-          <FilterSection title="Stock Status">
-            {STOCK_STATUS_OPTIONS.map((opt) => (
-              <label
-                key={opt.value}
-                className="flex items-center gap-2 text-sm py-1 px-1 rounded hover:bg-muted cursor-pointer"
-              >
-                <input
-                  type="checkbox"
-                  checked={filters.stockStatuses.includes(opt.value)}
-                  onChange={(e) => {
-                    const next = e.target.checked
-                      ? [...filters.stockStatuses, opt.value]
-                      : filters.stockStatuses.filter((s) => s !== opt.value);
-                    onFilterChange({ stockStatuses: next });
-                  }}
-                  className="size-3.5 accent-primary"
-                />
-                <span className="flex-1">{opt.label}</span>
-              </label>
-            ))}
-          </FilterSection>
-
-          {/* Price Range */}
-          <FilterSection title={t('common.price')}>
-            <div className="flex items-center gap-2">
-              <input
-                type="number"
-                placeholder="Min"
-                value={filters.priceMin ?? ''}
-                onChange={(e) =>
-                  onFilterChange({
-                    priceMin: e.target.value ? Number(e.target.value) : null,
-                  })
-                }
-                className="w-full px-2 py-1.5 text-xs border rounded-md bg-background"
-              />
-              <span className="text-muted-foreground">–</span>
-              <input
-                type="number"
-                placeholder="Max"
-                value={filters.priceMax ?? ''}
-                onChange={(e) =>
-                  onFilterChange({
-                    priceMax: e.target.value ? Number(e.target.value) : null,
-                  })
-                }
-                className="w-full px-2 py-1.5 text-xs border rounded-md bg-background"
-              />
-            </div>
-          </FilterSection>
-
-          {/* Warehouse Filter */}
-          <FilterSection title={t('common.warehouse')}>
-            <div className="relative mb-2">
-              <Search className="absolute left-2 top-1/2 -translate-y-1/2 size-3 text-muted-foreground" />
-              <input
-                type="text"
-                placeholder={`${t('common.search')}...`}
-                value={warehouseSearch}
-                onChange={(e) => setWarehouseSearch(e.target.value)}
-                className="w-full pl-7 pr-2 py-1.5 text-xs border rounded-md bg-background"
-              />
-            </div>
-            <ScrollArea className="max-h-[140px]">
-              {filteredWarehouses.map((wh) => (
-                <label
-                  key={wh.name}
-                  className="flex items-center gap-2 text-sm py-1 px-1 rounded hover:bg-muted cursor-pointer"
-                >
-                  <input
-                    type="checkbox"
-                    checked={filters.warehouses.includes(wh.name)}
-                    onChange={(e) => {
-                      const next = e.target.checked
-                        ? [...filters.warehouses, wh.name]
-                        : filters.warehouses.filter((w) => w !== wh.name);
-                      onFilterChange({ warehouses: next });
-                    }}
-                    className="size-3.5 accent-primary"
-                  />
-                  <span className="flex-1 truncate">{wh.name}</span>
-                  <span className="text-xs text-muted-foreground">({wh.count})</span>
-                </label>
-              ))}
-            </ScrollArea>
-          </FilterSection>
-        </CardContent>
-      </Card>
-    </div>
-  );
-}
-
-function FilterSection({ title, children }: { title: string; children: React.ReactNode }) {
-  return (
-    <div>
-      <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">
-        {title}
-      </p>
-      {children}
-    </div>
-  );
-}
-
-// ─── Filter Chips ──────────────────────────────────────────────────────────────
-
-function FilterChips({
-  filters,
-  quickFilter,
-  onRemoveFilter,
-  onRemoveQuickFilter,
-  onClearAll,
-}: {
-  filters: FilterState;
-  quickFilter: QuickFilterKey;
-  onRemoveFilter: (type: string, value: string) => void;
-  onRemoveQuickFilter: () => void;
-  onClearAll: () => void;
-}) {
-  const chips: { label: string; type: string; value: string }[] = [];
-
-  for (const c of filters.categories) chips.push({ label: c, type: 'category', value: c });
-  for (const t of filters.types) chips.push({ label: t, type: 'type', value: t });
-  for (const s of filters.stockStatuses) chips.push({ label: s, type: 'stockStatus', value: s });
-  for (const w of filters.warehouses) chips.push({ label: w, type: 'warehouse', value: w });
-  if (filters.priceMin !== null || filters.priceMax !== null) {
-    const label =
-      filters.priceMin !== null && filters.priceMax !== null
-        ? `${filters.priceMin} – ${filters.priceMax}`
-        : filters.priceMin !== null
-          ? `≥ ${filters.priceMin}`
-          : `≤ ${filters.priceMax}`;
-    chips.push({ label, type: 'price', value: 'price' });
-  }
-  if (quickFilter !== 'all') {
-    const qf = QUICK_FILTERS.find((q) => q.key === quickFilter);
-    if (qf) chips.push({ label: qf.label, type: 'quickFilter', value: quickFilter });
-  }
-
-  if (chips.length === 0) return null;
-
-  return (
-    <div className="flex flex-wrap items-center gap-1.5">
-      {chips.map((chip, i) => (
-        <Badge key={i} variant="secondary" className="gap-1 pr-1">
-          {chip.label}
-          <button
-            onClick={() =>
-              chip.type === 'quickFilter'
-                ? onRemoveQuickFilter()
-                : onRemoveFilter(chip.type, chip.value)
-            }
-            className="size-4 rounded-full hover:bg-muted-foreground/20 flex items-center justify-center"
-          >
-            <X className="size-3" />
-          </button>
-        </Badge>
-      ))}
-      <Button variant="ghost" size="sm" className="text-xs h-6" onClick={onClearAll}>
-        Clear all
-      </Button>
-    </div>
-  );
-}
-
-// ─── Filter State ──────────────────────────────────────────────────────────────
-
-type FilterState = {
-  categories: string[];
-  types: string[];
-  stockStatuses: string[];
-  warehouses: string[];
-  priceMin: number | null;
-  priceMax: number | null;
-};
-
-const EMPTY_FILTERS: FilterState = {
-  categories: [],
-  types: [],
-  stockStatuses: [],
-  warehouses: [],
-  priceMin: null,
-  priceMax: null,
-};
-
 // ─── Export Utilities ──────────────────────────────────────────────────────────
 
 function exportCsv(api: GridApi, fileName: string) {
@@ -693,7 +350,6 @@ export default function ItemReportPage() {
   const gridApiRef = useRef<GridApi | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [quickFilter, setQuickFilter] = useState<QuickFilterKey>('all');
-  const [filters, setFilters] = useState<FilterState>(EMPTY_FILTERS);
   const [selectedItem, setSelectedItem] = useState<ItemRow | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -756,38 +412,6 @@ export default function ItemReportPage() {
       });
     }
 
-    // Category
-    if (filters.categories.length > 0) {
-      result = result.filter(
-        (item) => item.categoryName && filters.categories.includes(item.categoryName),
-      );
-    }
-
-    // Type
-    if (filters.types.length > 0) {
-      result = result.filter((item) => filters.types.includes(item.type));
-    }
-
-    // Stock Status
-    if (filters.stockStatuses.length > 0) {
-      result = result.filter((item) => filters.stockStatuses.includes(item.stockStatus));
-    }
-
-    // Warehouse
-    if (filters.warehouses.length > 0) {
-      result = result.filter((item) =>
-        item.warehouseNames.some((w) => filters.warehouses.includes(w)),
-      );
-    }
-
-    // Price
-    if (filters.priceMin !== null) {
-      result = result.filter((item) => item.salesPrice >= filters.priceMin!);
-    }
-    if (filters.priceMax !== null) {
-      result = result.filter((item) => item.salesPrice <= filters.priceMax!);
-    }
-
     // Quick Filter
     if (quickFilter === 'saleable') {
       result = result.filter((item) => item.isSaleable && item.totalStock > 0);
@@ -804,7 +428,7 @@ export default function ItemReportPage() {
     }
 
     return result;
-  }, [items, searchQuery, filters, quickFilter]);
+  }, [items, searchQuery, quickFilter]);
 
   // ── KPIs ──────────────────────────────────────────────────────────────
 
@@ -877,6 +501,7 @@ export default function ItemReportPage() {
         field: 'sku',
         width: 105,
         hide: !visibleColumns.sku,
+        filter: 'agTextColumnFilter',
         cellClass: 'font-mono text-[11px]',
       },
       {
@@ -884,6 +509,7 @@ export default function ItemReportPage() {
         field: 'barcode',
         width: 105,
         hide: !visibleColumns.barcode,
+        filter: 'agTextColumnFilter',
         cellClass: 'font-mono text-[11px]',
         valueFormatter: (params) => params.value ?? '—',
       },
@@ -892,6 +518,7 @@ export default function ItemReportPage() {
         field: 'name',
         width: 180,
         hide: !visibleColumns.name,
+        filter: 'agTextColumnFilter',
         cellClass: 'font-medium text-[12px]',
       },
       {
@@ -899,6 +526,7 @@ export default function ItemReportPage() {
         field: 'categoryName',
         width: 110,
         hide: !visibleColumns.categoryName,
+        filter: 'agTextColumnFilter',
         cellRenderer: (params: { value: string | null; data: ItemRow }) => {
           if (!params.value)
             return (
@@ -929,6 +557,7 @@ export default function ItemReportPage() {
         field: 'type',
         width: 85,
         hide: !visibleColumns.type,
+        filter: 'agTextColumnFilter',
         cellRenderer: (params: { value: string }) => {
           const variants: Record<string, string> = {
             PRODUCT:
@@ -953,6 +582,7 @@ export default function ItemReportPage() {
         field: 'purchasePrice',
         width: 95,
         hide: !visibleColumns.purchasePrice,
+        filter: 'agNumberColumnFilter',
         type: 'numericColumn',
         cellClass: 'text-[12px] tabular-nums',
         valueFormatter: (params) => format(params.value),
@@ -962,6 +592,7 @@ export default function ItemReportPage() {
         field: 'salesPrice',
         width: 95,
         hide: !visibleColumns.salesPrice,
+        filter: 'agNumberColumnFilter',
         type: 'numericColumn',
         cellClass: 'text-[12px] tabular-nums font-medium',
         valueFormatter: (params) => format(params.value),
@@ -971,6 +602,7 @@ export default function ItemReportPage() {
         field: 'totalStock',
         width: 85,
         hide: !visibleColumns.totalStock,
+        filter: 'agNumberColumnFilter',
         type: 'numericColumn',
         cellRenderer: (params: { value: number; data: ItemRow }) => {
           const status = params.data.stockStatus;
@@ -995,6 +627,7 @@ export default function ItemReportPage() {
         field: 'warehouseNames',
         width: 140,
         hide: !visibleColumns.warehouseNames,
+        filter: 'agTextColumnFilter',
         cellClass: 'text-[11px]',
         valueFormatter: (params: { value: string[] }) => params.value?.join(', ') ?? '—',
       },
@@ -1003,6 +636,7 @@ export default function ItemReportPage() {
         field: 'stockStatus',
         width: 80,
         hide: !visibleColumns.stockStatus,
+        filter: 'agTextColumnFilter',
         cellRenderer: (params: { value: string }) => {
           const config: Record<string, { label: string; className: string }> = {
             in_stock: {
@@ -1068,44 +702,13 @@ export default function ItemReportPage() {
 
   // ── Filter Handlers ──────────────────────────────────────────────────
 
-  const handleFilterChange = useCallback((partial: Partial<FilterState>) => {
-    setFilters((prev) => ({ ...prev, ...partial }));
-  }, []);
-
-  const handleRemoveFilter = useCallback((type: string, value: string) => {
-    if (type === 'category') {
-      setFilters((prev) => ({
-        ...prev,
-        categories: prev.categories.filter((c) => c !== value),
-      }));
-    } else if (type === 'type') {
-      setFilters((prev) => ({
-        ...prev,
-        types: prev.types.filter((t) => t !== value),
-      }));
-    } else if (type === 'stockStatus') {
-      setFilters((prev) => ({
-        ...prev,
-        stockStatuses: prev.stockStatuses.filter((s) => s !== value),
-      }));
-    } else if (type === 'warehouse') {
-      setFilters((prev) => ({
-        ...prev,
-        warehouses: prev.warehouses.filter((w) => w !== value),
-      }));
-    } else if (type === 'price') {
-      setFilters((prev) => ({
-        ...prev,
-        priceMin: null,
-        priceMax: null,
-      }));
-    }
-  }, []);
-
   const handleClearAll = useCallback(() => {
-    setFilters(EMPTY_FILTERS);
     setQuickFilter('all');
     setSearchQuery('');
+    if (gridApiRef.current) {
+      gridApiRef.current.setFilterModel(null);
+      gridApiRef.current.onFilterChanged();
+    }
   }, []);
 
   return (
@@ -1238,216 +841,196 @@ export default function ItemReportPage() {
             </Card>
           </div>
 
-          {/* Main Content: Sidebar + Grid */}
-          <div className="flex gap-6">
-            {/* Filter Sidebar */}
-            <FilterSidebar items={items} filters={filters} onFilterChange={handleFilterChange} />
-
-            {/* Content Area */}
-            <div className="flex-1 min-w-0 space-y-4">
-              {/* Search + Quick Filters */}
-              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
-                <div className="flex-1 w-full sm:max-w-md">
-                  <InputGroup>
-                    <InputGroupAddon align="inline-start">
-                      <Search className="size-3.5" />
+          {/* Main Content: Grid */}
+          <div className="space-y-4">
+            {/* Search + Quick Filters */}
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+              <div className="flex-1 w-full sm:max-w-md">
+                <InputGroup>
+                  <InputGroupAddon align="inline-start">
+                    <Search className="size-3.5" />
+                  </InputGroupAddon>
+                  <InputGroupInput
+                    placeholder="Search SKU, barcode, name, category..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                  />
+                  {searchQuery && (
+                    <InputGroupAddon align="inline-end">
+                      <button
+                        onClick={() => setSearchQuery('')}
+                        className="size-5 rounded hover:bg-muted flex items-center justify-center"
+                      >
+                        <X className="size-3 text-muted-foreground" />
+                      </button>
                     </InputGroupAddon>
-                    <InputGroupInput
-                      placeholder="Search SKU, barcode, name, category..."
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                    />
-                    {searchQuery && (
-                      <InputGroupAddon align="inline-end">
-                        <button
-                          onClick={() => setSearchQuery('')}
-                          className="size-5 rounded hover:bg-muted flex items-center justify-center"
-                        >
-                          <X className="size-3 text-muted-foreground" />
-                        </button>
-                      </InputGroupAddon>
-                    )}
-                  </InputGroup>
-                </div>
-
-                {/* Quick Filters */}
-                <div className="flex flex-wrap gap-1.5">
-                  {QUICK_FILTERS.map((qf) => (
-                    <Button
-                      key={qf.key}
-                      variant={quickFilter === qf.key ? 'default' : 'outline'}
-                      size="sm"
-                      className="text-xs h-7"
-                      onClick={() => setQuickFilter(qf.key)}
-                    >
-                      {qf.label}
-                    </Button>
-                  ))}
-                </div>
+                  )}
+                </InputGroup>
               </div>
 
-              {/* Active Filter Chips */}
-              <FilterChips
-                filters={filters}
-                quickFilter={quickFilter}
-                onRemoveFilter={handleRemoveFilter}
-                onRemoveQuickFilter={() => setQuickFilter('all')}
-                onClearAll={handleClearAll}
-              />
-
-              {/* AG-Grid Card */}
-              <Card
-                className={cn(
-                  isFullscreen
-                    ? 'fixed inset-0 z-50 rounded-none border-0 bg-background flex flex-col'
-                    : 'flex flex-col',
-                )}
-              >
-                <CardHeader className="flex flex-row items-center justify-between gap-2 border-b shrink-0">
-                  <div></div>
-                  <div className="flex items-center gap-1">
-                    {/* Refresh */}
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="size-7"
-                      onClick={handleRefresh}
-                      title={t('common.refresh')}
-                    >
-                      <RefreshCw className="size-3.5" />
-                    </Button>
-
-                    {/* Export Dropdown */}
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="size-7"
-                      title="Export"
-                      onClick={() => {
-                        if (gridApiRef.current) exportCsv(gridApiRef.current, 'items-report');
-                      }}
-                    >
-                      <Download className="size-3.5" />
-                    </Button>
-
-                    {/* Column Toggle */}
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="size-7"
-                          title="Toggle columns"
-                        >
-                          <Columns3 className="size-3.5" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent
-                        align="end"
-                        className="w-48"
-                        onCloseAutoFocus={(e) => e.preventDefault()}
-                      >
-                        {Object.entries(visibleColumns).map(([field, visible]) => {
-                          const labels: Record<string, string> = {
-                            image: 'Image',
-                            sku: 'SKU',
-                            barcode: 'Barcode',
-                            name: 'Name',
-                            categoryName: 'Category',
-                            type: 'Type',
-                            purchasePrice: 'Buy Price',
-                            salesPrice: 'Sell Price',
-                            totalStock: 'Stock',
-                            warehouseNames: 'Warehouse',
-                            stockStatus: 'Status',
-                            id: 'Actions',
-                          };
-                          return (
-                            <DropdownMenuItem
-                              key={field}
-                              onSelect={(e) => {
-                                e.preventDefault();
-                                toggleColumn(field);
-                              }}
-                              className="gap-2"
-                            >
-                              <div
-                                className={cn(
-                                  'size-3.5 rounded border flex items-center justify-center',
-                                  visible
-                                    ? 'bg-primary border-primary text-primary-foreground'
-                                    : 'border-muted-foreground/30',
-                                )}
-                              >
-                                {visible && (
-                                  <svg className="size-2.5" viewBox="0 0 12 12" fill="none">
-                                    <path
-                                      d="M2 6l3 3 5-5"
-                                      stroke="currentColor"
-                                      strokeWidth="2"
-                                      strokeLinecap="round"
-                                      strokeLinejoin="round"
-                                    />
-                                  </svg>
-                                )}
-                              </div>
-                              <span className="flex-1">{labels[field] ?? field}</span>
-                            </DropdownMenuItem>
-                          );
-                        })}
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-
-                    {/* Fullscreen */}
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="size-7"
-                      onClick={toggleFullscreen}
-                      title={isFullscreen ? 'Exit fullscreen' : 'Fullscreen'}
-                    >
-                      {isFullscreen ? (
-                        <Minimize2 className="size-3.5" />
-                      ) : (
-                        <Maximize2 className="size-3.5" />
-                      )}
-                    </Button>
-                  </div>
-                </CardHeader>
-                <CardContent
-                  className={cn('p-0', isFullscreen ? 'flex-1 min-h-0 overflow-hidden' : '')}
-                >
-                  <div className={cn('w-full', isFullscreen ? 'h-full' : 'h-[500px]')}>
-                    {isLoading ? (
-                      <div className="flex items-center justify-center h-full">
-                        <Skeleton className="h-[500px] w-full" />
-                      </div>
-                    ) : (
-                      <AgGridReact
-                        rowData={filteredItems}
-                        columnDefs={columnDefs}
-                        defaultColDef={defaultColDef}
-                        theme={tableTheme}
-                        animateRows
-                        onGridReady={(params) => {
-                          gridApiRef.current = params.api;
-                        }}
-                        domLayout="normal"
-                        getRowId={(params) => params.data.id}
-                        suppressScrollOnNewData
-                        enableCellTextSelection
-                        ensureDomOrder
-                      />
-                    )}
-                  </div>
-                </CardContent>
-                <CardFooter className="m-0">
-                  <p className="text-sm text-muted-foreground">
-                    Showing {filteredItems.length} of {items.length} items
-                  </p>
-                </CardFooter>
-              </Card>
+              {/* Quick Filters */}
+              <div className="flex flex-wrap gap-1.5">
+                {QUICK_FILTERS.map((qf) => (
+                  <Button
+                    key={qf.key}
+                    variant={quickFilter === qf.key ? 'default' : 'outline'}
+                    size="sm"
+                    className="text-xs h-7"
+                    onClick={() => setQuickFilter(qf.key)}
+                  >
+                    {qf.label}
+                  </Button>
+                ))}
+              </div>
             </div>
+
+            {/* AG-Grid Card */}
+            <Card
+              className={cn(
+                isFullscreen
+                  ? 'fixed inset-0 z-50 rounded-none border-0 bg-background flex flex-col'
+                  : 'flex flex-col',
+              )}
+            >
+              <CardHeader className="flex flex-row items-center justify-between gap-2 border-b shrink-0">
+                <div></div>
+                <div className="flex items-center gap-1">
+                  {/* Refresh */}
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="size-7"
+                    onClick={handleRefresh}
+                    title={t('common.refresh')}
+                  >
+                    <RefreshCw className="size-3.5" />
+                  </Button>
+
+                  {/* Export Dropdown */}
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="size-7"
+                    title="Export"
+                    onClick={() => {
+                      if (gridApiRef.current) exportCsv(gridApiRef.current, 'items-report');
+                    }}
+                  >
+                    <Download className="size-3.5" />
+                  </Button>
+
+                  {/* Column Toggle */}
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="icon" className="size-7" title="Toggle columns">
+                        <Columns3 className="size-3.5" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent
+                      align="end"
+                      className="w-48"
+                      onCloseAutoFocus={(e) => e.preventDefault()}
+                    >
+                      {Object.entries(visibleColumns).map(([field, visible]) => {
+                        const labels: Record<string, string> = {
+                          image: 'Image',
+                          sku: 'SKU',
+                          barcode: 'Barcode',
+                          name: 'Name',
+                          categoryName: 'Category',
+                          type: 'Type',
+                          purchasePrice: 'Buy Price',
+                          salesPrice: 'Sell Price',
+                          totalStock: 'Stock',
+                          warehouseNames: 'Warehouse',
+                          stockStatus: 'Status',
+                          id: 'Actions',
+                        };
+                        return (
+                          <DropdownMenuItem
+                            key={field}
+                            onSelect={(e) => {
+                              e.preventDefault();
+                              toggleColumn(field);
+                            }}
+                            className="gap-2"
+                          >
+                            <div
+                              className={cn(
+                                'size-3.5 rounded border flex items-center justify-center',
+                                visible
+                                  ? 'bg-primary border-primary text-primary-foreground'
+                                  : 'border-muted-foreground/30',
+                              )}
+                            >
+                              {visible && (
+                                <svg className="size-2.5" viewBox="0 0 12 12" fill="none">
+                                  <path
+                                    d="M2 6l3 3 5-5"
+                                    stroke="currentColor"
+                                    strokeWidth="2"
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                  />
+                                </svg>
+                              )}
+                            </div>
+                            <span className="flex-1">{labels[field] ?? field}</span>
+                          </DropdownMenuItem>
+                        );
+                      })}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+
+                  {/* Fullscreen */}
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="size-7"
+                    onClick={toggleFullscreen}
+                    title={isFullscreen ? 'Exit fullscreen' : 'Fullscreen'}
+                  >
+                    {isFullscreen ? (
+                      <Minimize2 className="size-3.5" />
+                    ) : (
+                      <Maximize2 className="size-3.5" />
+                    )}
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent
+                className={cn('p-0', isFullscreen ? 'flex-1 min-h-0 overflow-hidden' : '')}
+              >
+                <div className={cn('w-full', isFullscreen ? 'h-full' : 'h-[500px]')}>
+                  {isLoading ? (
+                    <div className="flex items-center justify-center h-full">
+                      <Skeleton className="h-[500px] w-full" />
+                    </div>
+                  ) : (
+                    <AgGridReact
+                      rowData={filteredItems}
+                      columnDefs={columnDefs}
+                      defaultColDef={defaultColDef}
+                      theme={tableTheme}
+                      animateRows
+                      onGridReady={(params) => {
+                        gridApiRef.current = params.api;
+                      }}
+                      domLayout="normal"
+                      getRowId={(params) => params.data.id}
+                      suppressScrollOnNewData
+                      enableCellTextSelection
+                      ensureDomOrder
+                    />
+                  )}
+                </div>
+              </CardContent>
+              <CardFooter className="m-0">
+                <p className="text-sm text-muted-foreground">
+                  Showing {filteredItems.length} of {items.length} items
+                </p>
+              </CardFooter>
+            </Card>
           </div>
         </div>
       </main>
