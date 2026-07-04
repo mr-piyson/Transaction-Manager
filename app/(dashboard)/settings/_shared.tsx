@@ -6,6 +6,7 @@ import {
   Coins,
   Layers,
   LogOut,
+  Package,
   Palette,
   Percent,
   Shield,
@@ -26,6 +27,7 @@ export const NAV_ITEMS = [
   { id: 'financial', labelKey: 'settings.financial', href: '/settings/financial', icon: Coins },
   { id: 'tax-rates', labelKey: 'settings.defaultTaxRate', href: '/settings/tax-rates', icon: Percent },
   { id: 'categories', labelKey: 'items.category', href: '/settings/categories', icon: Layers },
+  { id: 'item-master', labelKey: 'settings.itemMaster.title', href: '/settings/item-master', icon: Package },
   {
     id: 'chart-of-accounts',
     labelKey: 'settings.chartOfAccounts',

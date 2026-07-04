@@ -99,6 +99,8 @@
     "goBack": "Go Back",
     "notFound": "Page not found",
     "unauthorized": "You are not authorized to perform this action",
+    "accessDenied": "Access Denied",
+    "backToSettings": "Back to Settings",
     "currency": "Currency",
     "percentage": "Percentage",
     "moreInfo": "More Info",
@@ -1038,6 +1040,11 @@
     "normalBalances": {
       "debit": "Debit",
       "credit": "Credit"
+    },
+    "itemMaster": {
+      "title": "Item Master",
+      "description": "Manage items and bulk import your product catalog",
+      "noPermission": "You don't have permission to access Item Master settings. Contact your administrator to request access."
     }
   },
   "sessions": {

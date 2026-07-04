@@ -4,7 +4,7 @@
 import { AppAbilityType } from '@/lib/abilities';
 import { createContext, useContext } from 'react';
 
-const AbilityContext = createContext<AppAbilityType>(null!);
+const AbilityContext = createContext<AppAbilityType | null>(null);
 
 export const useAbility = () => useContext(AbilityContext);
 

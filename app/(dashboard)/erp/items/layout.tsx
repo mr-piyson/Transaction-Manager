@@ -107,7 +107,7 @@ export default function ItemsLayout({ children }: { children?: React.ReactNode }
 
   return (
     <div className="flex h-screen flex-col overflow-hidden">
-      <Header title={t('layout.items')} icon={<Package className="size-5" />} onCreate={() => router.push('/erp/items/new')} createLabel={t('items.createItem')} actions={<Link href="/erp/items/import"><Button variant="outline" size="sm"><Download className="size-3.5 mr-1" />Import</Button></Link>} />
+      <Header title={t('layout.items')} icon={<Package className="size-5" />} onCreate={() => router.push('/erp/items/new')} createLabel={t('items.createItem')} actions={<Link href="/settings/item-master"><Button variant="outline" size="sm"><Download className="size-3.5 mr-1" />Import</Button></Link>} />
       <div className="flex-1 min-h-0 w-full">
         <ResizablePanelGroup className="h-full">
           {(isListView || !isMobile) && (

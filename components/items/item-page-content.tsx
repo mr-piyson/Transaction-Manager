@@ -41,7 +41,6 @@ import { alert } from '@/components/Alert-dialog';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Checkbox } from '@/components/ui/checkbox';
 import {
   Empty,
   EmptyDescription,
@@ -62,6 +61,7 @@ import {
 import { Separator } from '@/components/ui/separator';
 import { Spinner } from '@/components/ui/spinner';
 import { Textarea } from '@/components/ui/textarea';
+import { Toggle } from '@/components/ui/toggle';
 import { trpc } from '@/lib/trpc/client';
 import { cn } from '@/lib/utils';
 import { itemFormSchema, getItemFormDefaults } from '@/lib/validations/item';
@@ -160,6 +160,7 @@ export function ItemPageContent({ item, defaultMode }: ItemPageContentProps) {
   const barcodeRef = React.useRef<HTMLDivElement>(null);
 
   const families = categoryTree ?? [];
+  const { data: units } = trpc.units.list.useQuery();
 
   const form = useForm<ItemFormValues>({
     resolver: zodResolver(itemFormSchema) as any,
@@ -477,71 +478,11 @@ export function ItemPageContent({ item, defaultMode }: ItemPageContentProps) {
           </Button>
 
           {isEditing ? (
-            /* ── Edit/Create header ── */
-            <div className="flex items-center gap-3 flex-1 min-w-0">
-              <div className="relative shrink-0">
-                <div className="size-10 sm:size-12 rounded-xl flex items-center justify-center overflow-hidden bg-muted border">
-                  {currentImage ? (
-                    <img src={currentImage} alt="" className="size-full object-cover" />
-                  ) : (
-                    <TypeIcon className="size-5 sm:size-6 text-muted-foreground" />
-                  )}
-                </div>
-                <button
-                  type="button"
-                  onClick={() => fileInputRef.current?.click()}
-                  className="absolute -bottom-1 -right-1 size-5 rounded-full bg-primary text-primary-foreground flex items-center justify-center border-2 border-background"
-                >
-                  <Camera className="size-3" />
-                </button>
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  onChange={handleImageUpload}
-                />
-              </div>
-              <div className="flex-1 min-w-0 space-y-1">
-                <Input
-                  placeholder="Item name"
-                  aria-invalid={!!errors.name}
-                  {...register('name')}
-                  className="h-8 text-base font-semibold"
-                />
-                <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                  <Select value={selectedType} onValueChange={handleTypeChange}>
-                    <SelectTrigger className="h-6 text-xs w-24">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="PRODUCT">Product</SelectItem>
-                      <SelectItem value="SERVICE">Service</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <span className="flex items-center gap-1">
-                    <Hash className="size-3" />
-                    <Input
-                      placeholder="SKU"
-                      aria-invalid={!!errors.sku}
-                      {...register('sku')}
-                      className="h-6 text-xs w-28 inline-flex"
-                    />
-                    <button
-                      type="button"
-                      onClick={handleGenerateSku}
-                      className="text-muted-foreground hover:text-foreground"
-                      title="Auto-generate SKU"
-                    >
-                      {generateSku.isPending ? (
-                        <Loader2 className="size-3 animate-spin" />
-                      ) : (
-                        <Wand2 className="size-3" />
-                      )}
-                    </button>
-                  </span>
-                </div>
-              </div>
+            /* ── Edit/Create header (simple — inputs in body) ── */
+            <div className="flex-1 min-w-0">
+              <h1 className="text-base sm:text-lg font-semibold">
+                {isCreate ? 'New Item' : 'Edit Item'}
+              </h1>
             </div>
           ) : item ? (
             /* ── View header ── */
@@ -625,7 +566,89 @@ export function ItemPageContent({ item, defaultMode }: ItemPageContentProps) {
             /* ══════════════════ EDIT MODE ══════════════════ */
             <form onSubmit={handleSubmit(onSubmit)} noValidate>
               <div className="space-y-6">
-                {/* Quick Stats */}
+                {/* Basic Info — Name, Type, SKU, Unit */}
+                <Card>
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-base">Basic Info</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <Field>
+                        <Label htmlFor="name">Name *</Label>
+                        <Input
+                          id="name"
+                          placeholder="Item name"
+                          aria-invalid={!!errors.name}
+                          {...register('name')}
+                        />
+                      </Field>
+                      <Field>
+                        <Label htmlFor="type">Type *</Label>
+                        <Select value={selectedType} onValueChange={handleTypeChange}>
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="PRODUCT">Product</SelectItem>
+                            <SelectItem value="SERVICE">Service</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </Field>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <Field>
+                        <Label htmlFor="sku">SKU *</Label>
+                        <div className="flex gap-2">
+                          <Input
+                            id="sku"
+                            placeholder="SKU-001"
+                            aria-invalid={!!errors.sku}
+                            {...register('sku')}
+                            className="flex-1"
+                          />
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="icon"
+                            onClick={handleGenerateSku}
+                            disabled={generateSku.isPending}
+                            title="Auto-generate SKU"
+                          >
+                            {generateSku.isPending ? (
+                              <Loader2 className="size-4 animate-spin" />
+                            ) : (
+                              <Wand2 className="size-4" />
+                            )}
+                          </Button>
+                        </div>
+                      </Field>
+                      <Field>
+                        <Label htmlFor="unit">Unit *</Label>
+                        <Select
+                          value={watch('unitId') ?? ''}
+                          onValueChange={(v) => {
+                            setValue('unitId', v || undefined);
+                            const unit = (Array.isArray(units) ? units : []).find((u: any) => u.id === v);
+                            if (unit) setValue('unit', unit.code);
+                          }}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select unit" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {(Array.isArray(units) ? units : []).map((u: any) => (
+                              <SelectItem key={u.id} value={u.id}>
+                                {u.code} — {u.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </Field>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Pricing */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <Card>
                     <CardContent className="p-4">
@@ -662,60 +685,49 @@ export function ItemPageContent({ item, defaultMode }: ItemPageContentProps) {
                 </div>
 
                 {/* Image & Barcode */}
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                  <Card className="lg:col-span-2">
-                    <CardContent className="p-4">
-                      <Label className="text-xs font-medium text-muted-foreground mb-2 block">
-                        Image
-                      </Label>
-                      <div className="flex items-start gap-3">
-                        {currentImage ? (
-                          <div className="relative size-32 shrink-0 rounded-md border overflow-hidden">
-                            <img src={currentImage} alt="" className="size-full object-cover" />
-                            <button
-                              type="button"
-                              onClick={handleRemoveImage}
-                              className="absolute top-1 right-1 size-6 rounded-full bg-background/80 backdrop-blur-sm flex items-center justify-center hover:bg-background"
-                            >
-                              <X className="size-3" />
-                            </button>
-                          </div>
-                        ) : (
+                <Card>
+                  <CardContent className="p-4">
+                    <Label className="text-xs font-medium text-muted-foreground mb-2 block">
+                      Image
+                    </Label>
+                    <div className="flex items-start gap-3">
+                      {currentImage ? (
+                        <div className="relative size-32 shrink-0 rounded-md border overflow-hidden">
+                          <img src={currentImage} alt="" className="size-full object-cover" />
                           <button
                             type="button"
-                            onClick={() => fileInputRef.current?.click()}
-                            disabled={uploading}
-                            className="size-32 shrink-0 rounded-md border border-dashed flex flex-col items-center justify-center gap-1 text-muted-foreground hover:bg-muted/50 transition-colors"
+                            onClick={handleRemoveImage}
+                            className="absolute top-1 right-1 size-6 rounded-full bg-background/80 backdrop-blur-sm flex items-center justify-center hover:bg-background"
                           >
-                            {uploading ? (
-                              <Loader2 className="size-6 animate-spin" />
-                            ) : (
-                              <Upload className="size-6" />
-                            )}
-                            <span className="text-xs">Upload</span>
+                            <X className="size-3" />
                           </button>
-                        )}
-                        <div className="flex-1 space-y-2">
-                          <Label htmlFor="barcode">{t('items.barcode')}</Label>
-                          <Input
-                            id="barcode"
-                            placeholder="EAN/UPC"
-                            {...register('barcode')}
-                          />
                         </div>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => fileInputRef.current?.click()}
+                          disabled={uploading}
+                          className="size-32 shrink-0 rounded-md border border-dashed flex flex-col items-center justify-center gap-1 text-muted-foreground hover:bg-muted/50 transition-colors"
+                        >
+                          {uploading ? (
+                            <Loader2 className="size-6 animate-spin" />
+                          ) : (
+                            <Upload className="size-6" />
+                          )}
+                          <span className="text-xs">Upload</span>
+                        </button>
+                      )}
+                      <div className="flex-1 space-y-2">
+                        <Label htmlFor="barcode">{t('items.barcode')}</Label>
+                        <Input
+                          id="barcode"
+                          placeholder="EAN/UPC"
+                          {...register('barcode')}
+                        />
                       </div>
-                    </CardContent>
-                  </Card>
-
-                  <Card>
-                    <CardContent className="p-4">
-                      <Label className="text-xs font-medium text-muted-foreground mb-2 block">
-                        {t('items.unit')}
-                      </Label>
-                      <Input placeholder="pcs, kg, hr" {...register('unit')} />
-                    </CardContent>
-                  </Card>
-                </div>
+                    </div>
+                  </CardContent>
+                </Card>
 
                 {/* Description */}
                 <Card>
@@ -877,27 +889,25 @@ export function ItemPageContent({ item, defaultMode }: ItemPageContentProps) {
                     <CardTitle className="text-base">{t('items.flags')}</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="flex gap-6">
-                      <div className="flex items-center gap-2">
-                        <Checkbox
-                          id="isSaleable"
-                          checked={watch('isSaleable')}
-                          onCheckedChange={(checked) => setValue('isSaleable', checked === true)}
-                        />
-                        <Label htmlFor="isSaleable" className="text-sm font-normal">
-                          {t('items.saleable')}
-                        </Label>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Checkbox
-                          id="isPurchasable"
-                          checked={watch('isPurchasable')}
-                          onCheckedChange={(checked) => setValue('isPurchasable', checked === true)}
-                        />
-                        <Label htmlFor="isPurchasable" className="text-sm font-normal">
-                          {t('items.purchasable')}
-                        </Label>
-                      </div>
+                    <div className="flex gap-4">
+                      <Toggle
+                        pressed={watch('isSaleable')}
+                        onPressedChange={(pressed) => setValue('isSaleable', pressed)}
+                        variant="outline"
+                        aria-label="Toggle saleable"
+                      >
+                        <Tag className="size-4 mr-2" />
+                        {t('items.saleable')}
+                      </Toggle>
+                      <Toggle
+                        pressed={watch('isPurchasable')}
+                        onPressedChange={(pressed) => setValue('isPurchasable', pressed)}
+                        variant="outline"
+                        aria-label="Toggle purchasable"
+                      >
+                        <ShoppingCart className="size-4 mr-2" />
+                        {t('items.purchasable')}
+                      </Toggle>
                     </div>
                   </CardContent>
                 </Card>

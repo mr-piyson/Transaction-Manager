@@ -67,6 +67,11 @@ export type Action =
   | 'category:create'
   | 'category:update'
   | 'category:delete'
+  // Units
+  | 'unit:read'
+  | 'unit:create'
+  | 'unit:update'
+  | 'unit:delete'
   // Settings / admin
   | 'org:settings:read'
   | 'org:settings:update'
@@ -92,6 +97,7 @@ export type SubjectName =
   | 'PurchaseLine'
   | 'Expense'
   | 'Organization'
+  | 'Unit'
   | 'User'
   | 'all';
 

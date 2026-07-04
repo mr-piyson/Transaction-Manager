@@ -14,6 +14,7 @@ import { reportsRouter } from './reports/reports.router';
 import { settingsRouter } from './settings/settings.router';
 import { stockRouter } from './stock/stock.router';
 import { suppliersRouter } from './suppliers/suppliers.router';
+import { unitsRouter } from './units/units.router';
 import { usersRouter } from './users/users.router';
 import { warehousesRouter } from './warehouses/warehouses.router';
 
@@ -32,6 +33,7 @@ export const appRouter = t.router({
   settings: settingsRouter,
   stock: stockRouter,
   suppliers: suppliersRouter,
+  units: unitsRouter,
   warehouses: warehousesRouter,
   contracts: contractsRouter,
   users: usersRouter,

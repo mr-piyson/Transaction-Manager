@@ -7,7 +7,7 @@ import { type SubmitHandler, useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
+import { Toggle } from '@/components/ui/toggle';
 import {
   Dialog,
   DialogContent,
@@ -73,6 +73,7 @@ export function ItemFormDialog({ open, onOpenChange, item, onSuccess }: ItemForm
   const fileInputRef = React.useRef<HTMLInputElement>(null);
 
   const families = categoryTree ?? [];
+  const { data: units } = trpc.units.list.useQuery();
 
   const {
     register,
@@ -251,7 +252,25 @@ export function ItemFormDialog({ open, onOpenChange, item, onSuccess }: ItemForm
               </Field>
               <Field>
                 <Label htmlFor="unit">Unit *</Label>
-                <Input id="unit" placeholder="pcs, kg, hr" {...register('unit')} />
+                <Select
+                  value={watch('unitId') ?? ''}
+                  onValueChange={(v) => {
+                    setValue('unitId', v || undefined);
+                    const unit = (Array.isArray(units) ? units : []).find((u: any) => u.id === v);
+                    if (unit) setValue('unit', unit.code);
+                  }}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select unit" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {(Array.isArray(units) ? units : []).map((u: any) => (
+                      <SelectItem key={u.id} value={u.id}>
+                        {u.code} — {u.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </Field>
             </div>
 
@@ -507,27 +526,23 @@ export function ItemFormDialog({ open, onOpenChange, item, onSuccess }: ItemForm
             </div>
 
             {/* Flags */}
-            <div className="flex gap-6">
-              <div className="flex items-center gap-2">
-                <Checkbox
-                  id="isSaleable"
-                  checked={watch('isSaleable')}
-                  onCheckedChange={(checked) => setValue('isSaleable', checked === true)}
-                />
-                <Label htmlFor="isSaleable" className="text-sm font-normal">
-                  Sellable
-                </Label>
-              </div>
-              <div className="flex items-center gap-2">
-                <Checkbox
-                  id="isPurchasable"
-                  checked={watch('isPurchasable')}
-                  onCheckedChange={(checked) => setValue('isPurchasable', checked === true)}
-                />
-                <Label htmlFor="isPurchasable" className="text-sm font-normal">
-                  Purchasable
-                </Label>
-              </div>
+            <div className="flex gap-4">
+              <Toggle
+                pressed={watch('isSaleable')}
+                onPressedChange={(pressed) => setValue('isSaleable', pressed)}
+                variant="outline"
+                aria-label="Toggle saleable"
+              >
+                Sellable
+              </Toggle>
+              <Toggle
+                pressed={watch('isPurchasable')}
+                onPressedChange={(pressed) => setValue('isPurchasable', pressed)}
+                variant="outline"
+                aria-label="Toggle purchasable"
+              >
+                Purchasable
+              </Toggle>
             </div>
           </div>
 

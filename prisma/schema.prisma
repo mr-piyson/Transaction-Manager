@@ -364,6 +364,7 @@ model Organization {
   categoryClasses       CategoryClass[]
   categoryCommodities   CategoryCommodity[]
   roles                 Role[]
+  units                 Unit[]
 
   // HRMS relations
   employees           Employee[]
@@ -1402,6 +1403,8 @@ model Item {
   description String?
   image       String?
   unit        String   @default("pcs")
+  unitId      String?
+  unitRef     Unit?    @relation(fields: [unitId], references: [id])
 
   isActive      Boolean   @default(true)
   isSaleable    Boolean   @default(true)
@@ -1476,6 +1479,32 @@ model Item {
   @@index([organizationId, type, isActive])
   @@index([organizationId, isSaleable, isActive])
   @@index([barcode, organizationId])
+  @@schema("public")
+}
+
+// =============================================================================
+// UNITS OF MEASURE
+// =============================================================================
+
+model Unit {
+  id   String @id @default(cuid())
+  name String // "Pieces", "Kilograms", "Hours"
+  code String // "pcs", "kg", "hr"
+
+  isActive  Boolean   @default(true)
+  deletedAt DateTime?
+
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  items Item[]
+
+  @@unique([code, organizationId])
+  @@index([organizationId])
+  @@index([deletedAt])
   @@schema("public")
 }
 
