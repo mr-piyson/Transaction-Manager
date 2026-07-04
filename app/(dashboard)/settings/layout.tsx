@@ -100,8 +100,8 @@ export default function SettingsLayout({
         </SheetContent>
       </Sheet>
 
-      <div className="flex flex-1 min-h-0">
-        <aside className="w-56 shrink-0 border-r border-sidebar-border bg-sidebar hidden md:flex flex-col py-4">
+      <div className="flex flex-1 overflow-hidden">
+        <aside className="w-56 shrink-0 border-r border-sidebar-border bg-sidebar hidden md:flex flex-col overflow-y-auto py-4">
           {nav}
         </aside>
 
