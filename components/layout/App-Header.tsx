@@ -11,8 +11,10 @@ import { NavUser } from '@/components/layout/User-Options';
 
 interface HeaderProps {
   title?: ReactNode;
+  subtitle?: string;
   icon?: ReactNode;
   leftContent?: ReactNode;
+  actions?: ReactNode;
   rightContent?: ReactNode;
   showBorder?: boolean;
   sticky?: boolean;
@@ -27,8 +29,10 @@ interface HeaderProps {
 
 export function Header({
   title,
+  subtitle,
   icon,
   leftContent,
+  actions,
   rightContent,
   showBorder = true,
   sticky = true,
@@ -44,7 +48,7 @@ export function Header({
   return (
     <header
       className={cn(
-        ' flex h-14 items-center gap-2 px-2 z-50 transition-all duration-300 print:hidden',
+        'flex h-14 items-center gap-2 px-2 z-50 transition-all duration-300 print:hidden',
         sticky && 'sticky top-0',
         transparent
           ? 'bg-transparent'
@@ -61,23 +65,39 @@ export function Header({
         {leftContent || (
           <div className="flex items-center gap-2 truncate">
             {title && (
-              <div className="flex flex-row  gap-2 items-center truncate">
-                {icon && <span className="text-muted-foreground">{icon}</span>}
-                <h1 className="text-2xl font-semibold capitalize truncate">{title}</h1>
+              <div className="flex flex-row gap-2 items-center truncate">
+                {icon && <span className="text-muted-foreground shrink-0">{icon}</span>}
+                <div className="truncate">
+                  <h1 className="text-lg font-semibold capitalize truncate">{title}</h1>
+                  {subtitle && (
+                    <p className="text-xs text-muted-foreground truncate">{subtitle}</p>
+                  )}
+                </div>
                 {description && (
-                  <p className="text-sm text-muted-foreground truncate">{description}</p>
+                  <p className="text-sm text-muted-foreground truncate hidden sm:block">
+                    {description}
+                  </p>
                 )}
               </div>
             )}
           </div>
         )}
       </div>
+
+      {/* Actions */}
+      {actions && <div className="flex items-center gap-2 shrink-0">{actions}</div>}
+
+      {/* Create Button */}
       {onCreate && (
         <Button size="sm" className="gap-1.5 shrink-0" onClick={onCreate}>
           <Plus className="size-4" />
           {createLabel ?? t('common.create')}
         </Button>
       )}
+
+      {/* Right Content */}
+      {rightContent && <div className="flex items-center gap-2 shrink-0">{rightContent}</div>}
+
       <NavUser />
     </header>
   );

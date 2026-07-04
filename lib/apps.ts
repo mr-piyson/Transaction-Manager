@@ -66,6 +66,7 @@ function getErpRoutes(t: (key: string) => string): RouteConfig[] {
       label: t('layout.analytics'),
       children: [
         { type: 'item', label: t('layout.reports'), href: '/erp/reports', icon: BarChart3 },
+        { type: 'item', label: t('layout.itemReport') ?? 'Item Report', href: '/erp/reports/items', icon: Package },
       ],
     },
     {

@@ -6,6 +6,8 @@
   },
   "common": {
     "save": "Save",
+    "relations": "Relations",
+    "relatedRecords": "Related Records",
     "new": "New",
     "payment": "Payment",
     "system": "System",
@@ -234,6 +236,7 @@
     "items": "Items",
     "warehouses": "Warehouses",
     "reports": "Reports",
+    "itemReport": "Item Report",
     "settings": "Settings",
     "toggleSidebar": "Toggle Sidebar",
     "appearance": "Appearance",

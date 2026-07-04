@@ -1,39 +1,40 @@
 import { themeQuartz } from 'ag-grid-community';
 import { useTheme } from 'next-themes';
 
+const baseCompactParams = {
+  wrapperBorderRadius: '0px',
+  headerColumnResizeHandleColor: 'transparent',
+  columnBorder: { color: 'transparent', width: '0px' },
+  fontSize: '12px',
+  headerFontSize: '11px',
+  listItemHeight: '34px',
+  headerHeight: '34px',
+  cellHorizontalPadding: '8px',
+  cellVerticalPadding: '4px',
+};
+
 export function useTableTheme() {
   const theme = useTheme();
+
   const dark = themeQuartz.withParams({
+    ...baseCompactParams,
     backgroundColor: 'var(--popover)',
     foregroundColor: 'var(--foreground)',
     headerTextColor: 'var(--foreground)',
     headerBackgroundColor: 'var(--card)',
-    oddRowBackgroundColor: '#131313',
-    headerColumnResizeHandleColor: '#a1a1aa',
-    wrapperBorderRadius: '0px',
-    // borderColor: 'var(--border)',
-    listItemHeight: '30px',
-    columnBorder: {
-      color: '#2b2b2b',
-      width: '0px',
-    },
+    oddRowBackgroundColor: 'rgba(255,255,255,0.02)',
+    borderColor: 'var(--border)',
   });
 
   const light = themeQuartz.withParams({
+    ...baseCompactParams,
     backgroundColor: 'var(--popover)',
     foregroundColor: 'var(--foreground)',
     headerTextColor: 'var(--foreground)',
     headerBackgroundColor: 'var(--card)',
-    oddRowBackgroundColor: '#f9f9f9',
-    headerColumnResizeHandleColor: '#000000',
-    // borderColor: 'var(--border)',
-    wrapperBorderRadius: '0px',
-    columnBorder: {
-      color: '#cccccc',
-      width: '0px',
-    },
+    oddRowBackgroundColor: '#f9fafb',
+    borderColor: 'var(--border)',
   });
 
-  const tableTheme = theme.resolvedTheme === 'dark' ? dark : light;
-  return tableTheme;
+  return theme.resolvedTheme === 'dark' ? dark : light;
 }

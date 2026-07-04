@@ -554,4 +554,106 @@ export const itemsRouter = router({
 
       return { stocks, totalQuantity: totalQty };
     }),
+
+  // ── REPORT ──────────────────────────────────────────────────────────────
+  report: orgProcedure.query(async ({ ctx }) => {
+    assertCan(ctx.ability, 'report:inventory', 'all');
+
+    const orgId = ctx.user.organizationId;
+
+    const items = await ctx.db.item.findMany({
+      where: { organizationId: orgId, deletedAt: null },
+      orderBy: { name: 'asc' },
+      select: {
+        id: true,
+        sku: true,
+        barcode: true,
+        name: true,
+        image: true,
+        type: true,
+        unit: true,
+        isActive: true,
+        isSaleable: true,
+        isPurchasable: true,
+        purchasePrice: true,
+        salesPrice: true,
+        averageCost: true,
+        minStock: true,
+        reorderPoint: true,
+        reorderQty: true,
+        weightKg: true,
+        description: true,
+        createdAt: true,
+        category: { select: { id: true, name: true, color: true } },
+        family: { select: { id: true, name: true } },
+        class: { select: { id: true, name: true } },
+        commodity: { select: { id: true, name: true } },
+        taxRate: { select: { id: true, name: true, rate: true } },
+        stock: {
+          select: {
+            quantity: true,
+            warehouse: { select: { id: true, name: true } },
+          },
+        },
+        supplierItems: {
+          where: { isActive: true, deletedAt: null },
+          select: {
+            supplierSku: true,
+            basePrice: true,
+            supplier: { select: { id: true, name: true } },
+          },
+        },
+      },
+    });
+
+    return items.map((item) => {
+      const stockByWarehouse = item.stock.map((s) => ({
+        warehouseId: s.warehouse.id,
+        warehouseName: s.warehouse.name,
+        quantity: Number(s.quantity),
+      }));
+
+      const totalStock = stockByWarehouse.reduce((sum, s) => sum + s.quantity, 0);
+
+      const stockStatus =
+        totalStock <= 0 ? 'out' : totalStock <= item.minStock ? 'low' : 'in_stock';
+
+      const inventoryValue = totalStock * Number(item.purchasePrice);
+
+      return {
+        id: item.id,
+        sku: item.sku,
+        barcode: item.barcode,
+        name: item.name,
+        image: item.image,
+        type: item.type,
+        unit: item.unit,
+        isActive: item.isActive,
+        isSaleable: item.isSaleable,
+        isPurchasable: item.isPurchasable,
+        purchasePrice: Number(item.purchasePrice),
+        salesPrice: Number(item.salesPrice),
+        averageCost: Number(item.averageCost),
+        minStock: item.minStock,
+        reorderPoint: item.reorderPoint,
+        reorderQty: item.reorderQty,
+        weightKg: item.weightKg ? Number(item.weightKg) : null,
+        description: item.description,
+        createdAt: item.createdAt,
+        categoryName: item.category?.name ?? null,
+        categoryColor: item.category?.color ?? null,
+        familyName: item.family?.name ?? null,
+        className: item.class?.name ?? null,
+        commodityName: item.commodity?.name ?? null,
+        taxRateName: item.taxRate?.name ?? null,
+        taxRatePercent: item.taxRate ? Number(item.taxRate.rate) : null,
+        stockByWarehouse,
+        totalStock,
+        stockStatus,
+        inventoryValue,
+        supplierNames: item.supplierItems.map((si) => si.supplier.name),
+        warehouseNames: stockByWarehouse.map((s) => s.warehouseName),
+      };
+    });
+  }),
 });
