@@ -499,7 +499,7 @@ export default function ItemReportPage() {
       {
         headerName: 'SKU',
         field: 'sku',
-        width: 105,
+        flex: 1,
         hide: !visibleColumns.sku,
         filter: 'agTextColumnFilter',
         cellClass: 'font-mono text-[11px]',
@@ -507,7 +507,8 @@ export default function ItemReportPage() {
       {
         headerName: 'Barcode',
         field: 'barcode',
-        width: 105,
+        flex: 1,
+
         hide: !visibleColumns.barcode,
         filter: 'agTextColumnFilter',
         cellClass: 'font-mono text-[11px]',
@@ -516,7 +517,7 @@ export default function ItemReportPage() {
       {
         headerName: 'Name',
         field: 'name',
-        width: 180,
+        flex: 1,
         hide: !visibleColumns.name,
         filter: 'agTextColumnFilter',
         cellClass: 'font-medium text-[12px]',

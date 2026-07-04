@@ -213,7 +213,7 @@ export default function ItemDetailPage() {
   return (
     <div className="flex flex-col h-screen bg-background">
       {/* Sticky Header */}
-      <header className="sticky top-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b">
+      <header className="sticky top-0 z-50 bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60 border-b">
         <div className="flex items-center gap-2 px-3 h-14 sm:px-4">
           {/* Back Button */}
           <Button
