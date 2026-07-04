@@ -279,6 +279,44 @@ export const itemsRouter = router({
     return item;
   }),
 
+
+  // ── BULK IMPORT ──────────────────────────────────────────────────────────
+  bulkImport: orgProcedure
+    .input(
+      z.object({
+        items: z.array(
+          z.object({
+            sku: z.string().min(1),
+            name: z.string().min(1),
+            description: z.string().max(5000).optional(),
+            salesPrice: z.coerce.number().min(0).optional(),
+            purchasePrice: z.coerce.number().min(0).optional(),
+            unit: z.string().max(50).default('pcs'),
+            minStock: z.coerce.number().int().min(0).default(0),
+            reorderPoint: z.coerce.number().int().min(0).default(0),
+            reorderQty: z.coerce.number().int().min(0).default(0),
+            barcode: z.string().max(100).optional(),
+            image: z.string().max(500).optional(),
+            categoryName: z.string().optional(),
+            taxRateId: z.string().optional(),
+          }),
+        ),
+        updateExisting: z.boolean().default(false),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      assertCan(ctx.ability, 'item:create', 'Item');
+
+      const { bulkImportItems } = await import('./import.service');
+
+      return bulkImportItems(input.items, input.updateExisting, {
+        db: ctx.db,
+        organizationId: ctx.user.organizationId,
+        userId: ctx.user.id,
+        ipAddress: ctx.ipAddress,
+      });
+    }),
+
   // ── RESOLVE PRICE (for invoice line creation) ─────────────────────────────
   resolvePrice: orgProcedure
     .input(

@@ -1,0 +1,550 @@
+// =============================================================================
+// HRMS — Human Resource Management System  (hrms schema)
+// All models integrate with ERP core via Organization (org-scoped) and User.
+// =============================================================================
+
+// ── HRMS Enums ───────────────────────────────────────────────────────────────
+
+enum EmploymentType {
+  FULL_TIME
+  PART_TIME
+  CONTRACT
+  INTERN
+  FREELANCE
+
+  @@schema("hrms")
+}
+
+enum EmployeeStatus {
+  ACTIVE
+  ON_LEAVE
+  TERMINATED
+  RESIGNED
+  SUSPENDED
+
+  @@schema("hrms")
+}
+
+enum LeaveStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  CANCELLED
+
+  @@schema("hrms")
+}
+
+enum PayrollStatus {
+  DRAFT
+  PROCESSING
+  COMPLETED
+  CANCELLED
+
+  @@schema("hrms")
+}
+
+enum PerformanceRating {
+  EXCEEDS_EXPECTATIONS
+  MEETS_EXPECTATIONS
+  NEEDS_IMPROVEMENT
+  BELOW_EXPECTATIONS
+
+  @@schema("hrms")
+}
+
+enum CandidateStatus {
+  NEW
+  SCREENING
+  INTERVIEW
+  OFFERED
+  HIRED
+  REJECTED
+  WITHDRAWN
+
+  @@schema("hrms")
+}
+
+enum TrainingStatus {
+  PLANNED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+
+  @@schema("hrms")
+}
+
+// ── HRMS Models ──────────────────────────────────────────────────────────────
+
+/// Core employee record linked to a User account for authentication.
+model Employee {
+  id           String @id @default(cuid())
+  employeeCode String // "EMP-00001"
+
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id])
+
+  hireDate       DateTime
+  employmentType EmploymentType @default(FULL_TIME)
+  status         EmployeeStatus @default(ACTIVE)
+
+  phone            String?
+  emergencyContact String?
+  emergencyPhone   String?
+  bankAccount      String?
+  bankName         String?
+
+  jobPositionId String?
+  jobPosition   JobPosition? @relation(fields: [jobPositionId], references: [id])
+
+  departmentId String?
+  department   Department? @relation(fields: [departmentId], references: [id])
+
+  reportsToId   String?
+  reportsTo     Employee?  @relation("EmployeeSupervision", fields: [reportsToId], references: [id])
+  directReports Employee[] @relation("EmployeeSupervision")
+
+  salaryAmount   Decimal?      @db.Decimal(20, 6)
+  salaryCurrency CurrencyCode?
+
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+
+  deletedAt DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  leaveRequests       LeaveRequest[]
+  attendanceRecords   AttendanceRecord[]
+  payrollItems        PayrollItem[]
+  salaryComponents    SalaryComponent[]
+  performanceReviews  PerformanceReview[]
+  employeeDocuments   EmployeeDocument[]
+  trainingEnrollments TrainingEnrollment[]
+  employeeShifts      EmployeeShift[]
+
+  @@unique([employeeCode, organizationId])
+  @@index([organizationId])
+  @@index([userId])
+  @@index([departmentId])
+  @@index([status])
+  @@index([reportsToId])
+  @@schema("hrms")
+}
+
+/// Job positions / roles within the organization.
+model JobPosition {
+  id           String  @id @default(cuid())
+  name         String
+  code         String?
+  description  String?
+  requirements String?
+
+  isActive  Boolean   @default(true)
+  deletedAt DateTime?
+
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+
+  parentId String?
+  parent   JobPosition?  @relation("JobPositionHierarchy", fields: [parentId], references: [id])
+  children JobPosition[] @relation("JobPositionHierarchy")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  employees Employee[]
+
+  @@unique([name, organizationId])
+  @@index([organizationId])
+  @@index([parentId])
+  @@schema("hrms")
+}
+
+/// Types of leave (Annual, Sick, Emergency, etc.).
+model LeaveType {
+  id          String  @id @default(cuid())
+  name        String
+  code        String // "ANNUAL" | "SICK" | "EMERGENCY" | "MATERNITY" | "PERSONAL"
+  description String?
+  daysPerYear Int     @default(30)
+  isPaid      Boolean @default(true)
+  isActive    Boolean @default(true)
+
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  leaveRequests LeaveRequest[]
+
+  @@unique([code, organizationId])
+  @@index([organizationId])
+  @@schema("hrms")
+}
+
+/// Leave request submitted by an employee with approval workflow.
+model LeaveRequest {
+  id           String      @id @default(cuid())
+  startDate    DateTime
+  endDate      DateTime
+  durationDays Int
+  reason       String?
+  status       LeaveStatus @default(PENDING)
+  notes        String?
+
+  employeeId String
+  employee   Employee @relation(fields: [employeeId], references: [id])
+
+  leaveTypeId String
+  leaveType   LeaveType @relation(fields: [leaveTypeId], references: [id])
+
+  approvedById String?
+  approvedBy   User?     @relation(fields: [approvedById], references: [id])
+  approvedAt   DateTime?
+
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([employeeId])
+  @@index([organizationId])
+  @@index([status])
+  @@index([startDate, endDate])
+  @@schema("hrms")
+}
+
+/// Daily attendance check-in/out records.
+model AttendanceRecord {
+  id         String    @id @default(cuid())
+  date       DateTime  @default(now())
+  checkIn    DateTime
+  checkOut   DateTime?
+  breakStart DateTime?
+  breakEnd   DateTime?
+  totalHours Decimal?  @db.Decimal(6, 2)
+  notes      String?
+
+  employeeId String
+  employee   Employee @relation(fields: [employeeId], references: [id])
+
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([employeeId, date])
+  @@index([employeeId])
+  @@index([organizationId])
+  @@index([organizationId, date])
+  @@schema("hrms")
+}
+
+/// Monthly payroll run batch.
+model PayrollRun {
+  id              String        @id @default(cuid())
+  name            String // "Payroll June 2026"
+  periodStart     DateTime
+  periodEnd       DateTime
+  status          PayrollStatus @default(DRAFT)
+  totalSalaries   Decimal       @default(0) @db.Decimal(20, 6)
+  totalDeductions Decimal       @default(0) @db.Decimal(20, 6)
+  totalNetPay     Decimal       @default(0) @db.Decimal(20, 6)
+  processedAt     DateTime?
+  notes           String?
+
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+
+  processedById String?
+  processedBy   User?   @relation(fields: [processedById], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  items PayrollItem[]
+
+  @@unique([name, organizationId])
+  @@index([organizationId])
+  @@index([status])
+  @@schema("hrms")
+}
+
+/// Per-employee payroll line within a payroll run.
+model PayrollItem {
+  id          String    @id @default(cuid())
+  baseSalary  Decimal   @db.Decimal(20, 6)
+  allowances  Decimal   @default(0) @db.Decimal(20, 6)
+  deductions  Decimal   @default(0) @db.Decimal(20, 6)
+  bonus       Decimal   @default(0) @db.Decimal(20, 6)
+  overtime    Decimal   @default(0) @db.Decimal(20, 6)
+  tax         Decimal   @default(0) @db.Decimal(20, 6)
+  netPay      Decimal   @db.Decimal(20, 6)
+  bankAccount String?
+  bankName    String?
+  paymentDate DateTime?
+  notes       String?
+
+  payrollRunId String
+  payrollRun   PayrollRun @relation(fields: [payrollRunId], references: [id], onDelete: Cascade)
+
+  employeeId String
+  employee   Employee @relation(fields: [employeeId], references: [id])
+
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([payrollRunId, employeeId])
+  @@index([payrollRunId])
+  @@index([employeeId])
+  @@index([organizationId])
+  @@schema("hrms")
+}
+
+/// Employee salary components (basic, housing, transport, etc.).
+model SalaryComponent {
+  id          String  @id @default(cuid())
+  name        String // "Basic", "Housing", "Transport", "Food"
+  type        String // "ALLOWANCE" | "DEDUCTION"
+  amount      Decimal @db.Decimal(20, 6)
+  isRecurring Boolean @default(true)
+
+  employeeId String
+  employee   Employee @relation(fields: [employeeId], references: [id])
+
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([employeeId])
+  @@index([organizationId])
+  @@schema("hrms")
+}
+
+/// Employee performance review / appraisal.
+model PerformanceReview {
+  id           String            @id @default(cuid())
+  reviewPeriod String // "Q1 2026", "Annual 2026"
+  reviewDate   DateTime          @default(now())
+  rating       PerformanceRating
+  comments     String?
+  goals        String?
+  strengths    String?
+  weaknesses   String?
+  status       String            @default("DRAFT") // DRAFT | SUBMITTED | ACKNOWLEDGED
+
+  employeeId String
+  employee   Employee @relation(fields: [employeeId], references: [id])
+
+  reviewerId String
+  reviewer   User   @relation(fields: [reviewerId], references: [id])
+
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([employeeId])
+  @@index([organizationId])
+  @@index([reviewerId])
+  @@schema("hrms")
+}
+
+/// Employee documents (contract, ID, certificates, etc.).
+model EmployeeDocument {
+  id         String    @id @default(cuid())
+  name       String
+  type       String // "CONTRACT" | "ID" | "CERTIFICATE" | "EDUCATION" | "OTHER"
+  fileUrl    String
+  mimeType   String?
+  sizeBytes  Int?
+  expiryDate DateTime?
+  notes      String?
+
+  employeeId String
+  employee   Employee @relation(fields: [employeeId], references: [id])
+
+  uploadedById String?
+  uploadedBy   User?   @relation(fields: [uploadedById], references: [id])
+
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([employeeId])
+  @@index([organizationId])
+  @@index([type])
+  @@schema("hrms")
+}
+
+/// Job posting for recruitment.
+model JobPosting {
+  id             String         @id @default(cuid())
+  title          String
+  description    String?
+  requirements   String?
+  location       String?
+  employmentType EmploymentType @default(FULL_TIME)
+  salaryMin      Decimal?       @db.Decimal(20, 6)
+  salaryMax      Decimal?       @db.Decimal(20, 6)
+  currency       CurrencyCode   @default(BHD)
+  isActive       Boolean        @default(true)
+  closingDate    DateTime?
+  publishedAt    DateTime?
+
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  candidates Candidate[]
+
+  @@index([organizationId])
+  @@index([isActive])
+  @@schema("hrms")
+}
+
+/// Job candidate / applicant.
+model Candidate {
+  id            String          @id @default(cuid())
+  firstName     String
+  lastName      String
+  email         String
+  phone         String?
+  resumeUrl     String?
+  coverLetter   String?
+  status        CandidateStatus @default(NEW)
+  source        String? // "LinkedIn" | "Referral" | "Job Portal"
+  notes         String?
+  interviewDate DateTime?
+  offerAmount   Decimal?        @db.Decimal(20, 6)
+
+  jobPostingId String?
+  jobPosting   JobPosting? @relation(fields: [jobPostingId], references: [id])
+
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([jobPostingId])
+  @@index([organizationId])
+  @@index([email])
+  @@index([status])
+  @@schema("hrms")
+}
+
+/// Training / course programs.
+model Training {
+  id            String         @id @default(cuid())
+  name          String
+  description   String?
+  provider      String?
+  durationHours Int?
+  cost          Decimal?       @db.Decimal(20, 6)
+  currency      CurrencyCode   @default(BHD)
+  startDate     DateTime?
+  endDate       DateTime?
+  isMandatory   Boolean        @default(false)
+  status        TrainingStatus @default(PLANNED)
+
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  enrollments TrainingEnrollment[]
+
+  @@index([organizationId])
+  @@schema("hrms")
+}
+
+/// Employee enrollment in a training program.
+model TrainingEnrollment {
+  id          String         @id @default(cuid())
+  status      TrainingStatus @default(PLANNED)
+  score       Decimal?       @db.Decimal(5, 2)
+  completedAt DateTime?
+  notes       String?
+
+  trainingId String
+  training   Training @relation(fields: [trainingId], references: [id])
+
+  employeeId String
+  employee   Employee @relation(fields: [employeeId], references: [id])
+
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([trainingId, employeeId])
+  @@index([trainingId])
+  @@index([employeeId])
+  @@index([organizationId])
+  @@schema("hrms")
+}
+
+/// Work shift definitions.
+model Shift {
+  id        String  @id @default(cuid())
+  name      String // "Morning", "Evening", "Night"
+  startTime String // "08:00"
+  endTime   String // "16:00"
+  color     String? // Hex for calendar display
+  isActive  Boolean @default(true)
+
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  employeeShifts EmployeeShift[]
+
+  @@unique([name, organizationId])
+  @@index([organizationId])
+  @@schema("hrms")
+}
+
+/// Employee shift assignments.
+model EmployeeShift {
+  id        String   @id @default(cuid())
+  date      DateTime
+  startTime String? // Override shift default
+  endTime   String? // Override shift default
+  notes     String?
+
+  employeeId String
+  employee   Employee @relation(fields: [employeeId], references: [id])
+
+  shiftId String
+  shift   Shift  @relation(fields: [shiftId], references: [id])
+
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([employeeId, shiftId, date])
+  @@index([employeeId])
+  @@index([shiftId])
+  @@index([organizationId])
+  @@schema("hrms")
+}

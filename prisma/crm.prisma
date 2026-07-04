@@ -1,0 +1,383 @@
+// =============================================================================
+// CRM — Customer Relationship Management  (crm schema)
+// All models integrate with ERP core via Organization, User, and Customer.
+// =============================================================================
+
+// ── CRM Enums ────────────────────────────────────────────────────────────────
+
+enum LeadStatus {
+  NEW
+  CONTACTED
+  QUALIFIED
+  DISQUALIFIED
+  CONVERTED
+
+  @@schema("crm")
+}
+
+enum OpportunityStatus {
+  OPEN
+  WON
+  LOST
+  ABANDONED
+
+  @@schema("crm")
+}
+
+enum CampaignStatus {
+  DRAFT
+  ACTIVE
+  PAUSED
+  COMPLETED
+  CANCELLED
+
+  @@schema("crm")
+}
+
+enum TaskPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+
+  @@schema("crm")
+}
+
+enum TaskStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+
+  @@schema("crm")
+}
+
+// ── CRM Models ───────────────────────────────────────────────────────────────
+
+/// Marketing lead / prospect.
+model Lead {
+  id          String     @id @default(cuid())
+  firstName   String
+  lastName    String
+  email       String?
+  phone       String?
+  company     String?
+  jobTitle    String?
+  source      String? // "Website" | "Referral" | "LinkedIn" | "Event"
+  status      LeadStatus @default(NEW)
+  score       Int        @default(0)
+  notes       String?
+  convertedAt DateTime?
+
+  // Converted to ERP Customer
+  convertedToCustomerId String?
+  convertedToCustomer   Customer? @relation(fields: [convertedToCustomerId], references: [id])
+
+  assignedToId String?
+  assignedTo   User?   @relation(fields: [assignedToId], references: [id])
+
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+
+  deletedAt DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  opportunities Opportunity[]
+  activities    Activity[]
+  campaigns     CampaignMember[]
+  tasks         Task[]
+
+  @@index([organizationId])
+  @@index([assignedToId])
+  @@index([status])
+  @@index([email])
+  @@index([organizationId, status])
+  @@schema("crm")
+}
+
+/// Lead source tracking.
+model LeadSource {
+  id       String  @id @default(cuid())
+  name     String // "Website", "Referral", "Cold Call", "Event"
+  code     String  @unique
+  isActive Boolean @default(true)
+
+  @@schema("crm")
+}
+
+/// Sales opportunity with pipeline tracking.
+model Opportunity {
+  id              String            @id @default(cuid())
+  name            String
+  description     String?
+  amount          Decimal?          @db.Decimal(20, 6)
+  currency        CurrencyCode      @default(BHD)
+  probability     Int               @default(50) // 0-100
+  expectedCloseAt DateTime?
+  status          OpportunityStatus @default(OPEN)
+  closedAt        DateTime?
+  closedReason    String?
+  notes           String?
+
+  leadId String?
+  lead   Lead?   @relation(fields: [leadId], references: [id])
+
+  customerId String?
+  customer   Customer? @relation(fields: [customerId], references: [id])
+
+  pipelineId String?
+  pipeline   Pipeline? @relation(fields: [pipelineId], references: [id])
+
+  pipelineStageId String?
+  pipelineStage   PipelineStage? @relation(fields: [pipelineStageId], references: [id])
+
+  assignedToId String?
+  assignedTo   User?   @relation(fields: [assignedToId], references: [id])
+
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+
+  deletedAt DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  activities Activity[]
+  tasks      Task[]
+
+  @@index([organizationId])
+  @@index([leadId])
+  @@index([customerId])
+  @@index([pipelineId])
+  @@index([pipelineStageId])
+  @@index([assignedToId])
+  @@index([status])
+  @@schema("crm")
+}
+
+/// Sales pipeline definition.
+model Pipeline {
+  id          String  @id @default(cuid())
+  name        String
+  description String?
+
+  isActive  Boolean @default(true)
+  isDefault Boolean @default(false)
+
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  stages        PipelineStage[]
+  opportunities Opportunity[]
+
+  @@unique([name, organizationId])
+  @@index([organizationId])
+  @@schema("crm")
+}
+
+/// Stage within a sales pipeline.
+model PipelineStage {
+  id          String @id @default(cuid())
+  name        String // "Prospecting", "Qualification", "Proposal", "Negotiation"
+  order       Int
+  probability Int    @default(50) // Default probability for this stage
+
+  pipelineId String
+  pipeline   Pipeline @relation(fields: [pipelineId], references: [id], onDelete: Cascade)
+
+  opportunities Opportunity[]
+
+  @@unique([pipelineId, order])
+  @@unique([pipelineId, name])
+  @@index([pipelineId])
+  @@schema("crm")
+}
+
+/// CRM activity (call, email, meeting, note).
+model Activity {
+  id          String   @id @default(cuid())
+  type        String // "CALL" | "EMAIL" | "MEETING" | "NOTE" | "DEMO"
+  subject     String
+  description String?
+  date        DateTime @default(now())
+  durationMin Int?
+  outcome     String?
+  notes       String?
+
+  leadId String?
+  lead   Lead?   @relation(fields: [leadId], references: [id])
+
+  opportunityId String?
+  opportunity   Opportunity? @relation(fields: [opportunityId], references: [id])
+
+  contactId String?
+  contact   Contact? @relation(fields: [contactId], references: [id])
+
+  assignedToId String?
+  assignedTo   User?   @relation(fields: [assignedToId], references: [id])
+
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([leadId])
+  @@index([opportunityId])
+  @@index([contactId])
+  @@index([assignedToId])
+  @@index([organizationId])
+  @@index([organizationId, date])
+  @@schema("crm")
+}
+
+/// Activity type configuration.
+model ActivityType {
+  id       String  @id @default(cuid())
+  name     String // "Call", "Email", "Meeting", "Demo"
+  icon     String?
+  color    String?
+  isActive Boolean @default(true)
+
+  @@schema("crm")
+}
+
+/// Marketing campaign.
+model Campaign {
+  id             String         @id @default(cuid())
+  name           String
+  description    String?
+  type           String // "EMAIL" | "SOCIAL" | "EVENT" | "REFERRAL"
+  status         CampaignStatus @default(DRAFT)
+  budget         Decimal?       @db.Decimal(20, 6)
+  currency       CurrencyCode   @default(BHD)
+  startDate      DateTime?
+  endDate        DateTime?
+  targetAudience String?
+  notes          String?
+
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  members CampaignMember[]
+
+  @@index([organizationId])
+  @@index([status])
+  @@schema("crm")
+}
+
+/// Campaign member (lead/contact in a campaign).
+model CampaignMember {
+  id          String    @id @default(cuid())
+  status      String    @default("SENT") // "SENT" | "OPENED" | "CLICKED" | "REPLIED" | "BOUNCED"
+  respondedAt DateTime?
+
+  campaignId String
+  campaign   Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+
+  leadId String?
+  lead   Lead?   @relation(fields: [leadId], references: [id])
+
+  contactId String?
+  contact   Contact? @relation(fields: [contactId], references: [id])
+
+  @@unique([campaignId, leadId])
+  @@unique([campaignId, contactId])
+  @@index([campaignId])
+  @@index([leadId])
+  @@index([contactId])
+  @@schema("crm")
+}
+
+/// CRM contact (person at a company, separate from ERP Customer entity).
+model Contact {
+  id        String  @id @default(cuid())
+  firstName String
+  lastName  String
+  email     String?
+  phone     String?
+  jobTitle  String?
+  isPrimary Boolean @default(false)
+  notes     String?
+
+  customerId String?
+  customer   Customer? @relation(fields: [customerId], references: [id])
+
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  activities Activity[]
+  campaigns  CampaignMember[]
+  tasks      Task[]
+
+  @@index([organizationId])
+  @@index([customerId])
+  @@index([email])
+  @@schema("crm")
+}
+
+/// Email template for CRM communications.
+model EmailTemplate {
+  id       String  @id @default(cuid())
+  name     String
+  subject  String
+  body     String
+  category String? // "FOLLOW_UP" | "WELCOME" | "PROMOTION" | "GENERAL"
+  isActive Boolean @default(true)
+
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([name, organizationId])
+  @@index([organizationId])
+  @@schema("crm")
+}
+
+/// CRM follow-up task.
+model Task {
+  id          String       @id @default(cuid())
+  title       String
+  description String?
+  dueDate     DateTime?
+  priority    TaskPriority @default(MEDIUM)
+  status      TaskStatus   @default(PENDING)
+  completedAt DateTime?
+
+  leadId String?
+  lead   Lead?   @relation(fields: [leadId], references: [id])
+
+  opportunityId String?
+  opportunity   Opportunity? @relation(fields: [opportunityId], references: [id])
+
+  contactId String?
+  contact   Contact? @relation(fields: [contactId], references: [id])
+
+  assignedToId String?
+  assignedTo   User?   @relation(fields: [assignedToId], references: [id])
+
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([leadId])
+  @@index([opportunityId])
+  @@index([contactId])
+  @@index([assignedToId])
+  @@index([organizationId])
+  @@index([status])
+  @@schema("crm")
+}

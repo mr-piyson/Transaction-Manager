@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { uploadFile } from '@/server/services/file/upload.service';
+import { uploadFile, deleteUpload } from '@/server/services/file/upload.service';
 
 export async function POST(req: NextRequest) {
   try {
@@ -19,6 +19,25 @@ export async function POST(req: NextRequest) {
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Upload failed';
     console.error('[Upload Error]', message);
+    return NextResponse.json({ error: message }, { status: 500 });
+  }
+}
+
+export async function DELETE(req: NextRequest) {
+  try {
+    const { searchParams } = new URL(req.url);
+    const fileId = searchParams.get('fileId');
+
+    if (!fileId) {
+      return NextResponse.json({ error: 'fileId parameter is required' }, { status: 400 });
+    }
+
+    await deleteUpload(fileId);
+
+    return NextResponse.json({ message: 'File deleted successfully' });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Delete failed';
+    console.error('[Delete Error]', message);
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }

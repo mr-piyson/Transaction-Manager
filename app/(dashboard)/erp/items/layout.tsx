@@ -1,7 +1,7 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { Edit, Eye, FileText, Package, Trash2, User2 } from 'lucide-react';
+import { Download, Edit, Eye, FileText, Package, Trash2, User2 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import * as React from 'react';
@@ -11,6 +11,7 @@ import { alert } from '@/components/Alert-dialog';
 import { UniversalContextMenu } from '@/components/context-menu';
 import type { ContextMenuItemSchema } from '@/components/context-menu';
 import { useItemForm } from '@/components/dialogs';
+import { Button } from '@/components/ui/button';
 import { ListView } from '@/components/list-view';
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@/components/ui/resizable';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -132,7 +133,7 @@ export default function ItemsLayout({ children }: { children?: React.ReactNode }
 
   return (
     <div className="flex h-screen flex-col overflow-hidden">
-      <Header title={t('layout.items')} icon={<Package className="size-5" />} onCreate={() => openCreate()} createLabel={t('items.createItem')} />
+      <Header title={t('layout.items')} icon={<Package className="size-5" />} onCreate={() => openCreate()} createLabel={t('items.createItem')} actions={<Link href="/erp/items/import"><Button variant="outline" size="sm"><Download className="size-3.5 mr-1" />Import</Button></Link>} />
       <div className="flex-1 min-h-0 w-full">
         <ResizablePanelGroup className="h-full">
           {(isListView || !isMobile) && (

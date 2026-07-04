@@ -1,5 +1,6 @@
 import { fileTypeFromBuffer } from 'file-type';
 import { createId } from '@paralleldrive/cuid2';
+import { NotFoundError } from '@/lib/error';
 import { computeSha256 } from './hash.service';
 import { processImage } from './image.service';
 import * as storage from './storage.service';
@@ -95,4 +96,15 @@ export async function uploadFile(file: File): Promise<UploadResult> {
     width: fileRecord.width,
     height: fileRecord.height,
   };
+}
+
+export async function deleteUpload(fileId: string): Promise<void> {
+  const record = await fileRepo.findById(fileId);
+  if (!record) throw new NotFoundError('File', fileId);
+
+  // Only delete if no other attachments reference this file
+  const wasDeleted = await fileRepo.deleteFileIfOrphaned(fileId);
+  if (wasDeleted) {
+    await storage.remove(record.storagePath);
+  }
 }
