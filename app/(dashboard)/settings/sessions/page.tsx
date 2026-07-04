@@ -2,8 +2,8 @@
 
 import { useTranslations } from 'next-intl';
 import { LogOut, Monitor, Smartphone, Trash, Globe, Loader2 } from 'lucide-react';
+import { useCallback, useMemo } from 'react';
 import { toast } from 'sonner';
-import { useRouter } from 'next/navigation';
 import { useSession } from '@/auth/auth-client';
 import { alert } from '@/components/Alert-dialog';
 import { Badge } from '@/components/ui/badge';
@@ -28,58 +28,65 @@ function formatTime(dateStr: string) {
   });
 }
 
+interface DeviceInfo {
+  icon: typeof Monitor | typeof Smartphone | typeof Globe;
+  label: string;
+  os: string;
+}
+
+function parseDeviceInfo(ua: string | null, t: ReturnType<typeof useTranslations>): DeviceInfo {
+  if (!ua) return { icon: Globe, label: t('common.unknown'), os: '' };
+  const lower = ua.toLowerCase();
+  const isMobile = /mobile|android|iphone|ipad/i.test(lower);
+  const isMac = /mac/i.test(lower);
+  const isWindows = /windows/i.test(lower);
+  const isLinux = /linux/i.test(lower);
+
+  let os = '';
+  if (isMac) os = t('sessions.osMacos');
+  else if (isWindows) os = t('sessions.osWindows');
+  else if (isLinux) os = t('sessions.osLinux');
+  else if (/android/i.test(lower)) os = t('sessions.osAndroid');
+  else if (/iphone|ipad/i.test(lower)) os = t('sessions.osiOs');
+
+  const browser = /chrome/i.test(lower) ? t('sessions.browserChrome') :
+    /firefox/i.test(lower) ? t('sessions.browserFirefox') :
+    /safari/i.test(lower) ? t('sessions.browserSafari') :
+    /edge/i.test(lower) ? t('sessions.browserEdge') : '';
+
+  return {
+    icon: isMobile ? Smartphone : Monitor,
+    label: [browser, os].filter(Boolean).join(' · ') || t('common.unknown'),
+    os,
+  };
+}
+
 export default function SessionsSettingsPage() {
   const t = useTranslations();
-
-  function parseDeviceInfo(ua: string | null): { icon: typeof Monitor; label: string; os: string } {
-    if (!ua) return { icon: Globe, label: t('common.unknown'), os: '' };
-    const lower = ua.toLowerCase();
-    const isMobile = /mobile|android|iphone|ipad/i.test(lower);
-    const isMac = /mac/i.test(lower);
-    const isWindows = /windows/i.test(lower);
-    const isLinux = /linux/i.test(lower);
-
-    let os = '';
-    if (isMac) os = t('sessions.osMacos');
-    else if (isWindows) os = t('sessions.osWindows');
-    else if (isLinux) os = t('sessions.osLinux');
-    else if (/android/i.test(lower)) os = t('sessions.osAndroid');
-    else if (/iphone|ipad/i.test(lower)) os = t('sessions.osiOs');
-
-    const browser = /chrome/i.test(lower) ? t('sessions.browserChrome') :
-      /firefox/i.test(lower) ? t('sessions.browserFirefox') :
-      /safari/i.test(lower) ? t('sessions.browserSafari') :
-      /edge/i.test(lower) ? t('sessions.browserEdge') : '';
-
-    return {
-      icon: isMobile ? Smartphone : Monitor,
-      label: [browser, os].filter(Boolean).join(' · ') || t('common.unknown'),
-      os,
-    };
-  }
 
   const { data: sessionsData, isLoading, refetch } =
     trpc.auth.listSessions.useQuery();
   const revokeSession = trpc.auth.revokeSession.useMutation({
-    onSuccess: () => { refetch(); toast.success(t('sessions.revoked')); },
-    onError: (e) => toast.error(e.message),
+    onSuccess: useCallback(() => { refetch(); toast.success(t('sessions.revoked')); }, [refetch, t]),
+    onError: useCallback((e: { message: string }) => toast.error(e.message), []),
   });
   const revokeOther = trpc.auth.revokeOtherSessions.useMutation({
-    onSuccess: () => { refetch(); toast.success(t('sessions.revokedAll')); },
-    onError: (e) => toast.error(e.message),
+    onSuccess: useCallback(() => { refetch(); toast.success(t('sessions.revokedAll')); }, [refetch, t]),
+    onError: useCallback((e: { message: string }) => toast.error(e.message), []),
   });
 
   const session = useSession();
   const currentSessionToken = session.data?.session?.id;
 
-  const sessions: SessionData[] = (sessionsData as unknown as SessionData[]) ?? [];
+  const sessions = useMemo(
+    () => (sessionsData as unknown as SessionData[]) ?? [],
+    [sessionsData],
+  );
 
-  const currentSession = sessions.find(
-    (s) => s.id === currentSessionToken,
-  );
-  const otherSessions = sessions.filter(
-    (s) => s.id !== currentSessionToken,
-  );
+  const { currentSession, otherSessions } = useMemo(() => ({
+    currentSession: sessions.find((s) => s.id === currentSessionToken),
+    otherSessions: sessions.filter((s) => s.id !== currentSessionToken),
+  }), [sessions, currentSessionToken]);
 
   const isLoadingMutation =
     revokeSession.isPending || revokeOther.isPending;
@@ -102,7 +109,7 @@ export default function SessionsSettingsPage() {
                   <div className="flex items-start gap-3 min-w-0">
                     {(() => {
                       const info = parseDeviceInfo(
-                        currentSession.userAgent,
+                        currentSession.userAgent, t,
                       );
                       const Icon = info.icon;
                       return <Icon className="size-5 mt-0.5 shrink-0" />;
@@ -110,7 +117,7 @@ export default function SessionsSettingsPage() {
                     <div className="min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
                         <p className="font-medium">
-                          {parseDeviceInfo(currentSession.userAgent).label ||
+                          {parseDeviceInfo(currentSession.userAgent, t).label ||
                             t('common.active')}
                         </p>
                         <Badge
@@ -143,7 +150,7 @@ export default function SessionsSettingsPage() {
             )}
 
             {otherSessions.map((session) => {
-              const info = parseDeviceInfo(session.userAgent);
+              const info = parseDeviceInfo(session.userAgent, t);
               const Icon = info.icon;
               return (
                 <div

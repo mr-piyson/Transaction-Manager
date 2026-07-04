@@ -2,7 +2,7 @@
 
 import { useTranslations } from 'next-intl';
 import { Loader2, Pencil, Plus, Trash } from 'lucide-react';
-import { useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import { alert } from '@/components/Alert-dialog';
 import { Badge } from '@/components/ui/badge';
@@ -30,28 +30,28 @@ export default function TaxRatesPage() {
   const utils = trpc.useUtils();
 
   const createTaxRate = trpc.settings.taxRates.create.useMutation({
-    onSuccess: () => {
+    onSuccess: useCallback(() => {
       utils.settings.taxRates.list.invalidate();
       toast.success(t('common.itemCreated'));
-    },
-    onError: (e) => toast.error(e.message),
+    }, [utils, t]),
+    onError: useCallback((e: { message: string }) => toast.error(e.message), []),
   });
 
   const updateTaxRate = trpc.settings.taxRates.update.useMutation({
-    onSuccess: () => {
+    onSuccess: useCallback(() => {
       utils.settings.taxRates.list.invalidate();
       toast.success(t('common.itemUpdated'));
       closeEditDialog();
-    },
-    onError: (e) => toast.error(e.message),
+    }, [utils, t]),
+    onError: useCallback((e: { message: string }) => toast.error(e.message), []),
   });
 
   const deleteTaxRate = trpc.settings.taxRates.delete.useMutation({
-    onSuccess: () => {
+    onSuccess: useCallback(() => {
       utils.settings.taxRates.list.invalidate();
       toast.success(t('common.itemDeleted'));
-    },
-    onError: (e) => toast.error(e.message),
+    }, [utils, t]),
+    onError: useCallback((e: { message: string }) => toast.error(e.message), []),
   });
 
   const [newTaxName, setNewTaxName] = useState('');
@@ -66,20 +66,23 @@ export default function TaxRatesPage() {
     isDefault: false,
   });
 
-  const taxRates = (
-    rawTaxRates as unknown as {
-      id: string;
-      name: string;
-      rate: number;
-      isDefault: boolean;
-      isActive: boolean;
-    }[]
-  ).map((tax) => ({
-    ...tax,
-    rate: Number(tax.rate),
-  }));
+  const taxRates = useMemo(
+    () => (
+      rawTaxRates as unknown as {
+        id: string;
+        name: string;
+        rate: number;
+        isDefault: boolean;
+        isActive: boolean;
+      }[]
+    ).map((tax) => ({
+      ...tax,
+      rate: Number(tax.rate),
+    })),
+    [rawTaxRates],
+  );
 
-  const handleAdd = () => {
+  const handleAdd = useCallback(() => {
     if (!newTaxName || !newTaxRate) return;
     createTaxRate.mutate(
       { name: newTaxName, rate: Number(newTaxRate) },
@@ -90,9 +93,9 @@ export default function TaxRatesPage() {
         },
       },
     );
-  };
+  }, [newTaxName, newTaxRate, createTaxRate]);
 
-  const openEditDialog = (tax: (typeof taxRates)[number]) => {
+  const openEditDialog = useCallback((tax: (typeof taxRates)[number]) => {
     setEditingTaxId(tax.id);
     setEditForm({
       name: tax.name,
@@ -101,15 +104,15 @@ export default function TaxRatesPage() {
       isDefault: tax.isDefault,
     });
     setEditDialogOpen(true);
-  };
+  }, []);
 
-  const closeEditDialog = () => {
+  const closeEditDialog = useCallback(() => {
     setEditDialogOpen(false);
     setEditingTaxId(null);
     setEditForm({ name: '', rate: '', isActive: true, isDefault: false });
-  };
+  }, []);
 
-  const handleEditSave = () => {
+  const handleEditSave = useCallback(() => {
     if (!editingTaxId || !editForm.name || !editForm.rate) return;
     updateTaxRate.mutate({
       id: editingTaxId,
@@ -118,17 +121,17 @@ export default function TaxRatesPage() {
       isActive: editForm.isActive,
       isDefault: editForm.isDefault,
     });
-  };
+  }, [editingTaxId, editForm, updateTaxRate]);
 
-  const handleToggleActive = (tax: (typeof taxRates)[number]) => {
+  const handleToggleActive = useCallback((tax: (typeof taxRates)[number]) => {
     updateTaxRate.mutate({ id: tax.id, isActive: !tax.isActive });
-  };
+  }, [updateTaxRate]);
 
-  const handleToggleDefault = (tax: (typeof taxRates)[number]) => {
+  const handleToggleDefault = useCallback((tax: (typeof taxRates)[number]) => {
     updateTaxRate.mutate({ id: tax.id, isDefault: !tax.isDefault });
-  };
+  }, [updateTaxRate]);
 
-  const handleDelete = (id: string, name: string) => {
+  const handleDelete = useCallback((id: string, name: string) => {
     alert.delete({
       title: t('common.confirmDelete'),
       description: `"${name}"`,
@@ -137,7 +140,7 @@ export default function TaxRatesPage() {
         await deleteTaxRate.mutateAsync({ id });
       },
     });
-  };
+  }, [t, deleteTaxRate]);
 
   const isEditPending = updateTaxRate.isPending;
 

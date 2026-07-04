@@ -18,7 +18,7 @@ import {
 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import Link from 'next/link';
-import { useMemo, useRef, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { alert } from '@/components/Alert-dialog';
 import { Badge } from '@/components/ui/badge';
@@ -152,12 +152,12 @@ export default function PermissionsPage() {
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [newRole, setNewRole] = useState({ name: '', description: '', icon: 'shield', color: '#6366f1' });
 
-  const openCreateDialog = () => {
+  const openCreateDialog = useCallback(() => {
     setNewRole({ name: '', description: '', icon: 'shield', color: '#6366f1' });
     setCreateDialogOpen(true);
-  };
+  }, []);
 
-  const handleCreateRole = () => {
+  const handleCreateRole = useCallback(() => {
     if (!newRole.name.trim()) return;
     createRole.mutate({
       name: newRole.name.trim(),
@@ -166,14 +166,14 @@ export default function PermissionsPage() {
       color: newRole.color || undefined,
     });
     setCreateDialogOpen(false);
-  };
+  }, [newRole, createRole]);
 
   // ── Edit Role Dialog ───────────────────────────────────
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [editingRoleMeta, setEditingRoleMeta] = useState<RoleRow | null>(null);
   const [editRoleForm, setEditRoleForm] = useState({ name: '', description: '', icon: 'shield', color: '#6366f1' });
 
-  const openEditRoleDialog = (role: RoleRow) => {
+  const openEditRoleDialog = useCallback((role: RoleRow) => {
     setEditingRoleMeta(role);
     setEditRoleForm({
       name: role.name,
@@ -182,9 +182,9 @@ export default function PermissionsPage() {
       color: role.color ?? '#6366f1',
     });
     setEditDialogOpen(true);
-  };
+  }, []);
 
-  const handleEditRole = () => {
+  const handleEditRole = useCallback(() => {
     if (!editingRoleMeta || !editRoleForm.name.trim()) return;
     updateRole.mutate({
       id: editingRoleMeta.id,
@@ -194,9 +194,9 @@ export default function PermissionsPage() {
       color: editRoleForm.color || undefined,
     });
     setEditDialogOpen(false);
-  };
+  }, [editingRoleMeta, editRoleForm, updateRole]);
 
-  const handleDeleteRole = (role: RoleRow) => {
+  const handleDeleteRole = useCallback((role: RoleRow) => {
     alert.delete({
       title: t('users.deleteRole'),
       description: t('users.deleteRoleConfirm', { name: role.name }),
@@ -205,7 +205,7 @@ export default function PermissionsPage() {
         await deleteRole.mutateAsync({ id: role.id });
       },
     });
-  };
+  }, [t, deleteRole]);
 
   // ── Role Permissions Editor State ────────────────────────
   const [rolePermsDialogOpen, setRolePermsDialogOpen] = useState(false);
@@ -230,31 +230,30 @@ export default function PermissionsPage() {
     prevRoleRef.current = null;
   }
 
-  const openRolePermsDialog = (role: RoleRow) => {
+  const openRolePermsDialog = useCallback((role: RoleRow) => {
     setEditingRole(role);
     setPermissionSearch('');
     setRolePermsDialogOpen(true);
-  };
+  }, []);
 
-  const closeRolePermsDialog = () => {
+  const closeRolePermsDialog = useCallback(() => {
     setRolePermsDialogOpen(false);
     setEditingRole(null);
     setSelectedPermIds([]);
     setRolePermsDirty(false);
     setPermissionSearch('');
-  };
+  }, []);
 
-  const handlePermissionToggle = (permId: string) => {
-    setSelectedPermIds((prev) => {
-      const next = prev.includes(permId)
+  const handlePermissionToggle = useCallback((permId: string) => {
+    setSelectedPermIds((prev) =>
+      prev.includes(permId)
         ? prev.filter((id) => id !== permId)
-        : [...prev, permId];
-      setRolePermsDirty(true);
-      return next;
-    });
-  };
+        : [...prev, permId],
+    );
+    setRolePermsDirty(true);
+  }, []);
 
-  const toggleSelectAllModule = (perms: any[]) => {
+  const toggleSelectAllModule = useCallback((perms: any[]) => {
     const permIds = perms.map((p) => allPermissions?.find((ap) => ap.code === p.code)?.id).filter(Boolean) as string[];
     const allSelected = permIds.every((id) => selectedPermIds.includes(id));
 
@@ -270,12 +269,12 @@ export default function PermissionsPage() {
       });
     }
     setRolePermsDirty(true);
-  };
+  }, [allPermissions, selectedPermIds]);
 
-  const handleSaveRolePerms = () => {
+  const handleSaveRolePerms = useCallback(() => {
     if (!editingRole) return;
     rolePermsUpdateMutation.mutate({ roleId: editingRole.id, permissionIds: selectedPermIds });
-  };
+  }, [editingRole, selectedPermIds, rolePermsUpdateMutation]);
 
   // ── Stats Calculations ──────────────────────────────────
   const totalPermissions = allPermissions?.length ?? 0;
@@ -513,11 +512,11 @@ export default function PermissionsPage() {
           <div className="space-y-4 py-2">
             <div className="space-y-1.5">
               <Label htmlFor="role-name">{t('users.roleName')} *</Label>
-              <Input id="role-name" value={newRole.name} onChange={(e) => setNewRole({ ...newRole, name: e.target.value })} placeholder={t('users.roleNamePlaceholder')} />
+              <Input id="role-name" value={newRole.name} onChange={(e) => setNewRole((prev) => ({ ...prev, name: e.target.value }))} placeholder={t('users.roleNamePlaceholder')} />
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="role-desc">{t('users.roleDescription')}</Label>
-              <Input id="role-desc" value={newRole.description} onChange={(e) => setNewRole({ ...newRole, description: e.target.value })} placeholder={t('users.roleDescriptionPlaceholder')} />
+              <Input id="role-desc" value={newRole.description} onChange={(e) => setNewRole((prev) => ({ ...prev, description: e.target.value }))} placeholder={t('users.roleDescriptionPlaceholder')} />
             </div>
 
             {/* Icon Picker swatch */}
@@ -528,7 +527,7 @@ export default function PermissionsPage() {
                   <button
                     key={icon.name}
                     type="button"
-                    onClick={() => setNewRole({ ...newRole, icon: icon.name })}
+                    onClick={() => setNewRole((prev) => ({ ...prev, icon: icon.name }))}
                     className={cn(
                       "size-8 rounded-lg flex items-center justify-center text-sm font-semibold border hover:bg-muted/80 transition-colors shadow-sm",
                       newRole.icon === icon.name ? "border-primary bg-primary/10 ring-2 ring-primary/20 scale-105" : "border-input"
@@ -549,7 +548,7 @@ export default function PermissionsPage() {
                   <button
                     key={color.value}
                     type="button"
-                    onClick={() => setNewRole({ ...newRole, color: color.value })}
+                    onClick={() => setNewRole((prev) => ({ ...prev, color: color.value }))}
                     className={cn(
                       "size-6 rounded-full border border-black/10 shadow-sm relative flex items-center justify-center transition-all hover:scale-110",
                       newRole.color === color.value ? "ring-2 ring-primary/40 ring-offset-1 scale-105" : ""
@@ -568,7 +567,7 @@ export default function PermissionsPage() {
                   <input
                     type="color"
                     value={newRole.color}
-                    onChange={(e) => setNewRole({ ...newRole, color: e.target.value })}
+                    onChange={(e) => setNewRole((prev) => ({ ...prev, color: e.target.value }))}
                     className="size-5 rounded-md border-0 bg-transparent cursor-pointer shadow-xs"
                   />
                 </div>
@@ -598,11 +597,11 @@ export default function PermissionsPage() {
           <div className="space-y-4 py-2">
             <div className="space-y-1.5">
               <Label htmlFor="edit-role-name">{t('users.roleName')} *</Label>
-              <Input id="edit-role-name" value={editRoleForm.name} onChange={(e) => setEditRoleForm({ ...editRoleForm, name: e.target.value })} placeholder={t('users.roleNamePlaceholder')} />
+              <Input id="edit-role-name" value={editRoleForm.name} onChange={(e) => setEditRoleForm((prev) => ({ ...prev, name: e.target.value }))} placeholder={t('users.roleNamePlaceholder')} />
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="edit-role-desc">{t('users.roleDescription')}</Label>
-              <Input id="edit-role-desc" value={editRoleForm.description} onChange={(e) => setEditRoleForm({ ...editRoleForm, description: e.target.value })} placeholder={t('users.roleDescriptionPlaceholder')} />
+              <Input id="edit-role-desc" value={editRoleForm.description} onChange={(e) => setEditRoleForm((prev) => ({ ...prev, description: e.target.value }))} placeholder={t('users.roleDescriptionPlaceholder')} />
             </div>
 
             {/* Edit Icon Picker swatch */}
@@ -613,7 +612,7 @@ export default function PermissionsPage() {
                   <button
                     key={icon.name}
                     type="button"
-                    onClick={() => setEditRoleForm({ ...editRoleForm, icon: icon.name })}
+                    onClick={() => setEditRoleForm((prev) => ({ ...prev, icon: icon.name }))}
                     className={cn(
                       "size-8 rounded-lg flex items-center justify-center text-sm font-semibold border hover:bg-muted/80 transition-colors shadow-sm",
                       editRoleForm.icon === icon.name ? "border-primary bg-primary/10 ring-2 ring-primary/20 scale-105" : "border-input"
@@ -634,7 +633,7 @@ export default function PermissionsPage() {
                   <button
                     key={color.value}
                     type="button"
-                    onClick={() => setEditRoleForm({ ...editRoleForm, color: color.value })}
+                    onClick={() => setEditRoleForm((prev) => ({ ...prev, color: color.value }))}
                     className={cn(
                       "size-6 rounded-full border border-black/10 shadow-sm relative flex items-center justify-center transition-all hover:scale-110",
                       editRoleForm.color === color.value ? "ring-2 ring-primary/40 ring-offset-1 scale-105" : ""
@@ -653,7 +652,7 @@ export default function PermissionsPage() {
                   <input
                     type="color"
                     value={editRoleForm.color}
-                    onChange={(e) => setEditRoleForm({ ...editRoleForm, color: e.target.value })}
+                    onChange={(e) => setEditRoleForm((prev) => ({ ...prev, color: e.target.value }))}
                     className="size-5 rounded-md border-0 bg-transparent cursor-pointer shadow-xs"
                   />
                 </div>

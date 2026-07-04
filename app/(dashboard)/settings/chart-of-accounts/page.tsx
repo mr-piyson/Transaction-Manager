@@ -2,7 +2,7 @@
 
 import { useTranslations } from 'next-intl';
 import { ChevronDown, ChevronRight, Loader2, Pencil, Plus, Trash2 } from 'lucide-react';
-import { useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import { alert } from '@/components/Alert-dialog';
 import { Badge } from '@/components/ui/badge';
@@ -48,29 +48,29 @@ export default function ChartOfAccountsPage() {
   const { data: accounts = [], isLoading } = trpc.settings.chartOfAccounts.list.useQuery();
 
   const createMutation = trpc.settings.chartOfAccounts.create.useMutation({
-    onSuccess: () => {
+    onSuccess: useCallback(() => {
       utils.settings.chartOfAccounts.list.invalidate();
       toast.success(t('common.created'));
       resetCreateForm();
-    },
-    onError: (e) => toast.error(e.message),
+    }, [utils, t]),
+    onError: useCallback((e: { message: string }) => toast.error(e.message), []),
   });
 
   const updateMutation = trpc.settings.chartOfAccounts.update.useMutation({
-    onSuccess: () => {
+    onSuccess: useCallback(() => {
       utils.settings.chartOfAccounts.list.invalidate();
       toast.success(t('common.saved'));
       closeEditDialog();
-    },
-    onError: (e) => toast.error(e.message),
+    }, [utils, t]),
+    onError: useCallback((e: { message: string }) => toast.error(e.message), []),
   });
 
   const deleteMutation = trpc.settings.chartOfAccounts.delete.useMutation({
-    onSuccess: () => {
+    onSuccess: useCallback(() => {
       utils.settings.chartOfAccounts.list.invalidate();
       toast.success(t('common.deleted'));
-    },
-    onError: (e) => toast.error(e.message),
+    }, [utils, t]),
+    onError: useCallback((e: { message: string }) => toast.error(e.message), []),
   });
 
   // ── Create form ──────────────────────────────────────────────────────────
@@ -85,12 +85,12 @@ export default function ChartOfAccountsPage() {
     parentId: '',
   });
 
-  const resetCreateForm = () => {
+  const resetCreateForm = useCallback(() => {
     setForm({ code: '', name: '', description: '', type: 'ASSET', normalBalance: 'DEBIT', parentId: '' });
     setShowForm(false);
-  };
+  }, []);
 
-  const handleCreate = () => {
+  const handleCreate = useCallback(() => {
     if (!form.code || !form.name) return;
     createMutation.mutate({
       code: form.code,
@@ -100,7 +100,7 @@ export default function ChartOfAccountsPage() {
       normalBalance: form.normalBalance as any,
       parentId: form.parentId || undefined,
     });
-  };
+  }, [form, createMutation]);
 
   // ── Edit dialog ──────────────────────────────────────────────────────────
 
@@ -115,7 +115,7 @@ export default function ChartOfAccountsPage() {
     isActive: boolean;
   } | null>(null);
 
-  const openEditDialog = (acct: any) => {
+  const openEditDialog = useCallback((acct: any) => {
     setEditForm({
       id: acct.id,
       code: acct.code,
@@ -126,14 +126,14 @@ export default function ChartOfAccountsPage() {
       isActive: acct.isActive,
     });
     setEditDialogOpen(true);
-  };
+  }, []);
 
-  const closeEditDialog = () => {
+  const closeEditDialog = useCallback(() => {
     setEditDialogOpen(false);
     setEditForm(null);
-  };
+  }, []);
 
-  const handleUpdate = () => {
+  const handleUpdate = useCallback(() => {
     if (!editForm || !editForm.code || !editForm.name) return;
     updateMutation.mutate({
       id: editForm.id,
@@ -144,31 +144,40 @@ export default function ChartOfAccountsPage() {
       normalBalance: editForm.normalBalance as any,
       isActive: editForm.isActive,
     });
-  };
+  }, [editForm, updateMutation]);
 
-  const handleDelete = (id: string, name: string) => {
+  const handleDelete = useCallback((id: string, name: string) => {
     alert.delete({
       title: t('common.delete'),
       description: `${t('common.confirmDelete')} "${name}"?`,
       confirmText: t('common.delete'),
       onConfirm: async () => { await deleteMutation.mutateAsync({ id }); },
     });
-  };
+  }, [t, deleteMutation]);
 
   // ── Helpers ──────────────────────────────────────────────────────────────
 
-  const accountTypeLabel = (type: string) => {
-    const found = ACCOUNT_TYPES.find((a) => a.value === type);
-    return found ? t(found.labelKey) : type;
-  };
+  const accountTypeLabel = useCallback(
+    (type: string) => {
+      const found = ACCOUNT_TYPES.find((a) => a.value === type);
+      return found ? t(found.labelKey) : type;
+    },
+    [t],
+  );
 
-  const normalBalanceLabel = (balance: string) => {
-    const found = NORMAL_BALANCES.find((b) => b.value === balance);
-    return found ? t(found.labelKey) : balance;
-  };
+  const normalBalanceLabel = useCallback(
+    (balance: string) => {
+      const found = NORMAL_BALANCES.find((b) => b.value === balance);
+      return found ? t(found.labelKey) : balance;
+    },
+    [t],
+  );
 
   // Top-level accounts (parentId null)
-  const topLevel = accounts.filter((a: any) => !a.parentId);
+  const topLevel = useMemo(
+    () => accounts.filter((a: any) => !a.parentId),
+    [accounts],
+  );
 
   // ── Render ───────────────────────────────────────────────────────────────
 
@@ -207,18 +216,18 @@ export default function ChartOfAccountsPage() {
                   <Input
                     placeholder={t('settings.codePlaceholder')}
                     value={form.code}
-                    onChange={(e) => setForm({ ...form, code: e.target.value })}
+                    onChange={(e) => setForm((prev) => ({ ...prev, code: e.target.value }))}
                   />
                 </Field>
                 <Field label={t('common.name')}>
                   <Input
                     placeholder={t('settings.namePlaceholder')}
                     value={form.name}
-                    onChange={(e) => setForm({ ...form, name: e.target.value })}
+                    onChange={(e) => setForm((prev) => ({ ...prev, name: e.target.value }))}
                   />
                 </Field>
                 <Field label={t('common.type')}>
-                  <Select value={form.type} onValueChange={(v) => setForm({ ...form, type: v })}>
+                  <Select value={form.type} onValueChange={(v) => setForm((prev) => ({ ...prev, type: v }))}>
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
@@ -230,7 +239,7 @@ export default function ChartOfAccountsPage() {
                   </Select>
                 </Field>
                 <Field label={t('common.status')}>
-                  <Select value={form.normalBalance} onValueChange={(v) => setForm({ ...form, normalBalance: v })}>
+                  <Select value={form.normalBalance} onValueChange={(v) => setForm((prev) => ({ ...prev, normalBalance: v }))}>
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
@@ -242,7 +251,7 @@ export default function ChartOfAccountsPage() {
                   </Select>
                 </Field>
                 <Field label={t('common.parent')}>
-                  <Select value={form.parentId} onValueChange={(v) => setForm({ ...form, parentId: v })}>
+                  <Select value={form.parentId} onValueChange={(v) => setForm((prev) => ({ ...prev, parentId: v }))}>
                     <SelectTrigger>
                       <SelectValue placeholder={t('common.none')} />
                     </SelectTrigger>
@@ -261,7 +270,7 @@ export default function ChartOfAccountsPage() {
                 <Textarea
                   placeholder={t('common.optionalNotes')}
                   value={form.description}
-                  onChange={(e) => setForm({ ...form, description: e.target.value })}
+                  onChange={(e) => setForm((prev) => ({ ...prev, description: e.target.value }))}
                 />
               </Field>
               <div className="flex gap-2 justify-end">
@@ -293,13 +302,13 @@ export default function ChartOfAccountsPage() {
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <Field label={t('common.code')}>
-                  <Input value={editForm.code} onChange={(e) => setEditForm({ ...editForm, code: e.target.value })} />
+                  <Input value={editForm.code} onChange={(e) => setEditForm((prev) => prev ? { ...prev, code: e.target.value } : null)} />
                 </Field>
                 <Field label={t('common.name')}>
-                  <Input value={editForm.name} onChange={(e) => setEditForm({ ...editForm, name: e.target.value })} />
+                  <Input value={editForm.name} onChange={(e) => setEditForm((prev) => prev ? { ...prev, name: e.target.value } : null)} />
                 </Field>
                 <Field label={t('common.type')}>
-                  <Select value={editForm.type} onValueChange={(v) => setEditForm({ ...editForm, type: v })}>
+                  <Select value={editForm.type} onValueChange={(v) => setEditForm((prev) => prev ? { ...prev, type: v } : null)}>
                     <SelectTrigger><SelectValue /></SelectTrigger>
                     <SelectContent>
                       {ACCOUNT_TYPES.map((acct) => (
@@ -309,7 +318,7 @@ export default function ChartOfAccountsPage() {
                   </Select>
                 </Field>
                 <Field label={t('common.status')}>
-                  <Select value={editForm.normalBalance} onValueChange={(v) => setEditForm({ ...editForm, normalBalance: v })}>
+                  <Select value={editForm.normalBalance} onValueChange={(v) => setEditForm((prev) => prev ? { ...prev, normalBalance: v } : null)}>
                     <SelectTrigger><SelectValue /></SelectTrigger>
                     <SelectContent>
                       {NORMAL_BALANCES.map((b) => (
@@ -320,10 +329,10 @@ export default function ChartOfAccountsPage() {
                 </Field>
               </div>
               <Field label={t('common.description')}>
-                <Textarea value={editForm.description} onChange={(e) => setEditForm({ ...editForm, description: e.target.value })} />
+                <Textarea value={editForm.description} onChange={(e) => setEditForm((prev) => prev ? { ...prev, description: e.target.value } : null)} />
               </Field>
               <Field label={t('users.status')}>
-                <Select value={editForm.isActive ? 'active' : 'inactive'} onValueChange={(v) => setEditForm({ ...editForm, isActive: v === 'active' })}>
+                <Select value={editForm.isActive ? 'active' : 'inactive'} onValueChange={(v) => setEditForm((prev) => prev ? { ...prev, isActive: v === 'active' } : null)}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="active">{t('users.active')}</SelectItem>

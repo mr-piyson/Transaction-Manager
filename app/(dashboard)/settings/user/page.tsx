@@ -2,7 +2,7 @@
 
 import { CheckCircle2, Crown, Loader2, Shield } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import { useSession } from '@/auth/auth-client';
 import { Button } from '@/components/ui/button';
@@ -50,19 +50,19 @@ export default function UserSettingsPage() {
   }, [user]);
 
   const updateProfileMutation = trpc.auth.updateProfile.useMutation({
-    onSuccess: () => {
+    onSuccess: useCallback(() => {
       toast.success(t('common.itemSaved'));
       refetch();
-    },
-    onError: (e) => toast.error(e.message),
+    }, [t, refetch]),
+    onError: useCallback((e: { message: string }) => toast.error(e.message), []),
   });
 
   const changePasswordMutation = trpc.auth.changePassword.useMutation({
-    onSuccess: () => {
+    onSuccess: useCallback(() => {
       toast.success(t('common.itemSaved'));
       setPasswordForm({ currentPassword: '', newPassword: '' });
-    },
-    onError: (e) => toast.error(e.message),
+    }, [t]),
+    onError: useCallback((e: { message: string }) => toast.error(e.message), []),
   });
 
   if (!user) {
@@ -78,15 +78,15 @@ export default function UserSettingsPage() {
     profile.lastName !== ((user as any).lastName ?? '') ||
     profile.name !== (user.name ?? '');
 
-  const handleSaveProfile = () => {
+  const handleSaveProfile = useCallback(() => {
     updateProfileMutation.mutate({
       name: profile.name || undefined,
       firstName: profile.firstName || undefined,
       lastName: profile.lastName || undefined,
     });
-  };
+  }, [profile, updateProfileMutation]);
 
-  const handleChangePassword = () => {
+  const handleChangePassword = useCallback(() => {
     if (!passwordForm.currentPassword || passwordForm.currentPassword.length < 8) {
       toast.error(t('errors.minLength', { field: t('auth.password'), min: 8 }));
       return;
@@ -99,7 +99,7 @@ export default function UserSettingsPage() {
       currentPassword: passwordForm.currentPassword,
       newPassword: passwordForm.newPassword,
     });
-  };
+  }, [passwordForm, t, changePasswordMutation]);
 
   const initial = ((user as any).firstName ?? user.name ?? '')[0]?.toUpperCase() ?? '?';
 
@@ -121,21 +121,21 @@ export default function UserSettingsPage() {
 
         <Field label={t('auth.name')}>
           <Input
-            value={profile.name}
-            onChange={(e) => setProfile({ ...profile, name: e.target.value })}
-          />
-        </Field>
-        <Field label="First Name">
-          <Input
-            value={profile.firstName}
-            onChange={(e) => setProfile({ ...profile, firstName: e.target.value })}
-          />
-        </Field>
-        <Field label="Last Name">
-          <Input
-            value={profile.lastName}
-            onChange={(e) => setProfile({ ...profile, lastName: e.target.value })}
-          />
+          value={profile.name}
+          onChange={(e) => setProfile((prev) => ({ ...prev, name: e.target.value }))}
+        />
+      </Field>
+      <Field label="First Name">
+        <Input
+          value={profile.firstName}
+          onChange={(e) => setProfile((prev) => ({ ...prev, firstName: e.target.value }))}
+        />
+      </Field>
+      <Field label="Last Name">
+        <Input
+          value={profile.lastName}
+          onChange={(e) => setProfile((prev) => ({ ...prev, lastName: e.target.value }))}
+        />
         </Field>
         <Field label={t('auth.email')}>
           <Input value={user.email ?? ''} readOnly />
@@ -164,7 +164,7 @@ export default function UserSettingsPage() {
             placeholder="Current password"
             value={passwordForm.currentPassword}
             onChange={(e) =>
-              setPasswordForm({ ...passwordForm, currentPassword: e.target.value })
+              setPasswordForm((prev) => ({ ...prev, currentPassword: e.target.value }))
             }
           />
         </Field>
@@ -174,7 +174,7 @@ export default function UserSettingsPage() {
             placeholder="New password"
             value={passwordForm.newPassword}
             onChange={(e) =>
-              setPasswordForm({ ...passwordForm, newPassword: e.target.value })
+              setPasswordForm((prev) => ({ ...prev, newPassword: e.target.value }))
             }
           />
         </Field>

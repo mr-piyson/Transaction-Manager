@@ -2,7 +2,7 @@
 
 import { useTranslations } from 'next-intl';
 import { Loader2 } from 'lucide-react';
-import { useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -47,26 +47,29 @@ function GeneralForm({
   updateOrg: ReturnType<typeof trpc.settings.updateOrg.useMutation>;
 }) {
   const t = useTranslations();
-  const [form, setForm] = useState({
+  const [form, setForm] = useState(() => ({
     name: org.name ?? '',
     phone: org.phone ?? '',
     email: org.email ?? '',
     website: org.website ?? '',
     taxId: org.taxId ?? '',
     crNumber: org.crNumber ?? '',
-  });
+  }));
 
-  const hasChanges =
-    form.name !== (org.name ?? '') ||
-    form.phone !== (org.phone ?? '') ||
-    form.email !== (org.email ?? '') ||
-    form.website !== (org.website ?? '') ||
-    form.taxId !== (org.taxId ?? '') ||
-    form.crNumber !== (org.crNumber ?? '');
+  const hasChanges = useMemo(
+    () =>
+      form.name !== (org.name ?? '') ||
+      form.phone !== (org.phone ?? '') ||
+      form.email !== (org.email ?? '') ||
+      form.website !== (org.website ?? '') ||
+      form.taxId !== (org.taxId ?? '') ||
+      form.crNumber !== (org.crNumber ?? ''),
+    [form, org],
+  );
 
-  const handleSave = () => {
+  const handleSave = useCallback(() => {
     updateOrg.mutate(form as Parameters<typeof updateOrg.mutate>[0]);
-  };
+  }, [form, updateOrg]);
 
   return (
     <div className="h-full space-y-6">
@@ -77,26 +80,26 @@ function GeneralForm({
         <Field label={t('settings.organizationName')}>
           <Input
             value={form.name}
-            onChange={(e) => setForm({ ...form, name: e.target.value })}
+            onChange={(e) => setForm((prev) => ({ ...prev, name: e.target.value }))}
           />
         </Field>
         <Field label={t('settings.organizationPhone')}>
           <Input
             value={form.phone}
-            onChange={(e) => setForm({ ...form, phone: e.target.value })}
+            onChange={(e) => setForm((prev) => ({ ...prev, phone: e.target.value }))}
           />
         </Field>
         <Field label={t('settings.organizationEmail')}>
           <Input
             type="email"
             value={form.email}
-            onChange={(e) => setForm({ ...form, email: e.target.value })}
+            onChange={(e) => setForm((prev) => ({ ...prev, email: e.target.value }))}
           />
         </Field>
         <Field label={t('customers.website')}>
           <Input
             value={form.website}
-            onChange={(e) => setForm({ ...form, website: e.target.value })}
+            onChange={(e) => setForm((prev) => ({ ...prev, website: e.target.value }))}
           />
         </Field>
       </SectionCard>
@@ -105,13 +108,13 @@ function GeneralForm({
         <Field label={t('customers.taxId')}>
           <Input
             value={form.taxId}
-            onChange={(e) => setForm({ ...form, taxId: e.target.value })}
+            onChange={(e) => setForm((prev) => ({ ...prev, taxId: e.target.value }))}
           />
         </Field>
         <Field label={t('settings.crNumber')}>
           <Input
             value={form.crNumber}
-            onChange={(e) => setForm({ ...form, crNumber: e.target.value })}
+            onChange={(e) => setForm((prev) => ({ ...prev, crNumber: e.target.value }))}
           />
         </Field>
       </SectionCard>

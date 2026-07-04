@@ -2,7 +2,7 @@
 
 import { useTranslations } from 'next-intl';
 import { Loader2, Plus, Trash, X } from 'lucide-react';
-import { useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -17,7 +17,7 @@ export default function CategoriesPage() {
   const { data: tree, isLoading } = trpc.categories.listTree.useQuery();
   const utils = trpc.useUtils();
 
-  const handleError = (e: any) => toast.error(e.message);
+  const handleError = useCallback((e: { message: string }) => toast.error(e.message), []);
 
   const createFamily = trpc.categories.createFamily.useMutation({
     onSuccess: () => utils.categories.listTree.invalidate(),
@@ -69,7 +69,7 @@ export default function CategoriesPage() {
     );
   }
 
-  const families = tree ?? [];
+  const families = useMemo(() => tree ?? [], [tree]);
 
   return (
     <div className="h-full space-y-6">
@@ -94,12 +94,13 @@ export default function CategoriesPage() {
                     <Input
                       className="h-8 w-48"
                       value={editNames[family.id]}
-                      onChange={(e) => setEditNames({ ...editNames, [family.id]: e.target.value })}
+                      onChange={(e) => setEditNames((prev) => ({ ...prev, [family.id]: e.target.value }))}
                       onBlur={() => {
-                        if (editNames[family.id] && editNames[family.id] !== family.name) {
-                          updateFamily.mutate({ id: family.id, name: editNames[family.id] });
-                        }
                         setEditNames((prev) => {
+                          const current = prev[family.id];
+                          if (current && current !== family.name) {
+                            updateFamily.mutate({ id: family.id, name: current });
+                          }
                           const { [family.id]: _, ...rest } = prev;
                           return rest;
                         });
@@ -118,7 +119,7 @@ export default function CategoriesPage() {
                   ) : (
                     <span
                       className="font-semibold cursor-pointer hover:text-primary truncate"
-                      onDoubleClick={() => setEditNames({ ...editNames, [family.id]: family.name })}
+                      onDoubleClick={() => setEditNames((prev) => ({ ...prev, [family.id]: family.name }))}
                       title={t('common.edit')}
                     >
                       {family.name}
@@ -244,14 +245,14 @@ export default function CategoriesPage() {
               <Input
                 placeholder={t('common.name')}
                 value={newFamily.name}
-                onChange={(e) => setNewFamily({ ...newFamily, name: e.target.value })}
+                onChange={(e) => setNewFamily((prev) => ({ ...prev, name: e.target.value }))}
               />
             </Field>
             <Field label={t('common.code')}>
               <Input
                 placeholder={t('common.code')}
                 value={newFamily.code}
-                onChange={(e) => setNewFamily({ ...newFamily, code: e.target.value.toUpperCase() })}
+                onChange={(e) => setNewFamily((prev) => ({ ...prev, code: e.target.value.toUpperCase() }))}
               />
             </Field>
             <Field label="Color">
@@ -260,14 +261,14 @@ export default function CategoriesPage() {
                   type="color"
                   className="size-8 cursor-pointer rounded border"
                   value={newFamily.color}
-                  onChange={(e) => setNewFamily({ ...newFamily, color: e.target.value })}
+                  onChange={(e) => setNewFamily((prev) => ({ ...prev, color: e.target.value }))}
                 />
                 {newFamily.color !== '#000000' && (
                   <Button
                     variant="ghost"
                     size="icon"
                     className="size-7"
-                    onClick={() => setNewFamily({ ...newFamily, color: '#000000' })}
+                    onClick={() => setNewFamily((prev) => ({ ...prev, color: '#000000' }))}
                   >
                     <X className="size-3.5" />
                   </Button>
@@ -279,7 +280,7 @@ export default function CategoriesPage() {
                 placeholder="e.g. electronics"
                 maxLength={50}
                 value={newFamily.icon}
-                onChange={(e) => setNewFamily({ ...newFamily, icon: e.target.value })}
+                onChange={(e) => setNewFamily((prev) => ({ ...prev, icon: e.target.value }))}
               />
             </Field>
             <div className="col-span-2">
@@ -288,7 +289,7 @@ export default function CategoriesPage() {
                   placeholder={t('common.optionalNotes')}
                   maxLength={500}
                   value={newFamily.description}
-                  onChange={(e) => setNewFamily({ ...newFamily, description: e.target.value })}
+                  onChange={(e) => setNewFamily((prev) => ({ ...prev, description: e.target.value }))}
                 />
               </Field>
             </div>

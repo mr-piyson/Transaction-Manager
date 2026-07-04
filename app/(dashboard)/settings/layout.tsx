@@ -4,7 +4,7 @@ import { useTranslations } from 'next-intl';
 import { Menu, Settings } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { Header } from '@/components/layout/App-Header';
 import {
   SidebarGroup,
@@ -30,38 +30,46 @@ export default function SettingsLayout({
 }) {
   const t = useTranslations();
   const pathname = usePathname();
-  const activeSection = pathname.split('/').pop() ?? 'general';
+  const activeSection = useMemo(
+    () => pathname.split('/').pop() ?? 'general',
+    [pathname],
+  );
   const [mobileOpen, setMobileOpen] = useState(false);
 
-  const nav = (
-    <SidebarGroup>
-      <SidebarGroupLabel className="px-3 text-xs uppercase tracking-wider">
-        {t('settings.title')}
-      </SidebarGroupLabel>
-      <SidebarMenu>
-        {NAV_ITEMS.map((item) => {
-          const Icon = item.icon;
-          const isActive = item.id === activeSection;
-          return (
-            <SidebarMenuItem key={item.id}>
-              <Link
-                href={item.href}
-                onClick={() => setMobileOpen(false)}
-                className={cn(
-                  'flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors',
-                  isActive
-                    ? 'bg-sidebar-accent text-sidebar-accent-foreground'
-                    : 'text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground',
-                )}
-              >
-                <Icon className="size-4 shrink-0" />
-                <span>{t(item.labelKey)}</span>
-              </Link>
-            </SidebarMenuItem>
-          );
-        })}
-      </SidebarMenu>
-    </SidebarGroup>
+  const closeMobile = useCallback(() => setMobileOpen(false), []);
+
+  const nav = useMemo(
+    () => (
+      <SidebarGroup>
+        <SidebarGroupLabel className="px-3 text-xs uppercase tracking-wider">
+          {t('settings.title')}
+        </SidebarGroupLabel>
+        <SidebarMenu>
+          {NAV_ITEMS.map((item) => {
+            const Icon = item.icon;
+            const isActive = item.id === activeSection;
+            return (
+              <SidebarMenuItem key={item.id}>
+                <Link
+                  href={item.href}
+                  onClick={closeMobile}
+                  className={cn(
+                    'flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors',
+                    isActive
+                      ? 'bg-sidebar-accent text-sidebar-accent-foreground'
+                      : 'text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground',
+                  )}
+                >
+                  <Icon className="size-4 shrink-0" />
+                  <span>{t(item.labelKey)}</span>
+                </Link>
+              </SidebarMenuItem>
+            );
+          })}
+        </SidebarMenu>
+      </SidebarGroup>
+    ),
+    [t, activeSection, closeMobile],
   );
 
   return (

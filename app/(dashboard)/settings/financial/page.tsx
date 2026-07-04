@@ -2,7 +2,7 @@
 
 import { useTranslations } from 'next-intl';
 import { Loader2 } from 'lucide-react';
-import { useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -60,26 +60,29 @@ function FinancialForm({
 }) {
   const t = useTranslations();
   const MONTHS = Array.from({ length: 12 }, (_, i) => t(`common.monthNamesFull.${i}`));
-  const [form, setForm] = useState({
+  const [form, setForm] = useState(() => ({
     currency: org.currency ?? 'BHD',
     paymentTermsDays: org.paymentTermsDays ?? 30,
     vatRegistered: org.vatRegistered ?? false,
     defaultTermsText: org.defaultTermsText ?? '',
     invoiceFooter: org.invoiceFooter ?? '',
     fiscalYearStartMonth: org.fiscalYearStartMonth ?? 1,
-  });
+  }));
 
-  const hasChanges =
-    form.currency !== (org.currency ?? 'BHD') ||
-    form.paymentTermsDays !== (org.paymentTermsDays ?? 30) ||
-    form.vatRegistered !== (org.vatRegistered ?? false) ||
-    form.defaultTermsText !== (org.defaultTermsText ?? '') ||
-    form.invoiceFooter !== (org.invoiceFooter ?? '') ||
-    form.fiscalYearStartMonth !== (org.fiscalYearStartMonth ?? 1);
+  const hasChanges = useMemo(
+    () =>
+      form.currency !== (org.currency ?? 'BHD') ||
+      form.paymentTermsDays !== (org.paymentTermsDays ?? 30) ||
+      form.vatRegistered !== (org.vatRegistered ?? false) ||
+      form.defaultTermsText !== (org.defaultTermsText ?? '') ||
+      form.invoiceFooter !== (org.invoiceFooter ?? '') ||
+      form.fiscalYearStartMonth !== (org.fiscalYearStartMonth ?? 1),
+    [form, org],
+  );
 
-  const handleSave = () => {
+  const handleSave = useCallback(() => {
     updateOrg.mutate(form as Parameters<typeof updateOrg.mutate>[0]);
-  };
+  }, [form, updateOrg]);
 
   return (
     <div className="h-full space-y-6">
@@ -87,7 +90,7 @@ function FinancialForm({
         <Field label={t('settings.currency')}>
           <Select
             value={form.currency}
-            onValueChange={(v) => setForm({ ...form, currency: v })}
+            onValueChange={(v) => setForm((prev) => ({ ...prev, currency: v }))}
           >
             <SelectTrigger className="w-full">
               <SelectValue />
@@ -105,7 +108,7 @@ function FinancialForm({
           <Select
             value={String(form.fiscalYearStartMonth)}
             onValueChange={(v) =>
-              setForm({ ...form, fiscalYearStartMonth: Number(v) })
+              setForm((prev) => ({ ...prev, fiscalYearStartMonth: Number(v) }))
             }
           >
             <SelectTrigger className="w-full">
@@ -124,7 +127,7 @@ function FinancialForm({
           <div className="flex items-center gap-2">
             <Switch
               checked={form.vatRegistered}
-              onCheckedChange={(v) => setForm({ ...form, vatRegistered: v })}
+              onCheckedChange={(v) => setForm((prev) => ({ ...prev, vatRegistered: v }))}
             />
             <span className="text-sm text-muted-foreground">
               {form.vatRegistered ? t('common.active') : t('common.inactive')}
@@ -140,7 +143,7 @@ function FinancialForm({
             min={0}
             value={form.paymentTermsDays}
             onChange={(e) =>
-              setForm({ ...form, paymentTermsDays: Number(e.target.value) })
+              setForm((prev) => ({ ...prev, paymentTermsDays: Number(e.target.value) }))
             }
           />
         </Field>
@@ -150,7 +153,7 @@ function FinancialForm({
         <Field label={t('invoices.termsAndConditions')}>
           <RichtextEditor
             value={form.defaultTermsText}
-            onChange={(html) => setForm({ ...form, defaultTermsText: html })}
+            onChange={(html) => setForm((prev) => ({ ...prev, defaultTermsText: html }))}
             placeholder={t('settings.paymentTermsPlaceholder')}
             minHeight="150px"
           />
@@ -159,7 +162,7 @@ function FinancialForm({
           <Textarea
             value={form.invoiceFooter}
             onChange={(e) =>
-              setForm({ ...form, invoiceFooter: e.target.value })
+              setForm((prev) => ({ ...prev, invoiceFooter: e.target.value }))
             }
             placeholder={t('settings.termsPlaceholder')}
             rows={3}

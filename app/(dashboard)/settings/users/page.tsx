@@ -19,7 +19,7 @@ import {
   UserCheck,
 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { alert } from '@/components/Alert-dialog';
 import { Badge } from '@/components/ui/badge';
@@ -134,56 +134,6 @@ export default function UsersSettingsPage() {
   const [selectedRoleFilter, setSelectedRoleFilter] = useState('all');
   const [selectedStatusFilter, setSelectedStatusFilter] = useState('all');
 
-  // ── Mutations ───────────────────────────────────────────────────────────
-  const createMutation = trpc.users.create.useMutation({
-    onSuccess: () => {
-      utils.users.list.invalidate();
-      closeUserDialog();
-      toast.success(t('users.userCreated'));
-    },
-    onError: (e) => toast.error(e.message),
-  });
-
-  const updateMutation = trpc.users.update.useMutation({
-    onSuccess: () => {
-      utils.users.list.invalidate();
-      closeUserDialog();
-      toast.success(t('users.userUpdated'));
-    },
-    onError: (e) => toast.error(e.message),
-  });
-
-  const deleteMutation = trpc.users.delete.useMutation({
-    onSuccess: () => {
-      utils.users.list.invalidate();
-      toast.success(t('users.userDeleted'));
-    },
-    onError: (e) => toast.error(e.message),
-  });
-
-  const setPasswordMutation = trpc.users.setPassword.useMutation({
-    onSuccess: () => {
-      closeSetPasswordDialog();
-      toast.success(t('users.passwordSet'));
-    },
-    onError: (e) => toast.error(e.message),
-  });
-
-  const toggleActiveMutation = trpc.users.toggleActive.useMutation({
-    onSuccess: () => {
-      utils.users.list.invalidate();
-      toast.success(t('common.itemSaved'));
-    },
-    onError: (e) => toast.error(e.message),
-  });
-
-  const sendPasswordResetMutation = trpc.users.sendPasswordReset.useMutation({
-    onSuccess: () => toast.success(t('users.passwordResetSent')),
-    onError: (e) => toast.error(e.message),
-  });
-
-  const isUserPending = createMutation.isPending || updateMutation.isPending;
-
   // ── User Dialog State ───────────────────────────────────────────────────
   const [userDialogOpen, setUserDialogOpen] = useState(false);
   const [editingUserId, setEditingUserId] = useState<string | null>(null);
@@ -229,14 +179,14 @@ export default function UsersSettingsPage() {
   }
 
   // ── User Dialog Actions ─────────────────────────────────────────────────
-  const openCreateDialog = () => {
+  const openCreateDialog = useCallback(() => {
     setEditingUserId(null);
     setForm({ name: '', firstName: '', lastName: '', email: '', roleId: '', password: '', isActive: true });
     setFormErrors({});
     setUserDialogOpen(true);
-  };
+  }, []);
 
-  const openEditDialog = (user: NonNullable<typeof users>[number]) => {
+  const openEditDialog = useCallback((user: NonNullable<typeof users>[number]) => {
     const roleId = user.userOrganizationRoles?.[0]?.roleId ?? '';
     setEditingUserId(user.id);
     setForm({
@@ -250,16 +200,66 @@ export default function UsersSettingsPage() {
     });
     setFormErrors({});
     setUserDialogOpen(true);
-  };
+  }, []);
 
-  const closeUserDialog = () => {
+  const closeUserDialog = useCallback(() => {
     setUserDialogOpen(false);
     setEditingUserId(null);
     setForm({ name: '', firstName: '', lastName: '', email: '', roleId: '', password: '', isActive: true });
     setFormErrors({});
-  };
+  }, []);
 
-  const validateForm = (): boolean => {
+  // ── Mutations ───────────────────────────────────────────────────────────
+  const createMutation = trpc.users.create.useMutation({
+    onSuccess: useCallback(() => {
+      utils.users.list.invalidate();
+      closeUserDialog();
+      toast.success(t('users.userCreated'));
+    }, [utils, t]),
+    onError: useCallback((e: { message: string }) => toast.error(e.message), []),
+  });
+
+  const updateMutation = trpc.users.update.useMutation({
+    onSuccess: useCallback(() => {
+      utils.users.list.invalidate();
+      closeUserDialog();
+      toast.success(t('users.userUpdated'));
+    }, [utils, t]),
+    onError: useCallback((e: { message: string }) => toast.error(e.message), []),
+  });
+
+  const deleteMutation = trpc.users.delete.useMutation({
+    onSuccess: useCallback(() => {
+      utils.users.list.invalidate();
+      toast.success(t('users.userDeleted'));
+    }, [utils, t]),
+    onError: useCallback((e: { message: string }) => toast.error(e.message), []),
+  });
+
+  const setPasswordMutation = trpc.users.setPassword.useMutation({
+    onSuccess: useCallback(() => {
+      closeSetPasswordDialog();
+      toast.success(t('users.passwordSet'));
+    }, [t]),
+    onError: useCallback((e: { message: string }) => toast.error(e.message), []),
+  });
+
+  const toggleActiveMutation = trpc.users.toggleActive.useMutation({
+    onSuccess: useCallback(() => {
+      utils.users.list.invalidate();
+      toast.success(t('common.itemSaved'));
+    }, [utils, t]),
+    onError: useCallback((e: { message: string }) => toast.error(e.message), []),
+  });
+
+  const sendPasswordResetMutation = trpc.users.sendPasswordReset.useMutation({
+    onSuccess: useCallback(() => toast.success(t('users.passwordResetSent')), [t]),
+    onError: useCallback((e: { message: string }) => toast.error(e.message), []),
+  });
+
+  const isUserPending = createMutation.isPending || updateMutation.isPending;
+
+  const validateForm = useCallback((): boolean => {
     const errors: Partial<Record<string, string>> = {};
     if (!form.name.trim()) errors.name = t('errors.requiredField', { field: t('users.name') });
     if (!form.email.trim()) errors.email = t('errors.requiredField', { field: t('users.email') });
@@ -270,9 +270,9 @@ export default function UsersSettingsPage() {
     }
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
-  };
+  }, [form, t, isEditing]);
 
-  const handleUserSubmit = () => {
+  const handleUserSubmit = useCallback(() => {
     if (!validateForm()) return;
     const payload = {
       name: form.name.trim(),
@@ -283,13 +283,13 @@ export default function UsersSettingsPage() {
       isActive: form.isActive,
     };
     if (isEditing) {
-      updateMutation.mutate({ id: editingUserId, ...payload });
+      updateMutation.mutate({ id: editingUserId!, ...payload });
     } else {
       createMutation.mutate({ ...payload, password: form.password || undefined });
     }
-  };
+  }, [validateForm, form, isEditing, editingUserId, updateMutation, createMutation]);
 
-  const handleDelete = (userId: string) => {
+  const handleDelete = useCallback((userId: string) => {
     alert.delete({
       title: t('users.confirmDelete'),
       description: t('users.userDeleteConfirm'),
@@ -298,69 +298,68 @@ export default function UsersSettingsPage() {
         await deleteMutation.mutateAsync({ id: userId });
       },
     });
-  };
+  }, [t, deleteMutation]);
 
   // ── Set Password Actions ────────────────────────────────────────────────
-  const openSetPasswordDialog = (userId: string) => {
+  const openSetPasswordDialog = useCallback((userId: string) => {
     setPasswordUserId(userId);
     setNewPassword('');
     setPasswordError('');
     setPasswordDialogOpen(true);
-  };
+  }, []);
 
-  const closeSetPasswordDialog = () => {
+  const closeSetPasswordDialog = useCallback(() => {
     setPasswordDialogOpen(false);
     setPasswordUserId(null);
     setNewPassword('');
     setPasswordError('');
-  };
+  }, []);
 
-  const handleSetPassword = () => {
+  const handleSetPassword = useCallback(() => {
     if (!newPassword || newPassword.length < 6) {
       setPasswordError(t('errors.minLength', { field: t('users.password'), min: 6 }));
       return;
     }
     if (!passwordUserId) return;
     setPasswordMutation.mutate({ id: passwordUserId, newPassword });
-  };
+  }, [newPassword, passwordUserId, t, setPasswordMutation]);
 
   // ── Role Editor Actions ─────────────────────────────────────────────────
-  const openRolePermsDialog = (roleId: string) => {
+  const openRolePermsDialog = useCallback((roleId: string) => {
     setEditingRoleId(roleId);
     setRolePermsDialogOpen(true);
-  };
+  }, []);
 
-  const closeRolePermsDialog = () => {
+  const closeRolePermsDialog = useCallback(() => {
     setRolePermsDialogOpen(false);
     setEditingRoleId(null);
     setSelectedPermIds([]);
     setRolePermsDirty(false);
-  };
+  }, []);
 
-  const handlePermissionToggle = (permId: string) => {
-    setSelectedPermIds((prev) => {
-      const next = prev.includes(permId)
+  const handlePermissionToggle = useCallback((permId: string) => {
+    setSelectedPermIds((prev) =>
+      prev.includes(permId)
         ? prev.filter((id) => id !== permId)
-        : [...prev, permId];
-      setRolePermsDirty(true);
-      return next;
-    });
-  };
+        : [...prev, permId],
+    );
+    setRolePermsDirty(true);
+  }, []);
 
   const rolePermsUpdateMutation = trpc.users.rolePermissions.update.useMutation({
-    onSuccess: () => {
+    onSuccess: useCallback(() => {
       utils.users.rolePermissions.list.invalidate();
       utils.users.permissions.list.invalidate();
       toast.success(t('users.rolePermissionsUpdated'));
       setRolePermsDirty(false);
-    },
-    onError: (e) => toast.error(e.message),
+    }, [utils, t]),
+    onError: useCallback((e: { message: string }) => toast.error(e.message), []),
   });
 
-  const handleSaveRolePerms = () => {
+  const handleSaveRolePerms = useCallback(() => {
     if (!editingRoleId) return;
     rolePermsUpdateMutation.mutate({ roleId: editingRoleId, permissionIds: selectedPermIds });
-  };
+  }, [editingRoleId, selectedPermIds, rolePermsUpdateMutation]);
 
   // ── Role Map ─────────────────────────────────────────────────────────────
   const roleMap = useMemo(() => {
@@ -861,7 +860,7 @@ export default function UsersSettingsPage() {
               <Input
                 id="name"
                 value={form.name}
-                onChange={(e) => setForm({ ...form, name: e.target.value })}
+                onChange={(e) => setForm((prev) => ({ ...prev, name: e.target.value }))}
                 placeholder="John Doe"
               />
               {formErrors.name && <p className="text-xs text-destructive">{formErrors.name}</p>}
@@ -873,7 +872,7 @@ export default function UsersSettingsPage() {
                 id="email"
                 type="email"
                 value={form.email}
-                onChange={(e) => setForm({ ...form, email: e.target.value })}
+                onChange={(e) => setForm((prev) => ({ ...prev, email: e.target.value }))}
                 placeholder="john.doe@company.com"
               />
               {formErrors.email && <p className="text-xs text-destructive">{formErrors.email}</p>}
@@ -886,7 +885,7 @@ export default function UsersSettingsPage() {
                   id="password"
                   type="password"
                   value={form.password}
-                  onChange={(e) => setForm({ ...form, password: e.target.value })}
+                  onChange={(e) => setForm((prev) => ({ ...prev, password: e.target.value }))}
                   placeholder="At least 6 characters"
                 />
                 {form.password && strength && (
@@ -916,7 +915,7 @@ export default function UsersSettingsPage() {
               <Label htmlFor="role">{t('users.role')} *</Label>
               <Select
                 value={form.roleId}
-                onValueChange={(v) => setForm({ ...form, roleId: v })}
+                onValueChange={(v) => setForm((prev) => ({ ...prev, roleId: v }))}
               >
                 <SelectTrigger id="role" className="w-full">
                   <SelectValue placeholder={t('users.selectRole')} />
@@ -950,7 +949,7 @@ export default function UsersSettingsPage() {
                   <Switch
                     id="isActive"
                     checked={form.isActive}
-                    onCheckedChange={(v) => setForm({ ...form, isActive: v })}
+                    onCheckedChange={(v) => setForm((prev) => ({ ...prev, isActive: v }))}
                   />
                   <span className="text-sm text-muted-foreground">
                     {form.isActive ? t('common.active') : t('common.inactive')}
