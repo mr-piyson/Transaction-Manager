@@ -27,7 +27,12 @@ export function ItemListItem({ data, className, ...props }: ItemListItemProps) {
 
   return (
     <div className={cn('flex h-18 items-center gap-3 p-3', className)} {...props}>
-      <div className={cn('size-11 rounded-lg flex items-center justify-center shrink-0 overflow-hidden', style.bg)}>
+      <div
+        className={cn(
+          'size-11 rounded-lg flex items-center justify-center shrink-0 overflow-hidden',
+          style.bg,
+        )}
+      >
         {image ? (
           <img src={image} alt={name} className="size-full object-cover" />
         ) : (

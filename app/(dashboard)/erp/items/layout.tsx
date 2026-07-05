@@ -1,15 +1,37 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { ArrowLeft, Download, List, Package, Plus, Table2 } from 'lucide-react';
+import {
+  Box,
+  Download,
+  Edit,
+  Eye,
+  List,
+  MoreHorizontal,
+  Package,
+  Plus,
+  Table2,
+  Trash2,
+  Wrench,
+} from 'lucide-react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import * as React from 'react';
 import { useMemo, useRef, useState } from 'react';
+import { toast } from 'sonner';
 import { AllCommunityModule, ModuleRegistry, type ColDef, type GridApi } from 'ag-grid-community';
 import { AgGridReact } from 'ag-grid-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { HoverCard, HoverCardTrigger, HoverCardContent } from '@/components/ui/hover-card';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { alert } from '@/components/Alert-dialog';
 import { useTableTheme } from '@/hooks/use-table-theme';
 import { useCurrency } from '@/hooks/use-currency';
 import { trpc } from '@/lib/trpc/client';
@@ -43,6 +65,16 @@ export default function ItemsLayout({ children }: { children?: React.ReactNode }
   const pathname = usePathname();
   const activeItem = pathname.split('/')[3];
   const isListRoute = pathname === `/erp/${title.toLowerCase()}`;
+
+  const utils = trpc.useUtils();
+  const deleteMutation = trpc.items.delete.useMutation({
+    onSuccess: () => {
+      utils.items.list.invalidate();
+      toast.success(t('common.itemDeleted'));
+      if (activeItem) router.push(`/erp/${title.toLowerCase()}`);
+    },
+    onError: (e) => toast.error(e.message),
+  });
 
   const items = Array.isArray(data) ? data : (data?.data ?? []);
 
@@ -81,6 +113,41 @@ export default function ItemsLayout({ children }: { children?: React.ReactNode }
   const tableColumnDefs = useMemo<ColDef[]>(
     () => [
       {
+        headerName: '',
+        field: 'image',
+        width: 60,
+        sortable: false,
+        filter: false,
+        suppressMenu: true,
+        cellRenderer: (params: { data: any }) => {
+          const item = params.data;
+          return item.image ? (
+            <HoverCard openDelay={200} closeDelay={100}>
+              <HoverCardTrigger asChild>
+                <div className="flex items-center justify-center h-full cursor-pointer">
+                  <img
+                    src={item.image}
+                    alt={item.name}
+                    className="size-9 rounded object-cover border"
+                  />
+                </div>
+              </HoverCardTrigger>
+              <HoverCardContent side="right" className="w-auto p-2">
+                <img
+                  src={item.image}
+                  alt={item.name}
+                  className="max-w-56 max-h-56 rounded object-contain"
+                />
+              </HoverCardContent>
+            </HoverCard>
+          ) : (
+            <div className="flex items-center justify-center h-full">
+              <Package className="size-5 text-muted-foreground" />
+            </div>
+          );
+        },
+      },
+      {
         headerName: 'SKU',
         field: 'sku',
         width: 120,
@@ -96,20 +163,26 @@ export default function ItemsLayout({ children }: { children?: React.ReactNode }
       {
         headerName: 'Type',
         field: 'type',
-        width: 90,
+        width: 110,
         filter: 'agTextColumnFilter',
         cellRenderer: (params: { value: string }) => {
-          const variants: Record<string, string> = {
-            PRODUCT:
-              'bg-blue-50 text-blue-700 dark:bg-blue-950/50 dark:text-blue-300 border-blue-200 dark:border-blue-800',
-            SERVICE:
-              'bg-purple-50 text-purple-700 dark:bg-purple-950/50 dark:text-purple-300 border-purple-200 dark:border-purple-800',
+          const TYPE_STYLES: Record<string, { icon: typeof Package; bg: string; fg: string }> = {
+            PRODUCT: {
+              icon: Box,
+              bg: 'bg-sky-100 dark:bg-sky-900/40',
+              fg: 'text-sky-700 dark:text-sky-300',
+            },
+            SERVICE: {
+              icon: Wrench,
+              bg: 'bg-orange-100 dark:bg-orange-900/40',
+              fg: 'text-orange-700 dark:text-orange-300',
+            },
           };
+          const { bg, fg, icon: Icon } = TYPE_STYLES[params.value] ?? TYPE_STYLES.PRODUCT;
+
           return (
-            <Badge
-              variant="outline"
-              className={cn('px-1.5 py-0 font-medium', variants[params.value] ?? '')}
-            >
+            <Badge variant="outline" className={cn('gap-1 font-medium', fg)}>
+              <Icon className={cn('size-4')} />
               {params.value}
             </Badge>
           );
@@ -138,8 +211,58 @@ export default function ItemsLayout({ children }: { children?: React.ReactNode }
         cellClass: 'tabular-nums text-[12px] font-medium',
         valueFormatter: (params) => format(params.value),
       },
+      {
+        headerName: '',
+        field: 'id',
+        width: 50,
+        sortable: false,
+        filter: false,
+        suppressMenu: true,
+        cellRenderer: (params: { data: any }) => {
+          const item = params.data;
+          return (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                  <MoreHorizontal className="size-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem
+                  onClick={() => router.push(`/erp/${title.toLowerCase()}/${item.id}`)}
+                >
+                  <Eye className="size-4 mr-2" />
+                  {t('common.viewDetails')}
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => router.push(`/erp/${title.toLowerCase()}/${item.id}`)}
+                >
+                  <Edit className="size-4 mr-2" />
+                  {t('common.edit')}
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  onClick={() =>
+                    alert.delete({
+                      title: t('common.confirmDeleteTitle'),
+                      description: 'This action cannot be undone.',
+                      confirmText: t('common.delete'),
+                      onConfirm: async () => {
+                        await deleteMutation.mutateAsync({ id: item.id });
+                      },
+                    })
+                  }
+                >
+                  <Trash2 className="size-4 mr-2 text-destructive" />
+                  <span className="text-destructive">{t('common.delete')}</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          );
+        },
+      },
     ],
-    [format],
+    [format, router, activeItem, t, deleteMutation],
   );
 
   const defaultColDef = useMemo(
@@ -229,11 +352,6 @@ export default function ItemsLayout({ children }: { children?: React.ReactNode }
               suppressScrollOnNewData
               enableCellTextSelection
               ensureDomOrder
-              onRowClicked={(params) => {
-                if (viewMode === 'list') {
-                  router.push(`/erp/${title.toLowerCase()}/${params.data.id}`);
-                }
-              }}
               loading={isPending}
               headerHeight={viewMode === 'list' ? 0 : undefined}
               rowHeight={viewMode === 'list' ? 72 : undefined}
