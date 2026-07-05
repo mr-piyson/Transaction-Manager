@@ -14,36 +14,22 @@ interface HeaderProps {
   title?: ReactNode;
   subtitle?: string;
   icon?: ReactNode;
-  leftContent?: ReactNode;
-  actions?: ReactNode;
-  rightContent?: ReactNode;
   showBorder?: boolean;
   sticky?: boolean;
   transparent?: boolean;
-  showBackButton?: boolean;
   className?: string;
-  children?: ReactNode;
   description?: string;
-  onCreate?: () => void;
-  createLabel?: string;
 }
 
 export function Header({
   title,
   subtitle,
   icon,
-  leftContent,
-  actions,
-  rightContent,
   showBorder = true,
   sticky = true,
   transparent = false,
-  showBackButton = false,
   className,
-  children,
   description,
-  onCreate,
-  createLabel,
 }: HeaderProps) {
   const t = useTranslations();
   return (
@@ -63,45 +49,27 @@ export function Header({
 
       {/* Left Section */}
       <div className="flex items-center gap-3 flex-1 min-w-0">
-        {leftContent || (
-          <div className="flex items-center gap-2 truncate">
-            {title && (
-              <div className="flex flex-row gap-2 items-center truncate">
-                {icon && <span className="text-muted-foreground shrink-0">{icon}</span>}
-                <div className="truncate">
-                  <h1 className="text-lg font-semibold capitalize truncate">{title}</h1>
-                  {subtitle && (
-                    <p className="text-xs text-muted-foreground truncate">{subtitle}</p>
-                  )}
-                </div>
-                {description && (
-                  <p className="text-sm text-muted-foreground truncate hidden sm:block">
-                    {description}
-                  </p>
-                )}
+        <div className="flex items-center gap-2 truncate">
+          {title && (
+            <div className="flex flex-row gap-2 items-center truncate">
+              {icon && <span className="text-muted-foreground shrink-0">{icon}</span>}
+              <div className="truncate">
+                <h1 className="text-lg font-semibold capitalize truncate">{title}</h1>
+                {subtitle && <p className="text-xs text-muted-foreground truncate">{subtitle}</p>}
               </div>
-            )}
-          </div>
-        )}
+              {description && (
+                <p className="text-sm text-muted-foreground truncate hidden sm:block">
+                  {description}
+                </p>
+              )}
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Command Palette */}
       <CommandPaletteTrigger />
-
-      {/* Actions */}
-      {actions && <div className="flex items-center gap-2 shrink-0">{actions}</div>}
-
-      {/* Create Button */}
-      {onCreate && (
-        <Button size="sm" className="gap-1.5 shrink-0" onClick={onCreate}>
-          <Plus className="size-4" />
-          {createLabel ?? t('common.create')}
-        </Button>
-      )}
-
-      {/* Right Content */}
-      {rightContent && <div className="flex items-center gap-2 shrink-0">{rightContent}</div>}
-
+      {/* User DropDown */}
       <NavUser />
     </header>
   );

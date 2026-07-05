@@ -19,11 +19,13 @@ import {
 import { Switch } from '@/components/ui/switch';
 import Link from 'next/link';
 import { Button } from '../ui/button';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 export function NavUser() {
   const t = useTranslations();
   const { handleSignOut, handleToggleTheme, theme } = useActionHandlers();
   const user = useSession().data?.user;
+  const isMobile = useIsMobile();
 
   /**
    * Generates a deterministic HSL color based on a string (e.g., a user's name).
@@ -81,8 +83,8 @@ export function NavUser() {
       <DropdownMenuTrigger asChild>
         <Button
           variant="ghost"
-          size="lg"
-          className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+          size="sm"
+          className="h-10 data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
         >
           <Avatar className="h-8 w-8 rounded-lg">
             <AvatarImage src={user?.image || ''} alt={user?.name || ''} />
@@ -96,10 +98,12 @@ export function NavUser() {
               <User2 size={16} />
             </AvatarFallback>
           </Avatar>
-          <div className="grid flex-1 text-left text-sm leading-tight">
-            <span className="truncate font-medium">{user?.name}</span>
-            <span className="truncate text-xs">{user?.email}</span>
-          </div>
+          {!isMobile && (
+            <div className="grid flex-1 text-left text-sm leading-tight">
+              <span className="truncate font-medium">{user?.name}</span>
+              <span className="truncate text-xs">{user?.email}</span>
+            </div>
+          )}
           <ChevronsUpDown className="ml-auto size-4" />
         </Button>
       </DropdownMenuTrigger>

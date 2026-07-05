@@ -1,29 +1,33 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { Download, Edit, Eye, Package, Trash2, User2 } from 'lucide-react';
+import { ArrowLeft, Download, List, Package, Plus, Table2 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import * as React from 'react';
-import { useCallback } from 'react';
-import { toast } from 'sonner';
-import { alert } from '@/components/Alert-dialog';
-import { UniversalContextMenu } from '@/components/context-menu';
-import type { ContextMenuItemSchema } from '@/components/context-menu';
+import { useMemo, useRef, useState } from 'react';
+import { AllCommunityModule, ModuleRegistry, type ColDef, type GridApi } from 'ag-grid-community';
+import { AgGridReact } from 'ag-grid-react';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { ListView } from '@/components/list-view';
-import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@/components/ui/resizable';
-import { useIsMobile } from '@/hooks/use-mobile';
+import { useTableTheme } from '@/hooks/use-table-theme';
+import { useCurrency } from '@/hooks/use-currency';
 import { trpc } from '@/lib/trpc/client';
 import { cn } from '@/lib/utils';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Header } from '@/components/layout/App-Header';
 import { ItemListItem } from '@/components/items/item-list-item';
 
+ModuleRegistry.registerModules([AllCommunityModule]);
+
 const title = 'Items';
 
 export default function ItemsLayout({ children }: { children?: React.ReactNode }) {
   const t = useTranslations();
+  const { format } = useCurrency();
+  const tableTheme = useTableTheme();
+
+  const [viewMode, setViewMode] = useState<'list' | 'table'>('list');
 
   const TYPE_FILTERS = [
     { value: '', label: t('common.all') },
@@ -31,125 +35,213 @@ export default function ItemsLayout({ children }: { children?: React.ReactNode }
     { value: 'SERVICE', label: t('items.types.SERVICE') },
   ];
 
-  const [typeFilter, setTypeFilter] = React.useState('');
-  const { data, isPending } = trpc.items.list.useQuery({ type: (typeFilter || undefined) as 'PRODUCT' | 'SERVICE' | undefined });
-  const utils = trpc.useUtils();
+  const [typeFilter, setTypeFilter] = useState('');
+  const { data, isPending } = trpc.items.list.useQuery({
+    type: (typeFilter || undefined) as 'PRODUCT' | 'SERVICE' | undefined,
+  });
   const router = useRouter();
-  const isMobile = useIsMobile();
   const pathname = usePathname();
   const activeItem = pathname.split('/')[3];
-  const isListView = pathname === `/erp/${title.toLowerCase()}`;
+  const isListRoute = pathname === `/erp/${title.toLowerCase()}`;
 
-  const deleteMutation = trpc.items.delete.useMutation({
-    onSuccess: () => {
-      utils.items.list.invalidate();
-      toast.success(t('items.itemDeleted'));
-    },
-    onError: (e) => toast.error(e.message),
-  });
+  const items = Array.isArray(data) ? data : (data?.data ?? []);
 
-  const renderCard = useCallback(
-    (item: any) => {
-      const menuItems: ContextMenuItemSchema[] = [
-        {
-          id: 'view',
-          label: t('common.viewDetails'),
-          icon: Eye,
-          onClick: () => router.push(`/erp/items/${item.id}`),
+  const listColumnDefs = useMemo<ColDef[]>(
+    () => [
+      {
+        field: 'item',
+        flex: 1,
+        sortable: false,
+        filter: false,
+        suppressMenu: true,
+        cellRenderer: (params: { data: any }) => {
+          const item = params.data;
+          return (
+            <Link
+              href={`/erp/${title.toLowerCase()}/${item.id}`}
+              scroll={false}
+              draggable={false}
+              className="block w-full h-full"
+            >
+              <ItemListItem
+                data={item}
+                className={cn(
+                  'hover:bg-muted/40 border border-transparent rounded-lg',
+                  activeItem === item.id ? 'border-primary bg-primary/10' : '',
+                )}
+              />
+            </Link>
+          );
         },
-        {
-          id: 'edit',
-          label: t('common.edit'),
-          icon: Edit,
-          onClick: () => router.push(`/erp/items/${item.id}?edit=true`),
-        },
-        { id: 'sep1', type: 'separator' },
-        {
-          id: 'delete',
-          label: t('common.delete'),
-          icon: Trash2,
-          destructive: true,
-          onClick: () =>
-            alert.delete({
-              title: t('common.confirmDelete'),
-              description: t('common.thisActionCannotBeUndone'),
-              confirmText: t('common.delete'),
-              onConfirm: async () => {
-                await deleteMutation.mutateAsync({ id: item.id });
-              },
-            }),
-        },
-      ];
-
-      return (
-        <UniversalContextMenu items={menuItems}>
-          <Link
-            href={`/erp/${title.toLowerCase()}/${item.id}`}
-            scroll={false}
-            draggable={false}
-            className="block w-full h-full"
-          >
-            <ItemListItem
-              data={item}
-              className={cn(
-                'hover:bg-muted/40 border border-transparent',
-                activeItem === item.id ? 'border-primary border bg-primary/10' : '',
-              )}
-            />
-          </Link>
-        </UniversalContextMenu>
-      );
-    },
-    [activeItem, deleteMutation, utils, router],
+      },
+    ],
+    [activeItem],
   );
 
-  const items = Array.isArray(data) ? data : data?.data ?? [];
+  const tableColumnDefs = useMemo<ColDef[]>(
+    () => [
+      {
+        headerName: 'SKU',
+        field: 'sku',
+        width: 120,
+        cellClass: 'font-mono text-[11px]',
+      },
+      {
+        headerName: 'Name',
+        field: 'name',
+        flex: 1,
+        filter: 'agTextColumnFilter',
+        cellClass: 'font-medium text-[12px]',
+      },
+      {
+        headerName: 'Type',
+        field: 'type',
+        width: 90,
+        filter: 'agTextColumnFilter',
+        cellRenderer: (params: { value: string }) => {
+          const variants: Record<string, string> = {
+            PRODUCT:
+              'bg-blue-50 text-blue-700 dark:bg-blue-950/50 dark:text-blue-300 border-blue-200 dark:border-blue-800',
+            SERVICE:
+              'bg-purple-50 text-purple-700 dark:bg-purple-950/50 dark:text-purple-300 border-purple-200 dark:border-purple-800',
+          };
+          return (
+            <Badge
+              variant="outline"
+              className={cn('px-1.5 py-0 font-medium', variants[params.value] ?? '')}
+            >
+              {params.value}
+            </Badge>
+          );
+        },
+      },
+      {
+        headerName: 'Unit',
+        field: 'unit',
+        width: 70,
+      },
+      {
+        headerName: 'Buy Price',
+        field: 'purchasePrice',
+        width: 100,
+        type: 'numericColumn',
+        filter: 'agNumberColumnFilter',
+        cellClass: 'tabular-nums text-[12px]',
+        valueFormatter: (params) => format(params.value),
+      },
+      {
+        headerName: 'Sell Price',
+        field: 'salesPrice',
+        width: 100,
+        type: 'numericColumn',
+        filter: 'agNumberColumnFilter',
+        cellClass: 'tabular-nums text-[12px] font-medium',
+        valueFormatter: (params) => format(params.value),
+      },
+    ],
+    [format],
+  );
+
+  const defaultColDef = useMemo(
+    () => ({
+      sortable: true,
+      filter: true,
+      resizable: true,
+      minWidth: 60,
+    }),
+    [],
+  );
+
+  const gridApiRef = useRef<GridApi | null>(null);
+  const gridRef = useRef<any>(null);
+
+  const columnDefs = viewMode === 'list' ? listColumnDefs : tableColumnDefs;
 
   return (
     <div className="flex h-screen flex-col overflow-hidden">
-      <Header title={t('layout.items')} icon={<Package className="size-5" />} onCreate={() => router.push('/erp/items/new')} createLabel={t('items.createItem')} actions={<Link href="/settings/item-master"><Button variant="outline" size="sm"><Download className="size-3.5 mr-1" />Import</Button></Link>} />
+      <Header title={t('layout.items')} icon={<Package className="size-5" />} />
       <div className="flex-1 min-h-0 w-full">
-        <ResizablePanelGroup className="h-full">
-          {(isListView || !isMobile) && (
-            <ResizablePanel minSize={20} defaultSize={30} className={cn('h-full', !isListView ? 'hidden md:block' : 'block')}>
-              <aside className="flex h-full flex-col overflow-hidden border-r">
-                <div className="border-b px-4 py-2">
-                  <Tabs value={typeFilter} onValueChange={setTypeFilter}>
-                    <TabsList className="h-auto w-full justify-start">
-                      {TYPE_FILTERS.map((filter) => (
-                        <TabsTrigger key={filter.value} value={filter.value} className="text-xs px-3 py-1">
-                          {filter.label}
-                        </TabsTrigger>
-                      ))}
-                    </TabsList>
-                  </Tabs>
+        {isListRoute ? (
+          <div className="h-full w-full flex flex-col">
+            <div className="w-full flex flex-row justify-between border-b px-4 py-2 shrink-0">
+              {/* Start Actions */}
+              <div className="flex gap-2 items-center">
+                <Button size={'sm'} onClick={() => router.push('/erp/items/new')}>
+                  <Plus className="size-3.5" />
+                  <span className="hidden md:block">{t('items.createItem')}</span>
+                </Button>
+                <Tabs value={typeFilter} onValueChange={setTypeFilter}>
+                  <TabsList className="h-auto  justify-start">
+                    {TYPE_FILTERS.map((filter) => (
+                      <TabsTrigger
+                        key={filter.value}
+                        value={filter.value}
+                        className="text-xs px-3 py-1"
+                      >
+                        {filter.label}
+                      </TabsTrigger>
+                    ))}
+                  </TabsList>
+                </Tabs>
+              </div>
+              {/* End Actions */}
+              <div className="flex gap-2 items-center ">
+                <div className="flex items-center rounded-lg border p-0.5">
+                  <Button
+                    variant={viewMode === 'list' ? 'secondary' : 'ghost'}
+                    size="sm"
+                    className="h-7 px-2"
+                    onClick={() => setViewMode('list')}
+                    title="List view"
+                  >
+                    <List className="size-3.5" />
+                  </Button>
+                  <Button
+                    variant={viewMode === 'table' ? 'secondary' : 'ghost'}
+                    size="sm"
+                    className="h-7 px-2"
+                    onClick={() => setViewMode('table')}
+                    title="Table view"
+                  >
+                    <Table2 className="size-3.5" />
+                  </Button>
                 </div>
-                <div className="flex-1 overflow-y-auto">
-                  <ListView
-                    data={items}
-                    isLoading={isPending}
-                    className="h-full"
-                    useTheme
-                    searchFields={['name', 'sku', 'description'] as any}
-                    rowHeight={73}
-                    emptyTitle={t('items.noItems')}
-                    emptyDescription={t('items.createItem')}
-                    emptyIcon={<User2 className="size-20 text-muted-foreground" />}
-                    cardRenderer={renderCard}
-                  />
-                </div>
-              </aside>
-            </ResizablePanel>
-          )}
-
-          <ResizableHandle className={cn('hidden md:flex', !isListView && 'hidden md:flex')} />
-
-          {(!isListView || !isMobile) && (
-            <ResizablePanel defaultSize={70} className={cn('h-full w-full', isListView ? 'hidden md:block' : 'flex flex-col')}>
-              {children}
-            </ResizablePanel>
-          )}
-        </ResizablePanelGroup>
+                <Link href="/settings/item-master">
+                  <Button variant="outline" size="sm">
+                    <Download className="size-3.5" />
+                    <span className="hidden md:block">Import</span>
+                  </Button>
+                </Link>
+              </div>
+            </div>
+            <AgGridReact
+              ref={gridRef}
+              rowData={items}
+              columnDefs={columnDefs}
+              defaultColDef={viewMode === 'list' ? undefined : defaultColDef}
+              theme={tableTheme}
+              animateRows
+              onGridReady={(params) => {
+                gridApiRef.current = params.api;
+              }}
+              domLayout="normal"
+              getRowId={(params) => params.data.id}
+              suppressScrollOnNewData
+              enableCellTextSelection
+              ensureDomOrder
+              onRowClicked={(params) => {
+                if (viewMode === 'list') {
+                  router.push(`/erp/${title.toLowerCase()}/${params.data.id}`);
+                }
+              }}
+              loading={isPending}
+              headerHeight={viewMode === 'list' ? 0 : undefined}
+              rowHeight={viewMode === 'list' ? 72 : undefined}
+            />
+          </div>
+        ) : (
+          <div className="h-full w-full overflow-y-auto">{children}</div>
+        )}
       </div>
     </div>
   );

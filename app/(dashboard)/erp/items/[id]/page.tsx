@@ -9,10 +9,11 @@ export default function ItemDetailPage() {
   const params = useParams<{ id: string }>();
   const searchParams = useSearchParams();
 
-  const { data: item, isLoading, isError } = trpc.items.byId.useQuery(
-    { id: params.id },
-    { enabled: !!params.id },
-  );
+  const {
+    data: item,
+    isLoading,
+    isError,
+  } = trpc.items.byId.useQuery({ id: params.id }, { enabled: !!params.id });
 
   if (isLoading) {
     return (
