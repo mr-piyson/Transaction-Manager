@@ -1,10 +1,9 @@
 'use client';
 
 import { ChevronsUpDown, LogOut, Moon, Settings, Sun, User2 } from 'lucide-react';
-import { useTheme } from 'next-themes';
 import { useTranslations } from 'next-intl';
-import { useRouter } from 'next/navigation';
-import { signOut, useSession } from '@/auth/auth-client';
+import { useSession } from '@/auth/auth-client';
+import { useActionHandlers } from '@/lib/actions';
 import { LocaleSwitcherMenu } from '@/components/locale-switcher';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
@@ -22,19 +21,9 @@ import Link from 'next/link';
 import { Button } from '../ui/button';
 
 export function NavUser() {
-  const router = useRouter();
   const t = useTranslations();
-  const { theme, setTheme } = useTheme();
+  const { handleSignOut, handleToggleTheme, theme } = useActionHandlers();
   const user = useSession().data?.user;
-
-  const handleSignOut = async () => {
-    await signOut();
-    router.push('/auth');
-  };
-
-  const toggleTheme = (e: React.MouseEvent | React.BaseSyntheticEvent) => {
-    setTheme(theme === 'dark' ? 'light' : 'dark');
-  };
 
   /**
    * Generates a deterministic HSL color based on a string (e.g., a user's name).
@@ -141,7 +130,7 @@ export function NavUser() {
             {t('layout.appearance')}
           </DropdownMenuLabel>
 
-          <DropdownMenuItem onClick={toggleTheme} className={'bg-transparent!'}>
+          <DropdownMenuItem onClick={handleToggleTheme} className={'bg-transparent!'}>
             {theme === 'dark' ? <Moon className="size-4" /> : <Sun className="size-4" />}
             <span>{t('layout.darkMode')}</span>
             <DropdownMenuShortcut>

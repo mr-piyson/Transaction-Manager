@@ -73,6 +73,7 @@ Transaction-Manager/
 │   │   ├── server.ts    # createContext (auth resolution, CASL setup)
 │   │   └── client.ts    # tRPC React client
 │   ├── abilities.ts     # CASL ability definitions & builder
+│   ├── actions.ts       # Centralized action registry (logout, theme, locale, settings nav)
 │   ├── calculator.ts    # Pure invoice total computation
 │   ├── db.ts            # PrismaClient singleton
 │   ├── env.ts           # Zod-validated env vars
@@ -283,7 +284,30 @@ Shared validation patterns:
 - **Hooks** provide reusable state and utility access (ability checks, currency formatting, date formatting, mobile detection, table theming)
 - **i18n**: Fully client-side internationalization via `next-intl` (see §7a)
 
-### 7a. Internationalization (i18n)
+### 7b. Action Registry
+
+User-facing actions (logout, theme toggle, locale switching) and settings navigation are centralized in `lib/actions.ts` to avoid scattering action logic across components. The module exports three layers:
+
+**Types** (`NavItem`, `PaletteAction`, `PaletteGroup`): Shared interfaces used by both the command palette and the user dropdown menu.
+
+**Data** (`NAV_ITEMS`): Static array of settings page definitions (id, labelKey, href, icon). Consumed by the settings sidebar layout (`app/(dashboard)/settings/layout.tsx`) and re-exported from `app/(dashboard)/settings/_shared.tsx` for backward compatibility.
+
+**Hooks**:
+- `useActionHandlers()`: Returns memoized callback factories for `handleSignOut`, `handleToggleTheme`, `handleSwitchLocale`, plus `theme`/`setTheme`. Used directly by `NavUser` in the sidebar dropdown.
+- `usePaletteActions(t)`: Builds command palette sections (`settings` navigation + `actions` group with theme, locale, logout). Used by `CommandPalette` in `components/command-palette.tsx`.
+
+**Consumers**:
+
+| Consumer | What it uses |
+|---|---|
+| `components/command-palette.tsx` | `usePaletteActions()` — renders settings pages and quick actions as searchable command items |
+| `components/layout/User-Options.tsx` | `useActionHandlers()` — wires logout, theme toggle, and shared locale logic through the dropdown menu |
+| `app/(dashboard)/settings/layout.tsx` | `NAV_ITEMS` — renders the settings sidebar navigation |
+| `app/(dashboard)/settings/_shared.tsx` | Re-exports `NAV_ITEMS` from `@/lib/actions` |
+
+This replaces the previous pattern where logout/theme handlers were defined inline in `User-Options.tsx` and `NAV_ITEMS` lived only in `settings/_shared.tsx`. New actions (e.g. "Import data", "Keyboard shortcuts") can be added to `lib/actions.ts` and automatically appear in the command palette.
+
+### 7c. Internationalization (i18n)
 
 **Architecture**: Fully client-side — no middleware, no proxy routing, no next-intl plugin. This avoids Next.js 16 proxy conflicts that caused 404s with `createMiddleware()`.
 

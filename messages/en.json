@@ -223,6 +223,8 @@
   "layout": {
     "navigation": "Navigation",
     "sales": "Sales",
+    "actions": "Actions",
+    "lightMode": "Light Mode",
     "notifications": "Notifications",
     "purchases": "Purchases",
     "inventory": "Inventory",

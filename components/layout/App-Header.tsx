@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { SidebarToggleButton } from './App-Sidebar';
 import { NavUser } from '@/components/layout/User-Options';
+import { CommandPaletteTrigger } from '@/components/command-palette';
 
 interface HeaderProps {
   title?: ReactNode;
@@ -83,6 +84,9 @@ export function Header({
           </div>
         )}
       </div>
+
+      {/* Command Palette */}
+      <CommandPaletteTrigger />
 
       {/* Actions */}
       {actions && <div className="flex items-center gap-2 shrink-0">{actions}</div>}
