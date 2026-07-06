@@ -118,6 +118,7 @@ export default function DocumentsLayout({ children }: { children?: React.ReactNo
   const segments = pathname.split('/');
   const activeItem = segments[4];
   const isListRoute = segments.length === 4;
+  const isPrintRoute = pathname.endsWith('/print');
 
   const utils = trpc.useUtils();
   const deleteMutation = trpc.invoices.delete.useMutation({
@@ -289,6 +290,8 @@ export default function DocumentsLayout({ children }: { children?: React.ReactNo
 
   const Icon = config.icon;
   const headerTitle = type === 'invoices' ? t('layout.invoices') : t('layout.quotations');
+
+  if (isPrintRoute) return <>{children}</>;
 
   return (
     <div className="flex h-screen flex-col overflow-hidden">
