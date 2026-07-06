@@ -20,7 +20,7 @@ export function InvoiceListItem({ data, className, ...props }: InvoiceListItemPr
   const { serial, status, customer, date, total, currency } = data || {};
 
   return (
-    <div className={cn('flex items-center gap-3 p-3', className)} {...props}>
+    <div className={cn('flex items-center gap-3 h-18', className)} {...props}>
       <div className="size-11 rounded-lg bg-muted flex items-center justify-center shrink-0">
         <Receipt className="size-5 text-muted-foreground" />
       </div>
@@ -36,7 +36,9 @@ export function InvoiceListItem({ data, className, ...props }: InvoiceListItemPr
         </p>
       </div>
       <div className="text-right">
-        <p className="font-semibold">{Number(total).toFixed(3)} {currency}</p>
+        <p className="font-semibold">
+          {Number(total).toFixed(3)} {currency}
+        </p>
       </div>
     </div>
   );

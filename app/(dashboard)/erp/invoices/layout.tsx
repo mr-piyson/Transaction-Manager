@@ -19,7 +19,6 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@/components/ui/resizable';
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { trpc } from '@/lib/trpc/client';
 import { cn } from '@/lib/utils';
@@ -32,12 +31,6 @@ export default function InvoicesLayout({ children }: { children?: React.ReactNod
   const t = useTranslations();
   const { openCreate, openEdit } = useInvoiceForm();
 
-  const DOCUMENT_TYPES = [
-    { value: 'all', label: t('invoices.allStatuses') },
-    { value: 'INVOICE', label: t('invoices.invoice') },
-    { value: 'QUOTE', label: t('invoices.quote') },
-  ] as const;
-
   const PAYMENT_STATUSES = [
     { value: 'all', label: t('common.all') },
     { value: 'PENDING', label: t('common.pending') },
@@ -47,7 +40,6 @@ export default function InvoicesLayout({ children }: { children?: React.ReactNod
   ] as const;
   const utils = trpc.useUtils();
   const router = useRouter();
-  const [docType, setDocType] = useState('all');
   const [paymentStatus, setPaymentStatus] = useState('all');
 
   const deleteMutation = trpc.invoices.delete.useMutation({
@@ -60,7 +52,7 @@ export default function InvoicesLayout({ children }: { children?: React.ReactNod
   });
 
   const { data, isPending } = trpc.invoices.list.useQuery({
-    type: docType === 'all' ? undefined : (docType as any),
+    type: 'INVOICE',
     paymentStatus: paymentStatus === 'all' ? undefined : (paymentStatus as any),
   });
   const isMobile = useIsMobile();
@@ -162,15 +154,6 @@ export default function InvoicesLayout({ children }: { children?: React.ReactNod
 
   const filterBar = (
     <div className="flex flex-col gap-2 border-b px-4 py-2">
-      <Tabs value={docType} onValueChange={setDocType} className="min-w-0">
-        <TabsList className="h-auto min-h-8 w-full justify-start flex-wrap">
-          {DOCUMENT_TYPES.map((d) => (
-            <TabsTrigger key={d.value} value={d.value} className="text-xs px-3 py-1 shrink-0">
-              {d.label}
-            </TabsTrigger>
-          ))}
-        </TabsList>
-      </Tabs>
       <Select value={paymentStatus} onValueChange={setPaymentStatus}>
         <SelectTrigger className="w-full h-8 shrink-0">
           <SelectValue placeholder={t('common.payment')}>{activeLabel}</SelectValue>

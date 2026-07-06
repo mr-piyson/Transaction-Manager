@@ -833,6 +833,7 @@ export function InvoiceFormDialog({
 
 interface OpenOptions {
   onSuccess?: (id: string) => void;
+  defaults?: Partial<InvoiceFormValues>;
 }
 
 interface InvoiceFormContextValue {
@@ -855,7 +856,11 @@ export function InvoiceFormProvider({ children }: { children?: React.ReactNode }
   const [state, setState] = React.useState<DialogState>({ open: false });
 
   const openCreate = React.useCallback((options?: OpenOptions) => {
-    setState({ open: true, invoice: undefined, onSuccess: options?.onSuccess });
+    setState({
+      open: true,
+      invoice: options?.defaults ? (options.defaults as any) : undefined,
+      onSuccess: options?.onSuccess,
+    });
   }, []);
 
   const openEdit = React.useCallback(

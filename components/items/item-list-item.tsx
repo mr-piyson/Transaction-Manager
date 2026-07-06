@@ -26,7 +26,7 @@ export function ItemListItem({ data, className, ...props }: ItemListItemProps) {
   const Icon = style.icon;
 
   return (
-    <div className={cn('flex h-18 items-center gap-3 p-3', className)} {...props}>
+    <div className={cn('flex h-18 items-center gap-3 ', className)} {...props}>
       <div
         className={cn(
           'size-11 rounded-lg flex items-center justify-center shrink-0 overflow-hidden',

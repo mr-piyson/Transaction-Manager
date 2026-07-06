@@ -232,6 +232,7 @@
     "configuration": "Configuration",
     "dashboard": "Dashboard",
     "invoices": "Invoices",
+    "quotations": "Quotations",
     "customers": "Customers",
     "contracts": "Contracts",
     "purchaseOrders": "Purchase Orders",
