@@ -35,8 +35,8 @@ function getErpRoutes(t: (key: string) => string): RouteConfig[] {
       type: 'group',
       label: t('layout.sales'),
       children: [
-        { type: 'item', label: t('layout.invoices'), href: '/erp/invoices', icon: FilePenLine },
-        { type: 'item', label: t('layout.quotations'), href: '/erp/quotations', icon: FileText },
+        { type: 'item', label: t('layout.invoices'), href: '/erp/documents/invoices', icon: FilePenLine },
+        { type: 'item', label: t('layout.quotations'), href: '/erp/documents/quotations', icon: FileText },
         { type: 'item', label: t('layout.customers'), href: '/erp/customers', icon: Users },
         { type: 'item', label: t('layout.contracts'), href: '/erp/contracts', icon: Handshake },
       ],
