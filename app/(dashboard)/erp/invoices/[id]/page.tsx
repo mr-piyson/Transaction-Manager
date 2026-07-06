@@ -66,7 +66,12 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { UniversalDropdownMenu } from '@/components/dropdown';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { useInvoiceForm } from '@/components/dialogs/invoiceForm';
 import { trpc } from '@/lib/trpc/client';
 import { format } from 'date-fns';
@@ -747,17 +752,26 @@ export default function InvoiceDetailPage() {
             >
               <Printer className="size-4 mr-1" /> {t('invoices.printPdf')}
             </Button>
-            <UniversalDropdownMenu
-              trigger={<MoreHorizontal className="size-4" />}
-              items={actions.map((a) => ({
-                id: a.key,
-                label: a.label,
-                icon: a.icon,
-                destructive: a.variant === 'destructive',
-                disabled: isPending,
-                onClick: () => handleActionClick(a),
-              }))}
-            />
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon">
+                  <MoreHorizontal className="size-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                {actions.map((a) => (
+                  <DropdownMenuItem
+                    key={a.key}
+                    onClick={() => handleActionClick(a)}
+                    disabled={isPending}
+                    variant={a.variant === 'destructive' ? 'destructive' : 'default'}
+                  >
+                    <a.icon className="size-4" />
+                    {a.label}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         )}
       </header>

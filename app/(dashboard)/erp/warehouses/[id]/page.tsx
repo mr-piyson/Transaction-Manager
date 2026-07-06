@@ -1,6 +1,6 @@
 'use client';
 
-import { ArrowLeft, Edit, Loader2, MoreHorizontal, MoveRight, Package, Trash, Warehouse as WarehouseIcon, type LucideIcon } from 'lucide-react';
+import { ArrowLeft, Edit, Loader2, MoreHorizontal, MoveRight, Package, Trash, Warehouse as WarehouseIcon } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useParams, useRouter } from 'next/navigation';
 import * as React from 'react';
@@ -44,7 +44,12 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { UniversalDropdownMenu } from '@/components/dropdown';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { useWarehouseForm } from '@/components/dialogs';
 import { trpc } from '@/lib/trpc/client';
 import { format } from 'date-fns';
@@ -208,27 +213,34 @@ export default function WarehouseDetailPage() {
           )}
         </div>
         <div className="flex items-center gap-2">
-          <UniversalDropdownMenu
-            trigger={<MoreHorizontal className="size-4" />}
-            items={[
-              { id: 'edit', label: t('common.edit'), icon: Edit, onClick: handleEdit },
-              {
-                id: 'transfer',
-                label: t('common.transfer'),
-                icon: MoveRight,
-                disabled: stockItems.length === 0,
-                onClick: () => setTransferOpen(true),
-              },
-              {
-                id: 'delete',
-                label: t('common.delete'),
-                icon: Trash,
-                destructive: true,
-                disabled: deleteMutation.isPending,
-                onClick: handleDelete,
-              },
-            ]}
-          />
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon">
+                <MoreHorizontal className="size-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={handleEdit}>
+                <Edit className="size-4" />
+                {t('common.edit')}
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => setTransferOpen(true)}
+                disabled={stockItems.length === 0}
+              >
+                <MoveRight className="size-4" />
+                {t('common.transfer')}
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={handleDelete}
+                disabled={deleteMutation.isPending}
+                variant="destructive"
+              >
+                <Trash className="size-4" />
+                {t('common.delete')}
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </header>
 

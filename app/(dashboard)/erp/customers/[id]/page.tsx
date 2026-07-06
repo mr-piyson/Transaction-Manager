@@ -1,6 +1,6 @@
 'use client';
 
-import { ArrowLeft, Edit, MoreHorizontal, Trash, Users, type LucideIcon } from 'lucide-react';
+import { ArrowLeft, Edit, MoreHorizontal, Trash, Users } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useParams, useRouter } from 'next/navigation';
 import { toast } from 'sonner';
@@ -10,7 +10,12 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '@/components/ui/empty';
 import { Spinner } from '@/components/ui/spinner';
-import { UniversalDropdownMenu } from '@/components/dropdown';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { useCustomerForm } from '@/components/dialogs';
 import { trpc } from '@/lib/trpc/client';
 import { format } from 'date-fns';
@@ -122,20 +127,27 @@ export default function CustomerDetailPage() {
           )}
         </div>
         <div className="flex items-center gap-2">
-          <UniversalDropdownMenu
-            trigger={<MoreHorizontal className="size-4" />}
-            items={[
-              { id: 'edit', label: t('common.edit'), icon: Edit, onClick: handleEdit },
-              {
-                id: 'delete',
-                label: t('common.delete'),
-                icon: Trash,
-                destructive: true,
-                disabled: isPending,
-                onClick: handleDelete,
-              },
-            ]}
-          />
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon">
+                <MoreHorizontal className="size-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={handleEdit}>
+                <Edit className="size-4" />
+                {t('common.edit')}
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={handleDelete}
+                disabled={isPending}
+                variant="destructive"
+              >
+                <Trash className="size-4" />
+                {t('common.delete')}
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </header>
 

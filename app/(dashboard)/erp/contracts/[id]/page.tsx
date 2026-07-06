@@ -1,6 +1,6 @@
 'use client';
 
-import { ArrowLeft, Ban, Edit, Handshake, MoreHorizontal, Play, Trash, type LucideIcon } from 'lucide-react';
+import { ArrowLeft, Ban, Edit, Handshake, MoreHorizontal, Play, Trash } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useParams, useRouter } from 'next/navigation';
 import { toast } from 'sonner';
@@ -9,7 +9,12 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '@/components/ui/empty';
 import { Spinner } from '@/components/ui/spinner';
-import { UniversalDropdownMenu } from '@/components/dropdown';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { useContractForm } from '@/components/dialogs';
 import { ContractDetail } from '@/components/contracts/contract-detail';
 import { ContractStatusBadge } from '@/components/contracts/contract-status-badge';
@@ -154,41 +159,37 @@ export default function ContractDetailPage() {
           <ContractStatusBadge status={contract.status} />
         </div>
         <div className="flex items-center gap-2">
-          <UniversalDropdownMenu
-            trigger={<MoreHorizontal className="size-4" />}
-            items={[
-              ...(contract.status === 'DRAFT'
-                ? [{
-                    id: 'activate' as const,
-                    label: t('contracts.activate'),
-                    icon: Play,
-                    disabled: isPending,
-                    onClick: handleActivate,
-                  }]
-                : []),
-              { id: 'edit', label: t('common.edit'), icon: Edit, onClick: handleEdit },
-              ...(contract.status === 'ACTIVE' || contract.status === 'DRAFT'
-                ? [{
-                    id: 'terminate' as const,
-                    label: t('contracts.terminate'),
-                    icon: Ban,
-                    destructive: true as const,
-                    disabled: isPending,
-                    onClick: handleTerminate,
-                  }]
-                : []),
-              ...(contract.status !== 'ACTIVE'
-                ? [{
-                    id: 'delete' as const,
-                    label: t('common.delete'),
-                    icon: Trash,
-                    destructive: true as const,
-                    disabled: isPending,
-                    onClick: handleDelete,
-                  }]
-                : []),
-            ]}
-          />
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon">
+                <MoreHorizontal className="size-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              {contract.status === 'DRAFT' && (
+                <DropdownMenuItem onClick={handleActivate} disabled={isPending}>
+                  <Play className="size-4" />
+                  {t('contracts.activate')}
+                </DropdownMenuItem>
+              )}
+              <DropdownMenuItem onClick={handleEdit}>
+                <Edit className="size-4" />
+                {t('common.edit')}
+              </DropdownMenuItem>
+              {(contract.status === 'ACTIVE' || contract.status === 'DRAFT') && (
+                <DropdownMenuItem onClick={handleTerminate} disabled={isPending} variant="destructive">
+                  <Ban className="size-4" />
+                  {t('contracts.terminate')}
+                </DropdownMenuItem>
+              )}
+              {contract.status !== 'ACTIVE' && (
+                <DropdownMenuItem onClick={handleDelete} disabled={isPending} variant="destructive">
+                  <Trash className="size-4" />
+                  {t('common.delete')}
+                </DropdownMenuItem>
+              )}
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </header>
 

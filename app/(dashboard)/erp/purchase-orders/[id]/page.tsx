@@ -51,7 +51,12 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { UniversalDropdownMenu } from '@/components/dropdown';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { usePOForm } from '@/components/dialogs/poForm';
 import { trpc } from '@/lib/trpc/client';
 import { format } from 'date-fns';
@@ -355,17 +360,26 @@ export default function PurchaseOrderDetailPage() {
         </div>
         {showActions && (
           <div className="flex items-center gap-2">
-            <UniversalDropdownMenu
-              trigger={<MoreHorizontal className="size-4" />}
-              items={actions.map((a) => ({
-                id: a.key,
-                label: a.label,
-                icon: a.icon,
-                destructive: a.variant === 'destructive',
-                disabled: isPending,
-                onClick: () => handleActionClick(a),
-              }))}
-            />
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon">
+                  <MoreHorizontal className="size-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                {actions.map((a) => (
+                  <DropdownMenuItem
+                    key={a.key}
+                    onClick={() => handleActionClick(a)}
+                    disabled={isPending}
+                    variant={a.variant === 'destructive' ? 'destructive' : 'default'}
+                  >
+                    <a.icon className="size-4" />
+                    {a.label}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         )}
       </header>
