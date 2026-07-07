@@ -1,10 +1,63 @@
 import { z } from 'zod';
 import { NotFoundError, UnprocessableError } from '@/lib/error';
-import { assertCan, orgProcedure, router } from '@/lib/trpc/context';
+import { assertCan, orgProcedure, publicProcedure, router } from '@/lib/trpc/context';
 import { paginatedResponse, toPrismaPage } from '@/lib/validations';
 import { hrListSchema, dateRangeFilterSchema, hrDateField, hrOptionalDateField } from './hr.schemas';
 
 export const attendanceRouter = router({
+  logPublicAttendance: publicProcedure
+    .input(
+      z.object({
+        employeeCode: z.string().min(1).max(50),
+        organizationSlug: z.string().optional(),
+        token: z.string().optional(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      let orgId: string;
+
+      if (input.token) {
+        const kiosk = await ctx.db.kiosk.findFirst({
+          where: { token: input.token, isActive: true, deletedAt: null },
+          select: { organizationId: true },
+        });
+        if (!kiosk) throw new NotFoundError('Kiosk', input.token);
+        orgId = kiosk.organizationId;
+      } else if (input.organizationSlug) {
+        const org = await ctx.db.organization.findFirst({
+          where: { slug: input.organizationSlug, deletedAt: null },
+          select: { id: true },
+        });
+        if (!org) throw new NotFoundError('Organization', input.organizationSlug);
+        orgId = org.id;
+      } else {
+        throw new NotFoundError('Kiosk', 'token or slug required');
+      }
+
+      const employee = await ctx.db.employee.findFirst({
+        where: {
+          employeeCode: input.employeeCode,
+          organizationId: orgId,
+          deletedAt: null,
+          status: 'ACTIVE',
+        },
+        select: { id: true, user: { select: { name: true } } },
+      });
+      if (!employee) throw new NotFoundError('Employee', input.employeeCode);
+
+      const punch = await ctx.db.timePunch.create({
+        data: {
+          employeeId: employee.id,
+          organizationId: orgId,
+          timestamp: new Date(),
+          source: 'kiosk',
+          punchState: 'CHECK_IN',
+        },
+      });
+
+      return { success: true, employeeName: employee.user.name, punchTime: punch.timestamp };
+    }),
+
   timePunches: {
     list: orgProcedure
       .input(

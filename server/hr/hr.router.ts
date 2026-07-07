@@ -5,6 +5,7 @@ import { employeeTypesRouter } from './employee-types.router';
 import { shiftsRouter } from './shifts.router';
 import { employeesRouter } from './employees.router';
 import { attendanceRouter } from './attendance.router';
+import { kioskRouter } from './kiosk.router';
 import { leaveRouter } from './leave.router';
 import { salaryComponentsRouter } from './salary-components.router';
 import { payrollRouter } from './payroll.router';
@@ -23,6 +24,7 @@ export const hrRouter = router({
   shifts: shiftsRouter,
   employees: employeesRouter,
   attendance: attendanceRouter,
+  kiosk: kioskRouter,
   leave: leaveRouter,
   salaryComponents: salaryComponentsRouter,
   payroll: payrollRouter,

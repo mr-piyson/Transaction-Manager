@@ -10,6 +10,7 @@ import {
   Languages,
   Layers,
   LogOut,
+  Monitor,
   Moon,
   Package,
   Palette,
@@ -75,6 +76,7 @@ export const NAV_ITEMS = [
   },
   { id: 'sessions', labelKey: 'settings.sessions', href: '/settings/sessions', icon: LogOut },
   { id: 'hrms', labelKey: 'settings.hrms.title', href: '/settings/hrms', icon: Briefcase },
+  { id: 'kiosks', labelKey: 'settings.kiosks.title', href: '/settings/kiosks', icon: Monitor },
   {
     id: 'appearance',
     labelKey: 'settings.appearance',

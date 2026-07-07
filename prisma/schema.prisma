@@ -366,6 +366,9 @@ model Organization {
   roles                 Role[]
   units                 Unit[]
 
+  // Kiosk relations
+  kiosks Kiosk[]
+
   // HRMS relations
   employeeTypes          EmployeeType[]
   employees              Employee[]
@@ -423,6 +426,30 @@ model OrganizationSetting {
 
   @@unique([organizationId, key])
   @@index([organizationId])
+  @@schema("public")
+}
+
+// =============================================================================
+// KIOSK  (self-service attendance kiosk devices)
+// =============================================================================
+
+model Kiosk {
+  id   String @id @default(cuid())
+  name String
+
+  token    String  @unique
+  isActive Boolean @default(true)
+
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+
+  deletedAt DateTime?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([organizationId])
+  @@index([token])
+  @@index([deletedAt])
   @@schema("public")
 }
 

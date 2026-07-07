@@ -1063,6 +1063,32 @@
       "title": "Item Master",
       "description": "Manage items and bulk import your product catalog",
       "noPermission": "You don't have permission to access Item Master settings. Contact your administrator to request access."
+    },
+    "kiosks": {
+      "title": "Kiosks",
+      "description": "Manage self-service attendance kiosks",
+      "create": "Create Kiosk",
+      "edit": "Edit Kiosk",
+      "name": "Kiosk Name",
+      "namePlaceholder": "e.g. Main Entrance",
+      "token": "Token",
+      "copyToken": "Copy Token",
+      "tokenCopied": "Token copied to clipboard",
+      "regenerateToken": "Regenerate Token",
+      "regenerateConfirm": "Regenerating the token will break the existing kiosk connection. Continue?",
+      "tokenRegenerated": "Token regenerated",
+      "isActive": "Active",
+      "active": "Active",
+      "inactive": "Inactive",
+      "deleteConfirm": "Are you sure you want to delete this kiosk?",
+      "created": "Kiosk created",
+      "updated": "Kiosk updated",
+      "deleted": "Kiosk deleted",
+      "kioskUrl": "Kiosk URL",
+      "copyUrl": "Copy URL",
+      "urlCopied": "URL copied to clipboard",
+      "noKiosks": "No kiosks configured",
+      "noKiosksDesc": "Create a kiosk to start using self-service attendance."
     }
   },
   "sessions": {

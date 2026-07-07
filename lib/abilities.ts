@@ -221,6 +221,9 @@ export type SubjectName =
   | 'Grievance'
   | 'DisciplinaryAction'
   | 'EmployeeStatusHistory'
+  // Settings
+  | 'OrganizationSetting'
+  | 'Kiosk'
   | 'all';
 
 // Accepts either the string literal of the model (for generic checks)

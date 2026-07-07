@@ -880,6 +880,32 @@
     "normalBalances": {
       "debit": "مدين",
       "credit": "دائن"
+    },
+    "kiosks": {
+      "title": "أكشاك الحضور",
+      "description": "إدارة أكشاك الحضور الذاتي",
+      "create": "إضافة كشك",
+      "edit": "تعديل الكشك",
+      "name": "اسم الكشك",
+      "namePlaceholder": "مثال: المدخل الرئيسي",
+      "token": "الرمز المميز",
+      "copyToken": "نسخ الرمز",
+      "tokenCopied": "تم نسخ الرمز إلى الحافظة",
+      "regenerateToken": "إعادة إنشاء الرمز",
+      "regenerateConfirm": "إعادة إنشاء الرمز سيؤدي إلى قطع اتصال الكشك الحالي. هل تريد المتابعة؟",
+      "tokenRegenerated": "تم إعادة إنشاء الرمز",
+      "isActive": "نشط",
+      "active": "نشط",
+      "inactive": "غير نشط",
+      "deleteConfirm": "هل أنت متأكد من حذف هذا الكشك؟",
+      "created": "تم إنشاء الكشك",
+      "updated": "تم تحديث الكشك",
+      "deleted": "تم حذف الكشك",
+      "kioskUrl": "رابط الكشك",
+      "copyUrl": "نسخ الرابط",
+      "urlCopied": "تم نسخ الرابط إلى الحافظة",
+      "noKiosks": "لا توجد أكشاك مكونة",
+      "noKiosksDesc": "قم بإنشاء كشك لبدء استخدام الحضور الذاتي."
     }
   },
   "sessions": {
