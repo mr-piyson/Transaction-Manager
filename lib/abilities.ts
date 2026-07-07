@@ -76,7 +76,101 @@ export type Action =
   | 'org:settings:read'
   | 'org:settings:update'
   | 'user:manage'
-  | 'role:manage';
+  | 'role:manage'
+  // HRMS — Organisational Structure
+  | 'department:read'
+  | 'department:create'
+  | 'department:update'
+  | 'department:delete'
+  | 'employee:read'
+  | 'employee:create'
+  | 'employee:update'
+  | 'employee:delete'
+  | 'employee:status:update'
+  | 'employee-type:read'
+  | 'employee-type:create'
+  | 'employee-type:update'
+  | 'employee-type:delete'
+  | 'job-position:read'
+  | 'job-position:create'
+  | 'job-position:update'
+  | 'job-position:delete'
+  // HRMS — Leave
+  | 'leave-type:read'
+  | 'leave-type:create'
+  | 'leave-type:update'
+  | 'leave-type:delete'
+  | 'leave:request:create'
+  | 'leave:request:read'
+  | 'leave:request:update'
+  | 'leave:request:approve'
+  | 'leave:balance:read'
+  | 'leave:balance:adjust'
+  | 'holiday:read'
+  | 'holiday:create'
+  | 'holiday:update'
+  | 'holiday:delete'
+  // HRMS — Attendance
+  | 'attendance:read'
+  | 'attendance:create'
+  | 'attendance:update'
+  | 'shift:read'
+  | 'shift:create'
+  | 'shift:update'
+  | 'shift:delete'
+  // HRMS — Payroll
+  | 'payroll:read'
+  | 'payroll:create'
+  | 'payroll:process'
+  | 'payroll:complete'
+  | 'payroll:cancel'
+  | 'salary-component:read'
+  | 'salary-component:create'
+  | 'salary-component:update'
+  | 'salary-component:delete'
+  // HRMS — Performance
+  | 'performance:read'
+  | 'performance:create'
+  | 'performance:update'
+  | 'performance:delete'
+  | 'performance:submit'
+  | 'performance:acknowledge'
+  // HRMS — Recruitment
+  | 'job-posting:read'
+  | 'job-posting:create'
+  | 'job-posting:update'
+  | 'job-posting:delete'
+  | 'candidate:read'
+  | 'candidate:create'
+  | 'candidate:update'
+  | 'candidate:delete'
+  | 'candidate:status:update'
+  | 'interview:read'
+  | 'interview:create'
+  | 'interview:update'
+  | 'offer:read'
+  | 'offer:create'
+  | 'offer:update'
+  | 'offer:respond'
+  // HRMS — Training
+  | 'training:read'
+  | 'training:create'
+  | 'training:update'
+  | 'training:delete'
+  | 'training:enroll'
+  // HRMS — Documents & Relations
+  | 'employee-document:read'
+  | 'employee-document:create'
+  | 'employee-document:delete'
+  | 'grievance:read'
+  | 'grievance:create'
+  | 'grievance:update'
+  | 'grievance:resolve'
+  | 'disciplinary:read'
+  | 'disciplinary:create'
+  | 'disciplinary:update'
+  // HRMS — Reports
+  | 'report:hr';
 
 // ---------------------------------------------------------------------------
 // Subjects — Prisma model names + "all" wildcard for SUPER_ADMIN
@@ -99,6 +193,34 @@ export type SubjectName =
   | 'Organization'
   | 'Unit'
   | 'User'
+  // HRMS
+  | 'Department'
+  | 'Employee'
+  | 'EmployeeType'
+  | 'JobPosition'
+  | 'LeaveType'
+  | 'LeaveBalance'
+  | 'LeaveRequest'
+  | 'Holiday'
+  | 'AttendanceRecord'
+  | 'TimePunch'
+  | 'Shift'
+  | 'EmployeeShift'
+  | 'PayrollRun'
+  | 'PayrollItem'
+  | 'Payslip'
+  | 'SalaryComponent'
+  | 'PerformanceReview'
+  | 'EmployeeDocument'
+  | 'JobPosting'
+  | 'Candidate'
+  | 'InterviewRound'
+  | 'Offer'
+  | 'Training'
+  | 'TrainingEnrollment'
+  | 'Grievance'
+  | 'DisciplinaryAction'
+  | 'EmployeeStatusHistory'
   | 'all';
 
 // Accepts either the string literal of the model (for generic checks)
@@ -156,6 +278,70 @@ const MUTATION_ACTIONS: Action[] = [
   'org:settings:update',
   'user:manage',
   'role:manage',
+  // HRMS
+  'department:create',
+  'department:update',
+  'department:delete',
+  'employee:create',
+  'employee:update',
+  'employee:delete',
+  'employee:status:update',
+  'employee-type:create',
+  'employee-type:update',
+  'employee-type:delete',
+  'job-position:create',
+  'job-position:update',
+  'job-position:delete',
+  'leave-type:create',
+  'leave-type:update',
+  'leave-type:delete',
+  'leave:request:create',
+  'leave:request:update',
+  'leave:request:approve',
+  'leave:balance:adjust',
+  'holiday:create',
+  'holiday:update',
+  'holiday:delete',
+  'attendance:create',
+  'attendance:update',
+  'shift:create',
+  'shift:update',
+  'shift:delete',
+  'payroll:create',
+  'payroll:process',
+  'payroll:complete',
+  'payroll:cancel',
+  'salary-component:create',
+  'salary-component:update',
+  'salary-component:delete',
+  'performance:create',
+  'performance:update',
+  'performance:delete',
+  'performance:submit',
+  'performance:acknowledge',
+  'job-posting:create',
+  'job-posting:update',
+  'job-posting:delete',
+  'candidate:create',
+  'candidate:update',
+  'candidate:delete',
+  'candidate:status:update',
+  'interview:create',
+  'interview:update',
+  'offer:create',
+  'offer:update',
+  'offer:respond',
+  'training:create',
+  'training:update',
+  'training:delete',
+  'training:enroll',
+  'employee-document:create',
+  'employee-document:delete',
+  'grievance:create',
+  'grievance:update',
+  'grievance:resolve',
+  'disciplinary:create',
+  'disciplinary:update',
 ];
 
 /**
@@ -173,6 +359,26 @@ const RESOURCE_TO_SUBJECT_MAP: Record<string, SubjectName> = {
   user: 'User',
   report: 'all', // Reports aren't tied to a specific DB model row
   role: 'all',
+  department: 'Department',
+  employee: 'Employee',
+  'employee-type': 'EmployeeType',
+  'job-position': 'JobPosition',
+  'leave-type': 'LeaveType',
+  leave: 'LeaveRequest',
+  holiday: 'Holiday',
+  attendance: 'AttendanceRecord',
+  shift: 'Shift',
+  payroll: 'PayrollRun',
+  'salary-component': 'SalaryComponent',
+  performance: 'PerformanceReview',
+  'job-posting': 'JobPosting',
+  candidate: 'Candidate',
+  interview: 'InterviewRound',
+  offer: 'Offer',
+  training: 'Training',
+  'employee-document': 'EmployeeDocument',
+  grievance: 'Grievance',
+  disciplinary: 'DisciplinaryAction',
 };
 
 // --------------------------------------------------------------------
