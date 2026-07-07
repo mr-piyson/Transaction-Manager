@@ -1,19 +1,29 @@
 import {
   type LucideIcon,
+  Award,
+  BadgeCheck,
   BarChart3,
   Bell,
+  BookOpen,
   Boxes,
+  Briefcase,
   Building2,
   Calendar,
+  Clock,
   FilePenLine,
   FileText,
+  Gavel,
+  GraduationCap,
   Handshake,
   LayoutDashboard,
   Package,
+  PiggyBank,
   Settings,
   ShoppingCart,
+  Speech,
   Truck,
   User,
+  UserPlus,
   Users,
   Wallet,
   Warehouse,
@@ -118,6 +128,8 @@ function getHrRoutes(t: (key: string) => string): RouteConfig[] {
       children: [
         { type: 'item', label: t('hr.employees'), href: '/hrms/employees', icon: User },
         { type: 'item', label: t('hr.departments'), href: '/hrms/departments', icon: Building2 },
+        { type: 'item', label: t('hr.jobPositions'), href: '/hrms/job-positions', icon: Briefcase },
+        { type: 'item', label: t('hr.employeeTypes'), href: '/hrms/employee-types', icon: BadgeCheck },
       ],
     },
     {
@@ -126,12 +138,34 @@ function getHrRoutes(t: (key: string) => string): RouteConfig[] {
       children: [
         { type: 'item', label: t('hr.attendance'), href: '/hrms/attendance', icon: Calendar },
         { type: 'item', label: t('hr.leave'), href: '/hrms/leave', icon: Calendar },
+        { type: 'item', label: t('hr.shifts'), href: '/hrms/shifts', icon: Clock },
       ],
     },
     {
       type: 'group',
       label: t('hr.compensation'),
-      children: [{ type: 'item', label: t('hr.payroll'), href: '/hrms/payroll', icon: Wallet }],
+      children: [
+        { type: 'item', label: t('hr.payroll'), href: '/hrms/payroll', icon: Wallet },
+        { type: 'item', label: t('hr.salaryComponents'), href: '/hrms/salary-components', icon: PiggyBank },
+      ],
+    },
+    {
+      type: 'group',
+      label: t('hr.talentManagement'),
+      children: [
+        { type: 'item', label: t('hr.recruitment'), href: '/hrms/recruitment', icon: UserPlus },
+        { type: 'item', label: t('hr.performance'), href: '/hrms/performance', icon: Award },
+        { type: 'item', label: t('hr.training'), href: '/hrms/training', icon: GraduationCap },
+      ],
+    },
+    {
+      type: 'group',
+      label: t('hr.employeeRelations'),
+      children: [
+        { type: 'item', label: t('hr.grievances'), href: '/hrms/employee-relations', icon: Speech },
+        { type: 'item', label: t('hr.disciplinary'), href: '/hrms/employee-relations/disciplinary', icon: Gavel },
+        { type: 'item', label: t('hr.documents'), href: '/hrms/documents', icon: FileText },
+      ],
     },
   ];
 }
@@ -155,7 +189,7 @@ export const apps: AppInfo[] = [
     slug: 'crm',
     nameKey: 'apps.crm',
     icon: Handshake,
-    isActive: true,
+    isActive: false,
     getRoutes: getCrmRoutes,
   },
 ];

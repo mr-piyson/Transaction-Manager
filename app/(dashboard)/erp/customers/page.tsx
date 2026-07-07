@@ -2,11 +2,11 @@
 
 import { useTranslations } from 'next-intl';
 import { Users } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+import { useCustomerForm } from '@/components/dialogs';
 import { Button } from '@/components/ui/button';
 
 export default function CustomersPage() {
-  const router = useRouter();
+  const { openCreate } = useCustomerForm();
   const t = useTranslations();
 
   return (
@@ -18,7 +18,7 @@ export default function CustomersPage() {
         <h2 className="text-xl font-semibold">{t('customers.title')}</h2>
         <p className="text-muted-foreground mt-1">{t('customers.selectDescription')}</p>
       </div>
-      <Button onClick={() => router.push('/erp/customers/new')}>
+      <Button onClick={() => openCreate()}>
         {t('customers.createCustomer')}
       </Button>
     </div>

@@ -2,11 +2,11 @@
 
 import { useTranslations } from 'next-intl';
 import { Handshake } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+import { useContractForm } from '@/components/dialogs';
 import { Button } from '@/components/ui/button';
 
 export default function ContractsPage() {
-  const router = useRouter();
+  const { openCreate } = useContractForm();
   const t = useTranslations();
 
   return (
@@ -18,7 +18,7 @@ export default function ContractsPage() {
         <h2 className="text-xl font-semibold">{t('contracts.title')}</h2>
         <p className="text-muted-foreground mt-1">{t('contracts.selectDescription')}</p>
       </div>
-      <Button onClick={() => router.push('/erp/contracts/new')}>
+      <Button onClick={() => openCreate()}>
         {t('contracts.createContract')}
       </Button>
     </div>

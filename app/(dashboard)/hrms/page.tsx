@@ -1,10 +1,9 @@
 'use client';
 
-import { Users, Building2, Calendar, Wallet } from 'lucide-react';
+import { Users, Building2, Calendar, Wallet, Briefcase, BadgeCheck, Clock, PiggyBank, UserPlus, Award, GraduationCap, Speech, FileText } from 'lucide-react';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import { Header } from '@/components/layout/App-Header';
-import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
 const modules = [
@@ -13,6 +12,15 @@ const modules = [
   { key: 'attendance', icon: Calendar, href: '/hrms/attendance', color: 'bg-amber-500' },
   { key: 'leave', icon: Calendar, href: '/hrms/leave', color: 'bg-purple-500' },
   { key: 'payroll', icon: Wallet, href: '/hrms/payroll', color: 'bg-rose-500' },
+  { key: 'jobPositions', icon: Briefcase, href: '/hrms/job-positions', color: 'bg-indigo-500' },
+  { key: 'employeeTypes', icon: BadgeCheck, href: '/hrms/employee-types', color: 'bg-teal-500' },
+  { key: 'shifts', icon: Clock, href: '/hrms/shifts', color: 'bg-cyan-500' },
+  { key: 'salaryComponents', icon: PiggyBank, href: '/hrms/salary-components', color: 'bg-pink-500' },
+  { key: 'recruitment', icon: UserPlus, href: '/hrms/recruitment', color: 'bg-violet-500' },
+  { key: 'performance', icon: Award, href: '/hrms/performance', color: 'bg-orange-500' },
+  { key: 'training', icon: GraduationCap, href: '/hrms/training', color: 'bg-sky-500' },
+  { key: 'employeeRelations', icon: Speech, href: '/hrms/employee-relations', color: 'bg-lime-500' },
+  { key: 'documents', icon: FileText, href: '/hrms/documents', color: 'bg-stone-500' },
 ] as const;
 
 export default function HrDashboard() {
@@ -60,17 +68,6 @@ export default function HrDashboard() {
           })}
         </div>
 
-        <div className="rounded-xl border border-muted/60 bg-card p-8 text-center">
-          <h3 className="text-lg font-semibold text-muted-foreground">
-            {t('hr.comingSoon')}
-          </h3>
-          <p className="mt-1 text-sm text-muted-foreground/70">
-            {t('hr.comingSoonDescription')}
-          </p>
-          <Button variant="outline" className="mt-4" asChild>
-            <Link href="/erp">{t('common.back')}</Link>
-          </Button>
-        </div>
       </main>
     </div>
   );

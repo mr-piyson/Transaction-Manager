@@ -2,11 +2,11 @@
 
 import { useTranslations } from 'next-intl';
 import { Warehouse } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+import { useWarehouseForm } from '@/components/dialogs';
 import { Button } from '@/components/ui/button';
 
 export default function WarehousesPage() {
-  const router = useRouter();
+  const { openCreate } = useWarehouseForm();
   const t = useTranslations();
 
   return (
@@ -18,7 +18,7 @@ export default function WarehousesPage() {
         <h2 className="text-xl font-semibold">{t('warehouses.title')}</h2>
         <p className="text-muted-foreground mt-1">{t('warehouses.selectDescription')}</p>
       </div>
-      <Button onClick={() => router.push('/erp/warehouses/new')}>
+      <Button onClick={() => openCreate()}>
         {t('warehouses.createWarehouse')}
       </Button>
     </div>

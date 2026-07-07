@@ -2,11 +2,11 @@
 
 import { useTranslations } from 'next-intl';
 import { ShoppingCart } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+import { usePOForm } from '@/components/dialogs';
 import { Button } from '@/components/ui/button';
 
 export default function PurchaseOrdersPage() {
-  const router = useRouter();
+  const { openCreate } = usePOForm();
   const t = useTranslations();
 
   return (
@@ -18,7 +18,7 @@ export default function PurchaseOrdersPage() {
         <h2 className="text-xl font-semibold">{t('purchaseOrders.title')}</h2>
         <p className="text-muted-foreground mt-1">{t('purchaseOrders.selectDescription')}</p>
       </div>
-      <Button onClick={() => router.push('/erp/purchase-orders/new')}>{t('purchaseOrders.createPO')}</Button>
+      <Button onClick={() => openCreate()}>{t('purchaseOrders.createPO')}</Button>
     </div>
   );
 }

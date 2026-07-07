@@ -2,11 +2,11 @@
 
 import { useTranslations } from 'next-intl';
 import { Truck } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+import { useSupplierForm } from '@/components/dialogs';
 import { Button } from '@/components/ui/button';
 
 export default function SuppliersPage() {
-  const router = useRouter();
+  const { openCreate } = useSupplierForm();
   const t = useTranslations();
 
   return (
@@ -18,7 +18,7 @@ export default function SuppliersPage() {
         <h2 className="text-xl font-semibold">{t('suppliers.title')}</h2>
         <p className="text-muted-foreground mt-1">{t('suppliers.selectDescription')}</p>
       </div>
-      <Button onClick={() => router.push('/erp/suppliers/new')}>
+      <Button onClick={() => openCreate()}>
         {t('suppliers.createSupplier')}
       </Button>
     </div>

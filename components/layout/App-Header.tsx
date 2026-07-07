@@ -19,6 +19,11 @@ interface HeaderProps {
   transparent?: boolean;
   className?: string;
   description?: string;
+  actions?: ReactNode;
+  rightContent?: ReactNode;
+  onCreate?: () => void;
+  createLabel?: string;
+  children?: ReactNode;
 }
 
 export function Header({
@@ -30,6 +35,11 @@ export function Header({
   transparent = false,
   className,
   description,
+  actions,
+  rightContent,
+  onCreate,
+  createLabel,
+  children,
 }: HeaderProps) {
   const t = useTranslations();
   return (
@@ -66,6 +76,19 @@ export function Header({
           )}
         </div>
       </div>
+
+      {/* Children / Actions */}
+      {children && <div className="flex items-center gap-2 shrink-0">{children}</div>}
+      {actions && <div className="flex items-center gap-2 shrink-0">{actions}</div>}
+      {onCreate && (
+        <Button size="sm" onClick={onCreate}>
+          <Plus className="size-4 mr-1" />
+          {createLabel ?? 'Create'}
+        </Button>
+      )}
+
+      {/* Right Content */}
+      {rightContent && <div className="flex items-center gap-2 shrink-0">{rightContent}</div>}
 
       {/* Command Palette */}
       <CommandPaletteTrigger />
