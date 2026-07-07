@@ -12,6 +12,7 @@ import { organizationsRouter } from './organizations/organizations.router';
 import { purchaseOrdersRouter } from './purchase-orders/purchase-orders.router';
 import { reportsRouter } from './reports/reports.router';
 import { settingsRouter } from './settings/settings.router';
+import { setupRouter } from './setup/setup.router';
 import { stockRouter } from './stock/stock.router';
 import { suppliersRouter } from './suppliers/suppliers.router';
 import { unitsRouter } from './units/units.router';
@@ -31,6 +32,7 @@ export const appRouter = t.router({
   purchaseOrders: purchaseOrdersRouter,
   reports: reportsRouter,
   settings: settingsRouter,
+  setup: setupRouter,
   stock: stockRouter,
   suppliers: suppliersRouter,
   units: unitsRouter,

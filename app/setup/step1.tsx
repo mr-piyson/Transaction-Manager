@@ -24,14 +24,14 @@ export function Step1Language() {
         <Label>System Language</Label>
         <Select
           value={language}
-          onValueChange={(val) => setValue('language', val, { shouldValidate: true })}
+          onValueChange={(val) => setValue('language', val as 'en' | 'ar', { shouldValidate: true })}
         >
           <SelectTrigger>
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value={'English'}>English</SelectItem>
-            <SelectItem value={'Arabic'}>العربية</SelectItem>
+            <SelectItem value="en">English</SelectItem>
+            <SelectItem value="ar">العربية</SelectItem>
           </SelectContent>
         </Select>
       </div>

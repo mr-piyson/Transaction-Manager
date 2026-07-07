@@ -10,15 +10,12 @@ import { toast } from 'sonner';
 import { authClient } from '@/auth/auth-client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-
 import { trpc } from '@/lib/trpc/client';
 
 import { type SetupData, STEP_FIELDS, STEP_META, setupSchema } from './setup-types';
 import { Step1Language } from './step1';
 import { Step2Organization } from './step2';
 import { Step3Admin } from './step3';
-
-// ─── Animation ───────────────────────────────────────────────────────────────
 
 const slideVariants = {
   enter: (direction: number) => ({ x: direction > 0 ? 50 : -50, opacity: 0 }),
@@ -30,25 +27,21 @@ const slideVariants = {
   }),
 };
 
-// ─── Step registry ────────────────────────────────────────────────────────────
-
 const STEP_COMPONENTS = [Step1Language, Step2Organization, Step3Admin];
-
-// ─── Component ────────────────────────────────────────────────────────────────
 
 export default function SetupWizard() {
   const router = useRouter();
-  const setupMutation = trpc.organizations.setup.useMutation();
+  const setupMutation = trpc.setup.setup.useMutation();
   const isPending = setupMutation.isPending;
 
   const [step, setStep] = useState(0);
   const [direction, setDirection] = useState(0);
 
-  // ── Centralized form — shared across all steps via FormProvider ──
   const methods = useForm<SetupData>({
     resolver: zodResolver(setupSchema),
     mode: 'onChange',
     defaultValues: {
+      language: 'en',
       currency: 'BHD',
       orgName: '',
       slug: '',
@@ -62,8 +55,6 @@ export default function SetupWizard() {
 
   const { handleSubmit, trigger, watch } = methods;
   const formData = watch();
-
-  // ── Navigation ──────────────────────────────────────────────────
 
   const nextStep = async () => {
     const isStepValid = await trigger(STEP_FIELDS[step]);
@@ -84,8 +75,6 @@ export default function SetupWizard() {
     }
   };
 
-  // ── Keyboard navigation ─────────────────────────────────────────
-
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Enter' && !isPending) {
@@ -95,13 +84,11 @@ export default function SetupWizard() {
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [step, formData, isPending]); // re-bind to capture fresh `step` and `formData`
-
-  // ── Submission ──────────────────────────────────────────────────
+  }, [step, formData, isPending]);
 
   const onFinalSubmit = async (data: SetupData) => {
     try {
-      await setupMutation.mutateAsync(data as any);
+      await setupMutation.mutateAsync(data);
       toast.success('Organization created! Signing you in...');
       const { error } = await authClient.signIn.email({
         email: data.adminEmail,
@@ -118,15 +105,12 @@ export default function SetupWizard() {
     }
   };
 
-  // ── Render ──────────────────────────────────────────────────────
-
   const StepComponent = STEP_COMPONENTS[step];
   const isLastStep = step === STEP_META.length - 1;
 
   return (
     <div className="min-h-screen w-full flex items-center justify-center bg-muted/40 p-4">
       <div className="w-full max-w-lg">
-        {/* Progress bar */}
         <div className="flex gap-2 mb-6">
           {STEP_META.map((_, i) => (
             <div
@@ -136,18 +120,12 @@ export default function SetupWizard() {
           ))}
         </div>
 
-        {/* Card */}
         <Card className="shadow-xl relative overflow-hidden">
           <CardHeader className="text-center">
             <CardTitle className="text-2xl">{STEP_META[step].title}</CardTitle>
           </CardHeader>
 
           <CardContent className="min-h-75">
-            {/*
-              FormProvider makes the form context available to every
-              step component — they can all call useFormContext<SetupData>()
-              and get the same centralized form instance.
-            */}
             <FormProvider {...methods}>
               <AnimatePresence mode="wait" custom={direction}>
                 <motion.div
