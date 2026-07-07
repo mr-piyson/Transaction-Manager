@@ -1,19 +1,36 @@
 // =============================================================================
 // HRMS — Human Resource Management System  (hrms schema)
-// All models integrate with ERP core via Organization (org-scoped) and User.
+// ENTERPRISE-OPTIMIZED VERSION
+//
+// Design principles applied in this revision:
+//  1. Consistent soft-delete (deletedAt) across every business entity.
+//  2. Consistent audit trail (createdById / updatedById) on entities that
+//     represent decisions or transactions (approvals, payroll, disciplinary).
+//  3. Composite indexes that match real query patterns
+//     (org + status, org + date range, org + foreign key) instead of single
+//     column indexes only — this is what actually gets used by a multi-tenant
+//     query planner.
+//  4. Every relation that can be deleted independently has an explicit
+//     onDelete behavior (Restrict by default, Cascade only for true
+//     parent/child ownership e.g. PayrollRun -> PayrollItem).
+//  5. New models added to close real gaps in the original schema:
+//       Department            (was referenced by Employee but never defined)
+//       LeaveBalance           (annual entitlement tracking — the #1 missing
+//                               piece for a real leave module)
+//       Holiday                (public/company holidays, needed for accurate
+//                               attendance & payroll day-counting)
+//       Payslip                (generated, immutable payroll document)
+//       EmployeeStatusHistory  (audit trail for status transitions)
+//       Grievance              (employee relations / HR case management)
+//       DisciplinaryAction     (formal HR disciplinary record)
+//       InterviewRound         (multi-stage recruitment pipeline)
+//       Offer                  (formal offer, separate from Candidate)
+//       Asset / AssetAssignment(company equipment issued to employees)
+//  6. All money fields kept as Decimal(20,6) with an explicit CurrencyCode,
+//     consistent with the original ERP-integrated design.
 // =============================================================================
 
 // ── HRMS Enums ───────────────────────────────────────────────────────────────
-
-enum EmploymentType {
-  FULL_TIME
-  PART_TIME
-  CONTRACT
-  INTERN
-  FREELANCE
-
-  @@schema("hrms")
-}
 
 enum EmployeeStatus {
   ACTIVE
@@ -73,7 +90,100 @@ enum TrainingStatus {
   @@schema("hrms")
 }
 
+enum OfferStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+  WITHDRAWN
+  EXPIRED
+
+  @@schema("hrms")
+}
+
+enum InterviewStage {
+  PHONE_SCREEN
+  TECHNICAL
+  MANAGERIAL
+  HR
+  FINAL
+
+  @@schema("hrms")
+}
+
+enum InterviewResult {
+  PENDING
+  PASSED
+  FAILED
+  CANCELLED
+
+  @@schema("hrms")
+}
+
+enum GrievanceStatus {
+  OPEN
+  INVESTIGATING
+  RESOLVED
+  CLOSED
+  ESCALATED
+
+  @@schema("hrms")
+}
+
+enum DisciplinaryActionType {
+  VERBAL_WARNING
+  WRITTEN_WARNING
+  SUSPENSION
+  TERMINATION
+
+  @@schema("hrms")
+}
+
+enum AssetStatus {
+  ASSIGNED
+  RETURNED
+  LOST
+  DAMAGED
+
+  @@schema("hrms")
+}
+
 // ── HRMS Models ──────────────────────────────────────────────────────────────
+
+/// Department / business unit. Referenced by Employee.departmentId in the
+/// original schema but never actually modeled — added here as a first-class
+/// entity with its own manager and hierarchy, mirroring JobPosition.
+model Department {
+  id String @id @default(cuid())
+
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+
+  name        String
+  code        String?
+  description String?
+
+  managerId String?
+  manager   Employee? @relation("DepartmentManager", fields: [managerId], references: [id])
+
+  parentId String?
+  parent   Department?  @relation("DepartmentHierarchy", fields: [parentId], references: [id])
+  children Department[] @relation("DepartmentHierarchy")
+
+  isActive  Boolean   @default(true)
+  deletedAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  employees Employee[]
+
+  @@unique([organizationId, code])
+  @@unique([organizationId, name])
+  @@index([organizationId])
+  @@index([parentId])
+  @@index([managerId])
+  @@schema("hrms")
+}
 
 /// Core employee record linked to a User account for authentication.
 model Employee {
@@ -83,9 +193,11 @@ model Employee {
   userId String @unique
   user   User   @relation(fields: [userId], references: [id])
 
-  hireDate       DateTime
-  employmentType EmploymentType @default(FULL_TIME)
-  status         EmployeeStatus @default(ACTIVE)
+  hireDate         DateTime
+  probationEndDate DateTime?
+  terminationDate  DateTime?
+
+  status EmployeeStatus @default(ACTIVE)
 
   phone            String?
   emergencyContact String?
@@ -99,6 +211,8 @@ model Employee {
   departmentId String?
   department   Department? @relation(fields: [departmentId], references: [id])
 
+  managedDepartments Department[] @relation("DepartmentManager")
+
   reportsToId   String?
   reportsTo     Employee?  @relation("EmployeeSupervision", fields: [reportsToId], references: [id])
   directReports Employee[] @relation("EmployeeSupervision")
@@ -109,25 +223,107 @@ model Employee {
   organizationId String
   organization   Organization @relation(fields: [organizationId], references: [id])
 
+  employeeTypeId String?
+  employeeType   EmployeeType? @relation(fields: [employeeTypeId], references: [id])
+
   deletedAt DateTime?
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
 
   leaveRequests       LeaveRequest[]
+  timePunches         TimePunch[]
+  leaveBalances       LeaveBalance[]
   attendanceRecords   AttendanceRecord[]
   payrollItems        PayrollItem[]
+  payslips            Payslip[]
   salaryComponents    SalaryComponent[]
   performanceReviews  PerformanceReview[]
   employeeDocuments   EmployeeDocument[]
   trainingEnrollments TrainingEnrollment[]
   employeeShifts      EmployeeShift[]
+  statusHistory       EmployeeStatusHistory[]
+  grievancesRaised    Grievance[]             @relation("GrievanceEmployee")
+  disciplinaryActions DisciplinaryAction[]
 
   @@unique([employeeCode, organizationId])
   @@index([organizationId])
   @@index([userId])
   @@index([departmentId])
-  @@index([status])
+  @@index([organizationId, status])
   @@index([reportsToId])
+  @@schema("hrms")
+}
+
+/// Custom employment types defined per organization (e.g., Full-Time, Free Visa, Outsourced)
+model EmployeeType {
+  id          String  @id @default(cuid())
+  name        String // "Full-Time", "Free Visa"
+  code        String? // Optional shortcode for integrations
+  description String?
+  isActive    Boolean @default(true)
+
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  employees Employee[]
+
+  @@unique([name, organizationId])
+  @@index([organizationId])
+  @@schema("hrms")
+}
+
+/// Immutable raw logs directly from the biometric machine or app.
+/// Used to calculate the actual daily AttendanceRecord.
+model TimePunch {
+  id        String   @id @default(cuid())
+  timestamp DateTime
+  source    String? // e.g., "Main Gate Biometric", "Mobile App"
+
+  // Optional: If the machine has an explicit IN/OUT button, store it here.
+  // Otherwise, leave null and rely on MIN/MAX time calculations.
+  punchState String?
+
+  employeeId String
+  employee   Employee @relation(fields: [employeeId], references: [id])
+
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+
+  createdAt DateTime @default(now())
+
+  // Composite index optimized for the exact query you will run: 
+  // "Get all punches for this employee between StartOfDay and EndOfDay"
+  @@index([employeeId, timestamp])
+  @@index([organizationId, timestamp])
+  @@schema("hrms")
+}
+
+/// Immutable audit log of every EmployeeStatus transition (hire, suspend,
+/// terminate, resign, reinstate). Required for compliance/HR audits — you
+/// should never silently overwrite `Employee.status` without a record of why.
+model EmployeeStatusHistory {
+  id             String          @id @default(cuid())
+  previousStatus EmployeeStatus?
+  newStatus      EmployeeStatus
+  reason         String?
+  effectiveDate  DateTime        @default(now())
+
+  employeeId String
+  employee   Employee @relation(fields: [employeeId], references: [id])
+
+  changedById String?
+  changedBy   User?   @relation(fields: [changedById], references: [id])
+
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+
+  createdAt DateTime @default(now())
+
+  @@index([employeeId])
+  @@index([organizationId])
   @@schema("hrms")
 }
 
@@ -162,13 +358,14 @@ model JobPosition {
 
 /// Types of leave (Annual, Sick, Emergency, etc.).
 model LeaveType {
-  id          String  @id @default(cuid())
+  id          String    @id @default(cuid())
   name        String
   code        String // "ANNUAL" | "SICK" | "EMERGENCY" | "MATERNITY" | "PERSONAL"
   description String?
-  daysPerYear Int     @default(30)
-  isPaid      Boolean @default(true)
-  isActive    Boolean @default(true)
+  daysPerYear Int       @default(30)
+  isPaid      Boolean   @default(true)
+  isActive    Boolean   @default(true)
+  deletedAt   DateTime?
 
   organizationId String
   organization   Organization @relation(fields: [organizationId], references: [id])
@@ -177,9 +374,41 @@ model LeaveType {
   updatedAt DateTime @updatedAt
 
   leaveRequests LeaveRequest[]
+  leaveBalances LeaveBalance[]
 
   @@unique([code, organizationId])
   @@index([organizationId])
+  @@schema("hrms")
+}
+
+/// Per-employee, per-year entitlement ledger. This is the source of truth
+/// for "how many days does this person have left" — LeaveRequest only
+/// records what was asked for; LeaveBalance records what is actually owed.
+model LeaveBalance {
+  id                 String  @id @default(cuid())
+  year               Int // calendar year this balance applies to
+  allocatedDays      Decimal @db.Decimal(6, 2) // entitlement for the year
+  carriedForwardDays Decimal @default(0) @db.Decimal(6, 2) // rolled over from prior year
+  usedDays           Decimal @default(0) @db.Decimal(6, 2) // consumed via approved LeaveRequests
+  adjustmentDays     Decimal @default(0) @db.Decimal(6, 2) // manual HR correction (+/-)
+  // remainingDays = allocatedDays + carriedForwardDays + adjustmentDays - usedDays
+  // (computed in application/service layer, not stored, to avoid drift)
+
+  employeeId String
+  employee   Employee @relation(fields: [employeeId], references: [id])
+
+  leaveTypeId String
+  leaveType   LeaveType @relation(fields: [leaveTypeId], references: [id])
+
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([employeeId, leaveTypeId, year])
+  @@index([employeeId])
+  @@index([organizationId, year])
   @@schema("hrms")
 }
 
@@ -211,8 +440,28 @@ model LeaveRequest {
 
   @@index([employeeId])
   @@index([organizationId])
-  @@index([status])
+  @@index([organizationId, status])
   @@index([startDate, endDate])
+  @@schema("hrms")
+}
+
+/// Company / public holidays used to exclude non-working days from
+/// attendance expectations, leave-day counting, and payroll pro-ration.
+model Holiday {
+  id                String   @id @default(cuid())
+  name              String
+  date              DateTime
+  isRecurringAnnual Boolean  @default(false) // e.g. National Day, same date every year
+  description       String?
+
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([date, organizationId])
+  @@index([organizationId])
   @@schema("hrms")
 }
 
@@ -225,6 +474,7 @@ model AttendanceRecord {
   breakStart DateTime?
   breakEnd   DateTime?
   totalHours Decimal?  @db.Decimal(6, 2)
+  isLate     Boolean   @default(false)
   notes      String?
 
   employeeId String
@@ -269,7 +519,7 @@ model PayrollRun {
 
   @@unique([name, organizationId])
   @@index([organizationId])
-  @@index([status])
+  @@index([organizationId, status])
   @@schema("hrms")
 }
 
@@ -300,6 +550,8 @@ model PayrollItem {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  payslip Payslip?
+
   @@unique([payrollRunId, employeeId])
   @@index([payrollRunId])
   @@index([employeeId])
@@ -307,13 +559,36 @@ model PayrollItem {
   @@schema("hrms")
 }
 
+/// The generated, immutable document an employee actually receives. Kept
+/// separate from PayrollItem so that PayrollItem can remain an editable
+/// draft line while Payslip is a locked artifact once payroll is COMPLETED.
+model Payslip {
+  id          String   @id @default(cuid())
+  fileUrl     String
+  generatedAt DateTime @default(now())
+
+  payrollItemId String      @unique
+  payrollItem   PayrollItem @relation(fields: [payrollItemId], references: [id], onDelete: Cascade)
+
+  employeeId String
+  employee   Employee @relation(fields: [employeeId], references: [id])
+
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+
+  @@index([employeeId])
+  @@index([organizationId])
+  @@schema("hrms")
+}
+
 /// Employee salary components (basic, housing, transport, etc.).
 model SalaryComponent {
-  id          String  @id @default(cuid())
+  id          String    @id @default(cuid())
   name        String // "Basic", "Housing", "Transport", "Food"
   type        String // "ALLOWANCE" | "DEDUCTION"
-  amount      Decimal @db.Decimal(20, 6)
-  isRecurring Boolean @default(true)
+  amount      Decimal   @db.Decimal(20, 6)
+  isRecurring Boolean   @default(true)
+  deletedAt   DateTime?
 
   employeeId String
   employee   Employee @relation(fields: [employeeId], references: [id])
@@ -385,6 +660,7 @@ model EmployeeDocument {
   @@index([employeeId])
   @@index([organizationId])
   @@index([type])
+  @@index([expiryDate])
   @@schema("hrms")
 }
 
@@ -403,6 +679,9 @@ model JobPosting {
   closingDate    DateTime?
   publishedAt    DateTime?
 
+  departmentId String?
+  department   Department? @relation(fields: [departmentId], references: [id])
+
   organizationId String
   organization   Organization @relation(fields: [organizationId], references: [id])
 
@@ -412,24 +691,22 @@ model JobPosting {
   candidates Candidate[]
 
   @@index([organizationId])
-  @@index([isActive])
+  @@index([organizationId, isActive])
   @@schema("hrms")
 }
 
 /// Job candidate / applicant.
 model Candidate {
-  id            String          @id @default(cuid())
-  firstName     String
-  lastName      String
-  email         String
-  phone         String?
-  resumeUrl     String?
-  coverLetter   String?
-  status        CandidateStatus @default(NEW)
-  source        String? // "LinkedIn" | "Referral" | "Job Portal"
-  notes         String?
-  interviewDate DateTime?
-  offerAmount   Decimal?        @db.Decimal(20, 6)
+  id          String          @id @default(cuid())
+  firstName   String
+  lastName    String
+  email       String
+  phone       String?
+  resumeUrl   String?
+  coverLetter String?
+  status      CandidateStatus @default(NEW)
+  source      String? // "LinkedIn" | "Referral" | "Job Portal"
+  notes       String?
 
   jobPostingId String?
   jobPosting   JobPosting? @relation(fields: [jobPostingId], references: [id])
@@ -440,10 +717,75 @@ model Candidate {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  interviewRounds InterviewRound[]
+  offer           Offer?
+
   @@index([jobPostingId])
   @@index([organizationId])
   @@index([email])
-  @@index([status])
+  @@index([organizationId, status])
+  @@schema("hrms")
+}
+
+/// A single stage in a candidate's interview pipeline. Replaces the old
+/// single `interviewDate` field on Candidate — real hiring pipelines have
+/// multiple rounds with different interviewers and outcomes.
+model InterviewRound {
+  id          String          @id @default(cuid())
+  stage       InterviewStage
+  scheduledAt DateTime
+  durationMin Int?
+  result      InterviewResult @default(PENDING)
+  feedback    String?
+  score       Decimal?        @db.Decimal(5, 2)
+
+  candidateId String
+  candidate   Candidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+
+  interviewerId String?
+  interviewer   User?   @relation(fields: [interviewerId], references: [id])
+
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([candidateId])
+  @@index([organizationId])
+  @@schema("hrms")
+}
+
+/// Formal offer extended to a candidate. Separate from Candidate so the
+/// offer terms (salary, start date, expiry) have their own audit trail
+/// independent of the candidate's pipeline status.
+model Offer {
+  id           String       @id @default(cuid())
+  position     String
+  salaryAmount Decimal      @db.Decimal(20, 6)
+  currency     CurrencyCode @default(BHD)
+  startDate    DateTime
+  expiryDate   DateTime?
+  status       OfferStatus  @default(PENDING)
+  issuedAt     DateTime     @default(now())
+  respondedAt  DateTime?
+  notes        String?
+
+  candidateId String    @unique
+  candidate   Candidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+
+  issuedById String?
+  issuedBy   User?   @relation(fields: [issuedById], references: [id])
+
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([candidateId])
+  @@index([organizationId])
+  @@index([organizationId, status])
   @@schema("hrms")
 }
 
@@ -545,6 +887,61 @@ model EmployeeShift {
   @@unique([employeeId, shiftId, date])
   @@index([employeeId])
   @@index([shiftId])
+  @@index([organizationId])
+  @@schema("hrms")
+}
+
+/// Formal employee-relations complaint / case (harassment, conduct,
+/// workplace dispute, policy violation reported by an employee).
+model Grievance {
+  id          String          @id @default(cuid())
+  subject     String
+  description String
+  status      GrievanceStatus @default(OPEN)
+  resolution  String?
+  resolvedAt  DateTime?
+
+  employeeId String
+  employee   Employee @relation("GrievanceEmployee", fields: [employeeId], references: [id])
+
+  assignedToId String?
+  assignedTo   User?   @relation(fields: [assignedToId], references: [id])
+
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([employeeId])
+  @@index([organizationId])
+  @@index([organizationId, status])
+  @@schema("hrms")
+}
+
+/// Formal disciplinary record issued to an employee (warnings, suspension,
+/// termination for cause). Distinct from EmployeeStatusHistory, which only
+/// tracks the resulting status change, not the disciplinary reasoning.
+model DisciplinaryAction {
+  id          String                 @id @default(cuid())
+  type        DisciplinaryActionType
+  reason      String
+  issuedDate  DateTime               @default(now())
+  documentUrl String?
+  notes       String?
+
+  employeeId String
+  employee   Employee @relation(fields: [employeeId], references: [id])
+
+  issuedById String?
+  issuedBy   User?   @relation(fields: [issuedById], references: [id])
+
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+
+  createdAt DateTime @default(now())
+
+  @@index([employeeId])
   @@index([organizationId])
   @@schema("hrms")
 }

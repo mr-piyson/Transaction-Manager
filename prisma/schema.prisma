@@ -591,44 +591,6 @@ model RolePermission {
 }
 
 // =============================================================================
-// DEPARTMENTS  (cost centre segmentation)
-// =============================================================================
-
-model Department {
-  id   String  @id @default(cuid())
-  name String
-  code String? // Short code for GL posting
-
-  parentId String?
-  parent   Department?  @relation("DepartmentHierarchy", fields: [parentId], references: [id])
-  children Department[] @relation("DepartmentHierarchy")
-
-  isActive  Boolean   @default(true)
-  deletedAt DateTime?
-
-  organizationId String
-  organization   Organization @relation(fields: [organizationId], references: [id])
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  userOrganizationRoles UserOrganizationRole[]
-  expenses              Expense[]
-  invoiceLines          InvoiceLine[]
-  journalLines          JournalLine[]
-  invoices              Invoice[]
-  purchaseOrders        PurchaseOrder[]
-
-  // HRMS
-  employees Employee[]
-
-  @@unique([name, organizationId])
-  @@index([organizationId])
-  @@index([parentId])
-  @@schema("public")
-}
-
-// =============================================================================
 // BETTER AUTH standard models (unchanged names — library requirement)
 // =============================================================================
 
