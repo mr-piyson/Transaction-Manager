@@ -445,6 +445,11 @@ model User {
   // Admin plugin — used by better-auth for RBAC on admin endpoints
   role String @default("admin")
 
+  // Ban support (better-auth admin plugin)
+  banned     Boolean  @default(false)
+  banReason  String?
+  banExpires DateTime?
+
   platformRole PlatformRole @default(USER) // ← renamed from `role` for clarity
 
   // Primary org (for single-org users set at onboarding)
