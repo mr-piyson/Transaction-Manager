@@ -3,7 +3,7 @@ import { ConflictError, NotFoundError, UnprocessableError } from '@/lib/error';
 import { assertCan, orgProcedure, router } from '@/lib/trpc/context';
 import { paginatedResponse, toPrismaPage } from '@/lib/validations';
 import { writeAuditLog } from '../shared/audit.service';
-import { hrListSchema, dateRangeFilterSchema } from './hr.schemas';
+import { hrListSchema, dateRangeFilterSchema, hrDateField } from './hr.schemas';
 
 const shiftCreateSchema = z.object({
   name: z.string().min(1).max(255),
@@ -17,7 +17,7 @@ const shiftUpdateSchema = shiftCreateSchema.partial().extend({ id: z.string() })
 const employeeShiftUpsertSchema = z.object({
   employeeId: z.string(),
   shiftId: z.string(),
-  date: z.coerce.date(),
+  date: hrDateField(),
   startTime: z.string().regex(/^\d{2}:\d{2}$/).optional(),
   endTime: z.string().regex(/^\d{2}:\d{2}$/).optional(),
   notes: z.string().max(500).optional(),

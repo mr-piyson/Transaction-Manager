@@ -109,3 +109,16 @@ export const dateRangeFilterSchema = z
     to: z.coerce.date().optional(),
   })
   .optional();
+
+// ─── Date helpers (handle empty strings from HTML date inputs) ──────────────
+
+export function hrDateField() {
+  return z.preprocess((v) => (v === '' ? undefined : v), z.coerce.date());
+}
+
+export function hrOptionalDateField() {
+  return z.preprocess(
+    (v) => (v === '' || v === null || v === undefined ? undefined : v),
+    z.coerce.date().optional(),
+  );
+}

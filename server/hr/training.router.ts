@@ -3,7 +3,7 @@ import { ConflictError, NotFoundError, UnprocessableError } from '@/lib/error';
 import { assertCan, orgProcedure, router } from '@/lib/trpc/context';
 import { paginatedResponse, toPrismaPage } from '@/lib/validations';
 import { writeAuditLog } from '../shared/audit.service';
-import { hrListSchema, trainingStatusSchema } from './hr.schemas';
+import { hrListSchema, trainingStatusSchema, hrOptionalDateField } from './hr.schemas';
 
 const trainingCreateSchema = z.object({
   name: z.string().min(1).max(255),
@@ -12,8 +12,8 @@ const trainingCreateSchema = z.object({
   durationHours: z.number().int().min(0).optional(),
   cost: z.number().min(0).optional(),
   currency: z.enum(['USD', 'BHD', 'EUR', 'GBP', 'JPY', 'AED', 'SAR', 'KWD', 'QAR', 'OMR']).default('BHD'),
-  startDate: z.coerce.date().optional(),
-  endDate: z.coerce.date().optional(),
+  startDate: hrOptionalDateField(),
+  endDate: hrOptionalDateField(),
   isMandatory: z.boolean().default(false),
 });
 

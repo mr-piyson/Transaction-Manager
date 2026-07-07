@@ -3,14 +3,14 @@ import { ConflictError, NotFoundError, UnprocessableError } from '@/lib/error';
 import { assertCan, orgProcedure, router } from '@/lib/trpc/context';
 import { paginatedResponse, toPrismaPage } from '@/lib/validations';
 import { writeAuditLog } from '../shared/audit.service';
-import { employeeStatusSchema, hrListSchema } from './hr.schemas';
+import { employeeStatusSchema, hrDateField, hrOptionalDateField, hrListSchema } from './hr.schemas';
 import { generateEmployeeCode, withRetry } from './hr.service';
 
 const employeeCreateSchema = z.object({
   employeeCode: z.string().max(50).optional(),
   userId: z.string(),
-  hireDate: z.coerce.date(),
-  probationEndDate: z.coerce.date().optional(),
+  hireDate: hrDateField(),
+  probationEndDate: hrOptionalDateField(),
   status: employeeStatusSchema.default('ACTIVE'),
   phone: z.string().max(50).optional(),
   emergencyContact: z.string().max(255).optional(),

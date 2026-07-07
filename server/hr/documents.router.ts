@@ -3,7 +3,7 @@ import { NotFoundError } from '@/lib/error';
 import { assertCan, orgProcedure, router } from '@/lib/trpc/context';
 import { paginatedResponse, toPrismaPage } from '@/lib/validations';
 import { writeAuditLog } from '../shared/audit.service';
-import { hrListSchema } from './hr.schemas';
+import { hrListSchema, hrOptionalDateField } from './hr.schemas';
 
 export const documentsRouter = router({
   list: orgProcedure
@@ -49,7 +49,7 @@ export const documentsRouter = router({
         fileUrl: z.string(),
         mimeType: z.string().max(100).optional(),
         sizeBytes: z.number().int().optional(),
-        expiryDate: z.coerce.date().optional(),
+        expiryDate: hrOptionalDateField(),
         notes: z.string().max(2000).optional(),
       }),
     )

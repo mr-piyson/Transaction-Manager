@@ -2,7 +2,7 @@ import { z } from 'zod';
 import { NotFoundError, UnprocessableError } from '@/lib/error';
 import { assertCan, orgProcedure, router } from '@/lib/trpc/context';
 import { paginatedResponse, toPrismaPage } from '@/lib/validations';
-import { hrListSchema, dateRangeFilterSchema } from './hr.schemas';
+import { hrListSchema, dateRangeFilterSchema, hrDateField, hrOptionalDateField } from './hr.schemas';
 
 export const attendanceRouter = router({
   timePunches: {
@@ -48,7 +48,7 @@ export const attendanceRouter = router({
       .input(
         z.object({
           employeeId: z.string(),
-          timestamp: z.coerce.date(),
+          timestamp: hrDateField(),
           source: z.string().max(100).optional(),
           punchState: z.string().max(10).optional(),
         }),
@@ -128,7 +128,7 @@ export const attendanceRouter = router({
     }),
 
     calculate: orgProcedure
-      .input(z.object({ employeeId: z.string(), date: z.coerce.date() }))
+      .input(z.object({ employeeId: z.string(), date: hrDateField() }))
       .mutation(async ({ ctx, input }) => {
         assertCan(ctx.ability, 'attendance:create', 'AttendanceRecord');
         const orgId = ctx.user.organizationId;
@@ -186,10 +186,10 @@ export const attendanceRouter = router({
       .input(
         z.object({
           id: z.string(),
-          checkIn: z.coerce.date().optional(),
-          checkOut: z.coerce.date().optional(),
-          breakStart: z.coerce.date().optional(),
-          breakEnd: z.coerce.date().optional(),
+          checkIn: hrOptionalDateField(),
+          checkOut: hrOptionalDateField(),
+          breakStart: hrOptionalDateField(),
+          breakEnd: hrOptionalDateField(),
           totalHours: z.number().optional(),
           isLate: z.boolean().optional(),
           notes: z.string().max(1000).optional(),

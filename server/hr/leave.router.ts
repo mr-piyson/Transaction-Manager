@@ -3,7 +3,7 @@ import { ConflictError, NotFoundError, UnprocessableError } from '@/lib/error';
 import { assertCan, orgProcedure, router } from '@/lib/trpc/context';
 import { paginatedResponse, toPrismaPage } from '@/lib/validations';
 import { writeAuditLog } from '../shared/audit.service';
-import { hrListSchema, leaveStatusSchema, dateRangeFilterSchema } from './hr.schemas';
+import { hrListSchema, leaveStatusSchema, dateRangeFilterSchema, hrDateField } from './hr.schemas';
 
 // ── LeaveType ─────────────────────────────────────────────────────────────────
 
@@ -314,8 +314,8 @@ export const leaveRouter = router({
         z.object({
           employeeId: z.string(),
           leaveTypeId: z.string(),
-          startDate: z.coerce.date(),
-          endDate: z.coerce.date(),
+          startDate: hrDateField(),
+          endDate: hrDateField(),
           reason: z.string().max(2000).optional(),
           notes: z.string().max(2000).optional(),
         }),
@@ -586,7 +586,7 @@ export const leaveRouter = router({
       .input(
         z.object({
           name: z.string().min(1).max(255),
-          date: z.coerce.date(),
+          date: hrDateField(),
           isRecurringAnnual: z.boolean().default(false),
           description: z.string().max(1000).optional(),
         }),

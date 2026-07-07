@@ -3,7 +3,7 @@ import { ConflictError, NotFoundError, UnprocessableError } from '@/lib/error';
 import { assertCan, orgProcedure, router } from '@/lib/trpc/context';
 import { paginatedResponse, toPrismaPage } from '@/lib/validations';
 import { writeAuditLog } from '../shared/audit.service';
-import { hrListSchema, payrollStatusSchema, dateRangeFilterSchema } from './hr.schemas';
+import { hrListSchema, payrollStatusSchema, dateRangeFilterSchema, hrDateField } from './hr.schemas';
 
 const payrollInclude = {
   processedBy: { select: { id: true, name: true } },
@@ -67,8 +67,8 @@ export const payrollRouter = router({
     .input(
       z.object({
         name: z.string().min(1).max(255),
-        periodStart: z.coerce.date(),
-        periodEnd: z.coerce.date(),
+        periodStart: hrDateField(),
+        periodEnd: hrDateField(),
         notes: z.string().max(2000).optional(),
       }),
     )

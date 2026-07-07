@@ -103,10 +103,14 @@ export function EmployeeFormDialog({ open, onOpenChange, employee, onSuccess }: 
   }, [employee, reset]);
 
   const onSubmit: React.EventHandler<any> = async (values: any) => {
+    const cleaned = { ...values };
+    for (const k of Object.keys(cleaned)) {
+      if (cleaned[k] === '') cleaned[k] = undefined;
+    }
     if (isEdit && employee?.id) {
-      await updateMutation.mutateAsync({ id: employee.id, ...values });
+      await updateMutation.mutateAsync({ id: employee.id, ...cleaned });
     } else {
-      await createMutation.mutateAsync(values);
+      await createMutation.mutateAsync(cleaned);
     }
   };
 

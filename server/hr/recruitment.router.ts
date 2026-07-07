@@ -3,7 +3,7 @@ import { ConflictError, NotFoundError, UnprocessableError } from '@/lib/error';
 import { assertCan, orgProcedure, router } from '@/lib/trpc/context';
 import { paginatedResponse, toPrismaPage } from '@/lib/validations';
 import { writeAuditLog } from '../shared/audit.service';
-import { hrListSchema, candidateStatusSchema, interviewStageSchema, offerStatusSchema } from './hr.schemas';
+import { hrListSchema, candidateStatusSchema, interviewStageSchema, offerStatusSchema, hrDateField, hrOptionalDateField } from './hr.schemas';
 
 const jobPostingSchema = z.object({
   title: z.string().min(1).max(255),
@@ -14,7 +14,7 @@ const jobPostingSchema = z.object({
   salaryMin: z.number().optional(),
   salaryMax: z.number().optional(),
   currency: z.enum(['USD', 'BHD', 'EUR', 'GBP', 'JPY', 'AED', 'SAR', 'KWD', 'QAR', 'OMR']).default('BHD'),
-  closingDate: z.coerce.date().optional(),
+  closingDate: hrOptionalDateField(),
   departmentId: z.string().optional(),
 });
 
@@ -327,7 +327,7 @@ export const recruitmentRouter = router({
           z.object({
             candidateId: z.string(),
             stage: interviewStageSchema,
-            scheduledAt: z.coerce.date(),
+            scheduledAt: hrDateField(),
             durationMin: z.number().int().optional(),
             interviewerId: z.string().optional(),
           }),
@@ -351,7 +351,7 @@ export const recruitmentRouter = router({
         .input(
           z.object({
             id: z.string(),
-            scheduledAt: z.coerce.date().optional(),
+            scheduledAt: hrOptionalDateField(),
             durationMin: z.number().int().optional(),
             result: z.enum(['PENDING', 'PASSED', 'FAILED', 'CANCELLED']).optional(),
             feedback: z.string().max(5000).optional(),
@@ -399,8 +399,8 @@ export const recruitmentRouter = router({
             position: z.string().min(1).max(255),
             salaryAmount: z.number().min(0),
             currency: z.enum(['USD', 'BHD', 'EUR', 'GBP', 'JPY', 'AED', 'SAR', 'KWD', 'QAR', 'OMR']).default('BHD'),
-            startDate: z.coerce.date(),
-            expiryDate: z.coerce.date().optional(),
+            startDate: hrDateField(),
+            expiryDate: hrOptionalDateField(),
             notes: z.string().max(5000).optional(),
           }),
         )
