@@ -4,6 +4,7 @@ import type { LucideIcon } from 'lucide-react';
 import {
   Bell,
   BookType,
+  Briefcase,
   Building2,
   Coins,
   Languages,
@@ -73,6 +74,7 @@ export const NAV_ITEMS = [
     icon: BookType,
   },
   { id: 'sessions', labelKey: 'settings.sessions', href: '/settings/sessions', icon: LogOut },
+  { id: 'hrms', labelKey: 'settings.hrms.title', href: '/settings/hrms', icon: Briefcase },
   {
     id: 'appearance',
     labelKey: 'settings.appearance',
