@@ -3,11 +3,13 @@
 import type { ReactNode } from 'react';
 import { ContractFormProvider } from './contractForm';
 import { CustomerFormProvider } from './customerForm';
+import { EmployeeFormProvider } from './employeeForm';
 import { InvoiceFormProvider } from './invoiceForm';
 import { ItemFormProvider } from './itemForm';
 import { POFormProvider } from './poForm';
 import { SupplierFormProvider } from './supplierForm';
 import { SupplierItemFormProvider } from './supplierItemForm';
+import { TimePunchFormProvider } from './timePunchForm';
 import { WarehouseFormProvider } from './warehouseForm';
 
 export { CustomerFormProvider, useCustomerForm, CustomerFormDialog } from './customerForm';
@@ -34,6 +36,11 @@ export type { POFormValues } from './poForm';
 export { InvoiceFormProvider, useInvoiceForm, InvoiceFormDialog } from './invoiceForm';
 export type { InvoiceFormValues } from './invoiceForm';
 
+export { EmployeeFormProvider, useEmployeeForm, EmployeeFormDialog } from './employeeForm';
+export type { EmployeeFormValues } from './employeeForm';
+
+export { TimePunchFormProvider, useTimePunchForm, TimePunchFormDialog } from './timePunchForm';
+
 /**
  * DialogsProvider — mount once in your app layout.
  * Nest all form providers so their hooks work anywhere in the tree.
@@ -48,7 +55,11 @@ export function DialogsProvider({ children }: { children: ReactNode }) {
               <ContractFormProvider>
                 <POFormProvider>
                   <InvoiceFormProvider>
-                    {children}
+                    <EmployeeFormProvider>
+                      <TimePunchFormProvider>
+                        {children}
+                      </TimePunchFormProvider>
+                    </EmployeeFormProvider>
                   </InvoiceFormProvider>
                 </POFormProvider>
               </ContractFormProvider>
