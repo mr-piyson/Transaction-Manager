@@ -6,6 +6,7 @@ import {
   Download,
   Edit,
   Eye,
+  Filter,
   List,
   MoreHorizontal,
   Package,
@@ -59,8 +60,12 @@ export default function ItemsLayout({ children }: { children?: React.ReactNode }
   ];
 
   const [typeFilter, setTypeFilter] = useState('');
+  const [categoryFilter, setCategoryFilter] = useState<string | null>(null);
+
+  const { data: categoryList } = trpc.categories.list.useQuery();
   const { data, isPending } = trpc.items.list.useQuery({
     type: (typeFilter || undefined) as 'PRODUCT' | 'SERVICE' | undefined,
+    categoryId: categoryFilter ?? undefined,
   });
   const router = useRouter();
   const pathname = usePathname();
@@ -338,6 +343,43 @@ export default function ItemsLayout({ children }: { children?: React.ReactNode }
                     <span className="hidden md:block">Import</span>
                   </Button>
                 </Link>
+              </div>
+            </div>
+            {/* Category filter bar */}
+            <div className="w-full border-b px-4 py-1.5 shrink-0">
+              <div className="flex items-center gap-2 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+                <Filter className="size-3.5 text-muted-foreground shrink-0" />
+                <button
+                  className={cn(
+                    'shrink-0 rounded-full px-3 py-1 text-xs font-medium transition-colors',
+                    categoryFilter === null
+                      ? 'bg-primary text-primary-foreground'
+                      : 'bg-muted text-muted-foreground hover:bg-muted/80',
+                  )}
+                  onClick={() => setCategoryFilter(null)}
+                >
+                  {t('common.all')}
+                </button>
+                {categoryList?.map((cat) => (
+                  <button
+                    key={cat.id}
+                    className={cn(
+                      'shrink-0 rounded-full px-3 py-1 text-xs font-medium transition-colors whitespace-nowrap flex items-center gap-1.5',
+                      categoryFilter === cat.id
+                        ? 'bg-primary text-primary-foreground'
+                        : 'bg-muted text-muted-foreground hover:bg-muted/80',
+                    )}
+                    onClick={() => setCategoryFilter(categoryFilter === cat.id ? null : cat.id)}
+                  >
+                    {cat.color && (
+                      <span
+                        className="size-2 rounded-full shrink-0"
+                        style={{ backgroundColor: cat.color }}
+                      />
+                    )}
+                    {cat.name}
+                  </button>
+                ))}
               </div>
             </div>
             <AgGridReact
