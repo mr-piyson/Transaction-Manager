@@ -26,6 +26,7 @@ import { SupplierFormProvider } from './supplierForm';
 import { SupplierItemFormProvider } from './supplierItemForm';
 import { TimePunchFormProvider } from './timePunchForm';
 import { TrainingFormProvider } from './trainingForm';
+import { UnifiedItemFormProvider } from './item-dialog';
 import { WarehouseFormProvider } from './warehouseForm';
 
 export { CustomerFormProvider, useCustomerForm, CustomerFormDialog } from './customerForm';
@@ -42,6 +43,8 @@ export type { WarehouseFormValues } from './warehouseForm';
 
 export { ItemFormProvider, useItemForm, ItemFormDialog } from './itemForm';
 export type { ItemFormValues } from '@/lib/validations/item';
+
+export { UnifiedItemFormProvider, useUnifiedItemForm, UnifiedItemDialog } from './item-dialog';
 
 export { ContractFormProvider, useContractForm, ContractFormDialog } from './contractForm';
 export type { ContractFormValues } from './contractForm';
@@ -116,49 +119,51 @@ export function DialogsProvider({ children }: { children: ReactNode }) {
         <SupplierItemFormProvider>
           <WarehouseFormProvider>
             <ItemFormProvider>
-              <ContractFormProvider>
-                <POFormProvider>
-                  <InvoiceFormProvider>
-                    <EmployeeFormProvider>
-                      <TimePunchFormProvider>
-                        <DepartmentFormProvider>
-                          <JobPositionFormProvider>
-                            <EmployeeTypeFormProvider>
-                              <LeaveTypeFormProvider>
-                                <HolidayFormProvider>
-                                  <ShiftFormProvider>
-                                    <SalaryComponentFormProvider>
-                                      <PayrollRunFormProvider>
-                                        <PerformanceReviewFormProvider>
-                                          <DocumentFormProvider>
-                                            <GrievanceFormProvider>
-                                              <DisciplinaryActionFormProvider>
-                                                <JobPostingFormProvider>
-                                                  <CandidateFormProvider>
-                                                    <TrainingFormProvider>
-                                                      <LeaveAllocateFormProvider>
-                                                        {children}
-                                                      </LeaveAllocateFormProvider>
-                                                    </TrainingFormProvider>
-                                                  </CandidateFormProvider>
-                                                </JobPostingFormProvider>
-                                              </DisciplinaryActionFormProvider>
-                                            </GrievanceFormProvider>
-                                          </DocumentFormProvider>
-                                        </PerformanceReviewFormProvider>
-                                      </PayrollRunFormProvider>
-                                    </SalaryComponentFormProvider>
-                                  </ShiftFormProvider>
-                                </HolidayFormProvider>
-                              </LeaveTypeFormProvider>
-                            </EmployeeTypeFormProvider>
-                          </JobPositionFormProvider>
-                        </DepartmentFormProvider>
-                      </TimePunchFormProvider>
-                    </EmployeeFormProvider>
-                  </InvoiceFormProvider>
-                </POFormProvider>
-              </ContractFormProvider>
+              <UnifiedItemFormProvider>
+                <ContractFormProvider>
+                  <POFormProvider>
+                    <InvoiceFormProvider>
+                      <EmployeeFormProvider>
+                        <TimePunchFormProvider>
+                          <DepartmentFormProvider>
+                            <JobPositionFormProvider>
+                              <EmployeeTypeFormProvider>
+                                <LeaveTypeFormProvider>
+                                  <HolidayFormProvider>
+                                    <ShiftFormProvider>
+                                      <SalaryComponentFormProvider>
+                                        <PayrollRunFormProvider>
+                                          <PerformanceReviewFormProvider>
+                                            <DocumentFormProvider>
+                                              <GrievanceFormProvider>
+                                                <DisciplinaryActionFormProvider>
+                                                  <JobPostingFormProvider>
+                                                    <CandidateFormProvider>
+                                                      <TrainingFormProvider>
+                                                        <LeaveAllocateFormProvider>
+                                                          {children}
+                                                        </LeaveAllocateFormProvider>
+                                                      </TrainingFormProvider>
+                                                    </CandidateFormProvider>
+                                                  </JobPostingFormProvider>
+                                                </DisciplinaryActionFormProvider>
+                                              </GrievanceFormProvider>
+                                            </DocumentFormProvider>
+                                          </PerformanceReviewFormProvider>
+                                        </PayrollRunFormProvider>
+                                      </SalaryComponentFormProvider>
+                                    </ShiftFormProvider>
+                                  </HolidayFormProvider>
+                                </LeaveTypeFormProvider>
+                              </EmployeeTypeFormProvider>
+                            </JobPositionFormProvider>
+                          </DepartmentFormProvider>
+                        </TimePunchFormProvider>
+                      </EmployeeFormProvider>
+                    </InvoiceFormProvider>
+                  </POFormProvider>
+                </ContractFormProvider>
+              </UnifiedItemFormProvider>
             </ItemFormProvider>
           </WarehouseFormProvider>
         </SupplierItemFormProvider>

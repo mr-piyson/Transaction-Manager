@@ -17,6 +17,7 @@ import { z } from 'zod';
 import { ConflictError, NotFoundError } from '@/lib/error';
 import { assertCan, orgProcedure, router } from '@/lib/trpc/context';
 import {
+  currencyCodeSchema,
   decimalSchema,
   offsetPaginationSchema,
   paginatedResponse,
@@ -694,4 +695,158 @@ export const itemsRouter = router({
       };
     });
   }),
+
+  // ── CREATE WITH SUPPLIER ITEMS ────────────────────────────────────────
+  createWithSupplierItems: orgProcedure
+    .input(
+      z.object({
+        item: itemBaseSchema,
+        supplierItems: z
+          .array(
+            z.object({
+              supplierId: z.string(),
+              supplierSku: z.string().max(100).optional(),
+              supplierName: z.string().max(255).optional(),
+              basePrice: decimalSchema,
+              currency: currencyCodeSchema.default('BHD'),
+              leadTimeDays: z.number().int().min(0).optional(),
+              minOrderQty: decimalSchema.optional(),
+              notes: z.string().max(5000).optional(),
+            }),
+          )
+          .min(1, 'At least one supplier item is required'),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      assertCan(ctx.ability, 'item:create', 'Item');
+      assertCan(ctx.ability, 'po:update', 'all');
+
+      const orgId = ctx.user.organizationId;
+      const { item: itemInput, supplierItems: supplierItemInputs } = input;
+
+      // SKU uniqueness within org
+      const existingSku = await ctx.db.item.findFirst({
+        where: { sku: itemInput.sku, organizationId: orgId, deletedAt: null },
+        select: { id: true },
+      });
+      if (existingSku) {
+        throw new ConflictError(`SKU "${itemInput.sku}" is already in use.`);
+      }
+
+      // Validate all suppliers exist
+      const supplierIds = [...new Set(supplierItemInputs.map((si) => si.supplierId))];
+      const suppliers = await ctx.db.supplier.findMany({
+        where: { id: { in: supplierIds }, organizationId: orgId, deletedAt: null },
+        select: { id: true },
+      });
+      if (suppliers.length !== supplierIds.length) {
+        const found = new Set(suppliers.map((s) => s.id));
+        const missing = supplierIds.filter((id) => !found.has(id));
+        throw new NotFoundError('Supplier', missing.join(', '));
+      }
+
+      // Check for duplicate supplier+item pairs in the input
+      const seenPairs = new Set<string>();
+      for (const si of supplierItemInputs) {
+        const key = `${si.supplierId}`;
+        if (seenPairs.has(key)) {
+          throw new ConflictError(
+            `Supplier "${si.supplierId}" appears multiple times. Each supplier can only have one price per item.`,
+          );
+        }
+        seenPairs.add(key);
+      }
+
+      const { bundleLines, ...itemData } = itemInput;
+
+      const result = await ctx.db.$transaction(async (tx) => {
+        // 1. Create the item
+        const createdItem = await tx.item.create({
+          data: {
+            ...itemData,
+            organizationId: orgId,
+            createdById: ctx.user.id,
+          },
+        });
+
+        // Create bundle lines if present
+        if (bundleLines && bundleLines.length > 0) {
+          await tx.bundleLine.createMany({
+            data: bundleLines.map((bl) => ({
+              bundleItemId: createdItem.id,
+              componentItemId: bl.componentItemId,
+              quantity: bl.quantity,
+              organizationId: orgId,
+            })),
+          });
+        }
+
+        await writeAuditLog(
+          {
+            entityType: 'Item',
+            entityId: createdItem.id,
+            action: 'CREATE',
+            organizationId: orgId,
+            userId: ctx.user.id,
+            ipAddress: ctx.ipAddress,
+          },
+          tx,
+        );
+
+        // 2. Check for duplicate supplier+item pairs in DB
+        for (const si of supplierItemInputs) {
+          const alreadyExists = await tx.supplierItem.findFirst({
+            where: {
+              supplierId: si.supplierId,
+              itemId: createdItem.id,
+              deletedAt: null,
+            },
+            select: { id: true },
+          });
+          if (alreadyExists) {
+            throw new ConflictError(
+              `This supplier already has a price for this item.`,
+            );
+          }
+        }
+
+        // 3. Create supplier items
+        const createdSupplierItems = await tx.supplierItem.createMany({
+          data: supplierItemInputs.map((si) => ({
+            supplierId: si.supplierId,
+            itemId: createdItem.id,
+            supplierSku: si.supplierSku,
+            supplierName: si.supplierName,
+            basePrice: si.basePrice,
+            currency: si.currency,
+            leadTimeDays: si.leadTimeDays,
+            minOrderQty: si.minOrderQty ?? 1,
+            notes: si.notes,
+            organizationId: orgId,
+          })),
+        });
+
+        // Audit log each supplier item
+        for (const si of supplierItemInputs) {
+          await writeAuditLog(
+            {
+              entityType: 'SupplierItem',
+              entityId: `${createdItem.id}:${si.supplierId}`,
+              action: 'CREATE',
+              organizationId: orgId,
+              userId: ctx.user.id,
+              ipAddress: ctx.ipAddress,
+            },
+            tx,
+          );
+        }
+
+        return {
+          item: createdItem,
+          supplierItemsCount: createdSupplierItems.count,
+        };
+      });
+
+      return result;
+    }),
 });

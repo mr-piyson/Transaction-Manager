@@ -39,6 +39,7 @@ import { cn } from '@/lib/utils';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Header } from '@/components/layout/App-Header';
 import { ItemListItem } from '@/components/items/item-list-item';
+import { UnifiedItemDialog } from '@/components/dialogs';
 
 ModuleRegistry.registerModules([AllCommunityModule]);
 
@@ -289,10 +290,12 @@ export default function ItemsLayout({ children }: { children?: React.ReactNode }
             <div className="w-full flex flex-row justify-between border-b px-4 py-2 shrink-0">
               {/* Start Actions */}
               <div className="flex gap-2 items-center">
-                <Button size={'sm'} onClick={() => router.push('/erp/items/new')}>
-                  <Plus className="size-3.5" />
-                  <span className="hidden md:block">{t('items.createItem')}</span>
-                </Button>
+                <UnifiedItemDialog>
+                  <Button size={'sm'}>
+                    <Plus className="size-3.5" />
+                    <span className="hidden md:block">{t('items.createItem')}</span>
+                  </Button>
+                </UnifiedItemDialog>
                 <Tabs value={typeFilter} onValueChange={setTypeFilter}>
                   <TabsList className="h-auto  justify-start">
                     {TYPE_FILTERS.map((filter) => (
