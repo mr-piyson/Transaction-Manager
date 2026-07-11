@@ -41,7 +41,7 @@ import {
 import { Spinner } from '@/components/ui/spinner';
 import { useDocumentForm } from '@/components/dialogs';
 import { trpc } from '@/lib/trpc/client';
-import { format } from 'date-fns';
+import { useDateFormat } from '@/hooks/use-date-format';
 
 export default function DocumentsPage() {
   const [page, setPage] = useState(1);
@@ -50,6 +50,7 @@ export default function DocumentsPage() {
   const [typeFilter, setTypeFilter] = useState('');
   const { openCreate } = useDocumentForm();
   const limit = 25;
+  const { formatDate } = useDateFormat();
 
   const { data: employeesData } = trpc.hr.employees.list.useQuery({});
 
@@ -196,7 +197,7 @@ export default function DocumentsPage() {
                       </TableCell>
                       <TableCell className="text-sm">{record.uploadedBy?.name || '—'}</TableCell>
                       <TableCell className="text-sm">
-                        {record.createdAt ? format(new Date(record.createdAt), 'dd MMM yyyy') : '—'}
+                        {record.createdAt ? formatDate(record.createdAt) : '—'}
                       </TableCell>
                       <TableCell>
                         <DropdownMenu>

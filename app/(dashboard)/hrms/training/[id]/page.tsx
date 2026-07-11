@@ -50,7 +50,7 @@ import {
 } from '@/components/ui/table';
 import { Spinner } from '@/components/ui/spinner';
 import { trpc } from '@/lib/trpc/client';
-import { format } from 'date-fns';
+import { useDateFormat } from '@/hooks/use-date-format';
 
 const STATUS_COLORS: Record<string, string> = {
   PLANNED: 'bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-400',
@@ -70,6 +70,7 @@ export default function TrainingDetailPage() {
   const params = useParams<{ id: string }>();
   const router = useRouter();
   const utils = trpc.useUtils();
+  const { formatDate } = useDateFormat();
 
   const [enrollDialogOpen, setEnrollDialogOpen] = React.useState(false);
   const [selectedEmployeeId, setSelectedEmployeeId] = React.useState('');
@@ -186,8 +187,8 @@ export default function TrainingDetailPage() {
                 {training.cost != null && <span> · {Number(training.cost).toFixed(3)}</span>}
                 {training.startDate && (
                   <span>
-                    {' '}· {format(new Date(training.startDate), 'dd MMM yyyy')}
-                    {training.endDate && ` - ${format(new Date(training.endDate), 'dd MMM yyyy')}`}
+                    {' '}· {formatDate(training.startDate)}
+                    {training.endDate && ` - ${formatDate(training.endDate)}`}
                   </span>
                 )}
               </p>
@@ -258,7 +259,7 @@ export default function TrainingDetailPage() {
                       </TableCell>
                       <TableCell className="text-sm text-muted-foreground">
                         {enrollment.completedAt
-                          ? format(new Date(enrollment.completedAt), 'dd MMM yyyy')
+                          ? formatDate(enrollment.completedAt)
                           : '—'}
                       </TableCell>
                       <TableCell>

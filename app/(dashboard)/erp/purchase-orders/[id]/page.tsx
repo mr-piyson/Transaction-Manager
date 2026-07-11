@@ -61,7 +61,7 @@ import { usePOForm } from '@/components/dialogs/poForm';
 import { trpc } from '@/lib/trpc/client';
 import { useAppAbility } from '@/hooks/use-app-ability';
 import type { Action as PermissionAction } from '@/lib/abilities';
-import { format } from 'date-fns';
+import { useDateFormat } from '@/hooks/use-date-format';
 
 const STATUS_COLORS: Record<string, string> = {
   DRAFT: 'bg-muted text-muted-foreground',
@@ -81,6 +81,7 @@ export default function PurchaseOrderDetailPage() {
   const utils = trpc.useUtils();
   const { openEdit } = usePOForm();
   const t = useTranslations();
+  const { formatDate, formatDateTime, formatDateForInput, formatShortDate } = useDateFormat();
 
   const {
     data: po,
@@ -214,8 +215,8 @@ export default function PurchaseOrderDetailPage() {
         version,
         supplierId: po.supplierId,
         warehouseId: po.warehouseId,
-        date: po.date ? format(new Date(po.date), 'yyyy-MM-dd') : undefined,
-        expectedDate: po.expectedDate ? format(new Date(po.expectedDate), 'yyyy-MM-dd') : undefined,
+        date: po.date ? formatDateForInput(po.date) : undefined,
+        expectedDate: po.expectedDate ? formatDateForInput(po.expectedDate) : undefined,
         currency: po.currency as any,
         notes: po.notes ?? undefined,
         internalNotes: po.internalNotes ?? undefined,
@@ -437,7 +438,7 @@ export default function PurchaseOrderDetailPage() {
             </CardHeader>
             <CardContent>
               <p className="font-semibold">
-                {po.date ? format(new Date(po.date), 'dd MMM yyyy') : '—'}
+                {po.date ? formatDate(po.date) : '—'}
               </p>
             </CardContent>
           </Card>
@@ -449,7 +450,7 @@ export default function PurchaseOrderDetailPage() {
             </CardHeader>
             <CardContent>
               <p className="font-semibold">
-                {po.expectedDate ? format(new Date(po.expectedDate), 'dd MMM yyyy') : '—'}
+                {po.expectedDate ? formatDate(po.expectedDate) : '—'}
               </p>
             </CardContent>
           </Card>
@@ -579,7 +580,7 @@ export default function PurchaseOrderDetailPage() {
                   {stockMovements.map((m: any) => (
                     <TableRow key={m.id}>
                       <TableCell className="text-sm">
-                        {format(new Date(m.createdAt), 'dd MMM HH:mm')}
+                        {formatShortDate(m.createdAt)}
                       </TableCell>
                       <TableCell>
                         <span className="font-medium">{m.item?.name}</span>
@@ -608,21 +609,21 @@ export default function PurchaseOrderDetailPage() {
             {t('purchaseOrders.metaCreated', {
               type: po.status,
               name: po.createdBy?.name ?? '—',
-              date: po.createdAt ? format(new Date(po.createdAt), 'dd MMM yyyy HH:mm') : '—',
+              date: po.createdAt ? formatDateTime(po.createdAt) : '—',
             })}
           </span>
           <span>{t('purchaseOrders.metaVersion', { version: po.version })}</span>
           {po.receivedAt && (
             <span>
               {t('purchaseOrders.metaReceivedOn', {
-                date: format(new Date(po.receivedAt), 'dd MMM yyyy HH:mm'),
+                date: formatDateTime(po.receivedAt),
               })}
             </span>
           )}
           {po.cancelledAt && (
             <span>
               {t('purchaseOrders.metaCancelledOn', {
-                date: format(new Date(po.cancelledAt), 'dd MMM yyyy HH:mm'),
+                date: formatDateTime(po.cancelledAt),
               })}
             </span>
           )}

@@ -20,7 +20,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription } from '@/components/ui/empty';
 import { Spinner } from '@/components/ui/spinner';
 import { trpc } from '@/lib/trpc/client';
-import { format } from 'date-fns';
+import { useDateFormat } from '@/hooks/use-date-format';
 
 const STATUS_COLORS: Record<string, string> = {
   DRAFT: 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-400',
@@ -33,6 +33,7 @@ export default function PerformanceDetailPage() {
   const router = useRouter();
   const utils = trpc.useUtils();
   const { openEdit } = usePerformanceReviewForm();
+  const { formatDate } = useDateFormat();
 
   const { data: review, isLoading, isError, refetch } = trpc.hr.performance.byId.useQuery(
     { id: params.id },
@@ -123,7 +124,7 @@ export default function PerformanceDetailPage() {
               <p className="text-sm text-muted-foreground">
                 Reviewed by {review.reviewer?.name ?? '—'}
                 {review.reviewPeriod && <span> · {review.reviewPeriod}</span>}
-                {review.reviewDate && <span> · {format(new Date(review.reviewDate), 'dd MMM yyyy')}</span>}
+                {review.reviewDate && <span> · {formatDate(review.reviewDate)}</span>}
               </p>
             </div>
           </div>

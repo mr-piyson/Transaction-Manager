@@ -30,13 +30,14 @@ import {
 } from '@/components/ui/table';
 import { Spinner } from '@/components/ui/spinner';
 import { trpc } from '@/lib/trpc/client';
-import { format } from 'date-fns';
+import { useDateFormat } from '@/hooks/use-date-format';
 
 export default function TimePunchesPage() {
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
   const [employeeFilter, setEmployeeFilter] = useState('');
   const limit = 25;
+  const { formatDateTime } = useDateFormat();
 
   const { data, isLoading } = trpc.hr.attendance.timePunches.list.useQuery({
     page,
@@ -100,7 +101,7 @@ export default function TimePunchesPage() {
                         </div>
                       </TableCell>
                       <TableCell className="text-sm">
-                        {punch.timestamp ? format(new Date(punch.timestamp), 'dd MMM yyyy HH:mm:ss') : '—'}
+                        {punch.timestamp ? formatDateTime(punch.timestamp) : '—'}
                       </TableCell>
                       <TableCell>
                         {punch.punchState ? (

@@ -42,7 +42,7 @@ import {
 } from '@/components/ui/table';
 import { Spinner } from '@/components/ui/spinner';
 import { trpc } from '@/lib/trpc/client';
-import { format } from 'date-fns';
+import { useDateFormat } from '@/hooks/use-date-format';
 
 const statusBadge: Record<string, string> = {
   NEW: 'bg-blue-100 text-blue-800',
@@ -60,6 +60,7 @@ export default function CandidatesPage() {
   const [statusFilter, setStatusFilter] = useState('all');
   const [jobPostingFilter, setJobPostingFilter] = useState('');
   const limit = 25;
+  const { formatDate } = useDateFormat();
   const [statusDialogOpen, setStatusDialogOpen] = useState(false);
   const [statusTargetId, setStatusTargetId] = useState('');
   const [newStatus, setNewStatus] = useState('');
@@ -174,7 +175,7 @@ export default function CandidatesPage() {
                       </TableCell>
                       <TableCell className="text-sm">
                         {c.latestInterview
-                          ? format(new Date(c.latestInterview), 'dd MMM yyyy')
+                          ? formatDate(c.latestInterview)
                           : '—'}
                       </TableCell>
                       <TableCell>

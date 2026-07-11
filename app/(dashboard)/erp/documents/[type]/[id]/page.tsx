@@ -76,7 +76,6 @@ import {
 } from '@/components/ui/table';
 import { useInvoiceForm } from '@/components/dialogs/invoiceForm';
 import { trpc } from '@/lib/trpc/client';
-import { format } from 'date-fns';
 import { useDateFormat } from '@/hooks/use-date-format';
 
 const STATUS_COLORS: Record<string, string> = {
@@ -228,7 +227,7 @@ export default function DocumentDetailPage() {
   const isInvoice = type === 'invoices';
   const { openEdit } = useInvoiceForm();
   const utils = trpc.useUtils();
-  const { formatDate, formatDateTime } = useDateFormat();
+  const { formatDate, formatDateTime, formatDateForInput } = useDateFormat();
 
   const {
     data: invoice,
@@ -452,8 +451,8 @@ export default function DocumentDetailPage() {
         id: invoice.id,
         version,
         type: invoice.type as any,
-        date: invoice.date ? format(new Date(invoice.date), 'yyyy-MM-dd') : undefined,
-        dueDate: invoice.dueDate ? format(new Date(invoice.dueDate), 'yyyy-MM-dd') : undefined,
+        date: invoice.date ? formatDateForInput(invoice.date) : undefined,
+        dueDate: invoice.dueDate ? formatDateForInput(invoice.dueDate) : undefined,
         customerId: invoice.customerId ?? undefined,
         warehouseId: invoice.warehouseId ?? undefined,
         departmentId: invoice.departmentId ?? undefined,
@@ -679,7 +678,7 @@ export default function DocumentDetailPage() {
           <div>
             <p className="text-sm text-muted-foreground">{t('invoices.dueDate')}</p>
             <p className="font-medium">
-              {format(new Date(invoice.dueDate), 'dd MMM yyyy')}
+              {formatDate(invoice.dueDate)}
             </p>
           </div>
         )}
@@ -898,7 +897,7 @@ export default function DocumentDetailPage() {
                 {invoice.payments.map((payment: any) => (
                   <TableRow key={payment.id}>
                     <TableCell className="text-sm">
-                      {format(new Date(payment.date), 'dd MMM yyyy')}
+                      {formatDate(payment.date)}
                     </TableCell>
                     <TableCell>{payment.method}</TableCell>
                     <TableCell className="text-right font-medium">
@@ -1006,8 +1005,8 @@ export default function DocumentDetailPage() {
           {t('invoices.createdBy', {
             type: getTypeLabel(invoice.type),
             name: invoice.createdBy?.name ?? '—',
-            date: invoice.createdAt
-              ? format(new Date(invoice.createdAt), 'dd MMM yyyy HH:mm')
+              date: invoice.createdAt
+              ? formatDateTime(invoice.createdAt)
               : '—',
           })}
         </span>
@@ -1015,14 +1014,14 @@ export default function DocumentDetailPage() {
         {(invoice as any).sentAt && (
           <span>
             {t('invoices.sentOn', {
-              date: format(new Date((invoice as any).sentAt), 'dd MMM yyyy HH:mm'),
+              date: formatDateTime((invoice as any).sentAt),
             })}
           </span>
         )}
         {(invoice as any).cancelledAt && (
           <span>
             {t('invoices.cancelledOn', {
-              date: format(new Date((invoice as any).cancelledAt), 'dd MMM yyyy HH:mm'),
+              date: formatDateTime((invoice as any).cancelledAt),
             })}
           </span>
         )}

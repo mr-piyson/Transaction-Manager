@@ -37,7 +37,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { trpc } from '@/lib/trpc/client';
-import { format } from 'date-fns';
+import { useDateFormat } from '@/hooks/use-date-format';
 
 const statusBadge: Record<string, string> = {
   NEW: 'bg-blue-100 text-blue-800',
@@ -79,6 +79,7 @@ export default function CandidateDetailPage() {
   const [respondDialogOpen, setRespondDialogOpen] = useState(false);
   const [respondAction, setRespondAction] = useState<'ACCEPT' | 'REJECT' | null>(null);
   const [respondReason, setRespondReason] = useState('');
+  const { formatDate, formatDateTime } = useDateFormat();
 
   const { data: candidate, isLoading: candidateLoading } = trpc.hr.recruitment.candidates.byId.useQuery({ id });
   const { data: interviewsData, refetch: refetchInterviews } = trpc.hr.recruitment.candidates.interviewRounds.list.useQuery({ candidateId: id });
@@ -217,7 +218,7 @@ export default function CandidateDetailPage() {
                   <TableRow key={iv.id}>
                     <TableCell className="text-sm">{iv.stage ?? '—'}</TableCell>
                     <TableCell className="text-sm">
-                      {iv.scheduledAt ? format(new Date(iv.scheduledAt), 'dd MMM yyyy HH:mm') : '—'}
+                      {iv.scheduledAt ? formatDateTime(iv.scheduledAt) : '—'}
                     </TableCell>
                     <TableCell className="text-sm">{iv.interviewer?.user?.name ?? '—'}</TableCell>
                     <TableCell className="text-sm">{iv.durationMin ? `${iv.durationMin}m` : '—'}</TableCell>
@@ -268,8 +269,8 @@ export default function CandidateDetailPage() {
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div><strong>Position:</strong> {offer.position ?? '—'}</div>
                 <div><strong>Salary:</strong> {offer.salaryAmount ? `${offer.currency ?? ''} ${offer.salaryAmount}` : '—'}</div>
-                <div><strong>Start Date:</strong> {offer.startDate ? format(new Date(offer.startDate), 'dd MMM yyyy') : '—'}</div>
-                <div><strong>Expiry Date:</strong> {offer.expiryDate ? format(new Date(offer.expiryDate), 'dd MMM yyyy') : '—'}</div>
+                <div><strong>Start Date:</strong> {offer.startDate ? formatDate(offer.startDate) : '—'}</div>
+                <div><strong>Expiry Date:</strong> {offer.expiryDate ? formatDate(offer.expiryDate) : '—'}</div>
                 <div>
                   <strong>Status:</strong>{' '}
                   <Badge variant="outline" className={offerStatusBadge[offer.status] ?? ''}>{offer.status}</Badge>

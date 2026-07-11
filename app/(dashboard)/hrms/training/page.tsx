@@ -41,7 +41,7 @@ import {
 } from '@/components/ui/table';
 import { Spinner } from '@/components/ui/spinner';
 import { trpc } from '@/lib/trpc/client';
-import { format } from 'date-fns';
+import { useDateFormat } from '@/hooks/use-date-format';
 
 const STATUS_COLORS: Record<string, string> = {
   PLANNED: 'bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-400',
@@ -58,6 +58,7 @@ export default function TrainingListPage() {
   const [mandatory, setMandatory] = useState('all');
   const limit = 25;
   const { openCreate } = useTrainingForm();
+  const { formatDate } = useDateFormat();
 
   const { data, isLoading, refetch } = trpc.hr.training.list.useQuery({
     page,
@@ -182,10 +183,10 @@ export default function TrainingListPage() {
                       </TableCell>
                       <TableCell>{record._count?.enrollments ?? record.enrollments?.length ?? 0}</TableCell>
                       <TableCell className="text-sm text-muted-foreground">
-                        {record.startDate ? format(new Date(record.startDate), 'dd MMM yyyy') : '—'}
+                        {record.startDate ? formatDate(record.startDate) : '—'}
                       </TableCell>
                       <TableCell className="text-sm text-muted-foreground">
-                        {record.endDate ? format(new Date(record.endDate), 'dd MMM yyyy') : '—'}
+                        {record.endDate ? formatDate(record.endDate) : '—'}
                       </TableCell>
                       <TableCell onClick={(e) => e.stopPropagation()}>
                         <DropdownMenu>

@@ -38,7 +38,7 @@ import {
 } from '@/components/ui/table';
 import { Spinner } from '@/components/ui/spinner';
 import { trpc } from '@/lib/trpc/client';
-import { format } from 'date-fns';
+import { useDateFormat } from '@/hooks/use-date-format';
 
 const typeBadge: Record<string, string> = {
   WARNING: 'bg-yellow-100 text-yellow-800',
@@ -54,6 +54,7 @@ export default function DisciplinaryPage() {
   const [employeeId, setEmployeeId] = useState('');
   const [typeFilter, setTypeFilter] = useState('all');
   const limit = 25;
+  const { formatDate } = useDateFormat();
 
   const { data, isLoading, refetch } = trpc.hr.employeeRelations.disciplinaryActions.list.useQuery({
     page,
@@ -143,7 +144,7 @@ export default function DisciplinaryPage() {
                       <TableCell className="text-sm max-w-[300px] truncate">{a.reason ?? '—'}</TableCell>
                       <TableCell className="text-sm">{a.issuedBy?.user?.name ?? '—'}</TableCell>
                       <TableCell className="text-sm">
-                        {a.issuedAt ? format(new Date(a.issuedAt), 'dd MMM yyyy') : '—'}
+                        {a.issuedAt ? formatDate(a.issuedAt) : '—'}
                       </TableCell>
                       <TableCell>
                         <DropdownMenu>

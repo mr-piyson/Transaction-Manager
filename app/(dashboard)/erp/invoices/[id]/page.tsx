@@ -75,7 +75,6 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { useInvoiceForm } from '@/components/dialogs/invoiceForm';
 import { trpc } from '@/lib/trpc/client';
-import { format } from 'date-fns';
 import { useDateFormat } from '@/hooks/use-date-format';
 
 const STATUS_COLORS: Record<string, string> = {
@@ -234,7 +233,7 @@ export default function InvoiceDetailPage() {
   const utils = trpc.useUtils();
   const { openEdit } = useInvoiceForm();
   const t = useTranslations();
-  const { formatDate, formatDateTime } = useDateFormat();
+  const { formatDate, formatDateTime, formatDateForInput } = useDateFormat();
 
   const {
     data: invoice,
@@ -458,8 +457,8 @@ export default function InvoiceDetailPage() {
         id: invoice.id,
         version,
         type: invoice.type as any,
-        date: invoice.date ? format(new Date(invoice.date), 'yyyy-MM-dd') : undefined,
-        dueDate: invoice.dueDate ? format(new Date(invoice.dueDate), 'yyyy-MM-dd') : undefined,
+        date: invoice.date ? formatDateForInput(invoice.date) : undefined,
+        dueDate: invoice.dueDate ? formatDateForInput(invoice.dueDate) : undefined,
         customerId: invoice.customerId ?? undefined,
         warehouseId: invoice.warehouseId ?? undefined,
         departmentId: invoice.departmentId ?? undefined,

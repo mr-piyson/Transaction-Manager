@@ -6,13 +6,14 @@ import * as React from 'react';
 import { Button } from '@/components/ui/button';
 import { Spinner } from '@/components/ui/spinner';
 import { trpc } from '@/lib/trpc/client';
-import { format } from 'date-fns';
+import { useDateFormat } from '@/hooks/use-date-format';
 import { useTranslations } from 'next-intl';
 
 export default function DocumentPrintPage() {
   const params = useParams<{ type: string; id: string }>();
   const router = useRouter();
   const t = useTranslations();
+  const { formatDate } = useDateFormat();
   const type = params.type;
 
   const {
@@ -145,11 +146,11 @@ export default function DocumentPrintPage() {
             <div className="mt-2 text-xs text-muted-foreground space-y-0.5">
               <p>
                 {t('common.date')}:{' '}
-                {invoice.date ? format(new Date(invoice.date), 'dd MMM yyyy') : '—'}
+                {invoice.date ? formatDate(invoice.date) : '—'}
               </p>
               {invoice.dueDate && (
                 <p>
-                  {t('invoices.dueDate')}: {format(new Date(invoice.dueDate), 'dd MMM yyyy')}
+                  {t('invoices.dueDate')}: {formatDate(invoice.dueDate)}
                 </p>
               )}
             </div>
@@ -355,7 +356,7 @@ export default function DocumentPrintPage() {
               <tbody>
                 {invoice.payments.map((p: any) => (
                   <tr key={p.id}>
-                    <td className="py-1 pr-2">{format(new Date(p.date), 'dd MMM yyyy')}</td>
+                    <td className="py-1 pr-2">{formatDate(p.date)}</td>
                     <td className="py-1 pr-2">{p.method}</td>
                     <td className="py-1 pl-2 text-right">{Number(p.amount).toFixed(3)}</td>
                     <td className="py-1 pl-2 text-muted-foreground">{p.reference ?? '—'}</td>

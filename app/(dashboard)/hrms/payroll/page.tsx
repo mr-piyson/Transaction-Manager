@@ -61,6 +61,7 @@ export default function PayrollListPage() {
   const [dateTo, setDateTo] = useState('');
   const limit = 25;
   const { openCreate } = usePayrollRunForm();
+  const { formatDate } = useDateFormat();
 
   const { data, isLoading, refetch } = trpc.hr.payroll.list.useQuery({
     page,
@@ -169,7 +170,7 @@ export default function PayrollListPage() {
                       <TableCell className="font-medium">{record.name}</TableCell>
                       <TableCell className="text-sm">
                         {record.periodStart && record.periodEnd
-                          ? `${format(new Date(record.periodStart), 'dd MMM')} - ${format(new Date(record.periodEnd), 'dd MMM yyyy')}`
+                          ? `${format(new Date(record.periodStart), 'dd MMM')} - ${formatDate(record.periodEnd)}`
                           : '—'}
                       </TableCell>
                       <TableCell>
@@ -188,7 +189,7 @@ export default function PayrollListPage() {
                         {record.totalNet != null ? Number(record.totalNet).toFixed(3) : '—'}
                       </TableCell>
                       <TableCell className="text-sm text-muted-foreground">
-                        {record.createdAt ? format(new Date(record.createdAt), 'dd MMM yyyy') : '—'}
+                        {record.createdAt ? formatDate(record.createdAt) : '—'}
                       </TableCell>
                       <TableCell onClick={(e) => e.stopPropagation()}>
                         <DropdownMenu>

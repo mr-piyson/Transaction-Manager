@@ -14,7 +14,7 @@ import { Spinner } from '@/components/ui/spinner';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useSupplierForm, useSupplierItemForm } from '@/components/dialogs';
 import { trpc } from '@/lib/trpc/client';
-import { format } from 'date-fns';
+import { useDateFormat } from '@/hooks/use-date-format';
 
 const STATUS_COLORS: Record<string, string> = {
   DRAFT: 'bg-muted text-muted-foreground',
@@ -35,6 +35,7 @@ export default function SupplierDetailPage() {
   const { openEdit } = useSupplierForm();
   const { openCreate, openEdit: openSupplierItemEdit } = useSupplierItemForm();
   const t = useTranslations();
+  const { formatDate, formatDateTime } = useDateFormat();
 
   const { data: supplier, isLoading, isError, error, refetch } = trpc.suppliers.byId.useQuery(
     { id: params.id },
@@ -254,7 +255,7 @@ export default function SupplierDetailPage() {
                       </Badge>
                     </TableCell>
                     <TableCell className="text-sm text-muted-foreground">
-                      {po.date ? format(new Date(po.date), 'dd MMM yyyy') : '—'}
+                      {po.date ? formatDate(po.date) : '—'}
                     </TableCell>
                     <TableCell className="text-right font-medium">
                       {Number(po.total).toFixed(3)} {po.currency}
@@ -387,8 +388,8 @@ export default function SupplierDetailPage() {
 
         {/* Meta info */}
         <div className="text-xs text-muted-foreground flex flex-wrap gap-x-4 gap-y-1 pb-2">
-          <span>{t('suppliers.created')} {supplier.createdAt ? format(new Date(supplier.createdAt), 'dd MMM yyyy HH:mm') : '—'}</span>
-          <span>{t('suppliers.updated')} {supplier.updatedAt ? format(new Date(supplier.updatedAt), 'dd MMM yyyy HH:mm') : '—'}</span>
+          <span>{t('suppliers.created')} {supplier.createdAt ? formatDateTime(supplier.createdAt) : '—'}</span>
+          <span>{t('suppliers.updated')} {supplier.updatedAt ? formatDateTime(supplier.updatedAt) : '—'}</span>
         </div>
       </div>
 

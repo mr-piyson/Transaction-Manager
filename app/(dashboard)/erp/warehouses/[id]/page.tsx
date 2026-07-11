@@ -52,7 +52,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { useWarehouseForm } from '@/components/dialogs';
 import { trpc } from '@/lib/trpc/client';
-import { format } from 'date-fns';
+import { useDateFormat } from '@/hooks/use-date-format';
 
 export default function WarehouseDetailPage() {
   const params = useParams<{ id: string }>();
@@ -60,6 +60,7 @@ export default function WarehouseDetailPage() {
   const utils = trpc.useUtils();
   const { openEdit } = useWarehouseForm();
   const t = useTranslations();
+  const { formatDate, formatDateTime, formatShortDate } = useDateFormat();
 
   const { data: warehouse, isLoading, isError, error, refetch } = trpc.warehouses.byId.useQuery(
     { id: params.id },
@@ -345,7 +346,7 @@ export default function WarehouseDetailPage() {
                 {movements.map((m: any) => (
                   <TableRow key={m.id}>
                     <TableCell className="text-sm whitespace-nowrap">
-                      {format(new Date(m.createdAt), 'dd MMM HH:mm')}
+                      {formatShortDate(m.createdAt)}
                     </TableCell>
                     <TableCell>
                       <Badge variant="outline" className="text-xs">
@@ -381,8 +382,8 @@ export default function WarehouseDetailPage() {
 
         {/* Meta info */}
         <div className="text-xs text-muted-foreground flex flex-wrap gap-x-4 gap-y-1 pb-2">
-          <span>{t('warehouses.created')} {warehouse.createdAt ? format(new Date(warehouse.createdAt), 'dd MMM yyyy HH:mm') : '—'}</span>
-          <span>{t('warehouses.updated')} {warehouse.updatedAt ? format(new Date(warehouse.updatedAt), 'dd MMM yyyy HH:mm') : '—'}</span>
+          <span>{t('warehouses.created')} {warehouse.createdAt ? formatDateTime(warehouse.createdAt) : '—'}</span>
+          <span>{t('warehouses.updated')} {warehouse.updatedAt ? formatDateTime(warehouse.updatedAt) : '—'}</span>
         </div>
       </div>
 

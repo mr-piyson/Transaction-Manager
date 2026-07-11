@@ -18,7 +18,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { useCustomerForm } from '@/components/dialogs';
 import { trpc } from '@/lib/trpc/client';
-import { format } from 'date-fns';
+import { useDateFormat } from '@/hooks/use-date-format';
 
 export default function CustomerDetailPage() {
   const params = useParams<{ id: string }>();
@@ -26,6 +26,7 @@ export default function CustomerDetailPage() {
   const utils = trpc.useUtils();
   const { openEdit } = useCustomerForm();
   const t = useTranslations();
+  const { formatDateTime } = useDateFormat();
 
   const { data: customer, isLoading, isError, error, refetch } = trpc.customers.byId.useQuery(
     { id: params.id },
@@ -282,8 +283,8 @@ export default function CustomerDetailPage() {
 
         {/* Meta info */}
         <div className="text-xs text-muted-foreground flex flex-wrap gap-x-4 gap-y-1 pb-2">
-          <span>{t('customers.created')} {customer.createdAt ? format(new Date(customer.createdAt), 'dd MMM yyyy HH:mm') : '—'}</span>
-          <span>{t('customers.updated')} {customer.updatedAt ? format(new Date(customer.updatedAt), 'dd MMM yyyy HH:mm') : '—'}</span>
+          <span>{t('customers.created')} {customer.createdAt ? formatDateTime(customer.createdAt) : '—'}</span>
+          <span>{t('customers.updated')} {customer.updatedAt ? formatDateTime(customer.updatedAt) : '—'}</span>
         </div>
       </div>
 

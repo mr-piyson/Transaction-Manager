@@ -42,7 +42,7 @@ import {
 } from '@/components/ui/table';
 import { Spinner } from '@/components/ui/spinner';
 import { trpc } from '@/lib/trpc/client';
-import { format } from 'date-fns';
+import { useDateFormat } from '@/hooks/use-date-format';
 
 export default function ShiftAssignmentsPage() {
   const [page, setPage] = useState(1);
@@ -50,6 +50,7 @@ export default function ShiftAssignmentsPage() {
   const [dateFrom, setDateFrom] = useState('');
   const [dateTo, setDateTo] = useState('');
   const limit = 25;
+  const { formatDate } = useDateFormat();
   const [showAssignDialog, setShowAssignDialog] = useState(false);
   const [assignEmployeeId, setAssignEmployeeId] = useState('');
   const [assignShiftId, setAssignShiftId] = useState('');
@@ -186,7 +187,7 @@ export default function ShiftAssignmentsPage() {
                       </TableCell>
                       <TableCell className="text-sm">{a.shift?.name ?? '—'}</TableCell>
                       <TableCell className="text-sm">
-                        {a.date ? format(new Date(a.date), 'dd MMM yyyy') : '—'}
+                        {a.date ? formatDate(a.date) : '—'}
                       </TableCell>
                       <TableCell className="text-sm font-mono">{a.startTime ?? '—'}</TableCell>
                       <TableCell className="text-sm font-mono">{a.endTime ?? '—'}</TableCell>

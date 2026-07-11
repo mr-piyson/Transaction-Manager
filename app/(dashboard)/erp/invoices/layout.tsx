@@ -1,6 +1,7 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
+import { useDateFormat } from '@/hooks/use-date-format';
 import {
   Edit,
   Eye,
@@ -66,6 +67,7 @@ export default function InvoicesLayout({ children }: { children?: React.ReactNod
   const t = useTranslations();
   const tableTheme = useTableTheme();
   const { openCreate } = useInvoiceForm();
+  const { formatDate } = useDateFormat();
 
   const [viewMode, setViewMode] = useState<'list' | 'table'>('list');
   const [statusFilter, setStatusFilter] = useState('');
@@ -177,7 +179,7 @@ export default function InvoicesLayout({ children }: { children?: React.ReactNod
         cellClass: 'text-[12px]',
         valueFormatter: (params) => {
           if (!params.value) return '—';
-          return new Date(params.value).toLocaleDateString();
+          return formatDate(params.value);
         },
       },
       {

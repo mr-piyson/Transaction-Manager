@@ -39,7 +39,7 @@ import {
 } from '@/components/ui/table';
 import { Spinner } from '@/components/ui/spinner';
 import { trpc } from '@/lib/trpc/client';
-import { format } from 'date-fns';
+import { useDateFormat } from '@/hooks/use-date-format';
 
 export default function JobPostingsPage() {
   const [page, setPage] = useState(1);
@@ -47,6 +47,7 @@ export default function JobPostingsPage() {
   const [activeFilter, setActiveFilter] = useState('all');
   const [departmentFilter, setDepartmentFilter] = useState('');
   const limit = 25;
+  const { formatDate } = useDateFormat();
 
   const { data, isLoading, refetch } = trpc.hr.recruitment.jobPostings.list.useQuery({
     page,
@@ -149,7 +150,7 @@ export default function JobPostingsPage() {
                         )}
                       </TableCell>
                       <TableCell className="text-sm">
-                        {p.closingDate ? format(new Date(p.closingDate), 'dd MMM yyyy') : '—'}
+                        {p.closingDate ? formatDate(p.closingDate) : '—'}
                       </TableCell>
                       <TableCell>
                         <DropdownMenu>

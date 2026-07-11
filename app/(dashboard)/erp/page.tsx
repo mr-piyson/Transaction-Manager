@@ -28,7 +28,7 @@ import { Separator } from '@/components/ui/separator';
 import { useCurrency } from '@/hooks/use-currency';
 import { trpc } from '@/lib/trpc/client';
 import { cn } from '@/lib/utils';
-import { format } from 'date-fns';
+import { useDateFormat } from '@/hooks/use-date-format';
 
 function StatCard({
   title,
@@ -148,6 +148,7 @@ export default function ErpDashboard() {
   const { data: sessionData } = trpc.auth.session.useQuery();
   const { data: summary } = trpc.reports.summary.useQuery();
   const { format: currencyFormat, symbol } = useCurrency();
+  const { formatShortDate } = useDateFormat();
   const { data: topItems } = trpc.reports.topItems.useQuery();
   const { data: recentPOs } = trpc.purchaseOrders.list.useQuery({
     limit: 5,
@@ -355,7 +356,7 @@ export default function ErpDashboard() {
                         </div>
                         <p className="text-xs text-muted-foreground">
                           {po.supplier?.name ?? '—'} ·{' '}
-                          {po.date ? format(new Date(po.date), 'dd MMM') : '—'}
+                          {po.date ? formatShortDate(po.date) : '—'}
                         </p>
                       </div>
                       <span className="text-sm font-semibold shrink-0">
@@ -418,7 +419,7 @@ export default function ErpDashboard() {
                         </div>
                         <p className="text-xs text-muted-foreground">
                           {inv.customer?.name ?? '—'} ·{' '}
-                          {inv.date ? format(new Date(inv.date), 'dd MMM') : '—'}
+                          {inv.date ? formatShortDate(inv.date) : '—'}
                         </p>
                       </div>
                       <span className="text-sm font-semibold shrink-0">

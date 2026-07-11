@@ -45,7 +45,7 @@ import {
 } from '@/components/ui/table';
 import { Spinner } from '@/components/ui/spinner';
 import { trpc } from '@/lib/trpc/client';
-import { format } from 'date-fns';
+import { useDateFormat } from '@/hooks/use-date-format';
 
 const STATUS_COLORS: Record<string, string> = {
   DRAFT: 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-400',
@@ -58,6 +58,7 @@ export default function PayrollDetailPage() {
   const params = useParams<{ id: string }>();
   const router = useRouter();
   const utils = trpc.useUtils();
+  const { formatDate } = useDateFormat();
 
   const [editItemDialog, setEditItemDialog] = React.useState(false);
   const [editingItem, setEditingItem] = React.useState<any>(null);
@@ -183,7 +184,7 @@ export default function PayrollDetailPage() {
               </div>
               <p className="text-sm text-muted-foreground">
                 {payroll.periodStart && payroll.periodEnd
-                  ? `${format(new Date(payroll.periodStart), 'dd MMM yyyy')} - ${format(new Date(payroll.periodEnd), 'dd MMM yyyy')}`
+                  ? `${formatDate(payroll.periodStart)} - ${formatDate(payroll.periodEnd)}`
                   : 'No period set'}
               </p>
             </div>

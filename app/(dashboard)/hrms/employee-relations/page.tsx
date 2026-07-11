@@ -49,7 +49,7 @@ import {
 } from '@/components/ui/table';
 import { Spinner } from '@/components/ui/spinner';
 import { trpc } from '@/lib/trpc/client';
-import { format } from 'date-fns';
+import { useDateFormat } from '@/hooks/use-date-format';
 
 const statusBadge: Record<string, string> = {
   PENDING: 'bg-yellow-100 text-yellow-800',
@@ -72,6 +72,7 @@ export default function GrievancesPage() {
   const [statusTargetId, setStatusTargetId] = useState('');
   const [newStatus, setNewStatus] = useState('');
   const [resolution, setResolution] = useState('');
+  const { formatDate, formatDateTime } = useDateFormat();
 
   const { data, isLoading, refetch } = trpc.hr.employeeRelations.grievances.list.useQuery({
     page,
@@ -172,7 +173,7 @@ export default function GrievancesPage() {
                       </TableCell>
                       <TableCell className="text-sm">{g.assignee?.user?.name ?? '—'}</TableCell>
                       <TableCell className="text-sm">
-                        {g.createdAt ? format(new Date(g.createdAt), 'dd MMM yyyy') : '—'}
+                        {g.createdAt ? formatDate(g.createdAt) : '—'}
                       </TableCell>
                       <TableCell>
                         <DropdownMenu>
@@ -257,7 +258,7 @@ export default function GrievancesPage() {
               <div><strong>Status:</strong> {viewGrievance.status}</div>
               <div><strong>Assignee:</strong> {viewGrievance.assignee?.user?.name ?? 'Unassigned'}</div>
               <div><strong>Resolution:</strong> {viewGrievance.resolution ?? '—'}</div>
-              <div><strong>Created:</strong> {viewGrievance.createdAt ? format(new Date(viewGrievance.createdAt), 'dd MMM yyyy HH:mm') : '—'}</div>
+              <div><strong>Created:</strong> {viewGrievance.createdAt ? formatDateTime(viewGrievance.createdAt) : '—'}</div>
             </div>
           )}
           <DialogFooter>

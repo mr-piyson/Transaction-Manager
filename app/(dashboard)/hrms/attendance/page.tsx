@@ -40,6 +40,7 @@ import { Spinner } from '@/components/ui/spinner';
 import { useTimePunchForm } from '@/components/dialogs';
 import { trpc } from '@/lib/trpc/client';
 import { format } from 'date-fns';
+import { useDateFormat } from '@/hooks/use-date-format';
 
 export default function AttendanceRecordsPage() {
   const [page, setPage] = useState(1);
@@ -47,6 +48,7 @@ export default function AttendanceRecordsPage() {
   const [employeeFilter, setEmployeeFilter] = useState('');
   const [lateFilter, setLateFilter] = useState('all');
   const { openCreate } = useTimePunchForm();
+  const { formatDate } = useDateFormat();
   const limit = 25;
 
   const { data, isLoading, refetch } = trpc.hr.attendance.records.list.useQuery({
@@ -143,7 +145,7 @@ export default function AttendanceRecordsPage() {
                         </div>
                       </TableCell>
                       <TableCell className="text-sm">
-                        {record.date ? format(new Date(record.date), 'dd MMM yyyy') : '—'}
+                        {record.date ? formatDate(record.date) : '—'}
                       </TableCell>
                       <TableCell className="text-sm">
                         {record.checkIn ? format(new Date(record.checkIn), 'HH:mm') : '—'}

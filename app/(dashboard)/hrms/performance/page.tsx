@@ -41,7 +41,7 @@ import {
 } from '@/components/ui/table';
 import { Spinner } from '@/components/ui/spinner';
 import { trpc } from '@/lib/trpc/client';
-import { format } from 'date-fns';
+import { useDateFormat } from '@/hooks/use-date-format';
 
 const STATUS_COLORS: Record<string, string> = {
   DRAFT: 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-400',
@@ -57,6 +57,7 @@ export default function PerformanceListPage() {
   const [employeeId, setEmployeeId] = useState('');
   const limit = 25;
   const { openCreate } = usePerformanceReviewForm();
+  const { formatDate } = useDateFormat();
 
   const { data, isLoading, refetch } = trpc.hr.performance.list.useQuery({
     page,
@@ -180,7 +181,7 @@ export default function PerformanceListPage() {
                         </Badge>
                       </TableCell>
                       <TableCell className="text-sm text-muted-foreground">
-                        {record.reviewDate ? format(new Date(record.reviewDate), 'dd MMM yyyy') : '—'}
+                        {record.reviewDate ? formatDate(record.reviewDate) : '—'}
                       </TableCell>
                       <TableCell onClick={(e) => e.stopPropagation()}>
                         <DropdownMenu>
