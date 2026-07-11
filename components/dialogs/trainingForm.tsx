@@ -17,6 +17,7 @@ import {
 } from '@/components/ui/dialog';
 import { Field } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
+import { DatePickerField } from '@/components/ui/date-picker';
 import { Label } from '@/components/ui/label';
 import {
   Select,
@@ -155,12 +156,12 @@ export function TrainingFormDialog({ open, onOpenChange, training, onSuccess }: 
 
             <Field orientation="vertical">
               <Label htmlFor="startDate">Start Date</Label>
-              <Input id="startDate" type="date" {...register('startDate')} />
+              <DatePickerField id="startDate" {...register('startDate')} />
             </Field>
 
             <Field orientation="vertical">
               <Label htmlFor="endDate">End Date</Label>
-              <Input id="endDate" type="date" {...register('endDate')} />
+              <DatePickerField id="endDate" {...register('endDate')} />
             </Field>
 
             <Field orientation="vertical">

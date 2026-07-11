@@ -47,7 +47,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { trpc } from '@/lib/trpc/client';
-import { format } from 'date-fns';
+import { useDateFormat } from '@/hooks/use-date-format';
 
 const STATUS_OPTIONS = [
   { value: 'ACTIVE', label: 'Active', color: 'bg-green-100 text-green-800' },
@@ -62,6 +62,7 @@ export default function EmployeeDetailPage() {
   const router = useRouter();
   const utils = trpc.useUtils();
   const { openEdit } = useEmployeeForm();
+  const { formatDate, formatDateTime } = useDateFormat();
   const [statusDialogOpen, setStatusDialogOpen] = React.useState(false);
   const [selectedStatus, setSelectedStatus] = React.useState('');
   const [statusReason, setStatusReason] = React.useState('');
@@ -267,19 +268,19 @@ export default function EmployeeDetailPage() {
                   <div>
                     <dt className="text-muted-foreground">Hire Date</dt>
                     <dd className="font-medium mt-0.5">
-                      {employee.hireDate ? format(new Date(employee.hireDate), 'dd MMM yyyy') : '—'}
+                      {employee.hireDate ? formatDate(employee.hireDate) : '—'}
                     </dd>
                   </div>
                   <div>
                     <dt className="text-muted-foreground">Probation End Date</dt>
                     <dd className="font-medium mt-0.5">
-                      {employee.probationEndDate ? format(new Date(employee.probationEndDate), 'dd MMM yyyy') : '—'}
+                      {employee.probationEndDate ? formatDate(employee.probationEndDate) : '—'}
                     </dd>
                   </div>
                   <div>
                     <dt className="text-muted-foreground">Termination Date</dt>
                     <dd className="font-medium mt-0.5">
-                      {employee.terminationDate ? format(new Date(employee.terminationDate), 'dd MMM yyyy') : '—'}
+                      {employee.terminationDate ? formatDate(employee.terminationDate) : '—'}
                     </dd>
                   </div>
                   <div>
@@ -431,7 +432,7 @@ export default function EmployeeDetailPage() {
                           <p className="text-xs text-muted-foreground">{entry.reason}</p>
                         )}
                         <p className="text-xs text-muted-foreground mt-1">
-                          {entry.createdAt ? format(new Date(entry.createdAt), 'dd MMM yyyy HH:mm') : ''}
+                          {entry.createdAt ? formatDateTime(entry.createdAt) : ''}
                           {entry.changedBy?.name && ` by ${entry.changedBy.name}`}
                         </p>
                       </div>

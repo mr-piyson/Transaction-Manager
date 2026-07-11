@@ -2,7 +2,7 @@ import { ShoppingCart } from 'lucide-react';
 import type { HTMLAttributes } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
-import { format } from 'date-fns';
+import { useDateFormat } from '@/hooks/use-date-format';
 
 const STATUS_COLORS: Record<string, string> = {
   DRAFT: 'bg-muted text-muted-foreground',
@@ -21,6 +21,7 @@ interface POListItemProps extends HTMLAttributes<HTMLDivElement> {
 }
 
 export function POListItem({ data, className, ...props }: POListItemProps) {
+  const { formatDate } = useDateFormat();
   const { serial, status, supplier, date, total, currency, amountOwed } = data || {};
 
   return (
@@ -36,7 +37,7 @@ export function POListItem({ data, className, ...props }: POListItemProps) {
           </Badge>
         </div>
         <p className="text-sm text-muted-foreground truncate">
-          {supplier?.name ?? '—'} · {date ? format(new Date(date), 'dd MMM yyyy') : '—'}
+          {supplier?.name ?? '—'} · {date ? formatDate(date) : '—'}
         </p>
       </div>
       <div className="text-right">

@@ -1,6 +1,7 @@
 import { useTranslations } from 'next-intl';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { format, differenceInDays } from 'date-fns';
+import { differenceInDays } from 'date-fns';
+import { useDateFormat } from '@/hooks/use-date-format';
 import { ContractStatusBadge } from './contract-status-badge';
 
 interface ContractDetailProps {
@@ -9,6 +10,7 @@ interface ContractDetailProps {
 
 export function ContractDetail({ contract }: ContractDetailProps) {
   const t = useTranslations();
+  const { formatDate, formatDateTime } = useDateFormat();
 
   const totalDays = differenceInDays(new Date(contract.endDate), new Date(contract.startDate));
   const daysRemaining = differenceInDays(new Date(contract.endDate), new Date());
@@ -45,9 +47,9 @@ export function ContractDetail({ contract }: ContractDetailProps) {
           </CardHeader>
           <CardContent>
             <p className="font-semibold">
-              {contract.startDate ? format(new Date(contract.startDate), 'dd MMM yyyy') : '—'}
+              {contract.startDate ? formatDate(contract.startDate) : '—'}
               {' → '}
-              {contract.endDate ? format(new Date(contract.endDate), 'dd MMM yyyy') : '—'}
+              {contract.endDate ? formatDate(contract.endDate) : '—'}
             </p>
             <p className="text-xs text-muted-foreground">
               {daysRemaining >= 0
@@ -63,7 +65,7 @@ export function ContractDetail({ contract }: ContractDetailProps) {
           <CardContent>
             {contract.renewalDate ? (
               <>
-                <p className="font-semibold">{format(new Date(contract.renewalDate), 'dd MMM yyyy')}</p>
+                <p className="font-semibold">{formatDate(contract.renewalDate)}</p>
                 {daysUntilRenewal !== null && daysUntilRenewal >= 0 && (
                   <p className="text-xs text-muted-foreground">
                     {t('contracts.renewalIn', { days: daysUntilRenewal })}
@@ -131,11 +133,11 @@ export function ContractDetail({ contract }: ContractDetailProps) {
       {/* Meta info */}
       <div className="text-xs text-muted-foreground flex flex-wrap gap-x-4 gap-y-1 pb-2">
         <span>
-          {t('common.created')} {contract.createdAt ? format(new Date(contract.createdAt), 'dd MMM yyyy HH:mm') : '—'}
+          {t('common.created')} {contract.createdAt ? formatDateTime(contract.createdAt) : '—'}
           {contract.createdBy ? ` by ${contract.createdBy.name}` : ''}
         </span>
         <span>
-          {t('common.updated')} {contract.updatedAt ? format(new Date(contract.updatedAt), 'dd MMM yyyy HH:mm') : '—'}
+          {t('common.updated')} {contract.updatedAt ? formatDateTime(contract.updatedAt) : '—'}
           {contract.updatedBy ? ` by ${contract.updatedBy.name}` : ''}
         </span>
       </div>

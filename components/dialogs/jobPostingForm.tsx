@@ -17,6 +17,7 @@ import {
 } from '@/components/ui/dialog';
 import { Field } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
+import { DatePickerField } from '@/components/ui/date-picker';
 import { Label } from '@/components/ui/label';
 import {
   Select,
@@ -197,7 +198,7 @@ export function JobPostingFormDialog({ open, onOpenChange, jobPosting, onSuccess
 
             <Field orientation="vertical">
               <Label htmlFor="closingDate">Closing Date</Label>
-              <Input id="closingDate" type="date" {...register('closingDate')} />
+              <DatePickerField id="closingDate" {...register('closingDate')} />
             </Field>
           </div>
 

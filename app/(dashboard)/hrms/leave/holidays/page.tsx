@@ -14,6 +14,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription } from '@/components/ui/empty';
 import { Input } from '@/components/ui/input';
+import { DatePicker } from '@/components/ui/date-picker';
 import { Label } from '@/components/ui/label';
 import {
   Pagination,
@@ -33,13 +34,14 @@ import {
 import { Spinner } from '@/components/ui/spinner';
 import { useHolidayForm } from '@/components/dialogs';
 import { trpc } from '@/lib/trpc/client';
-import { format } from 'date-fns';
+import { useDateFormat } from '@/hooks/use-date-format';
 
 export default function HolidaysPage() {
   const [page, setPage] = useState(1);
   const [dateFrom, setDateFrom] = useState('');
   const [dateTo, setDateTo] = useState('');
   const limit = 25;
+  const { formatDate } = useDateFormat();
 
   const { data, isLoading, refetch } = trpc.hr.leave.holidays.list.useQuery({
     page,
@@ -64,18 +66,16 @@ export default function HolidaysPage() {
         <div className="flex items-center gap-4 flex-1 flex-wrap">
           <div className="flex items-center gap-2">
             <Label className="text-xs text-muted-foreground">From</Label>
-            <Input
-              type="date"
+            <DatePicker
               className="w-[150px]"
               value={dateFrom}
-              onChange={(e) => { setDateFrom(e.target.value); setPage(1); }}
+              onChange={(v) => { setDateFrom(v); setPage(1); }}
             />
             <Label className="text-xs text-muted-foreground">To</Label>
-            <Input
-              type="date"
+            <DatePicker
               className="w-[150px]"
               value={dateTo}
-              onChange={(e) => { setDateTo(e.target.value); setPage(1); }}
+              onChange={(v) => { setDateTo(v); setPage(1); }}
             />
           </div>
         </div>
@@ -117,7 +117,7 @@ export default function HolidaysPage() {
                     <TableRow key={h.id}>
                       <TableCell className="font-medium text-sm">{h.name}</TableCell>
                       <TableCell className="text-sm">
-                        {h.date ? format(new Date(h.date), 'dd MMM yyyy') : '—'}
+                        {h.date ? formatDate(h.date) : '—'}
                       </TableCell>
                       <TableCell>
                         {h.isRecurringAnnual ? (

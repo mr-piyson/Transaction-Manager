@@ -2,7 +2,7 @@ import { Receipt } from 'lucide-react';
 import type { HTMLAttributes } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
-import { format } from 'date-fns';
+import { useDateFormat } from '@/hooks/use-date-format';
 
 const STATUS_COLORS: Record<string, string> = {
   DRAFT: 'bg-muted text-muted-foreground',
@@ -17,6 +17,7 @@ interface InvoiceListItemProps extends HTMLAttributes<HTMLDivElement> {
 }
 
 export function InvoiceListItem({ data, className, ...props }: InvoiceListItemProps) {
+  const { formatDate } = useDateFormat();
   const { serial, status, customer, date, total, currency } = data || {};
 
   return (
@@ -32,7 +33,7 @@ export function InvoiceListItem({ data, className, ...props }: InvoiceListItemPr
           </Badge>
         </div>
         <p className="text-sm text-muted-foreground truncate">
-          {customer?.name ?? '—'} · {date ? format(new Date(date), 'dd MMM yyyy') : '—'}
+          {customer?.name ?? '—'} · {date ? formatDate(date) : '—'}
         </p>
       </div>
       <div className="text-right">

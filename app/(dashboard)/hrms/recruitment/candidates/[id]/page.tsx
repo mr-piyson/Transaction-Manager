@@ -17,6 +17,7 @@ import {
 } from '@/components/ui/dialog';
 import { Field } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
+import { DatePicker } from '@/components/ui/date-picker';
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
 import { Textarea } from '@/components/ui/textarea';
@@ -437,11 +438,11 @@ export default function CandidateDetailPage() {
             <div className="grid grid-cols-2 gap-4">
               <Field orientation="vertical">
                 <Label>Start Date *</Label>
-                <Input type="date" value={offerStartDate} onChange={(e) => setOfferStartDate(e.target.value)} />
+                <DatePicker value={offerStartDate} onChange={(v) => setOfferStartDate(v)} />
               </Field>
               <Field orientation="vertical">
                 <Label>Expiry Date</Label>
-                <Input type="date" value={offerExpiryDate} onChange={(e) => setOfferExpiryDate(e.target.value)} />
+                <DatePicker value={offerExpiryDate} onChange={(v) => setOfferExpiryDate(v)} />
               </Field>
             </div>
             <Field orientation="vertical">

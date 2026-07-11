@@ -21,6 +21,8 @@ import {
 } from '@/components/ui/dialog';
 import { Field } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
+import { DatePickerField } from '@/components/ui/date-picker';
+import { toDateInputValue } from '@/lib/date';
 import { Label } from '@/components/ui/label';
 import {
   Select,
@@ -269,11 +271,11 @@ export function POFormDialog({ open, onOpenChange, po, onSuccess }: POFormDialog
               <div className="grid grid-cols-3 gap-3">
                 <Field>
                   <Label htmlFor="date">Date *</Label>
-                  <Input id="date" type="date" {...register('date')} />
+                  <DatePickerField id="date" {...register('date')} />
                 </Field>
                 <Field>
                   <Label htmlFor="expectedDate">Expected date</Label>
-                  <Input id="expectedDate" type="date" {...register('expectedDate')} />
+                  <DatePickerField id="expectedDate" {...register('expectedDate')} />
                 </Field>
                 <Field>
                   <Label htmlFor="currency">Currency</Label>
@@ -593,7 +595,7 @@ function defaults(
   warehousesData?: any,
   orgCurrency?: string,
 ): POFormValues {
-  const today = new Date().toISOString().slice(0, 10);
+  const today = toDateInputValue(new Date());
   const list = Array.isArray(warehousesData)
     ? warehousesData
     : ((warehousesData as any)?.data ?? []);

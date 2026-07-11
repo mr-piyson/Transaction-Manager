@@ -54,6 +54,7 @@ import {
   EmptyTitle,
 } from '@/components/ui/empty';
 import { Input } from '@/components/ui/input';
+import { DatePicker } from '@/components/ui/date-picker';
 import { Label } from '@/components/ui/label';
 import {
   Select,
@@ -76,6 +77,7 @@ import {
 import { useInvoiceForm } from '@/components/dialogs/invoiceForm';
 import { trpc } from '@/lib/trpc/client';
 import { format } from 'date-fns';
+import { useDateFormat } from '@/hooks/use-date-format';
 
 const STATUS_COLORS: Record<string, string> = {
   DRAFT: 'bg-muted text-muted-foreground',
@@ -226,6 +228,7 @@ export default function DocumentDetailPage() {
   const isInvoice = type === 'invoices';
   const { openEdit } = useInvoiceForm();
   const utils = trpc.useUtils();
+  const { formatDate, formatDateTime } = useDateFormat();
 
   const {
     data: invoice,
@@ -618,7 +621,7 @@ export default function DocumentDetailPage() {
               )}
             </div>
             <p className="text-muted-foreground mt-1">
-              {invoice.customer?.name ?? '—'} · {invoice.date ? format(new Date(invoice.date), 'dd MMM yyyy') : '—'}
+              {invoice.customer?.name ?? '—'} · {invoice.date ? formatDate(invoice.date) : '—'}
             </p>
           </div>
         </div>
@@ -669,7 +672,7 @@ export default function DocumentDetailPage() {
         <div>
           <p className="text-sm text-muted-foreground">{t('invoices.issueDate')}</p>
           <p className="font-medium">
-            {invoice.date ? format(new Date(invoice.date), 'dd MMM yyyy') : '—'}
+            {invoice.date ? formatDate(invoice.date) : '—'}
           </p>
         </div>
         {invoice.dueDate && (
@@ -1183,7 +1186,7 @@ export default function DocumentDetailPage() {
             </div>
             <div className="space-y-2">
               <Label htmlFor="payment-date">{t('invoices.date')}</Label>
-              <Input id="payment-date" type="date" value={paymentDate} onChange={(e) => setPaymentDate(e.target.value)} />
+              <DatePicker id="payment-date" value={paymentDate} onChange={(v) => setPaymentDate(v)} />
             </div>
             <div className="space-y-2">
               <Label htmlFor="payment-reference">{t('invoices.paymentReference')}</Label>

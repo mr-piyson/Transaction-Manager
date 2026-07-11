@@ -1,7 +1,8 @@
 import { Handshake } from 'lucide-react';
 import type { HTMLAttributes } from 'react';
 import { cn } from '@/lib/utils';
-import { format, isAfter, differenceInDays } from 'date-fns';
+import { differenceInDays } from 'date-fns';
+import { useDateFormat } from '@/hooks/use-date-format';
 import { ContractStatusBadge } from './contract-status-badge';
 import { Progress } from '@/components/ui/progress';
 
@@ -10,6 +11,7 @@ interface ContractListItemProps extends HTMLAttributes<HTMLDivElement> {
 }
 
 export function ContractListItem({ data, className, ...props }: ContractListItemProps) {
+  const { formatDate } = useDateFormat();
   const { customer, serial, title, startDate, endDate, contractValue, currency, status, renewalAlertDays, renewalDate } = data || {};
   const expired = status === 'EXPIRED' || status === 'TERMINATED';
   const isActive = status === 'ACTIVE';
@@ -41,8 +43,8 @@ export function ContractListItem({ data, className, ...props }: ContractListItem
         </div>
         <p className="text-sm text-muted-foreground truncate">
           {customer?.name ? `${customer.name} · ` : ''}
-          {startDate ? format(new Date(startDate), 'dd MMM yyyy') : '—'}
-          {endDate ? ` → ${format(new Date(endDate), 'dd MMM yyyy')}` : ''}
+          {startDate ? formatDate(startDate) : '—'}
+          {endDate ? ` → ${formatDate(endDate)}` : ''}
         </p>
         <Progress value={progressPct} className="h-1.5 mt-1" />
       </div>

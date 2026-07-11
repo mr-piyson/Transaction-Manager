@@ -17,6 +17,8 @@ import {
 } from '@/components/ui/dialog';
 import { Field } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
+import { DatePickerField } from '@/components/ui/date-picker';
+import { toDateInputValue } from '@/lib/date';
 import { Label } from '@/components/ui/label';
 import {
   Select,
@@ -156,7 +158,7 @@ export function PerformanceReviewFormDialog({ open, onOpenChange, performanceRev
 
             <Field orientation="vertical">
               <Label htmlFor="reviewDate">Review Date *</Label>
-              <Input id="reviewDate" type="date" {...register('reviewDate')} />
+              <DatePickerField id="reviewDate" {...register('reviewDate')} />
             </Field>
 
             <Field orientation="vertical">
@@ -276,7 +278,7 @@ export function usePerformanceReviewForm(): PerformanceReviewFormContextValue {
 }
 
 function defaults(performanceReview?: { id: string } & Partial<PerformanceReviewFormValues>): PerformanceReviewFormValues {
-  const today = new Date().toISOString().slice(0, 10);
+  const today = toDateInputValue(new Date());
   return {
     employeeId: performanceReview?.employeeId ?? '',
     reviewerId: performanceReview?.reviewerId ?? '',

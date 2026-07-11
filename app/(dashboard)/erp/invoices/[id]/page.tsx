@@ -47,6 +47,7 @@ import {
   EmptyTitle,
 } from '@/components/ui/empty';
 import { Input } from '@/components/ui/input';
+import { DatePicker } from '@/components/ui/date-picker';
 import { Label } from '@/components/ui/label';
 import {
   Select,
@@ -75,6 +76,7 @@ import {
 import { useInvoiceForm } from '@/components/dialogs/invoiceForm';
 import { trpc } from '@/lib/trpc/client';
 import { format } from 'date-fns';
+import { useDateFormat } from '@/hooks/use-date-format';
 
 const STATUS_COLORS: Record<string, string> = {
   DRAFT: 'bg-muted text-muted-foreground',
@@ -232,6 +234,7 @@ export default function InvoiceDetailPage() {
   const utils = trpc.useUtils();
   const { openEdit } = useInvoiceForm();
   const t = useTranslations();
+  const { formatDate, formatDateTime } = useDateFormat();
 
   const {
     data: invoice,
@@ -815,7 +818,7 @@ export default function InvoiceDetailPage() {
                 <div className="min-w-0">
                   <p className="text-xs text-muted-foreground">{t('common.date')}</p>
                   <p className="text-sm font-semibold truncate">
-                    {invoice.date ? format(new Date(invoice.date), 'dd MMM yyyy') : '—'}
+                    {invoice.date ? formatDate(invoice.date) : '—'}
                   </p>
                 </div>
               </div>
@@ -824,7 +827,7 @@ export default function InvoiceDetailPage() {
                 <div className="min-w-0">
                   <p className="text-xs text-muted-foreground">{t('invoices.dueDate')}</p>
                   <p className="text-sm font-semibold truncate">
-                    {invoice.dueDate ? format(new Date(invoice.dueDate), 'dd MMM yyyy') : '—'}
+                    {invoice.dueDate ? formatDate(invoice.dueDate) : '—'}
                   </p>
                 </div>
               </div>
@@ -1018,7 +1021,7 @@ export default function InvoiceDetailPage() {
                   {invoice.payments.map((payment: any) => (
                     <TableRow key={payment.id}>
                       <TableCell className="text-sm">
-                        {format(new Date(payment.date), 'dd MMM yyyy')}
+                        {formatDate(payment.date)}
                       </TableCell>
                       <TableCell>
                         {t(
@@ -1141,7 +1144,7 @@ export default function InvoiceDetailPage() {
               type: getTypeLabel(invoice.type),
               name: invoice.createdBy?.name ?? '—',
               date: invoice.createdAt
-                ? format(new Date(invoice.createdAt), 'dd MMM yyyy HH:mm')
+                ? formatDateTime(invoice.createdAt)
                 : '—',
             })}
           </span>
@@ -1149,14 +1152,14 @@ export default function InvoiceDetailPage() {
           {invoice.sentAt && (
             <span>
               {t('invoices.sentOn', {
-                date: format(new Date(invoice.sentAt), 'dd MMM yyyy HH:mm'),
+                date: formatDateTime(invoice.sentAt),
               })}
             </span>
           )}
           {invoice.cancelledAt && (
             <span>
               {t('invoices.cancelledOn', {
-                date: format(new Date(invoice.cancelledAt), 'dd MMM yyyy HH:mm'),
+                date: formatDateTime(invoice.cancelledAt),
               })}
             </span>
           )}
@@ -1398,11 +1401,10 @@ export default function InvoiceDetailPage() {
             </div>
             <div className="space-y-2">
               <Label htmlFor="payment-date">{t('invoices.date')}</Label>
-              <Input
+              <DatePicker
                 id="payment-date"
-                type="date"
                 value={paymentDate}
-                onChange={(e) => setPaymentDate(e.target.value)}
+                onChange={(v) => setPaymentDate(v)}
               />
             </div>
             <div className="space-y-2">

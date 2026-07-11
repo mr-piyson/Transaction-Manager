@@ -23,6 +23,7 @@ import {
 import { Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription } from '@/components/ui/empty';
 import { Field } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
+import { DatePicker } from '@/components/ui/date-picker';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import {
@@ -50,6 +51,7 @@ import {
 import { Spinner } from '@/components/ui/spinner';
 import { trpc } from '@/lib/trpc/client';
 import { differenceInCalendarDays, format } from 'date-fns';
+import { useDateFormat } from '@/hooks/use-date-format';
 
 const statusBadge: Record<string, string> = {
   APPROVED: 'bg-green-100 text-green-800',
@@ -80,6 +82,7 @@ export default function LeaveRequestsPage() {
   const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
   const [cancelTargetId, setCancelTargetId] = useState('');
   const [cancelReason, setCancelReason] = useState('');
+  const { formatDate } = useDateFormat();
 
   const { data, isLoading, refetch } = trpc.hr.leave.requests.list.useQuery({
     page,
@@ -166,9 +169,9 @@ export default function LeaveRequestsPage() {
           </Select>
           <div className="flex items-center gap-2">
             <Label className="text-xs text-muted-foreground">From</Label>
-            <Input type="date" className="w-[150px]" value={dateFrom} onChange={(e) => { setDateFrom(e.target.value); setPage(1); }} />
+            <DatePicker className="w-[150px]" value={dateFrom} onChange={(v) => { setDateFrom(v); setPage(1); }} />
             <Label className="text-xs text-muted-foreground">To</Label>
-            <Input type="date" className="w-[150px]" value={dateTo} onChange={(e) => { setDateTo(e.target.value); setPage(1); }} />
+            <DatePicker className="w-[150px]" value={dateTo} onChange={(v) => { setDateTo(v); setPage(1); }} />
           </div>
         </div>
         <Button size="sm" onClick={() => setCreateDialogOpen(true)}>
@@ -220,14 +223,14 @@ export default function LeaveRequestsPage() {
                         <TableCell className="text-sm whitespace-nowrap">
                           {r.startDate ? format(new Date(r.startDate), 'dd MMM') : '—'}
                           {' — '}
-                          {r.endDate ? format(new Date(r.endDate), 'dd MMM yyyy') : '—'}
+                          {r.endDate ? formatDate(r.endDate) : '—'}
                         </TableCell>
                         <TableCell className="text-sm font-mono">{days}</TableCell>
                         <TableCell>
                           <Badge variant="outline" className={statusBadge[r.status] ?? ''}>{r.status}</Badge>
                         </TableCell>
                         <TableCell className="text-sm">
-                          {r.createdAt ? format(new Date(r.createdAt), 'dd MMM yyyy') : '—'}
+                          {r.createdAt ? formatDate(r.createdAt) : '—'}
                         </TableCell>
                         <TableCell>
                           <DropdownMenu>
@@ -332,11 +335,11 @@ export default function LeaveRequestsPage() {
             <div className="grid grid-cols-2 gap-4">
               <Field orientation="vertical">
                 <Label>Start Date *</Label>
-                <Input type="date" value={newStartDate} onChange={(e) => setNewStartDate(e.target.value)} />
+                <DatePicker value={newStartDate} onChange={(v) => setNewStartDate(v)} />
               </Field>
               <Field orientation="vertical">
                 <Label>End Date *</Label>
-                <Input type="date" value={newEndDate} onChange={(e) => setNewEndDate(e.target.value)} />
+                <DatePicker value={newEndDate} onChange={(v) => setNewEndDate(v)} />
               </Field>
             </div>
             <Field orientation="vertical">

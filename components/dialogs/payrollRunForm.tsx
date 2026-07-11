@@ -17,6 +17,8 @@ import {
 } from '@/components/ui/dialog';
 import { Field } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
+import { DatePickerField } from '@/components/ui/date-picker';
+import { toDateInputValue } from '@/lib/date';
 import { Label } from '@/components/ui/label';
 import { trpc } from '@/lib/trpc/client';
 
@@ -90,12 +92,12 @@ export function PayrollRunFormDialog({ open, onOpenChange, onSuccess }: PayrollR
 
             <Field orientation="vertical">
               <Label htmlFor="periodStart">Period Start *</Label>
-              <Input id="periodStart" type="date" {...register('periodStart')} />
+              <DatePickerField id="periodStart" {...register('periodStart')} />
             </Field>
 
             <Field orientation="vertical">
               <Label htmlFor="periodEnd">Period End *</Label>
-              <Input id="periodEnd" type="date" {...register('periodEnd')} />
+              <DatePickerField id="periodEnd" {...register('periodEnd')} />
             </Field>
 
             <Field orientation="vertical" className="md:col-span-2">
@@ -177,8 +179,8 @@ function defaults(): PayrollRunFormValues {
   const lastDay = new Date(today.getFullYear(), today.getMonth() + 1, 0);
   return {
     name: '',
-    periodStart: firstDay.toISOString().slice(0, 10),
-    periodEnd: lastDay.toISOString().slice(0, 10),
+    periodStart: toDateInputValue(firstDay),
+    periodEnd: toDateInputValue(lastDay),
     notes: undefined,
   };
 }

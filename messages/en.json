@@ -1105,6 +1105,17 @@
       "urlCopied": "URL copied to clipboard",
       "noKiosks": "No kiosks configured",
       "noKiosksDesc": "Create a kiosk to start using self-service attendance."
+    },
+    "dateTime": {
+      "title": "Date & Time",
+      "description": "Configure how dates are displayed and input across the application",
+      "inputFormat": "Date Input Format",
+      "inputFormatDesc": "The format used in date picker fields",
+      "displayFormat": "Date Display Format",
+      "displayFormatDesc": "How dates appear in tables, lists, and reports",
+      "preview": "Preview",
+      "todayIs": "Today's date",
+      "saved": "Date & time settings saved"
     }
   },
   "sessions": {

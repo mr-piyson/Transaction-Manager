@@ -17,6 +17,8 @@ import {
 } from '@/components/ui/dialog';
 import { Field } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
+import { DatePickerField } from '@/components/ui/date-picker';
+import { toDateInputValue } from '@/lib/date';
 import { Label } from '@/components/ui/label';
 import {
   Select,
@@ -154,12 +156,12 @@ export function EmployeeFormDialog({ open, onOpenChange, employee, onSuccess }: 
 
             <Field orientation="vertical">
               <Label htmlFor="hireDate">Hire Date *</Label>
-              <Input id="hireDate" type="date" {...register('hireDate')} />
+              <DatePickerField id="hireDate" {...register('hireDate')} />
             </Field>
 
             <Field orientation="vertical">
               <Label htmlFor="probationEndDate">Probation End Date</Label>
-              <Input id="probationEndDate" type="date" {...register('probationEndDate')} />
+              <DatePickerField id="probationEndDate" {...register('probationEndDate')} />
             </Field>
 
             <Field orientation="vertical">
@@ -366,7 +368,7 @@ export function useEmployeeForm(): EmployeeFormContextValue {
 }
 
 function defaults(employee?: { id: string } & Partial<EmployeeFormValues>): EmployeeFormValues {
-  const today = new Date().toISOString().slice(0, 10);
+  const today = toDateInputValue(new Date());
   return {
     userId: employee?.userId ?? '',
     hireDate: employee?.hireDate ?? today,

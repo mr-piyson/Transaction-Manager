@@ -17,6 +17,7 @@ import {
 } from '@/components/ui/dialog';
 import { Field } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
+import { DatePickerField } from '@/components/ui/date-picker';
 import { Label } from '@/components/ui/label';
 import {
   Select,
@@ -142,7 +143,7 @@ export function DocumentFormDialog({ open, onOpenChange, onSuccess }: DocumentFo
 
             <Field orientation="vertical">
               <Label htmlFor="expiryDate">Expiry Date</Label>
-              <Input id="expiryDate" type="date" {...register('expiryDate')} />
+              <DatePickerField id="expiryDate" {...register('expiryDate')} />
             </Field>
 
             <Field orientation="vertical" className="md:col-span-2">

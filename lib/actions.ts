@@ -6,6 +6,7 @@ import {
   BookType,
   Briefcase,
   Building2,
+  Calendar,
   Coins,
   Languages,
   Layers,
@@ -89,6 +90,12 @@ export const NAV_ITEMS = [
     labelKey: 'settings.appearance',
     href: '/settings/appearance',
     icon: Palette,
+  },
+  {
+    id: 'date-time',
+    labelKey: 'settings.dateTime.title',
+    href: '/settings/date-time',
+    icon: Calendar,
   },
   {
     id: 'notifications',

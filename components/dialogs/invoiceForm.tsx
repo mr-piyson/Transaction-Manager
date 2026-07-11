@@ -34,6 +34,8 @@ import {
 } from '@/components/ui/dialog';
 import { Field } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
+import { DatePickerField } from '@/components/ui/date-picker';
+import { toDateInputValue } from '@/lib/date';
 import { Label } from '@/components/ui/label';
 import {
   Select,
@@ -385,11 +387,11 @@ export function InvoiceFormDialog({
               <div className="grid grid-cols-2 gap-3">
                 <Field>
                   <Label htmlFor="date">{t('invoices.issueDate')} *</Label>
-                  <Input id="date" type="date" {...register('date')} />
+                  <DatePickerField id="date" {...register('date')} />
                 </Field>
                 <Field>
                   <Label htmlFor="dueDate">{t('invoices.dueDate')}</Label>
-                  <Input id="dueDate" type="date" {...register('dueDate')} />
+                  <DatePickerField id="dueDate" {...register('dueDate')} />
                 </Field>
               </div>
 
@@ -901,7 +903,7 @@ function defaults(
   warehousesData?: any,
   org?: { defaultTermsText?: string | null; currency?: string },
 ): InvoiceFormValues {
-  const today = new Date().toISOString().slice(0, 10);
+  const today = toDateInputValue(new Date());
   const list = Array.isArray(warehousesData)
     ? warehousesData
     : ((warehousesData as any)?.data ?? []);

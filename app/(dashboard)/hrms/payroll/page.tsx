@@ -17,6 +17,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription } from '@/components/ui/empty';
 import { Input } from '@/components/ui/input';
+import { DatePicker } from '@/components/ui/date-picker';
 import {
   Pagination,
   PaginationContent,
@@ -42,6 +43,7 @@ import {
 import { Spinner } from '@/components/ui/spinner';
 import { trpc } from '@/lib/trpc/client';
 import { format } from 'date-fns';
+import { useDateFormat } from '@/hooks/use-date-format';
 
 const STATUS_COLORS: Record<string, string> = {
   DRAFT: 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-400',
@@ -107,18 +109,16 @@ export default function PayrollListPage() {
               <SelectItem value="CANCELLED">Cancelled</SelectItem>
             </SelectContent>
           </Select>
-          <Input
-            type="date"
+          <DatePicker
             className="w-[150px]"
             value={dateFrom}
-            onChange={(e) => { setDateFrom(e.target.value); setPage(1); }}
+            onChange={(v) => { setDateFrom(v); setPage(1); }}
             placeholder="From"
           />
-          <Input
-            type="date"
+          <DatePicker
             className="w-[150px]"
             value={dateTo}
-            onChange={(e) => { setDateTo(e.target.value); setPage(1); }}
+            onChange={(v) => { setDateTo(v); setPage(1); }}
             placeholder="To"
           />
         </div>

@@ -1,7 +1,7 @@
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
-import { format } from 'date-fns';
+import { useDateFormat } from '@/hooks/use-date-format';
 import {
   ArrowLeft,
   Box,
@@ -149,6 +149,7 @@ export function ItemPageContent({ item, defaultMode }: ItemPageContentProps) {
   const router = useRouter();
   const utils = trpc.useUtils();
   const t = useTranslations();
+  const { formatDateTime } = useDateFormat();
   const isCreate = !item;
   const [isEditing, setIsEditing] = React.useState(defaultMode === 'edit' || isCreate);
   const { data: categories } = trpc.items.list.useQuery({ limit: 200 });
@@ -1446,13 +1447,13 @@ export function ItemPageContent({ item, defaultMode }: ItemPageContentProps) {
                   <span>
                     {t('items.created')}{' '}
                     {item.createdAt
-                      ? format(new Date(item.createdAt), 'dd MMM yyyy HH:mm')
+                      ? formatDateTime(item.createdAt)
                       : '—'}
                   </span>
                   <span>
                     {t('items.updated')}{' '}
                     {item.updatedAt
-                      ? format(new Date(item.updatedAt), 'dd MMM yyyy HH:mm')
+                      ? formatDateTime(item.updatedAt)
                       : '—'}
                   </span>
                 </div>

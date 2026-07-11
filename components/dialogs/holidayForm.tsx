@@ -17,6 +17,8 @@ import {
 } from '@/components/ui/dialog';
 import { Field } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
+import { DatePickerField } from '@/components/ui/date-picker';
+import { toDateInputValue } from '@/lib/date';
 import { Label } from '@/components/ui/label';
 import {
   Select,
@@ -114,7 +116,7 @@ export function HolidayFormDialog({ open, onOpenChange, holiday, onSuccess }: Ho
 
             <Field orientation="vertical">
               <Label htmlFor="date">Date *</Label>
-              <Input id="date" type="date" {...register('date')} />
+              <DatePickerField id="date" {...register('date')} />
             </Field>
 
             <Field orientation="vertical">
@@ -218,7 +220,7 @@ export function useHolidayForm(): HolidayFormContextValue {
 }
 
 function defaults(holiday?: { id: string } & Partial<HolidayFormValues>): HolidayFormValues {
-  const today = new Date().toISOString().slice(0, 10);
+  const today = toDateInputValue(new Date());
   return {
     name: holiday?.name ?? '',
     date: holiday?.date ?? today,

@@ -134,6 +134,8 @@ const ORG_SETTINGS = [
   { key: 'invoice.footerText',        value: ''       },
   { key: 'hrms.attendance.enabled',   value: 'true'   },
   { key: 'crm.enabled',               value: 'true'   },
+  { key: 'date.inputFormat',          value: 'yyyy-MM-dd' },
+  { key: 'date.displayFormat',        value: 'dd MMM yyyy' },
 ];
 
 // ─── Seed helpers (shared with reset) ─────────────────────────────────────────

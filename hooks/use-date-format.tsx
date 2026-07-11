@@ -1,98 +1,139 @@
-// date-format.tsx
 'use client';
 
-import React, { createContext, useContext, useState } from 'react';
+import { createContext, useCallback, useContext, useMemo } from 'react';
+import { trpc } from '@/lib/trpc/client';
+import {
+  DATE_DISPLAY_FORMATS,
+  DATE_INPUT_FORMATS,
+  DEFAULT_DISPLAY_FORMAT,
+  DEFAULT_INPUT_FORMAT,
+  formatDate as fmtDate,
+  formatDateTime as fmtDateTime,
+  formatDateTimeSeconds as fmtDateTimeSec,
+  formatDateAgo as fmtDateAgo,
+  formatDateForInput as fmtDateForInput,
+  formatShortDate as fmtShortDate,
+  parseDateFromInput,
+  toDateInputValue,
+  toDateTimeInputValue,
+  type DateDisplayFormat,
+  type DateInputFormat,
+} from '@/lib/date';
 
-export type DateFormatType = 'dd/mm/yyyy' | 'yyyy-mm-dd' | 'date';
-
-type DateFormatContextType = {
-  format: DateFormatType;
-  setFormat: (format: DateFormatType) => void;
-
-  formatDate: (date: Date | string | number | null) => string;
-  formatDateTime: (date: Date | string | number | null) => string;
-  formatDateAgo: (date: Date | string | number | null) => string;
+type DateFormatContextValue = {
+  inputFormat: DateInputFormat;
+  displayFormat: DateDisplayFormat;
+  formatDate: (date: Date | string | number | null | undefined) => string;
+  formatDateTime: (date: Date | string | number | null | undefined) => string;
+  formatDateTimeSeconds: (date: Date | string | number | null | undefined) => string;
+  formatDateAgo: (date: Date | string | null | undefined) => string;
+  formatDateForInput: (date: Date | string | number | null | undefined) => string;
+  formatShortDate: (date: Date | string | number | null | undefined) => string;
+  toDateInputValue: (date: Date | string | number | null | undefined) => string;
+  toDateTimeInputValue: (date: Date | string | number | null | undefined) => string;
+  parseDateFromInput: (value: string) => Date | null;
 };
 
-const DateFormatContext = createContext<DateFormatContextType | undefined>(undefined);
+const DateFormatContext = createContext<DateFormatContextValue | null>(null);
 
-export const DateFormatProvider = ({
-  children,
-  defaultFormat = 'date',
-}: {
-  children: React.ReactNode;
-  defaultFormat?: DateFormatType;
-}) => {
-  const [format, setFormat] = useState<DateFormatType>(defaultFormat);
+export function DateFormatProvider({ children }: { children: React.ReactNode }) {
+  const { data: settings } = trpc.settings.getSettings.useQuery(undefined, {
+    staleTime: 5 * 60 * 1000,
+  });
 
-  const formatDate = (date: Date | string | number | null): string => {
-    if (!date) return 'N/A';
-    if (typeof date !== 'string' || typeof date !== 'number') {
-      date = new Date(date);
-    }
-    const day = date.getDate().toString().padStart(2, '0');
-    const month = (date.getMonth() + 1).toString().padStart(2, '0');
-    const year = date.getFullYear();
+  const inputFormat = useMemo<DateInputFormat>(() => {
+    const val = settings?.['date.inputFormat'];
+    if (val && val in DATE_INPUT_FORMATS) return val as DateInputFormat;
+    return DEFAULT_INPUT_FORMAT;
+  }, [settings]);
 
-    if (format === 'dd/mm/yyyy') return `${day}/${month}/${year}`;
-    if (format === 'yyyy-mm-dd') return `${year}-${month}-${day}`;
-    return date.toDateString();
-  };
+  const displayFormat = useMemo<DateDisplayFormat>(() => {
+    const val = settings?.['date.displayFormat'];
+    if (val && val in DATE_DISPLAY_FORMATS) return val as DateDisplayFormat;
+    return DEFAULT_DISPLAY_FORMAT;
+  }, [settings]);
 
-  const formatDateTime = (date: Date | string | number | null): string => {
-    if (!date) return 'N/A';
-    if (typeof date !== 'string' || typeof date !== 'number') {
-      date = new Date(date);
-    }
-    const base = formatDate(date);
-    const hours = date.getHours().toString().padStart(2, '0');
-    const minutes = date.getMinutes().toString().padStart(2, '0');
-    const seconds = date.getSeconds().toString().padStart(2, '0');
-
-    return `${base} ${hours}:${minutes}:${seconds}`;
-  };
-
-  const formatDateAgo = (date: Date | string | number | null): string => {
-    if (!date) return 'N/A';
-    if (typeof date !== 'string' || typeof date !== 'number') {
-      date = new Date(date);
-    }
-    const now = new Date();
-    const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
-
-    if (diffInSeconds < 60) return 'just now';
-
-    const diffInMinutes = Math.floor(diffInSeconds / 60);
-    if (diffInMinutes < 60) return `${diffInMinutes}m ago`;
-
-    const diffInHours = Math.floor(diffInMinutes / 60);
-    if (diffInHours < 24) return `${diffInHours}h ago`;
-
-    const diffInDays = Math.floor(diffInHours / 24);
-    if (diffInDays < 2) return `${diffInDays}d ago`;
-
-    return formatDate(date);
-  };
-
-  return (
-    <DateFormatContext.Provider
-      value={{
-        format,
-        setFormat,
-        formatDate,
-        formatDateTime,
-        formatDateAgo,
-      }}
-    >
-      {children}
-    </DateFormatContext.Provider>
+  const formatDate = useCallback(
+    (date: Date | string | number | null | undefined) => fmtDate(date, displayFormat),
+    [displayFormat],
   );
-};
 
-export const useDateFormat = () => {
-  const context = useContext(DateFormatContext);
-  if (!context) {
-    throw new Error('useDateFormat must be used within DateFormatProvider');
+  const formatDateTime = useCallback(
+    (date: Date | string | number | null | undefined) => fmtDateTime(date, displayFormat),
+    [displayFormat],
+  );
+
+  const formatDateTimeSeconds = useCallback(
+    (date: Date | string | number | null | undefined) => fmtDateTimeSec(date, displayFormat),
+    [displayFormat],
+  );
+
+  const formatDateAgo = useCallback(
+    (date: Date | string | null | undefined) => fmtDateAgo(date),
+    [],
+  );
+
+  const formatDateForInputFn = useCallback(
+    (date: Date | string | number | null | undefined) => fmtDateForInput(date, inputFormat),
+    [inputFormat],
+  );
+
+  const formatShortDateFn = useCallback(
+    (date: Date | string | number | null | undefined) => fmtShortDate(date),
+    [],
+  );
+
+  const toDateInputValueFn = useCallback(
+    (date: Date | string | number | null | undefined) => toDateInputValue(date),
+    [],
+  );
+
+  const toDateTimeInputValueFn = useCallback(
+    (date: Date | string | number | null | undefined) => toDateTimeInputValue(date),
+    [],
+  );
+
+  const parseDateFromInputFn = useCallback(
+    (value: string) => parseDateFromInput(value, inputFormat),
+    [inputFormat],
+  );
+
+  const value = useMemo<DateFormatContextValue>(
+    () => ({
+      inputFormat,
+      displayFormat,
+      formatDate,
+      formatDateTime,
+      formatDateTimeSeconds,
+      formatDateAgo,
+      formatDateForInput: formatDateForInputFn,
+      formatShortDate: formatShortDateFn,
+      toDateInputValue: toDateInputValueFn,
+      toDateTimeInputValue: toDateTimeInputValueFn,
+      parseDateFromInput: parseDateFromInputFn,
+    }),
+    [
+      inputFormat,
+      displayFormat,
+      formatDate,
+      formatDateTime,
+      formatDateTimeSeconds,
+      formatDateAgo,
+      formatDateForInputFn,
+      formatShortDateFn,
+      toDateInputValueFn,
+      toDateTimeInputValueFn,
+      parseDateFromInputFn,
+    ],
+  );
+
+  return <DateFormatContext.Provider value={value}>{children}</DateFormatContext.Provider>;
+}
+
+export function useDateFormat() {
+  const ctx = useContext(DateFormatContext);
+  if (!ctx) {
+    throw new Error('useDateFormat must be used within a <DateFormatProvider />');
   }
-  return context;
-};
+  return ctx;
+}

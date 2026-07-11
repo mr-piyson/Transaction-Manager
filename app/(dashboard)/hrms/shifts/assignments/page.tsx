@@ -16,6 +16,7 @@ import {
 import { Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription } from '@/components/ui/empty';
 import { Field } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
+import { DatePicker } from '@/components/ui/date-picker';
 import { Label } from '@/components/ui/label';
 import {
   Pagination,
@@ -127,18 +128,16 @@ export default function ShiftAssignmentsPage() {
           </div>
           <div className="flex items-center gap-2">
             <Label className="text-xs text-muted-foreground">From</Label>
-            <Input
-              type="date"
+            <DatePicker
               className="w-[150px]"
               value={dateFrom}
-              onChange={(e) => { setDateFrom(e.target.value); setPage(1); }}
+              onChange={(v) => { setDateFrom(v); setPage(1); }}
             />
             <Label className="text-xs text-muted-foreground">To</Label>
-            <Input
-              type="date"
+            <DatePicker
               className="w-[150px]"
               value={dateTo}
-              onChange={(e) => { setDateTo(e.target.value); setPage(1); }}
+              onChange={(v) => { setDateTo(v); setPage(1); }}
             />
           </div>
         </div>
@@ -271,7 +270,7 @@ export default function ShiftAssignmentsPage() {
             </Field>
             <Field orientation="vertical">
               <Label>Date *</Label>
-              <Input type="date" value={assignDate} onChange={(e) => setAssignDate(e.target.value)} />
+              <DatePicker value={assignDate} onChange={(v) => setAssignDate(v)} />
             </Field>
             <div className="grid grid-cols-2 gap-4">
               <Field orientation="vertical">
