@@ -45,9 +45,11 @@ export default async function RootLayout(props: any) {
             storageKey={'theme'}
           >
             <DirectionProvider direction={dir} dir={dir}>
-              <DateFormatProvider defaultFormat={'date'}>
-                <TrpcProvider>{props.children}</TrpcProvider>
-              </DateFormatProvider>
+              <TrpcProvider>
+                <DateFormatProvider>
+                  {props.children}
+                </DateFormatProvider>
+              </TrpcProvider>
             </DirectionProvider>
           </ThemeProvider>
         </I18nProvider>
