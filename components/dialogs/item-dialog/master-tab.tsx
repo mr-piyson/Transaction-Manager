@@ -39,7 +39,9 @@ export function MasterTab({ form, canManageMaster }: MasterTabProps) {
   const selectedClass = classes.find((c: any) => c.id === master.classId);
   const commodities = selectedClass?.commodities ?? [];
 
-  const unitList = Array.isArray(units) ? units : [];
+  const unitList = Array.isArray(units)
+    ? units.filter((u: any) => u.isActive)
+    : [];
   const taxRateList = Array.isArray(taxRates) ? taxRates : [];
 
   const handleGenerateSku = () => {
@@ -169,6 +171,7 @@ export function MasterTab({ form, canManageMaster }: MasterTabProps) {
               {unitList.map((u: any) => (
                 <SelectItem key={u.id} value={u.id}>
                   {u.code} — {u.name}
+                  {u.isDefault ? ' ★' : ''}
                 </SelectItem>
               ))}
             </SelectContent>

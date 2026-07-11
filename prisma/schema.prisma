@@ -1500,8 +1500,9 @@ model Unit {
   name String // "Pieces", "Kilograms", "Hours"
   code String // "pcs", "kg", "hr"
 
-  isActive  Boolean   @default(true)
-  deletedAt DateTime?
+  isActive   Boolean   @default(true)
+  isDefault  Boolean   @default(false)
+  deletedAt  DateTime?
 
   organizationId String
   organization   Organization @relation(fields: [organizationId], references: [id])

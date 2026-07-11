@@ -148,7 +148,14 @@ export function useItemForm({
         setMasterState(getItemMasterDefaults(initialItem));
         setExistingMaster(initialItem);
       } else {
-        setMasterState(getItemMasterDefaults());
+        const unitList = Array.isArray(units) ? units : [];
+        const defaultUnit = unitList.find((u: any) => u.isDefault);
+        const defaults = getItemMasterDefaults();
+        if (defaultUnit) {
+          defaults.unitId = defaultUnit.id;
+          defaults.unit = defaultUnit.code;
+        }
+        setMasterState(defaults);
         setExistingMaster(null);
       }
       setSupplierDrafts(
@@ -164,7 +171,7 @@ export function useItemForm({
       );
       setErrors({ master: {}, suppliers: {} });
     }
-  }, [open, getInitialMode, initialItem, initialSupplierId]);
+  }, [open, getInitialMode, initialItem, initialSupplierId, units]);
 
   // ── Master field setters ────────────────────────────────────────────────
 

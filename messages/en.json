@@ -1072,6 +1072,14 @@
       "description": "Manage items and bulk import your product catalog",
       "noPermission": "You don't have permission to access Item Master settings. Contact your administrator to request access."
     },
+    "units": {
+      "title": "Units of Measure",
+      "description": "Manage measurement units used for items",
+      "nameLabel": "Name",
+      "namePlaceholder": "e.g. Kilograms",
+      "codeLabel": "Code",
+      "codePlaceholder": "e.g. kg"
+    },
     "kiosks": {
       "title": "Kiosks",
       "description": "Manage self-service attendance kiosks",

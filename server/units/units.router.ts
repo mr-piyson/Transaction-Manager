@@ -7,6 +7,7 @@ const unitBaseSchema = z.object({
   name: z.string().min(1).max(100),
   code: z.string().min(1).max(20),
   isActive: z.boolean().default(true),
+  isDefault: z.boolean().default(false),
 });
 
 const createUnitSchema = unitBaseSchema;
@@ -35,16 +36,24 @@ export const unitsRouter = router({
 
   create: orgProcedure.input(createUnitSchema).mutation(async ({ ctx, input }) => {
     assertCan(ctx.ability, 'unit:create', 'Unit');
+    const orgId = ctx.user.organizationId;
 
     const existing = await ctx.db.unit.findFirst({
-      where: { code: input.code, organizationId: ctx.user.organizationId },
+      where: { code: input.code, organizationId: orgId },
       select: { id: true },
     });
     if (existing) throw new ConflictError(`Unit code "${input.code}" already exists.`);
 
     return ctx.db.$transaction(async (tx) => {
+      if (input.isDefault) {
+        await tx.unit.updateMany({
+          where: { organizationId: orgId, isDefault: true },
+          data: { isDefault: false },
+        });
+      }
+
       const unit = await tx.unit.create({
-        data: { ...input, organizationId: ctx.user.organizationId },
+        data: { ...input, organizationId: orgId },
       });
 
       await writeAuditLog(
@@ -52,7 +61,7 @@ export const unitsRouter = router({
           entityType: 'Unit',
           entityId: unit.id,
           action: 'CREATE',
-          organizationId: ctx.user.organizationId,
+          organizationId: orgId,
           userId: ctx.user.id,
           ipAddress: ctx.ipAddress,
         },
@@ -66,21 +75,29 @@ export const unitsRouter = router({
   update: orgProcedure.input(updateUnitSchema).mutation(async ({ ctx, input }) => {
     const { id, ...data } = input;
     assertCan(ctx.ability, 'unit:update', 'Unit');
+    const orgId = ctx.user.organizationId;
 
     const existing = await ctx.db.unit.findFirst({
-      where: { id, organizationId: ctx.user.organizationId, deletedAt: null },
+      where: { id, organizationId: orgId, deletedAt: null },
     });
     if (!existing) throw new NotFoundError('Unit', id);
 
     if (data.code && data.code !== existing.code) {
       const conflict = await ctx.db.unit.findFirst({
-        where: { code: data.code, organizationId: ctx.user.organizationId, NOT: { id } },
+        where: { code: data.code, organizationId: orgId, NOT: { id } },
         select: { id: true },
       });
       if (conflict) throw new ConflictError(`Unit code "${data.code}" is already in use.`);
     }
 
     return ctx.db.$transaction(async (tx) => {
+      if (data.isDefault) {
+        await tx.unit.updateMany({
+          where: { organizationId: orgId, isDefault: true, NOT: { id } },
+          data: { isDefault: false },
+        });
+      }
+
       const unit = await tx.unit.update({ where: { id }, data });
 
       await writeAuditLog(
@@ -88,7 +105,7 @@ export const unitsRouter = router({
           entityType: 'Unit',
           entityId: id,
           action: 'UPDATE',
-          organizationId: ctx.user.organizationId,
+          organizationId: orgId,
           userId: ctx.user.id,
           ipAddress: ctx.ipAddress,
         },
@@ -107,6 +124,7 @@ export const unitsRouter = router({
       include: { items: { take: 1, select: { id: true } } },
     });
     if (!existing) throw new NotFoundError('Unit', input.id);
+    if (existing.isDefault) throw new ConflictError('Cannot delete the default unit.');
     if (existing.items.length > 0) {
       throw new ConflictError('Cannot delete a unit that is assigned to items.');
     }

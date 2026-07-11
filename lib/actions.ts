@@ -15,6 +15,7 @@ import {
   Package,
   Palette,
   Percent,
+  Ruler,
   Shield,
   Sun,
   User,
@@ -67,6 +68,12 @@ export const NAV_ITEMS = [
     labelKey: 'settings.itemMaster.title',
     href: '/settings/item-master',
     icon: Package,
+  },
+  {
+    id: 'units',
+    labelKey: 'settings.units.title',
+    href: '/settings/units',
+    icon: Ruler,
   },
   {
     id: 'chart-of-accounts',

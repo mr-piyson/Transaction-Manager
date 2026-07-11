@@ -889,6 +889,14 @@
       "debit": "مدين",
       "credit": "دائن"
     },
+    "units": {
+      "title": "وحدات القياس",
+      "description": "إدارة وحدات القياس المستخدمة للعناصر",
+      "nameLabel": "الاسم",
+      "namePlaceholder": "مثال: كيلوغرام",
+      "codeLabel": "الرمز",
+      "codePlaceholder": "مثال: kg"
+    },
     "kiosks": {
       "title": "أكشاك الحضور",
       "description": "إدارة أكشاك الحضور الذاتي",

@@ -354,6 +354,7 @@ const RESOURCE_TO_SUBJECT_MAP: Record<string, SubjectName> = {
   invoice: 'Invoice',
   customer: 'Customer',
   item: 'Item',
+  unit: 'Unit',
   stock: 'Stock',
   po: 'PurchaseOrder',
   expense: 'Expense',
