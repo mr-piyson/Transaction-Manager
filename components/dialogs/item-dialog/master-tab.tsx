@@ -28,27 +28,22 @@ export function MasterTab({ form, canManageMaster }: MasterTabProps) {
   const { mode, master, errors, setMasterField, handleMasterNameBlur } = form;
   const isLocked = !canManageMaster || mode === 'existing' || mode === 'add-supplier';
 
-  const { data: categoryTree } = trpc.categories.listTree.useQuery();
+  const { data: categories } = trpc.categories.list.useQuery();
   const { data: units } = trpc.units.list.useQuery();
   const { data: taxRates } = trpc.settings.taxRates.list.useQuery();
   const generateSku = trpc.categories.generateSku.useMutation();
 
-  const families = categoryTree ?? [];
-  const selectedFamily = families.find((f: any) => f.id === master.familyId);
-  const classes = selectedFamily?.classes ?? [];
-  const selectedClass = classes.find((c: any) => c.id === master.classId);
-  const commodities = selectedClass?.commodities ?? [];
-
+  const categoryList = Array.isArray(categories) ? categories : [];
   const unitList = Array.isArray(units)
     ? units.filter((u: any) => u.isActive)
     : [];
   const taxRateList = Array.isArray(taxRates) ? taxRates : [];
 
   const handleGenerateSku = () => {
-    const familyCode = selectedFamily?.code;
-    const classCode = selectedClass?.code;
+    const selectedCat = categoryList.find((c: any) => c.id === master.categoryId);
+    const categoryCode = selectedCat?.name?.substring(0, 10).toUpperCase().replace(/\s+/g, '');
     generateSku.mutate(
-      { familyCode, classCode },
+      { categoryCode },
       {
         onSuccess: (data) => setMasterField('sku', data.sku),
       },
@@ -182,112 +177,47 @@ export function MasterTab({ form, canManageMaster }: MasterTabProps) {
         </Field>
       </div>
 
-      {/* 3-Layer Category */}
-      <div className="grid grid-cols-3 gap-3">
-        <Field>
-          <Label>Family</Label>
-          <Select
-            value={master.familyId ?? ''}
-            onValueChange={(v) => setMasterField('familyId', v || undefined)}
-            disabled={isLocked}
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="Select family" />
-            </SelectTrigger>
-            <SelectContent>
-              {families.map((f: any) => (
-                <SelectItem key={f.id} value={f.id}>
-                  {f.code} — {f.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </Field>
-        <Field>
-          <Label>Class</Label>
-          <Select
-            value={master.classId ?? ''}
-            onValueChange={(v) => setMasterField('classId', v || undefined)}
-            disabled={isLocked || !master.familyId}
-          >
-            <SelectTrigger>
-              <SelectValue
-                placeholder={master.familyId ? 'Select class' : 'Select family first'}
-              />
-            </SelectTrigger>
-            <SelectContent>
-              {classes.map((c: any) => (
-                <SelectItem key={c.id} value={c.id}>
-                  {c.code} — {c.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </Field>
-        <Field>
-          <Label>Commodity</Label>
-          <Select
-            value={master.commodityId ?? ''}
-            onValueChange={(v) => setMasterField('commodityId', v || undefined)}
-            disabled={isLocked || !master.classId}
-          >
-            <SelectTrigger>
-              <SelectValue
-                placeholder={master.classId ? 'Select commodity' : 'Select class first'}
-              />
-            </SelectTrigger>
-            <SelectContent>
-              {commodities.map((c: any) => (
-                <SelectItem key={c.id} value={c.id}>
-                  {c.code} — {c.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </Field>
-      </div>
+      {/* Category */}
+      <Field>
+        <Label>Category</Label>
+        <Select
+          value={master.categoryId ?? ''}
+          onValueChange={(v) => setMasterField('categoryId', v || undefined)}
+          disabled={isLocked}
+        >
+          <SelectTrigger>
+            <SelectValue placeholder="Select category" />
+          </SelectTrigger>
+          <SelectContent>
+            {categoryList.map((cat: any) => (
+              <SelectItem key={cat.id} value={cat.id}>
+                {cat.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </Field>
 
-      {/* Category + Tax */}
-      <div className="grid grid-cols-2 gap-3">
-        <Field>
-          <Label>Category</Label>
-          <Select
-            value={master.categoryId ?? ''}
-            onValueChange={(v) => setMasterField('categoryId', v || undefined)}
-            disabled={isLocked}
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="Select category" />
-            </SelectTrigger>
-            <SelectContent>
-              {taxRateList.map((cat: any) => (
-                <SelectItem key={cat.id} value={cat.id}>
-                  {cat.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </Field>
-        <Field>
-          <Label>Tax rate</Label>
-          <Select
-            value={master.taxRateId ?? ''}
-            onValueChange={(v) => setMasterField('taxRateId', v || undefined)}
-            disabled={isLocked}
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="Select tax rate" />
-            </SelectTrigger>
-            <SelectContent>
-              {taxRateList.map((tr: any) => (
-                <SelectItem key={tr.id} value={tr.id}>
-                  {tr.name} ({Number(tr.rate)}%)
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </Field>
-      </div>
+      {/* Tax rate */}
+      <Field>
+        <Label>Tax rate</Label>
+        <Select
+          value={master.taxRateId ?? ''}
+          onValueChange={(v) => setMasterField('taxRateId', v || undefined)}
+          disabled={isLocked}
+        >
+          <SelectTrigger>
+            <SelectValue placeholder="Select tax rate" />
+          </SelectTrigger>
+          <SelectContent>
+            {taxRateList.map((tr: any) => (
+              <SelectItem key={tr.id} value={tr.id}>
+                {tr.name} ({Number(tr.rate)}%)
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </Field>
 
       {/* Flags */}
       <div className="flex gap-4">

@@ -17,9 +17,6 @@ export const itemFormSchema = z.object({
   reorderPoint: z.coerce.number().int().min(0).default(0),
   reorderQty: z.coerce.number().int().min(0).default(0),
   categoryId: z.string().optional(),
-  familyId: z.string().optional(),
-  classId: z.string().optional(),
-  commodityId: z.string().optional(),
   taxRateId: z.string().optional(),
 });
 
@@ -43,9 +40,6 @@ export function getItemFormDefaults(item?: Partial<ItemFormValues>): ItemFormVal
     reorderPoint: typeof item?.reorderPoint === 'number' ? item.reorderPoint : 0,
     reorderQty: typeof item?.reorderQty === 'number' ? item.reorderQty : 0,
     categoryId: item?.categoryId ?? undefined,
-    familyId: item?.familyId ?? undefined,
-    classId: item?.classId ?? undefined,
-    commodityId: item?.commodityId ?? undefined,
     taxRateId: item?.taxRateId ?? undefined,
   };
 }

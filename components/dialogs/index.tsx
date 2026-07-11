@@ -12,7 +12,6 @@ import { EmployeeTypeFormProvider } from './employeeTypeForm';
 import { GrievanceFormProvider } from './grievanceForm';
 import { HolidayFormProvider } from './holidayForm';
 import { InvoiceFormProvider } from './invoiceForm';
-import { ItemFormProvider } from './itemForm';
 import { JobPositionFormProvider } from './jobPositionForm';
 import { JobPostingFormProvider } from './jobPostingForm';
 import { LeaveAllocateFormProvider } from './leaveAllocateForm';
@@ -35,13 +34,16 @@ export type { CustomerFormValues } from './customerForm';
 export { SupplierFormProvider, useSupplierForm, SupplierFormDialog } from './supplierForm';
 export type { SupplierFormValues } from './supplierForm';
 
-export { SupplierItemFormProvider, useSupplierItemForm, SupplierItemFormDialog } from './supplierItemForm';
+export {
+  SupplierItemFormProvider,
+  useSupplierItemForm,
+  SupplierItemFormDialog,
+} from './supplierItemForm';
 export type { SupplierItemFormValues } from './supplierItemForm';
 
 export { WarehouseFormProvider, useWarehouseForm, WarehouseFormDialog } from './warehouseForm';
 export type { WarehouseFormValues } from './warehouseForm';
 
-export { ItemFormProvider, useItemForm, ItemFormDialog } from './itemForm';
 export type { ItemFormValues } from '@/lib/validations/item';
 
 export { UnifiedItemFormProvider, useUnifiedItemForm, UnifiedItemDialog } from './item-dialog';
@@ -63,10 +65,18 @@ export { TimePunchFormProvider, useTimePunchForm, TimePunchFormDialog } from './
 export { DepartmentFormProvider, useDepartmentForm, DepartmentFormDialog } from './departmentForm';
 export type { DepartmentFormValues } from './departmentForm';
 
-export { JobPositionFormProvider, useJobPositionForm, JobPositionFormDialog } from './jobPositionForm';
+export {
+  JobPositionFormProvider,
+  useJobPositionForm,
+  JobPositionFormDialog,
+} from './jobPositionForm';
 export type { JobPositionFormValues } from './jobPositionForm';
 
-export { EmployeeTypeFormProvider, useEmployeeTypeForm, EmployeeTypeFormDialog } from './employeeTypeForm';
+export {
+  EmployeeTypeFormProvider,
+  useEmployeeTypeForm,
+  EmployeeTypeFormDialog,
+} from './employeeTypeForm';
 export type { EmployeeTypeFormValues } from './employeeTypeForm';
 
 export { LeaveTypeFormProvider, useLeaveTypeForm, LeaveTypeFormDialog } from './leaveTypeForm';
@@ -78,13 +88,21 @@ export type { HolidayFormValues } from './holidayForm';
 export { ShiftFormProvider, useShiftForm, ShiftFormDialog } from './shiftForm';
 export type { ShiftFormValues } from './shiftForm';
 
-export { SalaryComponentFormProvider, useSalaryComponentForm, SalaryComponentFormDialog } from './salaryComponentForm';
+export {
+  SalaryComponentFormProvider,
+  useSalaryComponentForm,
+  SalaryComponentFormDialog,
+} from './salaryComponentForm';
 export type { SalaryComponentFormValues } from './salaryComponentForm';
 
 export { PayrollRunFormProvider, usePayrollRunForm, PayrollRunFormDialog } from './payrollRunForm';
 export type { PayrollRunFormValues } from './payrollRunForm';
 
-export { PerformanceReviewFormProvider, usePerformanceReviewForm, PerformanceReviewFormDialog } from './performanceReviewForm';
+export {
+  PerformanceReviewFormProvider,
+  usePerformanceReviewForm,
+  PerformanceReviewFormDialog,
+} from './performanceReviewForm';
 export type { PerformanceReviewFormValues } from './performanceReviewForm';
 
 export { DocumentFormProvider, useDocumentForm, DocumentFormDialog } from './documentForm';
@@ -93,7 +111,11 @@ export type { DocumentFormValues } from './documentForm';
 export { GrievanceFormProvider, useGrievanceForm, GrievanceFormDialog } from './grievanceForm';
 export type { GrievanceFormValues } from './grievanceForm';
 
-export { DisciplinaryActionFormProvider, useDisciplinaryActionForm, DisciplinaryActionFormDialog } from './disciplinaryActionForm';
+export {
+  DisciplinaryActionFormProvider,
+  useDisciplinaryActionForm,
+  DisciplinaryActionFormDialog,
+} from './disciplinaryActionForm';
 export type { DisciplinaryActionFormValues } from './disciplinaryActionForm';
 
 export { JobPostingFormProvider, useJobPostingForm, JobPostingFormDialog } from './jobPostingForm';
@@ -105,7 +127,11 @@ export type { CandidateFormValues } from './candidateForm';
 export { TrainingFormProvider, useTrainingForm, TrainingFormDialog } from './trainingForm';
 export type { TrainingFormValues } from './trainingForm';
 
-export { LeaveAllocateFormProvider, useLeaveAllocateForm, LeaveAllocateFormDialog } from './leaveAllocateForm';
+export {
+  LeaveAllocateFormProvider,
+  useLeaveAllocateForm,
+  LeaveAllocateFormDialog,
+} from './leaveAllocateForm';
 export type { LeaveAllocateFormValues } from './leaveAllocateForm';
 
 /**
@@ -118,7 +144,7 @@ export function DialogsProvider({ children }: { children: ReactNode }) {
       <SupplierFormProvider>
         <SupplierItemFormProvider>
           <WarehouseFormProvider>
-            <ItemFormProvider>
+            <UnifiedItemFormProvider>
               <UnifiedItemFormProvider>
                 <ContractFormProvider>
                   <POFormProvider>
@@ -164,7 +190,7 @@ export function DialogsProvider({ children }: { children: ReactNode }) {
                   </POFormProvider>
                 </ContractFormProvider>
               </UnifiedItemFormProvider>
-            </ItemFormProvider>
+            </UnifiedItemFormProvider>
           </WarehouseFormProvider>
         </SupplierItemFormProvider>
       </SupplierFormProvider>

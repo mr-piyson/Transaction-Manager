@@ -152,14 +152,14 @@ export function ItemPageContent({ item, defaultMode }: ItemPageContentProps) {
   const isCreate = !item;
   const [isEditing, setIsEditing] = React.useState(defaultMode === 'edit' || isCreate);
   const { data: categories } = trpc.items.list.useQuery({ limit: 200 });
-  const { data: categoryTree } = trpc.categories.listTree.useQuery();
+  const { data: categoryTree } = trpc.categories.list.useQuery();
   const { data: taxRates } = trpc.settings.taxRates.list.useQuery();
   const generateSku = trpc.categories.generateSku.useMutation();
   const [uploading, setUploading] = React.useState(false);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
   const barcodeRef = React.useRef<HTMLDivElement>(null);
 
-  const families = categoryTree ?? [];
+  const categoryList = categoryTree ?? [];
   const { data: units } = trpc.units.list.useQuery();
 
   const form = useForm<ItemFormValues>({
@@ -182,9 +182,6 @@ export function ItemPageContent({ item, defaultMode }: ItemPageContentProps) {
             reorderPoint: item.reorderPoint,
             reorderQty: item.reorderQty,
             categoryId: item.categoryId ?? undefined,
-            familyId: item.family?.id ?? undefined,
-            classId: item.class?.id ?? undefined,
-            commodityId: item.commodity?.id ?? undefined,
             taxRateId: item.taxRateId ?? undefined,
           }
         : undefined,
@@ -201,35 +198,9 @@ export function ItemPageContent({ item, defaultMode }: ItemPageContentProps) {
   } = form;
 
   const selectedType = watch('type');
-  const selectedFamilyId = watch('familyId');
-  const selectedClassId = watch('classId');
   const currentImage = watch('image');
   const isService = selectedType === 'SERVICE';
   const isProduct = selectedType === 'PRODUCT';
-
-  const selectedFamily = families.find((f: any) => f.id === selectedFamilyId);
-  const classes = (selectedFamily as any)?.classes ?? [];
-  const selectedClass = classes.find((c: any) => c.id === selectedClassId);
-  const commodities = (selectedClass as any)?.commodities ?? [];
-
-  React.useEffect(() => {
-    if (!selectedFamilyId) {
-      setValue('classId', undefined);
-      setValue('commodityId', undefined);
-    }
-  }, [selectedFamilyId, setValue]);
-
-  React.useEffect(() => {
-    if (!selectedClassId) {
-      setValue('commodityId', undefined);
-    }
-  }, [selectedClassId, setValue]);
-
-  React.useEffect(() => {
-    if (commodities.length === 1) {
-      setValue('commodityId', commodities[0].id);
-    }
-  }, [commodities, setValue]);
 
   const createMutation = trpc.items.create.useMutation({
     onSuccess(data) {
@@ -278,10 +249,10 @@ export function ItemPageContent({ item, defaultMode }: ItemPageContentProps) {
   };
 
   const handleGenerateSku = () => {
-    const familyCode = (selectedFamily as any)?.code;
-    const classCode = (selectedClass as any)?.code;
+    const selectedCat = categoryList.find((c: any) => c.id === watch('categoryId'));
+    const categoryCode = selectedCat?.name?.substring(0, 10).toUpperCase().replace(/\s+/g, '');
     generateSku.mutate(
-      { familyCode, classCode },
+      { categoryCode },
       {
         onSuccess: (data) => setValue('sku', data.sku),
         onError: (err) => toast.error('Failed to generate SKU', { description: err.message }),
@@ -337,9 +308,6 @@ export function ItemPageContent({ item, defaultMode }: ItemPageContentProps) {
           reorderPoint: item.reorderPoint,
           reorderQty: item.reorderQty,
           categoryId: item.categoryId ?? undefined,
-          familyId: item.family?.id ?? undefined,
-          classId: item.class?.id ?? undefined,
-          commodityId: item.commodity?.id ?? undefined,
           taxRateId: item.taxRateId ?? undefined,
         }),
       );
@@ -369,9 +337,6 @@ export function ItemPageContent({ item, defaultMode }: ItemPageContentProps) {
         reorderPoint: item!.reorderPoint,
         reorderQty: item!.reorderQty,
         categoryId: item!.categoryId ?? undefined,
-        familyId: item!.family?.id ?? undefined,
-        classId: item!.class?.id ?? undefined,
-        commodityId: item!.commodity?.id ?? undefined,
         taxRateId: item!.taxRateId ?? undefined,
       }),
     );
@@ -778,58 +743,38 @@ export function ItemPageContent({ item, defaultMode }: ItemPageContentProps) {
                     <CardTitle className="text-base">{t('items.category')}</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="grid grid-cols-3 gap-3">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <Field>
-                        <Label>Family</Label>
+                        <Label>{t('items.category')}</Label>
                         <Select
-                          value={selectedFamilyId ?? ''}
-                          onValueChange={(v) => setValue('familyId', v || undefined)}
+                          value={watch('categoryId') ?? ''}
+                          onValueChange={(v) => setValue('categoryId', v || undefined)}
                         >
                           <SelectTrigger>
-                            <SelectValue placeholder="Select family" />
+                            <SelectValue placeholder="Select category" />
                           </SelectTrigger>
                           <SelectContent>
-                            {families.map((f: any) => (
-                              <SelectItem key={f.id} value={f.id}>
-                                {f.code} — {f.name}
+                            {categoryList.map((cat: any) => (
+                              <SelectItem key={cat.id} value={cat.id}>
+                                {cat.name}
                               </SelectItem>
                             ))}
                           </SelectContent>
                         </Select>
                       </Field>
                       <Field>
-                        <Label>Class</Label>
+                        <Label>{t('common.tax')}</Label>
                         <Select
-                          value={selectedClassId ?? ''}
-                          onValueChange={(v) => setValue('classId', v || undefined)}
-                          disabled={!selectedFamilyId}
+                          value={watch('taxRateId') ?? ''}
+                          onValueChange={(v) => setValue('taxRateId', v || undefined)}
                         >
                           <SelectTrigger>
-                            <SelectValue placeholder={selectedFamilyId ? 'Select class' : 'Select family first'} />
+                            <SelectValue placeholder="Select tax rate" />
                           </SelectTrigger>
                           <SelectContent>
-                            {classes.map((c: any) => (
-                              <SelectItem key={c.id} value={c.id}>
-                                {c.code} — {c.name}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </Field>
-                      <Field>
-                        <Label>Commodity</Label>
-                        <Select
-                          value={watch('commodityId') ?? ''}
-                          onValueChange={(v) => setValue('commodityId', v || undefined)}
-                          disabled={!selectedClassId}
-                        >
-                          <SelectTrigger>
-                            <SelectValue placeholder={selectedClassId ? 'Select commodity' : 'Select class first'} />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {commodities.map((c: any) => (
-                              <SelectItem key={c.id} value={c.id}>
-                                {c.code} — {c.name}
+                            {(Array.isArray(taxRates) ? taxRates : []).map((tr: any) => (
+                              <SelectItem key={tr.id} value={tr.id}>
+                                {tr.name} ({Number(tr.rate)}%)
                               </SelectItem>
                             ))}
                           </SelectContent>
@@ -838,50 +783,6 @@ export function ItemPageContent({ item, defaultMode }: ItemPageContentProps) {
                     </div>
                   </CardContent>
                 </Card>
-
-                {/* Category + Tax */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <Card>
-                    <CardContent className="p-4">
-                      <Label className="text-xs font-medium text-muted-foreground mb-2 block">
-                        {t('items.category')}
-                      </Label>
-                      <Select onValueChange={(v) => setValue('categoryId', v)}>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select category" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {(Array.isArray(categories) ? categories : categories?.data ?? []).map(
-                            (cat: any) => (
-                              <SelectItem key={cat.id} value={cat.id}>
-                                {cat.name}
-                              </SelectItem>
-                            ),
-                          )}
-                        </SelectContent>
-                      </Select>
-                    </CardContent>
-                  </Card>
-                  <Card>
-                    <CardContent className="p-4">
-                      <Label className="text-xs font-medium text-muted-foreground mb-2 block">
-                        {t('common.tax')}
-                      </Label>
-                      <Select onValueChange={(v) => setValue('taxRateId', v)}>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select tax rate" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {(Array.isArray(taxRates) ? taxRates : []).map((tr: any) => (
-                            <SelectItem key={tr.id} value={tr.id}>
-                              {tr.name} ({Number(tr.rate)}%)
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </CardContent>
-                  </Card>
-                </div>
 
                 {/* Flags */}
                 <Card>
@@ -1321,39 +1222,6 @@ export function ItemPageContent({ item, defaultMode }: ItemPageContentProps) {
                             {item.category?.name ?? '—'}
                           </span>
                         </div>
-                        {item.family && (
-                          <>
-                            <Separator />
-                            <div className="flex items-center justify-between">
-                              <span className="text-sm text-muted-foreground">
-                                {t('items.family')}
-                              </span>
-                              <span className="text-sm font-medium">{item.family.name}</span>
-                            </div>
-                          </>
-                        )}
-                        {item.class && (
-                          <>
-                            <Separator />
-                            <div className="flex items-center justify-between">
-                              <span className="text-sm text-muted-foreground">
-                                {t('items.class')}
-                              </span>
-                              <span className="text-sm font-medium">{item.class.name}</span>
-                            </div>
-                          </>
-                        )}
-                        {item.commodity && (
-                          <>
-                            <Separator />
-                            <div className="flex items-center justify-between">
-                              <span className="text-sm text-muted-foreground">
-                                {t('items.commodity')}
-                              </span>
-                              <span className="text-sm font-medium">{item.commodity.name}</span>
-                            </div>
-                          </>
-                        )}
                       </div>
                     </CardContent>
                   </Card>

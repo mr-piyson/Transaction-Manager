@@ -3,77 +3,55 @@ import { ConflictError, NotFoundError } from '@/lib/error';
 import { assertCan, orgProcedure, router } from '@/lib/trpc/context';
 import { writeAuditLog } from '../shared/audit.service';
 
-const familySchema = z.object({
+const categoryBaseSchema = z.object({
   name: z.string().min(1).max(100),
-  code: z.string().min(1).max(20),
-  description: z.string().max(500).optional(),
   color: z.string().max(7).optional(),
   icon: z.string().max(50).optional(),
+  isActive: z.boolean().default(true),
 });
 
-const classSchema = z.object({
-  name: z.string().min(1).max(100),
-  code: z.string().min(1).max(20),
-  description: z.string().max(500).optional(),
-  color: z.string().max(7).optional(),
-  icon: z.string().max(50).optional(),
-  familyId: z.string(),
-});
+const createCategorySchema = categoryBaseSchema;
 
-const commoditySchema = z.object({
-  name: z.string().min(1).max(100),
-  code: z.string().min(1).max(20),
-  description: z.string().max(500).optional(),
-  color: z.string().max(7).optional(),
-  icon: z.string().max(50).optional(),
-  classId: z.string(),
+const updateCategorySchema = categoryBaseSchema.partial().extend({
+  id: z.string(),
 });
 
 export const categoriesRouter = router({
-  // ── LIST FULL TREE ────────────────────────────────────────────────────────
-  listTree: orgProcedure.query(async ({ ctx }) => {
-    assertCan(ctx.ability, 'category:read', 'CategoryFamily');
-    const orgId = ctx.user.organizationId;
-
-    const families = await ctx.db.categoryFamily.findMany({
-      where: { organizationId: orgId, deletedAt: null },
-      orderBy: { code: 'asc' },
-      include: {
-        classes: {
-          where: { deletedAt: null },
-          orderBy: { code: 'asc' },
-          include: {
-            commodities: {
-              where: { deletedAt: null },
-              orderBy: { code: 'asc' },
-            },
-          },
-        },
-      },
+  list: orgProcedure.query(async ({ ctx }) => {
+    assertCan(ctx.ability, 'category:read', 'ItemCategory');
+    return ctx.db.itemCategory.findMany({
+      where: { organizationId: ctx.user.organizationId, deletedAt: null },
+      orderBy: { name: 'asc' },
     });
-
-    return families;
   }),
 
-  // ── FAMILY CRUD ───────────────────────────────────────────────────────────
+  byId: orgProcedure.input(z.object({ id: z.string() })).query(async ({ ctx, input }) => {
+    assertCan(ctx.ability, 'category:read', 'ItemCategory');
+    const category = await ctx.db.itemCategory.findFirst({
+      where: { id: input.id, organizationId: ctx.user.organizationId, deletedAt: null },
+    });
+    if (!category) throw new NotFoundError('ItemCategory', input.id);
+    return category;
+  }),
 
-  createFamily: orgProcedure.input(familySchema).mutation(async ({ ctx, input }) => {
-    assertCan(ctx.ability, 'category:create', 'CategoryFamily');
+  create: orgProcedure.input(createCategorySchema).mutation(async ({ ctx, input }) => {
+    assertCan(ctx.ability, 'category:create', 'ItemCategory');
     const orgId = ctx.user.organizationId;
 
-    const existing = await ctx.db.categoryFamily.findFirst({
-      where: { code: input.code, organizationId: orgId },
+    const existing = await ctx.db.itemCategory.findFirst({
+      where: { name: input.name, organizationId: orgId },
       select: { id: true },
     });
-    if (existing) throw new ConflictError(`Family code "${input.code}" already exists.`);
+    if (existing) throw new ConflictError(`Category "${input.name}" already exists.`);
 
     return ctx.db.$transaction(async (tx) => {
-      const created = await tx.categoryFamily.create({
+      const created = await tx.itemCategory.create({
         data: { ...input, organizationId: orgId },
       });
+
       await writeAuditLog(
         {
-          entityType: 'CategoryFamily',
+          entityType: 'ItemCategory',
           entityId: created.id,
           action: 'CREATE',
           organizationId: orgId,
@@ -82,322 +60,91 @@ export const categoriesRouter = router({
         },
         tx,
       );
+
       return created;
     });
   }),
 
-  updateFamily: orgProcedure
-    .input(familySchema.partial().extend({ id: z.string() }))
-    .mutation(async ({ ctx, input }) => {
-      const { id, ...data } = input;
-      const orgId = ctx.user.organizationId;
+  update: orgProcedure.input(updateCategorySchema).mutation(async ({ ctx, input }) => {
+    const { id, ...data } = input;
+    assertCan(ctx.ability, 'category:update', 'ItemCategory');
+    const orgId = ctx.user.organizationId;
 
-      const existing = await ctx.db.categoryFamily.findFirst({
-        where: { id, organizationId: orgId },
-      });
-      if (!existing) throw new NotFoundError('CategoryFamily', id);
+    const existing = await ctx.db.itemCategory.findFirst({
+      where: { id, organizationId: orgId, deletedAt: null },
+    });
+    if (!existing) throw new NotFoundError('ItemCategory', id);
 
-      if (data.code && data.code !== existing.code) {
-        const conflict = await ctx.db.categoryFamily.findFirst({
-          where: { code: data.code, organizationId: orgId, NOT: { id } },
-          select: { id: true },
-        });
-        if (conflict) throw new ConflictError(`Family code "${data.code}" already exists.`);
-      }
-
-      return ctx.db.$transaction(async (tx) => {
-        const updated = await tx.categoryFamily.update({ where: { id }, data });
-        await writeAuditLog(
-          {
-            entityType: 'CategoryFamily',
-            entityId: id,
-            action: 'UPDATE',
-            organizationId: orgId,
-            userId: ctx.user.id,
-            ipAddress: ctx.ipAddress,
-          },
-          tx,
-        );
-        return updated;
-      });
-    }),
-
-  deleteFamily: orgProcedure
-    .input(z.object({ id: z.string() }))
-    .mutation(async ({ ctx, input }) => {
-      const orgId = ctx.user.organizationId;
-      const existing = await ctx.db.categoryFamily.findFirst({
-        where: { id: input.id, organizationId: orgId },
+    if (data.name && data.name !== existing.name) {
+      const conflict = await ctx.db.itemCategory.findFirst({
+        where: { name: data.name, organizationId: orgId, NOT: { id } },
         select: { id: true },
       });
-      if (!existing) throw new NotFoundError('CategoryFamily', input.id);
-
-      const hasClasses = await ctx.db.categoryClass.count({
-        where: { familyId: input.id, deletedAt: null },
-      });
-      if (hasClasses > 0)
-        throw new ConflictError('Cannot delete family with active classes. Remove classes first.');
-
-      return ctx.db.$transaction(async (tx) => {
-        await tx.categoryFamily.update({
-          where: { id: input.id },
-          data: { deletedAt: new Date(), isActive: false },
-        });
-        await writeAuditLog(
-          {
-            entityType: 'CategoryFamily',
-            entityId: input.id,
-            action: 'DELETE',
-            organizationId: orgId,
-            userId: ctx.user.id,
-            ipAddress: ctx.ipAddress,
-          },
-          tx,
-        );
-        return { success: true };
-      });
-    }),
-
-  // ── CLASS CRUD ────────────────────────────────────────────────────────────
-
-  createClass: orgProcedure.input(classSchema).mutation(async ({ ctx, input }) => {
-    assertCan(ctx.ability, 'category:create', 'CategoryClass');
-    const orgId = ctx.user.organizationId;
-
-    const family = await ctx.db.categoryFamily.findFirst({
-      where: { id: input.familyId, organizationId: orgId },
-      select: { id: true },
-    });
-    if (!family) throw new NotFoundError('CategoryFamily', input.familyId);
-
-    const existing = await ctx.db.categoryClass.findFirst({
-      where: { code: input.code, familyId: input.familyId, organizationId: orgId },
-      select: { id: true },
-    });
-    if (existing)
-      throw new ConflictError(`Class code "${input.code}" already exists in this family.`);
+      if (conflict) throw new ConflictError(`Category "${data.name}" already exists.`);
+    }
 
     return ctx.db.$transaction(async (tx) => {
-      const created = await tx.categoryClass.create({
-        data: { ...input, organizationId: orgId },
-      });
+      const updated = await tx.itemCategory.update({ where: { id }, data });
+
       await writeAuditLog(
         {
-          entityType: 'CategoryClass',
-          entityId: created.id,
-          action: 'CREATE',
+          entityType: 'ItemCategory',
+          entityId: id,
+          action: 'UPDATE',
           organizationId: orgId,
           userId: ctx.user.id,
           ipAddress: ctx.ipAddress,
         },
         tx,
       );
-      return created;
+
+      return updated;
     });
   }),
 
-  updateClass: orgProcedure
-    .input(classSchema.partial().extend({ id: z.string() }))
-    .mutation(async ({ ctx, input }) => {
-      const { id, ...data } = input;
-      const orgId = ctx.user.organizationId;
+  delete: orgProcedure.input(z.object({ id: z.string() })).mutation(async ({ ctx, input }) => {
+    assertCan(ctx.ability, 'category:delete', 'ItemCategory');
 
-      const existing = await ctx.db.categoryClass.findFirst({
-        where: { id, organizationId: orgId },
-      });
-      if (!existing) throw new NotFoundError('CategoryClass', id);
-
-      if (data.code && (data.code !== existing.code || data.familyId !== existing.familyId)) {
-        const conflict = await ctx.db.categoryClass.findFirst({
-          where: {
-            code: data.code,
-            familyId: data.familyId ?? existing.familyId,
-            organizationId: orgId,
-            NOT: { id },
-          },
-          select: { id: true },
-        });
-        if (conflict)
-          throw new ConflictError(`Class code "${data.code}" already exists in this family.`);
-      }
-
-      return ctx.db.$transaction(async (tx) => {
-        const updated = await tx.categoryClass.update({ where: { id }, data });
-        await writeAuditLog(
-          {
-            entityType: 'CategoryClass',
-            entityId: id,
-            action: 'UPDATE',
-            organizationId: orgId,
-            userId: ctx.user.id,
-            ipAddress: ctx.ipAddress,
-          },
-          tx,
-        );
-        return updated;
-      });
-    }),
-
-  deleteClass: orgProcedure.input(z.object({ id: z.string() })).mutation(async ({ ctx, input }) => {
-    const orgId = ctx.user.organizationId;
-    const existing = await ctx.db.categoryClass.findFirst({
-      where: { id: input.id, organizationId: orgId },
+    const existing = await ctx.db.itemCategory.findFirst({
+      where: { id: input.id, organizationId: ctx.user.organizationId, deletedAt: null },
+      include: { items: { take: 1, select: { id: true } } },
     });
-    if (!existing) throw new NotFoundError('CategoryClass', input.id);
-
-    const hasCommodities = await ctx.db.categoryCommodity.count({
-      where: { classId: input.id, deletedAt: null },
-    });
-    if (hasCommodities > 0)
-      throw new ConflictError(
-        'Cannot delete class with active commodities. Remove commodities first.',
-      );
+    if (!existing) throw new NotFoundError('ItemCategory', input.id);
+    if (existing.items.length > 0) {
+      throw new ConflictError('Cannot delete a category that is assigned to items.');
+    }
 
     return ctx.db.$transaction(async (tx) => {
-      await tx.categoryClass.update({
+      await tx.itemCategory.update({
         where: { id: input.id },
         data: { deletedAt: new Date(), isActive: false },
       });
+
       await writeAuditLog(
         {
-          entityType: 'CategoryClass',
+          entityType: 'ItemCategory',
           entityId: input.id,
           action: 'DELETE',
-          organizationId: orgId,
+          organizationId: ctx.user.organizationId,
           userId: ctx.user.id,
           ipAddress: ctx.ipAddress,
         },
         tx,
       );
+
       return { success: true };
     });
   }),
 
-  // ── COMMODITY CRUD ────────────────────────────────────────────────────────
-
-  createCommodity: orgProcedure.input(commoditySchema).mutation(async ({ ctx, input }) => {
-    assertCan(ctx.ability, 'category:create', 'CategoryCommodity');
-    const orgId = ctx.user.organizationId;
-
-    const cls = await ctx.db.categoryClass.findFirst({
-      where: { id: input.classId, organizationId: orgId },
-      select: { id: true },
-    });
-    if (!cls) throw new NotFoundError('CategoryClass', input.classId);
-
-    const existing = await ctx.db.categoryCommodity.findFirst({
-      where: { code: input.code, classId: input.classId, organizationId: orgId },
-      select: { id: true },
-    });
-    if (existing)
-      throw new ConflictError(`Commodity code "${input.code}" already exists in this class.`);
-
-    return ctx.db.$transaction(async (tx) => {
-      const created = await tx.categoryCommodity.create({
-        data: { ...input, organizationId: orgId },
-      });
-      await writeAuditLog(
-        {
-          entityType: 'CategoryCommodity',
-          entityId: created.id,
-          action: 'CREATE',
-          organizationId: orgId,
-          userId: ctx.user.id,
-          ipAddress: ctx.ipAddress,
-        },
-        tx,
-      );
-      return created;
-    });
-  }),
-
-  updateCommodity: orgProcedure
-    .input(commoditySchema.partial().extend({ id: z.string() }))
-    .mutation(async ({ ctx, input }) => {
-      const { id, ...data } = input;
-      const orgId = ctx.user.organizationId;
-
-      const existing = await ctx.db.categoryCommodity.findFirst({
-        where: { id, organizationId: orgId },
-      });
-      if (!existing) throw new NotFoundError('CategoryCommodity', id);
-
-      if (data.code && (data.code !== existing.code || data.classId !== existing.classId)) {
-        const conflict = await ctx.db.categoryCommodity.findFirst({
-          where: {
-            code: data.code,
-            classId: data.classId ?? existing.classId,
-            organizationId: orgId,
-            NOT: { id },
-          },
-          select: { id: true },
-        });
-        if (conflict)
-          throw new ConflictError(`Commodity code "${data.code}" already exists in this class.`);
-      }
-
-      return ctx.db.$transaction(async (tx) => {
-        const updated = await tx.categoryCommodity.update({ where: { id }, data });
-        await writeAuditLog(
-          {
-            entityType: 'CategoryCommodity',
-            entityId: id,
-            action: 'UPDATE',
-            organizationId: orgId,
-            userId: ctx.user.id,
-            ipAddress: ctx.ipAddress,
-          },
-          tx,
-        );
-        return updated;
-      });
-    }),
-
-  deleteCommodity: orgProcedure
-    .input(z.object({ id: z.string() }))
-    .mutation(async ({ ctx, input }) => {
-      const orgId = ctx.user.organizationId;
-      const existing = await ctx.db.categoryCommodity.findFirst({
-        where: { id: input.id, organizationId: orgId },
-      });
-      if (!existing) throw new NotFoundError('CategoryCommodity', input.id);
-
-      const hasItems = await ctx.db.item.count({
-        where: { commodityId: input.id, deletedAt: null },
-      });
-      if (hasItems > 0) throw new ConflictError('Cannot delete commodity linked to active items.');
-
-      return ctx.db.$transaction(async (tx) => {
-        await tx.categoryCommodity.update({
-          where: { id: input.id },
-          data: { deletedAt: new Date(), isActive: false },
-        });
-        await writeAuditLog(
-          {
-            entityType: 'CategoryCommodity',
-            entityId: input.id,
-            action: 'DELETE',
-            organizationId: orgId,
-            userId: ctx.user.id,
-            ipAddress: ctx.ipAddress,
-          },
-          tx,
-        );
-        return { success: true };
-      });
-    }),
-
-  // ── SKU AUTO-GENERATION ───────────────────────────────────────────────────
   generateSku: orgProcedure
     .input(
       z.object({
-        familyCode: z.string().max(10).optional(),
-        classCode: z.string().max(10).optional(),
+        categoryCode: z.string().max(10).optional(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
       const orgId = ctx.user.organizationId;
-      const prefix = [input.familyCode, input.classCode, 'ITM'].filter(Boolean).join('-');
+      const prefix = [input.categoryCode, 'ITM'].filter(Boolean).join('-');
 
       const seq = await ctx.db.$transaction(async (tx) => {
         const row = await tx.documentSequence.findFirst({

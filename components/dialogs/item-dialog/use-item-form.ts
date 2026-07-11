@@ -118,7 +118,7 @@ export function useItemForm({
     return list;
   }, [existingItemsData]);
 
-  const { data: categoryTree } = trpc.categories.listTree.useQuery(undefined, { enabled: open });
+  const { data: categories } = trpc.categories.list.useQuery(undefined, { enabled: open });
   const { data: units } = trpc.units.list.useQuery(undefined, { enabled: open });
   const { data: taxRates } = trpc.settings.taxRates.list.useQuery(undefined, { enabled: open });
   const generateSku = trpc.categories.generateSku.useMutation();
@@ -348,9 +348,6 @@ export function useItemForm({
             reorderPoint: existingMaster.reorderPoint ?? 0,
             reorderQty: existingMaster.reorderQty ?? 0,
             categoryId: existingMaster.categoryId ?? undefined,
-            familyId: existingMaster.familyId ?? undefined,
-            classId: existingMaster.classId ?? undefined,
-            commodityId: existingMaster.commodityId ?? undefined,
             taxRateId: existingMaster.taxRateId ?? undefined,
             isActive: existingMaster.isActive ?? true,
           },
@@ -385,9 +382,6 @@ export function useItemForm({
             reorderPoint: master.reorderPoint,
             reorderQty: master.reorderQty,
             categoryId: master.categoryId,
-            familyId: master.familyId,
-            classId: master.classId,
-            commodityId: master.commodityId,
             taxRateId: master.taxRateId,
             isActive: master.isActive,
           },

@@ -177,9 +177,7 @@ export type Action =
 // ---------------------------------------------------------------------------
 
 export type SubjectName =
-  | 'CategoryFamily'
-  | 'CategoryClass'
-  | 'CategoryCommodity'
+  | 'ItemCategory'
   | 'Invoice'
   | 'InvoiceLine'
   | 'Payment'
@@ -358,7 +356,7 @@ const RESOURCE_TO_SUBJECT_MAP: Record<string, SubjectName> = {
   stock: 'Stock',
   po: 'PurchaseOrder',
   expense: 'Expense',
-  category: 'CategoryFamily',
+  category: 'ItemCategory',
   org: 'Organization',
   user: 'User',
   report: 'all', // Reports aren't tied to a specific DB model row

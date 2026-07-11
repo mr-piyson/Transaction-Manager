@@ -206,9 +206,6 @@ function ItemDetailSheet({
               <DetailRow label={t('common.type')} value={item.type} />
               <DetailRow label={t('common.unit')} value={item.unit} />
               <DetailRow label={t('items.category')} value={item.categoryName ?? '—'} />
-              <DetailRow label={t('items.family')} value={item.familyName ?? '—'} />
-              <DetailRow label={t('items.class')} value={item.className ?? '—'} />
-              <DetailRow label={t('items.commodity')} value={item.commodityName ?? '—'} />
             </div>
 
             <Separator />
