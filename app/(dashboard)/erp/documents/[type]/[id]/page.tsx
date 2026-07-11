@@ -743,7 +743,7 @@ export default function DocumentDetailPage() {
           <CardTitle className="text-base">
             {t('invoices.lineItems')}
             <span className="text-muted-foreground font-normal ml-2">
-              ({invoice.lines?.length ?? 0} {t('invoices.itemsCount')})
+              ({t('invoices.itemsCount', { count: invoice.lines?.length ?? 0 })})
             </span>
           </CardTitle>
         </CardHeader>
