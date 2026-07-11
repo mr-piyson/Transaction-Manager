@@ -59,6 +59,8 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { usePOForm } from '@/components/dialogs/poForm';
 import { trpc } from '@/lib/trpc/client';
+import { useAppAbility } from '@/hooks/use-app-ability';
+import type { Action as PermissionAction } from '@/lib/abilities';
 import { format } from 'date-fns';
 
 const STATUS_COLORS: Record<string, string> = {
@@ -95,6 +97,8 @@ export default function PurchaseOrderDetailPage() {
         !!params.id && !!po && ['ORDERED', 'PARTIAL_RECEIVED', 'RECEIVED'].includes(po.status),
     },
   );
+
+  const ability = useAppAbility();
 
   const [receiveOpen, setReceiveOpen] = React.useState(false);
   const [rejectOpen, setRejectOpen] = React.useState(false);
@@ -264,7 +268,10 @@ export default function PurchaseOrderDetailPage() {
     icon: LucideIcon;
     variant?: 'default' | 'destructive' | 'outline';
     dialog?: 'receive' | 'reject';
+    permission?: PermissionAction;
   };
+
+  const can = (action?: PermissionAction) => !action || ability?.can(action, 'PurchaseOrder');
 
   const actions: Action[] = [];
   if (po.status === 'DRAFT') {
@@ -272,24 +279,28 @@ export default function PurchaseOrderDetailPage() {
       label: t('purchaseOrders.submitForApproval'),
       key: 'submit',
       icon: Send,
+      permission: 'po:update',
     });
     actions.push({
       label: t('common.edit'),
       key: 'edit',
       icon: Edit,
       variant: 'outline',
+      permission: 'po:update',
     });
     actions.push({
       label: t('common.delete'),
       key: 'delete',
       icon: Trash,
       variant: 'destructive',
+      permission: 'po:delete',
     });
   } else if (po.status === 'PENDING_APPROVAL') {
     actions.push({
       label: t('common.approve'),
       key: 'approve',
       icon: CheckCircle,
+      permission: 'po:approve',
     });
     actions.push({
       label: t('common.reject'),
@@ -297,24 +308,28 @@ export default function PurchaseOrderDetailPage() {
       icon: ThumbsDown,
       variant: 'destructive',
       dialog: 'reject',
+      permission: 'po:approve',
     });
     actions.push({
       label: t('common.cancel'),
       key: 'cancel',
       icon: XCircle,
       variant: 'destructive',
+      permission: 'po:delete',
     });
   } else if (po.status === 'APPROVED') {
     actions.push({
       label: t('purchaseOrders.placeOrder'),
       key: 'order',
       icon: FileDown,
+      permission: 'po:approve',
     });
     actions.push({
       label: t('common.cancel'),
       key: 'cancel',
       icon: XCircle,
       variant: 'destructive',
+      permission: 'po:delete',
     });
   } else if (po.status === 'ORDERED' || po.status === 'PARTIAL_RECEIVED') {
     actions.push({
@@ -322,16 +337,19 @@ export default function PurchaseOrderDetailPage() {
       key: 'receive',
       icon: Package,
       dialog: 'receive',
+      permission: 'po:receive',
     });
     actions.push({
       label: t('common.cancel'),
       key: 'cancel',
       icon: XCircle,
       variant: 'destructive',
+      permission: 'po:delete',
     });
   }
 
-  const showActions = actions.length > 0;
+  const visibleActions = ability !== null ? actions.filter((a) => can(a.permission)) : [];
+  const showActions = visibleActions.length > 0;
 
   const remainingLines = po.lines.filter((l: any) => Number(l.quantity) > Number(l.receivedQty));
   const allReceived = remainingLines.length === 0;
@@ -367,7 +385,7 @@ export default function PurchaseOrderDetailPage() {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                {actions.map((a) => (
+                {visibleActions.map((a) => (
                   <DropdownMenuItem
                     key={a.key}
                     onClick={() => handleActionClick(a)}

@@ -12,6 +12,7 @@ import type { ContextMenuItemSchema } from '@/components/context-menu';
 import { ListView } from '@/components/list-view';
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@/components/ui/resizable';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useAppAbility } from '@/hooks/use-app-ability';
 import { trpc } from '@/lib/trpc/client';
 import { cn } from '@/lib/utils';
 import { usePOForm } from '@/components/dialogs';
@@ -28,6 +29,7 @@ export default function POLayout({ children }: { children?: React.ReactNode }) {
   const router = useRouter();
   const { data, isPending } = trpc.purchaseOrders.list.useQuery({});
   const isMobile = useIsMobile();
+  const ability = useAppAbility();
   const pathname = usePathname();
   const activeItem = pathname.split('/')[3];
   const isListView = pathname === `/erp/${route}`;
@@ -56,6 +58,9 @@ export default function POLayout({ children }: { children?: React.ReactNode }) {
       const isDeletable = item.status === 'DRAFT';
       const isCancellable = !['CANCELLED', 'CLOSED', 'RECEIVED', 'INVOICED'].includes(item.status);
 
+      const canEdit = ability?.can('po:update', 'PurchaseOrder');
+      const canDelete = ability?.can('po:delete', 'PurchaseOrder');
+
       const menuItems: ContextMenuItemSchema[] = [
         {
           id: 'view',
@@ -63,18 +68,22 @@ export default function POLayout({ children }: { children?: React.ReactNode }) {
           icon: Eye,
           onClick: () => router.push(`/erp/${route}/${item.id}`),
         },
-        {
-          id: 'edit',
-          label: t('common.edit'),
-          icon: Edit,
-          onClick: () =>
-            openEdit(
-              { id: item.id, version: item.version },
-              { onSuccess: () => utils.purchaseOrders.byId.invalidate({ id: item.id }) },
-            ),
-          disabled: !isEditable,
-        },
-        ...(isCancellable
+        ...(canEdit
+          ? [
+              {
+                id: 'edit',
+                label: t('common.edit'),
+                icon: Edit,
+                onClick: () =>
+                  openEdit(
+                    { id: item.id, version: item.version },
+                    { onSuccess: () => utils.purchaseOrders.byId.invalidate({ id: item.id }) },
+                  ),
+                disabled: !isEditable,
+              },
+            ]
+          : []),
+        ...(isCancellable && canDelete
           ? [
               {
                 id: 'cancel',
@@ -92,22 +101,26 @@ export default function POLayout({ children }: { children?: React.ReactNode }) {
               } as ContextMenuItemSchema,
             ]
           : []),
-        { id: 'sep1', type: 'separator' as const },
-        {
-          id: 'delete',
-          label: t('common.delete'),
-          icon: Trash2,
-          onClick: () =>
-            alert.delete({
-              title: t('common.delete'),
-              description: t('common.thisActionCannotBeUndone'),
-              confirmText: t('common.delete'),
-              onConfirm: async () => {
-                await deleteMutation.mutateAsync({ id: item.id });
+        ...(canDelete ? [{ id: 'sep1', type: 'separator' as const }] : []),
+        ...(canDelete
+          ? [
+              {
+                id: 'delete',
+                label: t('common.delete'),
+                icon: Trash2,
+                onClick: () =>
+                  alert.delete({
+                    title: t('common.delete'),
+                    description: t('common.thisActionCannotBeUndone'),
+                    confirmText: t('common.delete'),
+                    onConfirm: async () => {
+                      await deleteMutation.mutateAsync({ id: item.id });
+                    },
+                  }),
+                disabled: !isDeletable,
               },
-            }),
-          disabled: !isDeletable,
-        },
+            ]
+          : []),
       ];
 
       return (
@@ -129,14 +142,19 @@ export default function POLayout({ children }: { children?: React.ReactNode }) {
         </UniversalContextMenu>
       );
     },
-    [activeItem, cancelMutation, deleteMutation, openEdit, router, utils],
+    [activeItem, ability, cancelMutation, deleteMutation, openEdit, router, utils],
   );
 
   const orders = Array.isArray(data) ? data : data?.data ?? [];
 
   return (
     <div className="flex h-screen flex-col overflow-hidden">
-      <Header title={t('layout.purchaseOrders')} icon={<ShoppingCart className="size-5" />} onCreate={() => openCreate()} createLabel={t('purchaseOrders.createPO')} />
+      <Header
+        title={t('layout.purchaseOrders')}
+        icon={<ShoppingCart className="size-5" />}
+        onCreate={ability?.can('po:create', 'PurchaseOrder') ? () => openCreate() : undefined}
+        createLabel={t('purchaseOrders.createPO')}
+      />
       <div className="flex-1 min-h-0 w-full">
         <ResizablePanelGroup className="h-full">
           {(isListView || !isMobile) && (

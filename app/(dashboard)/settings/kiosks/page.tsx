@@ -1,11 +1,21 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { Copy, Key, Loader2, MoreHorizontal, Plus, Trash2, Monitor, ExternalLink } from 'lucide-react';
+import {
+  Copy,
+  ExternalLink,
+  Key,
+  Loader2,
+  Monitor,
+  MoreHorizontal,
+  Plus,
+  Trash2,
+} from 'lucide-react';
 import { useCallback, useState } from 'react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { ClipboardDialog } from '@/components/ui/clipboard-dialog';
 import {
   Dialog,
   DialogContent,
@@ -34,6 +44,7 @@ import {
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
+import { ClipboardService } from '@/lib/clipboard';
 import { trpc } from '@/lib/trpc/client';
 
 export default function KiosksSettingsPage() {
@@ -73,6 +84,7 @@ export default function KiosksSettingsPage() {
   const [regeneratingId, setRegeneratingId] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [togglingId, setTogglingId] = useState<string | null>(null);
+  const [manualCopy, setManualCopy] = useState<{ text: string; label: string } | null>(null);
 
   const handleCreate = useCallback(
     (e: React.FormEvent) => {
@@ -84,18 +96,26 @@ export default function KiosksSettingsPage() {
   );
 
   const handleCopyToken = useCallback(
-    (token: string) => {
-      navigator.clipboard.writeText(token);
-      toast.success(t('settings.kiosks.tokenCopied'));
+    async (token: string) => {
+      const result = await ClipboardService.copy(token);
+      if (result.success) {
+        toast.success(t('clipboard.copied'));
+      } else {
+        setManualCopy({ text: token, label: t('settings.kiosks.token') });
+      }
     },
     [t],
   );
 
   const handleCopyUrl = useCallback(
-    (token: string) => {
+    async (token: string) => {
       const url = `${window.location.origin}/kiosk/attendance?token=${token}`;
-      navigator.clipboard.writeText(url);
-      toast.success(t('settings.kiosks.urlCopied'));
+      const result = await ClipboardService.copy(url);
+      if (result.success) {
+        toast.success(t('clipboard.copied'));
+      } else {
+        setManualCopy({ text: url, label: t('settings.kiosks.kioskUrl') });
+      }
     },
     [t],
   );
@@ -111,10 +131,7 @@ export default function KiosksSettingsPage() {
   const handleToggleActive = useCallback(
     (id: string, current: boolean) => {
       setTogglingId(id);
-      updateKiosk.mutate(
-        { id, isActive: !current },
-        { onSettled: () => setTogglingId(null) },
-      );
+      updateKiosk.mutate({ id, isActive: !current }, { onSettled: () => setTogglingId(null) });
     },
     [updateKiosk],
   );
@@ -154,9 +171,7 @@ export default function KiosksSettingsPage() {
               <form onSubmit={handleCreate}>
                 <DialogHeader>
                   <DialogTitle>{t('settings.kiosks.create')}</DialogTitle>
-                  <DialogDescription>
-                    {t('settings.kiosks.description')}
-                  </DialogDescription>
+                  <DialogDescription>{t('settings.kiosks.description')}</DialogDescription>
                 </DialogHeader>
                 <div className="space-y-4 py-4">
                   <div className="grid gap-2">
@@ -171,13 +186,8 @@ export default function KiosksSettingsPage() {
                   </div>
                 </div>
                 <DialogFooter>
-                  <Button
-                    type="submit"
-                    disabled={!newName.trim() || createKiosk.isPending}
-                  >
-                    {createKiosk.isPending && (
-                      <Loader2 className="size-4 mr-2 animate-spin" />
-                    )}
+                  <Button type="submit" disabled={!newName.trim() || createKiosk.isPending}>
+                    {createKiosk.isPending && <Loader2 className="size-4 mr-2 animate-spin" />}
                     {t('settings.kiosks.create')}
                   </Button>
                 </DialogFooter>
@@ -273,6 +283,15 @@ export default function KiosksSettingsPage() {
           )}
         </CardContent>
       </Card>
+
+      {manualCopy && (
+        <ClipboardDialog
+          open={!!manualCopy}
+          onOpenChange={(open) => { if (!open) setManualCopy(null); }}
+          text={manualCopy.text}
+          label={manualCopy.label}
+        />
+      )}
     </div>
   );
 }

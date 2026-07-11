@@ -172,6 +172,14 @@
       "amount": "0.000"
     }
   },
+  "clipboard": {
+    "automationFailed": "النسخ التلقائي غير متاح على هذا الاتصال.",
+    "manualCopy": "اضغط Ctrl+C (أو ⌘C على Mac) للنسخ.",
+    "copied": "تم النسخ إلى الحافظة",
+    "copyFailed": "تعذر النسخ إلى الحافظة",
+    "insecureContext": "النسخ إلى الحافظة يتطلب اتصالاً آمناً. سيتم فتح مربع حوار للنسخ اليدوي.",
+    "dialogTitle": "انسخ هذا النص"
+  },
   "layout": {
     "navigation": "التنقل",
     "notifications": "الإشعارات",

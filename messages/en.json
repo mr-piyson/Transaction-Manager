@@ -220,6 +220,14 @@
       "other": "Other"
     }
   },
+  "clipboard": {
+    "automationFailed": "Automatic copy is not available on this connection.",
+    "manualCopy": "Press Ctrl+C (or ⌘C on Mac) to copy.",
+    "copied": "Copied to clipboard",
+    "copyFailed": "Could not copy to clipboard",
+    "insecureContext": "Clipboard requires a secure connection. Opening a dialog for manual copy.",
+    "dialogTitle": "Copy this text"
+  },
   "layout": {
     "navigation": "Navigation",
     "sales": "Sales",
