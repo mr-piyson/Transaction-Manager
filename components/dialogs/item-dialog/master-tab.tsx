@@ -16,6 +16,7 @@ import {
 } from '@/components/ui/select';
 import { trpc } from '@/lib/trpc/client';
 import { cn } from '@/lib/utils';
+import { ImageUpload } from './image-upload';
 import type { Mode, UseItemFormReturn } from './use-item-form';
 
 interface MasterTabProps {
@@ -24,7 +25,7 @@ interface MasterTabProps {
 }
 
 export function MasterTab({ form, canManageMaster }: MasterTabProps) {
-  const { mode, master, errors, setMasterField, handleMasterNameBlur } = form;
+  const { mode, master, errors, setMasterField, handleMasterNameBlur, pendingImageFile, setPendingImageFile } = form;
   const isLocked = !canManageMaster || mode === 'existing' || mode === 'add-supplier';
 
   const { data: categories } = trpc.categories.list.useQuery();
@@ -68,6 +69,16 @@ export function MasterTab({ form, canManageMaster }: MasterTabProps) {
           <p className="text-sm text-destructive mt-1">{errors.master.name}</p>
         )}
       </Field>
+
+      {/* Image */}
+      {!isLocked && (
+        <ImageUpload
+          value={master.image}
+          file={pendingImageFile}
+          onFileChange={setPendingImageFile}
+          disabled={isLocked}
+        />
+      )}
 
       {/* SKU + Barcode */}
       <div className="grid grid-cols-2 gap-3">

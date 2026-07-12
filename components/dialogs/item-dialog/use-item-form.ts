@@ -34,10 +34,12 @@ export interface UseItemFormReturn {
   supplierDrafts: SupplierItemDraft[];
   errors: FormErrors;
   isSubmitting: boolean;
+  pendingImageFile: File | null;
 
   setMode: (mode: Mode) => void;
   setMasterField: <K extends keyof ItemMasterValues>(field: K, value: ItemMasterValues[K]) => void;
   setMaster: (master: ItemMasterValues) => void;
+  setPendingImageFile: (file: File | null) => void;
 
   addSupplierDraft: () => void;
   removeSupplierDraft: (tempId: string) => void;
@@ -98,6 +100,32 @@ export function useItemForm({
     return [getSupplierItemDraftDefaults()];
   });
   const [errors, setErrors] = React.useState<FormErrors>({ master: {}, suppliers: {} });
+  const [pendingImageFile, setPendingImageFileState] = React.useState<File | null>(null);
+
+  const setPendingImageFile = React.useCallback((file: File | null) => {
+    setPendingImageFileState(file);
+  }, []);
+
+  // ── Image upload helper ──────────────────────────────────────────────────
+  const uploadImage = React.useCallback(async (file: File): Promise<string | null> => {
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      const res = await fetch('/api/uploads', { method: 'POST', body: formData });
+      if (!res.ok) {
+        const body = await res.json().catch(() => null);
+        throw new Error(body?.error ?? 'Upload failed');
+      }
+      const data = await res.json();
+      return data.storagePath as string;
+    } catch (err) {
+      console.error('[uploadImage]', err);
+      toast.error('Image upload failed', {
+        description: err instanceof Error ? err.message : 'Please try again.',
+      });
+      return null;
+    }
+  }, []);
 
   // Data queries
   const { data: suppliersData } = trpc.suppliers.list.useQuery(
@@ -170,6 +198,7 @@ export function useItemForm({
           : [getSupplierItemDraftDefaults()],
       );
       setErrors({ master: {}, suppliers: {} });
+      setPendingImageFileState(null);
     }
   }, [open, getInitialMode, initialItem, initialSupplierId, units]);
 
@@ -319,6 +348,15 @@ export function useItemForm({
     async (keepOpen = false) => {
       if (!validate()) return;
 
+      // Upload pending image before creating item
+      let imageUrl: string | undefined;
+      if (pendingImageFile) {
+        const uploaded = await uploadImage(pendingImageFile);
+        if (uploaded) {
+          imageUrl = uploaded;
+        }
+      }
+
       if (mode === 'existing' && existingMaster) {
         // Only add supplier items to existing item
         const payload = {
@@ -328,7 +366,7 @@ export function useItemForm({
             name: existingMaster.name,
             barcode: existingMaster.barcode ?? undefined,
             description: existingMaster.description ?? undefined,
-            image: existingMaster.image ?? undefined,
+            image: imageUrl ?? existingMaster.image ?? undefined,
             unit: existingMaster.unit ?? 'pcs',
             unitId: existingMaster.unitId ?? undefined,
             isSaleable: existingMaster.isSaleable ?? true,
@@ -362,7 +400,7 @@ export function useItemForm({
             name: master.name,
             barcode: master.barcode,
             description: master.description,
-            image: master.image,
+            image: imageUrl ?? master.image,
             unit: master.unit,
             unitId: master.unitId,
             isSaleable: master.isSaleable,
@@ -390,7 +428,7 @@ export function useItemForm({
         createMutation.mutate(payload);
       }
     },
-    [validate, mode, existingMaster, master, supplierDrafts, createMutation],
+    [validate, mode, existingMaster, master, supplierDrafts, createMutation, pendingImageFile, uploadImage],
   );
 
   // ── Reset ───────────────────────────────────────────────────────────────
@@ -401,6 +439,7 @@ export function useItemForm({
     setExistingMaster(null);
     setSupplierDrafts([getSupplierItemDraftDefaults()]);
     setErrors({ master: {}, suppliers: {} });
+    setPendingImageFileState(null);
   }, []);
 
   return {
@@ -410,9 +449,11 @@ export function useItemForm({
     supplierDrafts,
     errors,
     isSubmitting: createMutation.isPending,
+    pendingImageFile,
     setMode,
     setMasterField,
     setMaster,
+    setPendingImageFile,
     addSupplierDraft,
     removeSupplierDraft,
     updateSupplierDraft,
