@@ -235,7 +235,7 @@ model Employee {
   directReports Employee[] @relation("EmployeeSupervision")
 
   salaryAmount   Decimal?      @db.Decimal(20, 6)
-  salaryCurrency CurrencyCode?
+  salaryCurrency String?
 
   organizationId String
   organization   Organization @relation(fields: [organizationId], references: [id])
@@ -691,7 +691,7 @@ model JobPosting {
   employmentType EmploymentType @default(FULL_TIME)
   salaryMin      Decimal?       @db.Decimal(20, 6)
   salaryMax      Decimal?       @db.Decimal(20, 6)
-  currency       CurrencyCode   @default(BHD)
+  currency       String   @default("BHD")
   isActive       Boolean        @default(true)
   closingDate    DateTime?
   publishedAt    DateTime?
@@ -780,7 +780,7 @@ model Offer {
   id           String       @id @default(cuid())
   position     String
   salaryAmount Decimal      @db.Decimal(20, 6)
-  currency     CurrencyCode @default(BHD)
+  currency     String @default("BHD")
   startDate    DateTime
   expiryDate   DateTime?
   status       OfferStatus  @default(PENDING)
@@ -814,7 +814,7 @@ model Training {
   provider      String?
   durationHours Int?
   cost          Decimal?       @db.Decimal(20, 6)
-  currency      CurrencyCode   @default(BHD)
+  currency      String   @default("BHD")
   startDate     DateTime?
   endDate       DateTime?
   isMandatory   Boolean        @default(false)

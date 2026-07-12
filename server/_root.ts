@@ -3,7 +3,9 @@ import { attachmentsRouter } from './attachments/attachments.router';
 import { authRouter } from './auth/auth.router';
 import { categoriesRouter } from './categories/categories.router';
 import { contractsRouter } from './contracts/contracts.router';
+import { currenciesRouter } from './currencies/currencies.router';
 import { customersRouter } from './customers/customers.router';
+import { exchangeRatesRouter } from './settings/exchange-rates.router';
 import { hrRouter } from './hr/hr.router';
 import { invoicesRouter } from './invoices/invoices.router';
 import { itemsRouter } from './items/items.router';
@@ -23,7 +25,10 @@ export const appRouter = t.router({
   attachments: attachmentsRouter,
   auth: authRouter,
   categories: categoriesRouter,
+  contracts: contractsRouter,
+  currencies: currenciesRouter,
   customers: customersRouter,
+  exchangeRates: exchangeRatesRouter,
   hr: hrRouter,
   invoices: invoicesRouter,
   items: itemsRouter,
@@ -36,9 +41,8 @@ export const appRouter = t.router({
   stock: stockRouter,
   suppliers: suppliersRouter,
   units: unitsRouter,
-  warehouses: warehousesRouter,
-  contracts: contractsRouter,
   users: usersRouter,
+  warehouses: warehousesRouter,
 });
 
 export type AppRouter = typeof appRouter;

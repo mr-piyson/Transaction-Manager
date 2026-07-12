@@ -18,6 +18,8 @@ import { toast } from 'sonner';
 import { z } from 'zod';
 import { calculateInvoiceTotals } from '@/lib/calculator';
 import { RichtextEditor } from '@/components/richtext-editor';
+import { CURRENCIES } from '@/lib/utils';
+import { currencyCodeSchema } from '@/lib/validations';
 import { SelectionDialog } from '@/components/select-dialog';
 import { InvoiceLineDialog, type InvoiceLineData } from '@/components/dialogs/invoiceLineDialog';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -69,9 +71,7 @@ const schema = z.object({
   customerId: z.string().optional(),
   warehouseId: z.string().optional(),
   departmentId: z.string().optional(),
-  currency: z
-    .enum(['BHD', 'USD', 'EUR', 'GBP', 'JPY', 'AED', 'SAR', 'KWD', 'QAR', 'OMR'])
-    .default('BHD'),
+  currency: currencyCodeSchema.default('BHD'),
   exchangeRate: z.coerce.number().positive().default(1),
   description: z.string().optional(),
   notes: z.string().optional(),
@@ -363,7 +363,7 @@ export function InvoiceFormDialog({
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      {['BHD', 'USD', 'EUR', 'GBP', 'AED', 'SAR', 'KWD', 'QAR', 'OMR'].map((c) => (
+                      {Object.keys(CURRENCIES).map((c) => (
                         <SelectItem key={c} value={c}>
                           {c}
                         </SelectItem>

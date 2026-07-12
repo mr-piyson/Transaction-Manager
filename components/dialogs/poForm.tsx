@@ -7,6 +7,8 @@ import { type SubmitHandler, useFieldArray, useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { z } from 'zod';
 import { useCurrency } from '@/hooks/use-currency';
+import { currencyCodeSchema } from '@/lib/validations';
+import { CURRENCIES } from '@/lib/utils';
 import { SelectionDialog } from '@/components/select-dialog';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
@@ -46,9 +48,7 @@ const schema = z.object({
   warehouseId: z.string().min(1, 'Warehouse is required'),
   date: z.string().min(1, 'Date is required'),
   expectedDate: z.string().optional(),
-  currency: z
-    .enum(['BHD', 'USD', 'EUR', 'GBP', 'JPY', 'AED', 'SAR', 'KWD', 'QAR', 'OMR'])
-    .default('BHD'),
+  currency: currencyCodeSchema.default('BHD'),
   notes: z.string().optional(),
   internalNotes: z.string().optional(),
   lines: z.array(lineSchema).min(1, 'At least one line is required'),
@@ -287,7 +287,7 @@ export function POFormDialog({ open, onOpenChange, po, onSuccess }: POFormDialog
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      {['BHD', 'USD', 'EUR', 'GBP', 'AED', 'SAR', 'KWD', 'QAR', 'OMR'].map((c) => (
+                      {Object.keys(CURRENCIES).map((c) => (
                         <SelectItem key={c} value={c}>
                           {c}
                         </SelectItem>

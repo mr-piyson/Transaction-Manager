@@ -15,6 +15,8 @@ import { DatePickerField } from '@/components/ui/date-picker';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { useCurrency } from '@/hooks/use-currency';
+import { currencyCodeSchema } from '@/lib/validations';
+import { CURRENCIES } from '@/lib/utils';
 import { trpc } from '@/lib/trpc/client';
 import { Label } from '@/components/ui/label';
 
@@ -23,7 +25,7 @@ const schema = z.object({
   description: z.string().optional(),
   status: z.enum(['DRAFT', 'ACTIVE', 'EXPIRED', 'TERMINATED']).default('DRAFT'),
   contractValue: z.coerce.number().min(0),
-  currency: z.enum(['BHD', 'USD', 'EUR', 'GBP', 'JPY', 'AED', 'SAR', 'KWD', 'QAR', 'OMR']),
+  currency: currencyCodeSchema,
   startDate: z.string().min(1, 'Start date is required'),
   endDate: z.string().min(1, 'End date is required'),
   renewalDate: z.string().optional(),
@@ -180,7 +182,7 @@ export function ContractFormDialog({ open, onOpenChange, contract, onSuccess }: 
                 <Select value={watchCurrency} onValueChange={(v) => setValue('currency', v as any)}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    {['BHD', 'USD', 'EUR', 'GBP', 'AED', 'SAR', 'KWD', 'QAR', 'OMR'].map((c) => (
+                    {Object.keys(CURRENCIES).map((c) => (
                       <SelectItem key={c} value={c}>{c}</SelectItem>
                     ))}
                   </SelectContent>

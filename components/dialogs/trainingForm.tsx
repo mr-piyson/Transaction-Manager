@@ -27,6 +27,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { trpc } from '@/lib/trpc/client';
+import { CURRENCIES } from '@/lib/utils';
 
 const schema = z.object({
   name: z.string().min(1, 'Name is required'),
@@ -147,7 +148,7 @@ export function TrainingFormDialog({ open, onOpenChange, training, onSuccess }: 
               >
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  {['BHD', 'USD', 'EUR', 'GBP', 'JPY', 'AED', 'SAR', 'KWD', 'QAR', 'OMR'].map((c) => (
+                  {Object.keys(CURRENCIES).map((c) => (
                     <SelectItem key={c} value={c}>{c}</SelectItem>
                   ))}
                 </SelectContent>

@@ -37,20 +37,32 @@ datasource db {
 // ENUMS
 // =============================================================================
 
-/// ISO 4217 currency codes. Keep in sync with the CURRENCIES constant in
-/// lib/currencies.ts.  Adding a new code here is a DB migration + code change.
-enum CurrencyCode {
-  USD
-  BHD
-  EUR
-  GBP
-  JPY
-  AED
-  SAR
-  KWD
-  QAR
-  OMR
+// =============================================================================
+// CURRENCY TABLE (replaces CurrencyCode enum)
+// Dynamic currency management with sync from external providers.
+// =============================================================================
 
+model Currency {
+  id   String @id @default(cuid())
+  code String @unique // ISO 4217: "USD", "BHD", "EUR"
+  name String // "US Dollar", "Bahraini Dinar"
+
+  symbol    String  // "$", "BD", "€"
+  precision Int     @default(2) // Decimal places (0 for JPY, 3 for BHD/KWD/OMR)
+  separator String  @default(",") // Thousands separator
+  decimal   String  @default(".") // Decimal point character
+
+  isActive Boolean @default(true)
+
+  // Sync metadata
+  lastSyncedAt DateTime?
+  syncSource   String? // "frankfurter" | "manual"
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([code])
+  @@index([isActive])
   @@schema("public")
 }
 
@@ -309,7 +321,7 @@ model Organization {
   vatRegistered Boolean @default(false)
 
   // Defaults — all overridable per document
-  currency         CurrencyCode @default(BHD)
+  currency         String @default("BHD")
   paymentTermsDays Int          @default(30)
   defaultTermsText String?
   stampImage       String?
@@ -745,8 +757,8 @@ model TaxRate {
 
 model ExchangeRate {
   id            String       @id @default(cuid())
-  fromCurrency  CurrencyCode
-  toCurrency    CurrencyCode
+  fromCurrency  String
+  toCurrency    String
   rate          Decimal      @db.Decimal(18, 8)
   effectiveDate DateTime
 
@@ -821,7 +833,7 @@ model JournalEntry {
 
   description  String?
   reference    String? // Source document reference (invoice serial, PO serial)
-  currency     CurrencyCode
+  currency     String
   exchangeRate Decimal      @default(1) @db.Decimal(18, 8)
 
   // Source document back-references (all optional)
@@ -1128,7 +1140,7 @@ model Attachment {
 model PriceList {
   id          String       @id @default(cuid())
   name        String
-  currency    CurrencyCode @default(BHD)
+  currency    String @default("BHD")
   isDefault   Boolean      @default(false)
   validFrom   DateTime?
   validTo     DateTime?
@@ -1196,7 +1208,7 @@ model Customer {
   priceList   PriceList? @relation(fields: [priceListId], references: [id])
 
   // Currency override — if customer transacts in a non-default currency
-  currencyCode CurrencyCode?
+  currencyCode String?
 
   organizationId String
   organization   Organization @relation(fields: [organizationId], references: [id])
@@ -1248,7 +1260,7 @@ model Supplier {
   paymentTermsDays Int @default(30)
 
   // Default currency this supplier invoices in
-  currencyCode CurrencyCode?
+  currencyCode String?
 
   // GL account for AP posting
   payablesAccountId String?
@@ -1275,7 +1287,7 @@ model SupplierItem {
   supplierSku  String?
   supplierName String?
   basePrice    Decimal      @db.Decimal(20, 6)
-  currency     CurrencyCode @default(BHD)
+  currency     String @default("BHD")
   leadTimeDays Int?
   minOrderQty  Decimal      @default(1)
   notes        String?
@@ -1604,7 +1616,7 @@ model Invoice {
   termsText     String?
   internalNotes String? // ← NEW: not printed on document — staff only
 
-  currency     CurrencyCode @default(BHD)
+  currency     String @default("BHD")
   exchangeRate Decimal      @default(1) @db.Decimal(18, 8) // Rate vs org base currency at invoice date
 
   // Totals
@@ -1792,7 +1804,7 @@ model PurchaseOrder {
 
   notes         String?
   internalNotes String?
-  currency      CurrencyCode @default(BHD)
+  currency      String @default("BHD")
   exchangeRate  Decimal      @default(1) @db.Decimal(18, 8)
 
   // Totals
@@ -1914,7 +1926,7 @@ model Contract {
   description   String?
   status        ContractStatus @default(DRAFT)
   contractValue Decimal?       @db.Decimal(20, 6)
-  currency      CurrencyCode   @default(BHD)
+  currency      String   @default("BHD")
 
   startDate        DateTime
   endDate          DateTime

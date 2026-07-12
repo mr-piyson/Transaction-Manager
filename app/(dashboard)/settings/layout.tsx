@@ -5,6 +5,7 @@ import { Menu, Settings } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useCallback, useMemo, useState } from 'react';
+import { DialogsProvider } from '@/components/dialogs';
 import { Header } from '@/components/layout/App-Header';
 import {
   SidebarGroup,
@@ -73,7 +74,7 @@ export default function SettingsLayout({
   );
 
   return (
-    <>
+    <DialogsProvider>
       <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
         <Header
           title={t('settings.title')}
@@ -107,6 +108,6 @@ export default function SettingsLayout({
 
         <div className="flex-1 overflow-y-auto p-6">{children}</div>
       </div>
-    </>
+    </DialogsProvider>
   );
 }

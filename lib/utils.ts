@@ -5,14 +5,20 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-export type CurrencyCode =
-  | 'USD' | 'EUR' | 'GBP' | 'JPY' | 'BHD'
-  | 'AED' | 'SAR' | 'KWD' | 'QAR' | 'OMR';
+export type CurrencyCode = string;
 
-export const CURRENCIES: Record<
-  CurrencyCode,
-  { code: string; symbol: string; label: string; precision: number; separator: string; decimal: string }
-> = {
+export interface CurrencyConfig {
+  code: string;
+  symbol: string;
+  label: string;
+  precision: number;
+  separator: string;
+  decimal: string;
+}
+
+// Fallback currencies (used when DB is unavailable or for static imports)
+// The canonical source is the Currency table in the database
+export const CURRENCIES: Record<string, CurrencyConfig> = {
   USD: { code: 'USD', symbol: '$', label: 'US Dollar', precision: 2, separator: ',', decimal: '.' },
   EUR: { code: 'EUR', symbol: '€', label: 'Euro', precision: 2, separator: '.', decimal: ',' },
   GBP: { code: 'GBP', symbol: '£', label: 'British Pound', precision: 2, separator: ',', decimal: '.' },
@@ -23,14 +29,19 @@ export const CURRENCIES: Record<
   KWD: { code: 'KWD', symbol: 'KD', label: 'Kuwaiti Dinar', precision: 3, separator: ',', decimal: '.' },
   QAR: { code: 'QAR', symbol: '﷼', label: 'Qatari Riyal', precision: 2, separator: ',', decimal: '.' },
   OMR: { code: 'OMR', symbol: '﷼', label: 'Omani Rial', precision: 3, separator: ',', decimal: '.' },
-} as const;
+};
+
+/** Get currency config, falls back to a default if code not found */
+export function getCurrencyConfig(code: CurrencyCode): CurrencyConfig {
+  return CURRENCIES[code] ?? { code, symbol: code, label: code, precision: 2, separator: ',', decimal: '.' };
+}
 
 export function formatAmount(
   amount: number | string | null | undefined,
   currency: CurrencyCode = 'BHD',
 ): string {
   const num = Number(amount ?? 0);
-  const config = CURRENCIES[currency];
+  const config = getCurrencyConfig(currency);
   return `${config.symbol} ${num.toLocaleString('en-US', {
     minimumFractionDigits: config.precision,
     maximumFractionDigits: config.precision,
@@ -49,7 +60,7 @@ export function formatCurrency(
  * 1500 + "BHD" → "1.500"
  */
 export function deformatMoney(amount: number, currency: CurrencyCode): string {
-  const { precision } = CURRENCIES[currency] ?? { precision: 2 };
+  const { precision } = getCurrencyConfig(currency);
   const value = amount / 10 ** precision;
   return value.toFixed(precision); // always returns correct decimal places
 }
@@ -58,7 +69,7 @@ export function deformatMoney(amount: number, currency: CurrencyCode): string {
 // toSmallestUnit(1.5, 'BHD') → 1500
 // toSmallestUnit(15, 'USD') → 1500
 export function toSmallestUnit(display: number, currency: CurrencyCode): number {
-  const config = CURRENCIES[currency];
+  const config = getCurrencyConfig(currency);
   return Math.round(display * 10 ** config.precision);
 }
 

@@ -9,6 +9,7 @@ import { DisciplinaryActionFormProvider } from './disciplinaryActionForm';
 import { DocumentFormProvider } from './documentForm';
 import { EmployeeFormProvider } from './employeeForm';
 import { EmployeeTypeFormProvider } from './employeeTypeForm';
+import { ExchangeRateFormProvider } from './exchangeRateForm';
 import { GrievanceFormProvider } from './grievanceForm';
 import { HolidayFormProvider } from './holidayForm';
 import { InvoiceFormProvider } from './invoiceForm';
@@ -134,6 +135,12 @@ export {
 } from './leaveAllocateForm';
 export type { LeaveAllocateFormValues } from './leaveAllocateForm';
 
+export {
+  ExchangeRateFormProvider,
+  useExchangeRateForm,
+  ExchangeRateDialog,
+} from './exchangeRateForm';
+
 /**
  * DialogsProvider — mount once in your app layout.
  * Nest all form providers so their hooks work anywhere in the tree.
@@ -167,7 +174,9 @@ export function DialogsProvider({ children }: { children: ReactNode }) {
                                                     <CandidateFormProvider>
                                                       <TrainingFormProvider>
                                                         <LeaveAllocateFormProvider>
-                                                          {children}
+                                                          <ExchangeRateFormProvider>
+                                                            {children}
+                                                          </ExchangeRateFormProvider>
                                                         </LeaveAllocateFormProvider>
                                                       </TrainingFormProvider>
                                                     </CandidateFormProvider>

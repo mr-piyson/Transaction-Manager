@@ -28,6 +28,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { trpc } from '@/lib/trpc/client';
+import { CURRENCIES } from '@/lib/utils';
 
 const statusValues = ['ACTIVE', 'ON_LEAVE', 'TERMINATED', 'RESIGNED', 'SUSPENDED'] as const;
 
@@ -277,7 +278,7 @@ export function EmployeeFormDialog({ open, onOpenChange, employee, onSuccess }: 
               >
                 <SelectTrigger><SelectValue placeholder="Select currency" /></SelectTrigger>
                 <SelectContent>
-                  {['BHD', 'USD', 'EUR', 'GBP', 'JPY', 'AED', 'SAR', 'KWD', 'QAR', 'OMR'].map((c) => (
+                  {Object.keys(CURRENCIES).map((c) => (
                     <SelectItem key={c} value={c}>{c}</SelectItem>
                   ))}
                 </SelectContent>

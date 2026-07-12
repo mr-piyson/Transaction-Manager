@@ -1,7 +1,7 @@
 'use client';
 
 import { createContext, useContext, useMemo } from 'react';
-import { CURRENCIES, formatAmount as fmtAmount, type CurrencyCode } from '@/lib/utils';
+import { CURRENCIES, getCurrencyConfig, formatAmount as fmtAmount, type CurrencyCode, type CurrencyConfig } from '@/lib/utils';
 import { trpc } from '@/lib/trpc/client';
 
 interface CurrencyContextValue {
@@ -10,7 +10,7 @@ interface CurrencyContextValue {
   precision: number;
   label: string;
   format: (amount: number | string | null | undefined) => string;
-  currencies: typeof CURRENCIES;
+  currencies: Record<string, CurrencyConfig>;
 }
 
 const CurrencyContext = createContext<CurrencyContextValue | null>(null);
@@ -22,7 +22,7 @@ export function CurrencyProvider({ children }: { children: React.ReactNode }) {
 
   const value = useMemo<CurrencyContextValue>(() => {
     const code = (org?.currency ?? 'BHD') as CurrencyCode;
-    const config = CURRENCIES[code] ?? CURRENCIES.BHD;
+    const config = getCurrencyConfig(code);
     return {
       currency: code,
       symbol: config.symbol,

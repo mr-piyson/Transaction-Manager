@@ -112,7 +112,7 @@ model Opportunity {
   name            String
   description     String?
   amount          Decimal?          @db.Decimal(20, 6)
-  currency        CurrencyCode      @default(BHD)
+  currency        String      @default("BHD")
   probability     Int               @default(50) // 0-100
   expectedCloseAt DateTime?
   status          OpportunityStatus @default(OPEN)
@@ -253,7 +253,7 @@ model Campaign {
   type           String // "EMAIL" | "SOCIAL" | "EVENT" | "REFERRAL"
   status         CampaignStatus @default(DRAFT)
   budget         Decimal?       @db.Decimal(20, 6)
-  currency       CurrencyCode   @default(BHD)
+  currency       String   @default("BHD")
   startDate      DateTime?
   endDate        DateTime?
   targetAudience String?

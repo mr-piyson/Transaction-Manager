@@ -1,10 +1,20 @@
 import * as cron from 'node-cron';
 import db from '@/lib/db';
 import { createNotification, NOTIFICATION_SETTINGS_KEYS, NOTIFICATION_TYPES } from '../notifications/notifications.shared';
+import { fullSyncCurrenciesAndRates } from './frankfurter';
 
 function shouldRun(jobName: string): boolean {
   return process.env[`CRON_${jobName.toUpperCase().replace(/-/g, '_')}_DISABLED`] !== 'true';
 }
+
+const SYNC_SETTINGS_KEYS = {
+  ENABLED: 'currencySyncEnabled',
+  FREQUENCY: 'currencySyncFrequency',
+  LAST_SYNCED: 'currencyLastSyncedAt',
+} as const;
+
+// Active scheduled tasks for dynamic rescheduling
+const activeTasks: Map<string, cron.ScheduledTask> = new Map();
 
 // Every hour: check for overdue invoices
 async function checkOverdueInvoices() {
@@ -153,6 +163,93 @@ async function checkLowStock() {
   console.log(`[cron] Checked low stock: ${lowStockItems.length} items low`);
 }
 
+// Exchange rate sync job
+async function syncExchangeRates() {
+  const orgs = await db.organization.findMany({
+    where: {
+      deletedAt: null,
+    },
+    select: {
+      id: true,
+      currency: true,
+    },
+  });
+
+  let totalSynced = 0;
+
+  for (const org of orgs) {
+    // Check if sync is enabled for this org
+    const syncEnabled = await db.organizationSetting.findFirst({
+      where: {
+        organizationId: org.id,
+        key: SYNC_SETTINGS_KEYS.ENABLED,
+      },
+      select: { value: true },
+    });
+
+    if (syncEnabled?.value !== 'true') continue;
+
+    if (!org.currency) continue;
+
+    try {
+      // Use the centralized full sync function
+      const result = await fullSyncCurrenciesAndRates(org.currency, org.id);
+
+      // Update last synced timestamp
+      await db.organizationSetting.upsert({
+        where: {
+          organizationId_key: {
+            organizationId: org.id,
+            key: SYNC_SETTINGS_KEYS.LAST_SYNCED,
+          },
+        },
+        create: {
+          organizationId: org.id,
+          key: SYNC_SETTINGS_KEYS.LAST_SYNCED,
+          value: new Date().toISOString(),
+        },
+        update: { value: new Date().toISOString() },
+      });
+
+      totalSynced++;
+    } catch (error) {
+      console.error(`[cron] Exchange rate sync failed for org ${org.id}:`, error);
+    }
+  }
+
+  if (totalSynced > 0) {
+    console.log(`[cron] Synced exchange rates for ${totalSynced} organizations`);
+  }
+}
+
+async function getSyncFrequency(): Promise<string> {
+  // Get the most common frequency setting across all orgs
+  // Default to daily if no settings exist
+  const frequencies = await db.organizationSetting.groupBy({
+    by: ['value'],
+    where: {
+      key: SYNC_SETTINGS_KEYS.FREQUENCY,
+    },
+    _count: true,
+  });
+
+  if (frequencies.length === 0) return '0 0 * * *'; // daily
+
+  // Get the most common frequency
+  const mostCommon = frequencies.reduce((prev, curr) =>
+    curr._count > prev._count ? curr : prev
+  );
+
+  switch (mostCommon.value) {
+    case 'weekly':
+      return '0 0 * * 0';
+    case 'monthly':
+      return '0 0 1 * *';
+    default:
+      return '0 0 * * *'; // daily
+  }
+}
+
 export function registerCronJobs() {
   if (shouldRun('overdue')) {
     cron.schedule('0 * * * *', () => {
@@ -166,5 +263,48 @@ export function registerCronJobs() {
       checkLowStock().catch((err) => console.error('[cron] low stock check failed:', err));
     });
     console.log('[cron] Registered low stock check (every 6 hours)');
+  }
+
+  if (shouldRun('currency-sync')) {
+    getSyncFrequency().then((frequency) => {
+      const task = cron.schedule(frequency, () => {
+        syncExchangeRates().catch((err) => console.error('[cron] currency sync failed:', err));
+      });
+      activeTasks.set('currency-sync', task);
+      console.log(`[cron] Registered exchange rate sync (${frequency})`);
+    });
+  }
+}
+
+/**
+ * Restart the currency sync job with a new frequency
+ * Called when user updates sync settings
+ */
+export async function restartCurrencySync(frequency: string): Promise<void> {
+  // Stop existing task if running
+  const existingTask = activeTasks.get('currency-sync');
+  if (existingTask) {
+    existingTask.stop();
+    activeTasks.delete('currency-sync');
+  }
+
+  // Schedule new task
+  const task = cron.schedule(frequency, () => {
+    syncExchangeRates().catch((err) => console.error('[cron] currency sync failed:', err));
+  });
+  activeTasks.set('currency-sync', task);
+  console.log(`[cron] Restarted exchange rate sync with frequency: ${frequency}`);
+}
+
+/**
+ * Manually trigger exchange rate sync
+ */
+export async function triggerCurrencySync(): Promise<{ success: boolean; ratesUpdated: number }> {
+  try {
+    await syncExchangeRates();
+    return { success: true, ratesUpdated: 0 }; // TODO: return actual count
+  } catch (error) {
+    console.error('[cron] Manual currency sync failed:', error);
+    return { success: false, ratesUpdated: 0 };
   }
 }

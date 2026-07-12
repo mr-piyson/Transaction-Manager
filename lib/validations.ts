@@ -209,18 +209,11 @@ export const decimalSchema = z
   .or(z.string().regex(/^\d+(\.\d+)?$/))
   .transform((v) => String(v)); // Store as string for Prisma Decimal
 
-export const currencyCodeSchema = z.enum([
-  'USD',
-  'BHD',
-  'EUR',
-  'GBP',
-  'JPY',
-  'AED',
-  'SAR',
-  'KWD',
-  'QAR',
-  'OMR',
-]);
+export const currencyCodeSchema = z
+  .string()
+  .min(3, 'Currency code must be at least 3 characters')
+  .max(3, 'Currency code must be exactly 3 characters')
+  .regex(/^[A-Z]{3}$/, 'Currency code must be 3 uppercase letters');
 
 export const paymentMethodSchema = z.enum([
   'CASH',
@@ -231,6 +224,22 @@ export const paymentMethodSchema = z.enum([
   'CREDIT',
   'OTHER',
 ]);
+
+// ---------------------------------------------------------------------------
+// Exchange rate schemas
+// ---------------------------------------------------------------------------
+
+export const exchangeRateInputSchema = z.object({
+  fromCurrency: currencyCodeSchema,
+  toCurrency: currencyCodeSchema,
+  rate: z.number().positive(),
+  effectiveDate: z.date(),
+});
+
+export const syncSettingsSchema = z.object({
+  enabled: z.boolean(),
+  frequency: z.enum(['daily', 'weekly', 'monthly']),
+});
 
 // ---------------------------------------------------------------------------
 // Date range filter (used by invoices, payments, expenses)
