@@ -463,7 +463,6 @@ export default function InvoiceDetailPage() {
         warehouseId: invoice.warehouseId ?? undefined,
         departmentId: invoice.departmentId ?? undefined,
         currency: invoice.currency as any,
-        description: invoice.description ?? undefined,
         notes: invoice.notes ?? undefined,
         termsText: invoice.termsText ?? undefined,
         internalNotes: invoice.internalNotes ?? undefined,

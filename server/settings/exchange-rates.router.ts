@@ -66,6 +66,48 @@ export const exchangeRatesRouter = router({
   }),
 
   /**
+   * Get the latest rate for a specific currency pair
+   */
+  getRate: orgProcedure
+    .input(
+      z.object({
+        fromCurrency: currencyCodeSchema,
+        toCurrency: currencyCodeSchema,
+      })
+    )
+    .query(async ({ ctx, input }) => {
+      if (input.fromCurrency === input.toCurrency) {
+        return { rate: 1 };
+      }
+
+      const rate = await ctx.db.exchangeRate.findFirst({
+        where: {
+          organizationId: ctx.user.organizationId,
+          fromCurrency: input.fromCurrency,
+          toCurrency: input.toCurrency,
+        },
+        orderBy: { effectiveDate: 'desc' },
+        select: { rate: true },
+      });
+
+      if (rate) {
+        return { rate: Number(rate.rate) };
+      }
+
+      // Fallback: try to fetch live from Frankfurter
+      try {
+        const response = await fetchLatestRates(input.fromCurrency, [input.toCurrency]);
+        if (response.rates.length > 0) {
+          return { rate: response.rates[0].rate };
+        }
+      } catch {
+        // ignore
+      }
+
+      return { rate: 1 };
+    }),
+
+  /**
    * Get latest rates directly from Frankfurter API (preview before sync)
    */
   getLatest: orgProcedure.query(async ({ ctx }) => {

@@ -73,7 +73,6 @@ const schema = z.object({
   departmentId: z.string().optional(),
   currency: currencyCodeSchema.default('BHD'),
   exchangeRate: z.coerce.number().positive().default(1),
-  description: z.string().optional(),
   notes: z.string().optional(),
   termsText: z.string().optional(),
   internalNotes: z.string().optional(),
@@ -154,6 +153,11 @@ export function InvoiceFormDialog({
   const isWalkIn = watch('isWalkIn');
   const currency = watch('currency');
 
+  const { data: exchangeRateData } = trpc.exchangeRates.getRate.useQuery(
+    { fromCurrency: currency, toCurrency: orgData?.currency ?? 'BHD' },
+    { enabled: !!currency && !!orgData?.currency && currency !== orgData?.currency },
+  );
+
   const isInvoiceType = invoiceType === 'INVOICE';
   const needsCustomer = !['DELIVERY_NOTE'].includes(invoiceType);
   const needsWarehouse = isInvoiceType;
@@ -180,6 +184,13 @@ export function InvoiceFormDialog({
       if (def) setValue('warehouseId', def.id);
     }
   }, [warehousesData, watch, setValue]);
+
+  // Auto-fill exchange rate when currency differs from org default
+  React.useEffect(() => {
+    if (exchangeRateData) {
+      setValue('exchangeRate', exchangeRateData.rate);
+    }
+  }, [exchangeRateData, setValue]);
 
   React.useEffect(() => {
     if (open) reset(defaults(invoice, warehousesData, orgData ?? undefined));
@@ -221,7 +232,6 @@ export function InvoiceFormDialog({
       departmentId: values.departmentId || undefined,
       currency: values.currency,
       exchangeRate: Number(values.exchangeRate) || 1,
-      description: values.description || undefined,
       notes: values.notes || undefined,
       termsText: values.termsText || undefined,
       internalNotes: values.internalNotes || undefined,
@@ -336,8 +346,8 @@ export function InvoiceFormDialog({
             <ValidationAlert errors={errors as any} />
 
             <div className="space-y-4 max-h-110 overflow-y-auto pr-2">
-              {/* Type + Currency + Exchange Rate */}
-              <div className="grid grid-cols-3 gap-3">
+              {/* Type + Currency */}
+              <div className="grid grid-cols-2 gap-3">
                 <Field>
                   <Label htmlFor="type">{t('invoices.type')} *</Label>
                   <Select value={watch('type')} onValueChange={(v) => setValue('type', v as any)}>
@@ -370,16 +380,6 @@ export function InvoiceFormDialog({
                       ))}
                     </SelectContent>
                   </Select>
-                </Field>
-                <Field>
-                  <Label htmlFor="exchangeRate">{t('invoices.exchangeRate')}</Label>
-                  <Input
-                    id="exchangeRate"
-                    type="number"
-                    min={0.001}
-                    step="any"
-                    {...register('exchangeRate')}
-                  />
                 </Field>
               </div>
 
@@ -467,16 +467,6 @@ export function InvoiceFormDialog({
                   </Select>
                 </Field>
               )}
-
-              {/* Description + Notes */}
-              <Field>
-                <Label htmlFor="description">{t('common.description')}</Label>
-                <Input
-                  id="description"
-                  placeholder={t('invoices.descriptionPlaceholder')}
-                  {...register('description')}
-                />
-              </Field>
 
               <div className="grid grid-cols-2 gap-3">
                 <Field>
@@ -917,7 +907,6 @@ function defaults(
     departmentId: invoice?.departmentId ?? undefined,
     currency: (invoice?.currency ?? org?.currency ?? 'BHD') as any,
     exchangeRate: invoice?.exchangeRate ?? 1,
-    description: invoice?.description ?? undefined,
     notes: invoice?.notes ?? undefined,
     termsText: invoice?.termsText ?? org?.defaultTermsText ?? undefined,
     internalNotes: invoice?.internalNotes ?? undefined,
