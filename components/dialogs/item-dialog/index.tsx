@@ -208,7 +208,7 @@ export function UnifiedItemDialog({
   return (
     <Dialog open={open} onOpenChange={(v) => !isSubmitting && handleClose(v)}>
       {children && <DialogTrigger asChild>{children}</DialogTrigger>}
-      <DialogContent className="sm:max-w-160">
+      <DialogContent className="sm:max-w-120">
         <DialogHeader>
           <DialogTitle>{getTitle()}</DialogTitle>
           <DialogDescription>

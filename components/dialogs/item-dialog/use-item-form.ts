@@ -226,9 +226,6 @@ export function useItemForm({
               if (mode === 'create') {
                 setMasterState((prevMaster) => {
                   const next = { ...prevMaster };
-                  if (!next.name && updated.supplierName) {
-                    next.name = updated.supplierName;
-                  }
                   if (!next.sku && updated.supplierSku) {
                     next.sku = updated.supplierSku;
                   }
@@ -248,8 +245,6 @@ export function useItemForm({
         if (patch.supplierId !== undefined) delete draftErrors.supplierId;
         if (patch.supplierSku !== undefined) delete draftErrors.supplierSku;
         if (patch.basePrice !== undefined) delete draftErrors.basePrice;
-        if (patch.minOrderQty !== undefined) delete draftErrors.minOrderQty;
-        if (patch.leadTimeDays !== undefined) delete draftErrors.leadTimeDays;
         return {
           ...prev,
           suppliers: { ...prev.suppliers, [tempId]: draftErrors },
@@ -296,10 +291,6 @@ export function useItemForm({
       const draftErrors: Partial<Record<keyof SupplierItemDraft, string>> = {};
       if (!draft.supplierId) draftErrors.supplierId = 'Select a supplier';
       if (draft.basePrice < 0) draftErrors.basePrice = 'Valid price is required';
-      if (draft.minOrderQty < 1) draftErrors.minOrderQty = 'MOQ must be at least 1';
-      if (draft.leadTimeDays !== undefined && draft.leadTimeDays < 0) {
-        draftErrors.leadTimeDays = 'Lead time is required';
-      }
 
       // Check duplicate supplier in drafts
       const duplicates = supplierDrafts.filter((d) => d.supplierId === draft.supplierId);

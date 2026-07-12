@@ -3,7 +3,7 @@
 import { Loader2, Wand2 } from 'lucide-react';
 import * as React from 'react';
 import { Button } from '@/components/ui/button';
-import { Toggle } from '@/components/ui/toggle';
+import { Switch } from '@/components/ui/switch';
 import { Field } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -14,7 +14,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Textarea } from '@/components/ui/textarea';
 import { trpc } from '@/lib/trpc/client';
 import { cn } from '@/lib/utils';
 import type { Mode, UseItemFormReturn } from './use-item-form';
@@ -117,19 +116,6 @@ export function MasterTab({ form, canManageMaster }: MasterTabProps) {
         </Field>
       </div>
 
-      {/* Description */}
-      <Field>
-        <Label htmlFor="master-description">Description</Label>
-        <Textarea
-          id="master-description"
-          className="resize-none"
-          rows={2}
-          value={master.description ?? ''}
-          onChange={(e) => setMasterField('description', e.target.value || undefined)}
-          disabled={isLocked}
-        />
-      </Field>
-
       {/* Type + Unit */}
       <div className="grid grid-cols-2 gap-3">
         <Field>
@@ -220,25 +206,31 @@ export function MasterTab({ form, canManageMaster }: MasterTabProps) {
       </Field>
 
       {/* Flags */}
-      <div className="flex gap-4">
-        <Toggle
-          pressed={master.isSaleable}
-          onPressedChange={(pressed) => setMasterField('isSaleable', pressed)}
-          variant="outline"
-          aria-label="Toggle saleable"
-          disabled={isLocked}
-        >
-          Sellable
-        </Toggle>
-        <Toggle
-          pressed={master.isPurchasable}
-          onPressedChange={(pressed) => setMasterField('isPurchasable', pressed)}
-          variant="outline"
-          aria-label="Toggle purchasable"
-          disabled={isLocked}
-        >
-          Purchasable
-        </Toggle>
+      <div className="grid grid-cols-2 gap-3">
+        <div className="flex items-center justify-between rounded-lg border p-3">
+          <Label htmlFor="master-saleable" className="text-sm font-normal cursor-pointer">
+            Sellable
+          </Label>
+          <Switch
+            id="master-saleable"
+            size="sm"
+            checked={master.isSaleable}
+            onCheckedChange={(checked) => setMasterField('isSaleable', checked)}
+            disabled={isLocked}
+          />
+        </div>
+        <div className="flex items-center justify-between rounded-lg border p-3">
+          <Label htmlFor="master-purchasable" className="text-sm font-normal cursor-pointer">
+            Purchasable
+          </Label>
+          <Switch
+            id="master-purchasable"
+            size="sm"
+            checked={master.isPurchasable}
+            onCheckedChange={(checked) => setMasterField('isPurchasable', checked)}
+            disabled={isLocked}
+          />
+        </div>
       </div>
     </div>
   );

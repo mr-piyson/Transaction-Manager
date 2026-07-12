@@ -177,34 +177,21 @@ export function SupplierCard({
         )}
       </Field>
 
-      {/* Supplier SKU + Name Override */}
-      <div className="grid grid-cols-2 gap-3">
-        <Field>
-          <Label>Supplier SKU</Label>
-          <Input
-            placeholder="Vendor's SKU"
-            value={draft.supplierSku ?? ''}
-            onChange={(e) =>
-              onUpdate(draft.tempId, { supplierSku: e.target.value || undefined })
-            }
-            disabled={disabled}
-          />
-        </Field>
-        <Field>
-          <Label>Supplier name (override)</Label>
-          <Input
-            placeholder="Custom name for this supplier"
-            value={draft.supplierName ?? ''}
-            onChange={(e) =>
-              onUpdate(draft.tempId, { supplierName: e.target.value || undefined })
-            }
-            disabled={disabled}
-          />
-        </Field>
-      </div>
+      {/* Supplier SKU */}
+      <Field>
+        <Label>Supplier SKU</Label>
+        <Input
+          placeholder="Vendor's SKU"
+          value={draft.supplierSku ?? ''}
+          onChange={(e) =>
+            onUpdate(draft.tempId, { supplierSku: e.target.value || undefined })
+          }
+          disabled={disabled}
+        />
+      </Field>
 
-      {/* Price + Currency + Lead Time */}
-      <div className="grid grid-cols-3 gap-3">
+      {/* Price + Currency */}
+      <div className="grid grid-cols-2 gap-3">
         <Field>
           <Label>Price *</Label>
           <Input
@@ -244,42 +231,8 @@ export function SupplierCard({
             </SelectContent>
           </Select>
         </Field>
-        <Field>
-          <Label>Lead time (days)</Label>
-          <Input
-            type="number"
-            min={0}
-            placeholder="e.g. 14"
-            value={draft.leadTimeDays ?? ''}
-            onChange={(e) =>
-              onUpdate(draft.tempId, {
-                leadTimeDays: e.target.value ? Number(e.target.value) : undefined,
-              })
-            }
-            disabled={disabled}
-          />
-        </Field>
       </div>
 
-      {/* MOQ */}
-      <Field>
-        <Label>Min order qty</Label>
-        <Input
-          type="number"
-          min={1}
-          step="1"
-          value={draft.minOrderQty}
-          onChange={(e) =>
-            onUpdate(draft.tempId, { minOrderQty: Number(e.target.value) })
-          }
-          disabled={disabled}
-          aria-invalid={!!errors?.minOrderQty}
-          className={cn(errors?.minOrderQty && 'border-destructive')}
-        />
-        {errors?.minOrderQty && (
-          <p className="text-sm text-destructive mt-1">{errors.minOrderQty}</p>
-        )}
-      </Field>
     </div>
   );
 }
