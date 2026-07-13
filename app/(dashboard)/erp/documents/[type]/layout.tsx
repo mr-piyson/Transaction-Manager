@@ -301,8 +301,8 @@ export default function DocumentsLayout({ children }: { children?: React.ReactNo
       <div className="flex-1 min-h-0 w-full">
         {isListRoute ? (
           <div className="h-full w-full flex flex-col">
-            <div className="w-full flex flex-row justify-between border-b px-4 py-2 shrink-0">
-              <div className="flex gap-2 items-center">
+            <div className="w-full flex flex-col sm:flex-row sm:justify-between gap-2 border-b px-4 py-2 shrink-0">
+              <div className="flex gap-2 items-center flex-wrap">
                 <Button
                   size={'sm'}
                   onClick={() => openCreate({ defaults: { type: config.trpcType } })}
@@ -310,19 +310,21 @@ export default function DocumentsLayout({ children }: { children?: React.ReactNo
                   <Plus className="size-3.5" />
                   <span className="hidden md:block">{t('invoices.newInvoice')}</span>
                 </Button>
-                <Tabs value={statusFilter} onValueChange={setStatusFilter}>
-                  <TabsList className="h-auto justify-start">
-                    {STATUS_FILTERS.map((f) => (
-                      <TabsTrigger
-                        key={f.value}
-                        value={f.value}
-                        className="text-xs px-3 py-1"
-                      >
-                        {f.label}
-                      </TabsTrigger>
-                    ))}
-                  </TabsList>
-                </Tabs>
+                <div className="overflow-x-auto">
+                  <Tabs value={statusFilter} onValueChange={setStatusFilter}>
+                    <TabsList className="h-auto justify-start">
+                      {STATUS_FILTERS.map((f) => (
+                        <TabsTrigger
+                          key={f.value}
+                          value={f.value}
+                          className="text-xs px-3 py-1"
+                        >
+                          {f.label}
+                        </TabsTrigger>
+                      ))}
+                    </TabsList>
+                  </Tabs>
+                </div>
               </div>
               <div className="flex gap-2 items-center">
                 {showPaymentFilter && (
