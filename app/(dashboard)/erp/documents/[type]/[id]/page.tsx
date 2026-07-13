@@ -512,43 +512,104 @@ export default function DocumentDetailPage() {
       actions.push({ label: t('common.edit'), key: 'edit', icon: Edit, variant: 'outline' });
       actions.push({ label: t('invoices.sendQuote'), key: 'send', icon: Send, dialog: 'send' });
       actions.push({ label: t('invoices.convertToInvoice'), key: 'convertQuote', icon: Receipt });
-      actions.push({ label: t('common.delete'), key: 'delete', icon: Trash, variant: 'destructive' });
+      actions.push({
+        label: t('common.delete'),
+        key: 'delete',
+        icon: Trash,
+        variant: 'destructive',
+      });
     } else if (status === 'SENT') {
       actions.push({ label: t('invoices.convertToInvoice'), key: 'convertQuote', icon: Receipt });
-      actions.push({ label: t('invoices.cancelQuote'), key: 'cancel', icon: XCircle, variant: 'destructive', dialog: 'cancel' });
+      actions.push({
+        label: t('invoices.cancelQuote'),
+        key: 'cancel',
+        icon: XCircle,
+        variant: 'destructive',
+        dialog: 'cancel',
+      });
     }
   } else if (invoiceType === 'INVOICE') {
     if (status === 'DRAFT') {
       actions.push({ label: t('common.edit'), key: 'edit', icon: Edit, variant: 'outline' });
       actions.push({ label: t('invoices.submitForApproval'), key: 'submit', icon: Send });
       actions.push({ label: t('common.send'), key: 'send', icon: Send, dialog: 'send' });
-      actions.push({ label: t('common.delete'), key: 'delete', icon: Trash, variant: 'destructive' });
+      actions.push({
+        label: t('common.delete'),
+        key: 'delete',
+        icon: Trash,
+        variant: 'destructive',
+      });
     } else if (status === 'PENDING_APPROVAL') {
       actions.push({ label: t('common.approve'), key: 'approve', icon: CheckCircle });
-      actions.push({ label: t('common.reject'), key: 'reject', icon: ThumbsDown, variant: 'destructive', dialog: 'reject' });
-      actions.push({ label: t('common.cancel'), key: 'cancel', icon: XCircle, variant: 'destructive', dialog: 'cancel' });
+      actions.push({
+        label: t('common.reject'),
+        key: 'reject',
+        icon: ThumbsDown,
+        variant: 'destructive',
+        dialog: 'reject',
+      });
+      actions.push({
+        label: t('common.cancel'),
+        key: 'cancel',
+        icon: XCircle,
+        variant: 'destructive',
+        dialog: 'cancel',
+      });
     } else if (status === 'APPROVED') {
       actions.push({ label: t('common.send'), key: 'send', icon: Send, dialog: 'send' });
-      actions.push({ label: t('common.cancel'), key: 'cancel', icon: XCircle, variant: 'destructive', dialog: 'cancel' });
+      actions.push({
+        label: t('common.cancel'),
+        key: 'cancel',
+        icon: XCircle,
+        variant: 'destructive',
+        dialog: 'cancel',
+      });
     } else if (['SENT', 'PARTIAL', 'OVERDUE'].includes(status)) {
-      actions.push({ label: t('invoices.recordPayment'), key: 'payment', icon: Banknote, dialog: 'payment' });
+      actions.push({
+        label: t('invoices.recordPayment'),
+        key: 'payment',
+        icon: Banknote,
+        dialog: 'payment',
+      });
       if (status !== 'OVERDUE') {
-        actions.push({ label: t('common.cancel'), key: 'cancel', icon: XCircle, variant: 'destructive', dialog: 'cancel' });
+        actions.push({
+          label: t('common.cancel'),
+          key: 'cancel',
+          icon: XCircle,
+          variant: 'destructive',
+          dialog: 'cancel',
+        });
       }
     }
   } else if (invoiceType === 'CREDIT_NOTE') {
     if (status === 'DRAFT') {
       actions.push({ label: t('common.edit'), key: 'edit', icon: Edit, variant: 'outline' });
       actions.push({ label: t('common.send'), key: 'send', icon: Send, dialog: 'send' });
-      actions.push({ label: t('common.delete'), key: 'delete', icon: Trash, variant: 'destructive' });
+      actions.push({
+        label: t('common.delete'),
+        key: 'delete',
+        icon: Trash,
+        variant: 'destructive',
+      });
     }
   } else {
     if (status === 'DRAFT') {
       actions.push({ label: t('common.edit'), key: 'edit', icon: Edit, variant: 'outline' });
       actions.push({ label: t('common.send'), key: 'send', icon: Send, dialog: 'send' });
-      actions.push({ label: t('common.delete'), key: 'delete', icon: Trash, variant: 'destructive' });
+      actions.push({
+        label: t('common.delete'),
+        key: 'delete',
+        icon: Trash,
+        variant: 'destructive',
+      });
     } else if (status === 'SENT') {
-      actions.push({ label: t('common.cancel'), key: 'cancel', icon: XCircle, variant: 'destructive', dialog: 'cancel' });
+      actions.push({
+        label: t('common.cancel'),
+        key: 'cancel',
+        icon: XCircle,
+        variant: 'destructive',
+        dialog: 'cancel',
+      });
     }
   }
 
@@ -609,13 +670,9 @@ export default function DocumentDetailPage() {
           <div>
             <div className="flex items-center gap-3">
               <h1 className="text-2xl font-bold">{invoice.serial}</h1>
-              <Badge className={STATUS_COLORS[invoice.status] ?? ''}>
-                {invoice.status}
-              </Badge>
+              <Badge className={STATUS_COLORS[invoice.status] ?? ''}>{invoice.status}</Badge>
               {invoice.paymentStatus && isInvoice && (
-                <Badge variant="outline">
-                  {invoice.paymentStatus}
-                </Badge>
+                <Badge variant="outline">{invoice.paymentStatus}</Badge>
               )}
             </div>
             <p className="text-muted-foreground mt-1">
@@ -629,7 +686,11 @@ export default function DocumentDetailPage() {
           </Button>
           {showActions && (
             <>
-              <Button variant="outline" size="sm" onClick={() => router.push(`/erp/documents/${type}/${invoice.id}/print`)}>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => router.push(`/erp/documents/${type}/${invoice.id}/print`)}
+              >
                 <Printer className="size-4 mr-1" /> {t('invoices.printPdf')}
               </Button>
               <DropdownMenu>
@@ -669,16 +730,12 @@ export default function DocumentDetailPage() {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <div>
           <p className="text-sm text-muted-foreground">{t('invoices.issueDate')}</p>
-          <p className="font-medium">
-            {invoice.date ? formatDate(invoice.date) : '—'}
-          </p>
+          <p className="font-medium">{invoice.date ? formatDate(invoice.date) : '—'}</p>
         </div>
         {invoice.dueDate && (
           <div>
             <p className="text-sm text-muted-foreground">{t('invoices.dueDate')}</p>
-            <p className="font-medium">
-              {formatDate(invoice.dueDate)}
-            </p>
+            <p className="font-medium">{formatDate(invoice.dueDate)}</p>
           </div>
         )}
         {invoice.customer && (
@@ -704,9 +761,7 @@ export default function DocumentDetailPage() {
         )}
         <div>
           <p className="text-sm text-muted-foreground">{t('common.status')}</p>
-          <Badge className={STATUS_COLORS[invoice.status] ?? ''}>
-            {invoice.status}
-          </Badge>
+          <Badge className={STATUS_COLORS[invoice.status] ?? ''}>{invoice.status}</Badge>
         </div>
         {(invoice as any).createdBy && (
           <div>
@@ -737,14 +792,6 @@ export default function DocumentDetailPage() {
 
       {/* Line Items */}
       <Card>
-        <CardHeader className="px-6 py-4">
-          <CardTitle className="text-base">
-            {t('invoices.lineItems')}
-            <span className="text-muted-foreground font-normal ml-2">
-              ({t('invoices.itemsCount', { count: invoice.lines?.length ?? 0 })})
-            </span>
-          </CardTitle>
-        </CardHeader>
         <CardContent className="px-0">
           <Table>
             <TableHeader>
@@ -824,53 +871,54 @@ export default function DocumentDetailPage() {
               )}
             </TableBody>
           </Table>
+
+          <Separator />
+          {/* Totals */}
+          <div className="flex justify-end p-5 pb-0">
+            <div className="w-72 space-y-2">
+              <div className="flex justify-between text-sm">
+                <span className="text-muted-foreground">{t('invoices.subtotal')}</span>
+                <span className="tabular-nums">{Number(invoice.subtotal).toFixed(3)}</span>
+              </div>
+              {Number(invoice.discountTotal) > 0 && (
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">{t('invoices.discount')}</span>
+                  <span className="tabular-nums text-destructive">
+                    -{Number(invoice.discountTotal).toFixed(3)}
+                  </span>
+                </div>
+              )}
+              <div className="flex justify-between text-sm">
+                <span className="text-muted-foreground">{t('invoices.tax')}</span>
+                <span className="tabular-nums">{Number(invoice.taxTotal).toFixed(3)}</span>
+              </div>
+              <Separator />
+              <div className="flex justify-between font-bold text-lg">
+                <span>{t('invoices.total')}</span>
+                <span className="tabular-nums">
+                  {Number(invoice.total).toFixed(3)} {invoice.currency}
+                </span>
+              </div>
+              {isInvoice && Number((invoice as any).amountPaid) > 0 && (
+                <>
+                  <div className="flex justify-between text-sm text-green-600">
+                    <span>{t('invoices.amountPaid')}</span>
+                    <span className="tabular-nums">
+                      {Number((invoice as any).amountPaid).toFixed(3)} {invoice.currency}
+                    </span>
+                  </div>
+                  <div className="flex justify-between text-sm text-red-600">
+                    <span>{t('invoices.balanceDue')}</span>
+                    <span className="tabular-nums">
+                      {Number((invoice as any).amountDue).toFixed(3)} {invoice.currency}
+                    </span>
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
         </CardContent>
       </Card>
-
-      {/* Totals */}
-      <div className="flex justify-end">
-        <div className="w-72 space-y-2">
-          <div className="flex justify-between text-sm">
-            <span className="text-muted-foreground">{t('invoices.subtotal')}</span>
-            <span className="tabular-nums">{Number(invoice.subtotal).toFixed(3)}</span>
-          </div>
-          {Number(invoice.discountTotal) > 0 && (
-            <div className="flex justify-between text-sm">
-              <span className="text-muted-foreground">{t('invoices.discount')}</span>
-              <span className="tabular-nums text-destructive">
-                -{Number(invoice.discountTotal).toFixed(3)}
-              </span>
-            </div>
-          )}
-          <div className="flex justify-between text-sm">
-            <span className="text-muted-foreground">{t('invoices.tax')}</span>
-            <span className="tabular-nums">{Number(invoice.taxTotal).toFixed(3)}</span>
-          </div>
-          <Separator />
-          <div className="flex justify-between font-bold text-lg">
-            <span>{t('invoices.total')}</span>
-            <span className="tabular-nums">
-              {Number(invoice.total).toFixed(3)} {invoice.currency}
-            </span>
-          </div>
-          {isInvoice && Number((invoice as any).amountPaid) > 0 && (
-            <>
-              <div className="flex justify-between text-sm text-green-600">
-                <span>{t('invoices.amountPaid')}</span>
-                <span className="tabular-nums">
-                  {Number((invoice as any).amountPaid).toFixed(3)} {invoice.currency}
-                </span>
-              </div>
-              <div className="flex justify-between text-sm text-red-600">
-                <span>{t('invoices.balanceDue')}</span>
-                <span className="tabular-nums">
-                  {Number((invoice as any).amountDue).toFixed(3)} {invoice.currency}
-                </span>
-              </div>
-            </>
-          )}
-        </div>
-      </div>
 
       {/* Payments table */}
       {invoice.payments && invoice.payments.length > 0 && (
@@ -895,9 +943,7 @@ export default function DocumentDetailPage() {
               <TableBody>
                 {invoice.payments.map((payment: any) => (
                   <TableRow key={payment.id}>
-                    <TableCell className="text-sm">
-                      {formatDate(payment.date)}
-                    </TableCell>
+                    <TableCell className="text-sm">{formatDate(payment.date)}</TableCell>
                     <TableCell>{payment.method}</TableCell>
                     <TableCell className="text-right font-medium">
                       {Number(payment.amount).toFixed(3)}
@@ -1004,9 +1050,7 @@ export default function DocumentDetailPage() {
           {t('invoices.createdBy', {
             type: getTypeLabel(invoice.type),
             name: invoice.createdBy?.name ?? '—',
-              date: invoice.createdAt
-              ? formatDateTime(invoice.createdAt)
-              : '—',
+            date: invoice.createdAt ? formatDateTime(invoice.createdAt) : '—',
           })}
         </span>
         <span>{t('invoices.version', { version: invoice.version })}</span>
@@ -1042,10 +1086,17 @@ export default function DocumentDetailPage() {
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setSendOpen(false)} disabled={sendMutation.isPending}>
+            <Button
+              variant="outline"
+              onClick={() => setSendOpen(false)}
+              disabled={sendMutation.isPending}
+            >
               {t('common.cancel')}
             </Button>
-            <Button onClick={() => sendMutation.mutate({ id: invoice.id, version })} disabled={sendMutation.isPending}>
+            <Button
+              onClick={() => sendMutation.mutate({ id: invoice.id, version })}
+              disabled={sendMutation.isPending}
+            >
               {sendMutation.isPending && <Loader2 className="size-4 mr-1 animate-spin" />}
               {t('common.send')} {getTypeLabel(invoice.type)}
             </Button>
@@ -1054,7 +1105,12 @@ export default function DocumentDetailPage() {
       </Dialog>
 
       {/* Cancel dialog */}
-      <Dialog open={cancelOpen} onOpenChange={(v) => { if (!cancelMutation.isPending) setCancelOpen(v); }}>
+      <Dialog
+        open={cancelOpen}
+        onOpenChange={(v) => {
+          if (!cancelMutation.isPending) setCancelOpen(v);
+        }}
+      >
         <DialogContent>
           <DialogHeader>
             <DialogTitle>
@@ -1062,7 +1118,9 @@ export default function DocumentDetailPage() {
             </DialogTitle>
             <DialogDescription>
               {t('invoices.cancelDialogDesc', { serial: invoice.serial })}
-              {invoiceType === 'INVOICE' && ['SENT', 'PARTIAL', 'OVERDUE'].includes(status) && ` ${t('invoices.stockReturned')}`}
+              {invoiceType === 'INVOICE' &&
+                ['SENT', 'PARTIAL', 'OVERDUE'].includes(status) &&
+                ` ${t('invoices.stockReturned')}`}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-3">
@@ -1076,10 +1134,27 @@ export default function DocumentDetailPage() {
             />
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => { setCancelOpen(false); setCancelReason(''); }} disabled={cancelMutation.isPending}>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setCancelOpen(false);
+                setCancelReason('');
+              }}
+              disabled={cancelMutation.isPending}
+            >
               {t('common.keep')}
             </Button>
-            <Button variant="destructive" onClick={() => cancelMutation.mutate({ id: invoice.id, version, reason: cancelReason || undefined })} disabled={cancelMutation.isPending}>
+            <Button
+              variant="destructive"
+              onClick={() =>
+                cancelMutation.mutate({
+                  id: invoice.id,
+                  version,
+                  reason: cancelReason || undefined,
+                })
+              }
+              disabled={cancelMutation.isPending}
+            >
               {cancelMutation.isPending && <Loader2 className="size-4 mr-1 animate-spin" />}
               {t('common.cancel')} {getTypeLabel(invoice.type)}
             </Button>
@@ -1101,19 +1176,38 @@ export default function DocumentDetailPage() {
             <DialogDescription>{confirmDialog.description}</DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setConfirmDialog({ open: false, action: '', title: '', description: '' })} disabled={isPending}>
+            <Button
+              variant="outline"
+              onClick={() =>
+                setConfirmDialog({ open: false, action: '', title: '', description: '' })
+              }
+              disabled={isPending}
+            >
               {t('common.cancel')}
             </Button>
-            <Button onClick={() => { handleConfirmAction(confirmDialog.action); setConfirmDialog({ open: false, action: '', title: '', description: '' }); }} disabled={isPending}>
+            <Button
+              onClick={() => {
+                handleConfirmAction(confirmDialog.action);
+                setConfirmDialog({ open: false, action: '', title: '', description: '' });
+              }}
+              disabled={isPending}
+            >
               {isPending && <Loader2 className="size-4 mr-1 animate-spin" />}
-              {confirmDialog.action === 'approve' ? t('common.approve') : t('invoices.submitForApproval')}
+              {confirmDialog.action === 'approve'
+                ? t('common.approve')
+                : t('invoices.submitForApproval')}
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
       {/* Reject dialog */}
-      <Dialog open={rejectOpen} onOpenChange={(v) => { if (!rejectMutation.isPending) setRejectOpen(v); }}>
+      <Dialog
+        open={rejectOpen}
+        onOpenChange={(v) => {
+          if (!rejectMutation.isPending) setRejectOpen(v);
+        }}
+      >
         <DialogContent>
           <DialogHeader>
             <DialogTitle>{t('invoices.rejectInvoiceTitle')}</DialogTitle>
@@ -1132,10 +1226,27 @@ export default function DocumentDetailPage() {
             />
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => { setRejectOpen(false); setRejectReason(''); }} disabled={rejectMutation.isPending}>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setRejectOpen(false);
+                setRejectReason('');
+              }}
+              disabled={rejectMutation.isPending}
+            >
               {t('common.cancel')}
             </Button>
-            <Button variant="destructive" onClick={() => rejectMutation.mutate({ id: invoice.id, version, reason: rejectReason || undefined })} disabled={rejectMutation.isPending}>
+            <Button
+              variant="destructive"
+              onClick={() =>
+                rejectMutation.mutate({
+                  id: invoice.id,
+                  version,
+                  reason: rejectReason || undefined,
+                })
+              }
+              disabled={rejectMutation.isPending}
+            >
               {rejectMutation.isPending && <Loader2 className="size-4 mr-1 animate-spin" />}
               {t('invoices.rejectInvoice')}
             </Button>
@@ -1144,12 +1255,18 @@ export default function DocumentDetailPage() {
       </Dialog>
 
       {/* Add Payment dialog */}
-      <Dialog open={paymentOpen} onOpenChange={(v) => { if (!addPaymentMutation.isPending) setPaymentOpen(v); }}>
+      <Dialog
+        open={paymentOpen}
+        onOpenChange={(v) => {
+          if (!addPaymentMutation.isPending) setPaymentOpen(v);
+        }}
+      >
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>{t('invoices.recordPayment')}</DialogTitle>
             <DialogDescription>
-              {invoice.serial} - {t('invoices.outstanding')}: {Number((invoice as any).amountDue).toFixed(3)} {invoice.currency}
+              {invoice.serial} - {t('invoices.outstanding')}:{' '}
+              {Number((invoice as any).amountDue).toFixed(3)} {invoice.currency}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
@@ -1173,30 +1290,51 @@ export default function DocumentDetailPage() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    {['CASH', 'BANK_TRANSFER', 'CARD', 'CHEQUE', 'ONLINE', 'CREDIT', 'OTHER'].map((value) => (
-                      <SelectItem key={value} value={value}>
-                        {value}
-                      </SelectItem>
-                    ))}
+                    {['CASH', 'BANK_TRANSFER', 'CARD', 'CHEQUE', 'ONLINE', 'CREDIT', 'OTHER'].map(
+                      (value) => (
+                        <SelectItem key={value} value={value}>
+                          {value}
+                        </SelectItem>
+                      ),
+                    )}
                   </SelectContent>
                 </Select>
               </div>
             </div>
             <div className="space-y-2">
               <Label htmlFor="payment-date">{t('invoices.date')}</Label>
-              <DatePicker id="payment-date" value={paymentDate} onChange={(v) => setPaymentDate(v)} />
+              <DatePicker
+                id="payment-date"
+                value={paymentDate}
+                onChange={(v) => setPaymentDate(v)}
+              />
             </div>
             <div className="space-y-2">
               <Label htmlFor="payment-reference">{t('invoices.paymentReference')}</Label>
-              <Input id="payment-reference" placeholder={t('invoices.paymentReference')} value={paymentReference} onChange={(e) => setPaymentReference(e.target.value)} />
+              <Input
+                id="payment-reference"
+                placeholder={t('invoices.paymentReference')}
+                value={paymentReference}
+                onChange={(e) => setPaymentReference(e.target.value)}
+              />
             </div>
             <div className="space-y-2">
               <Label htmlFor="payment-notes">{t('invoices.paymentNotes')}</Label>
-              <Textarea id="payment-notes" placeholder={t('common.optionalNotes')} value={paymentNotes} onChange={(e) => setPaymentNotes(e.target.value)} rows={2} />
+              <Textarea
+                id="payment-notes"
+                placeholder={t('common.optionalNotes')}
+                value={paymentNotes}
+                onChange={(e) => setPaymentNotes(e.target.value)}
+                rows={2}
+              />
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setPaymentOpen(false)} disabled={addPaymentMutation.isPending}>
+            <Button
+              variant="outline"
+              onClick={() => setPaymentOpen(false)}
+              disabled={addPaymentMutation.isPending}
+            >
               {t('common.cancel')}
             </Button>
             <Button
@@ -1207,7 +1345,11 @@ export default function DocumentDetailPage() {
                   return;
                 }
                 if (amount > Number((invoice as any).amountDue) + 0.000001) {
-                  toast.error(t('invoices.amountExceedsBalance', { balance: Number((invoice as any).amountDue).toFixed(3) }));
+                  toast.error(
+                    t('invoices.amountExceedsBalance', {
+                      balance: Number((invoice as any).amountDue).toFixed(3),
+                    }),
+                  );
                   return;
                 }
                 addPaymentMutation.mutate({

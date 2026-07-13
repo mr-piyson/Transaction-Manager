@@ -72,6 +72,7 @@ export default function DocumentsLayout({ children }: { children?: React.ReactNo
   const [statusFilter] = useQueryState('status', parseAsString.withDefault(''));
   const [paymentStatusFilter] = useQueryState('paymentStatus', parseAsString.withDefault('all'));
   const [viewMode] = useQueryState('view', parseAsString.withDefault('list'));
+  const [searchQuery] = useQueryState('q', parseAsString.withDefault(''));
 
   const showPaymentFilter = type === 'invoices';
 
@@ -90,6 +91,7 @@ export default function DocumentsLayout({ children }: { children?: React.ReactNo
     status: (statusFilter || undefined) as any,
     paymentStatus:
       paymentStatusFilter === 'all' ? undefined : (paymentStatusFilter as any),
+    search: searchQuery || undefined,
   });
   const router = useRouter();
   const pathname = usePathname();
