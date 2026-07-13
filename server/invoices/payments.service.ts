@@ -36,12 +36,14 @@ export function resolvePaymentStatus(
   total: number,
   amountPaid: number,
   dueDate: Date | null,
+  creditApplied: number = 0,
 ): 'PENDING' | 'PARTIAL' | 'PAID' | 'OVERDUE' {
-  if (amountPaid <= 0) {
+  const effectivePaid = amountPaid + creditApplied;
+  if (effectivePaid <= 0) {
     if (dueDate && dueDate < new Date()) return 'OVERDUE';
     return 'PENDING';
   }
-  if (amountPaid >= total) return 'PAID';
+  if (effectivePaid >= total) return 'PAID';
   if (dueDate && dueDate < new Date()) return 'OVERDUE';
   return 'PARTIAL';
 }
@@ -52,13 +54,15 @@ export function resolveInvoiceStatus(
   amountPaid: number,
   total: number,
   dueDate: Date | null,
+  creditApplied: number = 0,
 ): 'SENT' | 'PARTIAL' | 'PAID' | 'OVERDUE' {
   // Terminal statuses — don't change
   if (['CANCELLED', 'DELETED'].includes(currentStatus)) {
     return currentStatus as 'SENT';
   }
-  if (amountPaid >= total) return 'PAID';
-  if (amountPaid > 0) return 'PARTIAL';
+  const effectivePaid = amountPaid + creditApplied;
+  if (effectivePaid >= total) return 'PAID';
+  if (effectivePaid > 0) return 'PARTIAL';
   if (dueDate && dueDate < new Date()) return 'OVERDUE';
   return 'SENT';
 }
@@ -82,6 +86,14 @@ export async function syncInvoicePaymentTotals(
 
   const amountPaid = Number(aggregate._sum.amount ?? 0);
 
+  // Sum all credit note allocations for this invoice
+  const creditAggregate = await tx.creditNoteAllocation.aggregate({
+    where: { invoiceId, organizationId },
+    _sum: { amount: true },
+  });
+
+  const creditApplied = Number(creditAggregate._sum.amount ?? 0);
+
   // Load current invoice state
   const invoice = await tx.invoice.findUnique({
     where: { id: invoiceId },
@@ -91,10 +103,10 @@ export async function syncInvoicePaymentTotals(
   if (!invoice) throw new NotFoundError('Invoice', invoiceId);
 
   const total = Number(invoice.total);
-  const amountDue = Math.max(0, total - amountPaid);
+  const amountDue = Math.max(0, total - amountPaid - creditApplied);
 
-  const paymentStatus = resolvePaymentStatus(total, amountPaid, invoice.dueDate);
-  const invoiceStatus = resolveInvoiceStatus(invoice.status, amountPaid, total, invoice.dueDate);
+  const paymentStatus = resolvePaymentStatus(total, amountPaid, invoice.dueDate, creditApplied);
+  const invoiceStatus = resolveInvoiceStatus(invoice.status, amountPaid, total, invoice.dueDate, creditApplied);
 
   await tx.invoice.update({
     where: { id: invoiceId },

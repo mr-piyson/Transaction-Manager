@@ -353,6 +353,8 @@
     "type": "Type",
     "newInvoice": "New Invoice",
     "createInvoice": "Create Invoice",
+    "createCreditNote": "Create Credit Note",
+    "createCreditNoteDesc": "Issue a credit note to reverse items and amounts from the parent invoice.",
     "editInvoice": "Edit Invoice",
     "invoiceDetails": "Invoice Details",
     "invoiceNumber": "Invoice Number",

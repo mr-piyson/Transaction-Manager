@@ -329,6 +329,8 @@
     "creditNote": "إشعار دائن",
     "deliveryNote": "مذكرة تسليم",
     "createInvoice": "إنشاء فاتورة",
+    "createCreditNote": "إنشاء إشعار دائن",
+    "createCreditNoteDesc": "إصدار إشعار دائن لعكس الأ amounts والمبالغ من الفاتورة الأصلية.",
     "editInvoice": "تعديل الفاتورة",
     "invoiceDetails": "تفاصيل الفاتورة",
     "invoiceNumber": "رقم الفاتورة",

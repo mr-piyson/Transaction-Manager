@@ -335,10 +335,18 @@ export function InvoiceFormDialog({
         <DialogContent className="sm:max-w-200">
           <DialogHeader>
             <DialogTitle>
-              {isEdit ? t('invoices.editInvoice') : t('invoices.createInvoice')}
+              {isEdit
+                ? t('invoices.editInvoice')
+                : invoiceType === 'CREDIT_NOTE'
+                  ? t('invoices.createCreditNote')
+                  : t('invoices.createInvoice')}
             </DialogTitle>
             <DialogDescription>
-              {isEdit ? t('invoices.editInvoiceDesc') : t('invoices.createInvoiceDesc')}
+              {isEdit
+                ? t('invoices.editInvoiceDesc')
+                : invoiceType === 'CREDIT_NOTE'
+                  ? t('invoices.createCreditNoteDesc')
+                  : t('invoices.createInvoiceDesc')}
             </DialogDescription>
           </DialogHeader>
 

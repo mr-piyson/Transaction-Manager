@@ -9,6 +9,7 @@ import {
   Calendar,
   Check,
   CheckCircle,
+  CreditCard,
   Edit,
   FileText,
   HandCoins,
@@ -17,6 +18,7 @@ import {
   MoreHorizontal,
   Printer,
   Receipt,
+  RotateCcw,
   Send,
   ThumbsDown,
   Trash,
@@ -225,7 +227,7 @@ export default function DocumentDetailPage() {
   const params = useParams<{ type: string; id: string }>();
   const type = params.type;
   const isInvoice = type === 'invoices';
-  const { openEdit } = useInvoiceForm();
+  const { openEdit, openCreate } = useInvoiceForm();
   const utils = trpc.useUtils();
   const { formatDate, formatDateTime, formatDateForInput } = useDateFormat();
 
@@ -564,14 +566,22 @@ export default function DocumentDetailPage() {
         variant: 'destructive',
         dialog: 'cancel',
       });
-    } else if (['SENT', 'PARTIAL', 'OVERDUE'].includes(status)) {
+    } else if (['SENT', 'PARTIAL', 'PAID', 'OVERDUE'].includes(status)) {
+      if (status !== 'PAID') {
+        actions.push({
+          label: t('invoices.recordPayment'),
+          key: 'payment',
+          icon: Banknote,
+          dialog: 'payment',
+        });
+      }
       actions.push({
-        label: t('invoices.recordPayment'),
-        key: 'payment',
-        icon: Banknote,
-        dialog: 'payment',
+        label: t('invoices.createCreditNote'),
+        key: 'createCreditNote',
+        icon: RotateCcw,
+        variant: 'outline',
       });
-      if (status !== 'OVERDUE') {
+      if (!['PAID', 'OVERDUE'].includes(status)) {
         actions.push({
           label: t('common.cancel'),
           key: 'cancel',
@@ -628,6 +638,35 @@ export default function DocumentDetailPage() {
         if (window.confirm(t('invoices.convertToInvoiceTitle', { serial: invoice.serial }))) {
           convertQuoteMutation.mutate({ quoteId: invoice.id });
         }
+        break;
+      case 'createCreditNote':
+        openCreate({
+          defaults: {
+            type: 'CREDIT_NOTE',
+            parentInvoiceId: invoice.id,
+            customerId: invoice.customerId ?? undefined,
+            warehouseId: invoice.warehouseId ?? undefined,
+            currency: invoice.currency as any,
+            exchangeRate: Number(invoice.exchangeRate),
+            lines: invoice.lines.map((l: any) => ({
+              itemId: l.itemId,
+              description: l.description ?? undefined,
+              quantity: Number(l.quantity),
+              unitPrice: Number(l.unitPrice),
+              discountAmt: Number(l.discountAmt),
+              purchasePrice: Number(l.purchasePrice ?? 0),
+              taxRateId: l.taxRateId ?? undefined,
+              taxRateSnapshot: Number(l.taxRateSnapshot ?? 0),
+              taxRateName: l.taxRateName ?? undefined,
+              sortOrder: l.sortOrder ?? 0,
+              departmentId: l.departmentId ?? undefined,
+            })),
+          },
+          onSuccess: () => {
+            utils.invoices.byId.invalidate({ id: invoice.id });
+            utils.invoices.list.invalidate();
+          },
+        });
         break;
       case 'delete':
         if (window.confirm(t('common.confirmDelete', { name: invoice.serial }))) {

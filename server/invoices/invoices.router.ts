@@ -41,13 +41,13 @@ import {
   toPrismaPage,
 } from '@/lib/validations';
 import { writeAuditLog } from '../shared/audit.service';
-import { deductStockForInvoice, returnStockForCancelledInvoice } from './invoices.service';
+import { deductStockForInvoice, returnStockForCancelledInvoice, returnStockForCreditNote } from './invoices.service';
 import {
   createNotification,
   NOTIFICATION_SETTINGS_KEYS,
   NOTIFICATION_TYPES,
 } from '../notifications/notifications.shared';
-import { addPayment, deletePayment } from './payments.service';
+import { addPayment, deletePayment, resolvePaymentStatus, resolveInvoiceStatus } from './payments.service';
 import {
   createInvoiceSchema,
   updateInvoiceSchema,
@@ -207,11 +207,47 @@ export const invoicesRouter = router({
           organizationId: orgId,
           deletedAt: null,
         },
-        select: { id: true, status: true, type: true },
+        select: { id: true, status: true, type: true, total: true, warehouseId: true },
       });
       if (!parent) throw new NotFoundError('Parent Invoice', invoiceData.parentInvoiceId);
       if (parent.type !== 'INVOICE') {
         throw new UnprocessableError('Credit notes can only reference INVOICE type documents.');
+      }
+
+      // Validate credit note total does not exceed remaining refundable amount
+      const existingCreditNotes = await ctx.db.invoice.aggregate({
+        where: {
+          parentInvoiceId: invoiceData.parentInvoiceId,
+          type: 'CREDIT_NOTE',
+          organizationId: orgId,
+          deletedAt: null,
+        },
+        _sum: { total: true },
+      });
+      const totalAlreadyCredited = Number(existingCreditNotes._sum.total ?? 0);
+      const parentTotal = Number(parent.total);
+      const remainingRefundable = parentTotal - totalAlreadyCredited;
+
+      // Calculate this credit note's total for validation
+      const creditTotals = calculateInvoiceTotals(
+        lineInputs.map((l) => ({
+          quantity: l.quantity,
+          unitPrice: l.unitPrice,
+          discountAmt: l.discountAmt,
+          taxRateSnapshot: l.taxRateSnapshot ?? 0,
+          purchasePrice: l.purchasePrice,
+        })),
+      );
+
+      if (creditTotals.total > remainingRefundable + 0.000001) {
+        throw new UnprocessableError(
+          `Credit note total (${creditTotals.total.toFixed(3)}) exceeds the remaining refundable amount (${remainingRefundable.toFixed(3)}) on the parent invoice.`,
+        );
+      }
+
+      // Inherit warehouse from parent if not set
+      if (!invoiceData.warehouseId && parent.warehouseId) {
+        invoiceData.warehouseId = parent.warehouseId;
       }
     }
 
@@ -543,6 +579,11 @@ export const invoicesRouter = router({
         throw new UnprocessableError('A warehouse must be assigned before sending an invoice.');
       }
 
+      // Require warehouse for CREDIT_NOTE type (stock return needs it)
+      if (invoice.type === 'CREDIT_NOTE' && invoice.parentInvoiceId && !invoice.warehouseId) {
+        throw new UnprocessableError('A warehouse must be assigned before sending a credit note.');
+      }
+
       const notifSent = await ctx.db.organizationSetting.findFirst({
         where: {
           organizationId: orgId,
@@ -570,6 +611,36 @@ export const invoicesRouter = router({
           });
         }
 
+        // Return stock for CREDIT_NOTE (reverse the original SALE_OUTBOUND)
+        if (invoice.type === 'CREDIT_NOTE' && invoice.parentInvoiceId && invoice.warehouseId) {
+          await returnStockForCreditNote({
+            tx,
+            organizationId: orgId,
+            warehouseId: invoice.warehouseId,
+            userId: ctx.user.id,
+            lines: invoice.lines
+              .map((l) => ({
+                itemId: l.itemId!,
+                itemType: l.item?.type ?? 'SERVICE',
+                quantity: Number(l.quantity),
+                invoiceLineId: l.id,
+              }))
+              .filter((l) => l.itemId),
+          });
+        }
+
+        // Create CreditNoteAllocation to track this credit against the parent invoice
+        if (invoice.type === 'CREDIT_NOTE' && invoice.parentInvoiceId) {
+          await tx.creditNoteAllocation.create({
+            data: {
+              creditNoteId: invoice.id,
+              invoiceId: invoice.parentInvoiceId,
+              amount: Number(invoice.total),
+              organizationId: orgId,
+            },
+          });
+        }
+
         const updated = await tx.invoice.update({
           where: { id: input.id },
           data: {
@@ -594,6 +665,69 @@ export const invoicesRouter = router({
               createdById: ctx.user.id,
             },
           });
+        }
+
+        // Recalculate parent invoice status after credit note is sent
+        if (invoice.type === 'CREDIT_NOTE' && invoice.parentInvoiceId) {
+          const parentInvoice = await tx.invoice.findUnique({
+            where: { id: invoice.parentInvoiceId },
+            select: { id: true, total: true, dueDate: true, status: true },
+          });
+
+          if (parentInvoice) {
+            // Sum all SENT credit notes against this parent
+            const creditAggregate = await tx.creditNoteAllocation.aggregate({
+              where: { invoiceId: parentInvoice.id, organizationId: orgId },
+              _sum: { amount: true },
+            });
+
+            // Also sum credit notes directly linked via parentInvoiceId that are SENT
+            const linkedCreditNotes = await tx.invoice.aggregate({
+              where: {
+                parentInvoiceId: parentInvoice.id,
+                type: 'CREDIT_NOTE',
+                status: 'SENT',
+                organizationId: orgId,
+                deletedAt: null,
+              },
+              _sum: { total: true },
+            });
+
+            const allocationCredit = Number(creditAggregate._sum.amount ?? 0);
+            const linkedCredit = Number(linkedCreditNotes._sum.total ?? 0);
+            const totalCreditApplied = allocationCredit + linkedCredit;
+
+            // Sum payments on the parent
+            const paymentAggregate = await tx.payment.aggregate({
+              where: { invoiceId: parentInvoice.id, organizationId: orgId },
+              _sum: { amount: true },
+            });
+            const amountPaid = Number(paymentAggregate._sum.amount ?? 0);
+
+            const total = Number(parentInvoice.total);
+            const amountDue = Math.max(0, total - amountPaid - totalCreditApplied);
+
+            // Resolve status using credit-aware resolvers
+            const paymentStatus = resolvePaymentStatus(total, amountPaid, parentInvoice.dueDate, totalCreditApplied);
+            const invoiceStatus = resolveInvoiceStatus(
+              parentInvoice.status,
+              amountPaid,
+              total,
+              parentInvoice.dueDate,
+              totalCreditApplied,
+            );
+
+            await tx.invoice.update({
+              where: { id: parentInvoice.id },
+              data: {
+                amountPaid,
+                amountDue,
+                paymentStatus,
+                status: invoiceStatus,
+                updatedById: ctx.user.id,
+              },
+            });
+          }
         }
 
         await writeAuditLog(
