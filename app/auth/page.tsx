@@ -4,7 +4,6 @@ import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import SignInTab from '@/app/auth/SignIn';
-import SignUpTab from '@/app/auth/SignUp';
 import Logo from '@/components/Logo';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useSession } from '@/auth/auth-client';
@@ -30,13 +29,9 @@ export default function Auth() {
         <Tabs defaultValue="Sign-In" className="flex flex-col w-90 max-[400px]:w-full ">
           <TabsList className="flex w-full ">
             <TabsTrigger value="Sign-In">{t('auth.signIn')}</TabsTrigger>
-            <TabsTrigger value="Sign-Up">{t('auth.signUp')}</TabsTrigger>
           </TabsList>
           <TabsContent value="Sign-In">
             <SignInTab />
-          </TabsContent>
-          <TabsContent value="Sign-Up">
-            <SignUpTab />
           </TabsContent>
         </Tabs>
       </div>

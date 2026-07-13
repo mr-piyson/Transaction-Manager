@@ -13,7 +13,7 @@ export function I18nProvider({ children }: { children: ReactNode }) {
   const messages = allMessages[locale];
 
   return (
-    <NextIntlClientProvider locale={locale} messages={messages}>
+    <NextIntlClientProvider locale={locale} messages={messages} timeZone="Asia/Baghdad">
       {children}
     </NextIntlClientProvider>
   );
