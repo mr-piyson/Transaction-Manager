@@ -6,31 +6,32 @@ import Logo from '@/components/Logo';
 
 const footerLinks = [
   {
-    title: 'App',
+    title: 'Product',
     links: [
+      { label: 'Features', href: '#features' },
       { label: 'Dashboard', href: '/app' },
       { label: 'Invoices', href: '/erp/invoices' },
-      { label: 'Customers', href: '/erp/customers' },
-      { label: 'Suppliers', href: '/erp/suppliers' },
-      { label: 'Stock', href: '/erp/stock' },
+      { label: 'Inventory', href: '/erp/stock' },
+      { label: 'Reports', href: '/erp/reports' },
     ],
   },
   {
-    title: 'More',
+    title: 'Resources',
     links: [
+      { label: 'Customers', href: '/erp/customers' },
+      { label: 'Suppliers', href: '/erp/suppliers' },
       { label: 'Purchase Orders', href: '/erp/purchase-orders' },
       { label: 'Contracts', href: '/erp/contracts' },
-      { label: 'Reports', href: '/erp/reports' },
-      { label: 'Settings', href: '/settings' },
       { label: 'Warehouses', href: '/erp/warehouses' },
     ],
   },
   {
-    title: 'Account',
+    title: 'Company',
     links: [
       { label: 'Sign In', href: '/auth' },
       { label: 'Get Started', href: '/auth' },
       { label: 'Setup Wizard', href: '/setup' },
+      { label: 'Settings', href: '/settings' },
     ],
   },
 ];
@@ -47,7 +48,12 @@ export default function Footer() {
             </Link>
             <p className="text-sm leading-relaxed text-muted-foreground">
               Open-source ERP for invoicing, inventory, purchasing, and financial reporting.
+              Self-hosted and customizable.
             </p>
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <span className="size-1.5 rounded-full bg-emerald-500" />
+              Open Source
+            </div>
           </div>
 
           {footerLinks.map((group) => (
@@ -72,7 +78,10 @@ export default function Footer() {
         <Separator className="my-8" />
 
         <div className="flex flex-col items-center justify-between gap-4 text-sm text-muted-foreground sm:flex-row">
-          <p>&copy; {new Date().getFullYear()} Transaction Manager.</p>
+          <p>&copy; {new Date().getFullYear()} Transaction Manager. All rights reserved.</p>
+          <div className="flex items-center gap-4">
+            <span>Built with Next.js & Prisma</span>
+          </div>
         </div>
       </div>
     </footer>

@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { ArrowRight, Sparkles } from 'lucide-react';
+import { ArrowRight, Sparkles, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 
@@ -43,10 +43,14 @@ export default function Hero() {
         className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8"
       >
         <div className="mx-auto max-w-3xl text-center">
-          <motion.div variants={itemVariants} className="mb-6 flex justify-center">
+          <motion.div variants={itemVariants} className="mb-6 flex flex-wrap items-center justify-center gap-2">
             <Badge variant="outline" className="gap-1.5 px-4 py-1.5 text-xs">
               <Sparkles className="size-3.5 text-info" />
-              Open-source ERP — Invoices, Inventory, Purchasing & Reports
+              Open-source ERP Platform
+            </Badge>
+            <Badge variant="secondary" className="gap-1.5 px-3 py-1.5 text-xs">
+              <Zap className="size-3.5 text-amber-500" />
+              v0.1.0
             </Badge>
           </motion.div>
 
@@ -54,18 +58,18 @@ export default function Hero() {
             variants={itemVariants}
             className="text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl lg:text-7xl"
           >
-            Manage Your
+            The Modern ERP for{' '}
             <span className="bg-linear-to-r from-primary to-info bg-clip-text text-transparent">
-              {' '}Transactions
+              Growing Businesses
             </span>
-            , Grow Your Business
           </motion.h1>
 
           <motion.p
             variants={itemVariants}
             className="mt-6 text-lg leading-relaxed text-muted-foreground sm:text-xl"
           >
-            A complete ERP platform for invoicing, inventory, purchasing, and financial reporting.
+            Invoicing, inventory, purchasing, and financial reporting — all in one platform.
+            <br className="hidden sm:block" />
             Built for teams that need precision, control, and scale.
           </motion.p>
 
@@ -75,7 +79,7 @@ export default function Hero() {
           >
             <Link href="/auth">
               <Button size="lg" className="gap-2 text-base">
-                Get Started
+                Get Started Free
                 <ArrowRight className="size-4" />
               </Button>
             </Link>
@@ -84,6 +88,24 @@ export default function Hero() {
                 Explore Features
               </Button>
             </Link>
+          </motion.div>
+
+          <motion.div
+            variants={itemVariants}
+            className="mt-6 flex items-center justify-center gap-6 text-sm text-muted-foreground"
+          >
+            <span className="flex items-center gap-1.5">
+              <span className="size-1.5 rounded-full bg-emerald-500" />
+              No credit card required
+            </span>
+            <span className="flex items-center gap-1.5">
+              <span className="size-1.5 rounded-full bg-emerald-500" />
+              Open source
+            </span>
+            <span className="flex items-center gap-1.5">
+              <span className="size-1.5 rounded-full bg-emerald-500" />
+              Self-hostable
+            </span>
           </motion.div>
         </div>
 

@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, Rocket } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 export default function CTA() {
@@ -20,23 +20,27 @@ export default function CTA() {
         >
           <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_top_right,_var(--color-info)_0%,_transparent_60%)] opacity-10" />
 
-          <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
-            Ready to streamline your operations?
+          <div className="mx-auto flex size-12 items-center justify-center rounded-xl bg-primary/10 text-primary">
+            <Rocket className="size-6" />
+          </div>
+
+          <h2 className="mt-6 text-3xl font-bold tracking-tight sm:text-4xl">
+            Start managing your business today
           </h2>
           <p className="mx-auto mt-4 max-w-xl text-muted-foreground">
-            Get started with Transaction Manager — invoices, inventory, purchasing, and
-            financial reports in one platform.
+            Set up in minutes. No credit card required. Self-host or use our managed platform —
+            the choice is yours.
           </p>
           <div className="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row">
             <Link href="/auth">
               <Button size="lg" className="gap-2 text-base">
-                Get Started
+                Get Started Free
                 <ArrowRight className="size-4" />
               </Button>
             </Link>
             <Link href="/app">
               <Button variant="outline" size="lg" className="text-base">
-                View Dashboard
+                View Live Demo
               </Button>
             </Link>
           </div>

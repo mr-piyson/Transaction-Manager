@@ -199,11 +199,11 @@ export default function Features() {
           className="mx-auto max-w-2xl text-center"
         >
           <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
-            Everything you need to run your business
+            Every module, one platform
           </h2>
           <p className="mt-4 text-muted-foreground">
-            A complete ERP suite designed for growing companies that need powerful financial
-            tools without the complexity.
+            A complete ERP suite designed for growing companies. Powerful financial tools
+            without the complexity — each module works together seamlessly.
           </p>
         </motion.div>
 

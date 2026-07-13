@@ -9,8 +9,8 @@ import Logo from '@/components/Logo';
 
 const navLinks = [
   { label: 'Features', href: '#features' },
+  { label: 'Why Us', href: '#why-us' },
   { label: 'Dashboard', href: '/app' },
-  { label: 'Sign In', href: '/auth' },
 ];
 
 export default function Header() {
@@ -37,9 +37,9 @@ export default function Header() {
         </nav>
 
         <div className="hidden items-center gap-3 md:flex">
-          <Link href="/app">
-            <Button size="sm" variant="outline">
-              Dashboard
+          <Link href="/auth">
+            <Button size="sm" variant="ghost">
+              Sign In
             </Button>
           </Link>
           <Link href="/auth">
@@ -76,9 +76,9 @@ export default function Header() {
                 </Link>
               ))}
               <div className="flex gap-3 pt-2">
-                <Link href="/app" className="flex-1">
-                  <Button variant="outline" className="w-full" size="sm">
-                    Dashboard
+                <Link href="/auth" className="flex-1">
+                  <Button variant="ghost" className="w-full" size="sm">
+                    Sign In
                   </Button>
                 </Link>
                 <Link href="/auth" className="flex-1">
