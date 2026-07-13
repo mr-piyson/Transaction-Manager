@@ -1,19 +1,13 @@
 'use client';
 
 import {
-  AlertCircle,
-  AlertTriangle,
   ArrowLeft,
   Banknote,
-  Building2,
-  Calendar,
-  Check,
   CheckCircle,
-  CreditCard,
   Edit,
   FileText,
   HandCoins,
-  Layers,
+  History,
   Loader2,
   MoreHorizontal,
   Printer,
@@ -22,8 +16,6 @@ import {
   Send,
   ThumbsDown,
   Trash,
-  User,
-  Wallet,
   XCircle,
   type LucideIcon,
 } from 'lucide-react';
@@ -66,6 +58,8 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { Spinner } from '@/components/ui/spinner';
 import { Textarea } from '@/components/ui/textarea';
 import {
@@ -77,8 +71,10 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { useInvoiceForm } from '@/components/dialogs/invoiceForm';
+import { InvoiceHistoryPanel } from '@/components/invoices/invoice-history-panel';
 import { trpc } from '@/lib/trpc/client';
 import { useDateFormat } from '@/hooks/use-date-format';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 const STATUS_COLORS: Record<string, string> = {
   DRAFT: 'bg-muted text-muted-foreground',
@@ -92,134 +88,6 @@ const STATUS_COLORS: Record<string, string> = {
   DISPUTED: 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200',
   DELETED: 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200',
 };
-
-function StatusStepper({
-  status,
-  type,
-  paymentStatus,
-}: {
-  status: string;
-  type: string;
-  paymentStatus: string;
-}) {
-  const t = useTranslations();
-
-  const basePath =
-    type === 'INVOICE'
-      ? ['DRAFT', 'PENDING_APPROVAL', 'APPROVED', 'SENT', 'PAID']
-      : ['DRAFT', 'SENT'];
-
-  const steps = [...basePath];
-  const isPartiallyPaid = status === 'SENT' && paymentStatus === 'PARTIAL';
-
-  if (isPartiallyPaid) {
-    const sentIdx = steps.indexOf('SENT');
-    if (sentIdx !== -1) {
-      steps.splice(sentIdx + 1, 1, 'PARTIAL');
-    }
-  }
-
-  const getActiveStepIndex = () => {
-    if (isPartiallyPaid) return steps.indexOf('PARTIAL');
-    if (status === 'OVERDUE' || status === 'DISPUTED') return steps.indexOf('SENT');
-    if (status === 'PAID') return steps.indexOf('PAID');
-    return steps.indexOf(status);
-  };
-
-  const activeIdx = getActiveStepIndex();
-  const isBranch = !steps.includes(status) && !isPartiallyPaid;
-
-  const formatLabel = (step: string) => {
-    if (step === 'PENDING_APPROVAL') return t('invoices.approval');
-    if (step === 'DRAFT') return t('invoices.draft');
-    if (step === 'APPROVED') return t('invoices.approved');
-    if (step === 'SENT') return t('invoices.sent');
-    if (step === 'PAID') return t('invoices.paid');
-    if (step === 'PARTIAL') return t('invoices.partial');
-    return step.charAt(0) + step.slice(1).toLowerCase().replace(/_/g, ' ');
-  };
-
-  return (
-    <Card className="w-full">
-      <CardContent className="pt-6 pb-6">
-        <div className="flex items-center justify-between w-full relative">
-          {steps.map((step, idx) => {
-            const isCompleted = activeIdx !== -1 && idx < activeIdx;
-            const isCurrent = activeIdx === idx;
-
-            return (
-              <React.Fragment key={step}>
-                <div className="flex flex-col items-center gap-2 relative z-10">
-                  <div
-                    className={`rounded-full border-2 size-8 flex items-center justify-center shrink-0 transition-colors ${
-                      isCompleted || isCurrent
-                        ? 'border-primary bg-primary text-primary-foreground'
-                        : 'border-muted bg-background text-muted-foreground'
-                    } ${isCurrent ? 'ring-4 ring-primary/20 ring-offset-background' : ''}`}
-                  >
-                    {isCompleted ? (
-                      <Check className="size-3.5 stroke-3" />
-                    ) : isCurrent ? (
-                      <div className="size-2.5 rounded-full bg-current animate-pulse" />
-                    ) : (
-                      <div className="size-2 rounded-full bg-muted-foreground/30" />
-                    )}
-                  </div>
-
-                  <span
-                    className={`absolute top-9 text-[11px] whitespace-nowrap text-center ${
-                      isCompleted || isCurrent
-                        ? 'text-foreground font-medium'
-                        : 'text-muted-foreground'
-                    }`}
-                  >
-                    {formatLabel(step)}
-                  </span>
-                </div>
-
-                {idx < steps.length - 1 && (
-                  <div
-                    className={`flex-1 h-0.5 mx-2 rounded-full transition-colors ${
-                      isCompleted || (isCurrent && activeIdx > idx) ? 'bg-primary' : 'bg-muted'
-                    }`}
-                  />
-                )}
-              </React.Fragment>
-            );
-          })}
-        </div>
-
-        {isBranch && status !== 'PAID' && (
-          <div className="mt-10 flex items-center justify-center animate-in fade-in slide-in-from-top-2">
-            <Badge
-              variant={
-                status === 'OVERDUE' || status === 'CANCELLED' || status === 'DELETED'
-                  ? 'destructive'
-                  : 'secondary'
-              }
-              className={`px-3 py-1 text-xs gap-1.5 ${
-                status === 'DISPUTED'
-                  ? 'bg-orange-500/15 text-orange-600 hover:bg-orange-500/25 border-0'
-                  : ''
-              }`}
-            >
-              {status === 'OVERDUE' && <AlertCircle className="size-3.5" />}
-              {status === 'DISPUTED' && <AlertTriangle className="size-3.5" />}
-              {(status === 'CANCELLED' || status === 'DELETED') && <XCircle className="size-3.5" />}
-              {status === 'DELETED'
-                ? t('common.deleted')
-                : status === 'OVERDUE'
-                  ? t('invoices.overdue')
-                  : status === 'CANCELLED'
-                    ? t('invoices.cancelled')
-                    : status.replace(/_/g, ' ')}
-            </Badge>
-          </div>
-        )}
-      </CardContent>
-    </Card>
-  );
-}
 
 export default function DocumentDetailPage() {
   const t = useTranslations();
@@ -279,6 +147,8 @@ export default function DocumentDetailPage() {
   const [paymentDate, setPaymentDate] = React.useState(() => new Date().toISOString().slice(0, 10));
   const [paymentReference, setPaymentReference] = React.useState('');
   const [paymentNotes, setPaymentNotes] = React.useState('');
+  const [historyOpen, setHistoryOpen] = React.useState(false);
+  const isMobile = useIsMobile();
 
   function invalidate() {
     utils.invoices.byId.invalidate({ id: params.id });
@@ -723,6 +593,14 @@ export default function DocumentDetailPage() {
           <Button variant="outline" size="sm" onClick={() => router.push(`/erp/documents/${type}`)}>
             <ArrowLeft className="size-4 mr-1" /> {t('common.back')}
           </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            className="md:hidden"
+            onClick={() => setHistoryOpen(true)}
+          >
+            <History className="size-4 mr-1" /> {t('invoices.history')}
+          </Button>
           {showActions && (
             <>
               <Button
@@ -758,14 +636,10 @@ export default function DocumentDetailPage() {
 
       <Separator />
 
-      {/* Status pipeline */}
-      <StatusStepper
-        status={invoice.status}
-        type={invoice.type}
-        paymentStatus={invoice.paymentStatus}
-      />
-
-      {/* Info Grid */}
+      {/* Main content + History panel */}
+      <div className="flex gap-6">
+        <div className="flex-1 min-w-0 space-y-6">
+          {/* Info Grid */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <div>
           <p className="text-sm text-muted-foreground">{t('invoices.issueDate')}</p>
@@ -809,23 +683,6 @@ export default function DocumentDetailPage() {
           </div>
         )}
       </div>
-
-      {/* Parent invoice link (for credit notes) */}
-      {invoice.parentInvoice && (
-        <Card>
-          <CardContent className="py-3">
-            <p className="text-sm text-muted-foreground">
-              {t('invoices.creditNoteFor')}{' '}
-              <button
-                className="font-medium text-primary hover:underline"
-                onClick={() => router.push(`/erp/documents/${type}/${invoice.parentInvoice!.id}`)}
-              >
-                {invoice.parentInvoice.serial}
-              </button>
-            </p>
-          </CardContent>
-        </Card>
-      )}
 
       <Separator />
 
@@ -974,8 +831,6 @@ export default function DocumentDetailPage() {
                   <TableHead>{t('invoices.date')}</TableHead>
                   <TableHead>{t('invoices.paymentMethod')}</TableHead>
                   <TableHead className="text-right">{t('invoices.amount')}</TableHead>
-                  <TableHead>{t('invoices.paymentReference')}</TableHead>
-                  <TableHead>{t('invoices.paymentNotes')}</TableHead>
                   <TableHead className="w-16"></TableHead>
                 </TableRow>
               </TableHeader>
@@ -986,12 +841,6 @@ export default function DocumentDetailPage() {
                     <TableCell>{payment.method}</TableCell>
                     <TableCell className="text-right font-medium">
                       {Number(payment.amount).toFixed(3)}
-                    </TableCell>
-                    <TableCell className="text-sm text-muted-foreground">
-                      {payment.reference ?? '—'}
-                    </TableCell>
-                    <TableCell className="text-sm text-muted-foreground max-w-50 truncate">
-                      {payment.notes ?? '—'}
                     </TableCell>
                     <TableCell>
                       <Button
@@ -1007,45 +856,6 @@ export default function DocumentDetailPage() {
                       >
                         <Trash className="size-3.5" />
                       </Button>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Credit notes */}
-      {invoice.creditNotes && invoice.creditNotes.length > 0 && (
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-semibold">{t('invoices.creditNotes')}</CardTitle>
-          </CardHeader>
-          <CardContent className="p-0">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>{t('invoices.invoiceNumber')}</TableHead>
-                  <TableHead>{t('common.status')}</TableHead>
-                  <TableHead className="text-right">{t('invoices.total')}</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {invoice.creditNotes.map((cn: any) => (
-                  <TableRow
-                    key={cn.id}
-                    className="cursor-pointer hover:bg-muted/50"
-                    onClick={() => router.push(`/erp/documents/${type}/${cn.id}`)}
-                  >
-                    <TableCell className="font-medium">{cn.serial}</TableCell>
-                    <TableCell>
-                      <Badge variant="outline" className={STATUS_COLORS[cn.status] ?? ''}>
-                        {cn.status}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-right font-medium">
-                      {Number(cn.total).toFixed(3)}
                     </TableCell>
                   </TableRow>
                 ))}
@@ -1083,31 +893,41 @@ export default function DocumentDetailPage() {
         </Card>
       )}
 
-      {/* Meta info */}
-      <div className="text-xs text-muted-foreground flex flex-wrap gap-x-4 gap-y-1 pb-2">
-        <span>
-          {t('invoices.createdBy', {
-            type: getTypeLabel(invoice.type),
-            name: invoice.createdBy?.name ?? '—',
-            date: invoice.createdAt ? formatDateTime(invoice.createdAt) : '—',
-          })}
-        </span>
-        <span>{t('invoices.version', { version: invoice.version })}</span>
-        {(invoice as any).sentAt && (
-          <span>
-            {t('invoices.sentOn', {
-              date: formatDateTime((invoice as any).sentAt),
-            })}
-          </span>
-        )}
-        {(invoice as any).cancelledAt && (
-          <span>
-            {t('invoices.cancelledOn', {
-              date: formatDateTime((invoice as any).cancelledAt),
-            })}
-          </span>
-        )}
+      </div>{/* end flex-1 */}
+
+      {/* History side panel — desktop */}
+      <div className="w-80 shrink-0 hidden md:block">
+        <InvoiceHistoryPanel
+          invoice={invoice}
+          formatDate={formatDate}
+          formatDateTime={formatDateTime}
+          onNavigate={(path) => router.push(path)}
+        />
       </div>
+      </div>{/* end flex */}
+
+      {/* History side panel — mobile */}
+      <Sheet open={historyOpen} onOpenChange={setHistoryOpen}>
+        <SheetContent side="right" className="w-3/4 sm:max-w-sm">
+          <SheetHeader>
+            <SheetTitle className="flex items-center gap-2">
+              <History className="size-4" />
+              {t('invoices.history')}
+            </SheetTitle>
+          </SheetHeader>
+          <ScrollArea className="h-[calc(100dvh-8rem)]">
+            <InvoiceHistoryPanel
+              invoice={invoice}
+              formatDate={formatDate}
+              formatDateTime={formatDateTime}
+              onNavigate={(path) => {
+                setHistoryOpen(false);
+                router.push(path);
+              }}
+            />
+          </ScrollArea>
+        </SheetContent>
+      </Sheet>
 
       {/* Send confirmation dialog */}
       <Dialog open={sendOpen} onOpenChange={(v) => !sendMutation.isPending && setSendOpen(v)}>

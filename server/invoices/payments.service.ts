@@ -108,6 +108,8 @@ export async function syncInvoicePaymentTotals(
   const paymentStatus = resolvePaymentStatus(total, amountPaid, invoice.dueDate, creditApplied);
   const invoiceStatus = resolveInvoiceStatus(invoice.status, amountPaid, total, invoice.dueDate, creditApplied);
 
+  const oldStatus = invoice.status;
+
   await tx.invoice.update({
     where: { id: invoiceId },
     data: {
@@ -118,6 +120,21 @@ export async function syncInvoicePaymentTotals(
       updatedById: userId,
     },
   });
+
+  if (oldStatus !== invoiceStatus) {
+    await writeAuditLog(
+      {
+        entityType: 'Invoice',
+        entityId: invoiceId,
+        action: 'STATUS_CHANGE',
+        diff: { status: { before: oldStatus, after: invoiceStatus } },
+        organizationId,
+        userId,
+        ipAddress,
+      },
+      tx,
+    );
+  }
 }
 
 // ---------------------------------------------------------------------------

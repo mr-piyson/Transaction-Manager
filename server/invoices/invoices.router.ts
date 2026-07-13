@@ -177,6 +177,13 @@ export const invoicesRouter = router({
 
     if (!invoice) throw new NotFoundError('Invoice', input.id);
 
+    // Fetch audit logs separately (polymorphic — not a Prisma relation)
+    const auditLogs = await ctx.db.auditLog.findMany({
+      where: { entityType: 'Invoice', entityId: input.id },
+      orderBy: { createdAt: 'asc' },
+      include: { user: { select: { id: true, name: true } } },
+    });
+
     assertCan(
       ctx.ability,
       'invoice:read',
@@ -184,7 +191,7 @@ export const invoicesRouter = router({
       invoice as unknown as Record<string, unknown>,
     );
 
-    return invoice;
+    return { ...invoice, auditLogs };
   }),
 
   // ── CREATE ────────────────────────────────────────────────────────────────
@@ -717,6 +724,8 @@ export const invoicesRouter = router({
               totalCreditApplied,
             );
 
+            const parentOldStatus = parentInvoice.status;
+
             await tx.invoice.update({
               where: { id: parentInvoice.id },
               data: {
@@ -727,6 +736,21 @@ export const invoicesRouter = router({
                 updatedById: ctx.user.id,
               },
             });
+
+            if (parentOldStatus !== invoiceStatus) {
+              await writeAuditLog(
+                {
+                  entityType: 'Invoice',
+                  entityId: parentInvoice.id,
+                  action: 'STATUS_CHANGE',
+                  diff: { status: { before: parentOldStatus, after: invoiceStatus } },
+                  organizationId: orgId,
+                  userId: ctx.user.id,
+                  ipAddress: ctx.ipAddress,
+                },
+                tx,
+              );
+            }
           }
         }
 
