@@ -65,9 +65,9 @@ export const NAV_ITEMS = [
   },
   { id: 'categories', labelKey: 'items.category', href: '/settings/categories', icon: Layers },
   {
-    id: 'item-master',
-    labelKey: 'settings.itemMaster.title',
-    href: '/settings/item-master',
+    id: 'import-items',
+    labelKey: 'common.import',
+    href: '/erp/items/import',
     icon: Package,
   },
   {

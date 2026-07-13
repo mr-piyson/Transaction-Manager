@@ -22,6 +22,13 @@ import { AgGridReact } from 'ag-grid-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuSeparator,
+  ContextMenuTrigger,
+} from '@/components/ui/context-menu';
+import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
@@ -122,26 +129,63 @@ export default function DocumentsLayout({ children }: { children?: React.ReactNo
         suppressMenu: true,
         cellRenderer: (params: { data: any }) => {
           const item = params.data;
+          const isDeletable = ['DRAFT', 'CANCELLED', 'DELETED'].includes(item.status);
           return (
-            <Link
-              href={`/erp/documents/${type}/${item.id}`}
-              scroll={false}
-              draggable={false}
-              className="block w-full h-full"
-            >
-              <InvoiceListItem
-                data={item}
-                className={cn(
-                  'hover:bg-muted/40 border border-transparent rounded-lg',
-                  activeItem === item.id ? 'border-primary bg-primary/10' : '',
-                )}
-              />
-            </Link>
+            <ContextMenu>
+              <ContextMenuTrigger asChild>
+                <Link
+                  href={`/erp/documents/${type}/${item.id}`}
+                  scroll={false}
+                  draggable={false}
+                  className="block w-full h-full"
+                >
+                  <InvoiceListItem
+                    data={item}
+                    className={cn(
+                      'hover:bg-muted/40 border border-transparent rounded-lg',
+                      activeItem === item.id ? 'border-primary bg-primary/10' : '',
+                    )}
+                  />
+                </Link>
+              </ContextMenuTrigger>
+              <ContextMenuContent>
+                <ContextMenuItem
+                  onClick={() => router.push(`/erp/documents/${type}/${item.id}`)}
+                >
+                  <Eye className="size-4 mr-2" />
+                  {t('common.viewDetails')}
+                </ContextMenuItem>
+                <ContextMenuItem
+                  onClick={() => router.push(`/erp/documents/${type}/${item.id}`)}
+                >
+                  <Edit className="size-4 mr-2" />
+                  {t('common.edit')}
+                </ContextMenuItem>
+                <ContextMenuSeparator />
+                <ContextMenuItem
+                  onClick={() =>
+                    alert.delete({
+                      title: t('common.confirmDeleteTitle'),
+                      description: 'This action cannot be undone.',
+                      confirmText: t('common.delete'),
+                      onConfirm: async () => {
+                        await deleteMutation.mutateAsync({ id: item.id });
+                      },
+                    })
+                  }
+                  disabled={!isDeletable}
+                  variant="destructive"
+                >
+                  <Trash2 className="size-4 mr-2" />
+                  {t('common.delete')}
+                </ContextMenuItem>
+              </ContextMenuContent>
+            </ContextMenu>
           );
         },
       },
     ],
-    [activeItem, type],
+    [activeItem, type, router, t, deleteMutation],
   );
 
   const tableColumnDefs = useMemo<ColDef[]>(

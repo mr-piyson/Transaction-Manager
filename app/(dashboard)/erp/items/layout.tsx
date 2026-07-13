@@ -26,6 +26,13 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { HoverCard, HoverCardTrigger, HoverCardContent } from '@/components/ui/hover-card';
 import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuSeparator,
+  ContextMenuTrigger,
+} from '@/components/ui/context-menu';
+import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
@@ -94,26 +101,62 @@ export default function ItemsLayout({ children }: { children?: React.ReactNode }
         suppressMenu: true,
         cellRenderer: (params: { data: any }) => {
           const item = params.data;
+          const isDeletable = ['PRODUCT', 'SERVICE'].includes(item.type);
           return (
-            <Link
-              href={`/erp/${title.toLowerCase()}/${item.id}`}
-              scroll={false}
-              draggable={false}
-              className="block w-full h-full"
-            >
-              <ItemListItem
-                data={item}
-                className={cn(
-                  'hover:bg-muted/40 border border-transparent rounded-lg',
-                  activeItem === item.id ? 'border-primary bg-primary/10' : '',
-                )}
-              />
-            </Link>
+            <ContextMenu>
+              <ContextMenuTrigger asChild>
+                <Link
+                  href={`/erp/${title.toLowerCase()}/${item.id}`}
+                  scroll={false}
+                  draggable={false}
+                  className="block w-full h-full"
+                >
+                  <ItemListItem
+                    data={item}
+                    className={cn(
+                      'hover:bg-muted/40 border border-transparent rounded-lg',
+                      activeItem === item.id ? 'border-primary bg-primary/10' : '',
+                    )}
+                  />
+                </Link>
+              </ContextMenuTrigger>
+              <ContextMenuContent>
+                <ContextMenuItem
+                  onClick={() => router.push(`/erp/${title.toLowerCase()}/${item.id}`)}
+                >
+                  <Eye className="size-4 mr-2" />
+                  {t('common.viewDetails')}
+                </ContextMenuItem>
+                <ContextMenuItem
+                  onClick={() => router.push(`/erp/${title.toLowerCase()}/${item.id}`)}
+                >
+                  <Edit className="size-4 mr-2" />
+                  {t('common.edit')}
+                </ContextMenuItem>
+                <ContextMenuSeparator />
+                <ContextMenuItem
+                  onClick={() =>
+                    alert.delete({
+                      title: t('common.confirmDeleteTitle'),
+                      description: 'This action cannot be undone.',
+                      confirmText: t('common.delete'),
+                      onConfirm: async () => {
+                        await deleteMutation.mutateAsync({ id: item.id });
+                      },
+                    })
+                  }
+                  variant="destructive"
+                >
+                  <Trash2 className="size-4 mr-2" />
+                  {t('common.delete')}
+                </ContextMenuItem>
+              </ContextMenuContent>
+            </ContextMenu>
           );
         },
       },
     ],
-    [activeItem],
+    [activeItem, router, t, deleteMutation, title],
   );
 
   const tableColumnDefs = useMemo<ColDef[]>(
@@ -337,7 +380,7 @@ export default function ItemsLayout({ children }: { children?: React.ReactNode }
                     <Table2 className="size-3.5" />
                   </Button>
                 </div>
-                <Link href="/settings/item-master">
+                <Link href="/erp/items/import">
                   <Button variant="outline" size="sm">
                     <Download className="size-3.5" />
                     <span className="hidden md:block">Import</span>
