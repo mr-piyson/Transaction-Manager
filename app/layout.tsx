@@ -7,6 +7,7 @@ import { Toaster } from '@/components/sonner';
 import { ThemeProvider } from '@/components/Theme-Provider';
 import { DateFormatProvider } from '@/hooks/use-date-format';
 import TrpcProvider from '@/lib/trpc/provider';
+import { NuqsAdapter } from 'nuqs/adapters/next/app';
 import { cookies } from 'next/headers';
 
 const geistSans = Geist({
@@ -37,23 +38,25 @@ export default async function RootLayout(props: any) {
   return (
     <html lang={locale} dir={dir} suppressHydrationWarning>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-        <I18nProvider>
-          <ThemeProvider
-            attribute={'class'}
-            defaultTheme={'system'}
-            enableSystem={true}
-            storageKey={'theme'}
-          >
-            <DirectionProvider direction={dir} dir={dir}>
-              <TrpcProvider>
-                <DateFormatProvider>
-                  {props.children}
-                </DateFormatProvider>
-              </TrpcProvider>
-            </DirectionProvider>
-          </ThemeProvider>
-        </I18nProvider>
-        <Toaster position="top-center" />
+        <NuqsAdapter>
+          <I18nProvider>
+            <ThemeProvider
+              attribute={'class'}
+              defaultTheme={'system'}
+              enableSystem={true}
+              storageKey={'theme'}
+            >
+              <DirectionProvider direction={dir} dir={dir}>
+                <TrpcProvider>
+                  <DateFormatProvider>
+                    {props.children}
+                  </DateFormatProvider>
+                </TrpcProvider>
+              </DirectionProvider>
+            </ThemeProvider>
+          </I18nProvider>
+          <Toaster position="top-center" />
+        </NuqsAdapter>
       </body>
     </html>
   );

@@ -218,7 +218,13 @@
       "online": "Online",
       "credit": "Credit",
       "other": "Other"
-    }
+    },
+    "filterDescription": "Apply filters to narrow down results",
+    "clearFilters": "Clear all",
+    "done": "Done",
+    "listView": "List view",
+    "tableView": "Table view",
+    "customer": "Customer"
   },
   "clipboard": {
     "automationFailed": "Automatic copy is not available on this connection.",

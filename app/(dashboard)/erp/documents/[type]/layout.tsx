@@ -6,19 +6,18 @@ import {
   Edit,
   Eye,
   FileText,
-  List,
   MoreHorizontal,
   Plus,
   Receipt,
-  Table2,
   Trash2,
 } from 'lucide-react';
 import Link from 'next/link';
 import { useParams, usePathname, useRouter } from 'next/navigation';
 import * as React from 'react';
-import { useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef } from 'react';
+import { useQueryState, parseAsString } from 'nuqs';
 import { toast } from 'sonner';
-import { AllCommunityModule, ModuleRegistry, type ColDef, type GridApi } from 'ag-grid-community';
+import { AllCommunityModule, ModuleRegistry, type ColDef, type GridApi, type FilterModel } from 'ag-grid-community';
 import { AgGridReact } from 'ag-grid-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -29,21 +28,14 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { alert } from '@/components/Alert-dialog';
 import { useTableTheme } from '@/hooks/use-table-theme';
 import { trpc } from '@/lib/trpc/client';
 import { cn } from '@/lib/utils';
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Header } from '@/components/layout/App-Header';
 import { InvoiceListItem } from '@/components/invoices/invoice-list-item';
 import { useInvoiceForm } from '@/components/dialogs';
+import { DocumentFilterBar } from '@/components/erp/document-filter-bar';
 
 ModuleRegistry.registerModules([AllCommunityModule]);
 
@@ -77,27 +69,11 @@ export default function DocumentsLayout({ children }: { children?: React.ReactNo
   const { openCreate } = useInvoiceForm();
   const { formatDate } = useDateFormat();
 
-  const [viewMode, setViewMode] = useState<'list' | 'table'>('list');
-  const [statusFilter, setStatusFilter] = useState('');
-  const [paymentStatusFilter, setPaymentStatusFilter] = useState('all');
+  const [statusFilter] = useQueryState('status', parseAsString.withDefault(''));
+  const [paymentStatusFilter] = useQueryState('paymentStatus', parseAsString.withDefault('all'));
+  const [viewMode] = useQueryState('view', parseAsString.withDefault('list'));
 
   const showPaymentFilter = type === 'invoices';
-
-  const STATUS_FILTERS = [
-    { value: '', label: t('common.all') },
-    { value: 'DRAFT', label: t('invoices.draft') },
-    { value: 'SENT', label: t('invoices.sent') },
-    { value: 'APPROVED', label: t('invoices.approved') },
-    { value: 'CANCELLED', label: t('invoices.cancelled') },
-  ];
-
-  const PAYMENT_STATUS_FILTERS = [
-    { value: 'all', label: t('common.all') },
-    { value: 'PENDING', label: t('common.pending') },
-    { value: 'PARTIAL', label: t('common.partial') },
-    { value: 'PAID', label: t('common.paid') },
-    { value: 'OVERDUE', label: t('common.overdue') },
-  ];
 
   const STATUS_LABELS: Record<string, string> = {
     DRAFT: t('invoices.draft'),
@@ -293,6 +269,14 @@ export default function DocumentsLayout({ children }: { children?: React.ReactNo
   const Icon = config.icon;
   const headerTitle = type === 'invoices' ? t('layout.invoices') : t('layout.quotations');
 
+  // Sync nuqs status filter to ag-grid filter model for table view
+  const onFilterChanged = useCallback(() => {
+    const api = gridApiRef.current;
+    if (!api || viewMode !== 'table') return;
+    // When user changes ag-grid filters, we could sync back to nuqs
+    // For now, the server-side filter from nuqs takes precedence
+  }, [viewMode]);
+
   if (isPrintRoute) return <>{children}</>;
 
   return (
@@ -301,71 +285,11 @@ export default function DocumentsLayout({ children }: { children?: React.ReactNo
       <div className="flex-1 min-h-0 w-full">
         {isListRoute ? (
           <div className="h-full w-full flex flex-col">
-            <div className="w-full flex flex-col sm:flex-row sm:justify-between gap-2 border-b px-4 py-2 shrink-0">
-              <div className="flex gap-2 items-center flex-wrap">
-                <Button
-                  size={'sm'}
-                  onClick={() => openCreate({ defaults: { type: config.trpcType } })}
-                >
-                  <Plus className="size-3.5" />
-                  <span className="hidden md:block">{t('invoices.newInvoice')}</span>
-                </Button>
-                <div className="overflow-x-auto">
-                  <Tabs value={statusFilter} onValueChange={setStatusFilter}>
-                    <TabsList className="h-auto justify-start">
-                      {STATUS_FILTERS.map((f) => (
-                        <TabsTrigger
-                          key={f.value}
-                          value={f.value}
-                          className="text-xs px-3 py-1"
-                        >
-                          {f.label}
-                        </TabsTrigger>
-                      ))}
-                    </TabsList>
-                  </Tabs>
-                </div>
-              </div>
-              <div className="flex gap-2 items-center">
-                {showPaymentFilter && (
-                  <Select
-                    value={paymentStatusFilter}
-                    onValueChange={setPaymentStatusFilter}
-                  >
-                    <SelectTrigger className="h-7 w-32 text-xs">
-                      <SelectValue placeholder={t('common.payment')} />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {PAYMENT_STATUS_FILTERS.map((f) => (
-                        <SelectItem key={f.value} value={f.value} className="text-xs">
-                          {f.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                )}
-                <div className="flex items-center rounded-lg border p-0.5">
-                  <Button
-                    variant={viewMode === 'list' ? 'secondary' : 'ghost'}
-                    size="sm"
-                    className="h-7 px-2"
-                    onClick={() => setViewMode('list')}
-                    title="List view"
-                  >
-                    <List className="size-3.5" />
-                  </Button>
-                  <Button
-                    variant={viewMode === 'table' ? 'secondary' : 'ghost'}
-                    size="sm"
-                    className="h-7 px-2"
-                    onClick={() => setViewMode('table')}
-                    title="Table view"
-                  >
-                    <Table2 className="size-3.5" />
-                  </Button>
-                </div>
-              </div>
-            </div>
+            <DocumentFilterBar
+              type={type}
+              showPaymentFilter={showPaymentFilter}
+              onCreate={() => openCreate({ defaults: { type: config.trpcType } })}
+            />
             <AgGridReact
               ref={gridRef}
               rowData={documents}
@@ -376,6 +300,7 @@ export default function DocumentsLayout({ children }: { children?: React.ReactNo
               onGridReady={(params) => {
                 gridApiRef.current = params.api;
               }}
+              onFilterChanged={onFilterChanged}
               domLayout="normal"
               getRowId={(params) => params.data.id}
               suppressScrollOnNewData

@@ -170,7 +170,13 @@
     "order": "الطلب",
     "placeholders": {
       "amount": "0.000"
-    }
+    },
+    "filterDescription": "تطبيق المرشحات لتضييق النتائج",
+    "clearFilters": "مسح الكل",
+    "done": "تم",
+    "listView": "عرض القائمة",
+    "tableView": "عرض الجدول",
+    "customer": "العميل"
   },
   "clipboard": {
     "automationFailed": "النسخ التلقائي غير متاح على هذا الاتصال.",
