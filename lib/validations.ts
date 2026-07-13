@@ -161,12 +161,12 @@ import type { Prisma } from '@prisma/client';
 
 export const offsetPaginationSchema = z.object({
   page: z.number().int().min(1).default(1),
-  limit: z.number().int().min(1).max(200).default(25),
+  limit: z.number().int().min(1).max(500).default(25),
 });
 
 export const cursorPaginationSchema = z.object({
   cursor: z.string().optional(),
-  limit: z.number().int().min(1).max(200).default(25),
+  limit: z.number().int().min(1).max(500).default(25),
 });
 
 export type OffsetPagination = z.infer<typeof offsetPaginationSchema>;
