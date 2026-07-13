@@ -8,7 +8,7 @@ export default function ItemMasterPage() {
   const t = useTranslations();
 
   return (
-    <div className="flex flex-col h-full overflow-hidden">
+    <div className="flex flex-col h-full overflow-hidden p-5">
       <div className="flex items-center gap-3 mb-6">
         <Package className="size-6 text-primary" />
         <div>
