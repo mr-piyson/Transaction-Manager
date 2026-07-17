@@ -1029,7 +1029,17 @@
     "outstandingInvoices": "Outstanding Invoices",
     "daysOverdue": "Days Overdue",
     "selectAccount": "Select Account",
-    "selectAccountToView": "Select an account to view its general ledger."
+    "selectAccountToView": "Select an account to view its general ledger.",
+    "agingCurrent": "Current",
+    "aging1to30": "1–30 Days",
+    "aging31to60": "31–60 Days",
+    "aging61to90": "61–90 Days",
+    "aging90plus": "90+ Days",
+    "totalOutstanding": "Total Outstanding",
+    "totalPOs": "Total POs",
+    "totalInvoices": "Total Invoices",
+    "poCount": "{count} POs",
+    "invoiceCount": "{count} invoices"
   },
   "settings": {
     "title": "Settings",

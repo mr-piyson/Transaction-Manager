@@ -851,7 +851,17 @@
     "outstandingInvoices": "فواتير مستحقة",
     "daysOverdue": "أيام التأخير",
     "selectAccount": "اختر حساباً",
-    "selectAccountToView": "اختر حساباً لعرض دفتر الأستاذ العام."
+    "selectAccountToView": "اختر حساباً لعرض دفتر الأستاذ العام.",
+    "agingCurrent": " الحالي",
+    "aging1to30": "1–30 يوم",
+    "aging31to60": "31–60 يوم",
+    "aging61to90": "61–90 يوم",
+    "aging90plus": "+90 يوم",
+    "totalOutstanding": "إجمالي المستحقات",
+    "totalPOs": "إجمالي أوامر الشراء",
+    "totalInvoices": "إجمالي الفواتير",
+    "poCount": "{count} أوامر شراء",
+    "invoiceCount": "{count} فواتير"
   },
   "settings": {
     "title": "الإعدادات",

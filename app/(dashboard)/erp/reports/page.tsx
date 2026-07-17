@@ -7,11 +7,15 @@ import {
   ArrowUp,
   BarChart3,
   Box,
+  BookOpen,
+  Clock,
   DollarSign,
   FileText,
   IndianRupee,
+  Landmark,
   Package,
   Receipt,
+  Scale,
   ShoppingCart,
   TrendingUp,
   Truck,
@@ -20,6 +24,7 @@ import {
 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useTheme } from 'next-themes';
+import Link from 'next/link';
 import { Area, AreaChart, Bar, BarChart, Cell, Pie, PieChart, XAxis, YAxis } from 'recharts';
 import { useMemo, useRef, useState } from 'react';
 import { Header } from '@/components/layout/App-Header';
@@ -425,11 +430,17 @@ export default function ReportsPage() {
         </section>
 
         {/* ── Charts Section ──────────────────────────────────────────────── */}
-        <Tabs defaultValue="overview" className="space-y-6">
+        <Tabs defaultValue="reports" className="space-y-6">
           <TabsList
             variant="line"
             className="w-full justify-start border-b rounded-none bg-transparent h-auto pb-0 gap-0"
           >
+            <TabsTrigger
+              value="reports"
+              className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary pb-3 px-4"
+            >
+              {t('common.details')}
+            </TabsTrigger>
             <TabsTrigger
               value="overview"
               className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary pb-3 px-4"
@@ -442,13 +453,140 @@ export default function ReportsPage() {
             >
               {t('settings.financial')}
             </TabsTrigger>
-            <TabsTrigger
-              value="details"
-              className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary pb-3 px-4"
-            >
-              {t('common.details')}
-            </TabsTrigger>
           </TabsList>
+
+          {/* ═══════════════════════════════════════════════════════════════ */}
+          {/* REPORTS TAB                                                   */}
+          {/* ═══════════════════════════════════════════════════════════════ */}
+          <TabsContent value="reports" className="space-y-6 mt-0">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <Link href="/erp/reports/profit-and-loss">
+                <Card className="transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5 cursor-pointer group">
+                  <CardContent className="p-6">
+                    <div className="flex items-center gap-4">
+                      <div className="size-12 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-600 dark:text-emerald-500 group-hover:bg-emerald-500/20 transition-colors">
+                        <TrendingUp className="size-6" />
+                      </div>
+                      <div>
+                        <h3 className="font-semibold">{t('reports.profitAndLoss')}</h3>
+                        <p className="text-xs text-muted-foreground mt-0.5">
+                          {t('reports.revenueAccounts')} · {t('reports.expenseAccounts')}
+                        </p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </Link>
+
+              <Link href="/erp/reports/balance-sheet">
+                <Card className="transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5 cursor-pointer group">
+                  <CardContent className="p-6">
+                    <div className="flex items-center gap-4">
+                      <div className="size-12 rounded-xl bg-blue-500/10 flex items-center justify-center text-blue-600 dark:text-blue-500 group-hover:bg-blue-500/20 transition-colors">
+                        <Landmark className="size-6" />
+                      </div>
+                      <div>
+                        <h3 className="font-semibold">{t('reports.balanceSheet')}</h3>
+                        <p className="text-xs text-muted-foreground mt-0.5">
+                          {t('reports.accountingEquation')}
+                        </p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </Link>
+
+              <Link href="/erp/reports/trial-balance">
+                <Card className="transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5 cursor-pointer group">
+                  <CardContent className="p-6">
+                    <div className="flex items-center gap-4">
+                      <div className="size-12 rounded-xl bg-purple-500/10 flex items-center justify-center text-purple-600 dark:text-purple-500 group-hover:bg-purple-500/20 transition-colors">
+                        <Scale className="size-6" />
+                      </div>
+                      <div>
+                        <h3 className="font-semibold">{t('reports.trialBalance')}</h3>
+                        <p className="text-xs text-muted-foreground mt-0.5">
+                          {t('reports.trialBalanceDescription')}
+                        </p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </Link>
+
+              <Link href="/erp/reports/ap-aging">
+                <Card className="transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5 cursor-pointer group">
+                  <CardContent className="p-6">
+                    <div className="flex items-center gap-4">
+                      <div className="size-12 rounded-xl bg-amber-500/10 flex items-center justify-center text-amber-600 dark:text-amber-500 group-hover:bg-amber-500/20 transition-colors">
+                        <Clock className="size-6" />
+                      </div>
+                      <div>
+                        <h3 className="font-semibold">{t('reports.apAging')}</h3>
+                        <p className="text-xs text-muted-foreground mt-0.5">
+                          {t('reports.apAgingDescription')}
+                        </p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </Link>
+
+              <Link href="/erp/reports/ar-aging">
+                <Card className="transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5 cursor-pointer group">
+                  <CardContent className="p-6">
+                    <div className="flex items-center gap-4">
+                      <div className="size-12 rounded-xl bg-orange-500/10 flex items-center justify-center text-orange-600 dark:text-orange-500 group-hover:bg-orange-500/20 transition-colors">
+                        <Receipt className="size-6" />
+                      </div>
+                      <div>
+                        <h3 className="font-semibold">{t('reports.arAging')}</h3>
+                        <p className="text-xs text-muted-foreground mt-0.5">
+                          {t('reports.arAgingDescription')}
+                        </p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </Link>
+
+              <Link href="/erp/reports/general-ledger">
+                <Card className="transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5 cursor-pointer group">
+                  <CardContent className="p-6">
+                    <div className="flex items-center gap-4">
+                      <div className="size-12 rounded-xl bg-cyan-500/10 flex items-center justify-center text-cyan-600 dark:text-cyan-500 group-hover:bg-cyan-500/20 transition-colors">
+                        <BookOpen className="size-6" />
+                      </div>
+                      <div>
+                        <h3 className="font-semibold">{t('reports.generalLedger')}</h3>
+                        <p className="text-xs text-muted-foreground mt-0.5">
+                          {t('reports.selectAccountToView')}
+                        </p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </Link>
+
+              <Link href="/erp/reports/items">
+                <Card className="transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5 cursor-pointer group">
+                  <CardContent className="p-6">
+                    <div className="flex items-center gap-4">
+                      <div className="size-12 rounded-xl bg-indigo-500/10 flex items-center justify-center text-indigo-600 dark:text-indigo-500 group-hover:bg-indigo-500/20 transition-colors">
+                        <Package className="size-6" />
+                      </div>
+                      <div>
+                        <h3 className="font-semibold">{t('layout.itemReport') ?? 'Item Report'}</h3>
+                        <p className="text-xs text-muted-foreground mt-0.5">
+                          {t('layout.inventory')}
+                        </p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </Link>
+            </div>
+          </TabsContent>
 
           {/* ═══════════════════════════════════════════════════════════════ */}
           {/* OVERVIEW TAB                                                 */}
@@ -798,51 +936,6 @@ export default function ReportsPage() {
             </div>
           </TabsContent>
 
-          {/* ═══════════════════════════════════════════════════════════════ */}
-          {/* DETAILS TAB                                                 */}
-          {/* ═══════════════════════════════════════════════════════════════ */}
-          <TabsContent value="details" className="mt-0">
-            <Card>
-              <CardHeader className="pb-3 flex flex-row items-center justify-between">
-                <div>
-                  <CardTitle className="text-base flex items-center gap-2">
-                    <BarChart3 className="size-4 text-primary" />
-                    {t('settings.financial')}
-                  </CardTitle>
-                  <CardDescription>{t('common.details')}</CardDescription>
-                </div>
-                {gridApiRef.current && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="text-xs gap-1"
-                    onClick={() => gridApiRef.current?.exportDataAsCsv()}
-                  >
-                    {t('common.export')}
-                  </Button>
-                )}
-              </CardHeader>
-              <CardContent className="p-0">
-                <div className="h-[500px] w-full">
-                  <AgGridReact
-                    rowData={transactionData}
-                    columnDefs={columnDefs}
-                    defaultColDef={defaultColDef}
-                    theme={theme}
-                    animateRows
-                    onGridReady={(params) => {
-                      gridApiRef.current = params.api;
-                    }}
-                    domLayout="normal"
-                    getRowId={(params) => params.data.id}
-                    suppressScrollOnNewData
-                    enableCellTextSelection
-                    ensureDomOrder
-                  />
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
         </Tabs>
       </main>
     </div>
