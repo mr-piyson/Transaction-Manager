@@ -174,8 +174,16 @@ export function UnifiedItemDialog({
     }
   }, [open, initialMode]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Determine default tab
+  // Determine default tab and track active tab
   const defaultTab = mode === 'add-supplier' ? 'suppliers' : 'master';
+  const [activeTab, setActiveTab] = React.useState<string>(defaultTab);
+
+  // Reset active tab when dialog opens or mode changes
+  React.useEffect(() => {
+    if (open) {
+      setActiveTab(mode === 'add-supplier' ? 'suppliers' : 'master');
+    }
+  }, [open, mode]);
 
   const getTitle = () => {
     switch (mode) {
@@ -220,7 +228,7 @@ export function UnifiedItemDialog({
 
         {hasErrors && <ValidationAlert errors={errors} />}
 
-        <Tabs defaultValue={defaultTab}>
+        <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList>
             <TabsTrigger value="master" disabled={mode === 'add-supplier'}>
               Item Master

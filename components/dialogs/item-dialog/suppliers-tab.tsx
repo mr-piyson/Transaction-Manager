@@ -1,7 +1,8 @@
 'use client';
 
-import { Plus } from 'lucide-react';
+import { Plus, UserPlus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useSupplierForm } from '@/components/dialogs';
 import { SupplierCard } from './supplier-card';
 import type { UseItemFormReturn } from './use-item-form';
 
@@ -14,6 +15,7 @@ interface SuppliersTabProps {
 export function SuppliersTab({ form, suppliers, canManageSupplierItems }: SuppliersTabProps) {
   const { supplierDrafts, errors, addSupplierDraft, removeSupplierDraft, updateSupplierDraft } =
     form;
+  const { openCreate } = useSupplierForm();
 
   // Detect duplicate supplier IDs across drafts
   const supplierIdCounts = new Map<string, number>();
@@ -49,16 +51,28 @@ export function SuppliersTab({ form, suppliers, canManageSupplierItems }: Suppli
       ))}
 
       {canManageSupplierItems && (
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          className="w-full"
-          onClick={addSupplierDraft}
-        >
-          <Plus className="size-4 mr-1" />
-          Add supplier
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="flex-1"
+            onClick={addSupplierDraft}
+          >
+            <Plus className="size-4 mr-1" />
+            Add supplier
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="flex-1"
+            onClick={() => openCreate()}
+          >
+            <UserPlus className="size-4 mr-1" />
+            Create supplier
+          </Button>
+        </div>
       )}
     </div>
   );

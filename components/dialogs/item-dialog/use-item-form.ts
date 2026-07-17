@@ -167,39 +167,45 @@ export function useItemForm({
     },
   });
 
-  // Reset on open
+  // Reset on open — only when `open` transitions to true or initial props change
+  const prevOpenRef = React.useRef(open);
   React.useEffect(() => {
-    if (open) {
-      const m = getInitialMode();
-      setModeState(m);
-      if (initialItem?.id) {
-        setMasterState(getItemMasterDefaults(initialItem));
-        setExistingMaster(initialItem);
-      } else {
-        const unitList = Array.isArray(units) ? units : [];
-        const defaultUnit = unitList.find((u: any) => u.isDefault);
-        const defaults = getItemMasterDefaults();
-        if (defaultUnit) {
-          defaults.unitId = defaultUnit.id;
-          defaults.unit = defaultUnit.code;
-        }
-        setMasterState(defaults);
-        setExistingMaster(null);
+    const wasOpen = prevOpenRef.current;
+    prevOpenRef.current = open;
+
+    // Only reset when dialog first opens (false → true) or initial props change while open
+    if (!open) return;
+    if (wasOpen && !initialItem?.id && !initialSupplierId) return;
+
+    const m = getInitialMode();
+    setModeState(m);
+    if (initialItem?.id) {
+      setMasterState(getItemMasterDefaults(initialItem));
+      setExistingMaster(initialItem);
+    } else {
+      const unitList = Array.isArray(units) ? units : [];
+      const defaultUnit = unitList.find((u: any) => u.isDefault);
+      const defaults = getItemMasterDefaults();
+      if (defaultUnit) {
+        defaults.unitId = defaultUnit.id;
+        defaults.unit = defaultUnit.code;
       }
-      setSupplierDrafts(
-        initialSupplierId
-          ? [
-              {
-                ...getSupplierItemDraftDefaults(),
-                tempId: makeTempId(),
-                supplierId: initialSupplierId,
-              },
-            ]
-          : [getSupplierItemDraftDefaults()],
-      );
-      setErrors({ master: {}, suppliers: {} });
-      setPendingImageFileState(null);
+      setMasterState(defaults);
+      setExistingMaster(null);
     }
+    setSupplierDrafts(
+      initialSupplierId
+        ? [
+            {
+              ...getSupplierItemDraftDefaults(),
+              tempId: makeTempId(),
+              supplierId: initialSupplierId,
+            },
+          ]
+        : [getSupplierItemDraftDefaults()],
+    );
+    setErrors({ master: {}, suppliers: {} });
+    setPendingImageFileState(null);
   }, [open, getInitialMode, initialItem, initialSupplierId, units]);
 
   // ── Master field setters ────────────────────────────────────────────────
