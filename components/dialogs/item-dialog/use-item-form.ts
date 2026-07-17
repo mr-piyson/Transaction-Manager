@@ -14,7 +14,7 @@ import {
 // Types
 // ---------------------------------------------------------------------------
 
-export type Mode = 'create' | 'existing' | 'add-supplier';
+export type Mode = 'create' | 'existing' | 'add-supplier' | 'edit';
 
 export type MasterFieldErrors = Partial<Record<keyof ItemMasterValues, string>>;
 
@@ -31,6 +31,7 @@ export interface UseItemFormReturn {
   mode: Mode;
   master: ItemMasterValues;
   existingMaster: any | null;
+  editingItem: any | null;
   supplierDrafts: SupplierItemDraft[];
   errors: FormErrors;
   isSubmitting: boolean;
@@ -57,6 +58,8 @@ export interface UseItemFormOptions {
   initialSupplierId?: string;
   /** Pre-existing item for "add-supplier" mode */
   initialItem?: any;
+  /** Item ID for "edit" mode — triggers byId query */
+  editItemId?: string;
   onSuccess?: (itemId: string) => void;
 }
 
@@ -74,19 +77,22 @@ export function useItemForm({
   onOpenChange,
   initialSupplierId,
   initialItem,
+  editItemId,
   onSuccess,
 }: UseItemFormOptions): UseItemFormReturn {
   const utils = trpc.useUtils();
 
   // Determine initial mode
   const getInitialMode = React.useCallback((): Mode => {
+    if (editItemId) return 'edit';
     if (initialItem?.id) return 'add-supplier';
     return 'create';
-  }, [initialItem?.id]);
+  }, [editItemId, initialItem?.id]);
 
   const [mode, setModeState] = React.useState<Mode>(getInitialMode);
   const [master, setMasterState] = React.useState<ItemMasterValues>(getItemMasterDefaults);
   const [existingMaster, setExistingMaster] = React.useState<any | null>(null);
+  const [editingItem, setEditingItem] = React.useState<any | null>(null);
   const [supplierDrafts, setSupplierDrafts] = React.useState<SupplierItemDraft[]>(() => {
     if (initialSupplierId && initialItem) {
       return [
@@ -151,6 +157,12 @@ export function useItemForm({
   const { data: taxRates } = trpc.settings.taxRates.list.useQuery(undefined, { enabled: open });
   const generateSku = trpc.categories.generateSku.useMutation();
 
+  // Fetch item data for edit mode
+  const { data: editItemData, isLoading: isEditItemLoading } = trpc.items.byId.useQuery(
+    { id: editItemId! },
+    { enabled: open && mode === 'edit' && !!editItemId },
+  );
+
   // Mutations
   const createMutation = trpc.items.createWithSupplierItems.useMutation({
     onSuccess(data) {
@@ -167,6 +179,19 @@ export function useItemForm({
     },
   });
 
+  const updateMutation = trpc.items.update.useMutation({
+    onSuccess(data) {
+      utils.items.list.invalidate();
+      utils.items.byId.invalidate({ id: data.id });
+      toast.success('Item updated', { description: data.name });
+      onSuccess?.(data.id);
+      onOpenChange(false);
+    },
+    onError(err) {
+      toast.error('Failed to update item', { description: err.message });
+    },
+  });
+
   // Reset on open — only when `open` transitions to true or initial props change
   const prevOpenRef = React.useRef(open);
   React.useEffect(() => {
@@ -175,13 +200,39 @@ export function useItemForm({
 
     // Only reset when dialog first opens (false → true) or initial props change while open
     if (!open) return;
-    if (wasOpen && !initialItem?.id && !initialSupplierId) return;
+    if (wasOpen && !initialItem?.id && !initialSupplierId && !editItemId) return;
 
     const m = getInitialMode();
     setModeState(m);
-    if (initialItem?.id) {
+    if (editItemId && editItemData) {
+      // Edit mode: pre-fill from fetched item
+      const d = editItemData as any;
+      setMasterState(getItemMasterDefaults({
+        type: d.type,
+        sku: d.sku,
+        name: d.name,
+        barcode: d.barcode ?? undefined,
+        description: d.description ?? undefined,
+        image: d.image ?? undefined,
+        unit: d.unit,
+        unitId: d.unitId ?? undefined,
+        isSaleable: d.isSaleable,
+        isPurchasable: d.isPurchasable,
+        purchasePrice: Number(d.purchasePrice),
+        salesPrice: Number(d.salesPrice),
+        minStock: d.minStock,
+        reorderPoint: d.reorderPoint,
+        reorderQty: d.reorderQty,
+        categoryId: d.categoryId ?? undefined,
+        taxRateId: d.taxRateId ?? undefined,
+        isActive: d.isActive,
+      }));
+      setEditingItem(editItemData);
+      setExistingMaster(null);
+    } else if (initialItem?.id) {
       setMasterState(getItemMasterDefaults(initialItem));
       setExistingMaster(initialItem);
+      setEditingItem(null);
     } else {
       const unitList = Array.isArray(units) ? units : [];
       const defaultUnit = unitList.find((u: any) => u.isDefault);
@@ -192,6 +243,7 @@ export function useItemForm({
       }
       setMasterState(defaults);
       setExistingMaster(null);
+      setEditingItem(null);
     }
     setSupplierDrafts(
       initialSupplierId
@@ -206,7 +258,7 @@ export function useItemForm({
     );
     setErrors({ master: {}, suppliers: {} });
     setPendingImageFileState(null);
-  }, [open, getInitialMode, initialItem, initialSupplierId, units]);
+  }, [open, getInitialMode, initialItem, initialSupplierId, editItemId, editItemData, units]);
 
   // ── Master field setters ────────────────────────────────────────────────
 
@@ -308,13 +360,13 @@ export function useItemForm({
   const validate = React.useCallback((): boolean => {
     const masterErrors: MasterFieldErrors = {};
 
-    if (mode === 'create') {
+    if (mode === 'create' || mode === 'edit') {
       if (!master.name.trim()) masterErrors.name = 'Item name is required';
       if (!master.sku.trim()) masterErrors.sku = 'Internal SKU is required';
       if (!master.unit.trim()) masterErrors.unit = 'Unit of measure is required';
 
       const skuTaken = existingItems.some(
-        (i: any) => i.sku.toLowerCase().trim() === master.sku.toLowerCase().trim(),
+        (i: any) => i.sku.toLowerCase().trim() === master.sku.toLowerCase().trim() && i.id !== editingItem?.id,
       );
       if (skuTaken) masterErrors.sku = 'Internal SKU already exists';
     }
@@ -346,7 +398,7 @@ export function useItemForm({
     setErrors(newErrors);
 
     return Object.keys(masterErrors).length === 0 && !hasSupplierErrors;
-  }, [mode, master, supplierDrafts, existingItems]);
+  }, [mode, master, supplierDrafts, existingItems, editingItem]);
 
   // ── Submit ──────────────────────────────────────────────────────────────
 
@@ -398,6 +450,26 @@ export function useItemForm({
           })),
         };
         createMutation.mutate(payload);
+      } else if (mode === 'edit' && editingItem) {
+        updateMutation.mutate({
+          id: editingItem.id,
+          type: master.type,
+          sku: master.sku,
+          name: master.name,
+          barcode: master.barcode,
+          description: master.description,
+          image: imageUrl ?? master.image,
+          unit: master.unit,
+          isSaleable: master.isSaleable,
+          isPurchasable: master.isPurchasable,
+          purchasePrice: String(master.purchasePrice),
+          salesPrice: String(master.salesPrice),
+          minStock: master.minStock,
+          reorderPoint: master.reorderPoint,
+          reorderQty: master.reorderQty,
+          categoryId: master.categoryId,
+          taxRateId: master.taxRateId,
+        });
       } else if (mode === 'create') {
         const payload = {
           item: {
@@ -434,7 +506,7 @@ export function useItemForm({
         createMutation.mutate(payload);
       }
     },
-    [validate, mode, existingMaster, master, supplierDrafts, createMutation, pendingImageFile, uploadImage],
+    [validate, mode, existingMaster, master, supplierDrafts, createMutation, updateMutation, editingItem, pendingImageFile, uploadImage],
   );
 
   // ── Reset ───────────────────────────────────────────────────────────────
@@ -443,6 +515,7 @@ export function useItemForm({
     setModeState('create');
     setMasterState(getItemMasterDefaults());
     setExistingMaster(null);
+    setEditingItem(null);
     setSupplierDrafts([getSupplierItemDraftDefaults()]);
     setErrors({ master: {}, suppliers: {} });
     setPendingImageFileState(null);
@@ -452,9 +525,10 @@ export function useItemForm({
     mode,
     master,
     existingMaster,
+    editingItem,
     supplierDrafts,
     errors,
-    isSubmitting: createMutation.isPending,
+    isSubmitting: createMutation.isPending || updateMutation.isPending || isEditItemLoading,
     pendingImageFile,
     setMode,
     setMasterField,

@@ -114,6 +114,8 @@ export interface UnifiedItemDialogProps {
   initialItem?: any;
   /** Initial mode override */
   initialMode?: Mode;
+  /** Item ID for "edit" mode — triggers byId query to load item data */
+  editItemId?: string;
   onSuccess?: (itemId: string) => void;
   /** Rendered as the DialogTrigger — clicking it opens the dialog. */
   children?: React.ReactNode;
@@ -125,6 +127,7 @@ export function UnifiedItemDialog({
   initialSupplierId,
   initialItem,
   initialMode,
+  editItemId,
   onSuccess,
   children,
 }: UnifiedItemDialogProps) {
@@ -162,6 +165,7 @@ export function UnifiedItemDialog({
     onOpenChange: handleClose,
     initialSupplierId,
     initialItem,
+    editItemId,
     onSuccess,
   });
 
@@ -191,6 +195,8 @@ export function UnifiedItemDialog({
         return 'Add Supplier Price';
       case 'add-supplier':
         return 'Add Supplier Price';
+      case 'edit':
+        return 'Edit Item';
       case 'create':
       default:
         return 'Create Item';
@@ -203,6 +209,8 @@ export function UnifiedItemDialog({
         return 'Add Supplier Price';
       case 'add-supplier':
         return 'Add Supplier Price';
+      case 'edit':
+        return 'Save Changes';
       case 'create':
       default:
         return 'Create Item';
@@ -222,7 +230,9 @@ export function UnifiedItemDialog({
           <DialogDescription>
             {mode === 'existing' || mode === 'add-supplier'
               ? 'Add supplier pricing to an existing item.'
-              : 'Fill in the item details and attach supplier prices.'}
+              : mode === 'edit'
+                ? 'Update item details and supplier prices.'
+                : 'Fill in the item details and attach supplier prices.'}
           </DialogDescription>
         </DialogHeader>
 
@@ -234,7 +244,7 @@ export function UnifiedItemDialog({
               Item Master
             </TabsTrigger>
             <TabsTrigger value="suppliers">Suppliers</TabsTrigger>
-            {(mode === 'existing' || mode === 'add-supplier') && (
+            {(mode === 'existing' || mode === 'add-supplier' || mode === 'edit') && (
               <TabsTrigger value="existing">Existing</TabsTrigger>
             )}
           </TabsList>
@@ -251,9 +261,9 @@ export function UnifiedItemDialog({
             />
           </TabsContent>
 
-          {(mode === 'existing' || mode === 'add-supplier') && (
+          {(mode === 'existing' || mode === 'add-supplier' || mode === 'edit') && (
             <TabsContent value="existing">
-              <ExistingPreview item={form.existingMaster} />
+              <ExistingPreview item={mode === 'edit' ? form.editingItem : form.existingMaster} />
             </TabsContent>
           )}
         </Tabs>
@@ -300,9 +310,15 @@ interface OpenAddSupplierOptions {
   onSuccess?: (id: string) => void;
 }
 
+interface OpenEditOptions {
+  itemId: string;
+  onSuccess?: (id: string) => void;
+}
+
 interface UnifiedItemFormContextValue {
   openCreate: (options?: OpenCreateOptions) => void;
   openAddSupplier: (options: OpenAddSupplierOptions) => void;
+  openEdit: (options: OpenEditOptions) => void;
 }
 
 const UnifiedItemFormContext = React.createContext<UnifiedItemFormContextValue | null>(null);
@@ -312,6 +328,7 @@ interface DialogState {
   initialItem?: any;
   initialSupplierId?: string;
   initialMode?: Mode;
+  editItemId?: string;
   onSuccess?: (id: string) => void;
 }
 
@@ -332,12 +349,21 @@ export function UnifiedItemFormProvider({ children }: { children?: React.ReactNo
     });
   }, []);
 
+  const openEdit = React.useCallback((options: OpenEditOptions) => {
+    setState({
+      open: true,
+      editItemId: options.itemId,
+      initialMode: 'edit',
+      onSuccess: options.onSuccess,
+    });
+  }, []);
+
   const handleOpenChange = React.useCallback((open: boolean) => {
-    setState((prev) => ({ ...prev, open }));
+    setState((prev) => ({ ...prev, open, editItemId: open ? prev.editItemId : undefined }));
   }, []);
 
   return (
-    <UnifiedItemFormContext.Provider value={{ openCreate, openAddSupplier }}>
+    <UnifiedItemFormContext.Provider value={{ openCreate, openAddSupplier, openEdit }}>
       {children}
       <UnifiedItemDialog
         open={state.open}
@@ -345,6 +371,7 @@ export function UnifiedItemFormProvider({ children }: { children?: React.ReactNo
         initialItem={state.initialItem}
         initialSupplierId={state.initialSupplierId}
         initialMode={state.initialMode}
+        editItemId={state.editItemId}
         onSuccess={state.onSuccess}
       />
     </UnifiedItemFormContext.Provider>
