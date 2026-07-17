@@ -5,6 +5,7 @@ import { categoriesRouter } from './categories/categories.router';
 import { contractsRouter } from './contracts/contracts.router';
 import { currenciesRouter } from './currencies/currencies.router';
 import { customersRouter } from './customers/customers.router';
+import { expensesRouter } from './expenses/expenses.router';
 import { exchangeRatesRouter } from './settings/exchange-rates.router';
 import { hrRouter } from './hr/hr.router';
 import { invoicesRouter } from './invoices/invoices.router';
@@ -29,6 +30,7 @@ export const appRouter = t.router({
   contracts: contractsRouter,
   currencies: currenciesRouter,
   customers: customersRouter,
+  expenses: expensesRouter,
   exchangeRates: exchangeRatesRouter,
   hr: hrRouter,
   invoices: invoicesRouter,

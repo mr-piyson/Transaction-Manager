@@ -11,7 +11,7 @@ import {
   toPrismaPage,
 } from '@/lib/validations';
 import { writeAuditLog } from '../shared/audit.service';
-import { postPOReceived } from '../journals/journal-posting.service';
+import { postPOPayment, postPOReceived } from '../journals/journal-posting.service';
 import {
   createNotification,
   NOTIFICATION_SETTINGS_KEYS,
@@ -677,7 +677,7 @@ export const purchaseOrdersRouter = router({
         }, 0);
 
         if (receivedCost > 0) {
-          await tx.expense.create({
+          const expense = await tx.expense.create({
             data: {
               description: `PO #${po.serial} — Inventory received`,
               amount: receivedCost,
@@ -689,7 +689,7 @@ export const purchaseOrdersRouter = router({
           });
 
           // Double-entry journal: Dr Inventory / Cr Accounts Payable
-          await postPOReceived({
+          const journalEntry = await postPOReceived({
             tx,
             organizationId: orgId,
             userId: ctx.user.id,
@@ -700,6 +700,13 @@ export const purchaseOrdersRouter = router({
             currency: po.currency,
             exchangeRate: Number(po.exchangeRate),
           });
+
+          if (journalEntry) {
+            await tx.expense.update({
+              where: { id: expense.id },
+              data: { journalEntryId: journalEntry.id },
+            });
+          }
         }
 
         await writeAuditLog(
@@ -725,6 +732,108 @@ export const purchaseOrdersRouter = router({
           userId: ctx.user.id,
           organizationId: orgId,
         });
+
+        return updated;
+      });
+    }),
+
+  pay: orgProcedure
+    .input(
+      z.object({
+        id: z.string(),
+        amount: z.number().positive(),
+        method: z.enum(['CASH', 'BANK_TRANSFER', 'CARD', 'CHEQUE', 'ONLINE', 'OTHER']),
+        date: z.coerce.date().default(() => new Date()),
+        reference: z.string().max(500).optional(),
+        notes: z.string().max(2000).optional(),
+        version: z.number().int(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const orgId = ctx.user.organizationId;
+
+      const po = await ctx.db.purchaseOrder.findFirst({
+        where: { id: input.id, organizationId: orgId, deletedAt: null },
+        select: { id: true, status: true, version: true, serial: true, amountPaid: true, total: true, currency: true, exchangeRate: true },
+      });
+      if (!po) throw new NotFoundError('PurchaseOrder', input.id);
+      assertCan(ctx.ability, 'po:update', 'PurchaseOrder', po as Record<string, unknown>);
+      if (!['RECEIVED', 'PARTIAL_RECEIVED', 'INVOICED'].includes(po.status)) {
+        throw new UnprocessableError(`PO in status "${po.status}" cannot be paid.`);
+      }
+      if (po.version !== input.version) throw new StaleDataError('PurchaseOrder');
+
+      const currentPaid = Number(po.amountPaid);
+      const total = Number(po.total);
+      const maxPayable = total - currentPaid;
+      if (input.amount > maxPayable + 0.000001) {
+        throw new UnprocessableError(
+          `Payment amount (${input.amount}) exceeds outstanding balance (${maxPayable.toFixed(3)}).`,
+        );
+      }
+
+      return ctx.db.$transaction(async (tx) => {
+        const payment = await tx.purchasePayment.create({
+          data: {
+            amount: input.amount,
+            method: input.method,
+            date: input.date,
+            reference: input.reference,
+            notes: input.notes,
+            purchaseOrderId: input.id,
+            organizationId: orgId,
+          },
+        });
+
+        const newAmountPaid = currentPaid + input.amount;
+        const newAmountOwed = Math.max(0, total - newAmountPaid);
+
+        const updated = await tx.purchaseOrder.update({
+          where: { id: input.id },
+          data: {
+            amountPaid: newAmountPaid,
+            amountOwed: newAmountOwed,
+            version: { increment: 1 },
+            updatedById: ctx.user.id,
+          },
+        });
+
+        // Double-entry journal: Dr Accounts Payable / Cr Cash/Bank
+        const journalEntry = await postPOPayment({
+          tx,
+          organizationId: orgId,
+          userId: ctx.user.id,
+          ipAddress: ctx.ipAddress,
+          purchaseOrderId: input.id,
+          serial: po.serial,
+          amount: input.amount,
+          method: input.method,
+          currency: po.currency,
+          exchangeRate: Number(po.exchangeRate),
+        });
+
+        if (journalEntry) {
+          await tx.purchasePayment.update({
+            where: { id: payment.id },
+            data: { journalEntryId: journalEntry.id },
+          });
+        }
+
+        await writeAuditLog(
+          {
+            entityType: 'PurchasePayment',
+            entityId: payment.id,
+            action: 'PAYMENT',
+            diff: {
+              amount: { before: null, after: input.amount },
+              method: { before: null, after: input.method },
+            },
+            organizationId: orgId,
+            userId: ctx.user.id,
+            ipAddress: ctx.ipAddress,
+          },
+          tx,
+        );
 
         return updated;
       });
