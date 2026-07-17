@@ -25,6 +25,7 @@
 import type { PaymentMethod, Prisma } from '@prisma/client';
 import { NotFoundError, UnprocessableError } from '@/lib/error';
 import { writeAuditLog } from '../shared/audit.service';
+import { postPaymentReceived } from '../journals/journal-posting.service';
 
 type TransactionClient = Prisma.TransactionClient;
 
@@ -187,6 +188,33 @@ export async function addPayment(opts: AddPaymentOptions) {
       organizationId,
     },
   });
+
+  // Double-entry journal: Dr Cash/Bank / Cr Accounts Receivable
+  const invoiceWithSerial = await tx.invoice.findUnique({
+    where: { id: invoiceId },
+    select: { serial: true, currency: true, exchangeRate: true },
+  });
+  const journalEntry = await postPaymentReceived({
+    tx,
+    organizationId,
+    userId,
+    ipAddress,
+    paymentId: payment.id,
+    invoiceId,
+    amount: paymentData.amount,
+    method: paymentData.method,
+    serial: invoiceWithSerial?.serial ?? '',
+    currency: invoiceWithSerial?.currency,
+    exchangeRate: Number(invoiceWithSerial?.exchangeRate ?? 1),
+  });
+
+  // Link journal entry back to payment
+  if (journalEntry) {
+    await tx.payment.update({
+      where: { id: payment.id },
+      data: { journalEntryId: journalEntry.id },
+    });
+  }
 
   await syncInvoicePaymentTotals(tx, invoiceId, organizationId, userId, ipAddress);
 

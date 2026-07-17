@@ -8,6 +8,7 @@ import { customersRouter } from './customers/customers.router';
 import { exchangeRatesRouter } from './settings/exchange-rates.router';
 import { hrRouter } from './hr/hr.router';
 import { invoicesRouter } from './invoices/invoices.router';
+import { journalsRouter } from './journals/journal.router';
 import { itemsRouter } from './items/items.router';
 import { notificationsRouter } from './notifications/notifications.router';
 import { organizationsRouter } from './organizations/organizations.router';
@@ -31,6 +32,7 @@ export const appRouter = t.router({
   exchangeRates: exchangeRatesRouter,
   hr: hrRouter,
   invoices: invoicesRouter,
+  journals: journalsRouter,
   items: itemsRouter,
   notifications: notificationsRouter,
   organizations: organizationsRouter,

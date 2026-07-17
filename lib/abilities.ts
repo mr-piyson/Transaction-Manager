@@ -170,7 +170,9 @@ export type Action =
   | 'disciplinary:create'
   | 'disciplinary:update'
   // HRMS — Reports
-  | 'report:hr';
+  | 'report:hr'
+  // Journal / Accounting
+  | 'journal:entry';
 
 // ---------------------------------------------------------------------------
 // Subjects — Prisma model names + "all" wildcard for SUPER_ADMIN
@@ -222,6 +224,7 @@ export type SubjectName =
   // Settings
   | 'OrganizationSetting'
   | 'Kiosk'
+  | 'JournalEntry'
   | 'all';
 
 // Accepts either the string literal of the model (for generic checks)

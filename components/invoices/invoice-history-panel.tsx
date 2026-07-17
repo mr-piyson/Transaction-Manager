@@ -216,8 +216,8 @@ function buildTimelineEvents(invoice: any): TimelineEvent[] {
     });
   }
 
-  // Sort by timestamp ascending
-  events.sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
+  // Sort by timestamp descending (newest first)
+  events.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
 
   return events;
 }

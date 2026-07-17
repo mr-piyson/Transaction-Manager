@@ -11,6 +11,7 @@ import {
   toPrismaPage,
 } from '@/lib/validations';
 import { writeAuditLog } from '../shared/audit.service';
+import { postPOReceived } from '../journals/journal-posting.service';
 import {
   createNotification,
   NOTIFICATION_SETTINGS_KEYS,
@@ -685,6 +686,19 @@ export const purchaseOrdersRouter = router({
               organizationId: orgId,
               createdById: ctx.user.id,
             },
+          });
+
+          // Double-entry journal: Dr Inventory / Cr Accounts Payable
+          await postPOReceived({
+            tx,
+            organizationId: orgId,
+            userId: ctx.user.id,
+            ipAddress: ctx.ipAddress,
+            purchaseOrderId: po.id,
+            serial: po.serial,
+            receivedCost,
+            currency: po.currency,
+            exchangeRate: Number(po.exchangeRate),
           });
         }
 

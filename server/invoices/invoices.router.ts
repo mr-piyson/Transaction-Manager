@@ -41,6 +41,7 @@ import {
   toPrismaPage,
 } from '@/lib/validations';
 import { writeAuditLog } from '../shared/audit.service';
+import { postInvoiceSent, postCreditNoteSent } from '../journals/journal-posting.service';
 import { deductStockForInvoice, returnStockForCancelledInvoice, returnStockForCreditNote } from './invoices.service';
 import {
   createNotification,
@@ -671,6 +672,42 @@ export const invoicesRouter = router({
               organizationId: orgId,
               createdById: ctx.user.id,
             },
+          });
+
+          // Double-entry journal: Dr AR / Cr Revenue / Cr Tax Payable + Dr COGS / Cr Inventory
+          await postInvoiceSent({
+            tx,
+            organizationId: orgId,
+            userId: ctx.user.id,
+            ipAddress: ctx.ipAddress,
+            invoiceId: invoice.id,
+            serial: invoice.serial,
+            subtotal: Number(invoice.subtotal),
+            taxTotal: Number(invoice.taxTotal),
+            total: Number(invoice.total),
+            costTotal: Number(invoice.costTotal),
+            currency: invoice.currency,
+            exchangeRate: Number(invoice.exchangeRate),
+            lines: invoice.lines.map((l) => ({ departmentId: l.departmentId ?? undefined })),
+          });
+        }
+
+        // Credit note: reverse the original invoice posting
+        if (invoice.type === 'CREDIT_NOTE') {
+          await postCreditNoteSent({
+            tx,
+            organizationId: orgId,
+            userId: ctx.user.id,
+            ipAddress: ctx.ipAddress,
+            invoiceId: invoice.id,
+            serial: invoice.serial,
+            subtotal: Number(invoice.subtotal),
+            taxTotal: Number(invoice.taxTotal),
+            total: Number(invoice.total),
+            costTotal: Number(invoice.costTotal),
+            currency: invoice.currency,
+            exchangeRate: Number(invoice.exchangeRate),
+            lines: invoice.lines.map((l) => ({ departmentId: l.departmentId ?? undefined })),
           });
         }
 

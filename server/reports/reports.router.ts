@@ -1,3 +1,4 @@
+import { z } from 'zod';
 import { assertCan, orgProcedure, router } from '@/lib/trpc/context';
 
 export const reportsRouter = router({
@@ -351,4 +352,322 @@ export const reportsRouter = router({
       .sort((a, b) => b.totalRevenue - a.totalRevenue)
       .slice(0, 20);
   }),
+
+  // ── TRIAL BALANCE ──────────────────────────────────────────────────────────
+  trialBalance: orgProcedure
+    .input(
+      z.object({
+        asOf: z.coerce.date().optional(),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      assertCan(ctx.ability, 'report:financial', 'all');
+
+      const orgId = ctx.user.organizationId;
+
+      // Get all posted journal lines
+      const lines = await ctx.db.journalLine.findMany({
+        where: {
+          organizationId: orgId,
+          journalEntry: {
+            status: 'POSTED',
+            ...(input.asOf ? { date: { lte: input.asOf } } : {}),
+          },
+        },
+        select: {
+          accountId: true,
+          debit: true,
+          credit: true,
+        },
+      });
+
+      // Get all active accounts
+      const accounts = await ctx.db.ledgerAccount.findMany({
+        where: { organizationId: orgId, isActive: true },
+        select: { id: true, code: true, name: true, type: true, normalBalance: true },
+        orderBy: { code: 'asc' },
+      });
+
+      // Aggregate by account
+      const accountTotals = new Map<string, { totalDebit: number; totalCredit: number }>();
+      for (const line of lines) {
+        const existing = accountTotals.get(line.accountId) ?? { totalDebit: 0, totalCredit: 0 };
+        existing.totalDebit += Number(line.debit);
+        existing.totalCredit += Number(line.credit);
+        accountTotals.set(line.accountId, existing);
+      }
+
+      const trialBalance = accounts
+        .map((account) => {
+          const totals = accountTotals.get(account.id) ?? { totalDebit: 0, totalCredit: 0 };
+          // Balance: positive = normal side, negative = unusual
+          const balance =
+            account.normalBalance === 'DEBIT'
+              ? totals.totalDebit - totals.totalCredit
+              : totals.totalCredit - totals.totalDebit;
+          return {
+            accountId: account.id,
+            code: account.code,
+            name: account.name,
+            type: account.type,
+            normalBalance: account.normalBalance,
+            totalDebit: totals.totalDebit,
+            totalCredit: totals.totalCredit,
+            balance,
+          };
+        })
+        .filter((a) => a.totalDebit > 0 || a.totalCredit > 0);
+
+      const totalDebit = trialBalance.reduce((sum, a) => sum + a.totalDebit, 0);
+      const totalCredit = trialBalance.reduce((sum, a) => sum + a.totalCredit, 0);
+      const isBalanced = Math.abs(totalDebit - totalCredit) < 0.000001;
+
+      return {
+        accounts: trialBalance,
+        totalDebit,
+        totalCredit,
+        isBalanced,
+        asOf: input.asOf ?? new Date(),
+      };
+    }),
+
+  // ── GENERAL LEDGER ─────────────────────────────────────────────────────────
+  generalLedger: orgProcedure
+    .input(
+      z.object({
+        accountId: z.string(),
+        dateFrom: z.coerce.date().optional(),
+        dateTo: z.coerce.date().optional(),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      assertCan(ctx.ability, 'report:financial', 'all');
+
+      const orgId = ctx.user.organizationId;
+
+      const account = await ctx.db.ledgerAccount.findFirst({
+        where: { id: input.accountId, organizationId: orgId },
+      });
+      if (!account) return null;
+
+      const entries = await ctx.db.journalEntry.findMany({
+        where: {
+          organizationId: orgId,
+          status: 'POSTED',
+          lines: { some: { accountId: input.accountId } },
+          ...(input.dateFrom || input.dateTo
+            ? {
+                date: {
+                  ...(input.dateFrom ? { gte: input.dateFrom } : {}),
+                  ...(input.dateTo ? { lte: input.dateTo } : {}),
+                },
+              }
+            : {}),
+        },
+        include: {
+          lines: {
+            where: { accountId: input.accountId },
+            select: { debit: true, credit: true, description: true },
+          },
+        },
+        orderBy: { date: 'asc' },
+      });
+
+      let runningBalance = 0;
+      const transactions = entries.map((entry) => {
+        const line = entry.lines[0];
+        const debit = Number(line?.debit ?? 0);
+        const credit = Number(line?.credit ?? 0);
+
+        if (account.normalBalance === 'DEBIT') {
+          runningBalance += debit - credit;
+        } else {
+          runningBalance += credit - debit;
+        }
+
+        return {
+          date: entry.date,
+          entryNumber: entry.entryNumber,
+          description: line?.description ?? entry.description,
+          reference: entry.reference,
+          debit,
+          credit,
+          balance: runningBalance,
+        };
+      });
+
+      return {
+        account: {
+          id: account.id,
+          code: account.code,
+          name: account.name,
+          type: account.type,
+          normalBalance: account.normalBalance,
+        },
+        transactions,
+        closingBalance: runningBalance,
+      };
+    }),
+
+  // ── BALANCE SHEET ──────────────────────────────────────────────────────────
+  balanceSheet: orgProcedure
+    .input(
+      z.object({
+        asOf: z.coerce.date().optional(),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      assertCan(ctx.ability, 'report:financial', 'all');
+
+      const orgId = ctx.user.organizationId;
+
+      const lines = await ctx.db.journalLine.findMany({
+        where: {
+          organizationId: orgId,
+          journalEntry: {
+            status: 'POSTED',
+            ...(input.asOf ? { date: { lte: input.asOf } } : {}),
+          },
+        },
+        select: { accountId: true, debit: true, credit: true },
+      });
+
+      const accounts = await ctx.db.ledgerAccount.findMany({
+        where: {
+          organizationId: orgId,
+          isActive: true,
+          type: { in: ['ASSET', 'LIABILITY', 'EQUITY', 'CONTRA_ASSET'] },
+        },
+        select: { id: true, code: true, name: true, type: true, normalBalance: true },
+        orderBy: { code: 'asc' },
+      });
+
+      const accountTotals = new Map<string, { totalDebit: number; totalCredit: number }>();
+      for (const line of lines) {
+        const existing = accountTotals.get(line.accountId) ?? { totalDebit: 0, totalCredit: 0 };
+        existing.totalDebit += Number(line.debit);
+        existing.totalCredit += Number(line.credit);
+        accountTotals.set(line.accountId, existing);
+      }
+
+      const assets: Array<{ code: string; name: string; balance: number }> = [];
+      const liabilities: Array<{ code: string; name: string; balance: number }> = [];
+      const equity: Array<{ code: string; name: string; balance: number }> = [];
+
+      for (const account of accounts) {
+        const totals = accountTotals.get(account.id) ?? { totalDebit: 0, totalCredit: 0 };
+        const balance =
+          account.normalBalance === 'DEBIT'
+            ? totals.totalDebit - totals.totalCredit
+            : totals.totalCredit - totals.totalDebit;
+
+        const item = { code: account.code, name: account.name, balance: Math.abs(balance) };
+
+        if (account.type === 'ASSET' || account.type === 'CONTRA_ASSET') {
+          assets.push(item);
+        } else if (account.type === 'LIABILITY') {
+          liabilities.push(item);
+        } else if (account.type === 'EQUITY') {
+          equity.push(item);
+        }
+      }
+
+      const totalAssets = assets.reduce((sum, a) => sum + a.balance, 0);
+      const totalLiabilities = liabilities.reduce((sum, l) => sum + l.balance, 0);
+      const totalEquity = equity.reduce((sum, e) => sum + e.balance, 0);
+
+      return {
+        assets,
+        liabilities,
+        equity,
+        totalAssets,
+        totalLiabilities,
+        totalEquity,
+        isBalanced: Math.abs(totalAssets - totalLiabilities - totalEquity) < 0.000001,
+        asOf: input.asOf ?? new Date(),
+      };
+    }),
+
+  // ── PROFIT & LOSS ──────────────────────────────────────────────────────────
+  profitAndLoss: orgProcedure
+    .input(
+      z.object({
+        dateFrom: z.coerce.date().optional(),
+        dateTo: z.coerce.date().optional(),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      assertCan(ctx.ability, 'report:financial', 'all');
+
+      const orgId = ctx.user.organizationId;
+
+      const lines = await ctx.db.journalLine.findMany({
+        where: {
+          organizationId: orgId,
+          journalEntry: {
+            status: 'POSTED',
+            ...(input.dateFrom || input.dateTo
+              ? {
+                  date: {
+                    ...(input.dateFrom ? { gte: input.dateFrom } : {}),
+                    ...(input.dateTo ? { lte: input.dateTo } : {}),
+                  },
+                }
+              : {}),
+          },
+        },
+        select: { accountId: true, debit: true, credit: true },
+      });
+
+      const accounts = await ctx.db.ledgerAccount.findMany({
+        where: {
+          organizationId: orgId,
+          isActive: true,
+          type: { in: ['REVENUE', 'EXPENSE', 'CONTRA_REVENUE'] },
+        },
+        select: { id: true, code: true, name: true, type: true, normalBalance: true },
+        orderBy: { code: 'asc' },
+      });
+
+      const accountTotals = new Map<string, { totalDebit: number; totalCredit: number }>();
+      for (const line of lines) {
+        const existing = accountTotals.get(line.accountId) ?? { totalDebit: 0, totalCredit: 0 };
+        existing.totalDebit += Number(line.debit);
+        existing.totalCredit += Number(line.credit);
+        accountTotals.set(line.accountId, existing);
+      }
+
+      const revenue: Array<{ code: string; name: string; balance: number }> = [];
+      const expenses: Array<{ code: string; name: string; balance: number }> = [];
+
+      for (const account of accounts) {
+        const totals = accountTotals.get(account.id) ?? { totalDebit: 0, totalCredit: 0 };
+        const balance =
+          account.normalBalance === 'DEBIT'
+            ? totals.totalDebit - totals.totalCredit
+            : totals.totalCredit - totals.totalDebit;
+
+        const item = { code: account.code, name: account.name, balance: Math.abs(balance) };
+
+        if (account.type === 'REVENUE' || account.type === 'CONTRA_REVENUE') {
+          revenue.push(item);
+        } else if (account.type === 'EXPENSE') {
+          expenses.push(item);
+        }
+      }
+
+      const totalRevenue = revenue.reduce((sum, r) => sum + r.balance, 0);
+      const totalExpenses = expenses.reduce((sum, e) => sum + e.balance, 0);
+      const netIncome = totalRevenue - totalExpenses;
+
+      return {
+        revenue,
+        expenses,
+        totalRevenue,
+        totalExpenses,
+        netIncome,
+        dateFrom: input.dateFrom ?? null,
+        dateTo: input.dateTo ?? null,
+      };
+    }),
 });
