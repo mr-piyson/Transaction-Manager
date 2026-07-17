@@ -246,9 +246,15 @@ export function AppSidebar({ ...props }: AppSidebarProps) {
     [currentApp, router],
   );
 
+  const expandedByDefault = useMemo(() => {
+    return Object.entries(items)
+      .filter(([, data]) => (data.children?.length ?? 0) > 0)
+      .map(([id]) => id);
+  }, [items]);
+
   const tree = useTree<TreeItemData>({
     initialState: {
-      expandedItems: currentApp ? [currentApp.slug] : ['erp'],
+      expandedItems: expandedByDefault,
       search: null,
     },
     indent,
