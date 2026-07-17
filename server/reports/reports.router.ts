@@ -670,4 +670,146 @@ export const reportsRouter = router({
         dateTo: input.dateTo ?? null,
       };
     }),
+
+  // ── AP AGING (simple bucket summary) ──────────────────────────────────────
+  apAging: orgProcedure.query(async ({ ctx }) => {
+    assertCan(ctx.ability, 'report:financial', 'all');
+
+    const orgId = ctx.user.organizationId;
+    const now = new Date();
+
+    const outstandingPOs = await ctx.db.purchaseOrder.findMany({
+      where: {
+        organizationId: orgId,
+        deletedAt: null,
+        status: { notIn: ['CANCELLED', 'CLOSED'] },
+        amountOwed: { gt: 0 },
+      },
+      select: { dueDate: true, amountOwed: true, total: true },
+    });
+
+    const buckets = {
+      current: 0,
+      days1to30: 0,
+      days31to60: 0,
+      days61to90: 0,
+      days91plus: 0,
+    };
+
+    for (const po of outstandingPOs) {
+      const amount = Number(po.amountOwed);
+      if (!po.dueDate) {
+        buckets.current += amount;
+        continue;
+      }
+      const daysOverdue = Math.floor(
+        (now.getTime() - new Date(po.dueDate).getTime()) / (1000 * 60 * 60 * 24),
+      );
+      if (daysOverdue <= 0) buckets.current += amount;
+      else if (daysOverdue <= 30) buckets.days1to30 += amount;
+      else if (daysOverdue <= 60) buckets.days31to60 += amount;
+      else if (daysOverdue <= 90) buckets.days61to90 += amount;
+      else buckets.days91plus += amount;
+    }
+
+    return [
+      { bucket: 'Current', amount: buckets.current },
+      { bucket: '1–30 Days', amount: buckets.days1to30 },
+      { bucket: '31–60 Days', amount: buckets.days31to60 },
+      { bucket: '61–90 Days', amount: buckets.days61to90 },
+      { bucket: '90+ Days', amount: buckets.days91plus },
+    ];
+  }),
+
+  // ── AP AGING (detailed with PO list) ──────────────────────────────────────
+  apAgingDetailed: orgProcedure.query(async ({ ctx }) => {
+    assertCan(ctx.ability, 'report:financial', 'all');
+
+    const orgId = ctx.user.organizationId;
+    const now = new Date();
+
+    const outstandingPOs = await ctx.db.purchaseOrder.findMany({
+      where: {
+        organizationId: orgId,
+        deletedAt: null,
+        status: { notIn: ['CANCELLED', 'CLOSED'] },
+        amountOwed: { gt: 0 },
+      },
+      select: {
+        id: true,
+        serial: true,
+        total: true,
+        amountOwed: true,
+        dueDate: true,
+        date: true,
+        currency: true,
+        supplier: { select: { name: true } },
+      },
+      orderBy: { date: 'desc' },
+    });
+
+    const buckets = {
+      current: { amount: 0, count: 0, pos: [] as any[] },
+      days1to30: { amount: 0, count: 0, pos: [] as any[] },
+      days31to60: { amount: 0, count: 0, pos: [] as any[] },
+      days61to90: { amount: 0, count: 0, pos: [] as any[] },
+      days91plus: { amount: 0, count: 0, pos: [] as any[] },
+    };
+
+    for (const po of outstandingPOs) {
+      const amount = Number(po.amountOwed);
+      const daysOverdue = po.dueDate
+        ? Math.floor((now.getTime() - new Date(po.dueDate).getTime()) / (1000 * 60 * 60 * 24))
+        : 0;
+
+      const poData = {
+        id: po.id,
+        serial: po.serial,
+        total: Number(po.total),
+        amountOwed: amount,
+        dueDate: po.dueDate,
+        date: po.date,
+        currency: po.currency,
+        supplierName: po.supplier?.name ?? '—',
+        daysOverdue: Math.max(0, daysOverdue),
+      };
+
+      if (daysOverdue <= 0) {
+        buckets.current.amount += amount;
+        buckets.current.count += 1;
+        buckets.current.pos.push(poData);
+      } else if (daysOverdue <= 30) {
+        buckets.days1to30.amount += amount;
+        buckets.days1to30.count += 1;
+        buckets.days1to30.pos.push(poData);
+      } else if (daysOverdue <= 60) {
+        buckets.days31to60.amount += amount;
+        buckets.days31to60.count += 1;
+        buckets.days31to60.pos.push(poData);
+      } else if (daysOverdue <= 90) {
+        buckets.days61to90.amount += amount;
+        buckets.days61to90.count += 1;
+        buckets.days61to90.pos.push(poData);
+      } else {
+        buckets.days91plus.amount += amount;
+        buckets.days91plus.count += 1;
+        buckets.days91plus.pos.push(poData);
+      }
+    }
+
+    const grandTotal = Object.values(buckets).reduce((sum, b) => sum + b.amount, 0);
+    const totalCount = Object.values(buckets).reduce((sum, b) => sum + b.count, 0);
+
+    return {
+      buckets: [
+        { bucket: 'Current', amount: buckets.current.amount, count: buckets.current.count, pos: buckets.current.pos },
+        { bucket: '1–30 Days', amount: buckets.days1to30.amount, count: buckets.days1to30.count, pos: buckets.days1to30.pos },
+        { bucket: '31–60 Days', amount: buckets.days31to60.amount, count: buckets.days31to60.count, pos: buckets.days31to60.pos },
+        { bucket: '61–90 Days', amount: buckets.days61to90.amount, count: buckets.days61to90.count, pos: buckets.days61to90.pos },
+        { bucket: '90+ Days', amount: buckets.days91plus.amount, count: buckets.days91plus.count, pos: buckets.days91plus.pos },
+      ],
+      grandTotal,
+      totalCount,
+    };
+  }),
 });

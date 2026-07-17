@@ -1555,4 +1555,98 @@ export const invoicesRouter = router({
 
     return { buckets, grandTotal, invoiceCount: invoices.length };
   }),
+
+  // ── AR AGING (detailed with invoice list) ──────────────────────────────────
+  arAgingDetailed: orgProcedure.query(async ({ ctx }) => {
+    assertCan(ctx.ability, 'report:financial', 'all');
+
+    const today = new Date();
+    const orgId = ctx.user.organizationId;
+
+    const invoices = await ctx.db.invoice.findMany({
+      where: {
+        organizationId: orgId,
+        type: 'INVOICE',
+        status: { in: ['SENT', 'PARTIAL', 'OVERDUE'] },
+        deletedAt: null,
+        amountDue: { gt: 0 },
+      },
+      select: {
+        id: true,
+        serial: true,
+        date: true,
+        dueDate: true,
+        total: true,
+        amountDue: true,
+        currency: true,
+        customer: { select: { id: true, name: true } },
+      },
+      orderBy: { date: 'desc' },
+    });
+
+    const buckets = {
+      current: { amount: 0, count: 0, invoices: [] as any[] },
+      days1to30: { amount: 0, count: 0, invoices: [] as any[] },
+      days31to60: { amount: 0, count: 0, invoices: [] as any[] },
+      days61to90: { amount: 0, count: 0, invoices: [] as any[] },
+      over90: { amount: 0, count: 0, invoices: [] as any[] },
+    };
+
+    for (const inv of invoices) {
+      const daysOverdue = inv.dueDate
+        ? Math.floor((today.getTime() - inv.dueDate.getTime()) / 86_400_000)
+        : -1;
+      const amt = Number(inv.amountDue);
+
+      const invoiceData = {
+        id: inv.id,
+        serial: inv.serial,
+        total: Number(inv.total),
+        amountDue: amt,
+        dueDate: inv.dueDate,
+        date: inv.date,
+        currency: inv.currency,
+        customerName: inv.customer?.name ?? 'Walk-in',
+        customerId: inv.customer?.id,
+        daysOverdue: Math.max(0, daysOverdue),
+      };
+
+      if (daysOverdue <= 0) {
+        buckets.current.amount += amt;
+        buckets.current.count += 1;
+        buckets.current.invoices.push(invoiceData);
+      } else if (daysOverdue <= 30) {
+        buckets.days1to30.amount += amt;
+        buckets.days1to30.count += 1;
+        buckets.days1to30.invoices.push(invoiceData);
+      } else if (daysOverdue <= 60) {
+        buckets.days31to60.amount += amt;
+        buckets.days31to60.count += 1;
+        buckets.days31to60.invoices.push(invoiceData);
+      } else if (daysOverdue <= 90) {
+        buckets.days61to90.amount += amt;
+        buckets.days61to90.count += 1;
+        buckets.days61to90.invoices.push(invoiceData);
+      } else {
+        buckets.over90.amount += amt;
+        buckets.over90.count += 1;
+        buckets.over90.invoices.push(invoiceData);
+      }
+    }
+
+    const grandTotal = invoices.reduce((sum, inv) => sum + Number(inv.amountDue), 0);
+    const totalCount = invoices.length;
+
+    return {
+      buckets: [
+        { bucket: 'Current', amount: buckets.current.amount, count: buckets.current.count, invoices: buckets.current.invoices },
+        { bucket: '1–30 Days', amount: buckets.days1to30.amount, count: buckets.days1to30.count, invoices: buckets.days1to30.invoices },
+        { bucket: '31–60 Days', amount: buckets.days31to60.amount, count: buckets.days31to60.count, invoices: buckets.days31to60.invoices },
+        { bucket: '61–90 Days', amount: buckets.days61to90.amount, count: buckets.days61to90.count, invoices: buckets.days61to90.invoices },
+        { bucket: '90+ Days', amount: buckets.over90.amount, count: buckets.over90.count, invoices: buckets.over90.invoices },
+      ],
+      grandTotal,
+      totalCount,
+    };
+  }),
 });
