@@ -3,6 +3,7 @@ import { auth } from '@/auth/auth-server';
 import { ConflictError } from '@/lib/error';
 import { publicProcedure, t } from '@/lib/trpc/context';
 import { currencyCodeSchema, validateEmail, validatePassword } from '@/lib/validations';
+import { seedRoles, seedPermissions, seedCurrencies } from '../../prisma/seed/index';
 
 // ─── Input schema ────────────────────────────────────────────────────────────
 
@@ -140,99 +141,19 @@ const ORG_SETTINGS = [
 
 // ─── Seed helpers (shared with reset) ─────────────────────────────────────────
 
-const SEED_PERMISSIONS = [
-  { code: 'user:manage',    label: 'Manage Users',          module: 'Users & Roles' },
-  { code: 'user:view',      label: 'View Users',            module: 'Users & Roles' },
-  { code: 'role:manage',    label: 'Manage Roles',          module: 'Users & Roles' },
-  { code: 'org:manage',     label: 'Manage Organization',   module: 'Organization' },
-  { code: 'org:view',       label: 'View Organization',     module: 'Organization' },
-  { code: 'invoice:create',  label: 'Create Invoices',       module: 'Invoicing' },
-  { code: 'invoice:view',    label: 'View Invoices',         module: 'Invoicing' },
-  { code: 'invoice:edit',    label: 'Edit Invoices',         module: 'Invoicing' },
-  { code: 'invoice:delete',  label: 'Delete Invoices',       module: 'Invoicing' },
-  { code: 'invoice:approve', label: 'Approve Invoices',      module: 'Invoicing' },
-  { code: 'purchase:create',  label: 'Create Purchase Orders', module: 'Purchasing' },
-  { code: 'purchase:view',    label: 'View Purchase Orders',   module: 'Purchasing' },
-  { code: 'purchase:edit',    label: 'Edit Purchase Orders',   module: 'Purchasing' },
-  { code: 'purchase:delete',  label: 'Delete Purchase Orders', module: 'Purchasing' },
-  { code: 'purchase:approve', label: 'Approve Purchase Orders',module: 'Purchasing' },
-  { code: 'stock:view',    label: 'View Stock',             module: 'Inventory' },
-  { code: 'stock:adjust',  label: 'Adjust Stock',           module: 'Inventory' },
-  { code: 'warehouse:manage', label: 'Manage Warehouses',   module: 'Inventory' },
-  { code: 'item:create',   label: 'Create Items',           module: 'Inventory' },
-  { code: 'item:edit',     label: 'Edit Items',             module: 'Inventory' },
-  { code: 'customer:create', label: 'Create Customers',     module: 'Customers' },
-  { code: 'customer:view',   label: 'View Customers',       module: 'Customers' },
-  { code: 'customer:edit',   label: 'Edit Customers',       module: 'Customers' },
-  { code: 'customer:delete', label: 'Delete Customers',     module: 'Customers' },
-  { code: 'supplier:create', label: 'Create Suppliers',     module: 'Suppliers' },
-  { code: 'supplier:view',   label: 'View Suppliers',       module: 'Suppliers' },
-  { code: 'supplier:edit',   label: 'Edit Suppliers',       module: 'Suppliers' },
-  { code: 'supplier:delete', label: 'Delete Suppliers',     module: 'Suppliers' },
-  { code: 'report:financial', label: 'Financial Reports',   module: 'Reports' },
-  { code: 'report:sales',     label: 'Sales Reports',       module: 'Reports' },
-  { code: 'report:purchases', label: 'Purchase Reports',    module: 'Reports' },
-  { code: 'report:inventory', label: 'Inventory Reports',   module: 'Reports' },
-  { code: 'report:tax',       label: 'Tax Reports',         module: 'Reports' },
-  { code: 'account:create', label: 'Create Accounts',       module: 'Accounting' },
-  { code: 'account:view',   label: 'View Accounts',         module: 'Accounting' },
-  { code: 'account:edit',   label: 'Edit Accounts',         module: 'Accounting' },
-  { code: 'account:delete', label: 'Delete Accounts',       module: 'Accounting' },
-  { code: 'journal:entry',  label: 'Journal Entries',       module: 'Accounting' },
-  { code: 'tax:manage', label: 'Manage Tax Rates',          module: 'Tax' },
-  { code: 'tax:view',   label: 'View Tax Rates',            module: 'Tax' },
-  { code: 'hr:employee:create', label: 'Create Employees',        module: 'HRMS' },
-  { code: 'hr:employee:view',   label: 'View Employees',          module: 'HRMS' },
-  { code: 'hr:employee:edit',   label: 'Edit Employees',          module: 'HRMS' },
-  { code: 'hr:leave:manage',    label: 'Manage Leave Requests',    module: 'HRMS' },
-  { code: 'hr:attendance:view', label: 'View Attendance',         module: 'HRMS' },
-  { code: 'hr:payroll:manage',  label: 'Manage Payroll',          module: 'HRMS' },
-  { code: 'hr:recruitment:manage', label: 'Manage Recruitment',   module: 'HRMS' },
-  { code: 'hr:training:manage', label: 'Manage Training',         module: 'HRMS' },
-  { code: 'hr:performance:manage', label: 'Manage Performance',   module: 'HRMS' },
-  { code: 'crm:lead:create',  label: 'Create Leads',             module: 'CRM' },
-  { code: 'crm:lead:view',    label: 'View Leads',               module: 'CRM' },
-  { code: 'crm:lead:edit',    label: 'Edit Leads',               module: 'CRM' },
-  { code: 'crm:lead:delete',  label: 'Delete Leads',             module: 'CRM' },
-  { code: 'crm:opportunity:create', label: 'Create Opportunities', module: 'CRM' },
-  { code: 'crm:opportunity:view',   label: 'View Opportunities',   module: 'CRM' },
-  { code: 'crm:opportunity:edit',   label: 'Edit Opportunities',   module: 'CRM' },
-  { code: 'crm:campaign:manage', label: 'Manage Campaigns',       module: 'CRM' },
-  { code: 'crm:contact:manage', label: 'Manage Contacts',         module: 'CRM' },
-  { code: 'crm:pipeline:manage', label: 'Manage Pipelines',       module: 'CRM' },
-];
-
-const SEED_SYSTEM_ROLES = [
-  { systemKey: 'OWNER',      name: 'Owner',      icon: 'crown',      color: '#eab308' },
-  { systemKey: 'ADMIN',      name: 'Admin',      icon: 'shield',     color: '#3b82f6' },
-  { systemKey: 'MANAGER',    name: 'Manager',    icon: 'briefcase',  color: '#8b5cf6' },
-  { systemKey: 'ACCOUNTANT', name: 'Accountant', icon: 'calculator', color: '#06b6d4' },
-  { systemKey: 'SALES',      name: 'Sales',      icon: 'trending-up',color: '#10b981' },
-  { systemKey: 'WAREHOUSE',  name: 'Warehouse',  icon: 'package',    color: '#f59e0b' },
-  { systemKey: 'VIEWER',     name: 'Viewer',     icon: 'eye',        color: '#6b7280' },
-] as const;
-
 async function ensureSeedData(db: typeof import('@/lib/db').default) {
-  for (const perm of SEED_PERMISSIONS) {
-    await db.permission.upsert({
-      where: { code: perm.code },
-      update: { label: perm.label, module: perm.module },
-      create: perm,
-    });
-  }
-  for (const sr of SEED_SYSTEM_ROLES) {
-    await db.role.upsert({
-      where: { systemKey: sr.systemKey },
-      update: { name: sr.name, icon: sr.icon, color: sr.color, isSystem: true },
-      create: { ...sr, isSystem: true },
-    });
-  }
+  await seedPermissions(db);
+  await seedRoles(db);
+  await seedCurrencies(db);
 }
 
 // ─── Router ──────────────────────────────────────────────────────────────────
 
 export const setupRouter = t.router({
   setup: publicProcedure.input(setupSchema).mutation(async ({ ctx, input }) => {
+    // Ensure system roles and permissions exist (idempotent)
+    await ensureSeedData(ctx.db);
+
     const existingOrg = await ctx.db.organization.findUnique({ where: { slug: input.slug } });
     if (existingOrg) {
       throw new ConflictError(`Organization slug "${input.slug}" is already taken.`);
@@ -249,8 +170,7 @@ export const setupRouter = t.router({
 
     if (systemRoles.length === 0 || permissions.length === 0) {
       throw new Error(
-        'System roles and permissions must be seeded before running setup. ' +
-        'Run `npx tsx prisma/seed.ts` first.',
+        'Failed to ensure system roles and permissions. Check database connectivity.',
       );
     }
 
