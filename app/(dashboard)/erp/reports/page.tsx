@@ -234,10 +234,7 @@ export default function ReportsPage() {
     [],
   );
 
-  const topCustomers = useMemo(
-    () => salesByCustomer?.slice(0, 8) ?? [],
-    [salesByCustomer],
-  );
+  const topCustomers = useMemo(() => salesByCustomer?.slice(0, 8) ?? [], [salesByCustomer]);
 
   // ── Top Items Config ─────────────────────────────────────────────────────
   const itemsChartConfig = useMemo(
@@ -262,7 +259,9 @@ export default function ReportsPage() {
           id: `rev-${m.month}`,
           date: m.month,
           type: t('reports.revenue'),
-          description: t('reports.invoiceRevenueDesc', { month: MONTH_LABELS[m.month.slice(-2)] || m.month }),
+          description: t('reports.invoiceRevenueDesc', {
+            month: MONTH_LABELS[m.month.slice(-2)] || m.month,
+          }),
           amount: Math.round(m.revenue),
           status: t('common.posted'),
           category: t('reports.income'),
@@ -272,7 +271,9 @@ export default function ReportsPage() {
             id: `cogs-${m.month}`,
             date: m.month,
             type: t('reports.cogs'),
-            description: t('reports.cogsDesc', { month: MONTH_LABELS[m.month.slice(-2)] || m.month }),
+            description: t('reports.cogsDesc', {
+              month: MONTH_LABELS[m.month.slice(-2)] || m.month,
+            }),
             amount: -Math.round(m.cost),
             status: t('common.posted'),
             category: t('reports.costOfSales'),
@@ -288,7 +289,9 @@ export default function ReportsPage() {
             id: `exp-${m.month}`,
             date: m.month,
             type: t('reports.expense'),
-            description: t('reports.expenseDesc', { month: MONTH_LABELS[m.month.slice(-2)] || m.month }),
+            description: t('reports.expenseDesc', {
+              month: MONTH_LABELS[m.month.slice(-2)] || m.month,
+            }),
             amount: -Math.round(m.expenses),
             status: t('common.posted'),
             category: t('reports.expensesCategory'),
@@ -360,12 +363,19 @@ export default function ReportsPage() {
             <KpiCard
               title={t('reports.grossProfit')}
               value={summary ? format(summary.grossProfit) : '-'}
-              sub={t('reports.marginPercent', { percent: summary ? ((summary.grossProfit / summary.revenue.total) * 100).toFixed(1) : 0 })}
+              sub={t('reports.marginPercent', {
+                percent: summary
+                  ? ((summary.grossProfit / summary.revenue.total) * 100).toFixed(1)
+                  : 0,
+              })}
               icon={<Wallet className="size-4" />}
               loading={summaryLoadingState}
               trend={
                 summary?.grossProfit
-                  ? { dir: summary.grossProfit > 0 ? 'up' : 'down', label: t('reports.beforeExpenses') }
+                  ? {
+                      dir: summary.grossProfit > 0 ? 'up' : 'down',
+                      label: t('reports.beforeExpenses'),
+                    }
                   : undefined
               }
             />
@@ -388,7 +398,9 @@ export default function ReportsPage() {
               icon={<Receipt className="size-4" />}
               loading={summaryLoadingState}
               trend={
-                summary?.outstanding.total ? { dir: 'down', label: t('reports.needsCollection') } : undefined
+                summary?.outstanding.total
+                  ? { dir: 'down', label: t('reports.needsCollection') }
+                  : undefined
               }
             />
             <KpiCard
@@ -437,19 +449,19 @@ export default function ReportsPage() {
           >
             <TabsTrigger
               value="reports"
-              className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary pb-3 px-4"
+              className="rounded-none border-b-2 border-transparent pb-3 px-4"
             >
               {t('common.details')}
             </TabsTrigger>
             <TabsTrigger
               value="overview"
-              className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary pb-3 px-4"
+              className="rounded-none border-b-2 border-transparent pb-3 px-4"
             >
               {t('common.overview')}
             </TabsTrigger>
             <TabsTrigger
               value="financial"
-              className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary pb-3 px-4"
+              className="rounded-none border-b-2 border-transparent pb-3 px-4"
             >
               {t('settings.financial')}
             </TabsTrigger>
@@ -595,13 +607,11 @@ export default function ReportsPage() {
             {/* Revenue Trend */}
             <Card>
               <CardHeader>
-                  <CardTitle className="text-base flex items-center gap-2">
-                    <TrendingUp className="size-4 text-primary" />
-                    {t('reports.salesReport')}
-                  </CardTitle>
-                  <CardDescription>
-                    {t('reports.grossProfit')}
-                  </CardDescription>
+                <CardTitle className="text-base flex items-center gap-2">
+                  <TrendingUp className="size-4 text-primary" />
+                  {t('reports.salesReport')}
+                </CardTitle>
+                <CardDescription>{t('reports.grossProfit')}</CardDescription>
               </CardHeader>
               <CardContent>
                 {monthlyLoading ? (
@@ -779,11 +789,11 @@ export default function ReportsPage() {
             {/* Revenue vs Expenses */}
             <Card>
               <CardHeader>
-                  <CardTitle className="text-base flex items-center gap-2">
-                    <BarChart3 className="size-4 text-primary" />
-                    {t('reports.totalRevenue')} vs {t('reports.totalExpenses')}
-                  </CardTitle>
-                  <CardDescription>{t('common.description')}</CardDescription>
+                <CardTitle className="text-base flex items-center gap-2">
+                  <BarChart3 className="size-4 text-primary" />
+                  {t('reports.totalRevenue')} vs {t('reports.totalExpenses')}
+                </CardTitle>
+                <CardDescription>{t('common.description')}</CardDescription>
               </CardHeader>
               <CardContent>
                 {revExpLoading ? (
@@ -935,7 +945,6 @@ export default function ReportsPage() {
               </Card>
             </div>
           </TabsContent>
-
         </Tabs>
       </main>
     </div>
