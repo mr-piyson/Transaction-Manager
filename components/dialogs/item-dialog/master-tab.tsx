@@ -25,7 +25,7 @@ interface MasterTabProps {
 }
 
 export function MasterTab({ form, canManageMaster }: MasterTabProps) {
-  const { mode, master, errors, setMasterField, handleMasterNameBlur, pendingImageFile, setPendingImageFile } = form;
+  const { mode, master, errors, setMasterField, handleMasterNameBlur, pendingImageFile, setPendingImageFile, setImageRemoved } = form;
   const isLocked = !canManageMaster || mode === 'existing' || mode === 'add-supplier';
 
   const { data: categories } = trpc.categories.list.useQuery();
@@ -75,7 +75,11 @@ export function MasterTab({ form, canManageMaster }: MasterTabProps) {
         <ImageUpload
           value={master.image}
           file={pendingImageFile}
-          onFileChange={setPendingImageFile}
+          onFileChange={(f) => {
+            setPendingImageFile(f);
+            if (f) setImageRemoved(false);
+          }}
+          onRemove={() => setImageRemoved(true)}
           disabled={isLocked}
         />
       )}

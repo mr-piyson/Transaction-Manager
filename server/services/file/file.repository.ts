@@ -17,6 +17,10 @@ export function findById(id: string) {
   return db.file.findUnique({ where: { id } });
 }
 
+export function findByStoragePath(storagePath: string) {
+  return db.file.findUnique({ where: { storagePath } });
+}
+
 export function deleteFile(id: string) {
   return db.file.delete({ where: { id } });
 }

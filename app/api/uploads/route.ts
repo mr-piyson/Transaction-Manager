@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { uploadFile, deleteUpload } from '@/server/services/file/upload.service';
+import { uploadFile, deleteUpload, deleteUploadByStoragePath } from '@/server/services/file/upload.service';
 
 export async function POST(req: NextRequest) {
   try {
@@ -27,12 +27,17 @@ export async function DELETE(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
     const fileId = searchParams.get('fileId');
+    const storagePath = searchParams.get('storagePath');
 
-    if (!fileId) {
-      return NextResponse.json({ error: 'fileId parameter is required' }, { status: 400 });
+    if (!fileId && !storagePath) {
+      return NextResponse.json({ error: 'fileId or storagePath parameter is required' }, { status: 400 });
     }
 
-    await deleteUpload(fileId);
+    if (storagePath) {
+      await deleteUploadByStoragePath(storagePath);
+    } else {
+      await deleteUpload(fileId!);
+    }
 
     return NextResponse.json({ message: 'File deleted successfully' });
   } catch (error) {

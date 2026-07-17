@@ -108,3 +108,13 @@ export async function deleteUpload(fileId: string): Promise<void> {
     await storage.remove(record.storagePath);
   }
 }
+
+export async function deleteUploadByStoragePath(storagePath: string): Promise<void> {
+  const record = await fileRepo.findByStoragePath(storagePath);
+  if (!record) return; // already gone or never existed
+
+  const wasDeleted = await fileRepo.deleteFileIfOrphaned(record.id);
+  if (wasDeleted) {
+    await storage.remove(record.storagePath);
+  }
+}

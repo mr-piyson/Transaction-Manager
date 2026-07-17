@@ -36,11 +36,13 @@ export interface UseItemFormReturn {
   errors: FormErrors;
   isSubmitting: boolean;
   pendingImageFile: File | null;
+  imageRemoved: boolean;
 
   setMode: (mode: Mode) => void;
   setMasterField: <K extends keyof ItemMasterValues>(field: K, value: ItemMasterValues[K]) => void;
   setMaster: (master: ItemMasterValues) => void;
   setPendingImageFile: (file: File | null) => void;
+  setImageRemoved: (removed: boolean) => void;
 
   addSupplierDraft: () => void;
   removeSupplierDraft: (tempId: string) => void;
@@ -107,6 +109,8 @@ export function useItemForm({
   });
   const [errors, setErrors] = React.useState<FormErrors>({ master: {}, suppliers: {} });
   const [pendingImageFile, setPendingImageFileState] = React.useState<File | null>(null);
+  const [imageRemoved, setImageRemoved] = React.useState(false);
+  const originalImagePathRef = React.useRef<string | null>(null);
 
   const setPendingImageFile = React.useCallback((file: File | null) => {
     setPendingImageFileState(file);
@@ -130,6 +134,16 @@ export function useItemForm({
         description: err instanceof Error ? err.message : 'Please try again.',
       });
       return null;
+    }
+  }, []);
+
+  // ── Image cleanup helper ────────────────────────────────────────────────
+  const deleteOldImage = React.useCallback(async (storagePath: string | null | undefined) => {
+    if (!storagePath) return;
+    try {
+      await fetch(`/api/uploads?storagePath=${encodeURIComponent(storagePath)}`, { method: 'DELETE' });
+    } catch (err) {
+      console.error('[deleteOldImage]', err);
     }
   }, []);
 
@@ -207,6 +221,7 @@ export function useItemForm({
     if (editItemId && editItemData) {
       // Edit mode: pre-fill from fetched item
       const d = editItemData as any;
+      originalImagePathRef.current = d.image ?? null;
       setMasterState(getItemMasterDefaults({
         type: d.type,
         sku: d.sku,
@@ -230,6 +245,7 @@ export function useItemForm({
       setEditingItem(editItemData);
       setExistingMaster(null);
     } else if (initialItem?.id) {
+      originalImagePathRef.current = initialItem.image ?? null;
       setMasterState(getItemMasterDefaults(initialItem));
       setExistingMaster(initialItem);
       setEditingItem(null);
@@ -241,6 +257,7 @@ export function useItemForm({
         defaults.unitId = defaultUnit.id;
         defaults.unit = defaultUnit.code;
       }
+      originalImagePathRef.current = null;
       setMasterState(defaults);
       setExistingMaster(null);
       setEditingItem(null);
@@ -258,6 +275,7 @@ export function useItemForm({
     );
     setErrors({ master: {}, suppliers: {} });
     setPendingImageFileState(null);
+    setImageRemoved(false);
   }, [open, getInitialMode, initialItem, initialSupplierId, editItemId, editItemData, units]);
 
   // ── Master field setters ────────────────────────────────────────────────
@@ -415,6 +433,24 @@ export function useItemForm({
         }
       }
 
+      // Determine final image value and whether old image needs cleanup
+      const originalImage = originalImagePathRef.current;
+      let finalImage: string | undefined;
+      if (imageUrl) {
+        // New image uploaded (replacement) — clean up old
+        finalImage = imageUrl;
+        if (originalImage && originalImage !== imageUrl) {
+          await deleteOldImage(originalImage);
+        }
+      } else if (imageRemoved) {
+        // User explicitly removed the image
+        finalImage = undefined;
+        await deleteOldImage(originalImage);
+      } else {
+        // Image not touched — keep original
+        finalImage = undefined; // let each mode use its own fallback
+      }
+
       if (mode === 'existing' && existingMaster) {
         // Only add supplier items to existing item
         const payload = {
@@ -424,7 +460,7 @@ export function useItemForm({
             name: existingMaster.name,
             barcode: existingMaster.barcode ?? undefined,
             description: existingMaster.description ?? undefined,
-            image: imageUrl ?? existingMaster.image ?? undefined,
+            image: finalImage !== undefined ? finalImage : (imageUrl ?? existingMaster.image ?? undefined),
             unit: existingMaster.unit ?? 'pcs',
             unitId: existingMaster.unitId ?? undefined,
             isSaleable: existingMaster.isSaleable ?? true,
@@ -458,7 +494,7 @@ export function useItemForm({
           name: master.name,
           barcode: master.barcode,
           description: master.description,
-          image: imageUrl ?? master.image,
+          image: finalImage !== undefined ? finalImage : (imageUrl ?? master.image),
           unit: master.unit,
           isSaleable: master.isSaleable,
           isPurchasable: master.isPurchasable,
@@ -506,7 +542,7 @@ export function useItemForm({
         createMutation.mutate(payload);
       }
     },
-    [validate, mode, existingMaster, master, supplierDrafts, createMutation, updateMutation, editingItem, pendingImageFile, uploadImage],
+    [validate, mode, existingMaster, master, supplierDrafts, createMutation, updateMutation, editingItem, pendingImageFile, uploadImage, deleteOldImage, imageRemoved],
   );
 
   // ── Reset ───────────────────────────────────────────────────────────────
@@ -519,6 +555,7 @@ export function useItemForm({
     setSupplierDrafts([getSupplierItemDraftDefaults()]);
     setErrors({ master: {}, suppliers: {} });
     setPendingImageFileState(null);
+    setImageRemoved(false);
   }, []);
 
   return {
@@ -530,10 +567,12 @@ export function useItemForm({
     errors,
     isSubmitting: createMutation.isPending || updateMutation.isPending || isEditItemLoading,
     pendingImageFile,
+    imageRemoved,
     setMode,
     setMasterField,
     setMaster,
     setPendingImageFile,
+    setImageRemoved,
     addSupplierDraft,
     removeSupplierDraft,
     updateSupplierDraft,
