@@ -6,7 +6,7 @@
     "dev": "open http://localhost:3005 && next dev --port 3005 ",
     "build": "next build",
     "start": "next start",
-    "update": "git pull && bun install && bunx prisma generate && bunx prisma db push && bun build && bun start",
+    "update": "git pull && bun install && bunx prisma generate && bunx prisma db push && bun run build && bun start",
     "lint": "eslint",
     "format": "prettier --write .",
     "sync": "bunx prisma generate && bunx prisma db push "
