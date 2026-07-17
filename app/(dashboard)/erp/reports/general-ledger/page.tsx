@@ -285,7 +285,7 @@ export default function GeneralLedgerPage() {
                     gridApiRef.current = params.api;
                   }}
                   domLayout="normal"
-                  getRowId={(params, i) => `${params.data.entryNumber}-${i}`}
+                  getRowId={(params) => `${params.data.entryNumber}-${params.data.id}`}
                   suppressScrollOnNewData
                   enableCellTextSelection
                   ensureDomOrder

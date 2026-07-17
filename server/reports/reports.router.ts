@@ -685,7 +685,7 @@ export const reportsRouter = router({
         status: { notIn: ['CANCELLED', 'CLOSED'] },
         amountOwed: { gt: 0 },
       },
-      select: { dueDate: true, amountOwed: true, total: true },
+      select: { expectedDate: true, amountOwed: true, total: true },
     });
 
     const buckets = {
@@ -698,12 +698,12 @@ export const reportsRouter = router({
 
     for (const po of outstandingPOs) {
       const amount = Number(po.amountOwed);
-      if (!po.dueDate) {
+      if (!po.expectedDate) {
         buckets.current += amount;
         continue;
       }
       const daysOverdue = Math.floor(
-        (now.getTime() - new Date(po.dueDate).getTime()) / (1000 * 60 * 60 * 24),
+        (now.getTime() - new Date(po.expectedDate).getTime()) / (1000 * 60 * 60 * 24),
       );
       if (daysOverdue <= 0) buckets.current += amount;
       else if (daysOverdue <= 30) buckets.days1to30 += amount;
@@ -740,7 +740,7 @@ export const reportsRouter = router({
         serial: true,
         total: true,
         amountOwed: true,
-        dueDate: true,
+        expectedDate: true,
         date: true,
         currency: true,
         supplier: { select: { name: true } },
@@ -758,8 +758,8 @@ export const reportsRouter = router({
 
     for (const po of outstandingPOs) {
       const amount = Number(po.amountOwed);
-      const daysOverdue = po.dueDate
-        ? Math.floor((now.getTime() - new Date(po.dueDate).getTime()) / (1000 * 60 * 60 * 24))
+      const daysOverdue = po.expectedDate
+        ? Math.floor((now.getTime() - new Date(po.expectedDate).getTime()) / (1000 * 60 * 60 * 24))
         : 0;
 
       const poData = {
@@ -767,7 +767,7 @@ export const reportsRouter = router({
         serial: po.serial,
         total: Number(po.total),
         amountOwed: amount,
-        dueDate: po.dueDate,
+        dueDate: po.expectedDate,
         date: po.date,
         currency: po.currency,
         supplierName: po.supplier?.name ?? '—',
