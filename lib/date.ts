@@ -66,11 +66,108 @@ export const DATE_DISPLAY_FORMAT_LABELS: Record<DateDisplayFormat, string> = {
  *
  * Returns null if the value is empty or not a valid date.
  */
-export function safeParseISO(value: string | Date | null | undefined): Date | null {
+export function safeParseISO(
+  value: string | Date | null | undefined,
+): Date | null {
   if (!value) return null;
   if (value instanceof Date) return isValid(value) ? value : null;
   const parsed = parseISO(value);
   return isValid(parsed) ? parsed : null;
+}
+
+// =============================================================================
+// FORMAT SEGMENTS — dynamic OTP-slot layout derived from a format pattern
+// =============================================================================
+
+export type DateFormatKey = 'yyyy' | 'MM' | 'dd' | 'HH' | 'mm';
+
+export interface DateFormatDigits {
+  type: 'digits';
+  key: DateFormatKey;
+  length: number;
+}
+
+export interface DateFormatSeparator {
+  type: 'separator';
+  char: string;
+}
+
+export type DateFormatToken = DateFormatDigits | DateFormatSeparator;
+
+/**
+ * Break a date input format (e.g. "dd/MM/yyyy", "yyyy-MM-dd") — optionally
+ * extended with a time portion — into an ordered list of tokens: digit
+ * groups (with their width) and literal separator characters.
+ *
+ * This is what lets a component like an OTP-style date input render the
+ * right number of boxes, in the right order, with the right divider
+ * characters, for whichever format/mode is active — instead of hardcoding
+ * a single MM/DD/YYYY layout.
+ */
+export function getDateFormatSegments(
+  inputFormat: DateInputFormat = DEFAULT_INPUT_FORMAT,
+  mode: 'date' | 'datetime' = 'date',
+): DateFormatToken[] {
+  const pattern = DATE_INPUT_FORMATS[inputFormat];
+  const tokens: DateFormatToken[] = [];
+  let i = 0;
+  while (i < pattern.length) {
+    const ch = pattern[i];
+    if (/[a-zA-Z]/.test(ch)) {
+      let j = i;
+      while (j < pattern.length && pattern[j] === ch) j++;
+      const run = pattern.slice(i, j);
+      const key: DateFormatKey = run.length === 4 ? 'yyyy' : ch === 'M' ? 'MM' : 'dd';
+      tokens.push({ type: 'digits', key, length: run.length });
+      i = j;
+    } else {
+      tokens.push({ type: 'separator', char: ch });
+      i++;
+    }
+  }
+  if (mode === 'datetime') {
+    tokens.push({ type: 'separator', char: ' ' });
+    tokens.push({ type: 'digits', key: 'HH', length: 2 });
+    tokens.push({ type: 'separator', char: ':' });
+    tokens.push({ type: 'digits', key: 'mm', length: 2 });
+  }
+  return tokens;
+}
+
+/** Total number of digit slots across all digit tokens (the OTP maxLength). */
+export function getSegmentTotalDigits(tokens: DateFormatToken[]): number {
+  return tokens.reduce((sum, t) => (t.type === 'digits' ? sum + t.length : sum), 0);
+}
+
+/**
+ * Split a raw digit string (as typed into the OTP boxes) into its named
+ * parts, based on the same token order used to lay out the boxes.
+ */
+export function digitsToParts(
+  digits: string,
+  tokens: DateFormatToken[],
+): Partial<Record<DateFormatKey, string>> {
+  const parts: Partial<Record<DateFormatKey, string>> = {};
+  let pos = 0;
+  for (const t of tokens) {
+    if (t.type === 'digits') {
+      parts[t.key] = digits.slice(pos, pos + t.length);
+      pos += t.length;
+    }
+  }
+  return parts;
+}
+
+/**
+ * The inverse of digitsToParts: format a Date into the raw digit string
+ * matching the given tokens' order (used to seed the OTP boxes from an
+ * external Date — calendar selection, "Today", or a controlled value).
+ */
+export function dateToDigits(date: Date, tokens: DateFormatToken[]): string {
+  return tokens
+    .filter((t): t is DateFormatDigits => t.type === 'digits')
+    .map((t) => format(date, t.key))
+    .join('');
 }
 
 // =============================================================================
@@ -186,7 +283,9 @@ export function formatDateAgo(date: Date | string | null | undefined): string {
  * Format only the short date (no year) for compact displays.
  * Uses the month/day order from the input format.
  */
-export function formatShortDate(date: Date | string | number | null | undefined): string {
+export function formatShortDate(
+  date: Date | string | number | null | undefined,
+): string {
   if (!date) return 'N/A';
   const parsed = typeof date === 'string' ? safeParseISO(date) : new Date(date);
   if (!parsed || !isValid(parsed)) return 'Invalid Date';
