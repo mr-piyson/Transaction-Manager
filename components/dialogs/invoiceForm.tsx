@@ -500,15 +500,13 @@ export function InvoiceFormDialog({
                   const isManual = !field.itemId;
                   const item = itemsMap[field.itemId || ''] as any;
                   const lineWatch = watch(`lines.${index}`);
-                  const lineTaxRateId = watch(`lines.${index}.taxRateId`);
-                  const taxRate = taxRatesMap[lineTaxRateId || ''] as any;
                   const qty = Number(lineWatch?.quantity) || 0;
                   const price = Number(lineWatch?.unitPrice) || 0;
                   const costBasis = Number(lineWatch?.purchasePrice) || 0;
                   const discount = Number(lineWatch?.discountAmt) || 0;
                   const lineSubtotal = qty * price;
                   const lineTotal = lineSubtotal - discount;
-                  const lineTax = taxRate ? lineTotal * (Number(taxRate.rate) / 100) : 0;
+                  const lineTax = lineWatch?.taxRateSnapshot ? lineTotal * (Number(lineWatch.taxRateSnapshot) / 100) : 0;
                   const lineCogs = qty * costBasis;
                   const grossProfit = lineTotal - lineCogs;
                   const margin = lineTotal > 0 ? (grossProfit / lineTotal) * 100 : 0;
@@ -518,11 +516,18 @@ export function InvoiceFormDialog({
                       {/* Compact card header */}
                       <div className="flex items-center justify-between gap-2">
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium truncate">
-                            {isManual
-                              ? lineWatch?.description || t('invoices.manualEntry')
-                              : item?.name || field.itemId}
-                          </p>
+                          <div className="flex items-center gap-2">
+                            {isManual ? (
+                              <Wrench className="h-4 w-4 text-muted-foreground shrink-0" />
+                            ) : (
+                              <Package className="h-4 w-4 text-muted-foreground shrink-0" />
+                            )}
+                            <p className="text-sm font-medium truncate">
+                              {isManual
+                                ? lineWatch?.description || t('invoices.manualEntry')
+                                : item?.name || field.itemId}
+                            </p>
+                          </div>
                           <p className="text-xs text-muted-foreground">
                             {qty} × {price.toFixed(3)}
                             {discount > 0 && (
@@ -557,41 +562,6 @@ export function InvoiceFormDialog({
                             <Trash2 className="h-3.5 w-3.5 text-destructive" />
                           </Button>
                         </div>
-                      </div>
-
-                      {/* Tax rate selector */}
-                      <div className="flex items-center gap-2">
-                        <div className="w-48">
-                          <Select
-                            value={lineTaxRateId || 'none'}
-                            onValueChange={(v) => {
-                              const tr = v === 'none' ? undefined : (taxRatesMap[v] as any);
-                              setValue(`lines.${index}.taxRateId`, v === 'none' ? undefined : v);
-                              setValue(
-                                `lines.${index}.taxRateSnapshot`,
-                                tr ? Number(tr.rate) : undefined,
-                              );
-                              setValue(`lines.${index}.taxRateName`, tr?.name || undefined);
-                            }}
-                          >
-                            <SelectTrigger>
-                              <SelectValue placeholder={t('invoices.taxRate')} />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="none">{t('invoices.noTax')}</SelectItem>
-                              {taxRates.map((tr: any) => (
-                                <SelectItem key={tr.id} value={tr.id}>
-                                  {tr.name} ({Number(tr.rate)}%)
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </div>
-                        {taxRate && (
-                          <span className="text-xs text-muted-foreground">
-                            {t('invoices.tax')}: {lineTax.toFixed(3)} {currency}
-                          </span>
-                        )}
                       </div>
 
                       {/* Profit info */}
