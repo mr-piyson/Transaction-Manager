@@ -347,7 +347,7 @@ export function InvoiceFormDialog({
           <form onSubmit={handleSubmit(onSubmit)} noValidate>
             <ValidationAlert errors={errors as any} />
 
-            <div className="space-y-4 max-h-110 overflow-y-auto pr-2">
+            <div className="space-y-4 max-h-110 sm:max-h-110 max-sm:max-h-[calc(100dvh-14rem)] overflow-y-auto pr-2">
               {/* Type + Currency */}
               <div className="grid grid-cols-2 gap-3">
                 <Field>
@@ -506,7 +506,9 @@ export function InvoiceFormDialog({
                   const discount = Number(lineWatch?.discountAmt) || 0;
                   const lineSubtotal = qty * price;
                   const lineTotal = lineSubtotal - discount;
-                  const lineTax = lineWatch?.taxRateSnapshot ? lineTotal * (Number(lineWatch.taxRateSnapshot) / 100) : 0;
+                  const lineTax = lineWatch?.taxRateSnapshot
+                    ? lineTotal * (Number(lineWatch.taxRateSnapshot) / 100)
+                    : 0;
                   const lineCogs = qty * costBasis;
                   const grossProfit = lineTotal - lineCogs;
                   const margin = lineTotal > 0 ? (grossProfit / lineTotal) * 100 : 0;
