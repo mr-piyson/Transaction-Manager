@@ -10,6 +10,7 @@ import {
   TriangleAlert,
   User,
   Pencil,
+  Wrench,
 } from 'lucide-react';
 import * as React from 'react';
 import { type SubmitHandler, useFieldArray, useForm, useWatch } from 'react-hook-form';
@@ -46,7 +47,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Textarea } from '@/components/ui/textarea';
 import { trpc } from '@/lib/trpc/client';
 
 const invoiceLineSchema = z.object({
@@ -67,15 +67,12 @@ const invoiceLineSchema = z.object({
 const schema = z.object({
   type: z.enum(['QUOTE', 'INVOICE', 'CREDIT_NOTE', 'PROFORMA', 'DELIVERY_NOTE']).default('INVOICE'),
   date: z.string().min(1, 'Date is required'),
-  dueDate: z.string().optional(),
   customerId: z.string().optional(),
   warehouseId: z.string().optional(),
   departmentId: z.string().optional(),
   currency: currencyCodeSchema.default('BHD'),
   exchangeRate: z.coerce.number().positive().default(1),
-  notes: z.string().optional(),
   termsText: z.string().optional(),
-  internalNotes: z.string().optional(),
   isWalkIn: z.boolean().default(false),
   parentInvoiceId: z.string().optional(),
   lines: z.array(invoiceLineSchema).min(1, 'At least one line is required'),
@@ -226,15 +223,12 @@ export function InvoiceFormDialog({
     const payload = {
       type: values.type,
       date: new Date(values.date),
-      dueDate: values.dueDate ? new Date(values.dueDate) : undefined,
       customerId: values.isWalkIn ? undefined : values.customerId || undefined,
       warehouseId: values.warehouseId || undefined,
       departmentId: values.departmentId || undefined,
       currency: values.currency,
       exchangeRate: Number(values.exchangeRate) || 1,
-      notes: values.notes || undefined,
       termsText: values.termsText || undefined,
-      internalNotes: values.internalNotes || undefined,
       isWalkIn: values.isWalkIn,
       parentInvoiceId: values.parentInvoiceId || undefined,
       lines: values.lines.map((l, idx) => ({
@@ -392,22 +386,16 @@ export function InvoiceFormDialog({
               </div>
 
               {/* Dates */}
-              <div className="grid grid-cols-2 gap-3">
-                <Field>
-                  <Label htmlFor="date">{t('invoices.issueDate')} *</Label>
-                  <DateInputField
-                    control={control}
-                    name="date"
-                    rules={{ required: 'Date is required' }}
-                    required
-                    showTodayButton
-                  />
-                </Field>
-                <Field>
-                  <Label htmlFor="dueDate">{t('invoices.dueDate')}</Label>
-                  <DateInputField control={control} name="dueDate" />
-                </Field>
-              </div>
+              <Field>
+                <Label htmlFor="date">{t('invoices.issueDate')} *</Label>
+                <DateInputField
+                  control={control}
+                  name="date"
+                  rules={{ required: 'Date is required' }}
+                  required
+                  showTodayButton
+                />
+              </Field>
 
               {/* Customer */}
               {needsCustomer && (
@@ -481,22 +469,6 @@ export function InvoiceFormDialog({
                   </Select>
                 </Field>
               )}
-
-              <div className="grid grid-cols-2 gap-3">
-                <Field>
-                  <Label htmlFor="notes">{t('invoices.notesPrinted')}</Label>
-                  <Textarea id="notes" className="resize-none" rows={2} {...register('notes')} />
-                </Field>
-                <Field>
-                  <Label htmlFor="internalNotes">{t('invoices.internalNotes')}</Label>
-                  <Textarea
-                    id="internalNotes"
-                    className="resize-none"
-                    rows={2}
-                    {...register('internalNotes')}
-                  />
-                </Field>
-              </div>
 
               {/* Line Items */}
               <div className="space-y-3">
@@ -915,15 +887,12 @@ function defaults(
   return {
     type: invoice?.type ?? 'INVOICE',
     date: invoice?.date ?? today,
-    dueDate: invoice?.dueDate ?? undefined,
     customerId: invoice?.customerId ?? '',
     warehouseId: invoice?.warehouseId ?? defaultWarehouse?.id ?? '',
     departmentId: invoice?.departmentId ?? undefined,
     currency: (invoice?.currency ?? org?.currency ?? 'BHD') as any,
     exchangeRate: invoice?.exchangeRate ?? 1,
-    notes: invoice?.notes ?? undefined,
     termsText: invoice?.termsText ?? org?.defaultTermsText ?? undefined,
-    internalNotes: invoice?.internalNotes ?? undefined,
     isWalkIn: invoice?.isWalkIn ?? false,
     parentInvoiceId: invoice?.parentInvoiceId ?? undefined,
     lines: invoice?.lines ?? [],
