@@ -25,7 +25,7 @@ interface MasterTabProps {
 }
 
 export function MasterTab({ form, canManageMaster }: MasterTabProps) {
-  const { mode, master, errors, setMasterField, handleMasterNameBlur, pendingImageFile, setPendingImageFile, setImageRemoved } = form;
+  const { mode, master, errors, setMasterField, handleMasterNameBlur, pendingImageFile, setPendingImageFile, setImageRemoved, imageRemoved } = form;
   const isLocked = !canManageMaster || mode === 'existing' || mode === 'add-supplier';
 
   const { data: categories } = trpc.categories.list.useQuery();
@@ -81,6 +81,7 @@ export function MasterTab({ form, canManageMaster }: MasterTabProps) {
           }}
           onRemove={() => setImageRemoved(true)}
           disabled={isLocked}
+          imageRemoved={imageRemoved}
         />
       )}
 

@@ -111,6 +111,7 @@ export function useItemForm({
   const [pendingImageFile, setPendingImageFileState] = React.useState<File | null>(null);
   const [imageRemoved, setImageRemoved] = React.useState(false);
   const originalImagePathRef = React.useRef<string | null>(null);
+  const originalSupplierItemIdsRef = React.useRef<Set<string>>(new Set());
 
   const setPendingImageFile = React.useCallback((file: File | null) => {
     setPendingImageFileState(file);
@@ -206,6 +207,11 @@ export function useItemForm({
     },
   });
 
+  // Supplier item mutations (for edit mode)
+  const addSupplierItemMutation = trpc.suppliers.addSupplierItem.useMutation();
+  const updateSupplierItemMutation = trpc.suppliers.updateSupplierItem.useMutation();
+  const deleteSupplierItemMutation = trpc.suppliers.deleteSupplierItem.useMutation();
+
   // Reset on open — only when `open` transitions to true or initial props change
   const prevOpenRef = React.useRef(open);
   React.useEffect(() => {
@@ -244,6 +250,29 @@ export function useItemForm({
       }));
       setEditingItem(editItemData);
       setExistingMaster(null);
+
+      // Load existing supplier items into drafts
+      const existingSupplierItems: any[] = d.supplierItems ?? [];
+      originalSupplierItemIdsRef.current = new Set(existingSupplierItems.map((si: any) => si.id));
+      if (existingSupplierItems.length > 0) {
+        setSupplierDrafts(
+          existingSupplierItems.map((si: any) => ({
+            tempId: makeTempId(),
+            id: si.id,
+            supplierId: si.supplierId,
+            supplierSku: si.supplierSku ?? undefined,
+            supplierName: si.supplierName ?? undefined,
+            basePrice: Number(si.basePrice),
+            currency: si.currency ?? 'BHD',
+            leadTimeDays: si.leadTimeDays ?? undefined,
+            minOrderQty: Number(si.minOrderQty) ?? 1,
+            notes: si.notes ?? undefined,
+            isActive: si.isActive ?? true,
+          })),
+        );
+      } else {
+        setSupplierDrafts([getSupplierItemDraftDefaults()]);
+      }
     } else if (initialItem?.id) {
       originalImagePathRef.current = initialItem.image ?? null;
       setMasterState(getItemMasterDefaults(initialItem));
@@ -258,6 +287,7 @@ export function useItemForm({
         defaults.unit = defaultUnit.code;
       }
       originalImagePathRef.current = null;
+      originalSupplierItemIdsRef.current = new Set();
       setMasterState(defaults);
       setExistingMaster(null);
       setEditingItem(null);
@@ -487,7 +517,7 @@ export function useItemForm({
         };
         createMutation.mutate(payload);
       } else if (mode === 'edit' && editingItem) {
-        updateMutation.mutate({
+        const updatedItem = await updateMutation.mutateAsync({
           id: editingItem.id,
           type: master.type,
           sku: master.sku,
@@ -506,6 +536,54 @@ export function useItemForm({
           categoryId: master.categoryId,
           taxRateId: master.taxRateId,
         });
+
+        // Process supplier items
+        const currentIds = new Set(
+          supplierDrafts.filter((d) => d.id).map((d) => d.id!),
+        );
+
+        // Delete removed supplier items
+        for (const origId of originalSupplierItemIdsRef.current) {
+          if (!currentIds.has(origId)) {
+            await deleteSupplierItemMutation.mutateAsync({ id: origId });
+          }
+        }
+
+        // Add or update supplier items
+        for (const draft of supplierDrafts) {
+          if (draft.id) {
+            // Existing — update
+            await updateSupplierItemMutation.mutateAsync({
+              id: draft.id,
+              supplierSku: draft.supplierSku,
+              supplierName: draft.supplierName,
+              basePrice: String(draft.basePrice),
+              currency: draft.currency,
+              leadTimeDays: draft.leadTimeDays,
+              minOrderQty: String(draft.minOrderQty),
+              notes: draft.notes,
+            });
+          } else {
+            // New — add
+            await addSupplierItemMutation.mutateAsync({
+              supplierId: draft.supplierId,
+              itemId: editingItem.id,
+              supplierSku: draft.supplierSku,
+              supplierName: draft.supplierName,
+              basePrice: String(draft.basePrice),
+              currency: draft.currency,
+              leadTimeDays: draft.leadTimeDays,
+              minOrderQty: String(draft.minOrderQty),
+              notes: draft.notes,
+            });
+          }
+        }
+
+        utils.items.list.invalidate();
+        utils.items.byId.invalidate({ id: editingItem.id });
+        toast.success('Item updated', { description: updatedItem.name });
+        onSuccess?.(editingItem.id);
+        onOpenChange(false);
       } else if (mode === 'create') {
         const payload = {
           item: {
@@ -542,7 +620,7 @@ export function useItemForm({
         createMutation.mutate(payload);
       }
     },
-    [validate, mode, existingMaster, master, supplierDrafts, createMutation, updateMutation, editingItem, pendingImageFile, uploadImage, deleteOldImage, imageRemoved],
+    [validate, mode, existingMaster, master, supplierDrafts, createMutation, updateMutation, editingItem, pendingImageFile, uploadImage, deleteOldImage, imageRemoved, addSupplierItemMutation, updateSupplierItemMutation, deleteSupplierItemMutation, utils, onSuccess, onOpenChange],
   );
 
   // ── Reset ───────────────────────────────────────────────────────────────
@@ -556,6 +634,7 @@ export function useItemForm({
     setErrors({ master: {}, suppliers: {} });
     setPendingImageFileState(null);
     setImageRemoved(false);
+    originalSupplierItemIdsRef.current = new Set();
   }, []);
 
   return {
@@ -565,7 +644,7 @@ export function useItemForm({
     editingItem,
     supplierDrafts,
     errors,
-    isSubmitting: createMutation.isPending || updateMutation.isPending || isEditItemLoading,
+    isSubmitting: createMutation.isPending || updateMutation.isPending || addSupplierItemMutation.isPending || updateSupplierItemMutation.isPending || deleteSupplierItemMutation.isPending || isEditItemLoading,
     pendingImageFile,
     imageRemoved,
     setMode,

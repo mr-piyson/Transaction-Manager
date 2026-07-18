@@ -14,9 +14,10 @@ interface ImageUploadProps {
   onFileChange: (file: File | null) => void;
   onRemove?: () => void;
   disabled?: boolean;
+  imageRemoved?: boolean;
 }
 
-export function ImageUpload({ value, file, onFileChange, onRemove, disabled }: ImageUploadProps) {
+export function ImageUpload({ value, file, onFileChange, onRemove, disabled, imageRemoved }: ImageUploadProps) {
   const [preview, setPreview] = React.useState<string | null>(null);
   const [isDragOver, setIsDragOver] = React.useState(false);
   const inputRef = React.useRef<HTMLInputElement>(null);
@@ -82,7 +83,7 @@ export function ImageUpload({ value, file, onFileChange, onRemove, disabled }: I
     onRemove?.();
   };
 
-  const displayUrl = preview ?? value;
+  const displayUrl = imageRemoved ? null : (preview ?? value);
 
   return (
     <div className="space-y-2">

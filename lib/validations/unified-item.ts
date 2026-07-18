@@ -7,6 +7,7 @@ import { currencyCodeSchema } from '@/lib/validations';
 
 export const supplierItemDraftSchema = z.object({
   tempId: z.string(),
+  id: z.string().optional(), // Existing supplierItem ID (for edit mode)
   supplierId: z.string().min(1, 'Select a supplier'),
   supplierSku: z.string().max(100).optional(),
   supplierName: z.string().max(255).optional(),
