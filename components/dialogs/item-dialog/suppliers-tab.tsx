@@ -13,7 +13,7 @@ interface SuppliersTabProps {
 }
 
 export function SuppliersTab({ form, suppliers, canManageSupplierItems }: SuppliersTabProps) {
-  const { supplierDrafts, errors, addSupplierDraft, removeSupplierDraft, updateSupplierDraft } =
+  const { mode, supplierDrafts, errors, addSupplierDraft, removeSupplierDraft, updateSupplierDraft } =
     form;
   const { openCreate } = useSupplierForm();
 
@@ -44,7 +44,7 @@ export function SuppliersTab({ form, suppliers, canManageSupplierItems }: Suppli
             (supplierIdCounts.get(draft.supplierId) ?? 0) > 1
           }
           disabled={!canManageSupplierItems}
-          canRemove={supplierDrafts.length > 1}
+          canRemove={mode === 'edit' || supplierDrafts.length > 1}
           onUpdate={updateSupplierDraft}
           onRemove={removeSupplierDraft}
         />

@@ -292,17 +292,21 @@ export function useItemForm({
       setExistingMaster(null);
       setEditingItem(null);
     }
-    setSupplierDrafts(
-      initialSupplierId
-        ? [
-            {
-              ...getSupplierItemDraftDefaults(),
-              tempId: makeTempId(),
-              supplierId: initialSupplierId,
-            },
-          ]
-        : [getSupplierItemDraftDefaults()],
-    );
+    // In edit mode, supplier drafts are already loaded from editItemData above.
+    // Only reset supplier drafts for create / add-supplier modes.
+    if (m !== 'edit') {
+      setSupplierDrafts(
+        initialSupplierId
+          ? [
+              {
+                ...getSupplierItemDraftDefaults(),
+                tempId: makeTempId(),
+                supplierId: initialSupplierId,
+              },
+            ]
+          : [getSupplierItemDraftDefaults()],
+      );
+    }
     setErrors({ master: {}, suppliers: {} });
     setPendingImageFileState(null);
     setImageRemoved(false);
