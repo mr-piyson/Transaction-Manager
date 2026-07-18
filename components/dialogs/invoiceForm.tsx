@@ -36,7 +36,7 @@ import {
 } from '@/components/ui/dialog';
 import { Field } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
-import { DatePickerField } from '@/components/ui/date-picker';
+import { DateInputField } from '@/components/ui/date-picker';
 import { toDateInputValue } from '@/lib/date';
 import { Label } from '@/components/ui/label';
 import {
@@ -395,11 +395,20 @@ export function InvoiceFormDialog({
               <div className="grid grid-cols-2 gap-3">
                 <Field>
                   <Label htmlFor="date">{t('invoices.issueDate')} *</Label>
-                  <DatePickerField id="date" {...register('date')} />
+                  <DateInputField
+                    control={control}
+                    name="date"
+                    rules={{ required: 'Date is required' }}
+                    required
+                    showTodayButton
+                  />
                 </Field>
                 <Field>
                   <Label htmlFor="dueDate">{t('invoices.dueDate')}</Label>
-                  <DatePickerField id="dueDate" {...register('dueDate')} />
+                  <DateInputField
+                    control={control}
+                    name="dueDate"
+                  />
                 </Field>
               </div>
 

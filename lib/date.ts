@@ -1,4 +1,4 @@
-import { format, formatDistanceToNow, isValid, parse, startOfDay } from 'date-fns';
+import { format, formatDistanceToNow, isValid, parse, set, startOfDay } from 'date-fns';
 
 // =============================================================================
 // DATE FORMAT DEFINITIONS
@@ -172,6 +172,43 @@ export function formatShortDate(
   const parsed = new Date(date);
   if (!isValid(parsed)) return 'Invalid Date';
   return format(parsed, 'dd MMM');
+}
+
+/**
+ * Parse a user-typed datetime string (date + optional HH:mm) according to the input format.
+ * Returns null if the date part doesn't match the format.
+ */
+export function parseDateTimeFromInput(
+  value: string,
+  inputFormat: DateInputFormat = DEFAULT_INPUT_FORMAT,
+): Date | null {
+  if (!value.trim()) return null;
+  const [datePart, timePart] = value.split(/[\sT]+/, 2);
+  const date = parseDateFromInput(datePart, inputFormat);
+  if (!date) return null;
+  if (timePart) {
+    const [h, m] = timePart.split(':').map(Number);
+    if (!isNaN(h) && !isNaN(m)) {
+      return set(date, { hours: h, minutes: m, seconds: 0, milliseconds: 0 });
+    }
+  }
+  return date;
+}
+
+/**
+ * Format a Date into a datetime string matching the input format + HH:mm.
+ * Used for datetime-local style inputs.
+ */
+export function formatDateTimeForInput(
+  date: Date | string | number | null | undefined,
+  inputFormat: DateInputFormat = DEFAULT_INPUT_FORMAT,
+): string {
+  if (!date) return '';
+  const parsed = new Date(date);
+  if (!isValid(parsed)) return '';
+  const dateStr = format(parsed, DATE_INPUT_FORMATS[inputFormat]);
+  const timeStr = format(parsed, 'HH:mm');
+  return `${dateStr} ${timeStr}`;
 }
 
 // Re-export the old API name for backward compatibility during migration

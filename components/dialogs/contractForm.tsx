@@ -11,7 +11,7 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Field } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
-import { DatePickerField } from '@/components/ui/date-picker';
+import { DateInputField } from '@/components/ui/date-picker';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { useCurrency } from '@/hooks/use-currency';
@@ -69,7 +69,7 @@ export function ContractFormDialog({ open, onOpenChange, contract, onSuccess }: 
   const { currency: orgCurrency } = useCurrency();
   const { data: customersData } = trpc.customers.list.useQuery({ limit: 200 });
 
-  const { register, handleSubmit, reset, setValue, watch, formState: { errors, isSubmitting } } = useForm<ContractFormValues>({
+  const { register, handleSubmit, reset, setValue, watch, control, formState: { errors, isSubmitting } } = useForm<ContractFormValues>({
     resolver: zodResolver(schema) as any,
     defaultValues: defaults(contract, orgCurrency),
   });
@@ -193,18 +193,32 @@ export function ContractFormDialog({ open, onOpenChange, contract, onSuccess }: 
             <div className="grid grid-cols-2 gap-3">
               <Field>
                 <Label htmlFor="startDate">Start date *</Label>
-                <DatePickerField id="startDate" aria-invalid={!!errors.startDate} {...register('startDate')} />
+                <DateInputField
+                  control={control}
+                  name="startDate"
+                  rules={{ required: 'Start date is required' }}
+                  required
+                  showTodayButton
+                />
               </Field>
               <Field>
                 <Label htmlFor="endDate">End date *</Label>
-                <DatePickerField id="endDate" aria-invalid={!!errors.endDate} {...register('endDate')} />
+                <DateInputField
+                  control={control}
+                  name="endDate"
+                  rules={{ required: 'End date is required' }}
+                  required
+                />
               </Field>
             </div>
 
             <div className="grid grid-cols-2 gap-3">
               <Field>
                 <Label htmlFor="renewalDate">Renewal date</Label>
-                <DatePickerField id="renewalDate" {...register('renewalDate')} />
+                <DateInputField
+                  control={control}
+                  name="renewalDate"
+                />
               </Field>
               <Field>
                 <Label htmlFor="renewalAlertDays">Alert before (days)</Label>

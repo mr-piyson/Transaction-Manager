@@ -17,7 +17,7 @@ import {
 } from '@/components/ui/dialog';
 import { Field } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
-import { DatePickerField } from '@/components/ui/date-picker';
+import { DateInputField } from '@/components/ui/date-picker';
 import { toDateInputValue } from '@/lib/date';
 import { Label } from '@/components/ui/label';
 import {
@@ -95,6 +95,7 @@ export function EmployeeFormDialog({ open, onOpenChange, employee, onSuccess }: 
     reset,
     setValue,
     watch,
+    control,
     formState: { errors },
   } = useForm<EmployeeFormValues>({
     resolver: zodResolver(schema) as any,
@@ -157,12 +158,21 @@ export function EmployeeFormDialog({ open, onOpenChange, employee, onSuccess }: 
 
             <Field orientation="vertical">
               <Label htmlFor="hireDate">Hire Date *</Label>
-              <DatePickerField id="hireDate" {...register('hireDate')} />
+              <DateInputField
+                control={control}
+                name="hireDate"
+                rules={{ required: 'Hire date is required' }}
+                required
+                showTodayButton
+              />
             </Field>
 
             <Field orientation="vertical">
               <Label htmlFor="probationEndDate">Probation End Date</Label>
-              <DatePickerField id="probationEndDate" {...register('probationEndDate')} />
+              <DateInputField
+                control={control}
+                name="probationEndDate"
+              />
             </Field>
 
             <Field orientation="vertical">

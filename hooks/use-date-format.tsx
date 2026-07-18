@@ -12,8 +12,10 @@ import {
   formatDateTimeSeconds as fmtDateTimeSec,
   formatDateAgo as fmtDateAgo,
   formatDateForInput as fmtDateForInput,
+  formatDateTimeForInput as fmtDateTimeForInput,
   formatShortDate as fmtShortDate,
   parseDateFromInput,
+  parseDateTimeFromInput,
   toDateInputValue,
   toDateTimeInputValue,
   type DateDisplayFormat,
@@ -28,10 +30,12 @@ type DateFormatContextValue = {
   formatDateTimeSeconds: (date: Date | string | number | null | undefined) => string;
   formatDateAgo: (date: Date | string | null | undefined) => string;
   formatDateForInput: (date: Date | string | number | null | undefined) => string;
+  formatDateTimeForInput: (date: Date | string | number | null | undefined) => string;
   formatShortDate: (date: Date | string | number | null | undefined) => string;
   toDateInputValue: (date: Date | string | number | null | undefined) => string;
   toDateTimeInputValue: (date: Date | string | number | null | undefined) => string;
   parseDateFromInput: (value: string) => Date | null;
+  parseDateTimeFromInput: (value: string) => Date | null;
 };
 
 const DateFormatContext = createContext<DateFormatContextValue | null>(null);
@@ -98,6 +102,16 @@ export function DateFormatProvider({ children }: { children: React.ReactNode }) 
     [inputFormat],
   );
 
+  const formatDateTimeForInputFn = useCallback(
+    (date: Date | string | number | null | undefined) => fmtDateTimeForInput(date, inputFormat),
+    [inputFormat],
+  );
+
+  const parseDateTimeFromInputFn = useCallback(
+    (value: string) => parseDateTimeFromInput(value, inputFormat),
+    [inputFormat],
+  );
+
   const value = useMemo<DateFormatContextValue>(
     () => ({
       inputFormat,
@@ -107,10 +121,12 @@ export function DateFormatProvider({ children }: { children: React.ReactNode }) 
       formatDateTimeSeconds,
       formatDateAgo,
       formatDateForInput: formatDateForInputFn,
+      formatDateTimeForInput: formatDateTimeForInputFn,
       formatShortDate: formatShortDateFn,
       toDateInputValue: toDateInputValueFn,
       toDateTimeInputValue: toDateTimeInputValueFn,
       parseDateFromInput: parseDateFromInputFn,
+      parseDateTimeFromInput: parseDateTimeFromInputFn,
     }),
     [
       inputFormat,
@@ -120,10 +136,12 @@ export function DateFormatProvider({ children }: { children: React.ReactNode }) 
       formatDateTimeSeconds,
       formatDateAgo,
       formatDateForInputFn,
+      formatDateTimeForInputFn,
       formatShortDateFn,
       toDateInputValueFn,
       toDateTimeInputValueFn,
       parseDateFromInputFn,
+      parseDateTimeFromInputFn,
     ],
   );
 

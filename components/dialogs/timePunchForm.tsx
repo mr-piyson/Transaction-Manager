@@ -18,6 +18,7 @@ import {
 import { Field } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { DateInputField } from '@/components/ui/date-picker';
 import {
   Select,
   SelectContent,
@@ -63,6 +64,7 @@ export function TimePunchFormDialog({ open, onOpenChange, onSuccess }: TimePunch
     reset,
     setValue,
     watch,
+    control,
     formState: { errors, isSubmitting },
   } = useForm<TimePunchFormValues>({
     resolver: zodResolver(schema),
@@ -109,7 +111,14 @@ export function TimePunchFormDialog({ open, onOpenChange, onSuccess }: TimePunch
 
           <Field orientation="vertical">
             <Label htmlFor="timestamp">Timestamp *</Label>
-            <Input id="timestamp" type="datetime-local" {...register('timestamp')} />
+            <DateInputField
+              control={control}
+              name="timestamp"
+              rules={{ required: 'Timestamp is required' }}
+              required
+              mode="datetime"
+              showTodayButton
+            />
           </Field>
 
           <Field orientation="vertical">

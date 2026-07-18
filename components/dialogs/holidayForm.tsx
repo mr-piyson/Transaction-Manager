@@ -17,7 +17,7 @@ import {
 } from '@/components/ui/dialog';
 import { Field } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
-import { DatePickerField } from '@/components/ui/date-picker';
+import { DateInputField } from '@/components/ui/date-picker';
 import { toDateInputValue } from '@/lib/date';
 import { Label } from '@/components/ui/label';
 import {
@@ -74,6 +74,7 @@ export function HolidayFormDialog({ open, onOpenChange, holiday, onSuccess }: Ho
     reset,
     setValue,
     watch,
+    control,
     formState: { errors },
   } = useForm<HolidayFormValues>({
     resolver: zodResolver(schema) as any,
@@ -116,7 +117,13 @@ export function HolidayFormDialog({ open, onOpenChange, holiday, onSuccess }: Ho
 
             <Field orientation="vertical">
               <Label htmlFor="date">Date *</Label>
-              <DatePickerField id="date" {...register('date')} />
+              <DateInputField
+                control={control}
+                name="date"
+                rules={{ required: 'Date is required' }}
+                required
+                showTodayButton
+              />
             </Field>
 
             <Field orientation="vertical">

@@ -23,7 +23,7 @@ import {
 } from '@/components/ui/dialog';
 import { Field } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
-import { DatePickerField } from '@/components/ui/date-picker';
+import { DateInputField } from '@/components/ui/date-picker';
 import { toDateInputValue } from '@/lib/date';
 import { Label } from '@/components/ui/label';
 import {
@@ -271,11 +271,20 @@ export function POFormDialog({ open, onOpenChange, po, onSuccess }: POFormDialog
               <div className="grid grid-cols-3 gap-3">
                 <Field>
                   <Label htmlFor="date">Date *</Label>
-                  <DatePickerField id="date" {...register('date')} />
+                  <DateInputField
+                    control={control}
+                    name="date"
+                    rules={{ required: 'Date is required' }}
+                    required
+                    showTodayButton
+                  />
                 </Field>
                 <Field>
                   <Label htmlFor="expectedDate">Expected date</Label>
-                  <DatePickerField id="expectedDate" {...register('expectedDate')} />
+                  <DateInputField
+                    control={control}
+                    name="expectedDate"
+                  />
                 </Field>
                 <Field>
                   <Label htmlFor="currency">Currency</Label>
