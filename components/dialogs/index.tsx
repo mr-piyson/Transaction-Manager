@@ -10,6 +10,7 @@ import { DocumentFormProvider } from './documentForm';
 import { EmployeeFormProvider } from './employeeForm';
 import { EmployeeTypeFormProvider } from './employeeTypeForm';
 import { ExchangeRateFormProvider } from './exchangeRateForm';
+import { PaymentFormProvider } from './paymentForm';
 import { GrievanceFormProvider } from './grievanceForm';
 import { HolidayFormProvider } from './holidayForm';
 import { InvoiceFormProvider } from './invoiceForm';
@@ -141,6 +142,13 @@ export {
   ExchangeRateDialog,
 } from './exchangeRateForm';
 
+export {
+  PaymentFormProvider,
+  usePaymentForm,
+  PaymentFormDialog,
+} from './paymentForm';
+export type { PaymentFormValues } from './paymentForm';
+
 /**
  * DialogsProvider — mount once in your app layout.
  * Nest all form providers so their hooks work anywhere in the tree.
@@ -175,7 +183,9 @@ export function DialogsProvider({ children }: { children: ReactNode }) {
                                                       <TrainingFormProvider>
                                                         <LeaveAllocateFormProvider>
                                                           <ExchangeRateFormProvider>
-                                                            {children}
+                                                            <PaymentFormProvider>
+                                                              {children}
+                                                            </PaymentFormProvider>
                                                           </ExchangeRateFormProvider>
                                                         </LeaveAllocateFormProvider>
                                                       </TrainingFormProvider>

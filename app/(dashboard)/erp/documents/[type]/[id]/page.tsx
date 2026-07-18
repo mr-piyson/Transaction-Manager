@@ -48,15 +48,7 @@ import {
   EmptyTitle,
 } from '@/components/ui/empty';
 import { Input } from '@/components/ui/input';
-import { DatePicker } from '@/components/ui/date-picker';
 import { Label } from '@/components/ui/label';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -71,6 +63,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { useInvoiceForm } from '@/components/dialogs/invoiceForm';
+import { usePaymentForm } from '@/components/dialogs/paymentForm';
 import { InvoiceHistoryPanel } from '@/components/invoices/invoice-history-panel';
 import { trpc } from '@/lib/trpc/client';
 import { useDateFormat } from '@/hooks/use-date-format';
@@ -96,6 +89,7 @@ export default function DocumentDetailPage() {
   const type = params.type;
   const isInvoice = type === 'invoices';
   const { openEdit, openCreate } = useInvoiceForm();
+  const { openCreate: openPayment } = usePaymentForm();
   const utils = trpc.useUtils();
   const { formatDate, formatDateTime, formatDateForInput } = useDateFormat();
 
@@ -141,12 +135,6 @@ export default function DocumentDetailPage() {
     title: string;
     description: string;
   }>({ open: false, action: '', title: '', description: '' });
-  const [paymentOpen, setPaymentOpen] = React.useState(false);
-  const [paymentAmount, setPaymentAmount] = React.useState('');
-  const [paymentMethod, setPaymentMethod] = React.useState('CASH');
-  const [paymentDate, setPaymentDate] = React.useState(() => new Date().toISOString().slice(0, 10));
-  const [paymentReference, setPaymentReference] = React.useState('');
-  const [paymentNotes, setPaymentNotes] = React.useState('');
   const [historyOpen, setHistoryOpen] = React.useState(false);
   const isMobile = useIsMobile();
 
@@ -209,19 +197,6 @@ export default function DocumentDetailPage() {
     onError: (e) => toast.error(e.message),
   });
 
-  const addPaymentMutation = trpc.invoices.addPayment.useMutation({
-    onSuccess: () => {
-      setPaymentOpen(false);
-      setPaymentAmount('');
-      setPaymentMethod('CASH');
-      setPaymentReference('');
-      setPaymentNotes('');
-      invalidate();
-      toast.success(t('invoices.paymentRecorded'));
-    },
-    onError: (e) => toast.error(e.message),
-  });
-
   const deletePaymentMutation = trpc.invoices.deletePayment.useMutation({
     onSuccess: () => {
       invalidate();
@@ -246,17 +221,8 @@ export default function DocumentDetailPage() {
     sendMutation.isPending ||
     cancelMutation.isPending ||
     deleteMutation.isPending ||
-    addPaymentMutation.isPending ||
     deletePaymentMutation.isPending ||
     convertQuoteMutation.isPending;
-
-  const resetPaymentForm = () => {
-    setPaymentAmount('');
-    setPaymentMethod('CASH');
-    setPaymentDate(new Date().toISOString().slice(0, 10));
-    setPaymentReference('');
-    setPaymentNotes('');
-  };
 
   if (isLoading) {
     return (
@@ -555,8 +521,13 @@ export default function DocumentDetailPage() {
             setCancelOpen(true);
             break;
           case 'payment':
-            resetPaymentForm();
-            setPaymentOpen(true);
+            openPayment({
+              id: invoice.id,
+              serial: invoice.serial,
+              total: Number(invoice.total),
+              amountDue: Number((invoice as any).amountDue),
+              currency: invoice.currency,
+            });
             break;
         }
     }
@@ -1113,121 +1084,6 @@ export default function DocumentDetailPage() {
         </DialogContent>
       </Dialog>
 
-      {/* Add Payment dialog */}
-      <Dialog
-        open={paymentOpen}
-        onOpenChange={(v) => {
-          if (!addPaymentMutation.isPending) setPaymentOpen(v);
-        }}
-      >
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>{t('invoices.recordPayment')}</DialogTitle>
-            <DialogDescription>
-              {invoice.serial} - {t('invoices.outstanding')}:{' '}
-              {Number((invoice as any).amountDue).toFixed(3)} {invoice.currency}
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-2">
-                <Label htmlFor="payment-amount">{t('invoices.paymentAmount')} *</Label>
-                <Input
-                  id="payment-amount"
-                  type="number"
-                  step="0.001"
-                  min="0"
-                  placeholder="0.000"
-                  value={paymentAmount}
-                  onChange={(e) => setPaymentAmount(e.target.value)}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="payment-method">{t('invoices.paymentMethod')} *</Label>
-                <Select value={paymentMethod} onValueChange={setPaymentMethod}>
-                  <SelectTrigger id="payment-method">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {['CASH', 'BANK_TRANSFER', 'CARD', 'CHEQUE', 'ONLINE', 'CREDIT', 'OTHER'].map(
-                      (value) => (
-                        <SelectItem key={value} value={value}>
-                          {value}
-                        </SelectItem>
-                      ),
-                    )}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="payment-date">{t('invoices.date')}</Label>
-              <DatePicker
-                id="payment-date"
-                value={paymentDate}
-                onChange={(v) => setPaymentDate(v)}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="payment-reference">{t('invoices.paymentReference')}</Label>
-              <Input
-                id="payment-reference"
-                placeholder={t('invoices.paymentReference')}
-                value={paymentReference}
-                onChange={(e) => setPaymentReference(e.target.value)}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="payment-notes">{t('invoices.paymentNotes')}</Label>
-              <Textarea
-                id="payment-notes"
-                placeholder={t('common.optionalNotes')}
-                value={paymentNotes}
-                onChange={(e) => setPaymentNotes(e.target.value)}
-                rows={2}
-              />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setPaymentOpen(false)}
-              disabled={addPaymentMutation.isPending}
-            >
-              {t('common.cancel')}
-            </Button>
-            <Button
-              onClick={() => {
-                const amount = parseFloat(paymentAmount);
-                if (!amount || amount <= 0) {
-                  toast.error(t('invoices.enterValidAmount'));
-                  return;
-                }
-                if (amount > Number((invoice as any).amountDue) + 0.000001) {
-                  toast.error(
-                    t('invoices.amountExceedsBalance', {
-                      balance: Number((invoice as any).amountDue).toFixed(3),
-                    }),
-                  );
-                  return;
-                }
-                addPaymentMutation.mutate({
-                  invoiceId: invoice.id,
-                  amount,
-                  method: paymentMethod as any,
-                  date: paymentDate ? new Date(paymentDate) : new Date(),
-                  reference: paymentReference || undefined,
-                  notes: paymentNotes || undefined,
-                });
-              }}
-              disabled={addPaymentMutation.isPending}
-            >
-              {addPaymentMutation.isPending && <Loader2 className="size-4 mr-1 animate-spin" />}
-              {t('invoices.recordPayment')}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }
