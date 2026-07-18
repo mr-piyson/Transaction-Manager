@@ -1,4 +1,4 @@
-import { format, formatDistanceToNow, isValid, parse, set, startOfDay } from 'date-fns';
+import { format, formatDistanceToNow, isValid, parse, parseISO, set, startOfDay } from 'date-fns';
 
 // =============================================================================
 // DATE FORMAT DEFINITIONS
@@ -53,6 +53,27 @@ export const DATE_DISPLAY_FORMAT_LABELS: Record<DateDisplayFormat, string> = {
 };
 
 // =============================================================================
+// SAFE PARSING
+// =============================================================================
+
+/**
+ * Safely parse an ISO date/datetime string into a Date, WITHOUT the classic
+ * `new Date('yyyy-MM-dd')` bug where date-only strings get interpreted as
+ * UTC midnight (causing an off-by-one-day shift in timezones behind UTC).
+ *
+ * - Date-only strings ("2024-04-18") are parsed as LOCAL midnight.
+ * - Full ISO datetime strings (with time / offset / "Z") are parsed as-is.
+ *
+ * Returns null if the value is empty or not a valid date.
+ */
+export function safeParseISO(value: string | Date | null | undefined): Date | null {
+  if (!value) return null;
+  if (value instanceof Date) return isValid(value) ? value : null;
+  const parsed = parseISO(value);
+  return isValid(parsed) ? parsed : null;
+}
+
+// =============================================================================
 // FORMATTING FUNCTIONS
 // =============================================================================
 
@@ -65,8 +86,8 @@ export function formatDate(
   displayFormat: DateDisplayFormat = DEFAULT_DISPLAY_FORMAT,
 ): string {
   if (!date) return 'N/A';
-  const parsed = new Date(date);
-  if (!isValid(parsed)) return 'Invalid Date';
+  const parsed = typeof date === 'string' ? safeParseISO(date) : new Date(date);
+  if (!parsed || !isValid(parsed)) return 'Invalid Date';
   return format(parsed, DATE_DISPLAY_FORMATS[displayFormat]);
 }
 
@@ -78,8 +99,8 @@ export function formatDateTime(
   displayFormat: DateDisplayFormat = DEFAULT_DISPLAY_FORMAT,
 ): string {
   if (!date) return 'N/A';
-  const parsed = new Date(date);
-  if (!isValid(parsed)) return 'Invalid Date';
+  const parsed = typeof date === 'string' ? safeParseISO(date) : new Date(date);
+  if (!parsed || !isValid(parsed)) return 'Invalid Date';
   const base = format(parsed, DATE_DISPLAY_FORMATS[displayFormat]);
   const time = format(parsed, 'HH:mm');
   return `${base} ${time}`;
@@ -93,8 +114,8 @@ export function formatDateTimeSeconds(
   displayFormat: DateDisplayFormat = DEFAULT_DISPLAY_FORMAT,
 ): string {
   if (!date) return 'N/A';
-  const parsed = new Date(date);
-  if (!isValid(parsed)) return 'Invalid Date';
+  const parsed = typeof date === 'string' ? safeParseISO(date) : new Date(date);
+  if (!parsed || !isValid(parsed)) return 'Invalid Date';
   const base = format(parsed, DATE_DISPLAY_FORMATS[displayFormat]);
   const time = format(parsed, 'HH:mm:ss');
   return `${base} ${time}`;
@@ -106,8 +127,8 @@ export function formatDateTimeSeconds(
  */
 export function toDateInputValue(date: Date | string | number | null | undefined): string {
   if (!date) return '';
-  const parsed = new Date(date);
-  if (!isValid(parsed)) return '';
+  const parsed = typeof date === 'string' ? safeParseISO(date) : new Date(date);
+  if (!parsed || !isValid(parsed)) return '';
   return format(parsed, 'yyyy-MM-dd');
 }
 
@@ -116,8 +137,8 @@ export function toDateInputValue(date: Date | string | number | null | undefined
  */
 export function toDateTimeInputValue(date: Date | string | number | null | undefined): string {
   if (!date) return '';
-  const parsed = new Date(date);
-  if (!isValid(parsed)) return '';
+  const parsed = typeof date === 'string' ? safeParseISO(date) : new Date(date);
+  if (!parsed || !isValid(parsed)) return '';
   return format(parsed, "yyyy-MM-dd'T'HH:mm");
 }
 
@@ -145,8 +166,8 @@ export function formatDateForInput(
   inputFormat: DateInputFormat = DEFAULT_INPUT_FORMAT,
 ): string {
   if (!date) return '';
-  const parsed = new Date(date);
-  if (!isValid(parsed)) return '';
+  const parsed = typeof date === 'string' ? safeParseISO(date) : new Date(date);
+  if (!parsed || !isValid(parsed)) return '';
   return format(parsed, DATE_INPUT_FORMATS[inputFormat]);
 }
 
@@ -155,8 +176,8 @@ export function formatDateForInput(
  */
 export function formatDateAgo(date: Date | string | null | undefined): string {
   if (!date) return '';
-  const parsed = new Date(date);
-  if (!isValid(parsed)) return '';
+  const parsed = typeof date === 'string' ? safeParseISO(date) : new Date(date);
+  if (!parsed || !isValid(parsed)) return '';
   const distance = formatDistanceToNow(parsed, { addSuffix: true });
   return distance.replace('about ', '');
 }
@@ -165,12 +186,10 @@ export function formatDateAgo(date: Date | string | null | undefined): string {
  * Format only the short date (no year) for compact displays.
  * Uses the month/day order from the input format.
  */
-export function formatShortDate(
-  date: Date | string | number | null | undefined,
-): string {
+export function formatShortDate(date: Date | string | number | null | undefined): string {
   if (!date) return 'N/A';
-  const parsed = new Date(date);
-  if (!isValid(parsed)) return 'Invalid Date';
+  const parsed = typeof date === 'string' ? safeParseISO(date) : new Date(date);
+  if (!parsed || !isValid(parsed)) return 'Invalid Date';
   return format(parsed, 'dd MMM');
 }
 
@@ -204,8 +223,8 @@ export function formatDateTimeForInput(
   inputFormat: DateInputFormat = DEFAULT_INPUT_FORMAT,
 ): string {
   if (!date) return '';
-  const parsed = new Date(date);
-  if (!isValid(parsed)) return '';
+  const parsed = typeof date === 'string' ? safeParseISO(date) : new Date(date);
+  if (!parsed || !isValid(parsed)) return '';
   const dateStr = format(parsed, DATE_INPUT_FORMATS[inputFormat]);
   const timeStr = format(parsed, 'HH:mm');
   return `${dateStr} ${timeStr}`;

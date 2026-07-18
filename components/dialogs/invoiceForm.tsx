@@ -405,10 +405,7 @@ export function InvoiceFormDialog({
                 </Field>
                 <Field>
                   <Label htmlFor="dueDate">{t('invoices.dueDate')}</Label>
-                  <DateInputField
-                    control={control}
-                    name="dueDate"
-                  />
+                  <DateInputField control={control} name="dueDate" />
                 </Field>
               </div>
 
