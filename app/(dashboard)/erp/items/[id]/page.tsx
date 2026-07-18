@@ -5,9 +5,9 @@ import {
   Box,
   Download,
   Edit,
-  ExternalLink,
   Hash,
   Loader2,
+  MoreHorizontal,
   Package,
   Printer,
   QrCode,
@@ -27,6 +27,12 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import {
   Empty,
   EmptyDescription,
   EmptyHeader,
@@ -38,14 +44,17 @@ import { Spinner } from '@/components/ui/spinner';
 import { useUnifiedItemForm } from '@/components/dialogs';
 import { trpc } from '@/lib/trpc/client';
 import { cn } from '@/lib/utils';
+import { useDateFormat } from '@/hooks/use-date-format';
 
 const TYPE_CONFIG = {
   PRODUCT: {
     icon: Box,
+    labelKey: 'items.types.PRODUCT',
     className: 'bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300',
   },
   SERVICE: {
     icon: Wrench,
+    labelKey: 'items.types.SERVICE',
     className: 'bg-purple-100 text-purple-800 dark:bg-purple-900/50 dark:text-purple-300',
   },
 } as const;
@@ -62,6 +71,7 @@ export default function ItemDetailPage() {
   const router = useRouter();
   const utils = trpc.useUtils();
   const t = useTranslations();
+  const { formatDateTime } = useDateFormat();
   const { openEdit } = useUnifiedItemForm();
   const barcodeRef = React.useRef<HTMLDivElement>(null);
 
@@ -69,6 +79,8 @@ export default function ItemDetailPage() {
     data: item,
     isLoading,
     isError,
+    error,
+    refetch,
   } = trpc.items.byId.useQuery({ id: params.id }, { enabled: !!params.id });
 
   const deleteMutation = trpc.items.delete.useMutation({
@@ -129,9 +141,8 @@ export default function ItemDetailPage() {
 
   if (isLoading) {
     return (
-      <div className="flex flex-col items-center justify-center h-[60vh] gap-3">
+      <div className="flex items-center justify-center h-[60vh]">
         <Spinner className="size-8 text-primary" />
-        <p className="text-sm text-muted-foreground">Loading item details...</p>
       </div>
     );
   }
@@ -145,11 +156,16 @@ export default function ItemDetailPage() {
               <Package className="size-6" />
             </EmptyMedia>
             <EmptyTitle>{isError ? t('common.failedToLoad') : t('common.notFound')}</EmptyTitle>
-            <EmptyDescription>{t('items.doesNotExist')}</EmptyDescription>
+            <EmptyDescription>
+              {error?.message ?? t('items.doesNotExist')}
+            </EmptyDescription>
           </EmptyHeader>
-          <Button variant="outline" onClick={() => router.push('/erp/items')}>
-            <ArrowLeft className="size-4 mr-1" /> {t('common.back')}
-          </Button>
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={() => router.push('/erp/items')}>
+              <ArrowLeft className="size-4 mr-1" /> {t('common.back')}
+            </Button>
+            {isError && <Button onClick={() => refetch()}>{t('common.retry')}</Button>}
+          </div>
         </Empty>
       </div>
     );
@@ -162,320 +178,287 @@ export default function ItemDetailPage() {
   const isService = item.type === 'SERVICE';
 
   return (
-    <div className="flex flex-col h-screen bg-background">
+    <div className="flex flex-col h-screen">
       {/* Header */}
-      <header className="sticky top-0 z-50 bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60 border-b">
-        <div className="flex items-center gap-2 px-3 h-14 sm:px-4">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="shrink-0"
-            onClick={() => router.push('/erp/items')}
+      <header className="flex h-14 items-center gap-2 px-2 border-b bg-background/95 backdrop-blur-md sticky top-0 z-50 shrink-0">
+        <Button variant="ghost" size="icon" onClick={() => router.push('/erp/items')}>
+          <ArrowLeft className="size-5" />
+        </Button>
+        <span className="text-muted-foreground">|</span>
+        <div className="flex items-center gap-2 flex-1 min-w-0">
+          <TypeIcon className="size-5 text-muted-foreground shrink-0" />
+          <h1 className="text-xl font-semibold truncate">{item.name}</h1>
+          <Badge
+            variant="secondary"
+            className={cn('text-[10px] font-medium shrink-0', typeConfig.className)}
           >
-            <ArrowLeft className="size-5" />
-          </Button>
-
-          <div className="flex items-center gap-3 flex-1 min-w-0">
-            <div className="relative shrink-0">
-              <div className="size-10 sm:size-12 rounded-xl flex items-center justify-center overflow-hidden bg-muted border">
-                {item.image ? (
-                  <img src={item.image} alt={item.name} className="size-full object-cover" />
+            {t(typeConfig.labelKey)}
+          </Badge>
+          {!item.isActive && (
+            <Badge variant="outline" className="bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200">
+              {t('common.inactive')}
+            </Badge>
+          )}
+        </div>
+        <div className="flex items-center gap-2">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon">
+                <MoreHorizontal className="size-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={handleEdit}>
+                <Edit className="size-4" />
+                {t('common.edit')}
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={handleDelete}
+                disabled={isPending}
+                variant="destructive"
+              >
+                {isPending ? (
+                  <Loader2 className="size-4 animate-spin" />
                 ) : (
-                  <TypeIcon className="size-5 sm:size-6 text-muted-foreground" />
+                  <Trash className="size-4" />
                 )}
-              </div>
-              {!item.isActive && (
-                <div className="absolute -top-1 -right-1 size-4 rounded-full bg-gray-500 border-2 border-background flex items-center justify-center">
-                  <span className="size-1.5 rounded-full bg-white" />
-                </div>
-              )}
-            </div>
-
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2 flex-wrap">
-                <h1 className="text-base sm:text-lg font-semibold truncate">{item.name}</h1>
-                <Badge
-                  variant="secondary"
-                  className={cn(
-                    'text-[10px] sm:text-xs font-medium shrink-0',
-                    typeConfig.className,
-                  )}
-                >
-                  {t(`items.types.${item.type}`)}
-                </Badge>
-              </div>
-              <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                <span className="flex items-center gap-1">
-                  <Hash className="size-3" />
-                  {item.sku}
-                </span>
-              </div>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-1 shrink-0">
-            <Button variant="outline" size="sm" onClick={handleEdit}>
-              <Edit className="size-4 mr-1.5" />
-              {t('common.edit')}
-            </Button>
-            <Button
-              variant="destructive"
-              size="sm"
-              onClick={handleDelete}
-              disabled={isPending}
-            >
-              {isPending ? (
-                <Loader2 className="size-4 mr-1.5 animate-spin" />
-              ) : (
-                <Trash className="size-4 mr-1.5" />
-              )}
-              {t('common.delete')}
-            </Button>
-          </div>
+                {t('common.delete')}
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </header>
 
       {/* Content */}
-      <main className="flex-1 overflow-y-auto">
-        <div className="max-w-6xl mx-auto p-4 sm:p-6 space-y-6">
-          {/* Quick Stats */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-            <Card className="bg-linear-to-br from-green-50 to-green-100/50 dark:from-green-950/50 dark:to-green-900/30 border-green-200/50 dark:border-green-800/50">
-              <CardContent className="p-4">
-                <div className="flex items-center gap-2 mb-2">
-                  <div className="size-8 rounded-lg bg-green-100 dark:bg-green-900/50 flex items-center justify-center">
-                    <ShoppingCart className="size-4 text-green-600 dark:text-green-400" />
-                  </div>
-                  <span className="text-xs font-medium text-green-700 dark:text-green-300">
-                    {t('items.salesPrice')}
-                  </span>
-                </div>
-                <p className="text-2xl sm:text-3xl font-bold text-green-900 dark:text-green-100">
-                  {Number(item.salesPrice).toFixed(3)}
+      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+        {/* Info Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+          <Card>
+            <CardHeader className="pb-1.5">
+              <CardTitle className="text-xs text-muted-foreground font-medium">
+                {t('items.salesPrice')}
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-2xl font-bold tabular-nums">
+                {Number(item.salesPrice).toFixed(3)}
+              </p>
+            </CardContent>
+          </Card>
+
+          {!isService && (
+            <Card>
+              <CardHeader className="pb-1.5">
+                <CardTitle className="text-xs text-muted-foreground font-medium">
+                  {t('items.purchasePrice')}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-2xl font-bold tabular-nums">
+                  {Number(item.purchasePrice).toFixed(3)}
                 </p>
               </CardContent>
             </Card>
+          )}
 
-            {!isService && (
-              <Card className="bg-linear-to-br from-blue-50 to-blue-100/50 dark:from-blue-950/50 dark:to-blue-900/30 border-blue-200/50 dark:border-blue-800/50">
-                <CardContent className="p-4">
-                  <div className="flex items-center gap-2 mb-2">
-                    <div className="size-8 rounded-lg bg-blue-100 dark:bg-blue-900/50 flex items-center justify-center">
-                      <Tag className="size-4 text-blue-600 dark:text-blue-400" />
-                    </div>
-                    <span className="text-xs font-medium text-blue-700 dark:text-blue-300">
-                      {t('items.purchasePrice')}
-                    </span>
-                  </div>
-                  <p className="text-2xl sm:text-3xl font-bold text-blue-900 dark:text-blue-100">
-                    {Number(item.purchasePrice).toFixed(3)}
-                  </p>
-                </CardContent>
-              </Card>
-            )}
-
-            {!isService && (
-              <Card>
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-xs font-medium text-muted-foreground">
-                      {t('items.totalStock')}
-                    </span>
-                  </div>
-                  <p className="text-2xl sm:text-3xl font-bold">{totalStock}</p>
-                  <p className="text-xs text-muted-foreground mt-1">{item.unit}</p>
-                </CardContent>
-              </Card>
-            )}
-
+          {!isService && (
             <Card>
-              <CardContent className="p-4">
-                <div className="flex items-center gap-2 mb-2">
-                  <div className="size-8 rounded-lg bg-purple-100 dark:bg-purple-900/50 flex items-center justify-center">
-                    <Truck className="size-4 text-purple-600 dark:text-purple-400" />
+              <CardHeader className="pb-1.5">
+                <CardTitle className="text-xs text-muted-foreground font-medium">
+                  {t('items.totalStock')}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-2xl font-bold tabular-nums">{totalStock}</p>
+                <p className="text-xs text-muted-foreground">{item.unit}</p>
+              </CardContent>
+            </Card>
+          )}
+
+          <Card>
+            <CardHeader className="pb-1.5">
+              <CardTitle className="text-xs text-muted-foreground font-medium">
+                {t('common.tax')}
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="font-semibold">{item.taxRate?.name ?? '—'}</p>
+              {item.taxRate && (
+                <p className="text-xs text-muted-foreground">{Number(item.taxRate.rate)}%</p>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Image & Barcode */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          <Card className="lg:col-span-2 overflow-hidden">
+            <CardContent className="p-0">
+              {item.image ? (
+                <div className="relative aspect-video bg-card">
+                  <img
+                    src={item.image}
+                    alt={item.name}
+                    className="w-full h-full object-contain"
+                  />
+                  <div className="absolute inset-0 opacity-0 hover:opacity-100 transition-opacity flex items-end p-4">
+                    <div className="flex gap-2">
+                      <Button
+                        size="sm"
+                        variant="secondary"
+                        className="backdrop-blur-sm"
+                        onClick={() => item.image && window.open(item.image, '_blank')}
+                      >
+                        {t('common.viewFull')}
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="secondary"
+                        className="backdrop-blur-sm"
+                        onClick={() =>
+                          downloadImage(
+                            item.image!,
+                            `${item.sku}.${item.image!.split('.').pop() ?? 'jpg'}`,
+                          )
+                        }
+                      >
+                        <Download className="size-4 mr-1" />
+                        {t('common.download')}
+                      </Button>
+                    </div>
                   </div>
-                  <span className="text-xs font-medium text-muted-foreground">
-                    {t('common.tax')}
-                  </span>
                 </div>
-                <p className="text-lg font-semibold">{item.taxRate?.name ?? '—'}</p>
-                {item.taxRate && (
-                  <p className="text-xs text-muted-foreground">{Number(item.taxRate.rate)}%</p>
-                )}
-              </CardContent>
-            </Card>
-          </div>
+              ) : (
+                <div className="aspect-video bg-card flex flex-col items-center justify-center gap-4">
+                  <div className="size-20 rounded-2xl bg-background/80 flex items-center justify-center border-2 border-dashed border-muted-foreground/25">
+                    <TypeIcon className="size-10 text-muted-foreground/50" />
+                  </div>
+                  <p className="text-sm text-muted-foreground">No image</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
 
-          {/* Image & Barcode */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <Card className="lg:col-span-2 overflow-hidden">
-              <CardContent className="p-0">
-                {item.image ? (
-                  <div className="relative aspect-16/10 bg-card">
-                    <img
-                      src={item.image}
-                      alt={item.name}
-                      className="w-full h-full object-contain"
-                    />
-                    <div className="absolute inset-0 opacity-0 hover:opacity-100 transition-opacity flex items-end p-4">
-                      <div className="flex gap-2">
-                        <Button
-                          size="sm"
-                          variant="secondary"
-                          className="backdrop-blur-sm"
-                          onClick={() => item.image && window.open(item.image, '_blank')}
-                        >
-                          View Full
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="secondary"
-                          className="backdrop-blur-sm"
-                          onClick={() =>
-                            downloadImage(
-                              item.image!,
-                              `${item.sku}.${item.image!.split('.').pop() ?? 'jpg'}`,
-                            )
-                          }
-                        >
-                          <Download className="size-4 mr-1" />
-                          Download
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="aspect-16/10 bg-card flex flex-col items-center justify-center gap-4">
-                    <div className="size-24 rounded-2xl bg-background/80 flex items-center justify-center border-2 border-dashed border-muted-foreground/25">
-                      <TypeIcon className="size-12 text-muted-foreground/50" />
-                    </div>
-                    <p className="text-sm font-medium text-muted-foreground">No image uploaded</p>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-
-            <div className="space-y-6">
-              <Card>
-                <CardHeader className="pb-3">
-                  <div className="flex items-center justify-between">
-                    <CardTitle className="text-base flex items-center gap-2">
-                      <QrCode className="size-5 text-muted-foreground" />
-                      Barcode
-                    </CardTitle>
-                    {item.barcode && (
-                      <div className="flex gap-1">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="size-8"
-                          onClick={handlePrintBarcode}
-                        >
-                          <Printer className="size-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="size-8"
-                          onClick={handleDownloadBarcode}
-                        >
-                          <Download className="size-4" />
-                        </Button>
-                      </div>
-                    )}
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  {item.barcode ? (
-                    <div className="flex flex-col items-center gap-3" ref={barcodeRef}>
-                      <div className="flex items-center justify-center w-full p-4 bg-white rounded-lg border">
-                        <Barcode
-                          value={item.barcode}
-                          format="CODE128"
-                          width={1.5}
-                          height={60}
-                          displayValue={true}
-                          font="monospace"
-                          fontSize={12}
-                          textMargin={4}
-                          background="transparent"
-                          lineColor="#000000"
-                        />
-                      </div>
-                      <p className="text-xs text-muted-foreground font-mono">{item.barcode}</p>
-                    </div>
-                  ) : (
-                    <div className="flex flex-col items-center gap-3 py-4">
-                      <div className="w-full p-4 bg-muted/50 rounded-lg border border-dashed">
-                        <div className="flex flex-col items-center gap-2 text-muted-foreground">
-                          <p className="text-xs">No barcode</p>
-                        </div>
-                      </div>
+          <div className="space-y-4">
+            {/* Barcode */}
+            <Card>
+              <CardHeader className="pb-3">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-sm font-semibold flex items-center gap-2">
+                    <QrCode className="size-4 text-muted-foreground" />
+                    {t('items.barcode')}
+                  </CardTitle>
+                  {item.barcode && (
+                    <div className="flex gap-1">
+                      <Button
+                        variant="ghost"
+                        size="icon-sm"
+                        onClick={handlePrintBarcode}
+                      >
+                        <Printer className="size-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon-sm"
+                        onClick={handleDownloadBarcode}
+                      >
+                        <Download className="size-4" />
+                      </Button>
                     </div>
                   )}
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardContent className="p-4">
-                  <div className="flex items-center gap-3">
-                    <div className="size-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                      <Tag className="size-5 text-primary" />
+                </div>
+              </CardHeader>
+              <CardContent>
+                {item.barcode ? (
+                  <div className="flex flex-col items-center gap-3" ref={barcodeRef}>
+                    <div className="flex items-center justify-center w-full p-4 bg-white rounded-lg border">
+                      <Barcode
+                        value={item.barcode}
+                        format="CODE128"
+                        width={1.5}
+                        height={60}
+                        displayValue={true}
+                        font="monospace"
+                        fontSize={12}
+                        textMargin={4}
+                        background="transparent"
+                        lineColor="#000000"
+                      />
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-xs text-muted-foreground">SKU</p>
-                      <p className="font-mono font-semibold truncate">{item.sku}</p>
+                    <p className="text-xs text-muted-foreground font-mono">{item.barcode}</p>
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center gap-2 py-4">
+                    <div className="w-full p-4 bg-muted/50 rounded-lg border border-dashed">
+                      <p className="text-xs text-muted-foreground text-center">No barcode</p>
                     </div>
                   </div>
-                </CardContent>
-              </Card>
-            </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* SKU */}
+            <Card>
+              <CardContent className="p-4">
+                <div className="flex items-center gap-3">
+                  <div className="size-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                    <Tag className="size-5 text-primary" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs text-muted-foreground">SKU</p>
+                    <p className="font-mono font-semibold truncate">{item.sku}</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
           </div>
+        </div>
 
-          {/* Details */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="lg:col-span-2 space-y-6">
-              {!isService && (
-                <Card>
-                  <CardHeader className="pb-3">
-                    <CardTitle className="text-base flex items-center gap-2">
-                      <Box className="size-5 text-muted-foreground" />
-                      {t('items.stockReorder')}
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                      <div className="space-y-1">
-                        <p className="text-xs text-muted-foreground font-medium">
-                          {t('items.minStock')}
-                        </p>
-                        <p className="text-lg font-semibold">{item.minStock}</p>
-                      </div>
-                      <div className="space-y-1">
-                        <p className="text-xs text-muted-foreground font-medium">
-                          {t('items.reorderAt')}
-                        </p>
-                        <p className="text-lg font-semibold">{item.reorderPoint}</p>
-                      </div>
-                      <div className="space-y-1">
-                        <p className="text-xs text-muted-foreground font-medium">
-                          {t('items.reorderQty')}
-                        </p>
-                        <p className="text-lg font-semibold">{item.reorderQty}</p>
-                      </div>
-                      <div className="space-y-1">
-                        <p className="text-xs text-muted-foreground font-medium">
-                          {t('items.avgCost')}
-                        </p>
-                        <p className="text-lg font-semibold">
-                          {Number(item.averageCost).toFixed(3)}
-                        </p>
-                      </div>
+        {/* Details */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          <div className="lg:col-span-2 space-y-4">
+            {/* Stock & Reorder */}
+            {!isService && (
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-semibold flex items-center gap-2">
+                    <Box className="size-4 text-muted-foreground" />
+                    {t('items.stockReorder')}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                    <div className="space-y-1">
+                      <p className="text-xs text-muted-foreground font-medium">
+                        {t('items.minStock')}
+                      </p>
+                      <p className="text-lg font-semibold tabular-nums">{item.minStock}</p>
                     </div>
+                    <div className="space-y-1">
+                      <p className="text-xs text-muted-foreground font-medium">
+                        {t('items.reorderAt')}
+                      </p>
+                      <p className="text-lg font-semibold tabular-nums">{item.reorderPoint}</p>
+                    </div>
+                    <div className="space-y-1">
+                      <p className="text-xs text-muted-foreground font-medium">
+                        {t('items.reorderQty')}
+                      </p>
+                      <p className="text-lg font-semibold tabular-nums">{item.reorderQty}</p>
+                    </div>
+                    <div className="space-y-1">
+                      <p className="text-xs text-muted-foreground font-medium">
+                        {t('items.avgCost')}
+                      </p>
+                      <p className="text-lg font-semibold tabular-nums">
+                        {Number(item.averageCost).toFixed(3)}
+                      </p>
+                    </div>
+                  </div>
 
-                    <Separator />
-
-                    {item.stock && item.stock.length > 0 && (
+                  {item.stock && item.stock.length > 0 && (
+                    <>
+                      <Separator />
                       <div>
                         <p className="text-sm font-medium mb-3">{t('items.perWarehouse')}</p>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -487,7 +470,7 @@ export default function ItemDetailPage() {
                               <span className="font-medium text-sm">{s.warehouse.name}</span>
                               <span
                                 className={cn(
-                                  'font-semibold',
+                                  'font-semibold tabular-nums',
                                   Number(s.quantity) <= 0 ? 'text-destructive' : '',
                                 )}
                               >
@@ -497,94 +480,102 @@ export default function ItemDetailPage() {
                           ))}
                         </div>
                       </div>
-                    )}
-                  </CardContent>
-                </Card>
-              )}
-
-              {isService && (
-                <Card className="border-dashed">
-                  <CardContent className="p-6 text-center">
-                    <p className="text-sm text-muted-foreground">
-                      {t('items.notStockTracked')}
-                    </p>
-                  </CardContent>
-                </Card>
-              )}
-
-              {item.description && (
-                <Card>
-                  <CardHeader className="pb-3">
-                    <CardTitle className="text-base">{t('common.description')}</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-wrap">
-                      {item.description}
-                    </p>
-                  </CardContent>
-                </Card>
-              )}
-            </div>
-
-            <div className="space-y-6">
-              <Card>
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-base">{t('items.attributes')}</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground">{t('items.unit')}</span>
-                    <span className="text-sm font-medium">{item.unit}</span>
-                  </div>
-                  <Separator />
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground">{t('items.category')}</span>
-                    <span className="text-sm font-medium">{item.category?.name ?? '—'}</span>
-                  </div>
-                  <Separator />
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground">{t('items.saleable')}</span>
-                    <Badge variant={item.isSaleable ? 'default' : 'secondary'}>
-                      {item.isSaleable ? 'Yes' : 'No'}
-                    </Badge>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground">{t('items.purchasable')}</span>
-                    <Badge variant={item.isPurchasable ? 'default' : 'secondary'}>
-                      {item.isPurchasable ? 'Yes' : 'No'}
-                    </Badge>
-                  </div>
+                    </>
+                  )}
                 </CardContent>
               </Card>
+            )}
 
-              {/* Supplier Prices */}
-              {item.supplierItems && item.supplierItems.length > 0 && (
-                <Card>
-                  <CardHeader className="pb-3">
-                    <CardTitle className="text-base">{t('suppliers.itemsSupplied')}</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-2">
-                    {item.supplierItems.map((si: any) => (
-                      <div
-                        key={si.id}
-                        className="flex items-center justify-between p-2 rounded-lg bg-muted/50"
-                      >
-                        <div>
-                          <p className="text-sm font-medium">{si.supplier?.name ?? '—'}</p>
-                          <p className="text-xs text-muted-foreground">{si.supplierSku ?? '—'}</p>
-                        </div>
-                        <p className="text-sm font-semibold">
-                          {Number(si.basePrice).toFixed(3)} {si.currency}
-                        </p>
+            {isService && (
+              <Card className="border-dashed">
+                <CardContent className="p-6 text-center">
+                  <p className="text-sm text-muted-foreground">
+                    {t('items.notStockTracked')}
+                  </p>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Description */}
+            {item.description && (
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-semibold">{t('common.description')}</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-wrap">
+                    {item.description}
+                  </p>
+                </CardContent>
+              </Card>
+            )}
+          </div>
+
+          <div className="space-y-4">
+            {/* Attributes */}
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-semibold">{t('items.attributes')}</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-muted-foreground">{t('items.unit')}</span>
+                  <span className="text-sm font-medium">{item.unit}</span>
+                </div>
+                <Separator />
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-muted-foreground">{t('items.category')}</span>
+                  <span className="text-sm font-medium">{item.category?.name ?? '—'}</span>
+                </div>
+                <Separator />
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-muted-foreground">{t('items.saleable')}</span>
+                  <Badge variant={item.isSaleable ? 'default' : 'secondary'}>
+                    {item.isSaleable ? 'Yes' : 'No'}
+                  </Badge>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-muted-foreground">{t('items.purchasable')}</span>
+                  <Badge variant={item.isPurchasable ? 'default' : 'secondary'}>
+                    {item.isPurchasable ? 'Yes' : 'No'}
+                  </Badge>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Supplier Prices */}
+            {item.supplierItems && item.supplierItems.length > 0 && (
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-semibold">{t('suppliers.itemsSupplied')}</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-2">
+                  {item.supplierItems.map((si: any) => (
+                    <div
+                      key={si.id}
+                      className="flex items-center justify-between p-2 rounded-lg bg-muted/50"
+                    >
+                      <div className="min-w-0">
+                        <p className="text-sm font-medium truncate">{si.supplier?.name ?? '—'}</p>
+                        <p className="text-xs text-muted-foreground">{si.supplierSku ?? '—'}</p>
                       </div>
-                    ))}
-                  </CardContent>
-                </Card>
-              )}
-            </div>
+                      <p className="text-sm font-semibold tabular-nums shrink-0">
+                        {Number(si.basePrice).toFixed(3)} {si.currency}
+                      </p>
+                    </div>
+                  ))}
+                </CardContent>
+              </Card>
+            )}
           </div>
         </div>
-      </main>
+
+        {/* Meta info */}
+        <div className="text-xs text-muted-foreground flex flex-wrap gap-x-4 gap-y-1 pb-2">
+          <span>{t('items.created')} {item.createdAt ? formatDateTime(item.createdAt) : '—'}</span>
+          <span>{t('items.updated')} {item.updatedAt ? formatDateTime(item.updatedAt) : '—'}</span>
+        </div>
+      </div>
     </div>
   );
 }
