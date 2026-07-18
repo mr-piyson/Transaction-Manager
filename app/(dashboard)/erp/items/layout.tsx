@@ -47,7 +47,7 @@ import { cn } from '@/lib/utils';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Header } from '@/components/layout/App-Header';
 import { ItemListItem } from '@/components/items/item-list-item';
-import { UnifiedItemDialog } from '@/components/dialogs';
+import { UnifiedItemDialog, useUnifiedItemForm } from '@/components/dialogs';
 
 ModuleRegistry.registerModules([AllCommunityModule]);
 
@@ -57,6 +57,7 @@ export default function ItemsLayout({ children }: { children?: React.ReactNode }
   const t = useTranslations();
   const { format } = useCurrency();
   const tableTheme = useTableTheme();
+  const { openEdit } = useUnifiedItemForm();
 
   const [viewMode, setViewMode] = useState<'list' | 'table'>('list');
 
@@ -128,7 +129,9 @@ export default function ItemsLayout({ children }: { children?: React.ReactNode }
                   {t('common.viewDetails')}
                 </ContextMenuItem>
                 <ContextMenuItem
-                  onClick={() => router.push(`/erp/${title.toLowerCase()}/${item.id}`)}
+                  onClick={() => {
+                    openEdit({ itemId: item.id, onSuccess: () => utils.items.list.invalidate() });
+                  }}
                 >
                   <Edit className="size-4 mr-2" />
                   {t('common.edit')}
