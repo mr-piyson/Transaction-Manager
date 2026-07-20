@@ -77,6 +77,10 @@ export type Action =
   | 'org:settings:update'
   | 'user:manage'
   | 'role:manage'
+  // Exchange Rates
+  | 'exchange-rate:read'
+  | 'exchange-rate:update'
+  | 'exchange-rate:sync'
   // HRMS — Organisational Structure
   | 'department:read'
   | 'department:create'
@@ -282,6 +286,8 @@ const MUTATION_ACTIONS: Action[] = [
   'org:settings:update',
   'user:manage',
   'role:manage',
+  'exchange-rate:update',
+  'exchange-rate:sync',
   // HRMS
   'department:create',
   'department:update',
@@ -384,6 +390,7 @@ const RESOURCE_TO_SUBJECT_MAP: Record<string, SubjectName> = {
   'employee-document': 'EmployeeDocument',
   grievance: 'Grievance',
   disciplinary: 'DisciplinaryAction',
+  'exchange-rate': 'all',
 };
 
 // --------------------------------------------------------------------

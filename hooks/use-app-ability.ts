@@ -17,5 +17,5 @@ export function useAppAbility(): AppAbilityType | null {
       organizationId: me.organizationId ?? undefined,
       permissions: (me.permissionsList as any[])?.map((p: any) => p.code as Action) ?? [],
     });
-  }, [me, isLoading]);
+  }, [me?.id, me?.platformRole, me?.orgRole, me?.organizationId, isLoading]);
 }

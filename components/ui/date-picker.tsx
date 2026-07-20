@@ -668,18 +668,29 @@ export function DatePicker({
   );
 }
 
-export interface DatePickerFieldProps extends Omit<DatePickerProps, 'value' | 'onChange'> {
+export interface DatePickerFieldProps extends Omit<DatePickerProps, 'value' | 'onChange' | 'onBlur'> {
   value?: string;
   onChange?: (e: { target: { value: string; name?: string } }) => void;
+  onBlur?: (e: React.FocusEvent<HTMLElement>) => void;
   name?: string;
+  ref?: React.Ref<HTMLInputElement>;
+  min?: string | number;
+  max?: string | number;
+  step?: string | number;
+  id?: string;
+  className?: string;
+  placeholder?: string;
+  disabled?: boolean;
 }
 
-export function DatePickerField({ value, onChange, name, ...props }: DatePickerFieldProps) {
+export function DatePickerField({ value, onChange, onBlur, name, ref, min, max, step, id, className, placeholder, disabled, ...props }: DatePickerFieldProps) {
   const handleChange = React.useCallback(
     (iso: string) => {
       onChange?.({ target: { value: iso, name } });
+      // React Hook Form also expects onBlur after change
+      if (onBlur) onBlur({} as React.FocusEvent<HTMLElement>);
     },
-    [onChange, name],
+    [onChange, name, onBlur],
   );
 
   return <DatePicker value={value} onChange={handleChange} name={name} {...props} />;

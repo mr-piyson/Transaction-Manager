@@ -3,10 +3,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import {
-  type LucideIcon,
-  Search,
-} from 'lucide-react';
+import { type LucideIcon, Search } from 'lucide-react';
 import {
   CommandDialog,
   CommandEmpty,
@@ -32,11 +29,7 @@ interface FlatItem {
   keywords: string[];
 }
 
-function flattenRoutes(
-  routes: RouteConfig[],
-  category: string,
-  appSlug: string,
-): FlatItem[] {
+function flattenRoutes(routes: RouteConfig[], category: string, appSlug: string): FlatItem[] {
   const items: FlatItem[] = [];
   for (const route of routes) {
     if (route.type === 'item' && route.href && !route.search?.hidden) {
@@ -50,9 +43,7 @@ function flattenRoutes(
       });
     }
     if (route.type === 'group' && route.children) {
-      items.push(
-        ...flattenRoutes(route.children, route.label, appSlug),
-      );
+      items.push(...flattenRoutes(route.children, route.label, appSlug));
     }
   }
   return items;
@@ -90,7 +81,7 @@ export function CommandPaletteTrigger() {
         </Kbd>
       </Button>
       <button
-        className="lg:hidden p-2 text-muted-foreground hover:text-foreground transition-colors"
+        className="lg:hidden p-2 text-muted-foreground transition-colors"
         onClick={() => setOpen(true)}
         aria-label="Open command palette"
       >

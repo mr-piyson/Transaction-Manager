@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { NotFoundError, ConflictError } from '@/lib/error';
-import { orgProcedure, router } from '@/lib/trpc/context';
+import { assertCan, orgProcedure, router } from '@/lib/trpc/context';
 import { currencyCodeSchema } from '@/lib/validations';
 import {
   fetchLatestRates,
@@ -35,6 +35,7 @@ export const exchangeRatesRouter = router({
    * Get all exchange rates for the organization (latest per currency pair)
    */
   list: orgProcedure.query(async ({ ctx }) => {
+    assertCan(ctx.ability, 'exchange-rate:read', 'all', { organizationId: ctx.user.organizationId });
     const orgId = ctx.user.organizationId;
 
     // Get the latest rate for each currency pair
@@ -76,6 +77,7 @@ export const exchangeRatesRouter = router({
       })
     )
     .query(async ({ ctx, input }) => {
+      assertCan(ctx.ability, 'exchange-rate:read', 'all', { organizationId: ctx.user.organizationId });
       if (input.fromCurrency === input.toCurrency) {
         return { rate: 1 };
       }
@@ -111,6 +113,7 @@ export const exchangeRatesRouter = router({
    * Get latest rates directly from Frankfurter API (preview before sync)
    */
   getLatest: orgProcedure.query(async ({ ctx }) => {
+    assertCan(ctx.ability, 'exchange-rate:read', 'all', { organizationId: ctx.user.organizationId });
     const org = await ctx.db.organization.findUnique({
       where: { id: ctx.user.organizationId },
       select: { currency: true },
@@ -148,6 +151,7 @@ export const exchangeRatesRouter = router({
       })
     )
     .mutation(async ({ ctx, input }) => {
+      assertCan(ctx.ability, 'exchange-rate:update', 'all', { organizationId: ctx.user.organizationId });
       const orgId = ctx.user.organizationId;
 
       if (input.fromCurrency === input.toCurrency) {
@@ -192,6 +196,7 @@ export const exchangeRatesRouter = router({
   delete: orgProcedure
     .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
+      assertCan(ctx.ability, 'exchange-rate:update', 'all', { organizationId: ctx.user.organizationId });
       const orgId = ctx.user.organizationId;
 
       const existing = await ctx.db.exchangeRate.findFirst({
@@ -214,6 +219,7 @@ export const exchangeRatesRouter = router({
    * Trigger immediate sync from Frankfurter API
    */
   syncNow: orgProcedure.mutation(async ({ ctx }) => {
+    assertCan(ctx.ability, 'exchange-rate:sync', 'all', { organizationId: ctx.user.organizationId });
     const orgId = ctx.user.organizationId;
 
     const org = await ctx.db.organization.findUnique({
@@ -257,6 +263,7 @@ export const exchangeRatesRouter = router({
    * Get sync settings for the organization
    */
   getSyncSettings: orgProcedure.query(async ({ ctx }) => {
+    assertCan(ctx.ability, 'exchange-rate:read', 'all', { organizationId: ctx.user.organizationId });
     const orgId = ctx.user.organizationId;
 
     const settings = await ctx.db.organizationSetting.findMany({
@@ -294,6 +301,7 @@ export const exchangeRatesRouter = router({
       })
     )
     .mutation(async ({ ctx, input }) => {
+      assertCan(ctx.ability, 'exchange-rate:update', 'all', { organizationId: ctx.user.organizationId });
       const orgId = ctx.user.organizationId;
 
       await ctx.db.$transaction(async (tx) => {
