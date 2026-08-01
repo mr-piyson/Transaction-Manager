@@ -16,6 +16,7 @@ import {
   Send,
   ThumbsDown,
   Trash,
+  Trash2,
   XCircle,
   type LucideIcon,
 } from 'lucide-react';
@@ -64,6 +65,7 @@ import {
 } from '@/components/ui/table';
 import { useInvoiceForm } from '@/components/dialogs/invoiceForm';
 import { usePaymentForm } from '@/components/dialogs/paymentForm';
+import { useHardDeleteForm } from '@/components/dialogs/hardDeleteForm';
 import { InvoiceHistoryPanel } from '@/components/invoices/invoice-history-panel';
 import { trpc } from '@/lib/trpc/client';
 import { useDateFormat } from '@/hooks/use-date-format';
@@ -90,8 +92,11 @@ export default function DocumentDetailPage() {
   const isInvoice = type === 'invoices';
   const { openEdit, openCreate } = useInvoiceForm();
   const { openCreate: openPayment } = usePaymentForm();
+  const { openDialog: openHardDelete } = useHardDeleteForm();
   const utils = trpc.useUtils();
   const { formatDate, formatDateTime, formatDateForInput } = useDateFormat();
+  const { data: me } = trpc.auth.me.useQuery();
+  const isSuperAdmin = me?.platformRole === 'SUPER_ADMIN';
 
   const {
     data: invoice,
@@ -459,6 +464,15 @@ export default function DocumentDetailPage() {
     }
   }
 
+  if (isSuperAdmin) {
+    actions.push({
+      label: t('hardDelete.menu'),
+      key: 'hardDelete',
+      icon: Trash2,
+      variant: 'destructive',
+    });
+  }
+
   const showActions = actions.length > 0;
 
   const handleActionClick = (action: Action) => {
@@ -508,6 +522,9 @@ export default function DocumentDetailPage() {
         if (window.confirm(t('common.confirmDelete', { name: invoice.serial }))) {
           deleteMutation.mutate({ id: invoice.id });
         }
+        break;
+      case 'hardDelete':
+        openHardDelete({ id: invoice.id, serial: invoice.serial });
         break;
       default:
         switch (action.dialog) {
@@ -611,271 +628,272 @@ export default function DocumentDetailPage() {
       <div className="flex gap-6">
         <div className="flex-1 min-w-0 space-y-6">
           {/* Info Grid */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div>
-          <p className="text-sm text-muted-foreground">{t('invoices.issueDate')}</p>
-          <p className="font-medium">{invoice.date ? formatDate(invoice.date) : '—'}</p>
-        </div>
-        {invoice.dueDate && (
-          <div>
-            <p className="text-sm text-muted-foreground">{t('invoices.dueDate')}</p>
-            <p className="font-medium">{formatDate(invoice.dueDate)}</p>
-          </div>
-        )}
-        {invoice.customer && (
-          <div>
-            <p className="text-sm text-muted-foreground">{t('invoices.customer')}</p>
-            <p className="font-medium">{invoice.customer.name}</p>
-            <p className="text-xs text-muted-foreground">
-              {(invoice.customer as any).vatNumber ?? (invoice.customer as any).taxId ?? ''}
-            </p>
-          </div>
-        )}
-        {isInvoice && (invoice as any).warehouse && (
-          <div>
-            <p className="text-sm text-muted-foreground">{t('invoices.warehouse')}</p>
-            <p className="font-medium">{(invoice as any).warehouse?.name}</p>
-          </div>
-        )}
-        {invoice.currency && (
-          <div>
-            <p className="text-sm text-muted-foreground">{t('invoices.currency')}</p>
-            <p className="font-medium">{invoice.currency}</p>
-          </div>
-        )}
-        <div>
-          <p className="text-sm text-muted-foreground">{t('common.status')}</p>
-          <Badge className={STATUS_COLORS[invoice.status] ?? ''}>{invoice.status}</Badge>
-        </div>
-        {(invoice as any).createdBy && (
-          <div>
-            <p className="text-sm text-muted-foreground">{t('common.createdBy')}</p>
-            <p className="font-medium">{(invoice as any).createdBy?.name ?? '—'}</p>
-          </div>
-        )}
-      </div>
-
-      <Separator />
-
-      {/* Line Items */}
-      <Card>
-        <CardContent className="px-0">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="pl-6">#</TableHead>
-                <TableHead>{t('invoices.item')}</TableHead>
-                <TableHead className="text-right">{t('invoices.qty')}</TableHead>
-                <TableHead className="text-right">{t('invoices.stock')}</TableHead>
-                <TableHead className="text-right">{t('invoices.unitPrice')}</TableHead>
-                <TableHead className="text-right">{t('invoices.discount')}</TableHead>
-                <TableHead className="text-right">{t('invoices.tax')}</TableHead>
-                <TableHead className="text-right pr-6">{t('invoices.total')}</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {invoice.lines?.map((line: any, i: number) => (
-                <TableRow key={line.id ?? i}>
-                  <TableCell className="pl-6 text-muted-foreground">{i + 1}</TableCell>
-                  <TableCell>
-                    <p className="font-medium">{line.item?.name ?? line.description ?? '—'}</p>
-                    {line.item?.sku && (
-                      <p className="text-xs text-muted-foreground">{line.item.sku}</p>
-                    )}
-                    {line.description && (
-                      <p className="text-xs text-muted-foreground italic">{line.description}</p>
-                    )}
-                  </TableCell>
-                  <TableCell className="text-right tabular-nums">
-                    {Number(line.quantity).toFixed(3)}
-                  </TableCell>
-                  <TableCell className="text-right tabular-nums">
-                    {line.item?.type === 'PRODUCT' && invoice.warehouseId ? (
-                      <span
-                        className={
-                          (stockMap.get(line.itemId) ?? 0) < Number(line.quantity)
-                            ? 'text-destructive font-medium'
-                            : ''
-                        }
-                      >
-                        {stockMap.has(line.itemId)
-                          ? Number(stockMap.get(line.itemId)).toFixed(3)
-                          : '…'}
-                      </span>
-                    ) : (
-                      '—'
-                    )}
-                  </TableCell>
-                  <TableCell className="text-right tabular-nums">
-                    {Number(line.unitPrice).toFixed(3)}
-                  </TableCell>
-                  <TableCell className="text-right tabular-nums">
-                    {Number(line.discountAmt).toFixed(3)}
-                  </TableCell>
-                  <TableCell className="text-right tabular-nums">
-                    {line.taxRateName ? (
-                      <span>
-                        {Number(line.taxAmt).toFixed(3)}
-                        <span className="text-xs text-muted-foreground ml-1">
-                          ({line.taxRateName})
-                        </span>
-                      </span>
-                    ) : (
-                      '—'
-                    )}
-                  </TableCell>
-                  <TableCell className="text-right pr-6 tabular-nums font-medium">
-                    {Number(line.total).toFixed(3)}
-                  </TableCell>
-                </TableRow>
-              ))}
-              {invoice.lines?.length === 0 && (
-                <TableRow>
-                  <TableCell colSpan={8} className="text-center text-muted-foreground py-6">
-                    {t('invoices.noLineItems')}
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
-
-          <Separator />
-          {/* Totals */}
-          <div className="flex justify-end p-5 pb-0">
-            <div className="w-72 space-y-2">
-              <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">{t('invoices.subtotal')}</span>
-                <span className="tabular-nums">{Number(invoice.subtotal).toFixed(3)}</span>
-              </div>
-              {Number(invoice.discountTotal) > 0 && (
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">{t('invoices.discount')}</span>
-                  <span className="tabular-nums text-destructive">
-                    -{Number(invoice.discountTotal).toFixed(3)}
-                  </span>
-                </div>
-              )}
-              <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">{t('invoices.tax')}</span>
-                <span className="tabular-nums">{Number(invoice.taxTotal).toFixed(3)}</span>
-              </div>
-              <Separator />
-              <div className="flex justify-between font-bold text-lg">
-                <span>{t('invoices.total')}</span>
-                <span className="tabular-nums">
-                  {Number(invoice.total).toFixed(3)} {invoice.currency}
-                </span>
-              </div>
-              {isInvoice && Number((invoice as any).amountPaid) > 0 && (
-                <>
-                  <div className="flex justify-between text-sm text-green-600">
-                    <span>{t('invoices.amountPaid')}</span>
-                    <span className="tabular-nums">
-                      {Number((invoice as any).amountPaid).toFixed(3)} {invoice.currency}
-                    </span>
-                  </div>
-                  <div className="flex justify-between text-sm text-red-600">
-                    <span>{t('invoices.balanceDue')}</span>
-                    <span className="tabular-nums">
-                      {Number((invoice as any).amountDue).toFixed(3)} {invoice.currency}
-                    </span>
-                  </div>
-                </>
-              )}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div>
+              <p className="text-sm text-muted-foreground">{t('invoices.issueDate')}</p>
+              <p className="font-medium">{invoice.date ? formatDate(invoice.date) : '—'}</p>
             </div>
+            {invoice.dueDate && (
+              <div>
+                <p className="text-sm text-muted-foreground">{t('invoices.dueDate')}</p>
+                <p className="font-medium">{formatDate(invoice.dueDate)}</p>
+              </div>
+            )}
+            {invoice.customer && (
+              <div>
+                <p className="text-sm text-muted-foreground">{t('invoices.customer')}</p>
+                <p className="font-medium">{invoice.customer.name}</p>
+                <p className="text-xs text-muted-foreground">
+                  {(invoice.customer as any).vatNumber ?? (invoice.customer as any).taxId ?? ''}
+                </p>
+              </div>
+            )}
+            {isInvoice && (invoice as any).warehouse && (
+              <div>
+                <p className="text-sm text-muted-foreground">{t('invoices.warehouse')}</p>
+                <p className="font-medium">{(invoice as any).warehouse?.name}</p>
+              </div>
+            )}
+            {invoice.currency && (
+              <div>
+                <p className="text-sm text-muted-foreground">{t('invoices.currency')}</p>
+                <p className="font-medium">{invoice.currency}</p>
+              </div>
+            )}
+            <div>
+              <p className="text-sm text-muted-foreground">{t('common.status')}</p>
+              <Badge className={STATUS_COLORS[invoice.status] ?? ''}>{invoice.status}</Badge>
+            </div>
+            {(invoice as any).createdBy && (
+              <div>
+                <p className="text-sm text-muted-foreground">{t('common.createdBy')}</p>
+                <p className="font-medium">{(invoice as any).createdBy?.name ?? '—'}</p>
+              </div>
+            )}
           </div>
-        </CardContent>
-      </Card>
 
-      {/* Payments table */}
-      {invoice.payments && invoice.payments.length > 0 && (
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-semibold flex items-center gap-2">
-              <HandCoins className="size-4" /> {t('invoices.payments')}
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="p-0">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>{t('invoices.date')}</TableHead>
-                  <TableHead>{t('invoices.paymentMethod')}</TableHead>
-                  <TableHead className="text-right">{t('invoices.amount')}</TableHead>
-                  <TableHead className="w-16"></TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {invoice.payments.map((payment: any) => (
-                  <TableRow key={payment.id}>
-                    <TableCell className="text-sm">{formatDate(payment.date)}</TableCell>
-                    <TableCell>{payment.method}</TableCell>
-                    <TableCell className="text-right font-medium">
-                      {Number(payment.amount).toFixed(3)}
-                    </TableCell>
-                    <TableCell>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="size-7 text-muted-foreground hover:text-destructive"
-                        disabled={isPending}
-                        onClick={() => {
-                          if (window.confirm(t('invoices.deletePaymentConfirm'))) {
-                            deletePaymentMutation.mutate({ paymentId: payment.id });
-                          }
-                        }}
-                      >
-                        <Trash className="size-3.5" />
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Notes */}
-      {invoice.notes && (
-        <>
           <Separator />
-          <div>
-            <p className="text-sm text-muted-foreground mb-1">{t('invoices.notes')}</p>
-            <p className="whitespace-pre-wrap">{invoice.notes}</p>
-          </div>
-        </>
-      )}
 
-      {/* Terms */}
-      {(invoice as any).termsText && (
-        <Card>
-          <CardHeader className="pb-1.5">
-            <CardTitle className="text-xs text-muted-foreground font-medium">
-              {t('invoices.termsAndConditions')}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div
-              className="prose prose-sm max-w-none dark:prose-invert text-foreground [&_ol]:list-decimal [&_ul]:list-disc"
-              dangerouslySetInnerHTML={{ __html: (invoice as any).termsText }}
-            />
-          </CardContent>
-        </Card>
-      )}
+          {/* Line Items */}
+          <Card>
+            <CardContent className="px-0">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="pl-6">#</TableHead>
+                    <TableHead>{t('invoices.item')}</TableHead>
+                    <TableHead className="text-right">{t('invoices.qty')}</TableHead>
+                    <TableHead className="text-right">{t('invoices.stock')}</TableHead>
+                    <TableHead className="text-right">{t('invoices.unitPrice')}</TableHead>
+                    <TableHead className="text-right">{t('invoices.discount')}</TableHead>
+                    <TableHead className="text-right">{t('invoices.tax')}</TableHead>
+                    <TableHead className="text-right pr-6">{t('invoices.total')}</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {invoice.lines?.map((line: any, i: number) => (
+                    <TableRow key={line.id ?? i}>
+                      <TableCell className="pl-6 text-muted-foreground">{i + 1}</TableCell>
+                      <TableCell>
+                        <p className="font-medium">{line.item?.name ?? line.description ?? '—'}</p>
+                        {line.item?.sku && (
+                          <p className="text-xs text-muted-foreground">{line.item.sku}</p>
+                        )}
+                        {line.description && (
+                          <p className="text-xs text-muted-foreground italic">{line.description}</p>
+                        )}
+                      </TableCell>
+                      <TableCell className="text-right tabular-nums">
+                        {Number(line.quantity).toFixed(3)}
+                      </TableCell>
+                      <TableCell className="text-right tabular-nums">
+                        {line.item?.type === 'PRODUCT' && invoice.warehouseId ? (
+                          <span
+                            className={
+                              (stockMap.get(line.itemId) ?? 0) < Number(line.quantity)
+                                ? 'text-destructive font-medium'
+                                : ''
+                            }
+                          >
+                            {stockMap.has(line.itemId)
+                              ? Number(stockMap.get(line.itemId)).toFixed(3)
+                              : '…'}
+                          </span>
+                        ) : (
+                          '—'
+                        )}
+                      </TableCell>
+                      <TableCell className="text-right tabular-nums">
+                        {Number(line.unitPrice).toFixed(3)}
+                      </TableCell>
+                      <TableCell className="text-right tabular-nums">
+                        {Number(line.discountAmt).toFixed(3)}
+                      </TableCell>
+                      <TableCell className="text-right tabular-nums">
+                        {line.taxRateName ? (
+                          <span>
+                            {Number(line.taxAmt).toFixed(3)}
+                            <span className="text-xs text-muted-foreground ml-1">
+                              ({line.taxRateName})
+                            </span>
+                          </span>
+                        ) : (
+                          '—'
+                        )}
+                      </TableCell>
+                      <TableCell className="text-right pr-6 tabular-nums font-medium">
+                        {Number(line.total).toFixed(3)}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                  {invoice.lines?.length === 0 && (
+                    <TableRow>
+                      <TableCell colSpan={8} className="text-center text-muted-foreground py-6">
+                        {t('invoices.noLineItems')}
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </TableBody>
+              </Table>
 
-      </div>{/* end flex-1 */}
+              <Separator />
+              {/* Totals */}
+              <div className="flex justify-end p-5 pb-0">
+                <div className="w-72 space-y-2">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">{t('invoices.subtotal')}</span>
+                    <span className="tabular-nums">{Number(invoice.subtotal).toFixed(3)}</span>
+                  </div>
+                  {Number(invoice.discountTotal) > 0 && (
+                    <div className="flex justify-between text-sm">
+                      <span className="text-muted-foreground">{t('invoices.discount')}</span>
+                      <span className="tabular-nums text-destructive">
+                        -{Number(invoice.discountTotal).toFixed(3)}
+                      </span>
+                    </div>
+                  )}
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">{t('invoices.tax')}</span>
+                    <span className="tabular-nums">{Number(invoice.taxTotal).toFixed(3)}</span>
+                  </div>
+                  <Separator />
+                  <div className="flex justify-between font-bold text-lg">
+                    <span>{t('invoices.total')}</span>
+                    <span className="tabular-nums">
+                      {Number(invoice.total).toFixed(3)} {invoice.currency}
+                    </span>
+                  </div>
+                  {isInvoice && Number((invoice as any).amountPaid) > 0 && (
+                    <>
+                      <div className="flex justify-between text-sm text-green-600">
+                        <span>{t('invoices.amountPaid')}</span>
+                        <span className="tabular-nums">
+                          {Number((invoice as any).amountPaid).toFixed(3)} {invoice.currency}
+                        </span>
+                      </div>
+                      <div className="flex justify-between text-sm text-red-600">
+                        <span>{t('invoices.balanceDue')}</span>
+                        <span className="tabular-nums">
+                          {Number((invoice as any).amountDue).toFixed(3)} {invoice.currency}
+                        </span>
+                      </div>
+                    </>
+                  )}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
 
-      {/* History side panel — desktop */}
-      <div className="w-80 shrink-0 hidden md:block">
-        <InvoiceHistoryPanel
-          invoice={invoice}
-          formatDate={formatDate}
-          formatDateTime={formatDateTime}
-          onNavigate={(path) => router.push(path)}
-        />
+          {/* Payments table */}
+          {invoice.payments && invoice.payments.length > 0 && (
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-semibold flex items-center gap-2">
+                  <HandCoins className="size-4" /> {t('invoices.payments')}
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-0">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>{t('invoices.date')}</TableHead>
+                      <TableHead>{t('invoices.paymentMethod')}</TableHead>
+                      <TableHead className="text-right">{t('invoices.amount')}</TableHead>
+                      <TableHead className="w-16"></TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {invoice.payments.map((payment: any) => (
+                      <TableRow key={payment.id}>
+                        <TableCell className="text-sm">{formatDate(payment.date)}</TableCell>
+                        <TableCell>{payment.method}</TableCell>
+                        <TableCell className="text-right font-medium">
+                          {Number(payment.amount).toFixed(3)}
+                        </TableCell>
+                        <TableCell>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="size-7 text-muted-foreground hover:text-destructive"
+                            disabled={isPending}
+                            onClick={() => {
+                              if (window.confirm(t('invoices.deletePaymentConfirm'))) {
+                                deletePaymentMutation.mutate({ paymentId: payment.id });
+                              }
+                            }}
+                          >
+                            <Trash className="size-3.5" />
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Notes */}
+          {invoice.notes && (
+            <>
+              <Separator />
+              <div>
+                <p className="text-sm text-muted-foreground mb-1">{t('invoices.notes')}</p>
+                <p className="whitespace-pre-wrap">{invoice.notes}</p>
+              </div>
+            </>
+          )}
+
+          {/* Terms */}
+          {(invoice as any).termsText && (
+            <Card>
+              <CardHeader className="pb-1.5">
+                <CardTitle className="text-xs text-muted-foreground font-medium">
+                  {t('invoices.termsAndConditions')}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div
+                  className="prose prose-sm max-w-none dark:prose-invert text-foreground [&_ol]:list-decimal [&_ul]:list-disc"
+                  dangerouslySetInnerHTML={{ __html: (invoice as any).termsText }}
+                />
+              </CardContent>
+            </Card>
+          )}
+        </div>
+        {/* end flex-1 */}
+
+        {/* History side panel — desktop */}
+        <div className="w-80 shrink-0 hidden md:block">
+          <InvoiceHistoryPanel
+            invoice={invoice}
+            formatDate={formatDate}
+            formatDateTime={formatDateTime}
+            onNavigate={(path) => router.push(path)}
+          />
+        </div>
       </div>
-      </div>{/* end flex */}
+      {/* end flex */}
 
       {/* History side panel — mobile */}
       <Sheet open={historyOpen} onOpenChange={setHistoryOpen}>
@@ -1083,7 +1101,6 @@ export default function DocumentDetailPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-
     </div>
   );
 }

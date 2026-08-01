@@ -31,7 +31,13 @@
 
 import { z } from 'zod';
 import { calculateInvoiceTotals } from '@/lib/calculator';
-import { ConflictError, NotFoundError, StaleDataError, UnprocessableError } from '@/lib/error';
+import {
+  ConflictError,
+  ForbiddenError,
+  NotFoundError,
+  StaleDataError,
+  UnprocessableError,
+} from '@/lib/error';
 import { type DocumentPrefix, generateSerial } from '@/lib/sequences';
 import { assertCan, orgProcedure, router } from '@/lib/trpc/context';
 import {
@@ -42,18 +48,24 @@ import {
 } from '@/lib/validations';
 import { writeAuditLog } from '../shared/audit.service';
 import { postInvoiceSent, postCreditNoteSent } from '../journals/journal-posting.service';
-import { deductStockForInvoice, returnStockForCancelledInvoice, returnStockForCreditNote } from './invoices.service';
+import {
+  deductStockForInvoice,
+  returnStockForCancelledInvoice,
+  returnStockForCreditNote,
+} from './invoices.service';
+import { getHardDeleteInfo, hardDeleteInvoiceTree } from './hard-delete.service';
 import {
   createNotification,
   NOTIFICATION_SETTINGS_KEYS,
   NOTIFICATION_TYPES,
 } from '../notifications/notifications.shared';
-import { addPayment, deletePayment, resolvePaymentStatus, resolveInvoiceStatus } from './payments.service';
 import {
-  createInvoiceSchema,
-  updateInvoiceSchema,
-  listInvoicesSchema,
-} from './invoices.schemas';
+  addPayment,
+  deletePayment,
+  resolvePaymentStatus,
+  resolveInvoiceStatus,
+} from './payments.service';
+import { createInvoiceSchema, updateInvoiceSchema, listInvoicesSchema } from './invoices.schemas';
 
 // ---------------------------------------------------------------------------
 // Router
@@ -752,7 +764,12 @@ export const invoicesRouter = router({
             const amountDue = Math.max(0, total - amountPaid - totalCreditApplied);
 
             // Resolve status using credit-aware resolvers
-            const paymentStatus = resolvePaymentStatus(total, amountPaid, parentInvoice.dueDate, totalCreditApplied);
+            const paymentStatus = resolvePaymentStatus(
+              total,
+              amountPaid,
+              parentInvoice.dueDate,
+              totalCreditApplied,
+            );
             const invoiceStatus = resolveInvoiceStatus(
               parentInvoice.status,
               amountPaid,
@@ -1379,6 +1396,49 @@ export const invoicesRouter = router({
     return { success: true };
   }),
 
+  // ── HARD DELETE (SUPER_ADMIN only) ────────────────────────────────────────
+  // Permanently removes the document AND all related records. Only users with
+  // platformRole === 'SUPER_ADMIN' may call these procedures.
+  hardDeleteInfo: orgProcedure.input(z.object({ id: z.string() })).query(async ({ ctx, input }) => {
+    if (ctx.user.platformRole !== 'SUPER_ADMIN') {
+      throw new ForbiddenError(
+        'hard delete',
+        'this document. This action is restricted to platform super admins',
+      );
+    }
+
+    const orgId = ctx.user.organizationId;
+    const exists = await ctx.db.invoice.findFirst({
+      where: { id: input.id, organizationId: orgId },
+      select: { id: true },
+    });
+    if (!exists) throw new NotFoundError('Invoice', input.id);
+
+    return getHardDeleteInfo(ctx.db, orgId, input.id);
+  }),
+
+  hardDelete: orgProcedure.input(z.object({ id: z.string() })).mutation(async ({ ctx, input }) => {
+    if (ctx.user.platformRole !== 'SUPER_ADMIN') {
+      throw new ForbiddenError(
+        'hard delete',
+        'this document. This action is restricted to platform super admins',
+      );
+    }
+
+    const orgId = ctx.user.organizationId;
+    const exists = await ctx.db.invoice.findFirst({
+      where: { id: input.id, organizationId: orgId },
+      select: { id: true },
+    });
+    if (!exists) throw new NotFoundError('Invoice', input.id);
+
+    await ctx.db.$transaction(async (tx) => {
+      await hardDeleteInvoiceTree(tx, orgId, input.id, ctx.user.id, ctx.ipAddress);
+    });
+
+    return { success: true };
+  }),
+
   // ── PAYMENTS ──────────────────────────────────────────────────────────────
 
   addPayment: orgProcedure
@@ -1639,11 +1699,36 @@ export const invoicesRouter = router({
 
     return {
       buckets: [
-        { bucket: 'Current', amount: buckets.current.amount, count: buckets.current.count, invoices: buckets.current.invoices },
-        { bucket: '1–30 Days', amount: buckets.days1to30.amount, count: buckets.days1to30.count, invoices: buckets.days1to30.invoices },
-        { bucket: '31–60 Days', amount: buckets.days31to60.amount, count: buckets.days31to60.count, invoices: buckets.days31to60.invoices },
-        { bucket: '61–90 Days', amount: buckets.days61to90.amount, count: buckets.days61to90.count, invoices: buckets.days61to90.invoices },
-        { bucket: '90+ Days', amount: buckets.over90.amount, count: buckets.over90.count, invoices: buckets.over90.invoices },
+        {
+          bucket: 'Current',
+          amount: buckets.current.amount,
+          count: buckets.current.count,
+          invoices: buckets.current.invoices,
+        },
+        {
+          bucket: '1–30 Days',
+          amount: buckets.days1to30.amount,
+          count: buckets.days1to30.count,
+          invoices: buckets.days1to30.invoices,
+        },
+        {
+          bucket: '31–60 Days',
+          amount: buckets.days31to60.amount,
+          count: buckets.days31to60.count,
+          invoices: buckets.days31to60.invoices,
+        },
+        {
+          bucket: '61–90 Days',
+          amount: buckets.days61to90.amount,
+          count: buckets.days61to90.count,
+          invoices: buckets.days61to90.invoices,
+        },
+        {
+          bucket: '90+ Days',
+          amount: buckets.over90.amount,
+          count: buckets.over90.count,
+          invoices: buckets.over90.invoices,
+        },
       ],
       grandTotal,
       totalCount,

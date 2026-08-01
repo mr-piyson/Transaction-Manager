@@ -9,6 +9,7 @@ import {
   MoreHorizontal,
   Plus,
   Receipt,
+  ShieldAlert,
   Trash2,
 } from 'lucide-react';
 import Link from 'next/link';
@@ -17,7 +18,13 @@ import * as React from 'react';
 import { useCallback, useEffect, useMemo, useRef } from 'react';
 import { useQueryState, parseAsString } from 'nuqs';
 import { toast } from 'sonner';
-import { AllCommunityModule, ModuleRegistry, type ColDef, type GridApi, type FilterModel } from 'ag-grid-community';
+import {
+  AllCommunityModule,
+  ModuleRegistry,
+  type ColDef,
+  type GridApi,
+  type FilterModel,
+} from 'ag-grid-community';
 import { AgGridReact } from 'ag-grid-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -42,6 +49,7 @@ import { cn } from '@/lib/utils';
 import { Header } from '@/components/layout/App-Header';
 import { InvoiceListItem } from '@/components/invoices/invoice-list-item';
 import { useInvoiceForm } from '@/components/dialogs';
+import { useHardDeleteForm } from '@/components/dialogs/hardDeleteForm';
 import { DocumentFilterBar } from '@/components/erp/document-filter-bar';
 
 ModuleRegistry.registerModules([AllCommunityModule]);
@@ -74,6 +82,9 @@ export default function DocumentsLayout({ children }: { children?: React.ReactNo
   const config = DOCUMENT_CONFIG[type] ?? DOCUMENT_CONFIG.invoices;
   const tableTheme = useTableTheme();
   const { openCreate } = useInvoiceForm();
+  const { openDialog: openHardDelete } = useHardDeleteForm();
+  const { data: me } = trpc.auth.me.useQuery();
+  const isSuperAdmin = me?.platformRole === 'SUPER_ADMIN';
   const { formatDate } = useDateFormat();
 
   const [statusFilter] = useQueryState('status', parseAsString.withDefault(''));
@@ -96,8 +107,7 @@ export default function DocumentsLayout({ children }: { children?: React.ReactNo
   const { data, isPending } = trpc.invoices.list.useQuery({
     type: config.trpcType,
     status: (statusFilter || undefined) as any,
-    paymentStatus:
-      paymentStatusFilter === 'all' ? undefined : (paymentStatusFilter as any),
+    paymentStatus: paymentStatusFilter === 'all' ? undefined : (paymentStatusFilter as any),
     search: searchQuery || undefined,
   });
   const router = useRouter();
@@ -149,15 +159,11 @@ export default function DocumentsLayout({ children }: { children?: React.ReactNo
                 </Link>
               </ContextMenuTrigger>
               <ContextMenuContent>
-                <ContextMenuItem
-                  onClick={() => router.push(`/erp/documents/${type}/${item.id}`)}
-                >
+                <ContextMenuItem onClick={() => router.push(`/erp/documents/${type}/${item.id}`)}>
                   <Eye className="size-4 mr-2" />
                   {t('common.viewDetails')}
                 </ContextMenuItem>
-                <ContextMenuItem
-                  onClick={() => router.push(`/erp/documents/${type}/${item.id}`)}
-                >
+                <ContextMenuItem onClick={() => router.push(`/erp/documents/${type}/${item.id}`)}>
                   <Edit className="size-4 mr-2" />
                   {t('common.edit')}
                 </ContextMenuItem>
@@ -179,13 +185,25 @@ export default function DocumentsLayout({ children }: { children?: React.ReactNo
                   <Trash2 className="size-4 mr-2" />
                   {t('common.delete')}
                 </ContextMenuItem>
+                {isSuperAdmin && (
+                  <>
+                    <ContextMenuSeparator />
+                    <ContextMenuItem
+                      onClick={() => openHardDelete({ id: item.id, serial: item.serial })}
+                      variant="destructive"
+                    >
+                      <ShieldAlert className="size-4 mr-2" />
+                      {t('hardDelete.menu')}
+                    </ContextMenuItem>
+                  </>
+                )}
               </ContextMenuContent>
             </ContextMenu>
           );
         },
       },
     ],
-    [activeItem, type, router, t, deleteMutation],
+    [activeItem, type, router, t, deleteMutation, isSuperAdmin, openHardDelete],
   );
 
   const tableColumnDefs = useMemo<ColDef[]>(
@@ -259,15 +277,11 @@ export default function DocumentsLayout({ children }: { children?: React.ReactNo
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                <DropdownMenuItem
-                  onClick={() => router.push(`/erp/documents/${type}/${item.id}`)}
-                >
+                <DropdownMenuItem onClick={() => router.push(`/erp/documents/${type}/${item.id}`)}>
                   <Eye className="size-4 mr-2" />
                   {t('common.viewDetails')}
                 </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={() => router.push(`/erp/documents/${type}/${item.id}`)}
-                >
+                <DropdownMenuItem onClick={() => router.push(`/erp/documents/${type}/${item.id}`)}>
                   <Edit className="size-4 mr-2" />
                   {t('common.edit')}
                 </DropdownMenuItem>
@@ -288,13 +302,24 @@ export default function DocumentsLayout({ children }: { children?: React.ReactNo
                   <Trash2 className="size-4 mr-2 text-destructive" />
                   <span className="text-destructive">{t('common.delete')}</span>
                 </DropdownMenuItem>
+                {isSuperAdmin && (
+                  <>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
+                      onClick={() => openHardDelete({ id: item.id, serial: item.serial })}
+                    >
+                      <ShieldAlert className="size-4 mr-2 text-destructive" />
+                      <span className="text-destructive">{t('hardDelete.menu')}</span>
+                    </DropdownMenuItem>
+                  </>
+                )}
               </DropdownMenuContent>
             </DropdownMenu>
           );
         },
       },
     ],
-    [router, activeItem, t, deleteMutation, type],
+    [router, activeItem, t, deleteMutation, type, isSuperAdmin, openHardDelete],
   );
 
   const defaultColDef = useMemo(

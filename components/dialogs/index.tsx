@@ -11,6 +11,7 @@ import { EmployeeFormProvider } from './employeeForm';
 import { EmployeeTypeFormProvider } from './employeeTypeForm';
 import { ExchangeRateFormProvider } from './exchangeRateForm';
 import { PaymentFormProvider } from './paymentForm';
+import { HardDeleteFormProvider } from './hardDeleteForm';
 import { GrievanceFormProvider } from './grievanceForm';
 import { HolidayFormProvider } from './holidayForm';
 import { InvoiceFormProvider } from './invoiceForm';
@@ -142,12 +143,10 @@ export {
   ExchangeRateDialog,
 } from './exchangeRateForm';
 
-export {
-  PaymentFormProvider,
-  usePaymentForm,
-  PaymentFormDialog,
-} from './paymentForm';
+export { PaymentFormProvider, usePaymentForm, PaymentFormDialog } from './paymentForm';
 export type { PaymentFormValues } from './paymentForm';
+
+export { HardDeleteFormProvider, useHardDeleteForm, HardDeleteDialog } from './hardDeleteForm';
 
 /**
  * DialogsProvider — mount once in your app layout.
@@ -184,7 +183,9 @@ export function DialogsProvider({ children }: { children: ReactNode }) {
                                                         <LeaveAllocateFormProvider>
                                                           <ExchangeRateFormProvider>
                                                             <PaymentFormProvider>
-                                                              {children}
+                                                              <HardDeleteFormProvider>
+                                                                {children}
+                                                              </HardDeleteFormProvider>
                                                             </PaymentFormProvider>
                                                           </ExchangeRateFormProvider>
                                                         </LeaveAllocateFormProvider>
