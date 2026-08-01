@@ -1,10 +1,12 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { Handshake, User2 } from 'lucide-react';
+import { Eye, Handshake, ShieldAlert, User2 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname, useSearchParams, useRouter } from 'next/navigation';
 import { useCallback } from 'react';
+import { UniversalContextMenu } from '@/components/context-menu';
+import type { ContextMenuItemSchema } from '@/components/context-menu';
 import { ListView } from '@/components/list-view';
 import { Button } from '@/components/ui/button';
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@/components/ui/resizable';
@@ -12,6 +14,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { trpc } from '@/lib/trpc/client';
 import { cn } from '@/lib/utils';
 import { useContractForm } from '@/components/dialogs';
+import { useHardDeleteForm } from '@/components/dialogs/hardDeleteForm';
 import { Header } from '@/components/layout/App-Header';
 import { ContractListItem } from '@/components/contracts/contract-list-item';
 import { NotificationBell } from '@/components/layout/NotificationBell';
@@ -28,6 +31,9 @@ const statusFilters = [
 export default function ContractsLayout({ children }: { children?: React.ReactNode }) {
   const t = useTranslations();
   const { openCreate } = useContractForm();
+  const { openDialog: openHardDelete } = useHardDeleteForm();
+  const { data: me } = trpc.auth.me.useQuery();
+  const isSuperAdmin = me?.platformRole === 'SUPER_ADMIN';
   const searchParams = useSearchParams();
   const router = useRouter();
   const pathname = usePathname();
@@ -56,23 +62,49 @@ export default function ContractsLayout({ children }: { children?: React.ReactNo
   };
 
   const renderCard = useCallback(
-    (item: any) => (
-      <Link
-        href={`/erp/${contractsSegment}/${item.id}`}
-        scroll={false}
-        draggable={false}
-        className="block w-full h-full"
-      >
-        <ContractListItem
-          data={item}
-          className={cn(
-            'hover:bg-muted/40 border border-transparent',
-            activeItem === item.id ? 'border-primary border bg-primary/10' : '',
-          )}
-        />
-      </Link>
-    ),
-    [activeItem],
+    (item: any) => {
+      const menuItems: ContextMenuItemSchema[] = [
+        {
+          id: 'view',
+          label: t('common.viewDetails'),
+          icon: Eye,
+          onClick: () => router.push(`/erp/${contractsSegment}/${item.id}`),
+        },
+        ...(isSuperAdmin
+          ? [
+              { id: 'sep1', type: 'separator' as const },
+              {
+                id: 'hardDelete',
+                label: t('hardDelete.menu'),
+                icon: ShieldAlert,
+                destructive: true,
+                onClick: () =>
+                  openHardDelete({ kind: 'contract', id: item.id, title: item.serial }),
+              },
+            ]
+          : []),
+      ];
+
+      return (
+        <UniversalContextMenu items={menuItems}>
+          <Link
+            href={`/erp/${contractsSegment}/${item.id}`}
+            scroll={false}
+            draggable={false}
+            className="block w-full h-full"
+          >
+            <ContractListItem
+              data={item}
+              className={cn(
+                'hover:bg-muted/40 border border-transparent',
+                activeItem === item.id ? 'border-primary border bg-primary/10' : '',
+              )}
+            />
+          </Link>
+        </UniversalContextMenu>
+      );
+    },
+    [activeItem, router, t, isSuperAdmin, openHardDelete],
   );
 
   const contracts = Array.isArray(data) ? data : (data?.data ?? []);

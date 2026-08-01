@@ -1,6 +1,17 @@
 'use client';
 
-import { ArrowLeft, Edit, ExternalLink, Loader2, Pen, Plus, Trash, Truck, X } from 'lucide-react';
+import {
+  ArrowLeft,
+  Edit,
+  ExternalLink,
+  Loader2,
+  Pen,
+  Plus,
+  ShieldAlert,
+  Trash,
+  Truck,
+  X,
+} from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useParams, useRouter } from 'next/navigation';
 import { toast } from 'sonner';
@@ -8,11 +19,25 @@ import { alert } from '@/components/Alert-dialog';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '@/components/ui/empty';
+import {
+  Empty,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from '@/components/ui/empty';
 import { Separator } from '@/components/ui/separator';
 import { Spinner } from '@/components/ui/spinner';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 import { useSupplierForm, useSupplierItemForm } from '@/components/dialogs';
+import { useHardDeleteForm } from '@/components/dialogs/hardDeleteForm';
 import { trpc } from '@/lib/trpc/client';
 import { useDateFormat } from '@/hooks/use-date-format';
 
@@ -34,13 +59,19 @@ export default function SupplierDetailPage() {
   const utils = trpc.useUtils();
   const { openEdit } = useSupplierForm();
   const { openCreate, openEdit: openSupplierItemEdit } = useSupplierItemForm();
+  const { openDialog: openHardDelete } = useHardDeleteForm();
+  const { data: me } = trpc.auth.me.useQuery();
+  const isSuperAdmin = me?.platformRole === 'SUPER_ADMIN';
   const t = useTranslations();
   const { formatDate, formatDateTime } = useDateFormat();
 
-  const { data: supplier, isLoading, isError, error, refetch } = trpc.suppliers.byId.useQuery(
-    { id: params.id },
-    { enabled: !!params.id },
-  );
+  const {
+    data: supplier,
+    isLoading,
+    isError,
+    error,
+    refetch,
+  } = trpc.suppliers.byId.useQuery({ id: params.id }, { enabled: !!params.id });
 
   const deleteMutation = trpc.suppliers.delete.useMutation({
     onSuccess: () => {
@@ -78,9 +109,7 @@ export default function SupplierDetailPage() {
               <Truck className="size-6" />
             </EmptyMedia>
             <EmptyTitle>{isError ? t('common.failedToLoad') : t('common.notFound')}</EmptyTitle>
-            <EmptyDescription>
-              {error?.message ?? t('suppliers.doesNotExist')}
-            </EmptyDescription>
+            <EmptyDescription>{error?.message ?? t('suppliers.doesNotExist')}</EmptyDescription>
           </EmptyHeader>
           <div className="flex gap-2">
             <Button variant="outline" onClick={() => router.push('/erp/suppliers')}>
@@ -123,6 +152,13 @@ export default function SupplierDetailPage() {
     });
   };
 
+  const handleHardDelete = () => {
+    openHardDelete(
+      { kind: 'supplier', id: supplier.id, title: supplier.name },
+      { onSuccess: () => router.push('/erp/suppliers') },
+    );
+  };
+
   const purchaseOrders = supplier.purchaseOrders ?? [];
   const supplierItems = supplier.supplierItems ?? [];
 
@@ -137,7 +173,10 @@ export default function SupplierDetailPage() {
           <Truck className="size-5 text-muted-foreground shrink-0" />
           <h1 className="text-xl font-semibold truncate">{supplier.name}</h1>
           {!supplier.isActive && (
-            <Badge variant="outline" className="bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200">
+            <Badge
+              variant="outline"
+              className="bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200"
+            >
               {t('common.inactive')}
             </Badge>
           )}
@@ -157,6 +196,17 @@ export default function SupplierDetailPage() {
             {isPending ? <Loader2 className="size-4 animate-spin" /> : <Trash className="size-4" />}
             {t('common.delete')}
           </Button>
+          {isSuperAdmin && (
+            <Button
+              variant="destructive"
+              size="sm"
+              className="gap-1.5"
+              onClick={handleHardDelete}
+              title={t('hardDelete.menu')}
+            >
+              <ShieldAlert className="size-4" />
+            </Button>
+          )}
         </div>
       </header>
 
@@ -165,7 +215,9 @@ export default function SupplierDetailPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
           <Card>
             <CardHeader className="pb-1.5">
-              <CardTitle className="text-xs text-muted-foreground font-medium">{t('suppliers.contactInfo')}</CardTitle>
+              <CardTitle className="text-xs text-muted-foreground font-medium">
+                {t('suppliers.contactInfo')}
+              </CardTitle>
             </CardHeader>
             <CardContent>
               <p className="font-semibold">{supplier.contactName ?? '—'}</p>
@@ -175,26 +227,35 @@ export default function SupplierDetailPage() {
           </Card>
           <Card>
             <CardHeader className="pb-1.5">
-              <CardTitle className="text-xs text-muted-foreground font-medium">{t('suppliers.codeAndTax')}</CardTitle>
+              <CardTitle className="text-xs text-muted-foreground font-medium">
+                {t('suppliers.codeAndTax')}
+              </CardTitle>
             </CardHeader>
             <CardContent>
               <p className="font-semibold">{supplier.code ?? '—'}</p>
               <p className="text-xs text-muted-foreground">
-                {t('common.tax')}: {supplier.taxId ?? '—'} · {t('suppliers.crNumber')}: {supplier.crNumber ?? '—'}
+                {t('common.tax')}: {supplier.taxId ?? '—'} · {t('suppliers.crNumber')}:{' '}
+                {supplier.crNumber ?? '—'}
               </p>
             </CardContent>
           </Card>
           <Card>
             <CardHeader className="pb-1.5">
-              <CardTitle className="text-xs text-muted-foreground font-medium">{t('suppliers.paymentTerms')}</CardTitle>
+              <CardTitle className="text-xs text-muted-foreground font-medium">
+                {t('suppliers.paymentTerms')}
+              </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="font-semibold">{t('suppliers.paymentTermsDays', { days: supplier.paymentTermsDays })}</p>
+              <p className="font-semibold">
+                {t('suppliers.paymentTermsDays', { days: supplier.paymentTermsDays })}
+              </p>
             </CardContent>
           </Card>
           <Card>
             <CardHeader className="pb-1.5">
-              <CardTitle className="text-xs text-muted-foreground font-medium">{t('common.website')}</CardTitle>
+              <CardTitle className="text-xs text-muted-foreground font-medium">
+                {t('common.website')}
+              </CardTitle>
             </CardHeader>
             <CardContent>
               {supplier.website ? (
@@ -218,7 +279,9 @@ export default function SupplierDetailPage() {
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-semibold flex items-center justify-between">
-              <span>{t('suppliers.purchaseOrders')} ({supplier._count?.purchaseOrders ?? 0})</span>
+              <span>
+                {t('suppliers.purchaseOrders')} ({supplier._count?.purchaseOrders ?? 0})
+              </span>
               <Button
                 variant="ghost"
                 size="sm"
@@ -283,7 +346,9 @@ export default function SupplierDetailPage() {
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-semibold flex items-center justify-between">
-              <span>{t('suppliers.itemsSupplied')} ({supplier._count?.supplierItems ?? 0})</span>
+              <span>
+                {t('suppliers.itemsSupplied')} ({supplier._count?.supplierItems ?? 0})
+              </span>
               <Button
                 variant="ghost"
                 size="sm"
@@ -311,12 +376,18 @@ export default function SupplierDetailPage() {
                 {supplierItems.map((si: any) => (
                   <TableRow key={si.id}>
                     <TableCell className="font-medium">{si.item?.name ?? '—'}</TableCell>
-                    <TableCell className="text-sm text-muted-foreground">{si.item?.sku ?? '—'}</TableCell>
-                    <TableCell className="text-sm text-muted-foreground">{si.supplierSku ?? '—'}</TableCell>
+                    <TableCell className="text-sm text-muted-foreground">
+                      {si.item?.sku ?? '—'}
+                    </TableCell>
+                    <TableCell className="text-sm text-muted-foreground">
+                      {si.supplierSku ?? '—'}
+                    </TableCell>
                     <TableCell className="text-right">
                       {Number(si.basePrice).toFixed(3)} {si.currency}
                     </TableCell>
-                    <TableCell className="text-right">{si.leadTimeDays ? `${si.leadTimeDays}d` : '—'}</TableCell>
+                    <TableCell className="text-right">
+                      {si.leadTimeDays ? `${si.leadTimeDays}d` : '—'}
+                    </TableCell>
                     <TableCell>
                       <div className="flex items-center justify-end gap-1">
                         <Button
@@ -348,7 +419,9 @@ export default function SupplierDetailPage() {
                           onClick={() =>
                             alert.delete({
                               title: t('common.confirmDelete'),
-                              description: t('suppliers.removeItemConfirm', { name: si.item?.name ?? si.item?.sku ?? si.id }),
+                              description: t('suppliers.removeItemConfirm', {
+                                name: si.item?.name ?? si.item?.sku ?? si.id,
+                              }),
                               confirmText: t('common.remove'),
                               onConfirm: async () => {
                                 await deleteSupplierItemMutation.mutateAsync({ id: si.id });
@@ -378,7 +451,9 @@ export default function SupplierDetailPage() {
         {supplier.notes && (
           <Card>
             <CardHeader className="pb-1.5">
-              <CardTitle className="text-xs text-muted-foreground font-medium">{t('common.notes')}</CardTitle>
+              <CardTitle className="text-xs text-muted-foreground font-medium">
+                {t('common.notes')}
+              </CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-sm whitespace-pre-wrap">{supplier.notes}</p>
@@ -388,12 +463,14 @@ export default function SupplierDetailPage() {
 
         {/* Meta info */}
         <div className="text-xs text-muted-foreground flex flex-wrap gap-x-4 gap-y-1 pb-2">
-          <span>{t('suppliers.created')} {supplier.createdAt ? formatDateTime(supplier.createdAt) : '—'}</span>
-          <span>{t('suppliers.updated')} {supplier.updatedAt ? formatDateTime(supplier.updatedAt) : '—'}</span>
+          <span>
+            {t('suppliers.created')} {supplier.createdAt ? formatDateTime(supplier.createdAt) : '—'}
+          </span>
+          <span>
+            {t('suppliers.updated')} {supplier.updatedAt ? formatDateTime(supplier.updatedAt) : '—'}
+          </span>
         </div>
       </div>
-
-
     </div>
   );
 }

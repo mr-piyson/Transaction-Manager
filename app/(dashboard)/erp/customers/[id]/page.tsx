@@ -1,6 +1,6 @@
 'use client';
 
-import { ArrowLeft, Edit, MoreHorizontal, Trash, Users } from 'lucide-react';
+import { ArrowLeft, Edit, MoreHorizontal, ShieldAlert, Trash, Users } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useParams, useRouter } from 'next/navigation';
 import { toast } from 'sonner';
@@ -8,15 +8,23 @@ import { alert } from '@/components/Alert-dialog';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '@/components/ui/empty';
+import {
+  Empty,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from '@/components/ui/empty';
 import { Spinner } from '@/components/ui/spinner';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useCustomerForm } from '@/components/dialogs';
+import { useHardDeleteForm } from '@/components/dialogs/hardDeleteForm';
 import { trpc } from '@/lib/trpc/client';
 import { useDateFormat } from '@/hooks/use-date-format';
 
@@ -25,13 +33,19 @@ export default function CustomerDetailPage() {
   const router = useRouter();
   const utils = trpc.useUtils();
   const { openEdit } = useCustomerForm();
+  const { openDialog: openHardDelete } = useHardDeleteForm();
+  const { data: me } = trpc.auth.me.useQuery();
+  const isSuperAdmin = me?.platformRole === 'SUPER_ADMIN';
   const t = useTranslations();
   const { formatDateTime } = useDateFormat();
 
-  const { data: customer, isLoading, isError, error, refetch } = trpc.customers.byId.useQuery(
-    { id: params.id },
-    { enabled: !!params.id },
-  );
+  const {
+    data: customer,
+    isLoading,
+    isError,
+    error,
+    refetch,
+  } = trpc.customers.byId.useQuery({ id: params.id }, { enabled: !!params.id });
 
   const { data: creditData } = trpc.customers.creditBalance.useQuery(
     { id: params.id },
@@ -66,9 +80,7 @@ export default function CustomerDetailPage() {
               <Users className="size-6" />
             </EmptyMedia>
             <EmptyTitle>{isError ? t('common.failedToLoad') : t('common.notFound')}</EmptyTitle>
-            <EmptyDescription>
-              {error?.message ?? t('customers.doesNotExist')}
-            </EmptyDescription>
+            <EmptyDescription>{error?.message ?? t('customers.doesNotExist')}</EmptyDescription>
           </EmptyHeader>
           <div className="flex gap-2">
             <Button variant="outline" onClick={() => router.push('/erp/customers')}>
@@ -107,6 +119,13 @@ export default function CustomerDetailPage() {
     });
   };
 
+  const handleHardDelete = () => {
+    openHardDelete(
+      { kind: 'customer', id: customer.id, title: customer.name },
+      { onSuccess: () => router.push('/erp/customers') },
+    );
+  };
+
   const outstandingBalance = Number(creditData?.outstandingBalance ?? 0);
   const creditLimit = Number(customer.creditLimit);
   const creditUtilization = creditLimit > 0 ? (outstandingBalance / creditLimit) * 100 : 0;
@@ -122,7 +141,10 @@ export default function CustomerDetailPage() {
           <Users className="size-5 text-muted-foreground shrink-0" />
           <h1 className="text-xl font-semibold truncate">{customer.name}</h1>
           {!customer.isActive && (
-            <Badge variant="outline" className="bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200">
+            <Badge
+              variant="outline"
+              className="bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200"
+            >
               {t('common.inactive')}
             </Badge>
           )}
@@ -139,14 +161,19 @@ export default function CustomerDetailPage() {
                 <Edit className="size-4" />
                 {t('common.edit')}
               </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={handleDelete}
-                disabled={isPending}
-                variant="destructive"
-              >
+              <DropdownMenuItem onClick={handleDelete} disabled={isPending} variant="destructive">
                 <Trash className="size-4" />
                 {t('common.delete')}
               </DropdownMenuItem>
+              {isSuperAdmin && (
+                <>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={handleHardDelete} variant="destructive">
+                    <ShieldAlert className="size-4" />
+                    {t('hardDelete.menu')}
+                  </DropdownMenuItem>
+                </>
+              )}
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
@@ -157,7 +184,9 @@ export default function CustomerDetailPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
           <Card>
             <CardHeader className="pb-1.5">
-              <CardTitle className="text-xs text-muted-foreground font-medium">{t('customers.contact')}</CardTitle>
+              <CardTitle className="text-xs text-muted-foreground font-medium">
+                {t('customers.contact')}
+              </CardTitle>
             </CardHeader>
             <CardContent>
               <p className="font-semibold">{customer.phone ?? '—'}</p>
@@ -166,29 +195,39 @@ export default function CustomerDetailPage() {
           </Card>
           <Card>
             <CardHeader className="pb-1.5">
-              <CardTitle className="text-xs text-muted-foreground font-medium">{t('customers.codeAndTax')}</CardTitle>
+              <CardTitle className="text-xs text-muted-foreground font-medium">
+                {t('customers.codeAndTax')}
+              </CardTitle>
             </CardHeader>
             <CardContent>
               <p className="font-semibold">{customer.code ?? '—'}</p>
               <p className="text-xs text-muted-foreground">
-                {t('common.tax')}: {customer.taxId ?? '—'} · {t('customers.crNumber')}: {customer.crNumber ?? '—'}
+                {t('common.tax')}: {customer.taxId ?? '—'} · {t('customers.crNumber')}:{' '}
+                {customer.crNumber ?? '—'}
               </p>
             </CardContent>
           </Card>
           <Card>
             <CardHeader className="pb-1.5">
-              <CardTitle className="text-xs text-muted-foreground font-medium">{t('customers.creditTerms')}</CardTitle>
+              <CardTitle className="text-xs text-muted-foreground font-medium">
+                {t('customers.creditTerms')}
+              </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="font-semibold">{t('customers.creditTermsDays', { days: customer.creditTermsDays })}</p>
+              <p className="font-semibold">
+                {t('customers.creditTermsDays', { days: customer.creditTermsDays })}
+              </p>
               <p className="text-xs text-muted-foreground">
-                {t('customers.limit')}: {Number(customer.creditLimit).toFixed(3)} {customer.currencyCode ?? ''}
+                {t('customers.limit')}: {Number(customer.creditLimit).toFixed(3)}{' '}
+                {customer.currencyCode ?? ''}
               </p>
             </CardContent>
           </Card>
           <Card>
             <CardHeader className="pb-1.5">
-              <CardTitle className="text-xs text-muted-foreground font-medium">{t('customers.priceList')}</CardTitle>
+              <CardTitle className="text-xs text-muted-foreground font-medium">
+                {t('customers.priceList')}
+              </CardTitle>
             </CardHeader>
             <CardContent>
               <p className="font-semibold">{customer.priceListId ?? '—'}</p>
@@ -203,7 +242,9 @@ export default function CustomerDetailPage() {
         {creditData && (
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-semibold">{t('customers.creditBalance')}</CardTitle>
+              <CardTitle className="text-sm font-semibold">
+                {t('customers.creditBalance')}
+              </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="flex flex-col sm:flex-row sm:items-center gap-4">
@@ -218,15 +259,29 @@ export default function CustomerDetailPage() {
                 {creditLimit > 0 && (
                   <div className="flex-1 max-w-xs">
                     <div className="flex justify-between text-xs mb-1">
-                      <span className="text-muted-foreground">{t('customers.creditUtilization')}</span>
-                      <span className={creditUtilization > 80 ? 'text-destructive font-medium' : creditUtilization > 50 ? 'text-yellow-600 font-medium' : ''}>
+                      <span className="text-muted-foreground">
+                        {t('customers.creditUtilization')}
+                      </span>
+                      <span
+                        className={
+                          creditUtilization > 80
+                            ? 'text-destructive font-medium'
+                            : creditUtilization > 50
+                              ? 'text-yellow-600 font-medium'
+                              : ''
+                        }
+                      >
                         {creditUtilization.toFixed(0)}%
                       </span>
                     </div>
                     <div className="h-2 bg-muted rounded-full overflow-hidden">
                       <div
                         className={`h-full rounded-full transition-all ${
-                          creditUtilization > 80 ? 'bg-destructive' : creditUtilization > 50 ? 'bg-yellow-500' : 'bg-primary'
+                          creditUtilization > 80
+                            ? 'bg-destructive'
+                            : creditUtilization > 50
+                              ? 'bg-yellow-500'
+                              : 'bg-primary'
                         }`}
                         style={{ width: `${Math.min(creditUtilization, 100)}%` }}
                       />
@@ -248,7 +303,9 @@ export default function CustomerDetailPage() {
             onClick={() => router.push(`/erp/invoices?customerId=${customer.id}`)}
           >
             <CardHeader className="pb-1.5">
-              <CardTitle className="text-xs text-muted-foreground font-medium">{t('layout.invoices')}</CardTitle>
+              <CardTitle className="text-xs text-muted-foreground font-medium">
+                {t('layout.invoices')}
+              </CardTitle>
             </CardHeader>
             <CardContent className="flex items-center gap-2">
               <span className="text-2xl font-bold">{(customer as any)._count?.invoices ?? 0}</span>
@@ -260,11 +317,15 @@ export default function CustomerDetailPage() {
             onClick={() => router.push(`/erp/contracts?customerId=${customer.id}`)}
           >
             <CardHeader className="pb-1.5">
-              <CardTitle className="text-xs text-muted-foreground font-medium">{t('layout.contracts')}</CardTitle>
+              <CardTitle className="text-xs text-muted-foreground font-medium">
+                {t('layout.contracts')}
+              </CardTitle>
             </CardHeader>
             <CardContent className="flex items-center gap-2">
               <span className="text-2xl font-bold">{(customer as any)._count?.contracts ?? 0}</span>
-              <span className="text-sm text-muted-foreground">{t('customers.activeContracts')}</span>
+              <span className="text-sm text-muted-foreground">
+                {t('customers.activeContracts')}
+              </span>
             </CardContent>
           </Card>
         </div>
@@ -273,7 +334,9 @@ export default function CustomerDetailPage() {
         {customer.notes && (
           <Card>
             <CardHeader className="pb-1.5">
-              <CardTitle className="text-xs text-muted-foreground font-medium">{t('common.notes')}</CardTitle>
+              <CardTitle className="text-xs text-muted-foreground font-medium">
+                {t('common.notes')}
+              </CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-sm whitespace-pre-wrap">{customer.notes}</p>
@@ -283,12 +346,14 @@ export default function CustomerDetailPage() {
 
         {/* Meta info */}
         <div className="text-xs text-muted-foreground flex flex-wrap gap-x-4 gap-y-1 pb-2">
-          <span>{t('customers.created')} {customer.createdAt ? formatDateTime(customer.createdAt) : '—'}</span>
-          <span>{t('customers.updated')} {customer.updatedAt ? formatDateTime(customer.updatedAt) : '—'}</span>
+          <span>
+            {t('customers.created')} {customer.createdAt ? formatDateTime(customer.createdAt) : '—'}
+          </span>
+          <span>
+            {t('customers.updated')} {customer.updatedAt ? formatDateTime(customer.updatedAt) : '—'}
+          </span>
         </div>
       </div>
-
-
     </div>
   );
 }

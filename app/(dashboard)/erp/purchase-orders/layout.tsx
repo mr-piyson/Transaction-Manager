@@ -1,7 +1,7 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { Edit, Eye, ShoppingCart, Trash2, User2, XCircle } from 'lucide-react';
+import { Edit, Eye, ShieldAlert, ShoppingCart, Trash2, User2, XCircle } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useCallback } from 'react';
@@ -16,6 +16,7 @@ import { useAppAbility } from '@/hooks/use-app-ability';
 import { trpc } from '@/lib/trpc/client';
 import { cn } from '@/lib/utils';
 import { usePOForm } from '@/components/dialogs';
+import { useHardDeleteForm } from '@/components/dialogs/hardDeleteForm';
 import { Header } from '@/components/layout/App-Header';
 import { POListItem } from '@/components/purchase-orders/po-list-item';
 
@@ -25,6 +26,9 @@ const route = 'purchase-orders';
 export default function POLayout({ children }: { children?: React.ReactNode }) {
   const t = useTranslations();
   const { openCreate, openEdit } = usePOForm();
+  const { openDialog: openHardDelete } = useHardDeleteForm();
+  const { data: me } = trpc.auth.me.useQuery();
+  const isSuperAdmin = me?.platformRole === 'SUPER_ADMIN';
   const utils = trpc.useUtils();
   const router = useRouter();
   const { data, isPending } = trpc.purchaseOrders.list.useQuery({});
@@ -121,6 +125,18 @@ export default function POLayout({ children }: { children?: React.ReactNode }) {
               },
             ]
           : []),
+        ...(isSuperAdmin
+          ? [
+              { id: 'sep2', type: 'separator' as const },
+              {
+                id: 'hardDelete',
+                label: t('hardDelete.menu'),
+                icon: ShieldAlert,
+                destructive: true,
+                onClick: () => openHardDelete({ kind: 'po', id: item.id, title: item.serial }),
+              },
+            ]
+          : []),
       ];
 
       return (
@@ -142,10 +158,21 @@ export default function POLayout({ children }: { children?: React.ReactNode }) {
         </UniversalContextMenu>
       );
     },
-    [activeItem, ability, cancelMutation, deleteMutation, openEdit, router, utils],
+    [
+      activeItem,
+      ability,
+      cancelMutation,
+      deleteMutation,
+      openEdit,
+      router,
+      utils,
+      isSuperAdmin,
+      openHardDelete,
+      t,
+    ],
   );
 
-  const orders = Array.isArray(data) ? data : data?.data ?? [];
+  const orders = Array.isArray(data) ? data : (data?.data ?? []);
 
   return (
     <div className="flex h-screen flex-col overflow-hidden">
@@ -158,7 +185,11 @@ export default function POLayout({ children }: { children?: React.ReactNode }) {
       <div className="flex-1 min-h-0 w-full">
         <ResizablePanelGroup className="h-full">
           {(isListView || !isMobile) && (
-            <ResizablePanel minSize={20} defaultSize={30} className={cn('h-full', !isListView ? 'hidden md:block' : 'block')}>
+            <ResizablePanel
+              minSize={20}
+              defaultSize={30}
+              className={cn('h-full', !isListView ? 'hidden md:block' : 'block')}
+            >
               <aside className="flex h-full flex-col overflow-hidden border-r">
                 <div className="flex-1 overflow-y-auto">
                   <ListView
@@ -181,7 +212,10 @@ export default function POLayout({ children }: { children?: React.ReactNode }) {
           <ResizableHandle className={cn('hidden md:flex', !isListView && 'hidden md:flex')} />
 
           {(!isListView || !isMobile) && (
-            <ResizablePanel defaultSize={70} className={cn('h-full w-full', isListView ? 'hidden md:block' : 'flex flex-col')}>
+            <ResizablePanel
+              defaultSize={70}
+              className={cn('h-full w-full', isListView ? 'hidden md:block' : 'flex flex-col')}
+            >
               {children}
             </ResizablePanel>
           )}

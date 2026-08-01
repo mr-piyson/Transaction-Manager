@@ -1,21 +1,38 @@
 'use client';
 
-import { ArrowLeft, Ban, Edit, Handshake, MoreHorizontal, Play, Trash } from 'lucide-react';
+import {
+  ArrowLeft,
+  Ban,
+  Edit,
+  Handshake,
+  MoreHorizontal,
+  Play,
+  ShieldAlert,
+  Trash,
+} from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useParams, useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { alert } from '@/components/Alert-dialog';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '@/components/ui/empty';
+import {
+  Empty,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from '@/components/ui/empty';
 import { Spinner } from '@/components/ui/spinner';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useContractForm } from '@/components/dialogs';
+import { useHardDeleteForm } from '@/components/dialogs/hardDeleteForm';
 import { ContractDetail } from '@/components/contracts/contract-detail';
 import { ContractStatusBadge } from '@/components/contracts/contract-status-badge';
 import { trpc } from '@/lib/trpc/client';
@@ -25,12 +42,18 @@ export default function ContractDetailPage() {
   const router = useRouter();
   const utils = trpc.useUtils();
   const { openEdit } = useContractForm();
+  const { openDialog: openHardDelete } = useHardDeleteForm();
+  const { data: me } = trpc.auth.me.useQuery();
+  const isSuperAdmin = me?.platformRole === 'SUPER_ADMIN';
   const t = useTranslations();
 
-  const { data: contract, isLoading, isError, error, refetch } = trpc.contracts.byId.useQuery(
-    { id: params.id },
-    { enabled: !!params.id },
-  );
+  const {
+    data: contract,
+    isLoading,
+    isError,
+    error,
+    refetch,
+  } = trpc.contracts.byId.useQuery({ id: params.id }, { enabled: !!params.id });
 
   const activateMutation = trpc.contracts.activate.useMutation({
     onSuccess: () => {
@@ -59,7 +82,8 @@ export default function ContractDetailPage() {
     onError: (e) => toast.error(e.message),
   });
 
-  const isPending = activateMutation.isPending || terminateMutation.isPending || deleteMutation.isPending;
+  const isPending =
+    activateMutation.isPending || terminateMutation.isPending || deleteMutation.isPending;
 
   if (isLoading) {
     return (
@@ -78,9 +102,7 @@ export default function ContractDetailPage() {
               <Handshake className="size-6" />
             </EmptyMedia>
             <EmptyTitle>{isError ? t('common.failedToLoad') : t('common.notFound')}</EmptyTitle>
-            <EmptyDescription>
-              {error?.message ?? t('contracts.doesNotExist')}
-            </EmptyDescription>
+            <EmptyDescription>{error?.message ?? t('contracts.doesNotExist')}</EmptyDescription>
           </EmptyHeader>
           <div className="flex gap-2">
             <Button variant="outline" onClick={() => router.push('/erp/contracts')}>
@@ -102,9 +124,13 @@ export default function ContractDetailPage() {
         status: contract.status,
         contractValue: Number(contract.contractValue),
         currency: contract.currency,
-        startDate: contract.startDate ? new Date(contract.startDate).toISOString().split('T')[0] : '',
+        startDate: contract.startDate
+          ? new Date(contract.startDate).toISOString().split('T')[0]
+          : '',
         endDate: contract.endDate ? new Date(contract.endDate).toISOString().split('T')[0] : '',
-        renewalDate: contract.renewalDate ? new Date(contract.renewalDate).toISOString().split('T')[0] : undefined,
+        renewalDate: contract.renewalDate
+          ? new Date(contract.renewalDate).toISOString().split('T')[0]
+          : undefined,
         renewalAlertDays: contract.renewalAlertDays,
         notes: contract.notes ?? undefined,
         customerId: contract.customerId ?? undefined,
@@ -146,6 +172,13 @@ export default function ContractDetailPage() {
     });
   };
 
+  const handleHardDelete = () => {
+    openHardDelete(
+      { kind: 'contract', id: contract.id, title: contract.serial },
+      { onSuccess: () => router.push('/erp/contracts') },
+    );
+  };
+
   return (
     <div className="flex flex-col h-screen">
       <header className="flex h-14 items-center gap-2 px-2 border-b bg-background/95 backdrop-blur-md sticky top-0 z-50 shrink-0">
@@ -177,7 +210,11 @@ export default function ContractDetailPage() {
                 {t('common.edit')}
               </DropdownMenuItem>
               {(contract.status === 'ACTIVE' || contract.status === 'DRAFT') && (
-                <DropdownMenuItem onClick={handleTerminate} disabled={isPending} variant="destructive">
+                <DropdownMenuItem
+                  onClick={handleTerminate}
+                  disabled={isPending}
+                  variant="destructive"
+                >
                   <Ban className="size-4" />
                   {t('contracts.terminate')}
                 </DropdownMenuItem>
@@ -187,6 +224,15 @@ export default function ContractDetailPage() {
                   <Trash className="size-4" />
                   {t('common.delete')}
                 </DropdownMenuItem>
+              )}
+              {isSuperAdmin && (
+                <>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={handleHardDelete} variant="destructive">
+                    <ShieldAlert className="size-4" />
+                    {t('hardDelete.menu')}
+                  </DropdownMenuItem>
+                </>
               )}
             </DropdownMenuContent>
           </DropdownMenu>

@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { NotFoundError, UnprocessableError, StaleDataError } from '@/lib/error';
+import { ForbiddenError, NotFoundError, UnprocessableError, StaleDataError } from '@/lib/error';
 import { generateSerial } from '@/lib/sequences';
 import { assertCan, orgProcedure, router } from '@/lib/trpc/context';
 import {
@@ -10,6 +10,7 @@ import {
   toPrismaPage,
 } from '@/lib/validations';
 import { writeAuditLog } from '../shared/audit.service';
+import { getHardDeleteInfo, hardDeleteContractTree } from './hard-delete.service';
 
 const contractBaseSchema = z.object({
   title: z.string().min(1).max(255),
@@ -225,6 +226,50 @@ export const contractsRouter = router({
         },
         tx,
       );
+    });
+
+    return { success: true };
+  }),
+
+  // ── HARD DELETE (SUPER_ADMIN only) ────────────────────────────────────────
+  // Permanently removes the contract AND all related records (audit logs,
+  // tags, notifications, attachments). Only users with
+  // platformRole === 'SUPER_ADMIN' may call these procedures.
+  hardDeleteInfo: orgProcedure.input(z.object({ id: z.string() })).query(async ({ ctx, input }) => {
+    if (ctx.user.platformRole !== 'SUPER_ADMIN') {
+      throw new ForbiddenError(
+        'hard delete',
+        'this contract. This action is restricted to platform super admins',
+      );
+    }
+
+    const orgId = ctx.user.organizationId;
+    const exists = await ctx.db.contract.findFirst({
+      where: { id: input.id, organizationId: orgId },
+      select: { id: true },
+    });
+    if (!exists) throw new NotFoundError('Contract', input.id);
+
+    return getHardDeleteInfo(ctx.db, orgId, input.id);
+  }),
+
+  hardDelete: orgProcedure.input(z.object({ id: z.string() })).mutation(async ({ ctx, input }) => {
+    if (ctx.user.platformRole !== 'SUPER_ADMIN') {
+      throw new ForbiddenError(
+        'hard delete',
+        'this contract. This action is restricted to platform super admins',
+      );
+    }
+
+    const orgId = ctx.user.organizationId;
+    const exists = await ctx.db.contract.findFirst({
+      where: { id: input.id, organizationId: orgId },
+      select: { id: true },
+    });
+    if (!exists) throw new NotFoundError('Contract', input.id);
+
+    await ctx.db.$transaction(async (tx) => {
+      await hardDeleteContractTree(tx, orgId, input.id, ctx.user.id, ctx.ipAddress);
     });
 
     return { success: true };

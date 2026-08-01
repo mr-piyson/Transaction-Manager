@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { ConflictError, NotFoundError } from '@/lib/error';
+import { ConflictError, ForbiddenError, NotFoundError } from '@/lib/error';
 import { assertCan, orgProcedure, router } from '@/lib/trpc/context';
 import {
   offsetPaginationSchema,
@@ -8,6 +8,7 @@ import {
   toPrismaPage,
 } from '@/lib/validations';
 import { writeAuditLog } from '../shared/audit.service';
+import { getHardDeleteInfo, hardDeleteWarehouseTree } from './hard-delete.service';
 
 const warehouseBaseSchema = z.object({
   name: z.string().min(1).max(255),
@@ -191,6 +192,50 @@ export const warehousesRouter = router({
         },
         tx,
       );
+    });
+
+    return { success: true };
+  }),
+
+  // ── HARD DELETE (SUPER_ADMIN only) ────────────────────────────────────────
+  // Permanently removes the warehouse AND all related records (stock levels,
+  // stock movements, invoices and purchase orders). Only users with
+  // platformRole === 'SUPER_ADMIN' may call these procedures.
+  hardDeleteInfo: orgProcedure.input(z.object({ id: z.string() })).query(async ({ ctx, input }) => {
+    if (ctx.user.platformRole !== 'SUPER_ADMIN') {
+      throw new ForbiddenError(
+        'hard delete',
+        'this warehouse. This action is restricted to platform super admins',
+      );
+    }
+
+    const orgId = ctx.user.organizationId;
+    const exists = await ctx.db.warehouse.findFirst({
+      where: { id: input.id, organizationId: orgId },
+      select: { id: true },
+    });
+    if (!exists) throw new NotFoundError('Warehouse', input.id);
+
+    return getHardDeleteInfo(ctx.db, orgId, input.id);
+  }),
+
+  hardDelete: orgProcedure.input(z.object({ id: z.string() })).mutation(async ({ ctx, input }) => {
+    if (ctx.user.platformRole !== 'SUPER_ADMIN') {
+      throw new ForbiddenError(
+        'hard delete',
+        'this warehouse. This action is restricted to platform super admins',
+      );
+    }
+
+    const orgId = ctx.user.organizationId;
+    const exists = await ctx.db.warehouse.findFirst({
+      where: { id: input.id, organizationId: orgId },
+      select: { id: true },
+    });
+    if (!exists) throw new NotFoundError('Warehouse', input.id);
+
+    await ctx.db.$transaction(async (tx) => {
+      await hardDeleteWarehouseTree(tx, orgId, input.id, ctx.user.id, ctx.ipAddress);
     });
 
     return { success: true };

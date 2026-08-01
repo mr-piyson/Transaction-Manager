@@ -1,7 +1,7 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { Edit, Eye, Trash2, Truck, User2 } from 'lucide-react';
+import { Edit, Eye, ShieldAlert, Trash2, Truck, User2 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useCallback } from 'react';
@@ -15,6 +15,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { trpc } from '@/lib/trpc/client';
 import { cn } from '@/lib/utils';
 import { useSupplierForm } from '@/components/dialogs';
+import { useHardDeleteForm } from '@/components/dialogs/hardDeleteForm';
 import { Header } from '@/components/layout/App-Header';
 import { SupplierListItem } from '@/components/suppliers/supplier-list-item';
 
@@ -23,6 +24,9 @@ const title = 'Suppliers';
 export default function SuppliersLayout({ children }: { children?: React.ReactNode }) {
   const t = useTranslations();
   const { openCreate, openEdit } = useSupplierForm();
+  const { openDialog: openHardDelete } = useHardDeleteForm();
+  const { data: me } = trpc.auth.me.useQuery();
+  const isSuperAdmin = me?.platformRole === 'SUPER_ADMIN';
   const utils = trpc.useUtils();
   const router = useRouter();
   const { data, isPending } = trpc.suppliers.list.useQuery({});
@@ -66,7 +70,19 @@ export default function SuppliersLayout({ children }: { children?: React.ReactNo
           icon: Edit,
           onClick: () =>
             openEdit(
-              { id: item.id, name: item.name, code: item.code, phone: item.phone, email: item.email, contactName: item.contactName, website: item.website, taxId: item.taxId, crNumber: item.crNumber, notes: item.notes, paymentTermsDays: item.paymentTermsDays },
+              {
+                id: item.id,
+                name: item.name,
+                code: item.code,
+                phone: item.phone,
+                email: item.email,
+                contactName: item.contactName,
+                website: item.website,
+                taxId: item.taxId,
+                crNumber: item.crNumber,
+                notes: item.notes,
+                paymentTermsDays: item.paymentTermsDays,
+              },
               { onSuccess: () => utils.suppliers.byId.invalidate({ id: item.id }) },
             ),
         },
@@ -78,6 +94,18 @@ export default function SuppliersLayout({ children }: { children?: React.ReactNo
           onClick: handleDelete,
           disabled: deleteMutation.isPending,
         },
+        ...(isSuperAdmin
+          ? [
+              { id: 'sep2', type: 'separator' as const },
+              {
+                id: 'hardDelete',
+                label: t('hardDelete.menu'),
+                icon: ShieldAlert,
+                destructive: true,
+                onClick: () => openHardDelete({ kind: 'supplier', id: item.id, title: item.name }),
+              },
+            ]
+          : []),
       ];
 
       return (
@@ -99,18 +127,27 @@ export default function SuppliersLayout({ children }: { children?: React.ReactNo
         </UniversalContextMenu>
       );
     },
-    [activeItem, deleteMutation, openEdit, router, utils],
+    [activeItem, deleteMutation, openEdit, router, utils, isSuperAdmin, openHardDelete, t],
   );
 
-  const suppliers = Array.isArray(data) ? data : data?.data ?? [];
+  const suppliers = Array.isArray(data) ? data : (data?.data ?? []);
 
   return (
     <div className="flex h-screen flex-col overflow-hidden">
-      <Header title={t('layout.suppliers')} icon={<Truck className="size-5" />} onCreate={() => openCreate()} createLabel={t('suppliers.createSupplier')} />
+      <Header
+        title={t('layout.suppliers')}
+        icon={<Truck className="size-5" />}
+        onCreate={() => openCreate()}
+        createLabel={t('suppliers.createSupplier')}
+      />
       <div className="flex-1 min-h-0 w-full">
         <ResizablePanelGroup className="h-full">
           {(isListView || !isMobile) && (
-            <ResizablePanel minSize={20} defaultSize={30} className={cn('h-full', !isListView ? 'hidden md:block' : 'block')}>
+            <ResizablePanel
+              minSize={20}
+              defaultSize={30}
+              className={cn('h-full', !isListView ? 'hidden md:block' : 'block')}
+            >
               <aside className="flex h-full flex-col overflow-hidden border-r">
                 <div className="flex-1 overflow-y-auto">
                   <ListView
@@ -133,7 +170,10 @@ export default function SuppliersLayout({ children }: { children?: React.ReactNo
           <ResizableHandle className={cn('hidden md:flex', !isListView && 'hidden md:flex')} />
 
           {(!isListView || !isMobile) && (
-            <ResizablePanel defaultSize={70} className={cn('h-full w-full', isListView ? 'hidden md:block' : 'flex flex-col')}>
+            <ResizablePanel
+              defaultSize={70}
+              className={cn('h-full w-full', isListView ? 'hidden md:block' : 'flex flex-col')}
+            >
               {children}
             </ResizablePanel>
           )}

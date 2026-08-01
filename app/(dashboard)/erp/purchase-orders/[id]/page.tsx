@@ -10,6 +10,7 @@ import {
   MoreHorizontal,
   Package,
   Send,
+  ShieldAlert,
   ShoppingCart,
   ThumbsDown,
   Trash,
@@ -58,6 +59,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { usePOForm } from '@/components/dialogs/poForm';
+import { useHardDeleteForm } from '@/components/dialogs/hardDeleteForm';
 import { trpc } from '@/lib/trpc/client';
 import { useAppAbility } from '@/hooks/use-app-ability';
 import type { Action as PermissionAction } from '@/lib/abilities';
@@ -80,6 +82,9 @@ export default function PurchaseOrderDetailPage() {
   const router = useRouter();
   const utils = trpc.useUtils();
   const { openEdit } = usePOForm();
+  const { openDialog: openHardDelete } = useHardDeleteForm();
+  const { data: me } = trpc.auth.me.useQuery();
+  const isSuperAdmin = me?.platformRole === 'SUPER_ADMIN';
   const t = useTranslations();
   const { formatDate, formatDateTime, formatDateForInput, formatShortDate } = useDateFormat();
 
@@ -231,6 +236,13 @@ export default function PurchaseOrderDetailPage() {
     );
   };
 
+  const handleHardDelete = () => {
+    openHardDelete(
+      { kind: 'po', id: po.id, title: po.serial },
+      { onSuccess: () => router.push('/erp/purchase-orders') },
+    );
+  };
+
   const handleActionClick = (action: Action) => {
     switch (action.key) {
       case 'edit':
@@ -250,6 +262,9 @@ export default function PurchaseOrderDetailPage() {
         break;
       case 'delete':
         deleteMutation.mutate({ id: po.id });
+        break;
+      case 'hardDelete':
+        handleHardDelete();
         break;
       default:
         switch (action.dialog) {
@@ -349,6 +364,15 @@ export default function PurchaseOrderDetailPage() {
     });
   }
 
+  if (isSuperAdmin) {
+    actions.push({
+      label: t('hardDelete.menu'),
+      key: 'hardDelete',
+      icon: ShieldAlert,
+      variant: 'destructive',
+    });
+  }
+
   const visibleActions = ability !== null ? actions.filter((a) => can(a.permission)) : [];
   const showActions = visibleActions.length > 0;
 
@@ -437,9 +461,7 @@ export default function PurchaseOrderDetailPage() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="font-semibold">
-                {po.date ? formatDate(po.date) : '—'}
-              </p>
+              <p className="font-semibold">{po.date ? formatDate(po.date) : '—'}</p>
             </CardContent>
           </Card>
           <Card>
@@ -449,9 +471,7 @@ export default function PurchaseOrderDetailPage() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="font-semibold">
-                {po.expectedDate ? formatDate(po.expectedDate) : '—'}
-              </p>
+              <p className="font-semibold">{po.expectedDate ? formatDate(po.expectedDate) : '—'}</p>
             </CardContent>
           </Card>
         </div>
@@ -579,9 +599,7 @@ export default function PurchaseOrderDetailPage() {
                 <TableBody>
                   {stockMovements.map((m: any) => (
                     <TableRow key={m.id}>
-                      <TableCell className="text-sm">
-                        {formatShortDate(m.createdAt)}
-                      </TableCell>
+                      <TableCell className="text-sm">{formatShortDate(m.createdAt)}</TableCell>
                       <TableCell>
                         <span className="font-medium">{m.item?.name}</span>
                         {m.item?.sku && (

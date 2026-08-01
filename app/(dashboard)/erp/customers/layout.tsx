@@ -1,7 +1,7 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { Edit, Eye, Trash2, User2, Users } from 'lucide-react';
+import { Edit, Eye, ShieldAlert, Trash2, User2, Users } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useCallback } from 'react';
@@ -15,6 +15,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { trpc } from '@/lib/trpc/client';
 import { cn } from '@/lib/utils';
 import { useCustomerForm } from '@/components/dialogs';
+import { useHardDeleteForm } from '@/components/dialogs/hardDeleteForm';
 import { Header } from '@/components/layout/App-Header';
 import { Customer_List_Item } from '@/components/customers/customer-list-item';
 
@@ -23,6 +24,9 @@ const title = 'Customers';
 export default function CustomersLayout({ children }: { children?: React.ReactNode }) {
   const t = useTranslations();
   const { openCreate, openEdit } = useCustomerForm();
+  const { openDialog: openHardDelete } = useHardDeleteForm();
+  const { data: me } = trpc.auth.me.useQuery();
+  const isSuperAdmin = me?.platformRole === 'SUPER_ADMIN';
   const utils = trpc.useUtils();
   const router = useRouter();
   const { data, isPending } = trpc.customers.list.useQuery({});
@@ -55,7 +59,12 @@ export default function CustomersLayout({ children }: { children?: React.ReactNo
           icon: Edit,
           onClick: () =>
             openEdit(
-              { id: item.id, name: item.name, phone: item.phone ?? undefined, email: item.email ?? undefined },
+              {
+                id: item.id,
+                name: item.name,
+                phone: item.phone ?? undefined,
+                email: item.email ?? undefined,
+              },
               { onSuccess: () => utils.customers.byId.invalidate({ id: item.id }) },
             ),
         },
@@ -76,6 +85,18 @@ export default function CustomersLayout({ children }: { children?: React.ReactNo
               },
             }),
         },
+        ...(isSuperAdmin
+          ? [
+              { id: 'sep2', type: 'separator' as const },
+              {
+                id: 'hardDelete',
+                label: t('hardDelete.menu'),
+                icon: ShieldAlert,
+                destructive: true,
+                onClick: () => openHardDelete({ kind: 'customer', id: item.id, title: item.name }),
+              },
+            ]
+          : []),
       ];
 
       return (
@@ -97,18 +118,27 @@ export default function CustomersLayout({ children }: { children?: React.ReactNo
         </UniversalContextMenu>
       );
     },
-    [activeItem, openEdit, deleteMutation, utils, router],
+    [activeItem, openEdit, deleteMutation, utils, router, isSuperAdmin, openHardDelete, t],
   );
 
-  const items = Array.isArray(data) ? data : data?.data ?? [];
+  const items = Array.isArray(data) ? data : (data?.data ?? []);
 
   return (
     <div className="flex h-screen flex-col overflow-hidden">
-      <Header title={t('layout.customers')} icon={<Users className="size-5" />} onCreate={() => openCreate()} createLabel={t('customers.createCustomer')} />
+      <Header
+        title={t('layout.customers')}
+        icon={<Users className="size-5" />}
+        onCreate={() => openCreate()}
+        createLabel={t('customers.createCustomer')}
+      />
       <div className="flex-1 min-h-0 w-full">
         <ResizablePanelGroup className="h-full">
           {(isListView || !isMobile) && (
-            <ResizablePanel minSize={20} defaultSize={30} className={cn('h-full', !isListView ? 'hidden md:block' : 'block')}>
+            <ResizablePanel
+              minSize={20}
+              defaultSize={30}
+              className={cn('h-full', !isListView ? 'hidden md:block' : 'block')}
+            >
               <aside className="flex h-full flex-col overflow-hidden border-r">
                 <div className="flex-1 overflow-y-auto">
                   <ListView
@@ -131,7 +161,10 @@ export default function CustomersLayout({ children }: { children?: React.ReactNo
           <ResizableHandle className={cn('hidden md:flex', !isListView && 'hidden md:flex')} />
 
           {(!isListView || !isMobile) && (
-            <ResizablePanel defaultSize={70} className={cn('h-full w-full', isListView ? 'hidden md:block' : 'flex flex-col')}>
+            <ResizablePanel
+              defaultSize={70}
+              className={cn('h-full w-full', isListView ? 'hidden md:block' : 'flex flex-col')}
+            >
               {children}
             </ResizablePanel>
           )}

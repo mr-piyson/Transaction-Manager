@@ -8,6 +8,7 @@ import {
   FileClock,
   FileText,
   HandCoins,
+  Handshake,
   History,
   Landmark,
   Layers,
@@ -21,7 +22,10 @@ import {
   ShoppingCart,
   Tags,
   Trash2,
+  TrendingUp,
   Truck,
+  UserPlus,
+  Users,
   Wallet,
   type LucideIcon,
 } from 'lucide-react';
@@ -43,12 +47,19 @@ import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { trpc } from '@/lib/trpc/client';
 
-export type HardDeleteKind = 'invoice' | 'item';
+export type HardDeleteKind =
+  | 'invoice'
+  | 'item'
+  | 'customer'
+  | 'supplier'
+  | 'warehouse'
+  | 'po'
+  | 'contract';
 
 export interface HardDeleteTarget {
   kind: HardDeleteKind;
   id: string;
-  /** serial for documents, name/SKU for items */
+  /** serial for documents, name/SKU for master records */
   title?: string;
 }
 
@@ -62,6 +73,17 @@ interface RelatedRow {
 
 type InfoRecord = Record<string, number>;
 
+// ---------------------------------------------------------------------------
+// Per-kind related-row lists
+// ---------------------------------------------------------------------------
+
+const POLYMORPHIC_ROWS: RelatedRow[] = [
+  { key: 'auditLogs', icon: History, labelKey: 'hardDelete.auditLogs' },
+  { key: 'tags', icon: Tags, labelKey: 'hardDelete.tags' },
+  { key: 'notifications', icon: ShieldAlert, labelKey: 'hardDelete.notifications' },
+  { key: 'attachments', icon: Paperclip, labelKey: 'hardDelete.attachments' },
+];
+
 const INVOICE_ROWS: RelatedRow[] = [
   { key: 'lines', icon: FileText, labelKey: 'hardDelete.lines' },
   { key: 'payments', icon: HandCoins, labelKey: 'hardDelete.payments' },
@@ -71,10 +93,8 @@ const INVOICE_ROWS: RelatedRow[] = [
   { key: 'creditNoteAllocations', icon: Link2, labelKey: 'hardDelete.creditNoteAllocations' },
   { key: 'creditNotes', icon: RotateCcw, labelKey: 'hardDelete.creditNotes' },
   { key: 'conversions', icon: Receipt, labelKey: 'hardDelete.conversions' },
-  { key: 'auditLogs', icon: History, labelKey: 'hardDelete.auditLogs' },
   { key: 'approvalRequests', icon: FileClock, labelKey: 'hardDelete.approvalRequests' },
-  { key: 'tags', icon: Tags, labelKey: 'hardDelete.tags' },
-  { key: 'notifications', icon: ShieldAlert, labelKey: 'hardDelete.notifications' },
+  ...POLYMORPHIC_ROWS,
 ];
 
 const ITEM_ROWS: RelatedRow[] = [
@@ -86,18 +106,179 @@ const ITEM_ROWS: RelatedRow[] = [
   { key: 'purchaseLines', icon: ShoppingCart, labelKey: 'hardDelete.purchaseLines' },
   { key: 'invoiceLines', icon: Receipt, labelKey: 'hardDelete.invoiceLines', unlink: true },
   { key: 'expenses', icon: Wallet, labelKey: 'hardDelete.expenses', unlink: true },
-  { key: 'auditLogs', icon: History, labelKey: 'hardDelete.auditLogs' },
-  { key: 'tags', icon: Tags, labelKey: 'hardDelete.tags' },
-  { key: 'notifications', icon: ShieldAlert, labelKey: 'hardDelete.notifications' },
-  { key: 'attachments', icon: Paperclip, labelKey: 'hardDelete.attachments' },
+  ...POLYMORPHIC_ROWS,
 ];
 
-interface BodyProps {
-  target: HardDeleteTarget;
-  onPendingChange: (pending: boolean) => void;
-  onDone: () => void;
-  onSuccess?: () => void;
+const CUSTOMER_ROWS: RelatedRow[] = [
+  { key: 'invoices', icon: FileText, labelKey: 'hardDelete.invoices' },
+  { key: 'contracts', icon: Handshake, labelKey: 'hardDelete.contracts' },
+  { key: 'incomes', icon: Banknote, labelKey: 'hardDelete.incomes' },
+  { key: 'crmContacts', icon: Users, labelKey: 'hardDelete.contacts' },
+  { key: 'crmOpportunities', icon: TrendingUp, labelKey: 'hardDelete.opportunities' },
+  { key: 'crmLeads', icon: UserPlus, labelKey: 'hardDelete.leads' },
+  ...POLYMORPHIC_ROWS,
+];
+
+const SUPPLIER_ROWS: RelatedRow[] = [
+  { key: 'supplierItems', icon: Truck, labelKey: 'hardDelete.supplierItems' },
+  { key: 'purchaseOrders', icon: ShoppingCart, labelKey: 'hardDelete.purchaseOrders' },
+  ...POLYMORPHIC_ROWS,
+];
+
+const WAREHOUSE_ROWS: RelatedRow[] = [
+  { key: 'stock', icon: Boxes, labelKey: 'hardDelete.stock' },
+  { key: 'stockMovements', icon: ArrowUpDown, labelKey: 'hardDelete.stockMovements' },
+  { key: 'invoices', icon: FileText, labelKey: 'hardDelete.invoices' },
+  { key: 'purchaseOrders', icon: ShoppingCart, labelKey: 'hardDelete.purchaseOrders' },
+  ...POLYMORPHIC_ROWS,
+];
+
+const PO_ROWS: RelatedRow[] = [
+  { key: 'lines', icon: FileText, labelKey: 'hardDelete.lines' },
+  { key: 'payments', icon: HandCoins, labelKey: 'hardDelete.payments' },
+  { key: 'stockMovements', icon: Package, labelKey: 'hardDelete.stockMovements' },
+  { key: 'journalEntries', icon: Landmark, labelKey: 'hardDelete.journalEntries' },
+  { key: 'approvalRequests', icon: FileClock, labelKey: 'hardDelete.approvalRequests' },
+  ...POLYMORPHIC_ROWS,
+];
+
+const CONTRACT_ROWS: RelatedRow[] = [...POLYMORPHIC_ROWS];
+
+// ---------------------------------------------------------------------------
+// tRPC hook registry (config-driven)
+// ---------------------------------------------------------------------------
+
+interface InfoQueryResult {
+  data?: InfoRecord;
+  isLoading: boolean;
 }
+
+interface DeleteMutationLike {
+  isPending: boolean;
+  mutate: (input: { id: string }) => void;
+}
+
+interface InfoHookLike {
+  (input: { id: string }, opts: { enabled: boolean }): InfoQueryResult;
+}
+
+interface DeleteHookLike {
+  (opts: {
+    onSuccess?: () => void;
+    onError?: (error: { message: string }) => void;
+  }): DeleteMutationLike;
+}
+
+type Utils = ReturnType<typeof trpc.useUtils>;
+
+type HardDeleteTitleKey =
+  | 'hardDelete.title'
+  | 'hardDelete.titleItem'
+  | 'hardDelete.titleCustomer'
+  | 'hardDelete.titleSupplier'
+  | 'hardDelete.titleWarehouse'
+  | 'hardDelete.titlePo'
+  | 'hardDelete.titleContract';
+
+interface KindConfig {
+  rows: RelatedRow[];
+  titleKey: HardDeleteTitleKey;
+  invalidate: (utils: Utils, id: string) => void;
+}
+
+const KIND_CONFIG: Record<HardDeleteKind, KindConfig> = {
+  invoice: {
+    rows: INVOICE_ROWS,
+    titleKey: 'hardDelete.title',
+    invalidate: (utils, id) => {
+      utils.invoices.list.invalidate();
+      utils.invoices.byId.invalidate({ id });
+    },
+  },
+  item: {
+    rows: ITEM_ROWS,
+    titleKey: 'hardDelete.titleItem',
+    invalidate: (utils, id) => {
+      utils.items.list.invalidate();
+      utils.items.byId.invalidate({ id });
+    },
+  },
+  customer: {
+    rows: CUSTOMER_ROWS,
+    titleKey: 'hardDelete.titleCustomer',
+    invalidate: (utils, id) => {
+      utils.customers.list.invalidate();
+      utils.customers.byId.invalidate({ id });
+    },
+  },
+  supplier: {
+    rows: SUPPLIER_ROWS,
+    titleKey: 'hardDelete.titleSupplier',
+    invalidate: (utils, id) => {
+      utils.suppliers.list.invalidate();
+      utils.suppliers.byId.invalidate({ id });
+    },
+  },
+  warehouse: {
+    rows: WAREHOUSE_ROWS,
+    titleKey: 'hardDelete.titleWarehouse',
+    invalidate: (utils, id) => {
+      utils.warehouses.list.invalidate();
+      utils.warehouses.byId.invalidate({ id });
+    },
+  },
+  po: {
+    rows: PO_ROWS,
+    titleKey: 'hardDelete.titlePo',
+    invalidate: (utils, id) => {
+      utils.purchaseOrders.list.invalidate();
+      utils.purchaseOrders.byId.invalidate({ id });
+    },
+  },
+  contract: {
+    rows: CONTRACT_ROWS,
+    titleKey: 'hardDelete.titleContract',
+    invalidate: (utils, id) => {
+      utils.contracts.list.invalidate();
+      utils.contracts.byId.invalidate({ id });
+    },
+  },
+};
+
+const KIND_HOOKS: Record<HardDeleteKind, { useInfo: InfoHookLike; useDelete: DeleteHookLike }> = {
+  invoice: {
+    useInfo: trpc.invoices.hardDeleteInfo.useQuery as unknown as InfoHookLike,
+    useDelete: trpc.invoices.hardDelete.useMutation as unknown as DeleteHookLike,
+  },
+  item: {
+    useInfo: trpc.items.hardDeleteInfo.useQuery as unknown as InfoHookLike,
+    useDelete: trpc.items.hardDelete.useMutation as unknown as DeleteHookLike,
+  },
+  customer: {
+    useInfo: trpc.customers.hardDeleteInfo.useQuery as unknown as InfoHookLike,
+    useDelete: trpc.customers.hardDelete.useMutation as unknown as DeleteHookLike,
+  },
+  supplier: {
+    useInfo: trpc.suppliers.hardDeleteInfo.useQuery as unknown as InfoHookLike,
+    useDelete: trpc.suppliers.hardDelete.useMutation as unknown as DeleteHookLike,
+  },
+  warehouse: {
+    useInfo: trpc.warehouses.hardDeleteInfo.useQuery as unknown as InfoHookLike,
+    useDelete: trpc.warehouses.hardDelete.useMutation as unknown as DeleteHookLike,
+  },
+  po: {
+    useInfo: trpc.purchaseOrders.hardDeleteInfo.useQuery as unknown as InfoHookLike,
+    useDelete: trpc.purchaseOrders.hardDelete.useMutation as unknown as DeleteHookLike,
+  },
+  contract: {
+    useInfo: trpc.contracts.hardDeleteInfo.useQuery as unknown as InfoHookLike,
+    useDelete: trpc.contracts.hardDelete.useMutation as unknown as DeleteHookLike,
+  },
+};
+
+// ---------------------------------------------------------------------------
+// Shared body UI
+// ---------------------------------------------------------------------------
 
 function RelatedRows({ rows, info }: { rows: RelatedRow[]; info?: InfoRecord }) {
   const t = useTranslations();
@@ -148,75 +329,24 @@ function RelatedRows({ rows, info }: { rows: RelatedRow[]; info?: InfoRecord }) 
   );
 }
 
-function InvoiceHardDeleteBody({ target, onPendingChange, onDone, onSuccess }: BodyProps) {
-  const t = useTranslations();
-  const utils = trpc.useUtils();
-
-  const { data: info, isLoading } = trpc.invoices.hardDeleteInfo.useQuery(
-    { id: target.id },
-    { enabled: !!target.id },
-  );
-
-  const mutation = trpc.invoices.hardDelete.useMutation({
-    onSuccess: () => {
-      utils.invoices.list.invalidate();
-      utils.invoices.byId.invalidate({ id: target.id });
-      toast.success(t('hardDelete.success'));
-      onDone();
-      onSuccess?.();
-    },
-    onError: (e) => toast.error(e.message),
-  });
-
-  React.useEffect(() => {
-    onPendingChange(mutation.isPending);
-  }, [mutation.isPending, onPendingChange]);
-
-  return (
-    <>
-      <div>
-        <p className="text-sm font-medium mb-2">{t('hardDelete.relatedRecords')}</p>
-        <ScrollArea className="max-h-64">
-          {isLoading ? (
-            <div className="flex items-center justify-center py-8">
-              <Loader2 className="size-5 animate-spin text-muted-foreground" />
-            </div>
-          ) : (
-            <RelatedRows rows={INVOICE_ROWS} info={info as unknown as InfoRecord} />
-          )}
-        </ScrollArea>
-      </div>
-      <DialogFooter className="gap-2">
-        <Button type="button" variant="outline" onClick={onDone} disabled={mutation.isPending}>
-          {t('common.cancel')}
-        </Button>
-        <Button
-          variant="destructive"
-          disabled={mutation.isPending || !info}
-          onClick={() => mutation.mutate({ id: target.id })}
-        >
-          {mutation.isPending && <Loader2 className="mr-2 size-4 animate-spin" />}
-          <Trash2 className="mr-2 size-4" />
-          {t('hardDelete.confirmLabel')}
-        </Button>
-      </DialogFooter>
-    </>
-  );
+interface BodyProps {
+  target: HardDeleteTarget;
+  onPendingChange: (pending: boolean) => void;
+  onDone: () => void;
+  onSuccess?: () => void;
 }
 
-function ItemHardDeleteBody({ target, onPendingChange, onDone, onSuccess }: BodyProps) {
+function HardDeleteBody({ target, onPendingChange, onDone, onSuccess }: BodyProps) {
   const t = useTranslations();
   const utils = trpc.useUtils();
+  const config = KIND_CONFIG[target.kind];
+  const { useInfo, useDelete } = KIND_HOOKS[target.kind];
 
-  const { data: info, isLoading } = trpc.items.hardDeleteInfo.useQuery(
-    { id: target.id },
-    { enabled: !!target.id },
-  );
+  const { data: info, isLoading } = useInfo({ id: target.id }, { enabled: !!target.id });
 
-  const mutation = trpc.items.hardDelete.useMutation({
+  const mutation = useDelete({
     onSuccess: () => {
-      utils.items.list.invalidate();
-      utils.items.byId.invalidate({ id: target.id });
+      config.invalidate(utils, target.id);
       toast.success(t('hardDelete.success'));
       onDone();
       onSuccess?.();
@@ -238,7 +368,7 @@ function ItemHardDeleteBody({ target, onPendingChange, onDone, onSuccess }: Body
               <Loader2 className="size-5 animate-spin text-muted-foreground" />
             </div>
           ) : (
-            <RelatedRows rows={ITEM_ROWS} info={info as unknown as InfoRecord} />
+            <RelatedRows rows={config.rows} info={info} />
           )}
         </ScrollArea>
       </div>
@@ -271,7 +401,7 @@ export function HardDeleteDialog({ open, onOpenChange, target, onSuccess }: Hard
   const t = useTranslations();
   const [isPending, setIsPending] = React.useState(false);
 
-  const title = target?.kind === 'item' ? t('hardDelete.titleItem') : t('hardDelete.title');
+  const titleKey = target ? KIND_CONFIG[target.kind].titleKey : 'hardDelete.title';
 
   return (
     <Dialog open={open} onOpenChange={(v) => !isPending && onOpenChange(v)}>
@@ -279,7 +409,7 @@ export function HardDeleteDialog({ open, onOpenChange, target, onSuccess }: Hard
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Trash2 className="size-5 text-destructive" />
-            {title}
+            {t(titleKey)}
           </DialogTitle>
           <DialogDescription>
             {t('hardDelete.description', { name: target?.title ?? '' })}
@@ -294,21 +424,14 @@ export function HardDeleteDialog({ open, onOpenChange, target, onSuccess }: Hard
 
         <Separator />
 
-        {target?.kind === 'item' ? (
-          <ItemHardDeleteBody
+        {target && (
+          <HardDeleteBody
             target={target}
             onPendingChange={setIsPending}
             onDone={() => onOpenChange(false)}
             onSuccess={onSuccess}
           />
-        ) : target?.kind === 'invoice' ? (
-          <InvoiceHardDeleteBody
-            target={target}
-            onPendingChange={setIsPending}
-            onDone={() => onOpenChange(false)}
-            onSuccess={onSuccess}
-          />
-        ) : null}
+        )}
       </DialogContent>
     </Dialog>
   );

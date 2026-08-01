@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { calculateInvoiceTotals } from '@/lib/calculator';
-import { NotFoundError, StaleDataError, UnprocessableError } from '@/lib/error';
+import { ForbiddenError, NotFoundError, StaleDataError, UnprocessableError } from '@/lib/error';
 import { generateSerial } from '@/lib/sequences';
 import { assertCan, orgProcedure, router } from '@/lib/trpc/context';
 import {
@@ -12,6 +12,7 @@ import {
 } from '@/lib/validations';
 import { writeAuditLog } from '../shared/audit.service';
 import { postPOPayment, postPOReceived } from '../journals/journal-posting.service';
+import { getHardDeleteInfo, hardDeletePurchaseOrderTree } from './hard-delete.service';
 import {
   createNotification,
   NOTIFICATION_SETTINGS_KEYS,
@@ -925,6 +926,50 @@ export const purchaseOrdersRouter = router({
         },
         tx,
       );
+    });
+
+    return { success: true };
+  }),
+
+  // ── HARD DELETE (SUPER_ADMIN only) ────────────────────────────────────────
+  // Permanently removes the purchase order AND all related records (lines,
+  // payments, stock movements, journals, approvals). Only users with
+  // platformRole === 'SUPER_ADMIN' may call these procedures.
+  hardDeleteInfo: orgProcedure.input(z.object({ id: z.string() })).query(async ({ ctx, input }) => {
+    if (ctx.user.platformRole !== 'SUPER_ADMIN') {
+      throw new ForbiddenError(
+        'hard delete',
+        'this purchase order. This action is restricted to platform super admins',
+      );
+    }
+
+    const orgId = ctx.user.organizationId;
+    const exists = await ctx.db.purchaseOrder.findFirst({
+      where: { id: input.id, organizationId: orgId },
+      select: { id: true },
+    });
+    if (!exists) throw new NotFoundError('PurchaseOrder', input.id);
+
+    return getHardDeleteInfo(ctx.db, orgId, input.id);
+  }),
+
+  hardDelete: orgProcedure.input(z.object({ id: z.string() })).mutation(async ({ ctx, input }) => {
+    if (ctx.user.platformRole !== 'SUPER_ADMIN') {
+      throw new ForbiddenError(
+        'hard delete',
+        'this purchase order. This action is restricted to platform super admins',
+      );
+    }
+
+    const orgId = ctx.user.organizationId;
+    const exists = await ctx.db.purchaseOrder.findFirst({
+      where: { id: input.id, organizationId: orgId },
+      select: { id: true },
+    });
+    if (!exists) throw new NotFoundError('PurchaseOrder', input.id);
+
+    await ctx.db.$transaction(async (tx) => {
+      await hardDeletePurchaseOrderTree(tx, orgId, input.id, ctx.user.id, ctx.ipAddress);
     });
 
     return { success: true };

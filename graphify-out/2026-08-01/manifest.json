@@ -50,8 +50,8 @@
     "semantic_hash": "95aef6db55405ba95a659499b971271a"
   },
   "app/(dashboard)/erp/documents/[type]/[id]/page.tsx": {
-    "mtime": 1785599566.1004527,
-    "ast_hash": "17c0585713b8dc559df5dfa24486835f",
+    "mtime": 1785600056.2638323,
+    "ast_hash": "1e8af906a917306f0454fb646c6da9cc",
     "semantic_hash": ""
   },
   "app/(dashboard)/erp/documents/[type]/[id]/print/page.tsx": {
@@ -60,8 +60,8 @@
     "semantic_hash": ""
   },
   "app/(dashboard)/erp/documents/[type]/layout.tsx": {
-    "mtime": 1785599566.0634518,
-    "ast_hash": "320f747afb02d0438fe5ac27d69169f8",
+    "mtime": 1785600051.900052,
+    "ast_hash": "133258ba7d60da26a51f7d79ff2334be",
     "semantic_hash": ""
   },
   "app/(dashboard)/erp/documents/[type]/page.tsx": {
@@ -70,8 +70,8 @@
     "semantic_hash": "3e5ebcb38d0944d766c968a0d40f46cc"
   },
   "app/(dashboard)/erp/items/[id]/page.tsx": {
-    "mtime": 1784363386.0366156,
-    "ast_hash": "3bcd7ef585bf3edffe232bcd9d516039",
+    "mtime": 1785600149.4233088,
+    "ast_hash": "70cc097c0b52f8cea713cfe87191b843",
     "semantic_hash": ""
   },
   "app/(dashboard)/erp/items/import/page.tsx": {
@@ -80,8 +80,8 @@
     "semantic_hash": ""
   },
   "app/(dashboard)/erp/items/layout.tsx": {
-    "mtime": 1784363122.0476882,
-    "ast_hash": "f81e8345f49691524f085e34e12dc0e2",
+    "mtime": 1785600120.6041596,
+    "ast_hash": "da101786c5273991f64834bd12e84350",
     "semantic_hash": ""
   },
   "app/(dashboard)/erp/items/page.tsx": {
@@ -1435,13 +1435,13 @@
     "semantic_hash": ""
   },
   "messages/ar.json": {
-    "mtime": 1785599516.807864,
-    "ast_hash": "9df204b1a854952f3ca279d38cc61204",
+    "mtime": 1785600137.3128338,
+    "ast_hash": "02c96f87be84d6c264db6d43fc97f475",
     "semantic_hash": ""
   },
   "messages/en.json": {
-    "mtime": 1785599505.8737397,
-    "ast_hash": "6e0d8e74ab8f9c98bfd870a7f2e0a070",
+    "mtime": 1785600131.9283664,
+    "ast_hash": "cb4a7e3216b7f589c439cfa31d7d172a",
     "semantic_hash": ""
   },
   "next-intl.d.ts": {
@@ -1630,9 +1630,9 @@
     "semantic_hash": "76c78abcdf19d3bed6bf90f9609b0172"
   },
   "server/items/items.router.ts": {
-    "mtime": 1783771497.8767426,
-    "ast_hash": "f2e1c5593e4b4b9012d41aea112ca1f6",
-    "semantic_hash": "f2e1c5593e4b4b9012d41aea112ca1f6"
+    "mtime": 1785600149.5523102,
+    "ast_hash": "468fa3a9039694204acab57413fa51c2",
+    "semantic_hash": ""
   },
   "server/notifications/notifications.router.ts": {
     "mtime": 1782638506.7696013,
@@ -2335,8 +2335,8 @@
     "semantic_hash": ""
   },
   "components/dialogs/hardDeleteForm.tsx": {
-    "mtime": 1785599565.9677765,
-    "ast_hash": "9f409e9f0228cd82ccc2ef06726b706e",
+    "mtime": 1785600166.8810616,
+    "ast_hash": "40023963bf71832466be88429ad00a1a",
     "semantic_hash": ""
   },
   "components/dialogs/paymentForm.tsx": {
@@ -2412,6 +2412,11 @@
   "server/invoices/hard-delete.service.ts": {
     "mtime": 1785599390.106004,
     "ast_hash": "cd21fb4f4dea68daba92ff800ad9e878",
+    "semantic_hash": ""
+  },
+  "server/items/hard-delete.service.ts": {
+    "mtime": 1785599991.0169878,
+    "ast_hash": "4f90168871be57679db358b165e752b3",
     "semantic_hash": ""
   }
 }
