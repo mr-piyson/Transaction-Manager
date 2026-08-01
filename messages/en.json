@@ -538,9 +538,10 @@
   "hardDelete": {
     "menu": "Hard delete",
     "title": "Permanently Delete Document",
-    "description": "You are about to permanently delete {serial} and all data related to it.",
+    "titleItem": "Permanently Delete Item",
+    "description": "You are about to permanently delete {name} and all data related to it.",
     "warningTitle": "This cannot be undone",
-    "warningDescription": "The document and every related record (lines, payments, journals, stock movements, credit notes, audit logs, and more) will be permanently removed from the database.",
+    "warningDescription": "The record and every related record (payments, journals, stock movements, audit logs, and more) will be permanently removed from the database.",
     "relatedRecords": "Related data that will be deleted",
     "noRelatedRecords": "No related records found.",
     "lines": "Line items",
@@ -555,8 +556,17 @@
     "approvalRequests": "Approval requests",
     "tags": "Tags",
     "notifications": "Notifications",
+    "stock": "Stock records",
+    "supplierItems": "Supplier prices",
+    "bundleLines": "Bundle lines",
+    "priceListLines": "Price list lines",
+    "purchaseLines": "Purchase lines",
+    "invoiceLines": "Invoice lines",
+    "expenses": "Expense records",
+    "attachments": "Attachments",
+    "unlinked": "will be unlinked",
     "confirmLabel": "Delete permanently",
-    "success": "Document permanently deleted"
+    "success": "Record permanently deleted"
   },
   "customers": {
     "title": "Customers",

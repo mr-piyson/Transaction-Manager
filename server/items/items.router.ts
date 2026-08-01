@@ -14,7 +14,7 @@
  */
 
 import { z } from 'zod';
-import { ConflictError, NotFoundError } from '@/lib/error';
+import { ForbiddenError, ConflictError, NotFoundError } from '@/lib/error';
 import { assertCan, orgProcedure, router } from '@/lib/trpc/context';
 import {
   currencyCodeSchema,
@@ -25,6 +25,7 @@ import {
   toPrismaPage,
 } from '@/lib/validations';
 import { writeAuditLog } from '../shared/audit.service';
+import { getHardDeleteInfo, hardDeleteItemTree } from './hard-delete.service';
 
 // ---------------------------------------------------------------------------
 // Input schemas
@@ -273,7 +274,6 @@ export const itemsRouter = router({
     if (!item) throw new NotFoundError('Item (SKU)', input.sku);
     return item;
   }),
-
 
   // ── BULK IMPORT ──────────────────────────────────────────────────────────
   bulkImport: orgProcedure
@@ -566,6 +566,49 @@ export const itemsRouter = router({
     return { success: true };
   }),
 
+  // ── HARD DELETE (SUPER_ADMIN only) ────────────────────────────────────────
+  // Permanently removes the item AND all related records. Only users with
+  // platformRole === 'SUPER_ADMIN' may call these procedures.
+  hardDeleteInfo: orgProcedure.input(z.object({ id: z.string() })).query(async ({ ctx, input }) => {
+    if (ctx.user.platformRole !== 'SUPER_ADMIN') {
+      throw new ForbiddenError(
+        'hard delete',
+        'this item. This action is restricted to platform super admins',
+      );
+    }
+
+    const orgId = ctx.user.organizationId;
+    const exists = await ctx.db.item.findFirst({
+      where: { id: input.id, organizationId: orgId },
+      select: { id: true },
+    });
+    if (!exists) throw new NotFoundError('Item', input.id);
+
+    return getHardDeleteInfo(ctx.db, orgId, input.id);
+  }),
+
+  hardDelete: orgProcedure.input(z.object({ id: z.string() })).mutation(async ({ ctx, input }) => {
+    if (ctx.user.platformRole !== 'SUPER_ADMIN') {
+      throw new ForbiddenError(
+        'hard delete',
+        'this item. This action is restricted to platform super admins',
+      );
+    }
+
+    const orgId = ctx.user.organizationId;
+    const exists = await ctx.db.item.findFirst({
+      where: { id: input.id, organizationId: orgId },
+      select: { id: true },
+    });
+    if (!exists) throw new NotFoundError('Item', input.id);
+
+    await ctx.db.$transaction(async (tx) => {
+      await hardDeleteItemTree(tx, orgId, input.id, ctx.user.id, ctx.ipAddress);
+    });
+
+    return { success: true };
+  }),
+
   // ── STOCK SUMMARY ─────────────────────────────────────────────────────────
   stockSummary: orgProcedure
     .input(z.object({ itemId: z.string() }))
@@ -792,9 +835,7 @@ export const itemsRouter = router({
             select: { id: true },
           });
           if (alreadyExists) {
-            throw new ConflictError(
-              `This supplier already has a price for this item.`,
-            );
+            throw new ConflictError(`This supplier already has a price for this item.`);
           }
         }
 

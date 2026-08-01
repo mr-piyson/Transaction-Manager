@@ -11,6 +11,7 @@ import {
   MoreHorizontal,
   Package,
   Plus,
+  ShieldAlert,
   Table2,
   Trash2,
   Wrench,
@@ -48,6 +49,7 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Header } from '@/components/layout/App-Header';
 import { ItemListItem } from '@/components/items/item-list-item';
 import { UnifiedItemDialog, useUnifiedItemForm } from '@/components/dialogs';
+import { useHardDeleteForm } from '@/components/dialogs/hardDeleteForm';
 
 ModuleRegistry.registerModules([AllCommunityModule]);
 
@@ -58,6 +60,9 @@ export default function ItemsLayout({ children }: { children?: React.ReactNode }
   const { format } = useCurrency();
   const tableTheme = useTableTheme();
   const { openEdit } = useUnifiedItemForm();
+  const { openDialog: openHardDelete } = useHardDeleteForm();
+  const { data: me } = trpc.auth.me.useQuery();
+  const isSuperAdmin = me?.platformRole === 'SUPER_ADMIN';
 
   const [viewMode, setViewMode] = useState<'list' | 'table'>('list');
 
@@ -153,13 +158,27 @@ export default function ItemsLayout({ children }: { children?: React.ReactNode }
                   <Trash2 className="size-4 mr-2" />
                   {t('common.delete')}
                 </ContextMenuItem>
+                {isSuperAdmin && (
+                  <>
+                    <ContextMenuSeparator />
+                    <ContextMenuItem
+                      onClick={() =>
+                        openHardDelete({ kind: 'item', id: item.id, title: item.sku ?? item.name })
+                      }
+                      variant="destructive"
+                    >
+                      <ShieldAlert className="size-4 mr-2" />
+                      {t('hardDelete.menu')}
+                    </ContextMenuItem>
+                  </>
+                )}
               </ContextMenuContent>
             </ContextMenu>
           );
         },
       },
     ],
-    [activeItem, router, t, deleteMutation, title],
+    [activeItem, router, t, deleteMutation, title, isSuperAdmin, openHardDelete],
   );
 
   const tableColumnDefs = useMemo<ColDef[]>(
@@ -308,13 +327,26 @@ export default function ItemsLayout({ children }: { children?: React.ReactNode }
                   <Trash2 className="size-4 mr-2 text-destructive" />
                   <span className="text-destructive">{t('common.delete')}</span>
                 </DropdownMenuItem>
+                {isSuperAdmin && (
+                  <>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
+                      onClick={() =>
+                        openHardDelete({ kind: 'item', id: item.id, title: item.sku ?? item.name })
+                      }
+                    >
+                      <ShieldAlert className="size-4 mr-2 text-destructive" />
+                      <span className="text-destructive">{t('hardDelete.menu')}</span>
+                    </DropdownMenuItem>
+                  </>
+                )}
               </DropdownMenuContent>
             </DropdownMenu>
           );
         },
       },
     ],
-    [format, router, activeItem, t, deleteMutation],
+    [format, router, activeItem, t, deleteMutation, isSuperAdmin, openHardDelete],
   );
 
   const defaultColDef = useMemo(

@@ -189,7 +189,9 @@ export default function DocumentsLayout({ children }: { children?: React.ReactNo
                   <>
                     <ContextMenuSeparator />
                     <ContextMenuItem
-                      onClick={() => openHardDelete({ id: item.id, serial: item.serial })}
+                      onClick={() =>
+                        openHardDelete({ kind: 'invoice', id: item.id, title: item.serial })
+                      }
                       variant="destructive"
                     >
                       <ShieldAlert className="size-4 mr-2" />
@@ -306,7 +308,9 @@ export default function DocumentsLayout({ children }: { children?: React.ReactNo
                   <>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem
-                      onClick={() => openHardDelete({ id: item.id, serial: item.serial })}
+                      onClick={() =>
+                        openHardDelete({ kind: 'invoice', id: item.id, title: item.serial })
+                      }
                     >
                       <ShieldAlert className="size-4 mr-2 text-destructive" />
                       <span className="text-destructive">{t('hardDelete.menu')}</span>

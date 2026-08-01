@@ -11,6 +11,7 @@ import {
   Package,
   Printer,
   QrCode,
+  ShieldAlert,
   ShoppingCart,
   Tag,
   Trash,
@@ -30,6 +31,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import {
@@ -42,6 +44,7 @@ import {
 import { Separator } from '@/components/ui/separator';
 import { Spinner } from '@/components/ui/spinner';
 import { useUnifiedItemForm } from '@/components/dialogs';
+import { useHardDeleteForm } from '@/components/dialogs/hardDeleteForm';
 import { trpc } from '@/lib/trpc/client';
 import { cn } from '@/lib/utils';
 import { useDateFormat } from '@/hooks/use-date-format';
@@ -73,6 +76,9 @@ export default function ItemDetailPage() {
   const t = useTranslations();
   const { formatDateTime } = useDateFormat();
   const { openEdit } = useUnifiedItemForm();
+  const { openDialog: openHardDelete } = useHardDeleteForm();
+  const { data: me } = trpc.auth.me.useQuery();
+  const isSuperAdmin = me?.platformRole === 'SUPER_ADMIN';
   const barcodeRef = React.useRef<HTMLDivElement>(null);
 
   const {
@@ -156,9 +162,7 @@ export default function ItemDetailPage() {
               <Package className="size-6" />
             </EmptyMedia>
             <EmptyTitle>{isError ? t('common.failedToLoad') : t('common.notFound')}</EmptyTitle>
-            <EmptyDescription>
-              {error?.message ?? t('items.doesNotExist')}
-            </EmptyDescription>
+            <EmptyDescription>{error?.message ?? t('items.doesNotExist')}</EmptyDescription>
           </EmptyHeader>
           <div className="flex gap-2">
             <Button variant="outline" onClick={() => router.push('/erp/items')}>
@@ -171,8 +175,7 @@ export default function ItemDetailPage() {
     );
   }
 
-  const totalStock =
-    item.stock?.reduce((sum: number, s: any) => sum + Number(s.quantity), 0) ?? 0;
+  const totalStock = item.stock?.reduce((sum: number, s: any) => sum + Number(s.quantity), 0) ?? 0;
   const typeConfig = TYPE_CONFIG[item.type as keyof typeof TYPE_CONFIG] ?? TYPE_CONFIG.PRODUCT;
   const TypeIcon = typeConfig.icon;
   const isService = item.type === 'SERVICE';
@@ -195,7 +198,10 @@ export default function ItemDetailPage() {
             {t(typeConfig.labelKey)}
           </Badge>
           {!item.isActive && (
-            <Badge variant="outline" className="bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200">
+            <Badge
+              variant="outline"
+              className="bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200"
+            >
               {t('common.inactive')}
             </Badge>
           )}
@@ -212,11 +218,7 @@ export default function ItemDetailPage() {
                 <Edit className="size-4" />
                 {t('common.edit')}
               </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={handleDelete}
-                disabled={isPending}
-                variant="destructive"
-              >
+              <DropdownMenuItem onClick={handleDelete} disabled={isPending} variant="destructive">
                 {isPending ? (
                   <Loader2 className="size-4 animate-spin" />
                 ) : (
@@ -224,6 +226,27 @@ export default function ItemDetailPage() {
                 )}
                 {t('common.delete')}
               </DropdownMenuItem>
+              {isSuperAdmin && (
+                <>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem
+                    onClick={() =>
+                      openHardDelete(
+                        {
+                          kind: 'item',
+                          id: item.id,
+                          title: item.sku ? `${item.sku} - ${item.name}` : item.name,
+                        },
+                        { onSuccess: () => router.push('/erp/items') },
+                      )
+                    }
+                    variant="destructive"
+                  >
+                    <ShieldAlert className="size-4" />
+                    {t('hardDelete.menu')}
+                  </DropdownMenuItem>
+                </>
+              )}
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
@@ -296,11 +319,7 @@ export default function ItemDetailPage() {
             <CardContent className="p-0">
               {item.image ? (
                 <div className="relative aspect-video bg-card">
-                  <img
-                    src={item.image}
-                    alt={item.name}
-                    className="w-full h-full object-contain"
-                  />
+                  <img src={item.image} alt={item.name} className="w-full h-full object-contain" />
                   <div className="absolute inset-0 opacity-0 hover:opacity-100 transition-opacity flex items-end p-4">
                     <div className="flex gap-2">
                       <Button
@@ -350,18 +369,10 @@ export default function ItemDetailPage() {
                   </CardTitle>
                   {item.barcode && (
                     <div className="flex gap-1">
-                      <Button
-                        variant="ghost"
-                        size="icon-sm"
-                        onClick={handlePrintBarcode}
-                      >
+                      <Button variant="ghost" size="icon-sm" onClick={handlePrintBarcode}>
                         <Printer className="size-4" />
                       </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon-sm"
-                        onClick={handleDownloadBarcode}
-                      >
+                      <Button variant="ghost" size="icon-sm" onClick={handleDownloadBarcode}>
                         <Download className="size-4" />
                       </Button>
                     </div>
@@ -489,9 +500,7 @@ export default function ItemDetailPage() {
             {isService && (
               <Card className="border-dashed">
                 <CardContent className="p-6 text-center">
-                  <p className="text-sm text-muted-foreground">
-                    {t('items.notStockTracked')}
-                  </p>
+                  <p className="text-sm text-muted-foreground">{t('items.notStockTracked')}</p>
                 </CardContent>
               </Card>
             )}
@@ -547,7 +556,9 @@ export default function ItemDetailPage() {
             {item.supplierItems && item.supplierItems.length > 0 && (
               <Card>
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-semibold">{t('suppliers.itemsSupplied')}</CardTitle>
+                  <CardTitle className="text-sm font-semibold">
+                    {t('suppliers.itemsSupplied')}
+                  </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-2">
                   {item.supplierItems.map((si: any) => (
@@ -572,8 +583,12 @@ export default function ItemDetailPage() {
 
         {/* Meta info */}
         <div className="text-xs text-muted-foreground flex flex-wrap gap-x-4 gap-y-1 pb-2">
-          <span>{t('items.created')} {item.createdAt ? formatDateTime(item.createdAt) : '—'}</span>
-          <span>{t('items.updated')} {item.updatedAt ? formatDateTime(item.updatedAt) : '—'}</span>
+          <span>
+            {t('items.created')} {item.createdAt ? formatDateTime(item.createdAt) : '—'}
+          </span>
+          <span>
+            {t('items.updated')} {item.updatedAt ? formatDateTime(item.updatedAt) : '—'}
+          </span>
         </div>
       </div>
     </div>

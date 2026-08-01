@@ -524,7 +524,7 @@ export default function DocumentDetailPage() {
         }
         break;
       case 'hardDelete':
-        openHardDelete({ id: invoice.id, serial: invoice.serial });
+        openHardDelete({ kind: 'invoice', id: invoice.id, title: invoice.serial });
         break;
       default:
         switch (action.dialog) {
