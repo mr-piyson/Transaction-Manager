@@ -54,7 +54,9 @@ export type HardDeleteKind =
   | 'supplier'
   | 'warehouse'
   | 'po'
-  | 'contract';
+  | 'contract'
+  | 'expense'
+  | 'income';
 
 export interface HardDeleteTarget {
   kind: HardDeleteKind;
@@ -136,6 +138,7 @@ const WAREHOUSE_ROWS: RelatedRow[] = [
 const PO_ROWS: RelatedRow[] = [
   { key: 'lines', icon: FileText, labelKey: 'hardDelete.lines' },
   { key: 'payments', icon: HandCoins, labelKey: 'hardDelete.payments' },
+  { key: 'expenses', icon: Wallet, labelKey: 'hardDelete.expenses' },
   { key: 'stockMovements', icon: Package, labelKey: 'hardDelete.stockMovements' },
   { key: 'journalEntries', icon: Landmark, labelKey: 'hardDelete.journalEntries' },
   { key: 'approvalRequests', icon: FileClock, labelKey: 'hardDelete.approvalRequests' },
@@ -143,6 +146,16 @@ const PO_ROWS: RelatedRow[] = [
 ];
 
 const CONTRACT_ROWS: RelatedRow[] = [...POLYMORPHIC_ROWS];
+
+const EXPENSE_ROWS: RelatedRow[] = [
+  { key: 'journalEntries', icon: Landmark, labelKey: 'hardDelete.journalEntries' },
+  ...POLYMORPHIC_ROWS,
+];
+
+const INCOME_ROWS: RelatedRow[] = [
+  { key: 'journalEntries', icon: Landmark, labelKey: 'hardDelete.journalEntries' },
+  ...POLYMORPHIC_ROWS,
+];
 
 // ---------------------------------------------------------------------------
 // tRPC hook registry (config-driven)
@@ -178,7 +191,9 @@ type HardDeleteTitleKey =
   | 'hardDelete.titleSupplier'
   | 'hardDelete.titleWarehouse'
   | 'hardDelete.titlePo'
-  | 'hardDelete.titleContract';
+  | 'hardDelete.titleContract'
+  | 'hardDelete.titleExpense'
+  | 'hardDelete.titleIncome';
 
 interface KindConfig {
   rows: RelatedRow[];
@@ -243,6 +258,22 @@ const KIND_CONFIG: Record<HardDeleteKind, KindConfig> = {
       utils.contracts.byId.invalidate({ id });
     },
   },
+  expense: {
+    rows: EXPENSE_ROWS,
+    titleKey: 'hardDelete.titleExpense',
+    invalidate: (utils, id) => {
+      utils.expenses.list.invalidate();
+      utils.expenses.byId.invalidate({ id });
+    },
+  },
+  income: {
+    rows: INCOME_ROWS,
+    titleKey: 'hardDelete.titleIncome',
+    invalidate: (utils, id) => {
+      utils.incomes.list.invalidate();
+      utils.incomes.byId.invalidate({ id });
+    },
+  },
 };
 
 const KIND_HOOKS: Record<HardDeleteKind, { useInfo: InfoHookLike; useDelete: DeleteHookLike }> = {
@@ -273,6 +304,14 @@ const KIND_HOOKS: Record<HardDeleteKind, { useInfo: InfoHookLike; useDelete: Del
   contract: {
     useInfo: trpc.contracts.hardDeleteInfo.useQuery as unknown as InfoHookLike,
     useDelete: trpc.contracts.hardDelete.useMutation as unknown as DeleteHookLike,
+  },
+  expense: {
+    useInfo: trpc.expenses.hardDeleteInfo.useQuery as unknown as InfoHookLike,
+    useDelete: trpc.expenses.hardDelete.useMutation as unknown as DeleteHookLike,
+  },
+  income: {
+    useInfo: trpc.incomes.hardDeleteInfo.useQuery as unknown as InfoHookLike,
+    useDelete: trpc.incomes.hardDelete.useMutation as unknown as DeleteHookLike,
   },
 };
 

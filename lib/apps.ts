@@ -2,6 +2,7 @@ import {
   type LucideIcon,
   Award,
   BadgeCheck,
+  Banknote,
   BarChart3,
   Bell,
   BookOpen,
@@ -52,6 +53,7 @@ function getErpRoutes(t: (key: string) => string): RouteConfig[] {
         { type: 'item', label: t('layout.quotations'), href: '/erp/documents/quotations', icon: FileText },
         { type: 'item', label: t('layout.customers'), href: '/erp/customers', icon: Users },
         { type: 'item', label: t('layout.contracts'), href: '/erp/contracts', icon: Handshake },
+        { type: 'item', label: t('layout.incomes'), href: '/erp/incomes', icon: Banknote },
       ],
     },
     {
@@ -65,6 +67,7 @@ function getErpRoutes(t: (key: string) => string): RouteConfig[] {
           icon: ShoppingCart,
         },
         { type: 'item', label: t('layout.suppliers'), href: '/erp/suppliers', icon: Truck },
+        { type: 'item', label: t('layout.expenses'), href: '/erp/expenses', icon: Wallet },
       ],
     },
     {

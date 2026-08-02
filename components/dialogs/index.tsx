@@ -9,11 +9,13 @@ import { DisciplinaryActionFormProvider } from './disciplinaryActionForm';
 import { DocumentFormProvider } from './documentForm';
 import { EmployeeFormProvider } from './employeeForm';
 import { EmployeeTypeFormProvider } from './employeeTypeForm';
+import { ExpenseFormProvider } from './expenseForm';
 import { ExchangeRateFormProvider } from './exchangeRateForm';
 import { PaymentFormProvider } from './paymentForm';
 import { HardDeleteFormProvider } from './hardDeleteForm';
 import { GrievanceFormProvider } from './grievanceForm';
 import { HolidayFormProvider } from './holidayForm';
+import { IncomeFormProvider } from './incomeForm';
 import { InvoiceFormProvider } from './invoiceForm';
 import { JobPositionFormProvider } from './jobPositionForm';
 import { JobPostingFormProvider } from './jobPostingForm';
@@ -146,6 +148,12 @@ export {
 export { PaymentFormProvider, usePaymentForm, PaymentFormDialog } from './paymentForm';
 export type { PaymentFormValues } from './paymentForm';
 
+export { ExpenseFormProvider, useExpenseForm, ExpenseFormDialog } from './expenseForm';
+export type { ExpenseFormValues, ExpenseFormRecord } from './expenseForm';
+
+export { IncomeFormProvider, useIncomeForm, IncomeFormDialog } from './incomeForm';
+export type { IncomeFormValues, IncomeFormRecord } from './incomeForm';
+
 export { HardDeleteFormProvider, useHardDeleteForm, HardDeleteDialog } from './hardDeleteForm';
 
 /**
@@ -183,9 +191,13 @@ export function DialogsProvider({ children }: { children: ReactNode }) {
                                                         <LeaveAllocateFormProvider>
                                                           <ExchangeRateFormProvider>
                                                             <PaymentFormProvider>
-                                                              <HardDeleteFormProvider>
-                                                                {children}
-                                                              </HardDeleteFormProvider>
+                                                              <ExpenseFormProvider>
+                                                                <IncomeFormProvider>
+                                                                  <HardDeleteFormProvider>
+                                                                    {children}
+                                                                  </HardDeleteFormProvider>
+                                                                </IncomeFormProvider>
+                                                              </ExpenseFormProvider>
                                                             </PaymentFormProvider>
                                                           </ExchangeRateFormProvider>
                                                         </LeaveAllocateFormProvider>

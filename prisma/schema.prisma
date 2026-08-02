@@ -841,6 +841,7 @@ model JournalEntry {
   purchaseOrderId String?
   expenseId       String?
   paymentId       String?
+  incomeId        String?
 
   // Reversal link
   reversedById String?       @unique // JE that reversed this one
@@ -864,6 +865,8 @@ model JournalEntry {
   @@index([date, organizationId])
   @@index([invoiceId])
   @@index([purchaseOrderId])
+  @@index([expenseId])
+  @@index([incomeId])
   @@index([status, organizationId])
   @@schema("public")
 }
@@ -1845,6 +1848,7 @@ model PurchaseOrder {
 
   lines    PurchaseLine[]
   payments PurchasePayment[]
+  expenses Expense[]
 
   @@unique([serial, organizationId])
   @@index([supplierId])
@@ -2014,6 +2018,10 @@ model Expense {
   itemId String?
   item   Item?   @relation(fields: [itemId], references: [id])
 
+  // PO that produced this expense (auto-populated by the procurement workflow)
+  purchaseOrderId String?
+  purchaseOrder   PurchaseOrder? @relation(fields: [purchaseOrderId], references: [id])
+
   journalEntryId String?
 
   createdById String
@@ -2034,6 +2042,7 @@ model Expense {
   @@index([deletedAt])
   @@index([departmentId])
   @@index([journalEntryId])
+  @@index([purchaseOrderId])
   @@schema("public")
 }
 
@@ -2044,12 +2053,15 @@ model Income {
   date        DateTime @default(now())
   reference   String?
   notes       String?
+  method      PaymentMethod @default(CASH)
 
   invoiceId String?
   invoice   Invoice? @relation(fields: [invoiceId], references: [id])
 
   customerId String?
   customer   Customer? @relation(fields: [customerId], references: [id])
+
+  journalEntryId String?
 
   createdById String
   createdBy   User   @relation("IncomeCreatedBy", fields: [createdById], references: [id])
@@ -2065,6 +2077,7 @@ model Income {
   @@index([invoiceId])
   @@index([organizationId, date])
   @@index([deletedAt])
+  @@index([journalEntryId])
   @@schema("public")
 }
 

@@ -160,7 +160,8 @@ The schema (`prisma/schema.prisma`) defines ~40 models covering:
 - **Contacts**: `Customer`, `Supplier`, `SupplierItem`
 - **GL/Accounting**: `LedgerAccount`, `JournalEntry`, `JournalLine`
 - **Contracts**: `Contract`
-- **Expenses**: `ExpenseCategory`, `Expense`
+- **Expenses**: `ExpenseCategory`, `Expense` (linked to `PurchaseOrder`, auto-posts JE)
+- **Incomes**: `Income` (payment `method`, linked to `Customer`/`Invoice`, auto-posts JE)
 - **Cross-cutting**: `Address` (polymorphic), `Attachment`, `Tag`/`Tagging`, `Notification`, `AuditLog`
 - **Sequences**: `DocumentSequence` (per-org, per-prefix serial counters)
 - **Departments**: `Department` (hierarchical cost centres)
@@ -262,7 +263,9 @@ Each domain has its own module directory under `server/` with a tRPC router foll
 | Categories | `server/categories/categories.router.ts` | listTree, family/class/commodity CRUD, generateSku |
 | Stock | `server/stock/stock.router.ts` | list (with search/filter), byItem, adjust, transfer, movements, forItems |
 | Warehouses | `server/warehouses/warehouses.router.ts` | list, byId, create, update, delete |
-| Purchase Orders | `server/purchase-orders/purchase-orders.router.ts` | list, byId, create, update, submitForApproval, approve, reject, order, receive, cancel, delete, stockMovements |
+| Purchase Orders | `server/purchase-orders/purchase-orders.router.ts` | list, byId, create, update, submitForApproval, approve, reject, order, receive, cancel, delete, stockMovements; hardDeleteInfo/hardDelete cascade expenses + their journal entries |
+| Expenses | `server/expenses/expenses.router.ts` | list, byId, create, update, delete, hardDeleteInfo, hardDelete; categories subrouter (list/create/update/delete); auto-posts double-entry JE (Dr Expense / Cr Cash-Bank) and links `purchaseOrderId` from the PO detail workflow |
+| Incomes | `server/incomes/incomes.router.ts` | list, byId, create, update, delete, hardDeleteInfo, hardDelete; auto-posts double-entry JE (Dr Cash-Bank / Cr Sales Revenue) via `postIncome`; links customer/invoice |
 | Contracts | `server/contracts/contracts.router.ts` | list, byId, create, update, delete, activate, expire, terminate, renew, stats |
 | Reports | `server/reports/reports.router.ts` | summary, monthlyRevenue, invoiceStatusDistribution, arAging, revenueVsExpenses, salesByCustomer, topItems |
 | Notifications | `server/notifications/notifications.router.ts` | list, getUnreadCount, markRead, markAllRead, archive, dismiss |

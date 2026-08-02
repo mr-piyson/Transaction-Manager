@@ -14,6 +14,7 @@ import {
   ShoppingCart,
   ThumbsDown,
   Trash,
+  Wallet,
   XCircle,
   type LucideIcon,
 } from 'lucide-react';
@@ -59,6 +60,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { usePOForm } from '@/components/dialogs/poForm';
+import { useExpenseForm } from '@/components/dialogs/expenseForm';
 import { useHardDeleteForm } from '@/components/dialogs/hardDeleteForm';
 import { trpc } from '@/lib/trpc/client';
 import { useAppAbility } from '@/hooks/use-app-ability';
@@ -82,6 +84,7 @@ export default function PurchaseOrderDetailPage() {
   const router = useRouter();
   const utils = trpc.useUtils();
   const { openEdit } = usePOForm();
+  const { openCreate: openCreateExpense } = useExpenseForm();
   const { openDialog: openHardDelete } = useHardDeleteForm();
   const { data: me } = trpc.auth.me.useQuery();
   const isSuperAdmin = me?.platformRole === 'SUPER_ADMIN';
@@ -376,6 +379,11 @@ export default function PurchaseOrderDetailPage() {
   const visibleActions = ability !== null ? actions.filter((a) => can(a.permission)) : [];
   const showActions = visibleActions.length > 0;
 
+  const canCreateExpense =
+    ability !== null &&
+    ability.can('expense:create', 'Expense') &&
+    ['APPROVED', 'ORDERED', 'PARTIAL_RECEIVED', 'RECEIVED', 'INVOICED'].includes(po.status);
+
   const remainingLines = po.lines.filter((l: any) => Number(l.quantity) > Number(l.receivedQty));
   const allReceived = remainingLines.length === 0;
 
@@ -421,6 +429,19 @@ export default function PurchaseOrderDetailPage() {
                     {a.label}
                   </DropdownMenuItem>
                 ))}
+                {canCreateExpense && (
+                  <DropdownMenuItem
+                    onClick={() =>
+                      openCreateExpense({
+                        defaults: { purchaseOrderId: po.id },
+                        onSuccess: () => invalidate(),
+                      })
+                    }
+                  >
+                    <Wallet className="size-4" />
+                    {t('purchaseOrders.recordExpense')}
+                  </DropdownMenuItem>
+                )}
               </DropdownMenuContent>
             </DropdownMenu>
           </div>

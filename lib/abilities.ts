@@ -58,6 +58,11 @@ export type Action =
   | 'expense:read'
   | 'expense:update'
   | 'expense:delete'
+  // Incomes
+  | 'income:create'
+  | 'income:read'
+  | 'income:update'
+  | 'income:delete'
   // Reports
   | 'report:financial'
   | 'report:inventory'
@@ -194,6 +199,7 @@ export type SubjectName =
   | 'PurchaseOrder'
   | 'PurchaseLine'
   | 'Expense'
+  | 'Income'
   | 'Organization'
   | 'Unit'
   | 'User'
@@ -280,6 +286,9 @@ const MUTATION_ACTIONS: Action[] = [
   'expense:create',
   'expense:update',
   'expense:delete',
+  'income:create',
+  'income:update',
+  'income:delete',
   'category:create',
   'category:update',
   'category:delete',
@@ -365,6 +374,7 @@ const RESOURCE_TO_SUBJECT_MAP: Record<string, SubjectName> = {
   stock: 'Stock',
   po: 'PurchaseOrder',
   expense: 'Expense',
+  income: 'Income',
   category: 'ItemCategory',
   org: 'Organization',
   user: 'User',

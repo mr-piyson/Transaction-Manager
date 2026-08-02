@@ -460,3 +460,54 @@ export async function postExpense(opts: PostExpenseOptions) {
     ],
   });
 }
+
+// ---------------------------------------------------------------------------
+// Income posting (Cash/Bank + Sales Revenue)
+// ---------------------------------------------------------------------------
+
+interface PostIncomeOptions {
+  tx: TransactionClient;
+  organizationId: string;
+  userId: string;
+  ipAddress?: string;
+  incomeId: string;
+  amount: number;
+  method: string;
+  description: string;
+  currency?: string;
+  exchangeRate?: number;
+}
+
+export async function postIncome(opts: PostIncomeOptions) {
+  const { tx, organizationId, userId, ipAddress, incomeId, amount, method, description, currency, exchangeRate } = opts;
+
+  const accounts = await resolveAccounts(tx, organizationId);
+  const bankCode = resolveBankAccountCode(method);
+
+  return postJournalEntry({
+    tx,
+    organizationId,
+    userId,
+    ipAddress,
+    date: new Date(),
+    description,
+    reference: undefined,
+    incomeId,
+    currency,
+    exchangeRate,
+    lines: [
+      {
+        accountId: accounts.get(bankCode)!,
+        debit: amount,
+        credit: 0,
+        description: `Payment — ${method}`,
+      },
+      {
+        accountId: accounts.get(ACCOUNTS.SALES_REVENUE)!,
+        debit: 0,
+        credit: amount,
+        description,
+      },
+    ],
+  });
+}
