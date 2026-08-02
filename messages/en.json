@@ -6,6 +6,7 @@
   },
   "common": {
     "save": "Save",
+    "toReceive": "To Receive",
     "viewFull": "View Full",
     "relations": "Relations",
     "relatedRecords": "Related Records",
