@@ -1,16 +1,16 @@
 # Graph Report - Transaction-Manager  (2026-08-02)
 
 ## Corpus Check
-- 491 files · ~331,196 words
+- 496 files · ~332,728 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 4333 nodes · 10489 edges · 346 communities (203 shown, 143 thin omitted)
+- 4346 nodes · 10565 edges · 347 communities (202 shown, 145 thin omitted)
 - Extraction: 99% EXTRACTED · 1% INFERRED · 0% AMBIGUOUS · INFERRED: 95 edges (avg confidence: 0.74)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `baa7aaca`
+- Built from commit: `dec7c02f`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -154,8 +154,8 @@
 - Community 140
 - Community 141
 - Community 142
-- Community 143
-- Community 144
+- useSupplierForm
+- features.tsx
 - Community 145
 - Community 146
 - Community 147
@@ -163,18 +163,18 @@
 - Community 149
 - Community 150
 - Community 151
-- Community 152
+- button-group.tsx
 - Community 153
 - Community 154
 - Community 155
-- Community 156
-- Community 157
+- marker.tsx
+- useCustomerForm
 - Community 158
-- Community 159
+- image-upload.tsx
 - Community 160
 - Community 161
-- Community 162
-- Community 163
+- none
+- layout.tsx
 - Community 164
 - Community 165
 - Community 166
@@ -203,7 +203,7 @@
 - generate.py
 - fontSize
 - TestShadcnInstaller
-- layout.tsx
+- usePerformanceReviewForm
 - CIP Design Reference
 - Icon Design Reference
 - Copywriting Formulas
@@ -225,13 +225,13 @@
 - card
 - ShadcnInstaller
 - .generate_config_string
-- User-Options.tsx
+- layout.tsx
 - Core Visual Elements
 - CIP Design Style Guide
 - test_tailwind_config_gen.py
 - _search_csv
 - ._base_config
-- page.tsx
+- 16
 - use-locale.ts
 - Brand
 - Slide Strategies
@@ -249,12 +249,12 @@
 - employee-list-item.tsx
 - graphify reference: query, path, explain
 - Slides
-- _generate_intelligent_overrides
-- fromSettings
+- 1
+- 3
 - Brand Guidelines Template
 - $type
 - radius
-- lg
+- @base-ui/react
 - sm
 - padding-y
 - xl
@@ -263,15 +263,15 @@
 - graphify reference: commit hook and native CLAUDE.md integration
 - graphify reference: incremental update and cluster-only
 - seed-currencies.ts
-- performanceReviewForm.tsx
-- attachment.tsx
+- @better-auth/cli
+- fuse.js
 - test_sync_brand_to_tokens.py
 - main
-- navigation-menu.tsx
-- format_ascii_box
-- 3
+- lucide-react
+- next-themes
+- pdf-lib
 - 8
-- destructive
+- @prisma/adapter-libsql
 - destructive-foreground
 - muted
 - primary-foreground
@@ -282,11 +282,11 @@
 - shadcn_add.py
 - .__init__
 - search.py
-- marker.tsx
+- react-barcode
 - AGENTS.md
-- @base-ui/react
+- react-dom
 - better-auth
-- 1
+- react-is
 - nuqs
 - slides-create.md
 - extraction-spec.md
@@ -313,7 +313,7 @@
 - .test_custom_output_path
 - .test_base_config_structure
 - @tanstack/react-table
-- @tiptap/starter-kit
+- recharts
 - API Layer (tRPC)
 - Authentication (Better Auth)
 - Authorization (CASL)
@@ -349,37 +349,38 @@
 - primary
 - node-cron
 - @tanstack/react-form
-- tw-animate-css
-- badge.tsx
+- @tanstack/react-query
+- @tiptap/extension-underline
 - 12
 - 2
-- 6
+- @trpc/server
 - destructive
 - ag-grid-community
+- tw-animate-css
 
 ## God Nodes (most connected - your core abstractions)
-1. `cn()` - 479 edges
-2. `Button()` - 150 edges
-3. `react` - 139 edges
-4. `trpc` - 115 edges
-5. `Input()` - 88 edges
-6. `useDateFormat()` - 84 edges
-7. `Badge()` - 73 edges
-8. `Label()` - 65 edges
-9. `Card()` - 62 edges
-10. `CardContent()` - 62 edges
+1. `cn()` - 487 edges
+2. `Button()` - 153 edges
+3. `react` - 137 edges
+4. `trpc` - 116 edges
+5. `useDateFormat()` - 88 edges
+6. `Input()` - 87 edges
+7. `Badge()` - 76 edges
+8. `Label()` - 63 edges
+9. `Card()` - 60 edges
+10. `CardContent()` - 60 edges
 
 ## Surprising Connections (you probably didn't know these)
 - `KpiCard()` --calls--> `cn()`  [EXTRACTED]
   app/(dashboard)/erp/reports/items/page.tsx → lib/utils.ts
 - `DetailRow()` --calls--> `cn()`  [EXTRACTED]
   app/(dashboard)/erp/reports/items/page.tsx → lib/utils.ts
-- `KpiCard()` --calls--> `cn()`  [EXTRACTED]
-  app/(dashboard)/erp/reports/page.tsx → lib/utils.ts
 - `DateTimePage()` --calls--> `cn()`  [EXTRACTED]
   app/(dashboard)/settings/date-time/page.tsx → lib/utils.ts
 - `SettingsLayout()` --calls--> `cn()`  [EXTRACTED]
   app/(dashboard)/settings/layout.tsx → lib/utils.ts
+- `AppSidebar()` --indirect_call--> `handler()`  [INFERRED]
+  components/layout/App-Sidebar.tsx → app/api/trpc/[trpc]/route.ts
 
 ## Import Cycles
 - 3-file cycle: `components/dialogs/index.tsx -> components/dialogs/item-dialog/index.tsx -> components/dialogs/item-dialog/suppliers-tab.tsx -> components/dialogs/index.tsx`
@@ -388,83 +389,83 @@
 - **Transaction Manager Technology Stack** — architecture_transaction_manager, architecture_nextjs_16, architecture_typescript_5_9, architecture_trpc_v11, architecture_prisma_7, architecture_better_auth, architecture_casl [EXTRACTED 1.00]
 - **Architecture Layer Stack** — architecture_transaction_manager, architecture_database_layer, architecture_api_layer, architecture_auth_layer, architecture_authz_layer, architecture_service_layer, architecture_module_routers, architecture_frontend [EXTRACTED 1.00]
 
-## Communities (346 total, 143 thin omitted)
+## Communities (347 total, 145 thin omitted)
 
 ### Community 0 - "Auth & Core ERP Pages"
-Cohesion: 0.05
-Nodes (157): SignInSchema, CustomerDetailPage(), STATUS_COLORS, DocumentPrintPage(), ExpenseDetailPage(), JE_STATUS_COLORS, ExpensesPage(), IncomeDetailPage() (+149 more)
+Cohesion: 0.23
+Nodes (45): STATUS_COLORS, JE_STATUS_COLORS, JE_STATUS_COLORS, TYPE_CONFIG, STATUS_COLORS, typeBadge, statusBadge, statusBadge (+37 more)
 
 ### Community 1 - "Settings & Permissions UI"
 Cohesion: 0.03
-Nodes (81): StatCard(), AppearancePage(), PermissionsPage(), RoleIcon(), UsersSettingsPage(), AccordionContent(), AccordionItem(), AccordionTrigger() (+73 more)
+Nodes (86): StatCard(), KpiCard(), formatTimeAgo(), NotificationsPage(), AppearancePage(), PermissionsPage(), RoleIcon(), UsersSettingsPage() (+78 more)
 
 ### Community 2 - "Supplier & Location Management"
 Cohesion: 0.08
-Nodes (41): BAHRAIN_CITIES, BahrainCity, UniversalComboboxProps, ACCEPTED_TYPES, ImageUpload(), ImageUploadProps, CURRENCIES, defaults() (+33 more)
+Nodes (39): BAHRAIN_CITIES, BahrainCity, CityCombobox(), UniversalCombobox(), UniversalComboboxProps, CommandPalette(), CommandPaletteTrigger(), FlatItem (+31 more)
 
 ### Community 3 - "App Layout & Navigation"
-Cohesion: 0.06
-Nodes (46): SettingsLayout(), AppSidebar(), AppSidebarProps, AppSwitcher(), buildSidebarItems(), SidebarToggleButton(), TreeItemData, DashboardShell() (+38 more)
+Cohesion: 0.07
+Nodes (42): SettingsLayout(), AppSidebar(), AppSidebarProps, AppSwitcher(), buildSidebarItems(), SidebarToggleButton(), TreeItemData, DashboardShell() (+34 more)
 
 ### Community 4 - "Server tRPC & Error Handling"
-Cohesion: 0.08
-Nodes (58): NotFoundError, assertCan(), hasOrg, isAuthed, loggerMiddleware, orgProcedure, publicProcedure, paginatedResponse() (+50 more)
+Cohesion: 0.07
+Nodes (58): ConflictError, ErrorMeta, NotFoundError, publicProcedure, cuidSchema, paginatedResponse(), toPrismaPage(), attendanceRouter (+50 more)
 
 ### Community 5 - "Reports & Analytics"
-Cohesion: 0.05
-Nodes (67): ItemsLayout(), APAgingPage(), BUCKET_COLORS, BUCKET_KEYS, ARAgingPage(), BUCKET_COLORS, BUCKET_KEYS, BalanceSheetPage() (+59 more)
+Cohesion: 0.14
+Nodes (22): BUCKET_COLORS, BUCKET_KEYS, BUCKET_COLORS, BUCKET_KEYS, ReportAsOfFilter(), ReportAsOfFilterProps, ReportDateFilter(), ReportDateFilterProps (+14 more)
 
 ### Community 6 - "Shared UI Components"
-Cohesion: 0.25
-Nodes (7): RichtextEditor(), RichtextEditorProps, ToggleGroup(), ToggleGroupContext, ToggleGroupItem(), Toggle(), toggleVariants
+Cohesion: 0.08
+Nodes (34): SignInSchema, STATUS_COLORS, offerStatusBadge, statusBadge, ACCOUNT_TYPES, ChartOfAccountsPage(), NORMAL_BALANCES, DEFAULTS (+26 more)
 
 ### Community 7 - "Invoice Calculator & Instrumentation"
-Cohesion: 0.07
-Nodes (34): calculateInvoiceTotals(), InvoiceTotals, LineInput, LineResult, UnprocessableError, DocumentPrefix, GenerateSerialOptions, TransactionClient (+26 more)
+Cohesion: 0.10
+Nodes (24): register(), calculateInvoiceTotals(), InvoiceTotals, LineInput, LineResult, createNotification(), NOTIFICATION_SETTINGS_KEYS, NOTIFICATION_TYPES (+16 more)
 
 ### Community 8 - "Validation Schemas"
-Cohesion: 0.07
-Nodes (29): cuidSchema, CursorPagination, cursorPaginationSchema, dateRangeSchema, exchangeRateInputSchema, OffsetPagination, offsetPaginationSchema, paymentMethodSchema (+21 more)
+Cohesion: 0.13
+Nodes (18): CHART_COLORS, fmtShort(), ReportsPage(), ChartConfig, ChartContext, ChartContextProps, ChartLegendContent(), ChartTooltipContent() (+10 more)
 
 ### Community 9 - "Auth Signup & Customers"
-Cohesion: 0.07
-Nodes (42): decimalSchema, getHardDeleteInfo(), hardDeleteContractTree(), HardDeleteInfo, TransactionClient, customerBaseSchema, customersRouter, listCustomersSchema (+34 more)
+Cohesion: 0.08
+Nodes (36): contractBaseSchema, listContractsSchema, updateContractSchema, getHardDeleteInfo(), hardDeleteContractTree(), HardDeleteInfo, TransactionClient, hardDeleteCustomerTree() (+28 more)
 
 ### Community 10 - "ERP/HRMS Layout & Dialogs"
-Cohesion: 0.08
-Nodes (30): CandidateFormContext, CandidateFormContextValue, CandidateFormDialog(), CandidateFormDialogProps, CandidateFormProvider(), CandidateFormValues, defaults(), DialogState (+22 more)
+Cohesion: 0.09
+Nodes (33): DOCUMENT_CONFIG, STATUS_STYLES, BaseMenuItem, ContextMenuActionItem, ContextMenuLabelItem, ContextMenuSeparatorItem, ContextMenuSwitchItem, DesktopMenuItems (+25 more)
 
 ### Community 11 - "Item Management Dialog"
-Cohesion: 0.05
-Nodes (44): defaults(), DialogState, EmployeeFormContext, EmployeeFormContextValue, EmployeeFormDialog(), EmployeeFormDialogProps, EmployeeFormProvider(), EmployeeFormValues (+36 more)
+Cohesion: 0.12
+Nodes (17): IncomeDetailPage(), IncomesPage(), defaults(), DialogState, IncomeFormContext, IncomeFormContextValue, IncomeFormDialog(), IncomeFormDialogProps (+9 more)
 
 ### Community 12 - "Document & City Components"
-Cohesion: 0.67
-Nodes (3): POLayout(), PurchaseOrdersPage(), usePOForm()
+Cohesion: 0.32
+Nodes (6): ExpenseDetailPage(), ExpensesPage(), PurchaseOrderDetailPage(), PurchaseOrdersPage(), useExpenseForm(), usePOForm()
 
 ### Community 13 - "Root Layout & App Shell"
-Cohesion: 0.14
-Nodes (23): DateTimePage(), DatePicker(), DateFormatProvider(), DATE_DISPLAY_FORMAT_LABELS, DATE_DISPLAY_FORMATS, DATE_INPUT_FORMAT_LABELS, DATE_INPUT_FORMATS, DateDisplayFormat (+15 more)
+Cohesion: 0.08
+Nodes (39): DateTimePage(), DateInput, DateInputFieldProps, DateInputProps, DatePicker(), DatePickerField(), DatePickerFieldProps, DatePickerProps (+31 more)
 
 ### Community 14 - "Context Menu System"
-Cohesion: 0.08
-Nodes (31): DOCUMENT_CONFIG, STATUS_STYLES, BaseMenuItem, ContextMenuActionItem, ContextMenuLabelItem, ContextMenuSeparatorItem, ContextMenuSwitchItem, DesktopMenuItems (+23 more)
+Cohesion: 0.17
+Nodes (19): DocumentFilterBar(), DocumentFilterBarProps, PAYMENT_STATUS_FILTERS, SEARCH_ATTRIBUTES, STATUS_FILTERS, MoneyEntryFilterBarProps, Drawer(), DrawerClose() (+11 more)
 
 ### Community 15 - "App Sidebar Navigation"
-Cohesion: 0.10
-Nodes (22): ComboboxChip(), ComboboxChips(), ComboboxChipsInput(), ComboboxClear(), ComboboxContent(), ComboboxEmpty(), ComboboxGroup(), ComboboxInput() (+14 more)
+Cohesion: 0.17
+Nodes (12): defaults(), DialogState, DisciplinaryActionFormContext, DisciplinaryActionFormContextValue, DisciplinaryActionFormDialog(), DisciplinaryActionFormDialogProps, DisciplinaryActionFormProvider(), DisciplinaryActionFormValues (+4 more)
 
 ### Community 16 - "tRPC Procedure Context"
-Cohesion: 0.06
-Nodes (35): protectedProcedure, t, currencyCodeSchema, validateEmail(), validatePassword(), attachmentsRouter, createAttachmentSchema, deleteAttachmentSchema (+27 more)
+Cohesion: 0.04
+Nodes (56): currencyCodeSchema, CursorPagination, cursorPaginationSchema, dateRangeSchema, decimalSchema, exchangeRateInputSchema, OffsetPagination, offsetPaginationSchema (+48 more)
 
 ### Community 17 - "Biome Configuration"
 Cohesion: 0.06
 Nodes (35): useButtonType, useFocusableInteractive, useSemanticElements, source, assist, actions, enabled, useExhaustiveDependencies (+27 more)
 
 ### Community 18 - "Tax, Units & Time Tracking"
-Cohesion: 0.05
-Nodes (56): LeaveTypesPage(), ACCOUNT_TYPES, ChartOfAccountsPage(), NORMAL_BALANCES, defaults(), DialogState, EmployeeTypeFormContext, EmployeeTypeFormContextValue (+48 more)
+Cohesion: 0.02
+Nodes (197): LeaveBalancesPage(), ENROLLMENT_STATUS_OPTIONS, STATUS_COLORS, STATUS_ICONS, AVAILABLE_ICONS, CURATED_COLORS, RoleRow, Unit (+189 more)
 
 ### Community 19 - "TypeScript Reference Types"
 Cohesion: 0.06
@@ -475,12 +476,12 @@ Cohesion: 0.22
 Nodes (8): Contributing, Features, Installation, License, Prerequisite, Technologies Used, Transaction Manager, Usage
 
 ### Community 21 - "tRPC API & Authorization"
-Cohesion: 0.11
-Nodes (21): handler(), auth, AbilityContext, useAppAbility(), AbilityUser, Action, AppAbilityType, createAppAbility() (+13 more)
+Cohesion: 0.07
+Nodes (32): adaptUrl(), GET(), POST(), handler(), AuthLayout(), AuthLayoutProps, DashboardLayout(), SetupLayoutProps (+24 more)
 
 ### Community 22 - "ERP List Layouts"
-Cohesion: 0.35
-Nodes (12): statusFilters, EmployeesLayout(), ContextMenuItemSchema, UniversalContextMenu(), Header(), ListView(), ResizableHandle(), ResizablePanel() (+4 more)
+Cohesion: 0.14
+Nodes (26): ContractDetailPage(), ContractsLayout(), statusFilters, ContractsPage(), CustomersLayout(), POLayout(), StockRow, SuppliersLayout() (+18 more)
 
 ### Community 23 - "Grievance Management"
 Cohesion: 0.05
@@ -488,43 +489,43 @@ Nodes (53): $type, $value, $type, $value, $type, $value, $type, $value (+45 more
 
 ### Community 24 - "Invoice Management"
 Cohesion: 0.06
-Nodes (30): BodyProps, CONTRACT_ROWS, CUSTOMER_ROWS, DeleteHookLike, DeleteMutationLike, DialogState, EXPENSE_ROWS, HardDeleteBody() (+22 more)
+Nodes (32): BodyProps, CONTRACT_ROWS, CUSTOMER_ROWS, DeleteHookLike, DeleteMutationLike, DialogState, EXPENSE_ROWS, HardDeleteBody() (+24 more)
 
 ### Community 25 - "Dev Tooling Config"
 Cohesion: 0.07
 Nodes (29): eslint, eslint-config-next, devDependencies, eslint, eslint-config-next, prettier, prisma, tailwindcss (+21 more)
 
 ### Community 26 - "Salary & Payment Services"
-Cohesion: 0.20
-Nodes (11): AuthLayout(), AuthLayoutProps, DashboardLayout(), Page(), SetupLayoutProps, getCurrentUser(), getSession(), AlertProvider() (+3 more)
+Cohesion: 0.06
+Nodes (34): CHART_COLORS, DetailRow(), exportCsv(), ItemDetailSheet(), ItemReportPage(), ItemRow, KpiCard(), QUICK_FILTERS (+26 more)
 
 ### Community 27 - "Component Module Aliases"
 Cohesion: 0.10
 Nodes (19): aliases, components, hooks, lib, ui, utils, iconLibrary, registries (+11 more)
 
 ### Community 28 - "Alert Dialog System"
-Cohesion: 0.15
-Nodes (10): AlertDialog(), AlertDialogAction(), AlertDialogCancel(), AlertDialogContent(), AlertDialogDescription(), AlertDialogFooter(), AlertDialogHeader(), AlertDialogMedia() (+2 more)
+Cohesion: 0.14
+Nodes (14): AlertController, AlertVariant, ConfirmOptions, QueueItem, AlertDialog(), AlertDialogAction(), AlertDialogCancel(), AlertDialogContent() (+6 more)
 
 ### Community 29 - "Landing Page Components"
 Cohesion: 0.10
-Nodes (13): CTA(), Footer(), footerLinks, navLinks, containerVariants, itemVariants, routes, orbs (+5 more)
+Nodes (14): Page(), CTA(), Footer(), footerLinks, navLinks, containerVariants, itemVariants, routes (+6 more)
 
 ### Community 30 - "Auth Layouts"
-Cohesion: 0.09
-Nodes (38): generateSerial(), expensesRouter, PAYMENT_METHODS, incomesRouter, PAYMENT_METHODS, ACCOUNTS, postCreditNoteSent(), postExpense() (+30 more)
+Cohesion: 0.06
+Nodes (54): UnprocessableError, DocumentPrefix, generateSerial(), GenerateSerialOptions, TransactionClient, getHardDeleteInfo(), createInvoiceSchema, deductStockForInvoice() (+46 more)
 
 ### Community 31 - "Items Dashboard"
 Cohesion: 0.06
 Nodes (42): BM25, detect_domain(), get_cip_brief(), _load_csv(), Load CSV and return list of dicts, Core search function using BM25, Auto-detect the most relevant domain from query, Main search function with auto-domain detection (+34 more)
 
 ### Community 32 - "HR Accounts & Departments"
-Cohesion: 0.12
-Nodes (19): CommandPalette(), CommandPaletteTrigger(), FlatItem, flattenRoutes(), RouteConfig, Calendar(), CalendarDayButton(), CommandDialog() (+11 more)
+Cohesion: 0.21
+Nodes (9): RouteConfig, Calendar(), CalendarDayButton(), AppInfo, apps, getAppBySlug(), getAppFromPath(), getCrmRoutes() (+1 more)
 
 ### Community 33 - "Setup Wizard"
-Cohesion: 0.07
-Nodes (31): defaults(), DialogState, ExpenseFormContext, ExpenseFormContextValue, ExpenseFormDialog(), ExpenseFormDialogProps, ExpenseFormProvider(), ExpenseFormRecord (+23 more)
+Cohesion: 0.12
+Nodes (17): defaults(), DialogState, ExpenseFormContext, ExpenseFormContextValue, ExpenseFormDialog(), ExpenseFormDialogProps, ExpenseFormProvider(), ExpenseFormRecord (+9 more)
 
 ### Community 34 - "Item Master & File Upload"
 Cohesion: 0.05
@@ -535,8 +536,8 @@ Cohesion: 0.17
 Nodes (8): KiosksSettingsPage(), ClipboardDiagnostics, ClipboardErrorCode, ClipboardResult, ClipboardService, IN_MEMORY_CLIPBOARD, useClipboard(), UseClipboardResult
 
 ### Community 36 - "Items Tree Pattern"
-Cohesion: 0.09
-Nodes (16): AppError, ConflictError, ErrorMeta, ForbiddenError, InternalError, StaleDataError, UnauthorizedError, categoriesRouter (+8 more)
+Cohesion: 0.07
+Nodes (38): Action, AppAbilityType, ForbiddenError, assertCan(), hasOrg, isAuthed, loggerMiddleware, orgProcedure (+30 more)
 
 ### Community 37 - "Error Types"
 Cohesion: 0.08
@@ -544,7 +545,7 @@ Nodes (36): format_context(), format_result(), main(), Format a single search re
 
 ### Community 38 - "React Auth Dependencies"
 Cohesion: 0.13
-Nodes (15): bcryptjs, @better-auth/cli, next, nuqs, dependencies, bcryptjs, @better-auth/cli, next (+7 more)
+Nodes (15): bcryptjs, embla-carousel-react, next, nuqs, dependencies, bcryptjs, embla-carousel-react, next (+7 more)
 
 ### Community 39 - "File Upload API Routes"
 Cohesion: 0.23
@@ -559,12 +560,12 @@ Cohesion: 0.11
 Nodes (30): downloadCsvTemplate(), FileUploadStep(), FileUploadStepProps, TEMPLATE_COLUMNS, TEMPLATE_ROW, ImageUploadStep(), ImageUploadStepProps, BadgeCellRenderer() (+22 more)
 
 ### Community 42 - "Auth Dashboard Charts"
-Cohesion: 0.22
-Nodes (9): getHardDeleteInfo(), HardDeleteInfo, hardDeleteItemTree(), TransactionClient, bundleLineSchema, itemBaseSchema, itemsRouter, listItemsSchema (+1 more)
+Cohesion: 0.08
+Nodes (27): Sidebar(), SidebarContent(), SidebarContext, SidebarContextProps, SidebarFooter(), SidebarGroup(), SidebarGroupAction(), SidebarGroupContent() (+19 more)
 
 ### Community 43 - "Purchase Order Form"
-Cohesion: 0.13
-Nodes (21): MasterTabProps, SupplierCard(), SupplierCardProps, SuppliersTabProps, FormErrors, makeTempId(), MasterFieldErrors, Mode (+13 more)
+Cohesion: 0.08
+Nodes (32): DialogState, OpenAddSupplierOptions, OpenCreateOptions, OpenEditOptions, UnifiedItemDialog(), UnifiedItemDialogProps, UnifiedItemFormContext, UnifiedItemFormContextValue (+24 more)
 
 ### Community 44 - "Carousel Components"
 Cohesion: 0.20
@@ -599,8 +600,8 @@ Cohesion: 0.06
 Nodes (30): Accessibility, Base System, Best Practices, Clean & Modern, Common Font Pairings, Contrast Requirements, CSS Implementation, Editorial (+22 more)
 
 ### Community 52 - "Contract Form"
-Cohesion: 0.24
-Nodes (11): register(), activeTasks, checkLowStock(), checkOverdueInvoices(), getSyncFrequency(), registerCronJobs(), restartCurrencySync(), shouldRun() (+3 more)
+Cohesion: 0.28
+Nodes (8): AuditLogEntry, buildTimelineEvents(), CreditNoteEntry, groupByDate(), InvoiceHistoryPanel(), InvoiceHistoryPanelProps, PaymentEntry, TimelineEvent
 
 ### Community 53 - "Customer Form"
 Cohesion: 0.07
@@ -612,7 +613,7 @@ Nodes (28): Alert, Anatomy, Anatomy, Anatomy, Anatomy, Anatomy, Badge, Button (+
 
 ### Community 55 - "Item Detail Components"
 Cohesion: 0.13
-Nodes (17): ContractDetailPage(), ContractsLayout(), ContractsPage(), CustomersLayout(), CustomersPage(), SupplierDetailPage(), SuppliersLayout(), SuppliersPage() (+9 more)
+Nodes (14): WarehouseDetailPage(), WarehousesPage(), defaults(), DialogState, OpenOptions, schema, useWarehouseForm(), ValidationAlertProps (+6 more)
 
 ### Community 56 - "Holiday Form"
 Cohesion: 0.07
@@ -623,8 +624,8 @@ Cohesion: 0.07
 Nodes (15): Test adding colors multiple times., Test adding custom breakpoints., Test TailwindConfigGenerator class., Test generating TypeScript configuration., Test generating JavaScript configuration., Test generating config with custom colors., Test generating config with plugins., Test validating valid configuration. (+7 more)
 
 ### Community 58 - "Form Components"
-Cohesion: 0.17
-Nodes (10): FormControl, FormDescription, FormFieldContext, FormFieldContextValue, FormItem, FormItemContext, FormItemContextValue, FormLabel (+2 more)
+Cohesion: 0.13
+Nodes (14): Button, ButtonProps, buttonVariants, ExchangeRateDialogProps, CurrencyContext, CurrencyContextValue, CurrencyProvider(), CurrencyCode (+6 more)
 
 ### Community 59 - "Item Preview Steps"
 Cohesion: 0.14
@@ -639,8 +640,8 @@ Cohesion: 0.23
 Nodes (10): FormControl(), FormDescription(), FormFieldContext, FormFieldContextValue, FormItem(), FormItemContext, FormItemContextValue, FormLabel() (+2 more)
 
 ### Community 62 - "Shift Form"
-Cohesion: 0.11
-Nodes (13): StockRow, AttendanceLayout(), EmployeeRelationsLayout(), tabs, RecruitmentLayout(), ShiftsLayout(), ShiftsPage(), useGrievanceForm() (+5 more)
+Cohesion: 0.29
+Nodes (6): AttendanceLayout(), AttendanceRecordsPage(), ShiftsLayout(), ShiftsPage(), useShiftForm(), useTimePunchForm()
 
 ### Community 63 - "Rich Text Editor"
 Cohesion: 0.08
@@ -651,24 +652,24 @@ Cohesion: 0.50
 Nodes (4): generateEmployeeCode(), padNumber(), TransactionClient, withRetry()
 
 ### Community 66 - "Document Pages"
-Cohesion: 0.40
-Nodes (5): DocumentDetailPage(), DocumentsLayout(), DocumentsPage(), TRPC_TYPE, useInvoiceForm()
+Cohesion: 0.09
+Nodes (36): DocumentPrintPage(), DocumentsLayout(), ExpensesLayout(), IncomesLayout(), ItemsLayout(), ErpDashboard(), APAgingPage(), ARAgingPage() (+28 more)
 
 ### Community 67 - "Prettier Config"
 Cohesion: 0.20
 Nodes (9): arrowParens, bracketSpacing, endOfLine, printWidth, semi, singleQuote, tabWidth, trailingComma (+1 more)
 
 ### Community 68 - "Settings Item Page"
-Cohesion: 0.14
-Nodes (18): DocumentFilterBar(), DocumentFilterBarProps, PAYMENT_STATUS_FILTERS, SEARCH_ATTRIBUTES, STATUS_FILTERS, Drawer(), DrawerClose(), DrawerContent() (+10 more)
+Cohesion: 0.25
+Nodes (9): slideVariants, STEP_COMPONENTS, SetupData, setupSchema, STEP_FIELDS, STEP_META, Step1Language(), Step2Organization() (+1 more)
 
 ### Community 69 - "Storage Service"
 Cohesion: 0.28
 Nodes (5): buildStoragePath(), datePath(), StorageResult, UPLOAD_ROOT, write()
 
 ### Community 70 - "New Item Page"
-Cohesion: 0.36
-Nodes (9): ExchangeRateData, fetchAllCurrencyPairs(), fetchAllRatesForBase(), fetchHistoricalRates(), fetchLatestRates(), FrankfurterRateItem, FrankfurterRateResponse, fullSyncCurrenciesAndRates() (+1 more)
+Cohesion: 0.21
+Nodes (13): exchangeRatesRouter, SYNC_FREQUENCIES, SYNC_SETTINGS_KEYS, SyncFrequency, ExchangeRateData, fetchAllCurrencyPairs(), fetchAllRatesForBase(), fetchHistoricalRates() (+5 more)
 
 ### Community 71 - "Package Config"
 Cohesion: 0.32
@@ -679,8 +680,8 @@ Cohesion: 0.25
 Nodes (8): scripts, build, dev, format, lint, start, sync, update
 
 ### Community 73 - "Purchase Order Detail"
-Cohesion: 0.13
-Nodes (15): DateInput, DateInputFieldProps, DateInputProps, DatePickerField(), DatePickerFieldProps, DatePickerProps, evaluateDigits(), InputOTP() (+7 more)
+Cohesion: 0.18
+Nodes (12): Item(), ItemActions(), ItemContent(), ItemDescription(), ItemFooter(), ItemGroup(), ItemHeader(), ItemMedia() (+4 more)
 
 ### Community 74 - "Chat Bubble Components"
 Cohesion: 0.38
@@ -707,8 +708,8 @@ Cohesion: 0.11
 Nodes (19): BM25, detect_domain(), _load_csv(), Load CSV and return list of dicts, Core search function using BM25, Auto-detect the most relevant domain from query, Main search function with auto-domain detection, Search across all domains and combine results (+11 more)
 
 ### Community 80 - "Warehouse Detail"
-Cohesion: 0.24
-Nodes (7): ContractListItemProps, ContractStatusBadge(), ContractStatusBadgeProps, statusLabels, statusStyles, SplashScreen(), Progress()
+Cohesion: 0.50
+Nodes (4): downloadImage(), ItemDetailPage(), ItemsPage(), useUnifiedItemForm()
 
 ### Community 81 - "Roles Adapter"
 Cohesion: 0.40
@@ -719,16 +720,16 @@ Cohesion: 0.08
 Nodes (24): Accessibility, Accessibility Requirements, ARIA States, Color Contrast, Color Variants, Disabled States, Error Messages, Error States (+16 more)
 
 ### Community 83 - "Supplier List"
-Cohesion: 0.12
-Nodes (11): Menubar(), MenubarCheckboxItem(), MenubarContent(), MenubarItem(), MenubarLabel(), MenubarRadioItem(), MenubarSeparator(), MenubarShortcut() (+3 more)
+Cohesion: 0.21
+Nodes (8): ContractListItem(), ContractListItemProps, ContractStatusBadge(), ContractStatusBadgeProps, statusLabels, statusStyles, SplashScreen(), Progress()
 
 ### Community 84 - "Attendance Layout"
-Cohesion: 0.83
-Nodes (3): adaptUrl(), GET(), POST()
+Cohesion: 0.33
+Nodes (5): downloadImage(), ItemPageContent(), getItemFormDefaults(), itemFormSchema, ItemFormValues
 
 ### Community 85 - "Employee List"
-Cohesion: 0.04
-Nodes (51): CustomerFormContext, CustomerFormContextValue, CustomerFormDialog(), CustomerFormDialogProps, CustomerFormProvider(), CustomerFormValues, defaults(), DialogState (+43 more)
+Cohesion: 0.08
+Nodes (26): CustomerFormContext, CustomerFormContextValue, CustomerFormDialog(), CustomerFormDialogProps, CustomerFormProvider(), CustomerFormValues, defaults(), DialogState (+18 more)
 
 ### Community 86 - "Shift List"
 Cohesion: 0.08
@@ -755,8 +756,8 @@ Cohesion: 0.08
 Nodes (24): Accessibility Patterns, Alternative: Tailwind-Only Setup, Best Practices, Common Patterns, Component Layer: shadcn/ui, Component Library Guide, Component + Styling Setup, Core Stack (+16 more)
 
 ### Community 95 - "Recruitment Layout"
-Cohesion: 0.17
-Nodes (7): geistMono, geistSans, metadata, Toaster(), ThemeProvider(), DirectionProvider(), TrpcProvider()
+Cohesion: 0.50
+Nodes (4): _detect_page_type(), _generate_intelligent_overrides(), Generate intelligent overrides based on page type using layered search., Detect page type from context and search results.
 
 ### Community 96 - "Storage Abstraction Rationale"
 Cohesion: 0.06
@@ -774,25 +775,61 @@ Nodes (22): Best Practices, Chart.js Integration, Command, Component Spec Patter
 Cohesion: 0.09
 Nodes (22): @apply Directive, Best Practices, Color Customization, Complete Tailwind Config, Configuration Examples, Content Configuration, Custom Color Palette, Custom Font Sizes (+14 more)
 
-### Community 107 - "Community 107"
-Cohesion: 0.15
-Nodes (13): SalaryComponentsPage(), defaults(), DialogState, OpenOptions, SalaryComponentFormContext, SalaryComponentFormContextValue, SalaryComponentFormDialog(), SalaryComponentFormDialogProps (+5 more)
+### Community 115 - "Community 115"
+Cohesion: 0.17
+Nodes (10): FormControl, FormDescription, FormFieldContext, FormFieldContextValue, FormItem, FormItemContext, FormItemContextValue, FormLabel (+2 more)
 
 ### Community 116 - "Community 116"
-Cohesion: 0.19
-Nodes (10): slideVariants, STEP_COMPONENTS, SetupData, setupSchema, STEP_FIELDS, STEP_META, Step1Language(), Step2Organization() (+2 more)
+Cohesion: 0.17
+Nodes (7): geistMono, geistSans, metadata, Toaster(), ThemeProvider(), DirectionProvider(), TrpcProvider()
+
+### Community 120 - "Community 120"
+Cohesion: 0.25
+Nodes (7): RichtextEditor(), RichtextEditorProps, ToggleGroup(), ToggleGroupContext, ToggleGroupItem(), Toggle(), toggleVariants
+
+### Community 125 - "Community 125"
+Cohesion: 0.60
+Nodes (5): lg, $type, $value, lg, lg
 
 ### Community 126 - "Community 126"
 Cohesion: 0.09
 Nodes (22): $type, $value, $type, $value, $type, $value, $type, $value (+14 more)
 
+### Community 129 - "Community 129"
+Cohesion: 0.27
+Nodes (6): DeviceInfo, formatTime(), parseDeviceInfo(), SessionData, SessionsSettingsPage(), authClient
+
 ### Community 130 - "Community 130"
 Cohesion: 0.10
 Nodes (19): Banner Design Tasks, Brand Identity Tasks, Component Creation, Corporate Identity Program Tasks, Design Routing Guide, Design System Migration, Icon Design Tasks, Implementation Tasks (+11 more)
 
+### Community 133 - "Community 133"
+Cohesion: 0.40
+Nodes (8): allMessages, I18nProvider(), getCookie(), getInitialLocale(), Locale, setCookie(), SUPPORTED_LOCALES, useLocaleSwitcher()
+
 ### Community 135 - "Community 135"
-Cohesion: 0.67
-Nodes (4): $type, $value, none, none
+Cohesion: 0.25
+Nodes (4): AppError, InternalError, StaleDataError, UnauthorizedError
+
+### Community 137 - "Community 137"
+Cohesion: 0.29
+Nodes (6): locales, LocaleSwitcherMenu(), DropdownMenuPortal(), DropdownMenuSub(), DropdownMenuSubContent(), DropdownMenuSubTrigger()
+
+### Community 139 - "Community 139"
+Cohesion: 0.40
+Nodes (5): DocumentDetailPage(), DocumentsPage(), TRPC_TYPE, useInvoiceForm(), usePaymentForm()
+
+### Community 141 - "Community 141"
+Cohesion: 0.40
+Nodes (5): NavItem, PaletteAction, PaletteGroup, useActionHandlers(), usePaletteActions()
+
+### Community 143 - "useSupplierForm"
+Cohesion: 0.50
+Nodes (4): SupplierDetailPage(), SuppliersPage(), useSupplierForm(), useSupplierItemForm()
+
+### Community 144 - "features.tsx"
+Cohesion: 0.40
+Nodes (4): cardVariants, containerVariants, features, palettes
 
 ### Community 150 - "Community 150"
 Cohesion: 0.15
@@ -802,13 +839,25 @@ Nodes (19): _e(), generate_chart_slide(), generate_cta_slide(), generate_deck(),
 Cohesion: 0.10
 Nodes (19): Base Color Presets, Best Practices, Color Customization, Color Format, Component Customization, CSS Variable System, Customize Styles, Customize Variants (+11 more)
 
-### Community 156 - "Community 156"
-Cohesion: 0.16
-Nodes (13): ExchangeRateSection(), defaults(), DialogState, ExchangeRateDialog(), ExchangeRateDialogProps, ExchangeRateFormContext, ExchangeRateFormContextValue, ExchangeRateFormProvider() (+5 more)
+### Community 152 - "button-group.tsx"
+Cohesion: 0.50
+Nodes (4): ButtonGroup(), ButtonGroupSeparator(), ButtonGroupText(), buttonGroupVariants
 
-### Community 163 - "Community 163"
-Cohesion: 0.15
-Nodes (13): defaults(), DialogState, InvoiceData, OpenOptions, PAYMENT_METHODS, PaymentFormContext, PaymentFormContextValue, PaymentFormDialog() (+5 more)
+### Community 156 - "marker.tsx"
+Cohesion: 0.50
+Nodes (4): Marker(), MarkerContent(), MarkerIcon(), markerVariants
+
+### Community 157 - "useCustomerForm"
+Cohesion: 0.67
+Nodes (3): CustomerDetailPage(), CustomersPage(), useCustomerForm()
+
+### Community 159 - "image-upload.tsx"
+Cohesion: 0.67
+Nodes (3): ACCEPTED_TYPES, ImageUpload(), ImageUploadProps
+
+### Community 162 - "none"
+Cohesion: 0.67
+Nodes (4): $type, $value, none, none
 
 ### Community 166 - "Community 166"
 Cohesion: 0.10
@@ -821,6 +870,10 @@ Nodes (18): Asset Entry (manifest.json), Asset Organization Guide, By Campaign, 
 ### Community 168 - "Community 168"
 Cohesion: 0.11
 Nodes (18): Accessibility Considerations, Analogous, Black, Blue, Color Combinations by Industry, Color Harmony Types, Complementary, Green (+10 more)
+
+### Community 177 - "Community 177"
+Cohesion: 0.50
+Nodes (4): EmployeeDetailPage(), STATUS_OPTIONS, EmployeesPage(), useEmployeeForm()
 
 ### Community 181 - "Core Logo Types"
 Cohesion: 0.11
@@ -847,8 +900,8 @@ Cohesion: 0.17
 Nodes (17): generate_css_for_background(), get_background_image(), get_curated_images(), get_overlay_css(), get_pexels_search_url(), load_backgrounds_config(), load_brand_colors(), main() (+9 more)
 
 ### Community 187 - "design_system.py"
-Cohesion: 0.19
-Nodes (14): _detect_page_type(), format_markdown(), format_master_md(), format_page_override_md(), generate_design_system(), _generate_intelligent_overrides(), persist_design_system(), Format a page-specific override file with intelligent AI-generated content. (+6 more)
+Cohesion: 0.15
+Nodes (18): ansi_ljust(), format_ascii_box(), format_markdown(), format_master_md(), format_page_override_md(), generate_design_system(), hex_to_ansi(), persist_design_system() (+10 more)
 
 ### Community 188 - "Design Principles"
 Cohesion: 0.12
@@ -870,9 +923,9 @@ Nodes (16): $type, $value, $type, $value, $type, $value, $type, $value (+8 more)
 Cohesion: 0.12
 Nodes (9): Test adding components without shadcn config., Test adding components that are already installed., Test ShadcnInstaller class., Test adding all components in dry run mode., Create temporary project structure., Test successful addition of all components., Test listing installed components when none exist., Test checking for non-existent shadcn config. (+1 more)
 
-### Community 193 - "layout.tsx"
-Cohesion: 0.20
-Nodes (14): allMessages, I18nProvider(), locales, LocaleSwitcherMenu(), DropdownMenuPortal(), DropdownMenuSub(), DropdownMenuSubContent(), DropdownMenuSubTrigger() (+6 more)
+### Community 193 - "usePerformanceReviewForm"
+Cohesion: 0.67
+Nodes (3): PerformanceDetailPage(), PerformanceListPage(), usePerformanceReviewForm()
 
 ### Community 194 - "CIP Design Reference"
 Cohesion: 0.13
@@ -895,8 +948,8 @@ Cohesion: 0.13
 Nodes (8): main(), Add custom font families.          Args:             fonts: Dict of font_type: [, Add custom spacing values.          Args:             spacing: Dict of name: val, Add custom breakpoints.          Args:             breakpoints: Dict of name: wi, Add plugin requirements.          Args:             plugins: List of plugin name, Get plugin recommendations based on configuration.          Returns:, Validate configuration.          Returns:             Tuple of (valid, message), Add custom colors to theme.          Args:             colors: Dict of color_nam
 
 ### Community 199 - "page.tsx"
-Cohesion: 0.04
-Nodes (72): ItemsPage(), DepartmentsPage(), EmployeeTypesPage(), CityCombobox(), UniversalCombobox(), defaults(), DepartmentFormContext, DepartmentFormContextValue (+64 more)
+Cohesion: 0.03
+Nodes (101): DepartmentsPage(), DocumentsPage(), EmployeeTypesPage(), JobPositionsPage(), HolidaysPage(), PayrollListPage(), SalaryComponentsPage(), TrainingListPage() (+93 more)
 
 ### Community 200 - "Banner Design - Multi-Format Creative Banner System"
 Cohesion: 0.14
@@ -919,8 +972,8 @@ Cohesion: 0.14
 Nodes (13): Animation Tokens, Base Layer, Button Example, Component Classes, CSS Variables Setup, Dark Mode Toggle, HSL Format Benefits, shadcn/ui Alignment (+5 more)
 
 ### Community 205 - "radius"
-Cohesion: 0.18
-Nodes (15): $type, $value, lg, $type, $value, $type, $value, primitive (+7 more)
+Cohesion: 0.19
+Nodes (14): $type, $value, $type, $value, $type, $value, primitive, radius (+6 more)
 
 ### Community 206 - "Layout Patterns"
 Cohesion: 0.14
@@ -958,10 +1011,6 @@ Nodes (7): Handle shadcn/ui component installation., ShadcnInstaller, Test compo
 Cohesion: 0.20
 Nodes (6): Generate configuration file content.          Returns:             Configuration, Generate TypeScript configuration., Generate JavaScript configuration., Format plugins array for config.          Validates each plugin name against a s, Add indentation to JSON string., Write configuration to file.          Returns:             Tuple of (success, me
 
-### Community 215 - "User-Options.tsx"
-Cohesion: 0.17
-Nodes (12): JobPositionsPage(), defaults(), DialogState, JobPositionFormContext, JobPositionFormContextValue, JobPositionFormDialog(), JobPositionFormDialogProps, JobPositionFormProvider() (+4 more)
-
 ### Community 216 - "Core Visual Elements"
 Cohesion: 0.18
 Nodes (10): Color Palette, Colors, Core Visual Elements, Logo, Logo, Quick Checks, Typography, Typography (+2 more)
@@ -982,13 +1031,13 @@ Nodes (10): detect_domain(), _load_csv(), Load CSV and return list of dicts, Cor
 Cohesion: 0.22
 Nodes (6): Any, Path, Initialize generator.          Args:             typescript: If True, generate ., Determine default output path., Create base configuration structure., Get default content paths for framework.
 
-### Community 221 - "page.tsx"
-Cohesion: 0.17
-Nodes (12): LeaveBalancesPage(), defaults(), DialogState, LeaveAllocateFormContext, LeaveAllocateFormContextValue, LeaveAllocateFormDialog(), LeaveAllocateFormDialogProps, LeaveAllocateFormProvider() (+4 more)
+### Community 221 - "16"
+Cohesion: 0.67
+Nodes (3): $type, $value, 16
 
 ### Community 222 - "use-locale.ts"
-Cohesion: 0.21
-Nodes (10): Customer_List_Item(), Customer_List_Item_Props, SupplierListItem(), SupplierListItemProps, Avatar(), AvatarBadge(), AvatarFallback(), AvatarGroup() (+2 more)
+Cohesion: 0.17
+Nodes (13): Customer_List_Item(), Customer_List_Item_Props, SupplierListItem(), SupplierListItemProps, Avatar(), AvatarBadge(), AvatarFallback(), AvatarGroup() (+5 more)
 
 ### Community 223 - "Brand"
 Cohesion: 0.20
@@ -1054,13 +1103,13 @@ Nodes (5): For /graphify explain, For /graphify path, graphify reference: query,
 Cohesion: 0.33
 Nodes (5): References (Knowledge Base), Routing, Slides, Subcommands, When to Use
 
-### Community 239 - "_generate_intelligent_overrides"
-Cohesion: 0.17
-Nodes (11): ContractFormContext, ContractFormContextValue, ContractFormDialog(), ContractFormDialogProps, ContractFormProvider(), ContractFormValues, defaults(), DialogState (+3 more)
+### Community 239 - "1"
+Cohesion: 0.67
+Nodes (3): $type, $value, 1
 
-### Community 240 - "fromSettings"
-Cohesion: 0.18
-Nodes (12): Item(), ItemActions(), ItemContent(), ItemDescription(), ItemFooter(), ItemGroup(), ItemHeader(), ItemMedia() (+4 more)
+### Community 240 - "3"
+Cohesion: 0.67
+Nodes (3): $type, $value, 3
 
 ### Community 241 - "Brand Guidelines Template"
 Cohesion: 0.40
@@ -1073,10 +1122,6 @@ Nodes (5): $type, $value, border, border, border
 ### Community 243 - "radius"
 Cohesion: 0.60
 Nodes (5): radius, radius, radius, $type, $value
-
-### Community 244 - "lg"
-Cohesion: 0.18
-Nodes (11): defaults(), DialogState, employmentTypeValues, JobPostingFormContext, JobPostingFormContextValue, JobPostingFormDialog(), JobPostingFormDialogProps, JobPostingFormProvider() (+3 more)
 
 ### Community 245 - "sm"
 Cohesion: 0.60
@@ -1102,33 +1147,9 @@ Nodes (3): For git commit hook, For native CLAUDE.md integration, graphify refer
 Cohesion: 0.50
 Nodes (3): For --cluster-only, For --update (incremental re-extraction), graphify reference: incremental update and cluster-only
 
-### Community 253 - "performanceReviewForm.tsx"
-Cohesion: 0.18
-Nodes (11): defaults(), DialogState, OpenOptions, PerformanceReviewFormContext, PerformanceReviewFormContextValue, PerformanceReviewFormDialog(), PerformanceReviewFormDialogProps, PerformanceReviewFormProvider() (+3 more)
-
-### Community 254 - "attachment.tsx"
-Cohesion: 0.20
-Nodes (11): Attachment(), AttachmentAction(), AttachmentActions(), AttachmentContent(), AttachmentDescription(), AttachmentGroup(), AttachmentMedia(), attachmentMediaVariants (+3 more)
-
-### Community 257 - "navigation-menu.tsx"
-Cohesion: 0.22
-Nodes (9): NavigationMenu(), NavigationMenuContent(), NavigationMenuIndicator(), NavigationMenuItem(), NavigationMenuLink(), NavigationMenuList(), NavigationMenuTrigger(), navigationMenuTriggerStyle (+1 more)
-
-### Community 258 - "format_ascii_box"
-Cohesion: 0.25
-Nodes (8): ansi_ljust(), format_ascii_box(), hex_to_ansi(), Convert hex color to ANSI True Color swatch (██) with fallback., Like str.ljust but accounts for zero-width ANSI escape sequences., Create a Unicode section separator: ├─── NAME ───...┤, Format design system as Unicode box with ANSI color swatches., section_header()
-
-### Community 259 - "3"
-Cohesion: 0.40
-Nodes (4): cardVariants, containerVariants, features, palettes
-
 ### Community 260 - "8"
 Cohesion: 0.67
 Nodes (3): $type, $value, 8
-
-### Community 261 - "destructive"
-Cohesion: 0.50
-Nodes (4): ButtonGroup(), ButtonGroupSeparator(), ButtonGroupText(), buttonGroupVariants
 
 ### Community 262 - "destructive-foreground"
 Cohesion: 0.67
@@ -1150,57 +1171,33 @@ Nodes (3): ring, $type, $value
 Cohesion: 0.67
 Nodes (3): secondary-foreground, $type, $value
 
-### Community 272 - "marker.tsx"
-Cohesion: 0.50
-Nodes (4): Marker(), MarkerContent(), MarkerIcon(), markerVariants
-
-### Community 276 - "1"
-Cohesion: 0.50
-Nodes (3): Button, ButtonProps, buttonVariants
-
 ### Community 277 - "nuqs"
 Cohesion: 0.67
 Nodes (4): padding-y, padding-y, $type, $value
-
-### Community 336 - "primary"
-Cohesion: 0.67
-Nodes (4): $type, $value, md, md
-
-### Community 341 - "12"
-Cohesion: 0.67
-Nodes (3): $type, $value, 12
-
-### Community 342 - "2"
-Cohesion: 0.67
-Nodes (3): $type, $value, 2
-
-### Community 343 - "6"
-Cohesion: 0.67
-Nodes (3): $type, $value, 6
 
 ### Community 344 - "destructive"
 Cohesion: 0.67
 Nodes (3): destructive, $type, $value
 
 ## Knowledge Gaps
-- **1729 isolated node(s):** `@kilocode/plugin`, `$schema`, `.opencode/plugins/graphify.js`, `@opencode-ai/plugin`, `$schema` (+1724 more)
+- **1732 isolated node(s):** `@kilocode/plugin`, `$schema`, `.opencode/plugins/graphify.js`, `@opencode-ai/plugin`, `$schema` (+1727 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **143 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **145 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `cn()` connect `Settings & Permissions UI` to `Auth & Core ERP Pages`, `navigation-menu.tsx`, `Supplier & Location Management`, `App Layout & Navigation`, `3`, `Reports & Analytics`, `Shared UI Components`, `destructive`, `ERP/HRMS Layout & Dialogs`, `Item Management Dialog`, `Document & City Components`, `Root Layout & App Shell`, `Context Menu System`, `App Sidebar Navigation`, `marker.tsx`, `Tax, Units & Time Tracking`, `1`, `ERP List Layouts`, `Salary & Payment Services`, `Alert Dialog System`, `Landing Page Components`, `HR Accounts & Departments`, `Setup Wizard`, `CSV Import Steps`, `Purchase Order Form`, `Carousel Components`, `Item Detail Components`, `Form Components`, `Form Field Components`, `Shift Form`, `layout.tsx`, `Document Pages`, `Settings Item Page`, `page.tsx`, `Purchase Order Detail`, `Chat Bubble Components`, `Contract Detail`, `Warehouse Detail`, `Supplier List`, `badge.tsx`, `Employee List`, `use-locale.ts`, `employee-list-item.tsx`, `fromSettings`, `attachment.tsx`?**
-  _High betweenness centrality (0.115) - this node is a cross-community bridge._
-- **Why does `react` connect `page.tsx` to `Auth & Core ERP Pages`, `Settings & Permissions UI`, `Supplier & Location Management`, `App Layout & Navigation`, `Reports & Analytics`, `Shared UI Components`, `ERP/HRMS Layout & Dialogs`, `Item Management Dialog`, `Document & City Components`, `Root Layout & App Shell`, `Context Menu System`, `App Sidebar Navigation`, `Tax, Units & Time Tracking`, `ERP List Layouts`, `Invoice Management`, `Community 156`, `HR Accounts & Departments`, `Setup Wizard`, `Community 163`, `React Auth Dependencies`, `Purchase Order Form`, `Carousel Components`, `Community 177`, `Item Detail Components`, `Form Components`, `Form Field Components`, `Shift Form`, `Document Pages`, `Purchase Order Detail`, `Employee List`, `User-Options.tsx`, `page.tsx`, `Community 107`, `_generate_intelligent_overrides`, `lg`, `performanceReviewForm.tsx`?**
-  _High betweenness centrality (0.044) - this node is a cross-community bridge._
-- **Why does `dependencies` connect `React Auth Dependencies` to `Community 128`, `Community 129`, `Community 131`, `Community 132`, `Community 133`, `Community 134`, `Community 136`, `Community 137`, `Community 138`, `Community 139`, `Community 140`, `Community 141`, `Community 142`, `Community 143`, `Community 144`, `Community 145`, `@base-ui/react`, `better-auth`, `Community 146`, `Community 147`, `Community 148`, `Community 149`, `Community 152`, `Community 153`, `Community 154`, `Community 155`, `Community 157`, `Community 158`, `Community 159`, `Community 160`, `Community 161`, `Community 162`, `Community 164`, `Community 165`, `CSV Import Steps`, `@tanstack/react-table`, `@tiptap/starter-kit`, `Package Config`, `page.tsx`, `DB Seed Adapter`, `node-cron`, `@tanstack/react-form`, `tw-animate-css`, `ag-grid-community`, `Community 120`, `Community 108`, `Community 109`, `Community 110`, `Community 111`, `Community 114`, `Community 115`, `Community 118`, `Community 119`, `none`, `Community 121`, `Community 122`, `Community 123`, `Community 124`, `Community 125`?**
-  _High betweenness centrality (0.044) - this node is a cross-community bridge._
+- **Why does `cn()` connect `Settings & Permissions UI` to `Auth & Core ERP Pages`, `Supplier & Location Management`, `App Layout & Navigation`, `Reports & Analytics`, `Shared UI Components`, `Validation Schemas`, `Community 137`, `ERP/HRMS Layout & Dialogs`, `Root Layout & App Shell`, `Context Menu System`, `features.tsx`, `Tax, Units & Time Tracking`, `tRPC API & Authorization`, `ERP List Layouts`, `button-group.tsx`, `Salary & Payment Services`, `Alert Dialog System`, `Landing Page Components`, `marker.tsx`, `image-upload.tsx`, `HR Accounts & Departments`, `Setup Wizard`, `CSV Import Steps`, `Auth Dashboard Charts`, `Purchase Order Form`, `Carousel Components`, `Form Components`, `Form Field Components`, `Document Pages`, `page.tsx`, `Purchase Order Detail`, `Chat Bubble Components`, `Contract Detail`, `Warehouse Detail`, `Supplier List`, `Attendance Layout`, `Employee List`, `use-locale.ts`, `employee-list-item.tsx`, `Community 115`, `Community 120`?**
+  _High betweenness centrality (0.109) - this node is a cross-community bridge._
+- **Why does `react` connect `page.tsx` to `Auth & Core ERP Pages`, `Settings & Permissions UI`, `Supplier & Location Management`, `App Layout & Navigation`, `Community 132`, `Reports & Analytics`, `Validation Schemas`, `ERP/HRMS Layout & Dialogs`, `Community 139`, `Document & City Components`, `Item Management Dialog`, `Root Layout & App Shell`, `App Sidebar Navigation`, `useSupplierForm`, `Tax, Units & Time Tracking`, `ERP List Layouts`, `Invoice Management`, `Salary & Payment Services`, `useCustomerForm`, `image-upload.tsx`, `HR Accounts & Departments`, `Setup Wizard`, `layout.tsx`, `React Auth Dependencies`, `Auth Dashboard Charts`, `Purchase Order Form`, `Carousel Components`, `Community 177`, `Contract Form`, `Item Detail Components`, `Form Field Components`, `Shift Form`, `usePerformanceReviewForm`, `Document Pages`, `Warehouse Detail`, `Attendance Layout`, `Employee List`, `layout.tsx`, `Community 115`, `Community 120`?**
+  _High betweenness centrality (0.043) - this node is a cross-community bridge._
+- **Why does `dependencies` connect `React Auth Dependencies` to `Community 128`, `lucide-react`, `next-themes`, `Community 131`, `pdf-lib`, `@prisma/adapter-libsql`, `Community 134`, `Community 136`, `Community 138`, `Community 140`, `Community 142`, `react-barcode`, `Community 145`, `react-dom`, `better-auth`, `react-is`, `Community 146`, `Community 147`, `Community 148`, `Community 149`, `Community 153`, `Community 154`, `Community 155`, `Community 158`, `Community 160`, `Community 161`, `Community 164`, `Community 165`, `CSV Import Steps`, `@tanstack/react-table`, `recharts`, `Package Config`, `page.tsx`, `DB Seed Adapter`, `primary`, `node-cron`, `@tanstack/react-form`, `@tanstack/react-query`, `@tiptap/extension-underline`, `12`, `2`, `@trpc/server`, `ag-grid-community`, `tw-animate-css`, `Community 108`, `Community 109`, `Community 110`, `Community 111`, `Community 114`, `@base-ui/react`, `Community 118`, `Community 119`, `none`, `Community 121`, `Community 122`, `Community 123`, `Community 124`, `@better-auth/cli`, `fuse.js`?**
+  _High betweenness centrality (0.039) - this node is a cross-community bridge._
 - **What connects `@kilocode/plugin`, `$schema`, `.opencode/plugins/graphify.js` to the rest of the system?**
-  _1955 weakly-connected nodes found - possible documentation gaps or missing edges._
-- **Should `Auth & Core ERP Pages` be split into smaller, more focused modules?**
-  _Cohesion score 0.05437392795883362 - nodes in this community are weakly interconnected._
+  _1958 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `Settings & Permissions UI` be split into smaller, more focused modules?**
-  _Cohesion score 0.034161490683229816 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.029487179487179487 - nodes in this community are weakly interconnected._
 - **Should `Supplier & Location Management` be split into smaller, more focused modules?**
-  _Cohesion score 0.0798076923076923 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.07918367346938776 - nodes in this community are weakly interconnected._
+- **Should `App Layout & Navigation` be split into smaller, more focused modules?**
+  _Cohesion score 0.06887755102040816 - nodes in this community are weakly interconnected._

@@ -1790,9 +1790,9 @@
     "semantic_hash": "6a47d64fcc136324ca395065a707ef76"
   },
   "ARCHITECTURE.md": {
-    "mtime": 1783233354.2091053,
-    "ast_hash": "1f6e0e0d0403c64fb414279f452b5d72",
-    "semantic_hash": "1f6e0e0d0403c64fb414279f452b5d72"
+    "mtime": 1785688028.1589267,
+    "ast_hash": "54b8e1c22141b6929e620f461a6075e5",
+    "semantic_hash": ""
   },
   "README.md": {
     "mtime": 1781218123.626341,
@@ -2405,8 +2405,8 @@
     "semantic_hash": ""
   },
   "server/expenses/expenses.router.ts": {
-    "mtime": 1785687993.2155094,
-    "ast_hash": "5bf281ba9fe03fc8657e4d0bad503385",
+    "mtime": 1785688558.830616,
+    "ast_hash": "dcea6b0b1de3bc3af653433b1f419d1a",
     "semantic_hash": ""
   },
   "server/invoices/hard-delete.service.ts": {
@@ -2445,23 +2445,23 @@
     "semantic_hash": ""
   },
   "app/(dashboard)/erp/expenses/[id]/page.tsx": {
-    "mtime": 1785687996.0002277,
-    "ast_hash": "983e1a26f84bfc5534212d167c3c08d0",
+    "mtime": 1785688718.3784301,
+    "ast_hash": "8a47e10aba1e4f8a08486bec19100a29",
     "semantic_hash": ""
   },
   "app/(dashboard)/erp/expenses/page.tsx": {
-    "mtime": 1785687996.022594,
-    "ast_hash": "42bbde675434b0389bf0f8fda6e882a1",
+    "mtime": 1785688689.6657043,
+    "ast_hash": "68c37cd3f983150429cce84794c16ee5",
     "semantic_hash": ""
   },
   "app/(dashboard)/erp/incomes/[id]/page.tsx": {
-    "mtime": 1785687996.0359836,
-    "ast_hash": "2553427d25b4b52b4318ecc83fa01377",
+    "mtime": 1785688732.2809696,
+    "ast_hash": "ddaabce489c90698dd991c814f883414",
     "semantic_hash": ""
   },
   "app/(dashboard)/erp/incomes/page.tsx": {
-    "mtime": 1785687996.0466552,
-    "ast_hash": "29ee1f3c9e1ed26772fe1078cff792f7",
+    "mtime": 1785688689.6707356,
+    "ast_hash": "4ce307e0857d4412dbd9da72c71f2ca4",
     "semantic_hash": ""
   },
   "components/dialogs/expenseForm.tsx": {
@@ -2475,8 +2475,33 @@
     "semantic_hash": ""
   },
   "server/incomes/incomes.router.ts": {
-    "mtime": 1785687993.2320766,
-    "ast_hash": "b6a5c1d91be6167246bddb5e0ddccbfa",
+    "mtime": 1785688562.4487996,
+    "ast_hash": "7bb8a1e0a797ac30d8ee5dc3626123c1",
+    "semantic_hash": ""
+  },
+  "app/(dashboard)/erp/expenses/layout.tsx": {
+    "mtime": 1785688689.6410043,
+    "ast_hash": "2701ee9b18799d20dbaeeec94105aebe",
+    "semantic_hash": ""
+  },
+  "app/(dashboard)/erp/incomes/layout.tsx": {
+    "mtime": 1785688689.6609921,
+    "ast_hash": "106d04ffda000d6e2a9937ac6e4df29e",
+    "semantic_hash": ""
+  },
+  "components/erp/money-entry-filter-bar.tsx": {
+    "mtime": 1785688587.542769,
+    "ast_hash": "44bb11e927a71a1184fe5971ae20ba98",
+    "semantic_hash": ""
+  },
+  "components/expenses/expense-list-item.tsx": {
+    "mtime": 1785688567.4951541,
+    "ast_hash": "788d21b1fc21375a5cf28f8e0e29fe62",
+    "semantic_hash": ""
+  },
+  "components/incomes/income-list-item.tsx": {
+    "mtime": 1785688572.1020517,
+    "ast_hash": "5b28377f68afa92df25344eae3e49877",
     "semantic_hash": ""
   }
 }

@@ -3,12 +3,15 @@
 import {
   ArrowLeft,
   Banknote,
+  Calendar,
+  CreditCard,
   FileText,
   Landmark,
   MoreHorizontal,
   Pencil,
   ShieldAlert,
   Trash,
+  User,
 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useParams, useRouter } from 'next/navigation';
@@ -35,8 +38,8 @@ import {
 import { Separator } from '@/components/ui/separator';
 import { Spinner } from '@/components/ui/spinner';
 import { useDateFormat } from '@/hooks/use-date-format';
+import { useCurrency } from '@/hooks/use-currency';
 import { trpc } from '@/lib/trpc/client';
-import { formatCurrency } from '@/lib/utils';
 
 const JE_STATUS_COLORS: Record<string, string> = {
   DRAFT: 'bg-muted text-muted-foreground',
@@ -54,6 +57,7 @@ export default function IncomeDetailPage() {
   const isSuperAdmin = me?.platformRole === 'SUPER_ADMIN';
   const t = useTranslations();
   const { formatDate, formatDateTime } = useDateFormat();
+  const { format } = useCurrency();
 
   const {
     data: income,
@@ -182,17 +186,19 @@ export default function IncomeDetailPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
           <Card>
             <CardHeader className="pb-1.5">
-              <CardTitle className="text-xs text-muted-foreground font-medium">
+              <CardTitle className="text-xs text-muted-foreground font-medium flex items-center gap-1.5">
+                <Banknote className="size-3.5" />
                 {t('incomes.amount')}
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="font-semibold text-lg">{formatCurrency(Number(income.amount))}</p>
+              <p className="font-semibold text-lg">{format(Number(income.amount))}</p>
             </CardContent>
           </Card>
           <Card>
             <CardHeader className="pb-1.5">
-              <CardTitle className="text-xs text-muted-foreground font-medium">
+              <CardTitle className="text-xs text-muted-foreground font-medium flex items-center gap-1.5">
+                <Calendar className="size-3.5" />
                 {t('incomes.date')}
               </CardTitle>
             </CardHeader>
@@ -202,7 +208,8 @@ export default function IncomeDetailPage() {
           </Card>
           <Card>
             <CardHeader className="pb-1.5">
-              <CardTitle className="text-xs text-muted-foreground font-medium">
+              <CardTitle className="text-xs text-muted-foreground font-medium flex items-center gap-1.5">
+                <CreditCard className="size-3.5" />
                 {t('incomes.method')}
               </CardTitle>
             </CardHeader>
@@ -212,7 +219,8 @@ export default function IncomeDetailPage() {
           </Card>
           <Card>
             <CardHeader className="pb-1.5">
-              <CardTitle className="text-xs text-muted-foreground font-medium">
+              <CardTitle className="text-xs text-muted-foreground font-medium flex items-center gap-1.5">
+                <User className="size-3.5" />
                 {t('incomes.customer')}
               </CardTitle>
             </CardHeader>
