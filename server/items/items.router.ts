@@ -297,6 +297,7 @@ export const itemsRouter = router({
           }),
         ),
         updateExisting: z.boolean().default(false),
+        supplierId: z.string().optional(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
@@ -304,7 +305,7 @@ export const itemsRouter = router({
 
       const { bulkImportItems } = await import('./import.service');
 
-      return bulkImportItems(input.items, input.updateExisting, {
+      return bulkImportItems(input.items, input, {
         db: ctx.db,
         organizationId: ctx.user.organizationId,
         userId: ctx.user.id,

@@ -57,9 +57,16 @@ export function ItemImportWizard() {
   const [step, setStep] = useState<ImportStep>('upload-file');
   const [items, setItems] = useState<ParsedItem[]>([]);
   const [images, setImages] = useState<ImportImage[]>([]);
+  const [supplierId, setSupplierId] = useState<string>('');
   const [isImporting, setIsImporting] = useState(false);
   const [result, setResult] = useState<{ created: number; updated: number; skipped: number } | null>(null);
   const cleanupRef = useRef(false);
+
+  const { data: suppliersData, isLoading: suppliersLoading } = trpc.suppliers.list.useQuery(
+    { limit: 200 },
+    { enabled: step === 'preview' },
+  );
+  const suppliers = Array.isArray(suppliersData) ? suppliersData : (suppliersData?.data ?? []);
 
   useEffect(() => {
     return () => {
@@ -134,6 +141,7 @@ export function ItemImportWizard() {
     }
     setItems([]);
     setImages([]);
+    setSupplierId('');
     setResult(null);
     setStep('upload-file');
   }, []);
@@ -175,8 +183,12 @@ export function ItemImportWizard() {
       taxRateId: item.taxRateId,
     }));
 
-    bulkImport.mutate({ items: importItems, updateExisting: false });
-  }, [items, images, bulkImport]);
+    bulkImport.mutate({
+      items: importItems,
+      updateExisting: false,
+      supplierId: supplierId || undefined,
+    });
+  }, [items, images, bulkImport, supplierId]);
 
   const currentIdx = STEPS.findIndex((s) => s.key === step);
 
@@ -233,6 +245,10 @@ export function ItemImportWizard() {
           onClear={handleClear}
           onImport={handleImport}
           isImporting={isImporting}
+          suppliers={suppliers}
+          suppliersLoading={suppliersLoading}
+          supplierId={supplierId}
+          onSupplierChange={setSupplierId}
         />
       )}
     </div>

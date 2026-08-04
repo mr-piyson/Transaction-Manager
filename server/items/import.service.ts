@@ -1,3 +1,4 @@
+import { NotFoundError } from '@/lib/error';
 import { writeAuditLog } from '../shared/audit.service';
 
 export interface BulkItemInput {
@@ -51,13 +52,28 @@ async function resolveCategoryId(
   return created.id;
 }
 
+export interface BulkImportOptions {
+  updateExisting: boolean;
+  supplierId?: string;
+}
+
 export async function bulkImportItems(
   inputItems: BulkItemInput[],
-  updateExisting: boolean,
+  options: BulkImportOptions,
   deps: ImportDeps,
 ): Promise<BulkImportResult> {
   const { db, organizationId, userId, ipAddress } = deps;
+  const { updateExisting, supplierId } = options;
   const result: BulkImportResult = { created: 0, updated: 0, skipped: 0, errors: [] };
+
+  let supplier: { id: string; currencyCode: string | null } | null = null;
+  if (supplierId) {
+    supplier = await db.supplier.findFirst({
+      where: { id: supplierId, organizationId, deletedAt: null },
+      select: { id: true, currencyCode: true },
+    });
+    if (!supplier) throw new NotFoundError('Supplier', supplierId);
+  }
 
   for (const item of inputItems) {
     try {
@@ -100,6 +116,8 @@ export async function bulkImportItems(
         select: { id: true },
       });
 
+      let itemId: string;
+
       if (existing) {
         if (!updateExisting) {
           result.skipped++;
@@ -125,6 +143,7 @@ export async function bulkImportItems(
         );
 
         result.updated++;
+        itemId = existing.id;
       } else {
         const created = await db.item.create({ data });
 
@@ -141,6 +160,39 @@ export async function bulkImportItems(
         );
 
         result.created++;
+        itemId = created.id;
+      }
+
+      if (supplier) {
+        const existingLink = await db.supplierItem.findFirst({
+          where: { supplierId: supplier.id, itemId, deletedAt: null },
+          select: { id: true },
+        });
+
+        if (!existingLink) {
+          const supplierItem = await db.supplierItem.create({
+            data: {
+              supplierId: supplier.id,
+              itemId,
+              basePrice: data.purchasePrice ?? 0,
+              currency: supplier.currencyCode || 'BHD',
+              minOrderQty: 1,
+              organizationId,
+            },
+          });
+
+          await writeAuditLog(
+            {
+              entityType: 'SupplierItem',
+              entityId: supplierItem.id,
+              action: 'CREATE',
+              organizationId,
+              userId,
+              ipAddress,
+            },
+            db,
+          );
+        }
       }
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Unknown error';

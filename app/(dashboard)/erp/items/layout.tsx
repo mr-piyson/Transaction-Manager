@@ -77,6 +77,7 @@ export default function ItemsLayout({ children }: { children?: React.ReactNode }
 
   const { data: categoryList } = trpc.categories.list.useQuery();
   const { data, isPending } = trpc.items.list.useQuery({
+    limit: 500,
     type: (typeFilter || undefined) as 'PRODUCT' | 'SERVICE' | undefined,
     categoryId: categoryFilter ?? undefined,
   });

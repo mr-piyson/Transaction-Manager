@@ -1,16 +1,25 @@
 'use client';
 
 import { useMemo, useState, useCallback } from 'react';
-import { Download, ImageIcon, Trash2, Sparkles } from 'lucide-react';
+import { Download, ImageIcon, Trash2, Sparkles, Users } from 'lucide-react';
 import { AgGridReact } from 'ag-grid-react';
 import type { ColDef, ICellRendererParams } from 'ag-grid-community';
 import { AllCommunityModule, ModuleRegistry } from 'ag-grid-community';
 import { Button } from '@/components/ui/button';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Skeleton } from '@/components/ui/skeleton';
 import type { ParsedItem } from './types';
 import { useTableTheme } from '@/hooks/use-table-theme';
 import { generateSampleData } from './sample-data';
 
 ModuleRegistry.registerModules([AllCommunityModule]);
+
+interface SupplierOption {
+  id: string;
+  name: string;
+  code?: string | null;
+}
 
 interface PreviewStepProps {
   items: ParsedItem[];
@@ -18,6 +27,10 @@ interface PreviewStepProps {
   onClear: () => void;
   onImport: () => void;
   isImporting: boolean;
+  suppliers?: SupplierOption[];
+  suppliersLoading?: boolean;
+  supplierId?: string;
+  onSupplierChange?: (supplierId: string) => void;
 }
 
 function ImageCellRenderer(params: ICellRendererParams<ParsedItem>) {
@@ -51,10 +64,21 @@ function BadgeCellRenderer(params: ICellRendererParams<ParsedItem>) {
   );
 }
 
-export function PreviewStep({ items, onItemsChange, onClear, onImport, isImporting }: PreviewStepProps) {
+export function PreviewStep({
+  items,
+  onItemsChange,
+  onClear,
+  onImport,
+  isImporting,
+  suppliers = [],
+  suppliersLoading,
+  supplierId = '',
+  onSupplierChange,
+}: PreviewStepProps) {
   const tableTheme = useTableTheme();
   const [tab, setTab] = useState<'grid' | 'cards'>('grid');
   const itemsWithImages = items.filter((i) => i.hasImage).length;
+  const selectedSupplier = suppliers.find((s) => s.id === supplierId);
 
   const handleLoadSample = useCallback(() => {
     onItemsChange(generateSampleData());
@@ -131,6 +155,40 @@ export function PreviewStep({ items, onItemsChange, onClear, onImport, isImporti
             {isImporting ? 'Importing...' : 'Import All Items'}
           </Button>
         </div>
+      </div>
+
+      <div className="flex items-center gap-3 flex-wrap rounded-md border bg-muted/40 px-4 py-3">
+        <Users className="size-4 text-muted-foreground shrink-0" />
+        <div className="flex items-center gap-2">
+          <Label htmlFor="import-supplier" className="shrink-0">
+            Supplier
+          </Label>
+          {suppliersLoading ? (
+            <Skeleton className="h-9 w-64" />
+          ) : (
+            <Select
+              value={supplierId || 'none'}
+              onValueChange={(v) => onSupplierChange?.(v === 'none' ? '' : v)}
+            >
+              <SelectTrigger id="import-supplier" className="w-64">
+                <SelectValue placeholder="Select a supplier" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">No supplier</SelectItem>
+                {suppliers.map((s) => (
+                  <SelectItem key={s.id} value={s.id}>
+                    {s.code ? `${s.code} — ${s.name}` : s.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
+        </div>
+        <p className="text-sm text-muted-foreground">
+          {selectedSupplier
+            ? `Imported items will be linked to "${selectedSupplier.name}" with their purchase price as the supplier price.`
+            : 'Select a supplier to link imported items to it.'}
+        </p>
       </div>
 
       <div className="h-[500px] border rounded-md">
