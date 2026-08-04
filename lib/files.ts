@@ -40,7 +40,7 @@ const MIME_TO_EXT: Readonly<Record<string, string>> = {
 const SUPPORTED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp'] as const;
 type SupportedImageType = (typeof SUPPORTED_IMAGE_TYPES)[number];
 
-const UPLOAD_DIR = path.join(process.cwd(), 'public', 'uploads');
+const UPLOAD_DIR = path.join(process.cwd(), '.data', 'uploads');
 
 const DEFAULT_PDF_MAX_SIZE = 10 * 1024 * 1024; // 10 MB
 const DEFAULT_IMG_MAX_SIZE = 5 * 1024 * 1024; //  5 MB

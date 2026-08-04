@@ -1365,9 +1365,9 @@
     "semantic_hash": "a4b4d663212ee9b33d5138b3000d1c88"
   },
   "lib/files.ts": {
-    "mtime": 1774674312.025688,
-    "ast_hash": "6651cfe35b63c25a2f3ad91216e1b4f4",
-    "semantic_hash": "6651cfe35b63c25a2f3ad91216e1b4f4"
+    "mtime": 1785864734.6780632,
+    "ast_hash": "375e53c567bca0fd76e8a68bfcd796ea",
+    "semantic_hash": ""
   },
   "lib/permissions.ts": {
     "mtime": 1781886188.251376,
@@ -1440,8 +1440,8 @@
     "semantic_hash": ""
   },
   "messages/en.json": {
-    "mtime": 1785687882.4197829,
-    "ast_hash": "e09d5a314a0c50b4e9bfc6f47ab19a31",
+    "mtime": 1785690248.5822103,
+    "ast_hash": "9f41a038b9f3aed9f54f847760ee6e9d",
     "semantic_hash": ""
   },
   "next-intl.d.ts": {
@@ -1450,8 +1450,8 @@
     "semantic_hash": "e3b5ebed58ece9782856e18c85ecf2f8"
   },
   "next.config.ts": {
-    "mtime": 1784288952.6947606,
-    "ast_hash": "0f93bcdb340a3a46115a30837fa6274d",
+    "mtime": 1785864725.0399587,
+    "ast_hash": "e205fb5871cf16782c606f87cbcd99d4",
     "semantic_hash": ""
   },
   "package.json": {
@@ -1680,9 +1680,9 @@
     "semantic_hash": "eb4c39661f057b7c73dc1e7ca29aef36"
   },
   "server/services/file/storage.service.ts": {
-    "mtime": 1783073014.4160087,
-    "ast_hash": "281faaca1665975e4ebc9d4938698b15",
-    "semantic_hash": "281faaca1665975e4ebc9d4938698b15"
+    "mtime": 1785864716.011603,
+    "ast_hash": "ff8440e3221c3181b2a73c02372d7878",
+    "semantic_hash": ""
   },
   "server/services/file/upload.service.ts": {
     "mtime": 1784313228.4084458,
@@ -2299,11 +2299,6 @@
     "ast_hash": "45f134f37e4c4bbb038ceb6aa067a8c0",
     "semantic_hash": ""
   },
-  ".kilo/package.json": {
-    "mtime": 1784566628.1647544,
-    "ast_hash": "96b94694b62996cafa3a8ceba12749aa",
-    "semantic_hash": ""
-  },
   "app/(dashboard)/erp/reports/ap-aging/page.tsx": {
     "mtime": 1784273536.9683733,
     "ast_hash": "ec666760e926c05604b60284d21b8c69",
@@ -2502,6 +2497,11 @@
   "components/incomes/income-list-item.tsx": {
     "mtime": 1785688572.1020517,
     "ast_hash": "5b28377f68afa92df25344eae3e49877",
+    "semantic_hash": ""
+  },
+  "app/api/files/[...path]/route.ts": {
+    "mtime": 1785864786.3400223,
+    "ast_hash": "0be68ccf796e43f7eade30e6159d9775",
     "semantic_hash": ""
   }
 }

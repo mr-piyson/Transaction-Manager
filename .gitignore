@@ -47,6 +47,7 @@ next-env.d.ts
 
 # uploaded files
 /public/uploads/*
+/.data/
 
 # skills output
 graphify-out
