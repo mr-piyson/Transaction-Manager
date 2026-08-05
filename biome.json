@@ -25,7 +25,8 @@
 			"a11y": {
 				"useButtonType": "off",
 				"useFocusableInteractive": "off",
-				"useSemanticElements": "off"
+				"useSemanticElements": "off",
+				"noRedundantRoles": "off"
 			},
 			"preset": "recommended",
 			"correctness": {
@@ -40,7 +41,8 @@
 				"noRedeclare": "off",
 				"noUnknownAtRules": "off",
 				"noImplicitAnyLet": "off",
-				"noExplicitAny": "off"
+				"noExplicitAny": "off",
+				"noArrayIndexKey": "off"
 			}
 		}
 	},
