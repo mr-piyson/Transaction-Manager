@@ -16,9 +16,13 @@ export default function CustomersPage() {
       </div>
       <div>
         <h2 className="text-xl font-semibold">{t("customers.title")}</h2>
-        <p className="text-muted-foreground mt-1">{t("customers.selectDescription")}</p>
+        <p className="text-muted-foreground mt-1">
+          {t("customers.selectDescription")}
+        </p>
       </div>
-      <Button onClick={() => openCreate()}>{t("customers.createCustomer")}</Button>
+      <Button onClick={() => openCreate()}>
+        {t("customers.createCustomer")}
+      </Button>
     </div>
   );
 }
