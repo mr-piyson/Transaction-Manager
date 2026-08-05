@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "update": "git pull && bun install && bunx prisma generate && bunx prisma db push && bun run build && bun start",
-    "lint": "next lint",
+    "lint": "eslint .",
     "format": "prettier --write .",
     "sync": "bunx prisma generate && bunx prisma db push "
   },

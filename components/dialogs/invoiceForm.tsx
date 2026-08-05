@@ -21,7 +21,6 @@ import { calculateInvoiceTotals } from '@/lib/calculator';
 import { RichtextEditor } from '@/components/richtext-editor';
 import { CURRENCIES } from '@/lib/utils';
 import { currencyCodeSchema } from '@/lib/validations';
-import { SelectionDialog } from '@/components/select-dialog';
 import { InvoiceLineDialog, type InvoiceLineData } from '@/components/dialogs/invoiceLineDialog';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
@@ -741,43 +740,7 @@ export function InvoiceFormDialog({
       </Dialog>
 
       {/* Item selection dialog */}
-      <SelectionDialog
-        open={itemPickerOpen}
-        onOpenChange={setItemPickerOpen}
-        title={t('invoices.selectItemsTitle')}
-        description={t('invoices.selectItemsDesc')}
-        data={items.filter((i: any) => i.isSaleable)}
-        mode="multi"
-        getItemId={(i: any) => i.id}
-        onSelect={handleItemsSelected}
-        searchFields={['sku', 'name', 'barcode']}
-        cardRenderer={(item: any, selected: boolean) => (
-          <div className="flex items-center gap-3 p-3">
-            <div className="size-10 rounded-lg bg-muted flex items-center justify-center shrink-0">
-              <Package className="size-5 text-muted-foreground" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2">
-                <p className="font-semibold text-sm truncate">{item.name}</p>
-                <Badge variant="outline" className="text-[10px]">
-                  {item.sku}
-                </Badge>
-              </div>
-              <p className="text-xs text-muted-foreground">
-                {t('invoices.unit')}: {item.unit} · {t('invoices.price')}:{' '}
-                {Number(item.salesPrice).toFixed(3)}
-              </p>
-            </div>
-            {selected && (
-              <Badge className="shrink-0 bg-primary text-primary-foreground text-xs">
-                {t('invoices.selected')}
-              </Badge>
-            )}
-          </div>
-        )}
-        itemName={t('invoices.itemsLower')}
-        confirmLabel={t('invoices.addToInvoice')}
-      />
+  
     </>
   );
 }

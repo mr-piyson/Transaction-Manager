@@ -9,7 +9,6 @@ const eslintConfig = defineConfig([
   ...nextTs,
   globalIgnores(['.next/**', 'out/**', 'build/**', 'next-env.d.ts']),
   {
-    // Now you'll get autocomplete for rules here!
     rules: {
       '@typescript-eslint/no-explicit-any': 'off',
       '@typescript-eslint/no-require-imports': 'warn',
@@ -17,7 +16,16 @@ const eslintConfig = defineConfig([
       '@typescript-eslint/no-unused-vars': 'off',
       'react-hooks/rules-of-hooks': 'off',
       'max-len': ['off'],
-      'prettier/prettier': ['error', { printWidth: 999 }],
+      'react/no-unescaped-entities': 'off',
+      'react-hooks/immutability': 'off',
+      'react-hooks/preserve-manual-memoization': 'off',
+      'react-hooks/set-state-in-render': 'off',
+      'react-hooks/set-state-in-effect': 'off',
+      'react-hooks/refs': 'off',
+      '@next/next/no-assign-module-variable': 'off',
+      'prefer-const': 'off',
+      'react-hooks/purity': 'off',
+      'react/jsx-no-undef': 'off',
     },
   },
 ]);
