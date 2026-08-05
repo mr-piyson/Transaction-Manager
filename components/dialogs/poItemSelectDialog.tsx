@@ -63,7 +63,7 @@ export function POItemSelectDialog({
 	const virtualizer = useVirtualizer({
 		count: filtered.length,
 		getScrollElement: () => scrollRef.current,
-		estimateSize: () => 64,
+		estimateSize: () => 72,
 		overscan: 5,
 	});
 
@@ -104,8 +104,8 @@ export function POItemSelectDialog({
 
 	return (
 		<Dialog open={open} onOpenChange={onOpenChange}>
-			<DialogContent className="sm:max-w-2xl gap-0 p-0">
-				<DialogHeader className="px-6 pt-6 pb-4">
+			<DialogContent className="sm:max-w-2xl gap-0 p-0 h-[100dvh] sm:h-auto sm:max-h-[85vh] max-w-full sm:rounded-lg flex flex-col">
+				<DialogHeader className="shrink-0 px-4 pt-4 pb-3 sm:px-6 sm:pt-6 sm:pb-4">
 					<DialogTitle>Select Items</DialogTitle>
 					<DialogDescription>
 						Search and select products to add to this purchase order.
@@ -113,7 +113,7 @@ export function POItemSelectDialog({
 				</DialogHeader>
 
 				{/* Search input */}
-				<div className="flex items-center gap-2 border-t border-b px-6 py-3">
+				<div className="shrink-0 flex items-center gap-2 border-t border-b px-4 py-2.5 sm:px-6 sm:py-3">
 					<SearchIcon className="size-4 shrink-0 text-muted-foreground" />
 					<input
 						value={search}
@@ -134,7 +134,7 @@ export function POItemSelectDialog({
 				</div>
 
 				{/* Virtualized list */}
-				<div ref={setScrollRef} className="h-[400px] overflow-y-auto">
+				<div ref={setScrollRef} className="flex-1 overflow-y-auto min-h-0">
 					{isLoading ? (
 						<div className="flex items-center justify-center py-12 text-sm text-muted-foreground">
 							Loading items...
@@ -179,7 +179,7 @@ export function POItemSelectDialog({
 											if (!isExisting) toggleItem(item.id);
 										}}
 										className={cn(
-											"flex items-center gap-3 px-6 py-3 cursor-pointer border-b border-border/50 transition-colors",
+											"flex items-center gap-2.5 px-4 py-2.5 sm:gap-3 sm:px-6 sm:py-3 cursor-pointer border-b border-border/50 transition-colors",
 											isExisting
 												? "opacity-40 cursor-not-allowed bg-muted/20"
 												: isSelected
@@ -204,7 +204,7 @@ export function POItemSelectDialog({
 										</div>
 
 										{/* Image preview */}
-										<div className="size-10 shrink-0 overflow-hidden rounded-md border bg-muted">
+										<div className="size-8 shrink-0 overflow-hidden rounded-md border bg-muted sm:size-10">
 											{item.image ? (
 												<img
 													src={item.image}
@@ -213,27 +213,27 @@ export function POItemSelectDialog({
 												/>
 											) : (
 												<div className="flex size-full items-center justify-center">
-													<Package className="size-4 text-muted-foreground/40" />
+													<Package className="size-3.5 text-muted-foreground/40 sm:size-4" />
 												</div>
 											)}
 										</div>
 
 										{/* Item details */}
 										<div className="flex-1 min-w-0">
-											<div className="flex items-center gap-2">
+											<div className="flex items-center gap-1.5 sm:gap-2">
 												<span className="font-medium text-sm truncate">
 													{item.name}
 												</span>
 												{isExisting && (
 													<Badge
 														variant="secondary"
-														className="text-[10px] px-1.5 py-0"
+														className="text-[10px] px-1.5 py-0 shrink-0"
 													>
-														Already added
+														Added
 													</Badge>
 												)}
 											</div>
-											<div className="flex items-center gap-2 text-xs text-muted-foreground mt-0.5">
+											<div className="flex items-center gap-1.5 sm:gap-2 text-xs text-muted-foreground mt-0.5">
 												<span className="font-mono">{item.sku}</span>
 												{item.category && (
 													<Badge
@@ -246,29 +246,21 @@ export function POItemSelectDialog({
 											</div>
 										</div>
 
-										{/* Price */}
-										<div className="text-right shrink-0">
-											<div className="text-sm font-medium">
+										{/* Price + Stock — compact layout */}
+										<div className="flex flex-col items-end shrink-0 gap-0.5">
+											<span className="text-sm font-medium tabular-nums">
 												{price.toFixed(3)}
-											</div>
-											<div className="text-[10px] text-muted-foreground">
-												purchase price
-											</div>
-										</div>
-
-										{/* Stock */}
-										<div className="text-right shrink-0 w-16">
-											<div
+											</span>
+											<span
 												className={cn(
-													"text-sm font-medium",
-													item.isLowStock && "text-destructive",
+													"text-xs tabular-nums",
+													item.isLowStock
+														? "text-destructive"
+														: "text-muted-foreground",
 												)}
 											>
-												{stock}
-											</div>
-											<div className="text-[10px] text-muted-foreground">
-												in stock
-											</div>
+												{stock} in stock
+											</span>
 										</div>
 									</div>
 								);
@@ -278,36 +270,38 @@ export function POItemSelectDialog({
 				</div>
 
 				{/* Footer */}
-				<DialogFooter className="px-6 py-4 border-t">
-					<div className="flex items-center justify-between w-full">
-						<span className="text-sm text-muted-foreground">
-							{selected.size > 0 ? (
-								<>
-									{availableCount} item{availableCount !== 1 ? "s" : ""}{" "}
-									selected
-								</>
-							) : (
-								"Click items to select them"
-							)}
-						</span>
-						<div className="flex gap-2">
-							<Button
-								type="button"
-								variant="outline"
-								onClick={() => onOpenChange(false)}
-							>
-								Cancel
-							</Button>
-							<Button
-								type="button"
-								onClick={handleAdd}
-								disabled={availableCount === 0}
-							>
-								Add{" "}
-								{availableCount > 0 ? `${availableCount} ` : ""}item
-								{availableCount !== 1 ? "s" : ""}
-							</Button>
-						</div>
+				<DialogFooter className="shrink-0 px-4 py-3 border-t sm:px-6 sm:py-4 flex-col sm:flex-row gap-2 sm:gap-0">
+					<span className="text-sm text-muted-foreground shrink-0">
+						{selected.size > 0 ? (
+							<>
+								{availableCount} item{availableCount !== 1 ? "s" : ""}{" "}
+								selected
+							</>
+						) : (
+							"Tap items to select"
+						)}
+					</span>
+					<div className="flex gap-2 sm:ml-auto">
+						<Button
+							type="button"
+							variant="outline"
+							onClick={() => onOpenChange(false)}
+							size="sm"
+							className="flex-1 sm:flex-none"
+						>
+							Cancel
+						</Button>
+						<Button
+							type="button"
+							onClick={handleAdd}
+							disabled={availableCount === 0}
+							size="sm"
+							className="flex-1 sm:flex-none"
+						>
+							Add{" "}
+							{availableCount > 0 ? `${availableCount} ` : ""}item
+							{availableCount !== 1 ? "s" : ""}
+						</Button>
 					</div>
 				</DialogFooter>
 			</DialogContent>
