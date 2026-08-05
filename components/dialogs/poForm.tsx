@@ -2,6 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2, Package, Plus, Trash2, TriangleAlert } from "lucide-react";
+import { useRouter } from "next/navigation";
 import * as React from "react";
 import { type SubmitHandler, useFieldArray, useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -35,6 +36,7 @@ import { trpc } from "@/lib/trpc/client";
 import { CURRENCIES } from "@/lib/utils";
 import { currencyCodeSchema } from "@/lib/validations";
 import { POItemSelectDialog } from "./poItemSelectDialog";
+import { SupplierSelectDialog } from "./supplierSelectDialog";
 
 const lineSchema = z.object({
 	itemId: z.string().min(1, "Item is required"),
@@ -94,8 +96,10 @@ export function POFormDialog({
 }: POFormDialogProps) {
 	const isEdit = Boolean(po?.id);
 	const utils = trpc.useUtils();
+	const router = useRouter();
 	const { currency: orgCurrency } = useCurrency();
 	const [itemPickerOpen, setItemPickerOpen] = React.useState(false);
+	const [supplierPickerOpen, setSupplierPickerOpen] = React.useState(false);
 
 	const { data: suppliersData } = trpc.suppliers.list.useQuery({ limit: 200 });
 	const { data: warehousesData } = trpc.warehouses.list.useQuery({
@@ -169,6 +173,7 @@ export function POFormDialog({
 			toast.success("Purchase order created", { description: data.serial });
 			onSuccess?.(data.id);
 			onOpenChange(false);
+			router.push(`/erp/purchase-orders/${data.id}`);
 		},
 		onError(err) {
 			toast.error("Failed to create PO", { description: err.message });
@@ -263,46 +268,6 @@ export function POFormDialog({
 						<div className="flex-1 overflow-y-auto min-h-0 px-4 sm:px-6 space-y-4">
 							{/* Order details */}
 							<div className="grid grid-cols-1 sm:grid-cols-6 gap-3">
-								<div className="sm:col-span-3">
-									<Field>
-										<Label htmlFor="supplierId">Supplier *</Label>
-										<Select
-											value={watch("supplierId")}
-											onValueChange={(v) => setValue("supplierId", v)}
-										>
-											<SelectTrigger>
-												<SelectValue placeholder="Select supplier" />
-											</SelectTrigger>
-											<SelectContent>
-												{suppliers.map((s: any) => (
-													<SelectItem key={s.id} value={s.id}>
-														{s.name}
-													</SelectItem>
-												))}
-											</SelectContent>
-										</Select>
-									</Field>
-								</div>
-								<div className="sm:col-span-3">
-									<Field>
-										<Label htmlFor="warehouseId">Warehouse *</Label>
-										<Select
-											value={watch("warehouseId")}
-											onValueChange={(v) => setValue("warehouseId", v)}
-										>
-											<SelectTrigger>
-												<SelectValue placeholder="Select warehouse" />
-											</SelectTrigger>
-											<SelectContent>
-												{warehouses.map((w: any) => (
-													<SelectItem key={w.id} value={w.id}>
-														{w.name}
-													</SelectItem>
-												))}
-											</SelectContent>
-										</Select>
-									</Field>
-								</div>
 								<div className="sm:col-span-4">
 									<Field>
 										<Label htmlFor="date">Date *</Label>
@@ -329,6 +294,43 @@ export function POFormDialog({
 												{Object.keys(CURRENCIES).map((c) => (
 													<SelectItem key={c} value={c}>
 														{c}
+													</SelectItem>
+												))}
+											</SelectContent>
+										</Select>
+									</Field>
+								</div>
+								<div className="sm:col-span-3">
+									<Field>
+										<Label htmlFor="supplierId">Supplier *</Label>
+										<Button
+											type="button"
+											variant="outline"
+											className="w-full justify-start text-left font-normal h-9"
+											onClick={() => setSupplierPickerOpen(true)}
+										>
+											{watch("supplierId") ? (
+												suppliers.find((s: any) => s.id === watch("supplierId"))?.name || "Select supplier"
+											) : (
+												<span className="text-muted-foreground">Select supplier</span>
+											)}
+										</Button>
+									</Field>
+								</div>
+								<div className="sm:col-span-3">
+									<Field>
+										<Label htmlFor="warehouseId">Warehouse *</Label>
+										<Select
+											value={watch("warehouseId")}
+											onValueChange={(v) => setValue("warehouseId", v)}
+										>
+											<SelectTrigger>
+												<SelectValue placeholder="Select warehouse" />
+											</SelectTrigger>
+											<SelectContent>
+												{warehouses.map((w: any) => (
+													<SelectItem key={w.id} value={w.id}>
+														{w.name}
 													</SelectItem>
 												))}
 											</SelectContent>
@@ -598,6 +600,16 @@ export function POFormDialog({
 				isLoading={itemsLoading}
 				existingItemIds={fields.map((f) => f.itemId)}
 				onSelect={handleItemsSelected}
+			/>
+
+			<SupplierSelectDialog
+				open={supplierPickerOpen}
+				onOpenChange={setSupplierPickerOpen}
+				suppliers={suppliers}
+				isLoading={false}
+				onSelect={(supplier) => {
+					setValue("supplierId", supplier.id);
+				}}
 			/>
 		</>
 	);

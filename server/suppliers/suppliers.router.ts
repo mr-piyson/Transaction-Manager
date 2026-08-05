@@ -83,6 +83,18 @@ export const suppliersRouter = router({
 					skip,
 					take,
 					orderBy: { [sortBy]: sortOrder },
+					select: {
+						id: true,
+						name: true,
+						code: true,
+						email: true,
+						phone: true,
+						contactName: true,
+						isActive: true,
+						currencyCode: true,
+						paymentTermsDays: true,
+						_count: { select: { supplierItems: true, purchaseOrders: true } },
+					},
 				}),
 				ctx.db.supplier.count({ where }),
 			]);
