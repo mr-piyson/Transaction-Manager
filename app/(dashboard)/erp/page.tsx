@@ -428,9 +428,9 @@ export default function ErpDashboard() {
                         </p>
                       </div>
                       <span className="text-sm font-semibold shrink-0">
-                        {Number(inv.total).toFixed(0)} {inv.currency}
+                        {Number(po.total).toFixed(0)} {po.currency}
                       </span>
-                    </div>
+                    </Link>
                   ))}
                 </div>
               )}
