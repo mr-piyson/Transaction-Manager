@@ -34,6 +34,7 @@ import { toDateInputValue } from "@/lib/date";
 import { trpc } from "@/lib/trpc/client";
 import { CURRENCIES } from "@/lib/utils";
 import { currencyCodeSchema } from "@/lib/validations";
+import { POItemSelectDialog } from "./poItemSelectDialog";
 
 const lineSchema = z.object({
 	itemId: z.string().min(1, "Item is required"),
@@ -489,7 +490,14 @@ export function POFormDialog({
 				</DialogContent>
 			</Dialog>
 
-			{/* Item selection dialog */}
+			<POItemSelectDialog
+				open={itemPickerOpen}
+				onOpenChange={setItemPickerOpen}
+				items={items}
+				isLoading={itemsLoading}
+				existingItemIds={fields.map((f) => f.itemId)}
+				onSelect={handleItemsSelected}
+			/>
 		</>
 	);
 }

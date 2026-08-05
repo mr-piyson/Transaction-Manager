@@ -6,7 +6,8 @@
 		"useIgnoreFile": true
 	},
 	"files": {
-		"ignoreUnknown": false
+		"ignoreUnknown": false,
+		"includes": ["**", "!**/node_modules", "!**/dist", "!**/build"]
 	},
 	"css": {
 		"parser": {
@@ -15,7 +16,8 @@
 	},
 	"formatter": {
 		"enabled": true,
-		"indentStyle": "tab"
+		"indentStyle": "tab",
+		"includes": ["**", "!**/node_modules/**"]
 	},
 	"linter": {
 		"enabled": true,
