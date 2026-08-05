@@ -10,23 +10,6 @@
 
 Transaction Manager is a web application that allows users to create Records and manage Transactions. It is built using Next.js
 
-## Prerequisite
-
-- [ ] Internalization
-- [ ] Authentication : JWT + bcryptjs
-- [ ] Setup
-- [ ] Authorization : Attribute-Based Access Control + CASL.js
-
-## Features
-
-- [ ] Customers.
-- [ ] Inventory Items.
-- [ ] Invoices.
-- [ ] Payments. ( paid + partial + not paid )
-- [ ] Quotation.
-
----
-
 ## Technologies Used
 
 ![Technologies](https://go-skill-icons.vercel.app/api/icons?i=next,typescript,prisma,react,tailwind,shadcn,jwt,i18n)

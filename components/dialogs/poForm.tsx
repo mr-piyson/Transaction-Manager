@@ -1,17 +1,15 @@
-'use client';
+"use client";
 
-import { zodResolver } from '@hookform/resolvers/zod';
-import { Loader2, Package, Plus, Trash2, TriangleAlert } from 'lucide-react';
-import * as React from 'react';
-import { type SubmitHandler, useFieldArray, useForm } from 'react-hook-form';
-import { toast } from 'sonner';
-import { z } from 'zod';
-import { useCurrency } from '@/hooks/use-currency';
-import { currencyCodeSchema } from '@/lib/validations';
-import { CURRENCIES } from '@/lib/utils';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Loader2, Package, Plus, Trash2, TriangleAlert } from "lucide-react";
+import * as React from "react";
+import { type SubmitHandler, useFieldArray, useForm } from "react-hook-form";
+import { toast } from "sonner";
+import { z } from "zod";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { DateInputField } from "@/components/ui/date-picker";
 import {
   Dialog,
   DialogContent,
@@ -19,38 +17,34 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog';
-import { Field } from '@/components/ui/field';
-import { Input } from '@/components/ui/input';
-import { DateInputField } from '@/components/ui/date-picker';
-import { toDateInputValue } from '@/lib/date';
-import { Label } from '@/components/ui/label';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { Textarea } from '@/components/ui/textarea';
-import { trpc } from '@/lib/trpc/client';
+} from "@/components/ui/dialog";
+import { Field } from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import { useCurrency } from "@/hooks/use-currency";
+import { toDateInputValue } from "@/lib/date";
+import { trpc } from "@/lib/trpc/client";
+import { CURRENCIES } from "@/lib/utils";
+import { currencyCodeSchema } from "@/lib/validations";
 
 const lineSchema = z.object({
-  itemId: z.string().min(1, 'Item is required'),
+  itemId: z.string().min(1, "Item is required"),
   description: z.string().optional(),
-  quantity: z.coerce.number().positive('Qty must be > 0'),
-  unitCost: z.coerce.number().min(0, 'Unit cost must be >= 0'),
+  quantity: z.coerce.number().positive("Qty must be > 0"),
+  unitCost: z.coerce.number().min(0, "Unit cost must be >= 0"),
 });
 
 const schema = z.object({
-  supplierId: z.string().min(1, 'Supplier is required'),
-  warehouseId: z.string().min(1, 'Warehouse is required'),
-  date: z.string().min(1, 'Date is required'),
+  supplierId: z.string().min(1, "Supplier is required"),
+  warehouseId: z.string().min(1, "Warehouse is required"),
+  date: z.string().min(1, "Date is required"),
   expectedDate: z.string().optional(),
-  currency: currencyCodeSchema.default('BHD'),
+  currency: currencyCodeSchema.default("BHD"),
   notes: z.string().optional(),
   internalNotes: z.string().optional(),
-  lines: z.array(lineSchema).min(1, 'At least one line is required'),
+  lines: z.array(lineSchema).min(1, "At least one line is required"),
 });
 
 export type POFormValues = z.infer<typeof schema>;
@@ -93,7 +87,9 @@ export function POFormDialog({ open, onOpenChange, po, onSuccess }: POFormDialog
   const [itemPickerOpen, setItemPickerOpen] = React.useState(false);
 
   const { data: suppliersData } = trpc.suppliers.list.useQuery({ limit: 200 });
-  const { data: warehousesData } = trpc.warehouses.list.useQuery({ limit: 200 });
+  const { data: warehousesData } = trpc.warehouses.list.useQuery({
+    limit: 200,
+  });
 
   const {
     register,
@@ -108,29 +104,32 @@ export function POFormDialog({ open, onOpenChange, po, onSuccess }: POFormDialog
     defaultValues: defaults(po, warehousesData, orgCurrency),
   });
 
-  const selectedSupplierId = watch('supplierId');
+  const selectedSupplierId = watch("supplierId");
 
   const { data: itemsData, isLoading: itemsLoading } = trpc.items.list.useQuery(
-    { type: 'PRODUCT', supplierId: selectedSupplierId || undefined, withStock: true },
+    {
+      type: "PRODUCT",
+      supplierId: selectedSupplierId || undefined,
+      withStock: true,
+    },
     { enabled: !!selectedSupplierId },
   );
 
-  const { fields, append, remove } = useFieldArray({ control, name: 'lines' });
+  const { fields, append, remove } = useFieldArray({ control, name: "lines" });
 
-  const lines = watch('lines');
+  const lines = watch("lines");
 
   const subtotal = React.useMemo(
-    () =>
-      (lines ?? []).reduce((s, l) => s + (Number(l.quantity) || 0) * (Number(l.unitCost) || 0), 0),
+    () => (lines ?? []).reduce((s, l) => s + (Number(l.quantity) || 0) * (Number(l.unitCost) || 0), 0),
     [lines],
   );
 
   // Auto-select default warehouse when data loads
   React.useEffect(() => {
-    if (!watch('warehouseId') && warehousesData) {
+    if (!watch("warehouseId") && warehousesData) {
       const list = Array.isArray(warehousesData) ? warehousesData : (warehousesData?.data ?? []);
       const def = list.find((w: any) => w.isDefault);
-      if (def) setValue('warehouseId', def.id);
+      if (def) setValue("warehouseId", def.id);
     }
   }, [warehousesData, watch, setValue]);
 
@@ -141,24 +140,24 @@ export function POFormDialog({ open, onOpenChange, po, onSuccess }: POFormDialog
   const createMutation = trpc.purchaseOrders.create.useMutation({
     onSuccess(data) {
       utils.purchaseOrders.list.invalidate();
-      toast.success('Purchase order created', { description: data.serial });
+      toast.success("Purchase order created", { description: data.serial });
       onSuccess?.(data.id);
       onOpenChange(false);
     },
     onError(err) {
-      toast.error('Failed to create PO', { description: err.message });
+      toast.error("Failed to create PO", { description: err.message });
     },
   });
 
   const updateMutation = trpc.purchaseOrders.update.useMutation({
     onSuccess(data) {
       utils.purchaseOrders.list.invalidate();
-      toast.success('Purchase order updated', { description: data.serial });
+      toast.success("Purchase order updated", { description: data.serial });
       onSuccess?.(data.id);
       onOpenChange(false);
     },
     onError(err) {
-      toast.error('Failed to update PO', { description: err.message });
+      toast.error("Failed to update PO", { description: err.message });
     },
   });
 
@@ -182,7 +181,11 @@ export function POFormDialog({ open, onOpenChange, po, onSuccess }: POFormDialog
     };
 
     if (isEdit && po?.id) {
-      updateMutation.mutate({ id: po.id, version: po.version ?? 0, ...payload });
+      updateMutation.mutate({
+        id: po.id,
+        version: po.version ?? 0,
+        ...payload,
+      });
     } else {
       createMutation.mutate(payload);
     }
@@ -192,10 +195,7 @@ export function POFormDialog({ open, onOpenChange, po, onSuccess }: POFormDialog
   const warehouses = Array.isArray(warehousesData) ? warehousesData : (warehousesData?.data ?? []);
   const items = Array.isArray(itemsData) ? itemsData : (itemsData?.data ?? []);
 
-  const itemsMap = React.useMemo(
-    () => Object.fromEntries(items.map((i: any) => [i.id, i])),
-    [items],
-  );
+  const itemsMap = React.useMemo(() => Object.fromEntries(items.map((i: any) => [i.id, i])), [items]);
 
   const handleItemsSelected = (selected: any[]) => {
     for (const item of selected) {
@@ -214,11 +214,9 @@ export function POFormDialog({ open, onOpenChange, po, onSuccess }: POFormDialog
       <Dialog open={open} onOpenChange={(v) => !isPending && onOpenChange(v)}>
         <DialogContent className="sm:max-w-180">
           <DialogHeader>
-            <DialogTitle>{isEdit ? 'Edit purchase order' : 'New purchase order'}</DialogTitle>
+            <DialogTitle>{isEdit ? "Edit purchase order" : "New purchase order"}</DialogTitle>
             <DialogDescription>
-              {isEdit
-                ? 'Update the details below and save.'
-                : 'Fill in the details to create a new purchase order.'}
+              {isEdit ? "Update the details below and save." : "Fill in the details to create a new purchase order."}
             </DialogDescription>
           </DialogHeader>
 
@@ -230,10 +228,7 @@ export function POFormDialog({ open, onOpenChange, po, onSuccess }: POFormDialog
               <div className="grid grid-cols-2 gap-3">
                 <Field>
                   <Label htmlFor="supplierId">Supplier *</Label>
-                  <Select
-                    value={watch('supplierId')}
-                    onValueChange={(v) => setValue('supplierId', v)}
-                  >
+                  <Select value={watch("supplierId")} onValueChange={(v) => setValue("supplierId", v)}>
                     <SelectTrigger>
                       <SelectValue placeholder="Select supplier" />
                     </SelectTrigger>
@@ -248,10 +243,7 @@ export function POFormDialog({ open, onOpenChange, po, onSuccess }: POFormDialog
                 </Field>
                 <Field>
                   <Label htmlFor="warehouseId">Warehouse *</Label>
-                  <Select
-                    value={watch('warehouseId')}
-                    onValueChange={(v) => setValue('warehouseId', v)}
-                  >
+                  <Select value={watch("warehouseId")} onValueChange={(v) => setValue("warehouseId", v)}>
                     <SelectTrigger>
                       <SelectValue placeholder="Select warehouse" />
                     </SelectTrigger>
@@ -273,7 +265,7 @@ export function POFormDialog({ open, onOpenChange, po, onSuccess }: POFormDialog
                   <DateInputField
                     control={control}
                     name="date"
-                    rules={{ required: 'Date is required' }}
+                    rules={{ required: "Date is required" }}
                     required
                     showTodayButton
                   />
@@ -284,10 +276,7 @@ export function POFormDialog({ open, onOpenChange, po, onSuccess }: POFormDialog
                 </Field>
                 <Field>
                   <Label htmlFor="currency">Currency</Label>
-                  <Select
-                    value={watch('currency')}
-                    onValueChange={(v) => setValue('currency', v as any)}
-                  >
+                  <Select value={watch("currency")} onValueChange={(v) => setValue("currency", v as any)}>
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
@@ -305,7 +294,7 @@ export function POFormDialog({ open, onOpenChange, po, onSuccess }: POFormDialog
               {/* Notes */}
               <Field>
                 <Label htmlFor="notes">Notes</Label>
-                <Textarea id="notes" className="resize-none" rows={2} {...register('notes')} />
+                <Textarea id="notes" className="resize-none" rows={2} {...register("notes")} />
               </Field>
 
               {/* Lines */}
@@ -318,7 +307,7 @@ export function POFormDialog({ open, onOpenChange, po, onSuccess }: POFormDialog
                     size="sm"
                     onClick={() => setItemPickerOpen(true)}
                     disabled={!selectedSupplierId}
-                    title={!selectedSupplierId ? 'Select a supplier first' : undefined}
+                    title={!selectedSupplierId ? "Select a supplier first" : undefined}
                   >
                     <Package className="h-4 w-4 mr-1" /> Select items
                   </Button>
@@ -327,10 +316,7 @@ export function POFormDialog({ open, onOpenChange, po, onSuccess }: POFormDialog
                 {fields.map((field, index) => {
                   const item = itemsMap[field.itemId] as any;
                   return (
-                    <div
-                      key={field.id}
-                      className="flex items-start gap-2 border rounded-lg p-3 bg-muted/20"
-                    >
+                    <div key={field.id} className="flex items-start gap-2 border rounded-lg p-3 bg-muted/20">
                       <div className="flex-1 grid grid-cols-12 gap-2">
                         <div className="col-span-5">
                           <Label className="text-xs">Item</Label>
@@ -355,12 +341,7 @@ export function POFormDialog({ open, onOpenChange, po, onSuccess }: POFormDialog
                         </div>
                         <div className="col-span-2">
                           <Label className="text-xs">Unit cost</Label>
-                          <Input
-                            type="number"
-                            min={0}
-                            step="0.001"
-                            {...register(`lines.${index}.unitCost` as const)}
-                          />
+                          <Input type="number" min={0} step="0.001" {...register(`lines.${index}.unitCost` as const)} />
                         </div>
                         <div className="col-span-2">
                           <Label className="text-xs">Total</Label>
@@ -372,12 +353,7 @@ export function POFormDialog({ open, onOpenChange, po, onSuccess }: POFormDialog
                           </div>
                         </div>
                         <div className="col-span-1 flex items-end pb-1">
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => remove(index)}
-                          >
+                          <Button type="button" variant="ghost" size="icon" onClick={() => remove(index)}>
                             <Trash2 className="h-4 w-4 text-destructive" />
                           </Button>
                         </div>
@@ -395,12 +371,7 @@ export function POFormDialog({ open, onOpenChange, po, onSuccess }: POFormDialog
                         Select a supplier first to browse available items.
                       </p>
                     ) : (
-                      <Button
-                        type="button"
-                        variant="secondary"
-                        size="sm"
-                        onClick={() => setItemPickerOpen(true)}
-                      >
+                      <Button type="button" variant="secondary" size="sm" onClick={() => setItemPickerOpen(true)}>
                         Browse product catalogue
                       </Button>
                     )}
@@ -415,13 +386,13 @@ export function POFormDialog({ open, onOpenChange, po, onSuccess }: POFormDialog
                     <div className="flex justify-between gap-8 text-sm">
                       <span className="text-muted-foreground">Subtotal</span>
                       <span className="font-medium">
-                        {subtotal.toFixed(3)} {watch('currency')}
+                        {subtotal.toFixed(3)} {watch("currency")}
                       </span>
                     </div>
                     <div className="flex justify-between gap-8 text-base font-bold">
                       <span>Total</span>
                       <span>
-                        {subtotal.toFixed(3)} {watch('currency')}
+                        {subtotal.toFixed(3)} {watch("currency")}
                       </span>
                     </div>
                   </div>
@@ -430,17 +401,12 @@ export function POFormDialog({ open, onOpenChange, po, onSuccess }: POFormDialog
             </div>
 
             <DialogFooter className="mt-6">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => onOpenChange(false)}
-                disabled={isPending}
-              >
+              <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={isPending}>
                 Cancel
               </Button>
               <Button type="submit" disabled={isPending}>
                 {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                {isEdit ? 'Save changes' : 'Create PO'}
+                {isEdit ? "Save changes" : "Create PO"}
               </Button>
             </DialogFooter>
           </form>
@@ -460,10 +426,7 @@ interface OpenOptions {
 
 interface POFormContextValue {
   openCreate: (options?: OpenOptions) => void;
-  openEdit: (
-    po: { id: string; version?: number } & Partial<POFormValues>,
-    options?: OpenOptions,
-  ) => void;
+  openEdit: (po: { id: string; version?: number } & Partial<POFormValues>, options?: OpenOptions) => void;
 }
 
 const POFormContext = React.createContext<POFormContextValue | null>(null);
@@ -495,19 +458,14 @@ export function POFormProvider({ children }: { children?: React.ReactNode }) {
   return (
     <POFormContext.Provider value={{ openCreate, openEdit }}>
       {children}
-      <POFormDialog
-        open={state.open}
-        onOpenChange={handleOpenChange}
-        po={state.po}
-        onSuccess={state.onSuccess}
-      />
+      <POFormDialog open={state.open} onOpenChange={handleOpenChange} po={state.po} onSuccess={state.onSuccess} />
     </POFormContext.Provider>
   );
 }
 
 export function usePOForm(): POFormContextValue {
   const ctx = React.useContext(POFormContext);
-  if (!ctx) throw new Error('usePOForm must be used inside <POFormProvider>');
+  if (!ctx) throw new Error("usePOForm must be used inside <POFormProvider>");
   return ctx;
 }
 
@@ -517,16 +475,14 @@ function defaults(
   orgCurrency?: string,
 ): POFormValues {
   const today = toDateInputValue(new Date());
-  const list = Array.isArray(warehousesData)
-    ? warehousesData
-    : ((warehousesData as any)?.data ?? []);
+  const list = Array.isArray(warehousesData) ? warehousesData : ((warehousesData as any)?.data ?? []);
   const defaultWarehouse = list.find((w: any) => w.isDefault);
   return {
-    supplierId: po?.supplierId ?? '',
-    warehouseId: po?.warehouseId ?? defaultWarehouse?.id ?? '',
+    supplierId: po?.supplierId ?? "",
+    warehouseId: po?.warehouseId ?? defaultWarehouse?.id ?? "",
     date: po?.date ?? today,
     expectedDate: po?.expectedDate ?? undefined,
-    currency: (po?.currency ?? orgCurrency ?? 'BHD') as any,
+    currency: (po?.currency ?? orgCurrency ?? "BHD") as any,
     notes: po?.notes ?? undefined,
     internalNotes: po?.internalNotes ?? undefined,
     lines: po?.lines ?? [],

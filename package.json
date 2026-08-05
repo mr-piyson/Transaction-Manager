@@ -7,8 +7,8 @@
     "build": "next build",
     "start": "next start",
     "update": "git pull && bun install && bunx prisma generate && bunx prisma db push && bun run build && bun start",
-    "lint": "eslint .",
-    "format": "prettier --write .",
+    "lint": "biome check .",
+    "format": "biome format --write .",
     "sync": "bunx prisma generate && bunx prisma db push "
   },
   "dependencies": {
@@ -79,16 +79,13 @@
     "zod": "^4.4.3"
   },
   "devDependencies": {
+    "@biomejs/biome": "^2.5.7",
     "@tailwindcss/postcss": "^4.2.2",
     "@types/bcryptjs": "^2.4.6",
-    "@types/eslint": "^9.6.1",
     "@types/node": "^20.19.39",
     "@types/node-cron": "^3.0.11",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
-    "eslint": "^9.39.4",
-    "eslint-config-next": "16.1.6",
-    "prettier": "^3.8.2",
     "prisma": "^7.8.0",
     "tailwindcss": "^4.2.2",
     "typescript": "^5.9.3",
