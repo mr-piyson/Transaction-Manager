@@ -31,12 +31,14 @@
 				"useUniqueElementIds": "off"
 			},
 			"style": {
-				"useNodejsImportProtocol": "off"
+				"useNodejsImportProtocol": "off",
+				"noNonNullAssertion": "off"
 			},
 			"suspicious": {
 				"noRedeclare": "off",
 				"noUnknownAtRules": "off",
-				"noImplicitAnyLet": "off"
+				"noImplicitAnyLet": "off",
+				"noExplicitAny": "off"
 			}
 		}
 	},

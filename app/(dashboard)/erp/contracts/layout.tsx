@@ -11,6 +11,7 @@ import { ContractListItem } from "@/components/contracts/contract-list-item";
 import { useContractForm } from "@/components/dialogs";
 import { useHardDeleteForm } from "@/components/dialogs/hardDeleteForm";
 import { Header } from "@/components/layout/App-Header";
+import { ListView } from "@/components/list-view";
 import { NotificationBell } from "@/components/layout/NotificationBell";
 import { Button } from "@/components/ui/button";
 import {
