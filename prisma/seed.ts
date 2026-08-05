@@ -5,7 +5,7 @@
 import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "@prisma/client";
 import "dotenv/config";
-import { seedRoles, seedPermissions, seedCurrencies } from "./seed/index";
+import { seedCurrencies, seedPermissions, seedRoles } from "./seed/index";
 
 const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL! });
 const db = new PrismaClient({ adapter });

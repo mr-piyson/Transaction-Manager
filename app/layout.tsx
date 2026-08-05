@@ -1,14 +1,14 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { DirectionProvider } from "@/components/ui/direction";
+import { cookies } from "next/headers";
+import { NuqsAdapter } from "nuqs/adapters/next/app";
 import { I18nProvider } from "@/components/i18n-provider";
 import { Toaster } from "@/components/sonner";
 import { ThemeProvider } from "@/components/Theme-Provider";
+import { DirectionProvider } from "@/components/ui/direction";
 import { DateFormatProvider } from "@/hooks/use-date-format";
 import TrpcProvider from "@/lib/trpc/provider";
-import { NuqsAdapter } from "nuqs/adapters/next/app";
-import { cookies } from "next/headers";
 
 const geistSans = Geist({
 	variable: "--font-geist-sans",

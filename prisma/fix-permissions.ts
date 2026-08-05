@@ -14,7 +14,7 @@
  * Safe to run multiple times (idempotent).
  */
 
-import { PrismaClient, OrgRole } from "@prisma/client";
+import { type OrgRole, PrismaClient } from "@prisma/client";
 import { PERMISSIONS } from "./seed/index";
 
 const db = new PrismaClient();

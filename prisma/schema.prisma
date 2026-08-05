@@ -47,10 +47,10 @@ model Currency {
   code String @unique // ISO 4217: "USD", "BHD", "EUR"
   name String // "US Dollar", "Bahraini Dinar"
 
-  symbol    String  // "$", "BD", "€"
-  precision Int     @default(2) // Decimal places (0 for JPY, 3 for BHD/KWD/OMR)
-  separator String  @default(",") // Thousands separator
-  decimal   String  @default(".") // Decimal point character
+  symbol    String // "$", "BD", "€"
+  precision Int    @default(2) // Decimal places (0 for JPY, 3 for BHD/KWD/OMR)
+  separator String @default(",") // Thousands separator
+  decimal   String @default(".") // Decimal point character
 
   isActive Boolean @default(true)
 
@@ -321,8 +321,8 @@ model Organization {
   vatRegistered Boolean @default(false)
 
   // Defaults — all overridable per document
-  currency         String @default("BHD")
-  paymentTermsDays Int          @default(30)
+  currency         String  @default("BHD")
+  paymentTermsDays Int     @default(30)
   defaultTermsText String?
   stampImage       String?
   invoiceFooter    String? // Printed footer on all documents (bank details, etc.)
@@ -379,32 +379,32 @@ model Organization {
   kiosks Kiosk[]
 
   // HRMS relations
-  employeeTypes          EmployeeType[]
-  employees              Employee[]
-  employeeDocuments      EmployeeDocument[]
+  employeeTypes           EmployeeType[]
+  employees               Employee[]
+  employeeDocuments       EmployeeDocument[]
   employeeStatusHistories EmployeeStatusHistory[]
-  jobPositions           JobPosition[]
-  leaveTypes             LeaveType[]
-  leaveBalances          LeaveBalance[]
-  leaveRequests          LeaveRequest[]
-  timePunches            TimePunch[]
-  holidays               Holiday[]
-  attendanceRecords      AttendanceRecord[]
-  payrollRuns            PayrollRun[]
-  payrollItems           PayrollItem[]
-  payslips               Payslip[]
-  salaryComponents       SalaryComponent[]
-  performanceReviews     PerformanceReview[]
-  candidates             Candidate[]
-  interviewRounds        InterviewRound[]
-  offers                 Offer[]
-  jobPostings            JobPosting[]
-  trainings              Training[]
-  trainingEnrollments    TrainingEnrollment[]
-  shifts                 Shift[]
-  employeeShifts         EmployeeShift[]
-  grievances             Grievance[]
-  disciplinaryActions    DisciplinaryAction[]
+  jobPositions            JobPosition[]
+  leaveTypes              LeaveType[]
+  leaveBalances           LeaveBalance[]
+  leaveRequests           LeaveRequest[]
+  timePunches             TimePunch[]
+  holidays                Holiday[]
+  attendanceRecords       AttendanceRecord[]
+  payrollRuns             PayrollRun[]
+  payrollItems            PayrollItem[]
+  payslips                Payslip[]
+  salaryComponents        SalaryComponent[]
+  performanceReviews      PerformanceReview[]
+  candidates              Candidate[]
+  interviewRounds         InterviewRound[]
+  offers                  Offer[]
+  jobPostings             JobPosting[]
+  trainings               Training[]
+  trainingEnrollments     TrainingEnrollment[]
+  shifts                  Shift[]
+  employeeShifts          EmployeeShift[]
+  grievances              Grievance[]
+  disciplinaryActions     DisciplinaryAction[]
 
   // CRM relations
   leads          Lead[]
@@ -453,8 +453,8 @@ model Kiosk {
   organization   Organization @relation(fields: [organizationId], references: [id])
 
   deletedAt DateTime?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
 
   @@index([organizationId])
   @@index([token])
@@ -482,7 +482,7 @@ model User {
   role String @default("admin")
 
   // Ban support (better-auth admin plugin)
-  banned     Boolean  @default(false)
+  banned     Boolean   @default(false)
   banReason  String?
   banExpires DateTime?
 
@@ -522,11 +522,11 @@ model User {
   updatedContracts      Contract[]         @relation("ContractUpdatedBy")
 
   // HRMS
-  employee                     Employee?
-  approvedLeaveRequests        LeaveRequest[]
-  processedPayrollRuns         PayrollRun[]
-  reviewedPerformances         PerformanceReview[]
-  uploadedDocuments            EmployeeDocument[]
+  employee                       Employee?
+  approvedLeaveRequests          LeaveRequest[]
+  processedPayrollRuns           PayrollRun[]
+  reviewedPerformances           PerformanceReview[]
+  uploadedDocuments              EmployeeDocument[]
   changedEmployeeStatusHistories EmployeeStatusHistory[]
   interviewedRounds              InterviewRound[]
   issuedOffers                   Offer[]
@@ -756,10 +756,10 @@ model TaxRate {
 // =============================================================================
 
 model ExchangeRate {
-  id            String       @id @default(cuid())
+  id            String   @id @default(cuid())
   fromCurrency  String
   toCurrency    String
-  rate          Decimal      @db.Decimal(18, 8)
+  rate          Decimal  @db.Decimal(18, 8)
   effectiveDate DateTime
 
   source String? // "ECB" | "manual" | "provider_name"
@@ -834,7 +834,7 @@ model JournalEntry {
   description  String?
   reference    String? // Source document reference (invoice serial, PO serial)
   currency     String
-  exchangeRate Decimal      @default(1) @db.Decimal(18, 8)
+  exchangeRate Decimal @default(1) @db.Decimal(18, 8)
 
   // Source document back-references (all optional)
   invoiceId       String?
@@ -1141,10 +1141,10 @@ model Attachment {
 // =============================================================================
 
 model PriceList {
-  id          String       @id @default(cuid())
+  id          String    @id @default(cuid())
   name        String
-  currency    String @default("BHD")
-  isDefault   Boolean      @default(false)
+  currency    String    @default("BHD")
+  isDefault   Boolean   @default(false)
   validFrom   DateTime?
   validTo     DateTime?
   description String?
@@ -1286,15 +1286,15 @@ model Supplier {
 
 /// Supplier-specific pricing for a catalogue item.
 model SupplierItem {
-  id           String       @id @default(cuid())
+  id           String    @id @default(cuid())
   supplierSku  String?
   supplierName String?
-  basePrice    Decimal      @db.Decimal(20, 6)
-  currency     String @default("BHD")
+  basePrice    Decimal   @db.Decimal(20, 6)
+  currency     String    @default("BHD")
   leadTimeDays Int?
-  minOrderQty  Decimal      @default(1)
+  minOrderQty  Decimal   @default(1)
   notes        String?
-  isActive     Boolean      @default(true)
+  isActive     Boolean   @default(true)
   deletedAt    DateTime?
 
   supplierId String
@@ -1408,9 +1408,9 @@ model Unit {
   name String // "Pieces", "Kilograms", "Hours"
   code String // "pcs", "kg", "hr"
 
-  isActive   Boolean   @default(true)
-  isDefault  Boolean   @default(false)
-  deletedAt  DateTime?
+  isActive  Boolean   @default(true)
+  isDefault Boolean   @default(false)
+  deletedAt DateTime?
 
   organizationId String
   organization   Organization @relation(fields: [organizationId], references: [id])
@@ -1619,8 +1619,8 @@ model Invoice {
   termsText     String?
   internalNotes String? // ← NEW: not printed on document — staff only
 
-  currency     String @default("BHD")
-  exchangeRate Decimal      @default(1) @db.Decimal(18, 8) // Rate vs org base currency at invoice date
+  currency     String  @default("BHD")
+  exchangeRate Decimal @default(1) @db.Decimal(18, 8) // Rate vs org base currency at invoice date
 
   // Totals
   subtotal      Decimal @default(0) @db.Decimal(20, 6)
@@ -1807,8 +1807,8 @@ model PurchaseOrder {
 
   notes         String?
   internalNotes String?
-  currency      String @default("BHD")
-  exchangeRate  Decimal      @default(1) @db.Decimal(18, 8)
+  currency      String  @default("BHD")
+  exchangeRate  Decimal @default(1) @db.Decimal(18, 8)
 
   // Totals
   subtotal   Decimal @default(0) @db.Decimal(20, 6)
@@ -1930,7 +1930,7 @@ model Contract {
   description   String?
   status        ContractStatus @default(DRAFT)
   contractValue Decimal?       @db.Decimal(20, 6)
-  currency      String   @default("BHD")
+  currency      String         @default("BHD")
 
   startDate        DateTime
   endDate          DateTime
@@ -2047,10 +2047,10 @@ model Expense {
 }
 
 model Income {
-  id          String   @id @default(cuid())
+  id          String        @id @default(cuid())
   description String
-  amount      Decimal  @db.Decimal(20, 6)
-  date        DateTime @default(now())
+  amount      Decimal       @db.Decimal(20, 6)
+  date        DateTime      @default(now())
   reference   String?
   notes       String?
   method      PaymentMethod @default(CASH)
