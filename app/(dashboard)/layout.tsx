@@ -6,22 +6,26 @@ import { SplashScreen } from "@/components/Splash-Screen";
 import { CurrencyProvider } from "@/hooks/use-currency";
 import db from "@/lib/db";
 
-export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
-  if (!(await db.organization.count())) {
-    redirect("/setup");
-  }
-  const user = await getCurrentUser();
-  if (!user) {
-    redirect("/auth");
-  }
+export default async function DashboardLayout({
+	children,
+}: {
+	children: React.ReactNode;
+}) {
+	if (!(await db.organization.count())) {
+		redirect("/setup");
+	}
+	const user = await getCurrentUser();
+	if (!user) {
+		redirect("/auth");
+	}
 
-  return (
-    <SplashScreen>
-      <AlertProvider>
-        <CurrencyProvider>
-          <DashboardShell>{children}</DashboardShell>
-        </CurrencyProvider>
-      </AlertProvider>
-    </SplashScreen>
-  );
+	return (
+		<SplashScreen>
+			<AlertProvider>
+				<CurrencyProvider>
+					<DashboardShell>{children}</DashboardShell>
+				</CurrencyProvider>
+			</AlertProvider>
+		</SplashScreen>
+	);
 }
