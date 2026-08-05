@@ -1,4 +1,4 @@
-import type { Action, Subjects } from '@/lib/abilities';
+import type { Action, Subjects } from "@/lib/abilities";
 
 export type AppActions = Action;
 export type AppSubjects = Subjects;
