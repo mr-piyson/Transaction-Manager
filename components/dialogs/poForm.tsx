@@ -47,7 +47,6 @@ const schema = z.object({
 	supplierId: z.string().min(1, "Supplier is required"),
 	warehouseId: z.string().min(1, "Warehouse is required"),
 	date: z.string().min(1, "Date is required"),
-	expectedDate: z.string().optional(),
 	currency: currencyCodeSchema.default("BHD"),
 	notes: z.string().optional(),
 	internalNotes: z.string().optional(),
@@ -151,6 +150,15 @@ export function POFormDialog({
 		}
 	}, [warehousesData, watch, setValue]);
 
+	// Clear line items when supplier changes
+	const prevSupplierRef = React.useRef(selectedSupplierId);
+	React.useEffect(() => {
+		if (prevSupplierRef.current && selectedSupplierId !== prevSupplierRef.current) {
+			setValue("lines", []);
+		}
+		prevSupplierRef.current = selectedSupplierId;
+	}, [selectedSupplierId, setValue]);
+
 	React.useEffect(() => {
 		if (open) reset(defaults(po, warehousesData, orgCurrency));
 	}, [open, po, warehousesData, orgCurrency, reset]);
@@ -188,9 +196,6 @@ export function POFormDialog({
 			notes: values.notes || undefined,
 			internalNotes: values.internalNotes || undefined,
 			date: new Date(values.date),
-			expectedDate: values.expectedDate
-				? new Date(values.expectedDate)
-				: undefined,
 			lines: values.lines
 				.filter((l) => l.itemId)
 				.map((l) => ({
@@ -237,11 +242,11 @@ export function POFormDialog({
 		setItemPickerOpen(false);
 	};
 
-	return (
+		return (
 		<>
 			<Dialog open={open} onOpenChange={(v) => !isPending && onOpenChange(v)}>
-				<DialogContent className="sm:max-w-180">
-					<DialogHeader>
+				<DialogContent className="sm:max-w-180 gap-0 p-0 h-[100dvh] sm:h-auto sm:max-h-[85vh] max-w-full sm:rounded-lg flex flex-col">
+					<DialogHeader className="shrink-0 px-4 pt-4 pb-3 sm:px-6 sm:pt-6 sm:pb-4">
 						<DialogTitle>
 							{isEdit ? "Edit purchase order" : "New purchase order"}
 						</DialogTitle>
@@ -252,96 +257,85 @@ export function POFormDialog({
 						</DialogDescription>
 					</DialogHeader>
 
-					<form onSubmit={handleSubmit(onSubmit)} noValidate>
+					<form onSubmit={handleSubmit(onSubmit)} noValidate className="flex flex-col flex-1 min-h-0">
 						<ValidationAlert errors={errors as any} />
 
-						<div className="space-y-4 max-h-100 overflow-y-auto pr-2">
-							{/* Supplier + Warehouse */}
-							<div className="grid grid-cols-2 gap-3">
-								<Field>
-									<Label htmlFor="supplierId">Supplier *</Label>
-									<Select
-										value={watch("supplierId")}
-										onValueChange={(v) => setValue("supplierId", v)}
-									>
-										<SelectTrigger>
-											<SelectValue placeholder="Select supplier" />
-										</SelectTrigger>
-										<SelectContent>
-											{suppliers.map((s: any) => (
-												<SelectItem key={s.id} value={s.id}>
-													{s.name}
-												</SelectItem>
-											))}
-										</SelectContent>
-									</Select>
-								</Field>
-								<Field>
-									<Label htmlFor="warehouseId">Warehouse *</Label>
-									<Select
-										value={watch("warehouseId")}
-										onValueChange={(v) => setValue("warehouseId", v)}
-									>
-										<SelectTrigger>
-											<SelectValue placeholder="Select warehouse" />
-										</SelectTrigger>
-										<SelectContent>
-											{warehouses.map((w: any) => (
-												<SelectItem key={w.id} value={w.id}>
-													{w.name}
-												</SelectItem>
-											))}
-										</SelectContent>
-									</Select>
-								</Field>
+						<div className="flex-1 overflow-y-auto min-h-0 px-4 sm:px-6 space-y-4">
+							{/* Order details */}
+							<div className="grid grid-cols-1 sm:grid-cols-6 gap-3">
+								<div className="sm:col-span-3">
+									<Field>
+										<Label htmlFor="supplierId">Supplier *</Label>
+										<Select
+											value={watch("supplierId")}
+											onValueChange={(v) => setValue("supplierId", v)}
+										>
+											<SelectTrigger>
+												<SelectValue placeholder="Select supplier" />
+											</SelectTrigger>
+											<SelectContent>
+												{suppliers.map((s: any) => (
+													<SelectItem key={s.id} value={s.id}>
+														{s.name}
+													</SelectItem>
+												))}
+											</SelectContent>
+										</Select>
+									</Field>
+								</div>
+								<div className="sm:col-span-3">
+									<Field>
+										<Label htmlFor="warehouseId">Warehouse *</Label>
+										<Select
+											value={watch("warehouseId")}
+											onValueChange={(v) => setValue("warehouseId", v)}
+										>
+											<SelectTrigger>
+												<SelectValue placeholder="Select warehouse" />
+											</SelectTrigger>
+											<SelectContent>
+												{warehouses.map((w: any) => (
+													<SelectItem key={w.id} value={w.id}>
+														{w.name}
+													</SelectItem>
+												))}
+											</SelectContent>
+										</Select>
+									</Field>
+								</div>
+								<div className="sm:col-span-4">
+									<Field>
+										<Label htmlFor="date">Date *</Label>
+										<DateInputField
+											control={control}
+											name="date"
+											rules={{ required: "Date is required" }}
+											required
+											showTodayButton
+										/>
+									</Field>
+								</div>
+								<div className="sm:col-span-2">
+									<Field>
+										<Label htmlFor="currency">Currency</Label>
+										<Select
+											value={watch("currency")}
+											onValueChange={(v) => setValue("currency", v as any)}
+										>
+											<SelectTrigger>
+												<SelectValue />
+											</SelectTrigger>
+											<SelectContent>
+												{Object.keys(CURRENCIES).map((c) => (
+													<SelectItem key={c} value={c}>
+														{c}
+													</SelectItem>
+												))}
+											</SelectContent>
+										</Select>
+									</Field>
+								</div>
 							</div>
-
-							{/* Dates + Currency */}
-							<div className="grid grid-cols-3 gap-3">
-								<Field>
-									<Label htmlFor="date">Date *</Label>
-									<DateInputField
-										control={control}
-										name="date"
-										rules={{ required: "Date is required" }}
-										required
-										showTodayButton
-									/>
-								</Field>
-								<Field>
-									<Label htmlFor="expectedDate">Expected date</Label>
-									<DateInputField control={control} name="expectedDate" />
-								</Field>
-								<Field>
-									<Label htmlFor="currency">Currency</Label>
-									<Select
-										value={watch("currency")}
-										onValueChange={(v) => setValue("currency", v as any)}
-									>
-										<SelectTrigger>
-											<SelectValue />
-										</SelectTrigger>
-										<SelectContent>
-											{Object.keys(CURRENCIES).map((c) => (
-												<SelectItem key={c} value={c}>
-													{c}
-												</SelectItem>
-											))}
-										</SelectContent>
-									</Select>
-								</Field>
-							</div>
-
-							{/* Notes */}
-							<Field>
-								<Label htmlFor="notes">Notes</Label>
-								<Textarea
-									id="notes"
-									className="resize-none"
-									rows={2}
-									{...register("notes")}
-								/>
-							</Field>
 
 							{/* Lines */}
 							<div className="space-y-3">
@@ -370,59 +364,146 @@ export function POFormDialog({
 									return (
 										<div
 											key={field.id}
-											className="flex items-start gap-2 border rounded-lg p-3 bg-muted/20"
+											className="border rounded-lg p-2.5 sm:p-3 bg-muted/20"
 										>
-											<div className="flex-1 grid grid-cols-12 gap-2">
-												<div className="col-span-5">
-													<Label className="text-xs">Item</Label>
-													<div className="h-9 flex items-center text-sm truncate">
-														{item ? (
-															<span className="font-medium">
-																{item.sku} — {item.name}
-															</span>
+											{/* Mobile: stacked layout */}
+											<div className="flex flex-col gap-2 sm:hidden">
+												<div className="flex items-center justify-between gap-2">
+													<div className="size-8 shrink-0 overflow-hidden rounded-md border bg-muted">
+														{item?.image ? (
+															<img
+																src={item.image}
+																alt={item.name}
+																className="size-full object-cover"
+															/>
 														) : (
-															<span className="text-muted-foreground italic">
-																Select item
-															</span>
+															<div className="flex size-full items-center justify-center">
+																<Package className="size-3.5 text-muted-foreground/40" />
+															</div>
 														)}
 													</div>
-												</div>
-												<div className="col-span-2">
-													<Label className="text-xs">Qty</Label>
-													<Input
-														type="number"
-														min={0.001}
-														step="any"
-														{...register(`lines.${index}.quantity` as const)}
-													/>
-												</div>
-												<div className="col-span-2">
-													<Label className="text-xs">Unit cost</Label>
-													<Input
-														type="number"
-														min={0}
-														step="0.001"
-														{...register(`lines.${index}.unitCost` as const)}
-													/>
-												</div>
-												<div className="col-span-2">
-													<Label className="text-xs">Total</Label>
-													<div className="h-9 flex items-center text-sm font-medium text-muted-foreground">
-														{(
-															(Number(watch(`lines.${index}.quantity`)) || 0) *
-															(Number(watch(`lines.${index}.unitCost`)) || 0)
-														).toFixed(3)}
+													<div className="flex-1 min-w-0">
+														<Label className="text-xs">Item</Label>
+														<div className="text-sm truncate">
+															{item ? (
+																<span className="font-medium">
+																	{item.sku} — {item.name}
+																</span>
+															) : (
+																<span className="text-muted-foreground italic">
+																	Select item
+																</span>
+															)}
+														</div>
 													</div>
-												</div>
-												<div className="col-span-1 flex items-end pb-1">
 													<Button
 														type="button"
 														variant="ghost"
 														size="icon"
+														className="size-8 shrink-0"
 														onClick={() => remove(index)}
 													>
 														<Trash2 className="h-4 w-4 text-destructive" />
 													</Button>
+												</div>
+												<div className="grid grid-cols-3 gap-2">
+													<div>
+														<Label className="text-xs">Qty</Label>
+														<Input
+															type="number"
+															min={0.001}
+															step="any"
+															{...register(`lines.${index}.quantity` as const)}
+														/>
+													</div>
+													<div>
+														<Label className="text-xs">Unit cost</Label>
+														<Input
+															type="number"
+															min={0}
+															step="0.001"
+															{...register(`lines.${index}.unitCost` as const)}
+														/>
+													</div>
+													<div>
+														<Label className="text-xs">Total</Label>
+														<div className="h-9 flex items-center text-sm font-medium text-muted-foreground">
+															{(
+																(Number(watch(`lines.${index}.quantity`)) || 0) *
+																(Number(watch(`lines.${index}.unitCost`)) || 0)
+															).toFixed(3)}
+														</div>
+													</div>
+												</div>
+											</div>
+
+											{/* Desktop: inline layout */}
+											<div className="hidden sm:flex items-start gap-2">
+												<div className="size-10 shrink-0 overflow-hidden rounded-md border bg-muted">
+													{item?.image ? (
+														<img
+															src={item.image}
+															alt={item.name}
+															className="size-full object-cover"
+														/>
+													) : (
+														<div className="flex size-full items-center justify-center">
+															<Package className="size-4 text-muted-foreground/40" />
+														</div>
+													)}
+												</div>
+												<div className="flex-1 grid grid-cols-12 gap-2">
+													<div className="col-span-5">
+														<Label className="text-xs">Item</Label>
+														<div className="h-9 flex items-center text-sm truncate">
+															{item ? (
+																<span className="font-medium">
+																	{item.sku} — {item.name}
+																</span>
+															) : (
+																<span className="text-muted-foreground italic">
+																	Select item
+																</span>
+															)}
+														</div>
+													</div>
+													<div className="col-span-2">
+														<Label className="text-xs">Qty</Label>
+														<Input
+															type="number"
+															min={0.001}
+															step="any"
+															{...register(`lines.${index}.quantity` as const)}
+														/>
+													</div>
+													<div className="col-span-2">
+														<Label className="text-xs">Unit cost</Label>
+														<Input
+															type="number"
+															min={0}
+															step="0.001"
+															{...register(`lines.${index}.unitCost` as const)}
+														/>
+													</div>
+													<div className="col-span-2">
+														<Label className="text-xs">Total</Label>
+														<div className="h-9 flex items-center text-sm font-medium text-muted-foreground">
+															{(
+																(Number(watch(`lines.${index}.quantity`)) || 0) *
+																(Number(watch(`lines.${index}.unitCost`)) || 0)
+															).toFixed(3)}
+														</div>
+													</div>
+													<div className="col-span-1 flex items-end pb-1">
+														<Button
+															type="button"
+															variant="ghost"
+															size="icon"
+															onClick={() => remove(index)}
+														>
+															<Trash2 className="h-4 w-4 text-destructive" />
+														</Button>
+													</div>
 												</div>
 											</div>
 										</div>
@@ -451,40 +532,60 @@ export function POFormDialog({
 								)}
 							</div>
 
+							{/* Notes */}
+							<Field>
+								<Label htmlFor="notes">Notes</Label>
+								<Textarea
+									id="notes"
+									className="resize-none"
+									rows={2}
+									{...register("notes")}
+								/>
+							</Field>
+
 							{/* Totals */}
 							{fields.length > 0 && (
-								<div className="flex justify-end border-t pt-3">
-									<div className="text-right space-y-1">
-										<div className="flex justify-between gap-8 text-sm">
-											<span className="text-muted-foreground">Subtotal</span>
-											<span className="font-medium">
-												{subtotal.toFixed(3)} {watch("currency")}
-											</span>
-										</div>
-										<div className="flex justify-between gap-8 text-base font-bold">
-											<span>Total</span>
-											<span>
-												{subtotal.toFixed(3)} {watch("currency")}
-											</span>
+								<div className="border-t pt-3">
+									<div className="flex justify-end">
+										<div className="w-full sm:w-64 space-y-1">
+											<div className="flex justify-between text-sm">
+												<span className="text-muted-foreground">Subtotal</span>
+												<span className="font-medium tabular-nums">
+													{subtotal.toFixed(3)} {watch("currency")}
+												</span>
+											</div>
+											<div className="flex justify-between text-base font-bold border-t pt-1">
+												<span>Total</span>
+												<span className="tabular-nums">
+													{subtotal.toFixed(3)} {watch("currency")}
+												</span>
+											</div>
 										</div>
 									</div>
 								</div>
 							)}
 						</div>
 
-						<DialogFooter className="mt-6">
-							<Button
-								type="button"
-								variant="outline"
-								onClick={() => onOpenChange(false)}
-								disabled={isPending}
-							>
-								Cancel
-							</Button>
-							<Button type="submit" disabled={isPending}>
-								{isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-								{isEdit ? "Save changes" : "Create PO"}
-							</Button>
+						<DialogFooter className="shrink-0 px-4 py-3 border-t sm:px-6 sm:py-4 flex-col sm:flex-row gap-2 sm:gap-0 sm:mt-6">
+							<span className="text-sm text-muted-foreground">
+								{isPending ? "Saving..." : ""}
+							</span>
+							<div className="flex gap-2 sm:ml-auto">
+								<Button
+									type="button"
+									variant="outline"
+									onClick={() => onOpenChange(false)}
+									disabled={isPending}
+									size="sm"
+									className="flex-1 sm:flex-none"
+								>
+									Cancel
+								</Button>
+								<Button type="submit" disabled={isPending} size="sm" className="flex-1 sm:flex-none">
+									{isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+									{isEdit ? "Save changes" : "Create PO"}
+								</Button>
+							</div>
 						</DialogFooter>
 					</form>
 				</DialogContent>
@@ -578,7 +679,6 @@ function defaults(
 		supplierId: po?.supplierId ?? "",
 		warehouseId: po?.warehouseId ?? defaultWarehouse?.id ?? "",
 		date: po?.date ?? today,
-		expectedDate: po?.expectedDate ?? undefined,
 		currency: (po?.currency ?? orgCurrency ?? "BHD") as any,
 		notes: po?.notes ?? undefined,
 		internalNotes: po?.internalNotes ?? undefined,

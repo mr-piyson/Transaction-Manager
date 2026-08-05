@@ -240,9 +240,6 @@ export default function PurchaseOrderDetailPage() {
 				supplierId: po.supplierId,
 				warehouseId: po.warehouseId,
 				date: po.date ? formatDateForInput(po.date) : undefined,
-				expectedDate: po.expectedDate
-					? formatDateForInput(po.expectedDate)
-					: undefined,
 				currency: po.currency as any,
 				notes: po.notes ?? undefined,
 				internalNotes: po.internalNotes ?? undefined,
