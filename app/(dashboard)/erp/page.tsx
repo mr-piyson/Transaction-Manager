@@ -409,7 +409,8 @@ export default function ErpDashboard() {
               ) : (
                 <div className="divide-y">
                   {invoiceList.map((inv: any) => (
-                    <div
+                    <Link
+                      href={`/erp/invoices/${inv.id}`}
                       key={inv.id}
                       className="flex items-center gap-3 px-4 py-3 hover:bg-muted/50 transition-colors cursor-pointer"
                     >
@@ -428,7 +429,7 @@ export default function ErpDashboard() {
                         </p>
                       </div>
                       <span className="text-sm font-semibold shrink-0">
-                        {Number(po.total).toFixed(0)} {po.currency}
+                        {Number(inv.total).toFixed(0)} {inv.currency}
                       </span>
                     </Link>
                   ))}
