@@ -356,10 +356,10 @@ export default function ErpDashboard() {
               ) : (
                 <div className="divide-y">
                   {poList.map((po: any) => (
-                    <div
+                    <Link
                       key={po.id}
-                      className="flex items-center gap-3 px-4 py-3 hover:bg-muted/50 transition-colors cursor-pointer"
-                      onClick={() => router.push(`/erp/purchase-orders/${po.id}`)}
+                      href={`/erp/purchase-orders/${po.id}`}
+                      className="flex items-center gap-3 px-4 py-3 hover:bg-muted/50 transition-colors"
                     >
                       <div className="size-9 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
                         <FileDown className="size-4 text-primary" />
@@ -378,7 +378,7 @@ export default function ErpDashboard() {
                       <span className="text-sm font-semibold shrink-0">
                         {Number(po.total).toFixed(0)} {po.currency}
                       </span>
-                    </div>
+                    </Link>
                   ))}
                 </div>
               )}
