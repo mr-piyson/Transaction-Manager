@@ -1,9 +1,9 @@
 "use client";
 
-import { useTranslations } from "next-intl";
 import { Banknote } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { useTranslations } from "next-intl";
 import { useIncomeForm } from "@/components/dialogs";
+import { Button } from "@/components/ui/button";
 
 export default function IncomesPage() {
 	const t = useTranslations();

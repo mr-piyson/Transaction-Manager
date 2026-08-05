@@ -1,14 +1,14 @@
 "use client";
 
 import { createContext, useContext, useMemo } from "react";
+import { trpc } from "@/lib/trpc/client";
 import {
 	CURRENCIES,
-	getCurrencyConfig,
-	formatAmount as fmtAmount,
 	type CurrencyCode,
 	type CurrencyConfig,
+	formatAmount as fmtAmount,
+	getCurrencyConfig,
 } from "@/lib/utils";
-import { trpc } from "@/lib/trpc/client";
 
 interface CurrencyContextValue {
 	currency: CurrencyCode;

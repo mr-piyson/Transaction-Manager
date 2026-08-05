@@ -1,7 +1,7 @@
 "use client";
 
+import { Check, Loader2, Pencil, Plus, Trash, X } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { Loader2, Plus, Trash, X, Check, Pencil } from "lucide-react";
 import { useCallback, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";

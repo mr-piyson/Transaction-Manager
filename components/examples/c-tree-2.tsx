@@ -1,8 +1,8 @@
 "use client";
 
-import { Tree, TreeItem, TreeItemLabel } from "@/components/reui/tree";
 import { hotkeysCoreFeature, syncDataLoaderFeature } from "@headless-tree/core";
 import { useTree } from "@headless-tree/react";
+import { Tree, TreeItem, TreeItemLabel } from "@/components/reui/tree";
 
 interface Item {
 	name: string;

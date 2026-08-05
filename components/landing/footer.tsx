@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { Separator } from "@/components/ui/separator";
 import Logo from "@/components/Logo";
+import { Separator } from "@/components/ui/separator";
 
 const footerLinks = [
 	{

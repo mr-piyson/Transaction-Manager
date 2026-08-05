@@ -1,5 +1,6 @@
 "use client";
 
+import { format } from "date-fns";
 import {
 	Calendar,
 	CheckCircle2,
@@ -10,6 +11,7 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
+import { useTimePunchForm } from "@/components/dialogs";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -21,10 +23,10 @@ import {
 } from "@/components/ui/dropdown-menu";
 import {
 	Empty,
+	EmptyDescription,
 	EmptyHeader,
 	EmptyMedia,
 	EmptyTitle,
-	EmptyDescription,
 } from "@/components/ui/empty";
 import { Input } from "@/components/ui/input";
 import {
@@ -41,6 +43,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
+import { Spinner } from "@/components/ui/spinner";
 import {
 	Table,
 	TableBody,
@@ -49,11 +52,8 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
-import { Spinner } from "@/components/ui/spinner";
-import { useTimePunchForm } from "@/components/dialogs";
-import { trpc } from "@/lib/trpc/client";
-import { format } from "date-fns";
 import { useDateFormat } from "@/hooks/use-date-format";
+import { trpc } from "@/lib/trpc/client";
 
 export default function AttendanceRecordsPage() {
 	const [page, setPage] = useState(1);

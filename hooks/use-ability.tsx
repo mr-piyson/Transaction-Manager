@@ -1,8 +1,8 @@
 // components/AbilityProvider.tsx
 "use client";
 
-import { AppAbilityType } from "@/lib/abilities";
 import { createContext, useContext } from "react";
+import type { AppAbilityType } from "@/lib/abilities";
 
 const AbilityContext = createContext<AppAbilityType | null>(null);
 

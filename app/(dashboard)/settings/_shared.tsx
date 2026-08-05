@@ -1,4 +1,3 @@
-import { NAV_ITEMS } from "@/lib/actions";
 import {
 	Card,
 	CardContent,
@@ -7,6 +6,7 @@ import {
 	CardTitle,
 } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
+import { NAV_ITEMS } from "@/lib/actions";
 
 export { NAV_ITEMS };
 

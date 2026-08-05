@@ -4,6 +4,8 @@ import { Building2, Edit, Plus, Search, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { alert } from "@/components/Alert-dialog";
+import { useDepartmentForm } from "@/components/dialogs";
+import { Header } from "@/components/layout/App-Header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -15,12 +17,11 @@ import {
 } from "@/components/ui/dropdown-menu";
 import {
 	Empty,
+	EmptyDescription,
 	EmptyHeader,
 	EmptyMedia,
 	EmptyTitle,
-	EmptyDescription,
 } from "@/components/ui/empty";
-import { Header } from "@/components/layout/App-Header";
 import { Input } from "@/components/ui/input";
 import {
 	Pagination,
@@ -29,6 +30,7 @@ import {
 	PaginationNext,
 	PaginationPrevious,
 } from "@/components/ui/pagination";
+import { Spinner } from "@/components/ui/spinner";
 import {
 	Table,
 	TableBody,
@@ -37,8 +39,6 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
-import { Spinner } from "@/components/ui/spinner";
-import { useDepartmentForm } from "@/components/dialogs";
 import { trpc } from "@/lib/trpc/client";
 
 export default function DepartmentsPage() {

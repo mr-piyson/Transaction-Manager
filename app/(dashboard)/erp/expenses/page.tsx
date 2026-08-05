@@ -1,9 +1,9 @@
 "use client";
 
-import { useTranslations } from "next-intl";
 import { Wallet } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { useTranslations } from "next-intl";
 import { useExpenseForm } from "@/components/dialogs";
+import { Button } from "@/components/ui/button";
 
 export default function ExpensesPage() {
 	const t = useTranslations();

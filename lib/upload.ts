@@ -25,7 +25,7 @@ export async function uploadImage<T>({
 	onSuccess,
 	onError,
 }: HandleImageUploadOptions<T>) {
-	let uploadResult: UploadResponse | undefined = undefined;
+	let uploadResult: UploadResponse | undefined;
 
 	try {
 		// 1. Upload if it's a file

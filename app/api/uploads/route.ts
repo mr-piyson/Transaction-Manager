@@ -1,8 +1,8 @@
-import { NextRequest, NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 import {
-	uploadFile,
 	deleteUpload,
 	deleteUploadByStoragePath,
+	uploadFile,
 } from "@/server/services/file/upload.service";
 
 export async function POST(req: NextRequest) {

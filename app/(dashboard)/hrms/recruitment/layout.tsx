@@ -3,9 +3,9 @@
 import { Briefcase, UserPlus } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useJobPostingForm } from "@/components/dialogs";
 import { Header } from "@/components/layout/App-Header";
 import { Button } from "@/components/ui/button";
-import { useJobPostingForm } from "@/components/dialogs";
 
 export default function RecruitmentLayout({
 	children,

@@ -19,8 +19,8 @@ import {
 } from "@/components/ui/dialog";
 import { Field } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { trpc } from "@/lib/trpc/client";
 import { Label } from "@/components/ui/label";
+import { trpc } from "@/lib/trpc/client";
 
 const schema = z.object({
 	name: z.string().min(1, "Name is required"),

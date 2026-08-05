@@ -9,6 +9,7 @@ import {
 	HandCoins,
 	History,
 	Loader2,
+	type LucideIcon,
 	MoreHorizontal,
 	Printer,
 	Receipt,
@@ -18,12 +19,15 @@ import {
 	Trash,
 	Trash2,
 	XCircle,
-	type LucideIcon,
 } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import * as React from "react";
 import { toast } from "sonner";
-import { useTranslations } from "next-intl";
+import { useHardDeleteForm } from "@/components/dialogs/hardDeleteForm";
+import { useInvoiceForm } from "@/components/dialogs/invoiceForm";
+import { usePaymentForm } from "@/components/dialogs/paymentForm";
+import { InvoiceHistoryPanel } from "@/components/invoices/invoice-history-panel";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -50,6 +54,7 @@ import {
 } from "@/components/ui/empty";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import {
 	Sheet,
@@ -57,9 +62,7 @@ import {
 	SheetHeader,
 	SheetTitle,
 } from "@/components/ui/sheet";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { Spinner } from "@/components/ui/spinner";
-import { Textarea } from "@/components/ui/textarea";
 import {
 	Table,
 	TableBody,
@@ -68,13 +71,10 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
-import { useInvoiceForm } from "@/components/dialogs/invoiceForm";
-import { usePaymentForm } from "@/components/dialogs/paymentForm";
-import { useHardDeleteForm } from "@/components/dialogs/hardDeleteForm";
-import { InvoiceHistoryPanel } from "@/components/invoices/invoice-history-panel";
-import { trpc } from "@/lib/trpc/client";
+import { Textarea } from "@/components/ui/textarea";
 import { useDateFormat } from "@/hooks/use-date-format";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { trpc } from "@/lib/trpc/client";
 
 const STATUS_COLORS: Record<string, string> = {
 	DRAFT: "bg-muted text-muted-foreground",

@@ -1,25 +1,25 @@
 "use client";
 
-import { useTranslations } from "next-intl";
 import { Eye, ShieldAlert, User2, Warehouse } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { useCallback } from "react";
-import { UniversalContextMenu } from "@/components/context-menu";
 import type { ContextMenuItemSchema } from "@/components/context-menu";
+import { UniversalContextMenu } from "@/components/context-menu";
+import { useWarehouseForm } from "@/components/dialogs";
+import { useHardDeleteForm } from "@/components/dialogs/hardDeleteForm";
+import { Header } from "@/components/layout/App-Header";
 import { ListView } from "@/components/list-view";
 import {
 	ResizableHandle,
 	ResizablePanel,
 	ResizablePanelGroup,
 } from "@/components/ui/resizable";
+import { WarehouseListItem } from "@/components/warehouses/warehouse-list-item";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { trpc } from "@/lib/trpc/client";
 import { cn } from "@/lib/utils";
-import { useWarehouseForm } from "@/components/dialogs";
-import { useHardDeleteForm } from "@/components/dialogs/hardDeleteForm";
-import { Header } from "@/components/layout/App-Header";
-import { WarehouseListItem } from "@/components/warehouses/warehouse-list-item";
 
 const warehousesSegment = "warehouses";
 

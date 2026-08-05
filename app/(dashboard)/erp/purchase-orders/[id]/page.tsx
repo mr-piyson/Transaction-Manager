@@ -7,6 +7,7 @@ import {
 	FileDown,
 	History,
 	Loader2,
+	type LucideIcon,
 	MoreHorizontal,
 	Package,
 	Send,
@@ -16,12 +17,14 @@ import {
 	Trash,
 	Wallet,
 	XCircle,
-	type LucideIcon,
 } from "lucide-react";
-import { useTranslations } from "next-intl";
 import { useParams, useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import * as React from "react";
 import { toast } from "sonner";
+import { useExpenseForm } from "@/components/dialogs/expenseForm";
+import { useHardDeleteForm } from "@/components/dialogs/hardDeleteForm";
+import { usePOForm } from "@/components/dialogs/poForm";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -34,6 +37,12 @@ import {
 	DialogTitle,
 } from "@/components/ui/dialog";
 import {
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuItem,
+	DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
 	Empty,
 	EmptyDescription,
 	EmptyHeader,
@@ -44,7 +53,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Spinner } from "@/components/ui/spinner";
-import { Textarea } from "@/components/ui/textarea";
 import {
 	Table,
 	TableBody,
@@ -53,19 +61,11 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
-import {
-	DropdownMenu,
-	DropdownMenuContent,
-	DropdownMenuItem,
-	DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { usePOForm } from "@/components/dialogs/poForm";
-import { useExpenseForm } from "@/components/dialogs/expenseForm";
-import { useHardDeleteForm } from "@/components/dialogs/hardDeleteForm";
-import { trpc } from "@/lib/trpc/client";
+import { Textarea } from "@/components/ui/textarea";
 import { useAppAbility } from "@/hooks/use-app-ability";
-import type { Action as PermissionAction } from "@/lib/abilities";
 import { useDateFormat } from "@/hooks/use-date-format";
+import type { Action as PermissionAction } from "@/lib/abilities";
+import { trpc } from "@/lib/trpc/client";
 import { cn } from "@/lib/utils";
 
 const STATUS_COLORS: Record<string, string> = {
@@ -426,8 +426,13 @@ export default function PurchaseOrderDetailPage() {
 				<span className="text-muted-foreground hidden sm:inline">|</span>
 				<div className="flex items-center gap-2 flex-1 min-w-0">
 					<ShoppingCart className="size-5 text-muted-foreground shrink-0" />
-					<h1 className="text-lg sm:text-xl font-semibold truncate">{po.serial}</h1>
-					<Badge variant="outline" className={`${STATUS_COLORS[po.status] ?? ""} shrink-0`}>
+					<h1 className="text-lg sm:text-xl font-semibold truncate">
+						{po.serial}
+					</h1>
+					<Badge
+						variant="outline"
+						className={`${STATUS_COLORS[po.status] ?? ""} shrink-0`}
+					>
 						{t(`purchaseOrders.statuses.${po.status}`)}
 					</Badge>
 					{po.approvalStatus === "REJECTED" && (
@@ -486,24 +491,38 @@ export default function PurchaseOrderDetailPage() {
 					<CardContent className="p-4">
 						<div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
 							<div>
-								<p className="text-xs text-muted-foreground">{t("purchaseOrders.supplier")}</p>
-								<p className="font-semibold text-sm">{po.supplier?.name ?? "—"}</p>
+								<p className="text-xs text-muted-foreground">
+									{t("purchaseOrders.supplier")}
+								</p>
+								<p className="font-semibold text-sm">
+									{po.supplier?.name ?? "—"}
+								</p>
 								{po.supplier?.email && (
-									<p className="text-xs text-muted-foreground truncate">{po.supplier.email}</p>
+									<p className="text-xs text-muted-foreground truncate">
+										{po.supplier.email}
+									</p>
 								)}
 							</div>
 							<div>
-								<p className="text-xs text-muted-foreground">{t("purchaseOrders.warehouse")}</p>
-								<p className="font-semibold text-sm">{po.warehouse?.name ?? "—"}</p>
+								<p className="text-xs text-muted-foreground">
+									{t("purchaseOrders.warehouse")}
+								</p>
+								<p className="font-semibold text-sm">
+									{po.warehouse?.name ?? "—"}
+								</p>
 							</div>
 							<div>
-								<p className="text-xs text-muted-foreground">{t("common.date")}</p>
+								<p className="text-xs text-muted-foreground">
+									{t("common.date")}
+								</p>
 								<p className="font-semibold text-sm">
 									{po.date ? formatDate(po.date) : "—"}
 								</p>
 							</div>
 							<div>
-								<p className="text-xs text-muted-foreground">{t("common.total")}</p>
+								<p className="text-xs text-muted-foreground">
+									{t("common.total")}
+								</p>
 								<p className="font-semibold text-sm tabular-nums">
 									{Number(po.total).toFixed(3)} {po.currency}
 								</p>
@@ -530,12 +549,24 @@ export default function PurchaseOrderDetailPage() {
 							<Table>
 								<TableHeader>
 									<TableRow>
-										<TableHead className="w-[32%]">{t("common.item")}</TableHead>
-										<TableHead className="text-right">{t("common.ordered")}</TableHead>
-										<TableHead className="text-right">{t("common.received")}</TableHead>
-										<TableHead className="text-right">{t("common.remaining")}</TableHead>
-										<TableHead className="text-right">{t("common.unitCost")}</TableHead>
-										<TableHead className="text-right">{t("common.total")}</TableHead>
+										<TableHead className="w-[32%]">
+											{t("common.item")}
+										</TableHead>
+										<TableHead className="text-right">
+											{t("common.ordered")}
+										</TableHead>
+										<TableHead className="text-right">
+											{t("common.received")}
+										</TableHead>
+										<TableHead className="text-right">
+											{t("common.remaining")}
+										</TableHead>
+										<TableHead className="text-right">
+											{t("common.unitCost")}
+										</TableHead>
+										<TableHead className="text-right">
+											{t("common.total")}
+										</TableHead>
 									</TableRow>
 								</TableHeader>
 								<TableBody>
@@ -561,24 +592,41 @@ export default function PurchaseOrderDetailPage() {
 															)}
 														</div>
 														<div>
-															<div className="font-medium">{line.item?.name ?? "—"}</div>
+															<div className="font-medium">
+																{line.item?.name ?? "—"}
+															</div>
 															{line.item?.sku && (
-																<div className="text-xs text-muted-foreground">{line.item.sku}</div>
+																<div className="text-xs text-muted-foreground">
+																	{line.item.sku}
+																</div>
 															)}
 														</div>
 													</div>
 												</TableCell>
-												<TableCell className="text-right tabular-nums">{qty.toFixed(3)}</TableCell>
-												<TableCell className="text-right tabular-nums">{recv.toFixed(3)}</TableCell>
-												<TableCell className="text-right tabular-nums">{rem.toFixed(3)}</TableCell>
-												<TableCell className="text-right tabular-nums">{Number(line.unitCost).toFixed(3)}</TableCell>
-												<TableCell className="text-right font-medium tabular-nums">{Number(line.total).toFixed(3)}</TableCell>
+												<TableCell className="text-right tabular-nums">
+													{qty.toFixed(3)}
+												</TableCell>
+												<TableCell className="text-right tabular-nums">
+													{recv.toFixed(3)}
+												</TableCell>
+												<TableCell className="text-right tabular-nums">
+													{rem.toFixed(3)}
+												</TableCell>
+												<TableCell className="text-right tabular-nums">
+													{Number(line.unitCost).toFixed(3)}
+												</TableCell>
+												<TableCell className="text-right font-medium tabular-nums">
+													{Number(line.total).toFixed(3)}
+												</TableCell>
 											</TableRow>
 										);
 									})}
 									{po.lines.length === 0 && (
 										<TableRow>
-											<TableCell colSpan={6} className="text-center text-muted-foreground py-6">
+											<TableCell
+												colSpan={6}
+												className="text-center text-muted-foreground py-6"
+											>
 												{t("purchaseOrders.noLineItems")}
 											</TableCell>
 										</TableRow>
@@ -610,27 +658,50 @@ export default function PurchaseOrderDetailPage() {
 												)}
 											</div>
 											<div className="flex-1 min-w-0">
-												<div className="font-medium text-sm truncate">{line.item?.name ?? "—"}</div>
+												<div className="font-medium text-sm truncate">
+													{line.item?.name ?? "—"}
+												</div>
 												{line.item?.sku && (
-													<div className="text-xs text-muted-foreground font-mono">{line.item.sku}</div>
+													<div className="text-xs text-muted-foreground font-mono">
+														{line.item.sku}
+													</div>
 												)}
 											</div>
 											<div className="text-right shrink-0">
-												<div className="text-sm font-medium tabular-nums">{Number(line.total).toFixed(3)}</div>
+												<div className="text-sm font-medium tabular-nums">
+													{Number(line.total).toFixed(3)}
+												</div>
 											</div>
 										</div>
 										<div className="grid grid-cols-3 gap-2 mt-2 text-xs">
 											<div>
-												<span className="text-muted-foreground">{t("common.ordered")}: </span>
-												<span className="font-medium tabular-nums">{qty.toFixed(3)}</span>
+												<span className="text-muted-foreground">
+													{t("common.ordered")}:{" "}
+												</span>
+												<span className="font-medium tabular-nums">
+													{qty.toFixed(3)}
+												</span>
 											</div>
 											<div>
-												<span className="text-muted-foreground">{t("common.received")}: </span>
-												<span className="font-medium tabular-nums">{recv.toFixed(3)}</span>
+												<span className="text-muted-foreground">
+													{t("common.received")}:{" "}
+												</span>
+												<span className="font-medium tabular-nums">
+													{recv.toFixed(3)}
+												</span>
 											</div>
 											<div>
-												<span className="text-muted-foreground">{t("common.remaining")}: </span>
-												<span className={cn("font-medium tabular-nums", rem > 0 && "text-destructive")}>{rem.toFixed(3)}</span>
+												<span className="text-muted-foreground">
+													{t("common.remaining")}:{" "}
+												</span>
+												<span
+													className={cn(
+														"font-medium tabular-nums",
+														rem > 0 && "text-destructive",
+													)}
+												>
+													{rem.toFixed(3)}
+												</span>
 											</div>
 										</div>
 									</div>
@@ -648,12 +719,20 @@ export default function PurchaseOrderDetailPage() {
 						<div className="flex justify-end px-4 py-3">
 							<div className="w-full sm:w-64 space-y-1 text-sm">
 								<div className="flex justify-between">
-									<span className="text-muted-foreground">{t("common.subtotal")}</span>
-									<span className="tabular-nums">{Number(po.subtotal).toFixed(3)}</span>
+									<span className="text-muted-foreground">
+										{t("common.subtotal")}
+									</span>
+									<span className="tabular-nums">
+										{Number(po.subtotal).toFixed(3)}
+									</span>
 								</div>
 								<div className="flex justify-between">
-									<span className="text-muted-foreground">{t("common.tax")}</span>
-									<span className="tabular-nums">{Number(po.taxTotal).toFixed(3)}</span>
+									<span className="text-muted-foreground">
+										{t("common.tax")}
+									</span>
+									<span className="tabular-nums">
+										{Number(po.taxTotal).toFixed(3)}
+									</span>
 								</div>
 								<Separator />
 								<div className="flex justify-between font-bold text-base">
@@ -679,7 +758,9 @@ export default function PurchaseOrderDetailPage() {
 				{po.notes && (
 					<Card>
 						<CardContent className="p-4">
-							<p className="text-xs text-muted-foreground mb-1">{t("common.notes")}</p>
+							<p className="text-xs text-muted-foreground mb-1">
+								{t("common.notes")}
+							</p>
 							<p className="text-sm whitespace-pre-wrap">{po.notes}</p>
 						</CardContent>
 					</Card>
@@ -701,7 +782,9 @@ export default function PurchaseOrderDetailPage() {
 										<TableRow>
 											<TableHead>{t("common.date")}</TableHead>
 											<TableHead>{t("common.item")}</TableHead>
-											<TableHead className="text-right">{t("common.quantity")}</TableHead>
+											<TableHead className="text-right">
+												{t("common.quantity")}
+											</TableHead>
 											<TableHead>{t("common.warehouse")}</TableHead>
 											<TableHead>{t("common.by")}</TableHead>
 										</TableRow>
@@ -709,18 +792,24 @@ export default function PurchaseOrderDetailPage() {
 									<TableBody>
 										{stockMovements.map((m: any) => (
 											<TableRow key={m.id}>
-												<TableCell className="text-sm">{formatShortDate(m.createdAt)}</TableCell>
+												<TableCell className="text-sm">
+													{formatShortDate(m.createdAt)}
+												</TableCell>
 												<TableCell>
 													<span className="font-medium">{m.item?.name}</span>
 													{m.item?.sku && (
-														<span className="text-xs text-muted-foreground ml-1">({m.item.sku})</span>
+														<span className="text-xs text-muted-foreground ml-1">
+															({m.item.sku})
+														</span>
 													)}
 												</TableCell>
 												<TableCell className="text-right font-medium text-green-600 dark:text-green-400">
 													+{Number(m.quantity).toFixed(3)}
 												</TableCell>
 												<TableCell>{m.toWarehouse?.name ?? "—"}</TableCell>
-												<TableCell className="text-sm text-muted-foreground">{m.user?.name ?? "—"}</TableCell>
+												<TableCell className="text-sm text-muted-foreground">
+													{m.user?.name ?? "—"}
+												</TableCell>
 											</TableRow>
 										))}
 									</TableBody>
@@ -730,11 +819,17 @@ export default function PurchaseOrderDetailPage() {
 							{/* Mobile stacked list */}
 							<div className="sm:hidden divide-y">
 								{stockMovements.map((m: any) => (
-									<div key={m.id} className="px-4 py-3 flex items-center justify-between gap-2">
+									<div
+										key={m.id}
+										className="px-4 py-3 flex items-center justify-between gap-2"
+									>
 										<div className="min-w-0">
-											<div className="font-medium text-sm truncate">{m.item?.name}</div>
+											<div className="font-medium text-sm truncate">
+												{m.item?.name}
+											</div>
 											<div className="text-xs text-muted-foreground">
-												{formatShortDate(m.createdAt)} · {m.toWarehouse?.name ?? "—"} · {m.user?.name ?? "—"}
+												{formatShortDate(m.createdAt)} ·{" "}
+												{m.toWarehouse?.name ?? "—"} · {m.user?.name ?? "—"}
 											</div>
 										</div>
 										<div className="text-right shrink-0">
@@ -886,9 +981,15 @@ function ReceiveDialog({
 							<TableHeader>
 								<TableRow>
 									<TableHead>{tr("common.item")}</TableHead>
-									<TableHead className="text-right">{tr("common.ordered")}</TableHead>
-									<TableHead className="text-right">{tr("common.received")}</TableHead>
-									<TableHead className="text-right">{tr("common.toReceive")}</TableHead>
+									<TableHead className="text-right">
+										{tr("common.ordered")}
+									</TableHead>
+									<TableHead className="text-right">
+										{tr("common.received")}
+									</TableHead>
+									<TableHead className="text-right">
+										{tr("common.toReceive")}
+									</TableHead>
 								</TableRow>
 							</TableHeader>
 							<TableBody>
@@ -900,12 +1001,20 @@ function ReceiveDialog({
 											<TableCell>
 												<span className="font-medium">{line.item?.name}</span>
 												{line.item?.sku && (
-													<span className="text-xs text-muted-foreground ml-1">({line.item.sku})</span>
+													<span className="text-xs text-muted-foreground ml-1">
+														({line.item.sku})
+													</span>
 												)}
 											</TableCell>
-											<TableCell className="text-right tabular-nums">{qty.toFixed(3)}</TableCell>
-											<TableCell className="text-right tabular-nums">{recv.toFixed(3)}</TableCell>
-											<TableCell className="text-right font-medium tabular-nums">{(qty - recv).toFixed(3)}</TableCell>
+											<TableCell className="text-right tabular-nums">
+												{qty.toFixed(3)}
+											</TableCell>
+											<TableCell className="text-right tabular-nums">
+												{recv.toFixed(3)}
+											</TableCell>
+											<TableCell className="text-right font-medium tabular-nums">
+												{(qty - recv).toFixed(3)}
+											</TableCell>
 										</TableRow>
 									);
 								})}
@@ -915,10 +1024,17 @@ function ReceiveDialog({
 				)}
 
 				<DialogFooter>
-					<Button variant="outline" onClick={() => onOpenChange(false)} disabled={isPending}>
+					<Button
+						variant="outline"
+						onClick={() => onOpenChange(false)}
+						disabled={isPending}
+					>
 						{tr("common.cancel")}
 					</Button>
-					<Button onClick={onConfirm} disabled={isPending || allAlreadyReceived}>
+					<Button
+						onClick={onConfirm}
+						disabled={isPending || allAlreadyReceived}
+					>
 						{isPending && <Loader2 className="size-4 mr-1 animate-spin" />}
 						{allAlreadyReceived
 							? tr("common.close")

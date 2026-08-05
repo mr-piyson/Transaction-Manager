@@ -3,7 +3,7 @@
 import { useFormContext } from "react-hook-form";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { SetupData } from "./setup-types";
+import type { SetupData } from "./setup-types";
 
 export function Step3Admin() {
 	const {

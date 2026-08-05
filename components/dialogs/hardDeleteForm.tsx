@@ -14,6 +14,7 @@ import {
 	Layers,
 	Link2,
 	Loader2,
+	type LucideIcon,
 	Package,
 	Paperclip,
 	Receipt,
@@ -27,10 +28,9 @@ import {
 	UserPlus,
 	Users,
 	Wallet,
-	type LucideIcon,
 } from "lucide-react";
-import * as React from "react";
 import { useTranslations } from "next-intl";
+import * as React from "react";
 import { toast } from "sonner";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
@@ -43,8 +43,8 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from "@/components/ui/dialog";
-import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Separator } from "@/components/ui/separator";
 import { trpc } from "@/lib/trpc/client";
 
 export type HardDeleteKind =
@@ -245,16 +245,15 @@ interface DeleteMutationLike {
 	mutate: (input: { id: string }) => void;
 }
 
-interface InfoHookLike {
-	(input: { id: string }, opts: { enabled: boolean }): InfoQueryResult;
-}
+type InfoHookLike = (
+	input: { id: string },
+	opts: { enabled: boolean },
+) => InfoQueryResult;
 
-interface DeleteHookLike {
-	(opts: {
-		onSuccess?: () => void;
-		onError?: (error: { message: string }) => void;
-	}): DeleteMutationLike;
-}
+type DeleteHookLike = (opts: {
+	onSuccess?: () => void;
+	onError?: (error: { message: string }) => void;
+}) => DeleteMutationLike;
 
 type Utils = ReturnType<typeof trpc.useUtils>;
 

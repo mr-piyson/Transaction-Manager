@@ -1,8 +1,8 @@
 "use client";
 
-import { useTranslations } from "next-intl";
-import { useRouter } from "next/navigation";
 import { Bell, CheckCheck, Loader2 } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -11,8 +11,8 @@ import {
 	PopoverTrigger,
 } from "@/components/ui/popover";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { cn } from "@/lib/utils";
 import { trpc } from "@/lib/trpc/client";
+import { cn } from "@/lib/utils";
 
 function formatTimeAgo(date: Date, t: ReturnType<typeof useTranslations>) {
 	const diff = Date.now() - new Date(date).getTime();

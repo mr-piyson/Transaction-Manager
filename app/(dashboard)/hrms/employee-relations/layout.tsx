@@ -3,9 +3,9 @@
 import { MessageSquare, ShieldAlert } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useGrievanceForm } from "@/components/dialogs";
 import { Header } from "@/components/layout/App-Header";
 import { Button } from "@/components/ui/button";
-import { useGrievanceForm } from "@/components/dialogs";
 
 export default function EmployeeRelationsLayout({
 	children,

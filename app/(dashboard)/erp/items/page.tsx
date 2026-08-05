@@ -1,9 +1,9 @@
 "use client";
 
-import { useTranslations } from "next-intl";
 import { Package } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { useTranslations } from "next-intl";
 import { useUnifiedItemForm } from "@/components/dialogs";
+import { Button } from "@/components/ui/button";
 
 export default function ItemsPage() {
 	const t = useTranslations();

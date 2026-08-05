@@ -1,19 +1,19 @@
 "use client";
 
-import { useCallback, useRef, useState } from "react";
 import {
-	Download,
-	Upload,
-	FileSpreadsheet,
-	X,
 	AlertCircle,
 	CheckCircle2,
+	Download,
+	FileSpreadsheet,
+	Upload,
+	X,
 } from "lucide-react";
+import { useCallback, useRef, useState } from "react";
 import * as XLSX from "xlsx";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { COLUMN_ALIASES } from "./types";
 import type { ParsedItem } from "./types";
+import { COLUMN_ALIASES } from "./types";
 
 const TEMPLATE_COLUMNS = [
 	"SKU",

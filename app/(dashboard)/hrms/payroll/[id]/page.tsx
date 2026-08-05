@@ -34,13 +34,14 @@ import {
 } from "@/components/ui/dropdown-menu";
 import {
 	Empty,
+	EmptyDescription,
 	EmptyHeader,
 	EmptyMedia,
 	EmptyTitle,
-	EmptyDescription,
 } from "@/components/ui/empty";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Spinner } from "@/components/ui/spinner";
 import {
 	Table,
 	TableBody,
@@ -49,9 +50,8 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
-import { Spinner } from "@/components/ui/spinner";
-import { trpc } from "@/lib/trpc/client";
 import { useDateFormat } from "@/hooks/use-date-format";
+import { trpc } from "@/lib/trpc/client";
 
 const STATUS_COLORS: Record<string, string> = {
 	DRAFT: "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-400",

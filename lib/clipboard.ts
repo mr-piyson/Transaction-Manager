@@ -316,8 +316,8 @@ export const ClipboardService = {
 
 	canUseClipboard: (): boolean => {
 		if (typeof window === "undefined") return false;
-		if (window.isSecureContext && !!navigator.clipboard) return true;
-		if (isLocalhost(window.location.hostname) && !!navigator.clipboard)
+		if (window.isSecureContext && navigator.clipboard) return true;
+		if (isLocalhost(window.location.hostname) && navigator.clipboard)
 			return true;
 		try {
 			return document.queryCommandSupported?.("copy") ?? false;

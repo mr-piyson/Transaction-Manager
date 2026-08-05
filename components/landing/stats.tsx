@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { FileText, Users, Globe, Shield } from "lucide-react";
+import { FileText, Globe, Shield, Users } from "lucide-react";
 
 const stats = [
 	{

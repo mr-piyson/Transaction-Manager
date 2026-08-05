@@ -1,6 +1,6 @@
 import { z } from "zod";
-import { orgProcedure, router } from "@/lib/trpc/context";
 import db from "@/lib/db";
+import { orgProcedure, router } from "@/lib/trpc/context";
 
 export const currenciesRouter = router({
 	list: orgProcedure.query(async () => {

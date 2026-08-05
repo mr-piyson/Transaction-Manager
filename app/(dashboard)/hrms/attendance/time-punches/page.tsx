@@ -6,10 +6,10 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import {
 	Empty,
+	EmptyDescription,
 	EmptyHeader,
 	EmptyMedia,
 	EmptyTitle,
-	EmptyDescription,
 } from "@/components/ui/empty";
 import { Input } from "@/components/ui/input";
 import {
@@ -26,6 +26,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
+import { Spinner } from "@/components/ui/spinner";
 import {
 	Table,
 	TableBody,
@@ -34,9 +35,8 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
-import { Spinner } from "@/components/ui/spinner";
-import { trpc } from "@/lib/trpc/client";
 import { useDateFormat } from "@/hooks/use-date-format";
+import { trpc } from "@/lib/trpc/client";
 
 export default function TimePunchesPage() {
 	const [page, setPage] = useState(1);

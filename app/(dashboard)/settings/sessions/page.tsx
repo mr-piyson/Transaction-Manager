@@ -1,14 +1,14 @@
 "use client";
 
-import { useTranslations } from "next-intl";
 import {
+	Globe,
+	Loader2,
 	LogOut,
 	Monitor,
 	Smartphone,
 	Trash,
-	Globe,
-	Loader2,
 } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useCallback, useMemo } from "react";
 import { toast } from "sonner";
 import { useSession } from "@/auth/auth-client";

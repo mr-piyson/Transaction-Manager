@@ -14,7 +14,7 @@
  */
 
 import { z } from "zod";
-import { ForbiddenError, ConflictError, NotFoundError } from "@/lib/error";
+import { ConflictError, ForbiddenError, NotFoundError } from "@/lib/error";
 import { assertCan, orgProcedure, router } from "@/lib/trpc/context";
 import {
 	currencyCodeSchema,

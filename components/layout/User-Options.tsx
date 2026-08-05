@@ -8,9 +8,9 @@ import {
 	Sun,
 	User2,
 } from "lucide-react";
+import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { useSession } from "@/auth/auth-client";
-import { useActionHandlers } from "@/lib/actions";
 import { LocaleSwitcherMenu } from "@/components/locale-switcher";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -24,9 +24,9 @@ import {
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Switch } from "@/components/ui/switch";
-import Link from "next/link";
-import { Button } from "../ui/button";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useActionHandlers } from "@/lib/actions";
+import { Button } from "../ui/button";
 
 export function NavUser() {
 	const t = useTranslations();

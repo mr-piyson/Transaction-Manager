@@ -1,10 +1,10 @@
+import { differenceInDays } from "date-fns";
 import { Handshake } from "lucide-react";
 import type { HTMLAttributes } from "react";
-import { cn } from "@/lib/utils";
-import { differenceInDays } from "date-fns";
-import { useDateFormat } from "@/hooks/use-date-format";
-import { ContractStatusBadge } from "./contract-status-badge";
 import { Progress } from "@/components/ui/progress";
+import { useDateFormat } from "@/hooks/use-date-format";
+import { cn } from "@/lib/utils";
+import { ContractStatusBadge } from "./contract-status-badge";
 
 interface ContractListItemProps extends HTMLAttributes<HTMLDivElement> {
 	data?: any;

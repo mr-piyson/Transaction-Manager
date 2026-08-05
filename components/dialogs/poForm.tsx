@@ -157,7 +157,10 @@ export function POFormDialog({
 	// Clear line items when supplier changes
 	const prevSupplierRef = React.useRef(selectedSupplierId);
 	React.useEffect(() => {
-		if (prevSupplierRef.current && selectedSupplierId !== prevSupplierRef.current) {
+		if (
+			prevSupplierRef.current &&
+			selectedSupplierId !== prevSupplierRef.current
+		) {
 			setValue("lines", []);
 		}
 		prevSupplierRef.current = selectedSupplierId;
@@ -247,7 +250,7 @@ export function POFormDialog({
 		setItemPickerOpen(false);
 	};
 
-		return (
+	return (
 		<>
 			<Dialog open={open} onOpenChange={(v) => !isPending && onOpenChange(v)}>
 				<DialogContent className="sm:max-w-180 gap-0 p-0 h-[100dvh] sm:h-auto sm:max-h-[85vh] max-w-full sm:rounded-lg flex flex-col">
@@ -262,7 +265,11 @@ export function POFormDialog({
 						</DialogDescription>
 					</DialogHeader>
 
-					<form onSubmit={handleSubmit(onSubmit)} noValidate className="flex flex-col flex-1 min-h-0">
+					<form
+						onSubmit={handleSubmit(onSubmit)}
+						noValidate
+						className="flex flex-col flex-1 min-h-0"
+					>
 						<ValidationAlert errors={errors as any} />
 
 						<div className="flex-1 overflow-y-auto min-h-0 px-4 sm:px-6 space-y-4">
@@ -310,9 +317,12 @@ export function POFormDialog({
 											onClick={() => setSupplierPickerOpen(true)}
 										>
 											{watch("supplierId") ? (
-												suppliers.find((s: any) => s.id === watch("supplierId"))?.name || "Select supplier"
+												suppliers.find((s: any) => s.id === watch("supplierId"))
+													?.name || "Select supplier"
 											) : (
-												<span className="text-muted-foreground">Select supplier</span>
+												<span className="text-muted-foreground">
+													Select supplier
+												</span>
 											)}
 										</Button>
 									</Field>
@@ -431,7 +441,8 @@ export function POFormDialog({
 														<Label className="text-xs">Total</Label>
 														<div className="h-9 flex items-center text-sm font-medium text-muted-foreground">
 															{(
-																(Number(watch(`lines.${index}.quantity`)) || 0) *
+																(Number(watch(`lines.${index}.quantity`)) ||
+																	0) *
 																(Number(watch(`lines.${index}.unitCost`)) || 0)
 															).toFixed(3)}
 														</div>
@@ -491,7 +502,8 @@ export function POFormDialog({
 														<Label className="text-xs">Total</Label>
 														<div className="h-9 flex items-center text-sm font-medium text-muted-foreground">
 															{(
-																(Number(watch(`lines.${index}.quantity`)) || 0) *
+																(Number(watch(`lines.${index}.quantity`)) ||
+																	0) *
 																(Number(watch(`lines.${index}.unitCost`)) || 0)
 															).toFixed(3)}
 														</div>
@@ -583,8 +595,15 @@ export function POFormDialog({
 								>
 									Cancel
 								</Button>
-								<Button type="submit" disabled={isPending} size="sm" className="flex-1 sm:flex-none">
-									{isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+								<Button
+									type="submit"
+									disabled={isPending}
+									size="sm"
+									className="flex-1 sm:flex-none"
+								>
+									{isPending && (
+										<Loader2 className="mr-2 h-4 w-4 animate-spin" />
+									)}
 									{isEdit ? "Save changes" : "Create PO"}
 								</Button>
 							</div>

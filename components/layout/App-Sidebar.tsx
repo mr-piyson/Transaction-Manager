@@ -1,53 +1,50 @@
 "use client";
 
-import { useState, useEffect, useMemo, useRef, useCallback } from "react";
-import Fuse from "fuse.js";
-import { usePathname, useRouter } from "next/navigation";
-import Link from "next/link";
-import { useLocale, useTranslations } from "next-intl";
-import {
-	Search,
-	X,
-	Check,
-	ChevronDown,
-	SidebarIcon,
-	type LucideIcon,
-} from "lucide-react";
-
-import { Tree, TreeItem, TreeItemLabel } from "@/components/reui/tree";
 import {
 	hotkeysCoreFeature,
-	syncDataLoaderFeature,
 	searchFeature,
+	syncDataLoaderFeature,
 } from "@headless-tree/core";
 import { useTree } from "@headless-tree/react";
-
+import Fuse from "fuse.js";
+import {
+	Check,
+	ChevronDown,
+	type LucideIcon,
+	Search,
+	SidebarIcon,
+	X,
+} from "lucide-react";
+import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
+import { useLocale, useTranslations } from "next-intl";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import Logo from "@/components/Logo";
+import { Tree, TreeItem, TreeItemLabel } from "@/components/reui/tree";
 import {
 	Sidebar,
 	SidebarContent,
 	SidebarFooter,
 	SidebarHeader,
 	SidebarMenu,
-	SidebarMenuItem,
 	SidebarMenuButton,
+	SidebarMenuItem,
 	SidebarRail,
 	useSidebar,
 } from "@/components/sidebar";
+import { Button } from "@/components/ui/button";
 import {
 	DropdownMenu,
 	DropdownMenuContent,
 	DropdownMenuItem,
+	DropdownMenuLabel,
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
-	DropdownMenuLabel,
 } from "@/components/ui/dropdown-menu";
-import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
-import Logo from "@/components/Logo";
-import type { AppActions, AppSubjects } from "@/lib/permissions";
 import { apps, getAppFromPath } from "@/lib/apps";
+import type { AppActions, AppSubjects } from "@/lib/permissions";
 import { cn } from "@/lib/utils";
-import { NavUser } from "./User-Options";
 import {
 	InputGroup,
 	InputGroupAddon,
@@ -55,6 +52,7 @@ import {
 	InputGroupInput,
 } from "../ui/input-group";
 import { Kbd } from "../ui/kbd";
+import { NavUser } from "./User-Options";
 
 export type RouteConfig = {
 	type: "item" | "group";

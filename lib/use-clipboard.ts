@@ -2,10 +2,10 @@
 
 import { useCallback, useEffect, useState } from "react";
 import {
-	ClipboardService,
 	type ClipboardDiagnostics,
-	type ClipboardResult,
 	ClipboardErrorCode,
+	type ClipboardResult,
+	ClipboardService,
 } from "./clipboard";
 
 export type UseClipboardResult = {
@@ -59,5 +59,5 @@ export function useClipboard(): UseClipboardResult {
 	return { copy, read, lastResult, diagnose, canCopy };
 }
 
-export { ClipboardErrorCode };
 export type { ClipboardResult };
+export { ClipboardErrorCode };

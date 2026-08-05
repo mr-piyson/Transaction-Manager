@@ -1,5 +1,4 @@
 import {
-	type LucideIcon,
 	Award,
 	BadgeCheck,
 	Banknote,
@@ -16,8 +15,9 @@ import {
 	Gavel,
 	GraduationCap,
 	Handshake,
-	LayoutDashboard,
 	Landmark,
+	LayoutDashboard,
+	type LucideIcon,
 	Package,
 	PiggyBank,
 	Scale,

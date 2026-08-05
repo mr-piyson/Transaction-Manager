@@ -37,10 +37,10 @@ import {
 } from "@/components/ui/dropdown-menu";
 import {
 	Empty,
+	EmptyDescription,
 	EmptyHeader,
 	EmptyMedia,
 	EmptyTitle,
-	EmptyDescription,
 } from "@/components/ui/empty";
 import { Separator } from "@/components/ui/separator";
 import { Spinner } from "@/components/ui/spinner";
@@ -52,8 +52,8 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
-import { trpc } from "@/lib/trpc/client";
 import { useDateFormat } from "@/hooks/use-date-format";
+import { trpc } from "@/lib/trpc/client";
 
 const STATUS_OPTIONS = [
 	{ value: "ACTIVE", label: "Active", color: "bg-green-100 text-green-800" },

@@ -1,5 +1,5 @@
-import { NextRequest, NextResponse } from "next/server";
 import { fileTypeFromBuffer } from "file-type";
+import { type NextRequest, NextResponse } from "next/server";
 import { readByStoragePath } from "@/server/services/file/storage.service";
 
 export async function GET(

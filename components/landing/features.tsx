@@ -1,19 +1,19 @@
 "use client";
 
-import Link from "next/link";
 import { motion } from "framer-motion";
 import {
-	FileText,
-	Package,
-	ShoppingCart,
-	FileCheck,
 	BarChart3,
+	Building2,
+	FileCheck,
+	FileText,
 	Globe,
+	Package,
+	Settings,
+	ShoppingCart,
 	Users,
 	Warehouse,
-	Settings,
-	Building2,
 } from "lucide-react";
+import Link from "next/link";
 import { cn } from "@/lib/utils";
 
 const features = [

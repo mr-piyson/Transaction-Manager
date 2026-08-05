@@ -8,9 +8,9 @@ import {
 	validatePassword,
 } from "@/lib/validations";
 import {
-	seedRoles,
-	seedPermissions,
 	seedCurrencies,
+	seedPermissions,
+	seedRoles,
 } from "../../prisma/seed/index";
 
 // ─── Input schema ────────────────────────────────────────────────────────────

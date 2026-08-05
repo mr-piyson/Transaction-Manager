@@ -1,18 +1,10 @@
 "use client";
 
+import { List, Plus, Search, SlidersHorizontal, Table2, X } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { SlidersHorizontal, X, List, Table2, Plus, Search } from "lucide-react";
-import { useQueryState, parseAsString } from "nuqs";
-import { Button } from "@/components/ui/button";
+import { parseAsString, useQueryState } from "nuqs";
 import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "@/components/ui/select";
+import { Button } from "@/components/ui/button";
 import {
 	Drawer,
 	DrawerClose,
@@ -23,13 +15,21 @@ import {
 	DrawerTitle,
 	DrawerTrigger,
 } from "@/components/ui/drawer";
+import { Input } from "@/components/ui/input";
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "@/components/ui/select";
+import { Separator } from "@/components/ui/separator";
 import {
 	Tooltip,
 	TooltipContent,
 	TooltipProvider,
 	TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { Separator } from "@/components/ui/separator";
 
 const STATUS_FILTERS = [
 	{ value: "", labelKey: "common.all" as const },

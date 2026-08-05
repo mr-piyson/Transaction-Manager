@@ -24,8 +24,8 @@
 
 import type { PaymentMethod, Prisma } from "@prisma/client";
 import { NotFoundError, UnprocessableError } from "@/lib/error";
-import { writeAuditLog } from "../shared/audit.service";
 import { postPaymentReceived } from "../journals/journal-posting.service";
+import { writeAuditLog } from "../shared/audit.service";
 
 type TransactionClient = Prisma.TransactionClient;
 

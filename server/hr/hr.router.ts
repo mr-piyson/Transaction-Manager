@@ -1,18 +1,18 @@
 import { publicProcedure, router } from "@/lib/trpc/context";
-import { departmentsRouter } from "./departments.router";
-import { jobPositionsRouter } from "./job-positions.router";
-import { employeeTypesRouter } from "./employee-types.router";
-import { shiftsRouter } from "./shifts.router";
-import { employeesRouter } from "./employees.router";
 import { attendanceRouter } from "./attendance.router";
-import { kioskRouter } from "./kiosk.router";
-import { leaveRouter } from "./leave.router";
-import { salaryComponentsRouter } from "./salary-components.router";
-import { payrollRouter } from "./payroll.router";
-import { performanceRouter } from "./performance.router";
+import { departmentsRouter } from "./departments.router";
 import { documentsRouter } from "./documents.router";
 import { employeeRelationsRouter } from "./employee-relations.router";
+import { employeeTypesRouter } from "./employee-types.router";
+import { employeesRouter } from "./employees.router";
+import { jobPositionsRouter } from "./job-positions.router";
+import { kioskRouter } from "./kiosk.router";
+import { leaveRouter } from "./leave.router";
+import { payrollRouter } from "./payroll.router";
+import { performanceRouter } from "./performance.router";
 import { recruitmentRouter } from "./recruitment.router";
+import { salaryComponentsRouter } from "./salary-components.router";
+import { shiftsRouter } from "./shifts.router";
 import { trainingRouter } from "./training.router";
 
 export const hrRouter = router({

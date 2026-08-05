@@ -1,6 +1,6 @@
 "use client";
 
-import { CalendarCheck, CalendarDays, Calculator, Sun } from "lucide-react";
+import { Calculator, CalendarCheck, CalendarDays, Sun } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Header } from "@/components/layout/App-Header";

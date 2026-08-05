@@ -2,12 +2,12 @@
 
 import { ArrowLeft, Loader2, Printer } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import * as React from "react";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
-import { trpc } from "@/lib/trpc/client";
 import { useDateFormat } from "@/hooks/use-date-format";
-import { useTranslations } from "next-intl";
+import { trpc } from "@/lib/trpc/client";
 
 export default function DocumentPrintPage() {
 	const params = useParams<{ type: string; id: string }>();

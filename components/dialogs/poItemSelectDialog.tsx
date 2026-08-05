@@ -100,7 +100,9 @@ export function POItemSelectDialog({
 		onSelect(selectedItems);
 	};
 
-	const availableCount = [...selected].filter((id) => !existingSet.has(id)).length;
+	const availableCount = [...selected].filter(
+		(id) => !existingSet.has(id),
+	).length;
 
 	return (
 		<Dialog open={open} onOpenChange={onOpenChange}>
@@ -274,8 +276,7 @@ export function POItemSelectDialog({
 					<span className="text-sm text-muted-foreground shrink-0">
 						{selected.size > 0 ? (
 							<>
-								{availableCount} item{availableCount !== 1 ? "s" : ""}{" "}
-								selected
+								{availableCount} item{availableCount !== 1 ? "s" : ""} selected
 							</>
 						) : (
 							"Tap items to select"
@@ -298,8 +299,7 @@ export function POItemSelectDialog({
 							size="sm"
 							className="flex-1 sm:flex-none"
 						>
-							Add{" "}
-							{availableCount > 0 ? `${availableCount} ` : ""}item
+							Add {availableCount > 0 ? `${availableCount} ` : ""}item
 							{availableCount !== 1 ? "s" : ""}
 						</Button>
 					</div>

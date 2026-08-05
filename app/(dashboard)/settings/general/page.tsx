@@ -1,13 +1,13 @@
 "use client";
 
-import { useTranslations } from "next-intl";
 import { Loader2 } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useCallback, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { trpc } from "@/lib/trpc/client";
-import { Field, SectionCard, type OrgData } from "../_shared";
+import { Field, type OrgData, SectionCard } from "../_shared";
 
 export default function GeneralSettingsPage() {
 	const t = useTranslations();

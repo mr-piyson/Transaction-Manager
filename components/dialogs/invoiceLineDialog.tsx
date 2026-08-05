@@ -1,11 +1,11 @@
 "use client";
 
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Calculator, Loader2 } from "lucide-react";
+import { useTranslations } from "next-intl";
 import * as React from "react";
 import { useForm, useWatch } from "react-hook-form";
-import { useTranslations } from "next-intl";
 import { z } from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
 import {
 	Dialog,

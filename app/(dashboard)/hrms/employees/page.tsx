@@ -3,8 +3,8 @@
 import { User } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { Button } from "@/components/ui/button";
 import { useEmployeeForm } from "@/components/dialogs";
+import { Button } from "@/components/ui/button";
 
 export default function EmployeesPage() {
 	const router = useRouter();

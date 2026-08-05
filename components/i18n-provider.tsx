@@ -3,8 +3,8 @@
 import { NextIntlClientProvider } from "next-intl";
 import { type ReactNode, useState } from "react";
 import { getInitialLocale, type Locale } from "@/hooks/use-locale";
-import enMessages from "../messages/en.json";
 import arMessages from "../messages/ar.json";
+import enMessages from "../messages/en.json";
 
 const allMessages = { en: enMessages, ar: arMessages } as const;
 

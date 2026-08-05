@@ -1,7 +1,6 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useDateFormat } from "@/hooks/use-date-format";
 import {
 	ArrowLeft,
 	Box,
@@ -31,10 +30,10 @@ import {
 	Wrench,
 	X,
 } from "lucide-react";
-import Barcode from "react-barcode";
-import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import * as React from "react";
+import Barcode from "react-barcode";
 import { type SubmitHandler, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { alert } from "@/components/Alert-dialog";
@@ -62,10 +61,11 @@ import { Separator } from "@/components/ui/separator";
 import { Spinner } from "@/components/ui/spinner";
 import { Textarea } from "@/components/ui/textarea";
 import { Toggle } from "@/components/ui/toggle";
+import { useDateFormat } from "@/hooks/use-date-format";
 import { trpc } from "@/lib/trpc/client";
 import { cn } from "@/lib/utils";
-import { itemFormSchema, getItemFormDefaults } from "@/lib/validations/item";
 import type { ItemFormValues } from "@/lib/validations/item";
+import { getItemFormDefaults, itemFormSchema } from "@/lib/validations/item";
 
 // ---------------------------------------------------------------------------
 // Types

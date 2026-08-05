@@ -1,7 +1,7 @@
 "use client";
 
-import { useTranslations } from "next-intl";
 import { Warehouse } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useWarehouseForm } from "@/components/dialogs";
 import { Button } from "@/components/ui/button";
 

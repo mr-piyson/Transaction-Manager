@@ -1,13 +1,13 @@
 "use client";
 
-import Particles from "@/components/landing/particles";
+import CTA from "@/components/landing/cta";
+import Features from "@/components/landing/features";
+import Footer from "@/components/landing/footer";
 import Header from "@/components/landing/header";
 import Hero from "@/components/landing/hero";
+import Particles from "@/components/landing/particles";
 import Stats from "@/components/landing/stats";
 import WhyUs from "@/components/landing/why-us";
-import Features from "@/components/landing/features";
-import CTA from "@/components/landing/cta";
-import Footer from "@/components/landing/footer";
 
 export default function LandingClient() {
 	return (

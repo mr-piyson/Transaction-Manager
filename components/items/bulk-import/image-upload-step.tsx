@@ -1,17 +1,17 @@
 "use client";
 
-import { useCallback, useRef, useState } from "react";
 import {
-	Upload,
-	ImageIcon,
-	X,
-	CheckCircle2,
 	AlertCircle,
+	CheckCircle2,
+	ImageIcon,
 	Loader2,
+	Upload,
+	X,
 } from "lucide-react";
+import { useCallback, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import type { ParsedItem, ImportImage } from "./types";
+import type { ImportImage, ParsedItem } from "./types";
 
 interface ImageUploadStepProps {
 	items: ParsedItem[];

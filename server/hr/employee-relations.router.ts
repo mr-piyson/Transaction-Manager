@@ -4,9 +4,9 @@ import { assertCan, orgProcedure, router } from "@/lib/trpc/context";
 import { paginatedResponse, toPrismaPage } from "@/lib/validations";
 import { writeAuditLog } from "../shared/audit.service";
 import {
-	hrListSchema,
-	grievanceStatusSchema,
 	disciplinaryActionTypeSchema,
+	grievanceStatusSchema,
+	hrListSchema,
 } from "./hr.schemas";
 
 // ── Grievances ───────────────────────────────────────────────────────────────

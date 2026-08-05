@@ -3,7 +3,6 @@
 import { Loader2, Wand2 } from "lucide-react";
 import * as React from "react";
 import { Button } from "@/components/ui/button";
-import { Switch } from "@/components/ui/switch";
 import { Field } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -14,6 +13,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
 import { trpc } from "@/lib/trpc/client";
 import { cn } from "@/lib/utils";
 import { ImageUpload } from "./image-upload";

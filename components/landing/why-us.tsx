@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Layers, ArrowRightLeft, Palette, Lock } from "lucide-react";
+import { ArrowRightLeft, Layers, Lock, Palette } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const reasons = [

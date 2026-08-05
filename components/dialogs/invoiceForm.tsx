@@ -5,13 +5,14 @@ import {
 	Calculator,
 	Loader2,
 	Package,
+	Pencil,
 	Plus,
 	Trash2,
 	TriangleAlert,
 	User,
-	Pencil,
 	Wrench,
 } from "lucide-react";
+import { useTranslations } from "next-intl";
 import * as React from "react";
 import {
 	type SubmitHandler,
@@ -19,21 +20,18 @@ import {
 	useForm,
 	useWatch,
 } from "react-hook-form";
-import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { z } from "zod";
-import { calculateInvoiceTotals } from "@/lib/calculator";
-import { RichtextEditor } from "@/components/richtext-editor";
-import { CURRENCIES } from "@/lib/utils";
-import { currencyCodeSchema } from "@/lib/validations";
 import {
-	InvoiceLineDialog,
 	type InvoiceLineData,
+	InvoiceLineDialog,
 } from "@/components/dialogs/invoiceLineDialog";
+import { RichtextEditor } from "@/components/richtext-editor";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
+import { DateInputField } from "@/components/ui/date-picker";
 import {
 	Dialog,
 	DialogContent,
@@ -44,8 +42,6 @@ import {
 } from "@/components/ui/dialog";
 import { Field } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { DateInputField } from "@/components/ui/date-picker";
-import { toDateInputValue } from "@/lib/date";
 import { Label } from "@/components/ui/label";
 import {
 	Select,
@@ -54,7 +50,11 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
+import { calculateInvoiceTotals } from "@/lib/calculator";
+import { toDateInputValue } from "@/lib/date";
 import { trpc } from "@/lib/trpc/client";
+import { CURRENCIES } from "@/lib/utils";
+import { currencyCodeSchema } from "@/lib/validations";
 
 const invoiceLineSchema = z.object({
 	id: z.string().optional(),

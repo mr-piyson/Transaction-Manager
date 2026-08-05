@@ -1,14 +1,14 @@
 "use client";
 
-import { useLocale, useTranslations } from "next-intl";
-import { useLocaleSwitcher } from "@/hooks/use-locale";
 import { Check, Languages } from "lucide-react";
+import { useLocale, useTranslations } from "next-intl";
 import {
 	DropdownMenuPortal,
 	DropdownMenuSub,
 	DropdownMenuSubContent,
 	DropdownMenuSubTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useLocaleSwitcher } from "@/hooks/use-locale";
 
 const locales = [
 	{ code: "en", label: "English", dir: "ltr" },

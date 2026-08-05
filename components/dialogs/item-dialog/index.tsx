@@ -18,8 +18,8 @@ import { useAppAbility } from "@/hooks/use-app-ability";
 import { trpc } from "@/lib/trpc/client";
 import { MasterTab } from "./master-tab";
 import { SuppliersTab } from "./suppliers-tab";
-import { useItemForm } from "./use-item-form";
 import type { Mode } from "./use-item-form";
+import { useItemForm } from "./use-item-form";
 
 // ---------------------------------------------------------------------------
 // Validation Alert (banner at top of dialog)

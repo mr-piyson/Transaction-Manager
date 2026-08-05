@@ -1,17 +1,16 @@
 "use client";
 
+import type { ItemInstance } from "@headless-tree/core";
+import { ChevronDownIcon, MinusIcon, PlusIcon } from "lucide-react";
+import { Slot } from "radix-ui";
 import {
-	ButtonHTMLAttributes,
+	type ButtonHTMLAttributes,
+	type CSSProperties,
 	createContext,
-	CSSProperties,
-	HTMLAttributes,
+	type HTMLAttributes,
 	useContext,
 } from "react";
-import { ItemInstance } from "@headless-tree/core";
-import { Slot } from "radix-ui";
-
 import { cn } from "@/lib/utils";
-import { MinusIcon, PlusIcon, ChevronDownIcon } from "lucide-react";
 
 type ToggleIconType = "chevron" | "plus-minus";
 
@@ -238,4 +237,4 @@ function TreeDragLine({ className, ...props }: HTMLAttributes<HTMLDivElement>) {
 	);
 }
 
-export { Tree, TreeItem, TreeItemLabel, TreeDragLine };
+export { Tree, TreeDragLine, TreeItem, TreeItemLabel };

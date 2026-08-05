@@ -1,17 +1,20 @@
 "use client";
 
-import { useTranslations } from "next-intl";
 import { format } from "date-fns";
 import {
 	ArrowRightLeft,
 	Loader2,
+	Pencil,
 	Plus,
 	RefreshCw,
 	Trash2,
-	Pencil,
 } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useCallback, useMemo, useState } from "react";
 import { toast } from "sonner";
+import { useExchangeRateForm } from "@/components/dialogs";
+import { RichtextEditor } from "@/components/richtext-editor";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -22,8 +25,6 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import { RichtextEditor } from "@/components/richtext-editor";
-import { Textarea } from "@/components/ui/textarea";
 import {
 	Table,
 	TableBody,
@@ -32,12 +33,11 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
+import { Textarea } from "@/components/ui/textarea";
 import { trpc } from "@/lib/trpc/client";
-import { CURRENCIES } from "@/lib/utils";
 import type { CurrencyCode } from "@/lib/utils";
-import { Field, SectionCard, type OrgData } from "../_shared";
-import { useExchangeRateForm } from "@/components/dialogs";
+import { CURRENCIES } from "@/lib/utils";
+import { Field, type OrgData, SectionCard } from "../_shared";
 
 export default function FinancialSettingsPage() {
 	const t = useTranslations();

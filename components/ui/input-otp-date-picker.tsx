@@ -1,18 +1,18 @@
 "use client";
 
-import * as React from "react";
-import {
-	Controller,
-	type Control,
-	type FieldValues,
-	type FieldPath,
-	type RegisterOptions,
-} from "react-hook-form";
 import { format, isValid, set, startOfDay } from "date-fns";
 import { CalendarIcon, X } from "lucide-react";
+import * as React from "react";
+import {
+	type Control,
+	Controller,
+	type FieldPath,
+	type FieldValues,
+	type RegisterOptions,
+} from "react-hook-form";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Calendar } from "@/components/ui/calendar";
+import { Input } from "@/components/ui/input";
 import {
 	InputOTP,
 	InputOTPGroup,
@@ -23,18 +23,18 @@ import {
 	PopoverContent,
 	PopoverTrigger,
 } from "@/components/ui/popover";
-import { cn } from "@/lib/utils";
 import { useDateFormat } from "@/hooks/use-date-format";
 import {
 	DATE_INPUT_FORMATS,
-	parseDateFromInput,
-	safeParseISO,
+	type DateFormatToken,
+	dateToDigits,
+	digitsToParts,
 	getDateFormatSegments,
 	getSegmentTotalDigits,
-	digitsToParts,
-	dateToDigits,
-	type DateFormatToken,
+	parseDateFromInput,
+	safeParseISO,
 } from "@/lib/date";
+import { cn } from "@/lib/utils";
 
 // =============================================================================
 // DateInput — compact OTP-style date (or datetime) input + calendar picker

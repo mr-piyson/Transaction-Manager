@@ -1,10 +1,10 @@
-import { fileTypeFromBuffer } from "file-type";
 import { createId } from "@paralleldrive/cuid2";
+import { fileTypeFromBuffer } from "file-type";
 import { NotFoundError } from "@/lib/error";
+import * as fileRepo from "./file.repository";
 import { computeSha256 } from "./hash.service";
 import { processImage } from "./image.service";
 import * as storage from "./storage.service";
-import * as fileRepo from "./file.repository";
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB
 

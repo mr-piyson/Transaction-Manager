@@ -1,5 +1,5 @@
-import { getSession } from "@/auth/auth-server";
 import { redirect } from "next/navigation";
+import { getSession } from "@/auth/auth-server";
 
 type AuthLayoutProps = {
 	children?: React.ReactNode;

@@ -7,18 +7,17 @@
  */
 
 import type { PrismaClient } from "@prisma/client";
-import { SYSTEM_ROLES } from "./roles";
-import { PERMISSIONS } from "./permissions";
 import { CURRENCIES } from "./currencies";
+import { PERMISSIONS } from "./permissions";
+import { SYSTEM_ROLES } from "./roles";
 
+export type { CurrencyDefinition } from "./currencies";
+export { CURRENCIES } from "./currencies";
+export type { PermissionDefinition } from "./permissions";
+export { PERMISSIONS } from "./permissions";
+export type { SystemRoleDefinition } from "./roles";
 // Re-export data for direct access
 export { SYSTEM_ROLES } from "./roles";
-export { PERMISSIONS } from "./permissions";
-export { CURRENCIES } from "./currencies";
-
-export type { SystemRoleDefinition } from "./roles";
-export type { PermissionDefinition } from "./permissions";
-export type { CurrencyDefinition } from "./currencies";
 
 /**
  * Seed system roles (idempotent — uses upsert).

@@ -1,5 +1,5 @@
+import type { NextRequest } from "next/server";
 import { auth } from "@/auth/auth-server";
-import { NextRequest } from "next/server";
 
 // Dynamically forces the backend to adapt to ANY domain, IP, or tunnel hitting it
 function adaptUrl(req: NextRequest) {

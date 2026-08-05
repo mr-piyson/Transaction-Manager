@@ -1,23 +1,23 @@
 "use client";
 
 import {
+	CheckCircle2,
 	ChevronDown,
 	ChevronUp,
+	Crown,
 	Loader2,
 	MoreHorizontal,
 	Pencil,
 	Plus,
+	Search,
 	Shield,
 	Trash2,
 	UserPlus,
 	Users,
-	Search,
 	X,
-	CheckCircle2,
-	Crown,
 } from "lucide-react";
-import { useTranslations } from "next-intl";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import { useCallback, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { alert } from "@/components/Alert-dialog";
@@ -26,17 +26,11 @@ import { Button } from "@/components/ui/button";
 import {
 	Card,
 	CardContent,
+	CardDescription,
 	CardHeader,
 	CardTitle,
-	CardDescription,
 } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
-import {
-	DropdownMenu,
-	DropdownMenuContent,
-	DropdownMenuItem,
-	DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import {
 	Dialog,
 	DialogContent,
@@ -45,17 +39,23 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from "@/components/ui/dialog";
+import {
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuItem,
+	DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+	Empty,
+	EmptyDescription,
+	EmptyHeader,
+	EmptyTitle,
+} from "@/components/ui/empty";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Spinner } from "@/components/ui/spinner";
 import { trpc } from "@/lib/trpc/client";
 import { cn } from "@/lib/utils";
-import {
-	Empty,
-	EmptyHeader,
-	EmptyTitle,
-	EmptyDescription,
-} from "@/components/ui/empty";
 
 // Available role symbols
 const AVAILABLE_ICONS = [

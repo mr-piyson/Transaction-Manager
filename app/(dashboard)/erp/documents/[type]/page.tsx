@@ -1,10 +1,10 @@
 "use client";
 
-import { useTranslations } from "next-intl";
 import { FileText, Receipt } from "lucide-react";
 import { useParams } from "next/navigation";
-import { Button } from "@/components/ui/button";
+import { useTranslations } from "next-intl";
 import { useInvoiceForm } from "@/components/dialogs";
+import { Button } from "@/components/ui/button";
 
 const TRPC_TYPE: Record<string, "INVOICE" | "QUOTE"> = {
 	invoices: "INVOICE",

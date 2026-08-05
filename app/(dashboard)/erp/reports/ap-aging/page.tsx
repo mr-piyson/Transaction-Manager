@@ -2,9 +2,9 @@
 
 import {
 	AllCommunityModule,
-	ModuleRegistry,
 	type ColDef,
 	type GridApi,
+	ModuleRegistry,
 } from "ag-grid-community";
 import { AgGridReact } from "ag-grid-react";
 import {
@@ -15,13 +15,14 @@ import {
 	TrendingUp,
 	Truck,
 } from "lucide-react";
-import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { useMemo, useRef, useState } from "react";
+import { Bar, BarChart, Cell, XAxis, YAxis } from "recharts";
 import {
+	ReportCsvExportButton,
 	ReportKpiCard,
 	ReportLayout,
-	ReportCsvExportButton,
 } from "@/components/reports";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -43,7 +44,6 @@ import { useDateFormat } from "@/hooks/use-date-format";
 import { useTableTheme } from "@/hooks/use-table-theme";
 import { trpc } from "@/lib/trpc/client";
 import { cn } from "@/lib/utils";
-import { Bar, BarChart, Cell, XAxis, YAxis } from "recharts";
 
 ModuleRegistry.registerModules([AllCommunityModule]);
 

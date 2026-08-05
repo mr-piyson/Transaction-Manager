@@ -183,7 +183,9 @@ export function SupplierSelectDialog({
 											</div>
 											<div className="flex items-center gap-1.5 sm:gap-2 text-xs text-muted-foreground mt-0.5">
 												{supplier.contactName && (
-													<span className="truncate">{supplier.contactName}</span>
+													<span className="truncate">
+														{supplier.contactName}
+													</span>
 												)}
 												{supplier.contactName && supplier.email && (
 													<span className="text-border">·</span>
@@ -191,9 +193,9 @@ export function SupplierSelectDialog({
 												{supplier.email && (
 													<span className="truncate">{supplier.email}</span>
 												)}
-												{!supplier.contactName && !supplier.email && supplier.phone && (
-													<span>{supplier.phone}</span>
-												)}
+												{!supplier.contactName &&
+													!supplier.email &&
+													supplier.phone && <span>{supplier.phone}</span>}
 											</div>
 										</div>
 

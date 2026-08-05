@@ -3,6 +3,7 @@
 import { Calculator, Loader2, Plus, Search } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
+import { useLeaveAllocateForm } from "@/components/dialogs";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -16,10 +17,10 @@ import {
 } from "@/components/ui/dialog";
 import {
 	Empty,
+	EmptyDescription,
 	EmptyHeader,
 	EmptyMedia,
 	EmptyTitle,
-	EmptyDescription,
 } from "@/components/ui/empty";
 import { Field } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
@@ -38,6 +39,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
+import { Spinner } from "@/components/ui/spinner";
 import {
 	Table,
 	TableBody,
@@ -46,8 +48,6 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
-import { Spinner } from "@/components/ui/spinner";
-import { useLeaveAllocateForm } from "@/components/dialogs";
 import { trpc } from "@/lib/trpc/client";
 
 export default function LeaveBalancesPage() {

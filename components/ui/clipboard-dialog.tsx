@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useRef } from "react";
-import { useTranslations } from "next-intl";
 import { Copy } from "lucide-react";
+import { useTranslations } from "next-intl";
+import { useEffect, useRef } from "react";
 import {
 	Dialog,
 	DialogContent,

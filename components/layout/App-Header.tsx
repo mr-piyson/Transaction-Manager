@@ -1,14 +1,14 @@
 "use client";
 
-import { useTranslations } from "next-intl";
 import { Plus } from "lucide-react";
+import { useTranslations } from "next-intl";
 import type { ReactNode } from "react";
-import { cn } from "@/lib/utils";
+import { CommandPaletteTrigger } from "@/components/command-palette";
+import { NavUser } from "@/components/layout/User-Options";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
+import { cn } from "@/lib/utils";
 import { SidebarToggleButton } from "./App-Sidebar";
-import { NavUser } from "@/components/layout/User-Options";
-import { CommandPaletteTrigger } from "@/components/command-palette";
 
 interface HeaderProps {
 	title?: ReactNode;

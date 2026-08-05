@@ -1,29 +1,29 @@
 "use client";
 
-import { useState, useCallback, useEffect, useRef } from "react";
 import {
-	Check,
-	Upload,
-	ImageIcon,
-	Table2,
 	ArrowLeft,
 	ArrowRight,
+	Check,
+	ImageIcon,
+	Table2,
+	Upload,
 } from "lucide-react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
 import { trpc } from "@/lib/trpc/client";
+import { cn } from "@/lib/utils";
 import { FileUploadStep } from "./file-upload-step";
 import { ImageUploadStep } from "./image-upload-step";
 import { PreviewStep } from "./preview-step";
+import type { ImportImage, ImportStep, ParsedItem } from "./types";
 import {
-	markForCleanup,
-	removeFromCleanup,
-	getPendingFileIds,
 	cleanupUploadedFiles,
 	clearPending,
+	getPendingFileIds,
+	markForCleanup,
+	removeFromCleanup,
 } from "./upload-cleanup";
-import type { ParsedItem, ImportImage, ImportStep } from "./types";
 
 const STEPS: { key: ImportStep; label: string; icon: typeof Upload }[] = [
 	{ key: "upload-file", label: "Data File", icon: Upload },

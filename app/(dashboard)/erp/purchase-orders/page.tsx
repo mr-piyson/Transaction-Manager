@@ -1,7 +1,7 @@
 "use client";
 
-import { useTranslations } from "next-intl";
 import { ShoppingCart } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 export default function PurchaseOrdersPage() {
 	const t = useTranslations();

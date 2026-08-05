@@ -5,8 +5,8 @@ import { paginatedResponse, toPrismaPage } from "@/lib/validations";
 import { writeAuditLog } from "../shared/audit.service";
 import {
 	hrListSchema,
-	trainingStatusSchema,
 	hrOptionalDateField,
+	trainingStatusSchema,
 } from "./hr.schemas";
 
 const trainingCreateSchema = z.object({

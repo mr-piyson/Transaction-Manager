@@ -1,8 +1,8 @@
 import { Receipt } from "lucide-react";
 import type { HTMLAttributes } from "react";
 import { Badge } from "@/components/ui/badge";
-import { cn } from "@/lib/utils";
 import { useDateFormat } from "@/hooks/use-date-format";
+import { cn } from "@/lib/utils";
 
 const STATUS_COLORS: Record<string, string> = {
 	DRAFT: "bg-muted text-muted-foreground",
