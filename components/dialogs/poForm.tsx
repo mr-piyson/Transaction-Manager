@@ -281,10 +281,7 @@ export function POFormDialog({ open, onOpenChange, po, onSuccess }: POFormDialog
                 </Field>
                 <Field>
                   <Label htmlFor="expectedDate">Expected date</Label>
-                  <DateInputField
-                    control={control}
-                    name="expectedDate"
-                  />
+                  <DateInputField control={control} name="expectedDate" />
                 </Field>
                 <Field>
                   <Label htmlFor="currency">Currency</Label>
@@ -455,6 +452,7 @@ export function POFormDialog({ open, onOpenChange, po, onSuccess }: POFormDialog
       <SelectionDialog
         open={itemPickerOpen}
         onOpenChange={setItemPickerOpen}
+        rowHeight={82}
         title="Select items to purchase"
         description="Choose the items you want to add to this purchase order."
         data={items}
@@ -465,9 +463,7 @@ export function POFormDialog({ open, onOpenChange, po, onSuccess }: POFormDialog
         searchFields={['sku', 'name', 'barcode']}
         emptyIcon={<Package className="size-8 text-muted-foreground/50" />}
         emptyTitle={
-          !selectedSupplierId
-            ? 'No supplier selected'
-            : 'No items found for this supplier'
+          !selectedSupplierId ? 'No supplier selected' : 'No items found for this supplier'
         }
         emptyDescription={
           !selectedSupplierId
@@ -497,10 +493,7 @@ export function POFormDialog({ open, onOpenChange, po, onSuccess }: POFormDialog
                 <div className="flex items-center gap-2 text-xs text-muted-foreground mt-0.5">
                   <span>Unit: {item.unit}</span>
                   <span>·</span>
-                  <span>
-                    Price:{' '}
-                    {Number(si?.basePrice ?? item.purchasePrice).toFixed(3)}
-                  </span>
+                  <span>Price: {Number(si?.basePrice ?? item.purchasePrice).toFixed(3)}</span>
                   {si?.supplierSku && (
                     <>
                       <span>·</span>

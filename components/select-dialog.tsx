@@ -1,10 +1,8 @@
 'use client';
 
-import type { ColDef } from 'ag-grid-community';
-import { AllCommunityModule, ModuleRegistry } from 'ag-grid-community';
-import { AgGridReact } from 'ag-grid-react';
+import { useVirtualizer } from '@tanstack/react-virtual';
 import { Check, CheckSquare, Filter, Search, Square, X } from 'lucide-react';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useDeferredValue, useEffect, useMemo, useRef, useState } from 'react';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -27,21 +25,17 @@ import {
 } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
 import { Spinner } from '@/components/ui/spinner';
-import { useIsMobile } from '@/hooks/use-mobile';
-import { useTableTheme } from '@/hooks/use-table-theme';
 import { cn } from '@/lib/utils';
-
-ModuleRegistry.registerModules([AllCommunityModule]);
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
-export interface FilterConfig {
+export interface FilterConfig<T> {
   key: string;
   label: string;
-  getValue: (item: any) => string | undefined;
+  getValue: (item: T) => string | undefined;
 }
 
-export interface SelectionDialogProps<T extends Record<string, any>> {
+export interface SelectionDialogProps<T> {
   // Dialog
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -50,7 +44,7 @@ export interface SelectionDialogProps<T extends Record<string, any>> {
   children?: React.ReactNode;
 
   // Data
-  data: T[] | undefined;
+  data: T[];
   isLoading?: boolean;
   isError?: boolean;
   error?: Error | null;
@@ -71,22 +65,21 @@ export interface SelectionDialogProps<T extends Record<string, any>> {
 
   // Search
   searchPlaceholder?: string;
-  searchFields: (keyof T | ((item: T) => string | undefined))[];
+  searchFields: Array<keyof T | ((item: T) => string | undefined)>;
 
   // Filters
-  filters?: FilterConfig[];
+  filters?: FilterConfig<T>[];
 
   // Card renderer
   cardRenderer: (item: T, selected: boolean) => React.ReactNode;
 
   // Empty state
   emptyIcon?: React.ReactNode;
-  emptyTitle?: string | React.ReactNode;
-  emptyDescription?: string | React.ReactNode;
+  emptyTitle?: React.ReactNode;
+  emptyDescription?: React.ReactNode;
 
-  // Grid options
+  // List options
   rowHeight?: number | 'auto';
-  useTheme?: boolean;
 
   // Labels
   itemName?: string;
@@ -96,7 +89,7 @@ export interface SelectionDialogProps<T extends Record<string, any>> {
 
 // ─── Component ───────────────────────────────────────────────────────────────
 
-export function SelectionDialog<T extends Record<string, any>>({
+export function SelectionDialog<T>({
   open,
   onOpenChange,
   title = 'Select items',
@@ -120,71 +113,74 @@ export function SelectionDialog<T extends Record<string, any>>({
   emptyTitle = 'No items found',
   emptyDescription = 'Try adjusting your search or filters',
   rowHeight = 'auto',
-  useTheme = false,
   itemName = 'items',
   confirmLabel = 'Confirm',
   cancelLabel = 'Cancel',
 }: SelectionDialogProps<T>) {
-  const isMobile = useIsMobile();
-  const gridRef = useRef<any>(null);
-  const cardRef = useRef<HTMLButtonElement>(null);
-  const theme = useTableTheme();
-  const resizeObserverRef = useRef<ResizeObserver | null>(null);
+  // Refs keep latest values available to the open-reset effect without
+  // re-running it when the props change identity.
+  const controlledIdsRef = useRef(controlledSelectedIds);
+  controlledIdsRef.current = controlledSelectedIds;
+  const filtersRef = useRef(filters);
+  filtersRef.current = filters;
 
-  // Internal selection state (mirrors controlled if provided)
-  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set(controlledSelectedIds ?? []));
+  // Internal selection state (mirrors the controlled prop while open)
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(
+    () => new Set(controlledSelectedIds ?? []),
+  );
   const [searchTerm, setSearchTerm] = useState('');
-  const [filterValues, setFilterValues] = useState<Record<string, string>>(
+  const deferredSearchTerm = useDeferredValue(searchTerm);
+  const [filterValues, setFilterValues] = useState<Record<string, string>>(() =>
     Object.fromEntries(filters.map((f) => [f.key, 'all'])),
   );
-  const [cardHeight, setCardHeight] = useState(0);
 
-  // Sync controlled selectedIds when dialog opens
+  // Reset internal state whenever the dialog opens
   useEffect(() => {
-    if (open) {
-      setSelectedIds(new Set(controlledSelectedIds ?? []));
-      setSearchTerm('');
-      setFilterValues(Object.fromEntries(filters.map((f) => [f.key, 'all'])));
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    if (!open) return;
+    setSelectedIds(new Set(controlledIdsRef.current ?? []));
+    setSearchTerm('');
+    setFilterValues(Object.fromEntries(filtersRef.current.map((f) => [f.key, 'all'])));
   }, [open]);
 
   // ─── Filter Options ───────────────────────────────────────────────────────
 
-  const filterOptions = useMemo(() => {
-    return filters.reduce(
-      (acc, filter) => {
-        const values = new Set<string>(
-          data.map((item) => filter.getValue(item)).filter((v): v is string => Boolean(v)),
-        );
-        acc[filter.key] = Array.from(values).sort();
-        return acc;
-      },
-      {} as Record<string, string[]>,
-    );
-  }, [data, filters]);
+  const filterOptions = useMemo(
+    () =>
+      filters.reduce(
+        (acc, filter) => {
+          const values = new Set<string>(
+            data.map((item) => filter.getValue(item)).filter((v): v is string => Boolean(v)),
+          );
+          acc[filter.key] = Array.from(values).sort();
+          return acc;
+        },
+        {} as Record<string, string[]>,
+      ),
+    [data, filters],
+  );
 
   // ─── Filtered Data ────────────────────────────────────────────────────────
 
   const filteredData = useMemo(() => {
+    const query = deferredSearchTerm.trim().toLowerCase();
+
     return data.filter((item) => {
       const matchesSearch =
-        !searchTerm ||
+        !query ||
         searchFields.some((field) => {
-          const value =
-            typeof field === 'function' ? field(item) : String(item[field as keyof T] ?? '');
-          return value?.toLowerCase().includes(searchTerm.toLowerCase());
+          const value = typeof field === 'function' ? field(item) : String(item[field] ?? '');
+          return value?.toLowerCase().includes(query);
         });
 
       const matchesFilters = filters.every((filter) => {
-        const fv = filterValues[filter.key];
+        const fv = filterValues[filter.key] ?? 'all';
         if (fv === 'all') return true;
         return filter.getValue(item) === fv;
       });
 
       return matchesSearch && matchesFilters;
     });
-  }, [data, searchTerm, searchFields, filters, filterValues]);
+  }, [data, deferredSearchTerm, searchFields, filters, filterValues]);
 
   // ─── Selection Helpers ────────────────────────────────────────────────────
 
@@ -193,15 +189,10 @@ export function SelectionDialog<T extends Record<string, any>>({
       const id = getItemId(item);
 
       if (mode === 'single') {
-        // Single: replace selection
         setSelectedIds(new Set([id]));
-        // Auto confirm for single mode? Maybe not always, but often desired.
-        // For now, just update state and let confirm button handle it,
-        // or we could auto-confirm if desired.
         return;
       }
 
-      // Multi
       setSelectedIds((prev) => {
         const next = new Set(prev);
         if (next.has(id)) next.delete(id);
@@ -233,106 +224,64 @@ export function SelectionDialog<T extends Record<string, any>>({
     [filterValues],
   );
 
-  const clearAllFilters = () => {
+  const clearAllFilters = useCallback(() => {
     setSearchTerm('');
     setFilterValues(Object.fromEntries(filters.map((f) => [f.key, 'all'])));
-  };
+  }, [filters]);
 
   const updateFilter = useCallback((key: string, value: string) => {
     setFilterValues((prev) => ({ ...prev, [key]: value }));
   }, []);
 
-  // ─── Card Height Measurement ──────────────────────────────────────────────
+  // ─── Virtualized List ─────────────────────────────────────────────────────
 
-  useEffect(() => {
-    if (rowHeight !== 'auto' || !cardRef.current) return;
-    resizeObserverRef.current?.disconnect();
+  const scrollRef = useRef<HTMLDivElement>(null);
 
-    resizeObserverRef.current = new ResizeObserver((entries) => {
-      for (const entry of entries) {
-        const h = entry.target.clientHeight;
-        if (h > 0) setCardHeight(h + 16);
-      }
-    });
+  const virtualizer = useVirtualizer<HTMLDivElement, HTMLDivElement>({
+    count: filteredData.length,
+    getScrollElement: () => scrollRef.current,
+    estimateSize: () => (typeof rowHeight === 'number' ? rowHeight : 100),
+    overscan: 8,
+  });
 
-    resizeObserverRef.current.observe(cardRef.current);
-    const immediateH = cardRef.current.clientHeight;
-    if (immediateH > 0) setCardHeight(immediateH + 16);
+  const handleListKeyDown = useCallback(
+    (event: React.KeyboardEvent<HTMLDivElement>) => {
+      if (event.key !== 'ArrowDown' && event.key !== 'ArrowUp') return;
+      if (filteredData.length === 0) return;
 
-    return () => resizeObserverRef.current?.disconnect();
-  }, [filteredData.length, rowHeight]);
+      const focused = document.activeElement as HTMLElement | null;
+      const currentIndex = focused?.dataset.index;
+      if (currentIndex === undefined) return;
 
-  useEffect(() => {
-    if (cardHeight > 0) gridRef.current?.api?.resetRowHeights();
-  }, [cardHeight]);
+      const current = Number(currentIndex);
+      const next =
+        event.key === 'ArrowDown'
+          ? Math.min(current + 1, filteredData.length - 1)
+          : Math.max(current - 1, 0);
 
-  const calculatedRowHeight = useMemo(() => {
-    if (rowHeight === 'auto') return cardHeight > 0 ? cardHeight : isMobile ? 400 : 150;
-    return typeof rowHeight === 'number' ? rowHeight : 150;
-  }, [rowHeight, cardHeight, isMobile]);
+      if (next === current) return;
+      event.preventDefault();
 
-  // ─── Grid ─────────────────────────────────────────────────────────────────
-
-  const FullWidthCellRenderer = useCallback(
-    (props: any) => {
-      const item = props.data as T;
-      const id = getItemId(item);
-      const isSelected = selectedIds.has(id);
-      const isFirst = props.rowIndex === 0;
-
-      return (
-        <Button
-          variant={'ghost'}
-          ref={isFirst && rowHeight === 'auto' ? cardRef : null}
-          onClick={() => toggleItem(item)}
-          className={cn(
-            'cursor-pointer transition-all duration-200 w-full group py-1',
-            'ring-inset',
-          )}
-        >
-          <div
-            className={cn(
-              'rounded-xl border transition-all duration-200 overflow-hidden',
-              isSelected
-                ? 'border-primary bg-primary/5 ring-1 ring-primary'
-                : 'border-transparent hover:border-muted-foreground/30 hover:bg-muted/50',
-            )}
-          >
-            {cardRenderer(item, isSelected)}
-          </div>
-        </Button>
-      );
+      virtualizer.scrollToIndex(next, { align: 'auto' });
+      requestAnimationFrame(() => {
+        scrollRef.current?.querySelector<HTMLElement>(`[data-index="${next}"]`)?.focus();
+      });
     },
-    [cardRenderer, getItemId, selectedIds, toggleItem, rowHeight],
-  );
-
-  const columnDefs = useMemo<ColDef[]>(() => [{ field: 'id', hide: true }], []);
-  const defaultColDef = useMemo(() => ({ flex: 1, minWidth: 100 }), []);
-
-  const gridOptions = useMemo(
-    () => ({
-      fullWidthCellRenderer: FullWidthCellRenderer,
-      isFullWidthRow: () => true,
-      rowHeight: calculatedRowHeight,
-      suppressHorizontalScroll: true,
-      headerHeight: 0,
-      suppressRowClickSelection: true,
-    }),
-    [FullWidthCellRenderer, calculatedRowHeight],
+    [filteredData.length, virtualizer],
   );
 
   // ─── Confirm / Cancel ─────────────────────────────────────────────────────
 
-  const handleConfirm = () => {
+  const handleConfirm = useCallback(() => {
     const selected = data.filter((item) => selectedIds.has(getItemId(item)));
     onSelect(selected);
     onOpenChange(false);
-  };
+  }, [data, selectedIds, getItemId, onSelect, onOpenChange]);
 
-  const handleCancel = () => {
+  const handleCancel = useCallback(() => {
     onCancel?.();
     onOpenChange(false);
-  };
+  }, [onCancel, onOpenChange]);
 
   // ─── Render ───────────────────────────────────────────────────────────────
 
@@ -341,14 +290,10 @@ export function SelectionDialog<T extends Record<string, any>>({
       <DialogContent className="flex flex-col gap-0 p-0 max-w-2xl w-full h-[90vh] sm:h-auto sm:max-h-[85vh] overflow-hidden bg-background border shadow-2xl">
         {/* Header */}
         <div className="px-6 pt-6 pb-2 shrink-0 border-b bg-muted/20">
-          <div className="flex justify-between items-start mb-2">
-            <div>
-              <DialogTitle className="text-xl font-bold tracking-tight">{title}</DialogTitle>
-              {description && (
-                <DialogDescription className="mt-1 text-sm">{description}</DialogDescription>
-              )}
-            </div>
-          </div>
+          <DialogTitle className="text-xl font-bold tracking-tight">{title}</DialogTitle>
+          {description && (
+            <DialogDescription className="mt-1 text-sm">{description}</DialogDescription>
+          )}
         </div>
 
         {/* Search + Filters + Optional Children (Tabs etc) */}
@@ -362,14 +307,17 @@ export function SelectionDialog<T extends Record<string, any>>({
                 placeholder={searchPlaceholder}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
+                autoFocus
                 className="pl-10 pr-9 h-11 bg-muted/40 border-none focus-visible:ring-1 focus-visible:ring-primary/50"
               />
               {searchTerm && (
                 <Button
+                  type="button"
                   variant="ghost"
                   size="icon"
                   className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8 hover:bg-transparent"
                   onClick={() => setSearchTerm('')}
+                  aria-label="Clear search"
                 >
                   <X className="w-4 h-4 text-muted-foreground hover:text-foreground" />
                 </Button>
@@ -398,6 +346,7 @@ export function SelectionDialog<T extends Record<string, any>>({
                       <h4 className="font-semibold text-sm">Filters</h4>
                       {activeFiltersCount > 0 && (
                         <Button
+                          type="button"
                           variant="ghost"
                           size="sm"
                           onClick={clearAllFilters}
@@ -414,8 +363,8 @@ export function SelectionDialog<T extends Record<string, any>>({
                           {filter.label}
                         </Label>
                         <Select
-                          value={filterValues[filter.key]}
-                          onValueChange={(v) => updateFilter(filter.key, v as string)}
+                          value={filterValues[filter.key] ?? 'all'}
+                          onValueChange={(v) => updateFilter(filter.key, v)}
                         >
                           <SelectTrigger className="w-full h-9" id={`${filter.key}-filter`}>
                             <SelectValue placeholder={`All ${filter.label.toLowerCase()}`} />
@@ -442,7 +391,7 @@ export function SelectionDialog<T extends Record<string, any>>({
             <div className="flex flex-wrap gap-1.5 mt-3">
               {filters.map((filter) => {
                 const value = filterValues[filter.key];
-                if (value === 'all') return null;
+                if (!value || value === 'all') return null;
                 return (
                   <Badge
                     key={filter.key}
@@ -472,6 +421,7 @@ export function SelectionDialog<T extends Record<string, any>>({
 
             {mode === 'multi' && filteredData.length > 0 && (
               <Button
+                type="button"
                 variant="ghost"
                 size="sm"
                 className="h-8 text-xs gap-1.5 hover:bg-muted font-medium"
@@ -498,7 +448,7 @@ export function SelectionDialog<T extends Record<string, any>>({
           <Separator />
         </div>
 
-        {/* Grid Content */}
+        {/* List Content */}
         <div className="flex flex-col min-h-0 flex-1 bg-background px-4">
           {isError ? (
             <div className="flex flex-col items-center justify-center h-full gap-4 p-8 text-center">
@@ -512,7 +462,7 @@ export function SelectionDialog<T extends Record<string, any>>({
                 </p>
               </div>
               {onRefetch && (
-                <Button variant="outline" size="sm" onClick={onRefetch}>
+                <Button type="button" variant="outline" size="sm" onClick={onRefetch}>
                   Try again
                 </Button>
               )}
@@ -534,35 +484,62 @@ export function SelectionDialog<T extends Record<string, any>>({
                 <p className="max-w-75 mt-1 text-sm text-muted-foreground">{emptyDescription}</p>
               </div>
               {(searchTerm || activeFiltersCount > 0) && (
-                <Button variant="outline" size="sm" onClick={clearAllFilters} className="mt-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={clearAllFilters}
+                  className="mt-2"
+                >
                   Clear all filters
                 </Button>
               )}
             </div>
           ) : (
-            <div className="h-full min-h-0 py-2 overflow-hidden">
-              <AgGridReact
-                ref={gridRef}
-                rowData={filteredData}
-                columnDefs={columnDefs}
-                defaultColDef={defaultColDef}
-                gridOptions={gridOptions}
-                animateRows
-                suppressMenuHide
-                theme={useTheme ? theme : undefined}
-                loading={isLoading}
-                isFullWidthRow={() => true}
-                fullWidthCellRenderer={FullWidthCellRenderer}
-                rowHeight={calculatedRowHeight}
-                domLayout="autoHeight"
-                className="h-full w-full"
-                containerStyle={
-                  {
-                    '--ag-background-color': 'transparent',
-                    '--ag-border-color': 'transparent',
-                  } as any
-                }
-              />
+            <div
+              ref={scrollRef}
+              onKeyDown={handleListKeyDown}
+              className="h-full min-h-0 overflow-y-auto py-2"
+            >
+              <div className="relative w-full" style={{ height: virtualizer.getTotalSize() }}>
+                {virtualizer.getVirtualItems().map((virtualItem) => {
+                  const item = filteredData[virtualItem.index];
+                  const id = getItemId(item);
+                  const isSelected = selectedIds.has(id);
+
+                  return (
+                    <div
+                      key={id}
+                      ref={virtualizer.measureElement}
+                      data-index={virtualItem.index}
+                      className="absolute top-0 left-0 w-full"
+                      style={{ transform: `translateY(${virtualItem.start}px)` }}
+                    >
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        data-index={virtualItem.index}
+                        aria-pressed={isSelected}
+                        onClick={() => toggleItem(item)}
+                        className={cn(
+                          'h-auto w-full cursor-pointer py-1 group transition-all duration-200 ring-inset',
+                        )}
+                      >
+                        <div
+                          className={cn(
+                            'w-full rounded-xl border transition-all duration-200 overflow-hidden',
+                            isSelected
+                              ? 'border-primary bg-primary/5 ring-1 ring-primary'
+                              : 'border-transparent hover:border-muted-foreground/30 hover:bg-muted/50',
+                          )}
+                        >
+                          {cardRenderer(item, isSelected)}
+                        </div>
+                      </Button>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
           )}
         </div>
@@ -570,27 +547,26 @@ export function SelectionDialog<T extends Record<string, any>>({
         {/* Footer */}
         <DialogFooter className="px-6 py-4 border-t bg-muted/20 shrink-0">
           <div className="flex w-full items-center justify-between gap-4">
-            <Button variant="ghost" onClick={handleCancel} className="font-medium">
+            <Button type="button" variant="ghost" onClick={handleCancel} className="font-medium">
               {cancelLabel}
             </Button>
-            <div className="flex gap-2">
-              <Button
-                onClick={handleConfirm}
-                disabled={selectedIds.size === 0}
-                className="gap-2 px-6 h-11 font-semibold shadow-lg shadow-primary/20 transition-all hover:scale-[1.02] active:scale-[0.98]"
-              >
-                <Check className="w-5 h-5" />
-                {confirmLabel}
-                {selectedIds.size > 0 && (
-                  <Badge
-                    variant="secondary"
-                    className="ml-1 bg-primary-foreground/20 text-primary-foreground border-none h-5 px-1.5 text-xs"
-                  >
-                    {selectedIds.size}
-                  </Badge>
-                )}
-              </Button>
-            </div>
+            <Button
+              type="button"
+              onClick={handleConfirm}
+              disabled={selectedIds.size === 0}
+              className="gap-2 px-6 h-11 font-semibold shadow-lg shadow-primary/20"
+            >
+              <Check className="w-5 h-5" />
+              {confirmLabel}
+              {selectedIds.size > 0 && (
+                <Badge
+                  variant="secondary"
+                  className="ml-1 bg-primary-foreground/20 text-primary-foreground border-none h-5 px-1.5 text-xs"
+                >
+                  {selectedIds.size}
+                </Badge>
+              )}
+            </Button>
           </div>
         </DialogFooter>
       </DialogContent>
