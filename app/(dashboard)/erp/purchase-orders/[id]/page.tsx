@@ -66,6 +66,7 @@ import { trpc } from "@/lib/trpc/client";
 import { useAppAbility } from "@/hooks/use-app-ability";
 import type { Action as PermissionAction } from "@/lib/abilities";
 import { useDateFormat } from "@/hooks/use-date-format";
+import { cn } from "@/lib/utils";
 
 const STATUS_COLORS: Record<string, string> = {
 	DRAFT: "bg-muted text-muted-foreground",
@@ -422,24 +423,24 @@ export default function PurchaseOrderDetailPage() {
 				>
 					<ArrowLeft className="size-5" />
 				</Button>
-				<span className="text-muted-foreground">|</span>
+				<span className="text-muted-foreground hidden sm:inline">|</span>
 				<div className="flex items-center gap-2 flex-1 min-w-0">
 					<ShoppingCart className="size-5 text-muted-foreground shrink-0" />
-					<h1 className="text-xl font-semibold truncate">{po.serial}</h1>
-					<Badge variant="outline" className={STATUS_COLORS[po.status] ?? ""}>
+					<h1 className="text-lg sm:text-xl font-semibold truncate">{po.serial}</h1>
+					<Badge variant="outline" className={`${STATUS_COLORS[po.status] ?? ""} shrink-0`}>
 						{t(`purchaseOrders.statuses.${po.status}`)}
 					</Badge>
 					{po.approvalStatus === "REJECTED" && (
 						<Badge
 							variant="outline"
-							className="bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200"
+							className="bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200 shrink-0"
 						>
 							{t("common.rejected")}
 						</Badge>
 					)}
 				</div>
 				{showActions && (
-					<div className="flex items-center gap-2">
+					<div className="flex items-center gap-1 sm:gap-2 shrink-0">
 						<DropdownMenu>
 							<DropdownMenuTrigger asChild>
 								<Button variant="ghost" size="icon">
@@ -479,60 +480,44 @@ export default function PurchaseOrderDetailPage() {
 				)}
 			</header>
 
-			<div className="flex-1 overflow-y-auto p-4 space-y-4">
-				{/* Info cards */}
-				<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
-					<Card>
-						<CardHeader className="pb-1.5">
-							<CardTitle className="text-xs text-muted-foreground font-medium">
-								{t("purchaseOrders.supplier")}
-							</CardTitle>
-						</CardHeader>
-						<CardContent>
-							<p className="font-semibold">{po.supplier?.name ?? "—"}</p>
-							<p className="text-xs text-muted-foreground">
-								{po.supplier?.email}
-								{po.supplier?.phone ? ` · ${po.supplier.phone}` : ""}
-							</p>
-						</CardContent>
-					</Card>
-					<Card>
-						<CardHeader className="pb-1.5">
-							<CardTitle className="text-xs text-muted-foreground font-medium">
-								{t("purchaseOrders.warehouse")}
-							</CardTitle>
-						</CardHeader>
-						<CardContent>
-							<p className="font-semibold">{po.warehouse?.name ?? "—"}</p>
-						</CardContent>
-					</Card>
-					<Card>
-						<CardHeader className="pb-1.5">
-							<CardTitle className="text-xs text-muted-foreground font-medium">
-								{t("common.date")}
-							</CardTitle>
-						</CardHeader>
-						<CardContent>
-							<p className="font-semibold">
-								{po.date ? formatDate(po.date) : "—"}
-							</p>
-						</CardContent>
-					</Card>
-					<Card>
-						<CardHeader className="pb-1.5">
-							<CardTitle className="text-xs text-muted-foreground font-medium">
-								{t("purchaseOrders.expectedDate")}
-							</CardTitle>
-						</CardHeader>
-						<CardContent>
-							<p className="font-semibold">
-								{po.expectedDate ? formatDate(po.expectedDate) : "—"}
-							</p>
-						</CardContent>
-					</Card>
-				</div>
+			<div className="flex-1 overflow-y-auto p-3 sm:p-4 space-y-3 sm:space-y-4">
+				{/* Single info card */}
+				<Card>
+					<CardContent className="p-4">
+						<div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+							<div>
+								<p className="text-xs text-muted-foreground">{t("purchaseOrders.supplier")}</p>
+								<p className="font-semibold text-sm">{po.supplier?.name ?? "—"}</p>
+								{po.supplier?.email && (
+									<p className="text-xs text-muted-foreground truncate">{po.supplier.email}</p>
+								)}
+							</div>
+							<div>
+								<p className="text-xs text-muted-foreground">{t("purchaseOrders.warehouse")}</p>
+								<p className="font-semibold text-sm">{po.warehouse?.name ?? "—"}</p>
+							</div>
+							<div>
+								<p className="text-xs text-muted-foreground">{t("common.date")}</p>
+								<p className="font-semibold text-sm">
+									{po.date ? formatDate(po.date) : "—"}
+								</p>
+							</div>
+							<div>
+								<p className="text-xs text-muted-foreground">{t("common.total")}</p>
+								<p className="font-semibold text-sm tabular-nums">
+									{Number(po.total).toFixed(3)} {po.currency}
+								</p>
+								{Number(po.amountOwed) > 0 && (
+									<p className="text-xs text-destructive">
+										{Number(po.amountOwed).toFixed(3)} {t("common.amountOwed")}
+									</p>
+								)}
+							</div>
+						</div>
+					</CardContent>
+				</Card>
 
-				{/* Line items table with totals */}
+				{/* Line items */}
 				<Card>
 					<CardHeader className="pb-2">
 						<CardTitle className="text-sm font-semibold">
@@ -540,105 +525,147 @@ export default function PurchaseOrderDetailPage() {
 						</CardTitle>
 					</CardHeader>
 					<CardContent className="p-0">
-						<Table>
-							<TableHeader>
-								<TableRow>
-									<TableHead className="w-[32%]">{t("common.item")}</TableHead>
-									<TableHead className="text-right">
-										{t("common.ordered")}
-									</TableHead>
-									<TableHead className="text-right">
-										{t("common.received")}
-									</TableHead>
-									<TableHead className="text-right">
-										{t("common.remaining")}
-									</TableHead>
-									<TableHead className="text-right">
-										{t("common.unitCost")}
-									</TableHead>
-									<TableHead className="text-right">
-										{t("common.total")}
-									</TableHead>
-								</TableRow>
-							</TableHeader>
-							<TableBody>
-								{po.lines.map((line: any) => {
-									const qty = Number(line.quantity);
-									const recv = Number(line.receivedQty);
-									const rem = qty - recv;
-									return (
-										<TableRow key={line.id}>
-											<TableCell>
-												<div className="font-medium">
-													{line.item?.name ?? "—"}
-												</div>
-												{line.item?.sku && (
-													<div className="text-xs text-muted-foreground">
-														{line.item.sku}
+						{/* Desktop table */}
+						<div className="hidden sm:block">
+							<Table>
+								<TableHeader>
+									<TableRow>
+										<TableHead className="w-[32%]">{t("common.item")}</TableHead>
+										<TableHead className="text-right">{t("common.ordered")}</TableHead>
+										<TableHead className="text-right">{t("common.received")}</TableHead>
+										<TableHead className="text-right">{t("common.remaining")}</TableHead>
+										<TableHead className="text-right">{t("common.unitCost")}</TableHead>
+										<TableHead className="text-right">{t("common.total")}</TableHead>
+									</TableRow>
+								</TableHeader>
+								<TableBody>
+									{po.lines.map((line: any) => {
+										const qty = Number(line.quantity);
+										const recv = Number(line.receivedQty);
+										const rem = qty - recv;
+										return (
+											<TableRow key={line.id}>
+												<TableCell>
+													<div className="flex items-center gap-2">
+														<div className="size-8 shrink-0 overflow-hidden rounded border bg-muted">
+															{line.item?.image ? (
+																<img
+																	src={line.item.image}
+																	alt={line.item.name}
+																	className="size-full object-cover"
+																/>
+															) : (
+																<div className="flex size-full items-center justify-center">
+																	<Package className="size-3.5 text-muted-foreground/40" />
+																</div>
+															)}
+														</div>
+														<div>
+															<div className="font-medium">{line.item?.name ?? "—"}</div>
+															{line.item?.sku && (
+																<div className="text-xs text-muted-foreground">{line.item.sku}</div>
+															)}
+														</div>
 													</div>
-												)}
-												{line.description && (
-													<div className="text-xs text-muted-foreground italic">
-														{line.description}
-													</div>
-												)}
-											</TableCell>
-											<TableCell className="text-right">
-												{qty.toFixed(3)}
-											</TableCell>
-											<TableCell className="text-right">
-												{recv.toFixed(3)}
-											</TableCell>
-											<TableCell className="text-right">
-												{rem.toFixed(3)}
-											</TableCell>
-											<TableCell className="text-right">
-												{Number(line.unitCost).toFixed(3)}
-											</TableCell>
-											<TableCell className="text-right font-medium">
-												{Number(line.total).toFixed(3)}
+												</TableCell>
+												<TableCell className="text-right tabular-nums">{qty.toFixed(3)}</TableCell>
+												<TableCell className="text-right tabular-nums">{recv.toFixed(3)}</TableCell>
+												<TableCell className="text-right tabular-nums">{rem.toFixed(3)}</TableCell>
+												<TableCell className="text-right tabular-nums">{Number(line.unitCost).toFixed(3)}</TableCell>
+												<TableCell className="text-right font-medium tabular-nums">{Number(line.total).toFixed(3)}</TableCell>
+											</TableRow>
+										);
+									})}
+									{po.lines.length === 0 && (
+										<TableRow>
+											<TableCell colSpan={6} className="text-center text-muted-foreground py-6">
+												{t("purchaseOrders.noLineItems")}
 											</TableCell>
 										</TableRow>
-									);
-								})}
-								{po.lines.length === 0 && (
-									<TableRow>
-										<TableCell
-											colSpan={6}
-											className="text-center text-muted-foreground py-6"
-										>
-											{t("purchaseOrders.noLineItems")}
-										</TableCell>
-									</TableRow>
-								)}
-							</TableBody>
-						</Table>
+									)}
+								</TableBody>
+							</Table>
+						</div>
+
+						{/* Mobile stacked list */}
+						<div className="sm:hidden divide-y">
+							{po.lines.map((line: any) => {
+								const qty = Number(line.quantity);
+								const recv = Number(line.receivedQty);
+								const rem = qty - recv;
+								return (
+									<div key={line.id} className="px-4 py-3">
+										<div className="flex items-start gap-2.5">
+											<div className="size-8 shrink-0 overflow-hidden rounded border bg-muted">
+												{line.item?.image ? (
+													<img
+														src={line.item.image}
+														alt={line.item.name}
+														className="size-full object-cover"
+													/>
+												) : (
+													<div className="flex size-full items-center justify-center">
+														<Package className="size-3.5 text-muted-foreground/40" />
+													</div>
+												)}
+											</div>
+											<div className="flex-1 min-w-0">
+												<div className="font-medium text-sm truncate">{line.item?.name ?? "—"}</div>
+												{line.item?.sku && (
+													<div className="text-xs text-muted-foreground font-mono">{line.item.sku}</div>
+												)}
+											</div>
+											<div className="text-right shrink-0">
+												<div className="text-sm font-medium tabular-nums">{Number(line.total).toFixed(3)}</div>
+											</div>
+										</div>
+										<div className="grid grid-cols-3 gap-2 mt-2 text-xs">
+											<div>
+												<span className="text-muted-foreground">{t("common.ordered")}: </span>
+												<span className="font-medium tabular-nums">{qty.toFixed(3)}</span>
+											</div>
+											<div>
+												<span className="text-muted-foreground">{t("common.received")}: </span>
+												<span className="font-medium tabular-nums">{recv.toFixed(3)}</span>
+											</div>
+											<div>
+												<span className="text-muted-foreground">{t("common.remaining")}: </span>
+												<span className={cn("font-medium tabular-nums", rem > 0 && "text-destructive")}>{rem.toFixed(3)}</span>
+											</div>
+										</div>
+									</div>
+								);
+							})}
+							{po.lines.length === 0 && (
+								<div className="text-center text-muted-foreground py-6 text-sm">
+									{t("purchaseOrders.noLineItems")}
+								</div>
+							)}
+						</div>
+
+						{/* Totals */}
 						<Separator />
 						<div className="flex justify-end px-4 py-3">
-							<div className="w-64 space-y-1 text-sm">
+							<div className="w-full sm:w-64 space-y-1 text-sm">
 								<div className="flex justify-between">
-									<span className="text-muted-foreground">
-										{t("common.subtotal")}
-									</span>
-									<span>{Number(po.subtotal).toFixed(3)}</span>
+									<span className="text-muted-foreground">{t("common.subtotal")}</span>
+									<span className="tabular-nums">{Number(po.subtotal).toFixed(3)}</span>
 								</div>
 								<div className="flex justify-between">
-									<span className="text-muted-foreground">
-										{t("common.tax")}
-									</span>
-									<span>{Number(po.taxTotal).toFixed(3)}</span>
+									<span className="text-muted-foreground">{t("common.tax")}</span>
+									<span className="tabular-nums">{Number(po.taxTotal).toFixed(3)}</span>
 								</div>
 								<Separator />
 								<div className="flex justify-between font-bold text-base">
 									<span>{t("common.total")}</span>
-									<span>
+									<span className="tabular-nums">
 										{Number(po.total).toFixed(3)} {po.currency}
 									</span>
 								</div>
 								{Number(po.amountOwed) > 0 && (
 									<div className="flex justify-between text-destructive font-medium">
 										<span>{t("common.amountOwed")}</span>
-										<span>
+										<span className="tabular-nums">
 											{Number(po.amountOwed).toFixed(3)} {po.currency}
 										</span>
 									</div>
@@ -651,12 +678,8 @@ export default function PurchaseOrderDetailPage() {
 				{/* Notes */}
 				{po.notes && (
 					<Card>
-						<CardHeader className="pb-1.5">
-							<CardTitle className="text-xs text-muted-foreground font-medium">
-								{t("common.notes")}
-							</CardTitle>
-						</CardHeader>
-						<CardContent>
+						<CardContent className="p-4">
+							<p className="text-xs text-muted-foreground mb-1">{t("common.notes")}</p>
 							<p className="text-sm whitespace-pre-wrap">{po.notes}</p>
 						</CardContent>
 					</Card>
@@ -671,43 +694,57 @@ export default function PurchaseOrderDetailPage() {
 							</CardTitle>
 						</CardHeader>
 						<CardContent className="p-0">
-							<Table>
-								<TableHeader>
-									<TableRow>
-										<TableHead>{t("common.date")}</TableHead>
-										<TableHead>{t("common.item")}</TableHead>
-										<TableHead className="text-right">
-											{t("common.quantity")}
-										</TableHead>
-										<TableHead>{t("common.warehouse")}</TableHead>
-										<TableHead>{t("common.by")}</TableHead>
-									</TableRow>
-								</TableHeader>
-								<TableBody>
-									{stockMovements.map((m: any) => (
-										<TableRow key={m.id}>
-											<TableCell className="text-sm">
-												{formatShortDate(m.createdAt)}
-											</TableCell>
-											<TableCell>
-												<span className="font-medium">{m.item?.name}</span>
-												{m.item?.sku && (
-													<span className="text-xs text-muted-foreground ml-1">
-														({m.item.sku})
-													</span>
-												)}
-											</TableCell>
-											<TableCell className="text-right font-medium text-green-600 dark:text-green-400">
-												+{Number(m.quantity).toFixed(3)}
-											</TableCell>
-											<TableCell>{m.toWarehouse?.name ?? "—"}</TableCell>
-											<TableCell className="text-sm text-muted-foreground">
-												{m.user?.name ?? "—"}
-											</TableCell>
+							{/* Desktop table */}
+							<div className="hidden sm:block">
+								<Table>
+									<TableHeader>
+										<TableRow>
+											<TableHead>{t("common.date")}</TableHead>
+											<TableHead>{t("common.item")}</TableHead>
+											<TableHead className="text-right">{t("common.quantity")}</TableHead>
+											<TableHead>{t("common.warehouse")}</TableHead>
+											<TableHead>{t("common.by")}</TableHead>
 										</TableRow>
-									))}
-								</TableBody>
-							</Table>
+									</TableHeader>
+									<TableBody>
+										{stockMovements.map((m: any) => (
+											<TableRow key={m.id}>
+												<TableCell className="text-sm">{formatShortDate(m.createdAt)}</TableCell>
+												<TableCell>
+													<span className="font-medium">{m.item?.name}</span>
+													{m.item?.sku && (
+														<span className="text-xs text-muted-foreground ml-1">({m.item.sku})</span>
+													)}
+												</TableCell>
+												<TableCell className="text-right font-medium text-green-600 dark:text-green-400">
+													+{Number(m.quantity).toFixed(3)}
+												</TableCell>
+												<TableCell>{m.toWarehouse?.name ?? "—"}</TableCell>
+												<TableCell className="text-sm text-muted-foreground">{m.user?.name ?? "—"}</TableCell>
+											</TableRow>
+										))}
+									</TableBody>
+								</Table>
+							</div>
+
+							{/* Mobile stacked list */}
+							<div className="sm:hidden divide-y">
+								{stockMovements.map((m: any) => (
+									<div key={m.id} className="px-4 py-3 flex items-center justify-between gap-2">
+										<div className="min-w-0">
+											<div className="font-medium text-sm truncate">{m.item?.name}</div>
+											<div className="text-xs text-muted-foreground">
+												{formatShortDate(m.createdAt)} · {m.toWarehouse?.name ?? "—"} · {m.user?.name ?? "—"}
+											</div>
+										</div>
+										<div className="text-right shrink-0">
+											<div className="text-sm font-medium text-green-600 dark:text-green-400 tabular-nums">
+												+{Number(m.quantity).toFixed(3)}
+											</div>
+										</div>
+									</div>
+								))}
+							</div>
 						</CardContent>
 					</Card>
 				)}
@@ -849,15 +886,9 @@ function ReceiveDialog({
 							<TableHeader>
 								<TableRow>
 									<TableHead>{tr("common.item")}</TableHead>
-									<TableHead className="text-right">
-										{tr("common.ordered")}
-									</TableHead>
-									<TableHead className="text-right">
-										{tr("common.received")}
-									</TableHead>
-									<TableHead className="text-right">
-										{tr("common.toReceive")}
-									</TableHead>
+									<TableHead className="text-right">{tr("common.ordered")}</TableHead>
+									<TableHead className="text-right">{tr("common.received")}</TableHead>
+									<TableHead className="text-right">{tr("common.toReceive")}</TableHead>
 								</TableRow>
 							</TableHeader>
 							<TableBody>
@@ -869,20 +900,12 @@ function ReceiveDialog({
 											<TableCell>
 												<span className="font-medium">{line.item?.name}</span>
 												{line.item?.sku && (
-													<span className="text-xs text-muted-foreground ml-1">
-														({line.item.sku})
-													</span>
+													<span className="text-xs text-muted-foreground ml-1">({line.item.sku})</span>
 												)}
 											</TableCell>
-											<TableCell className="text-right">
-												{qty.toFixed(3)}
-											</TableCell>
-											<TableCell className="text-right">
-												{recv.toFixed(3)}
-											</TableCell>
-											<TableCell className="text-right font-medium">
-												{(qty - recv).toFixed(3)}
-											</TableCell>
+											<TableCell className="text-right tabular-nums">{qty.toFixed(3)}</TableCell>
+											<TableCell className="text-right tabular-nums">{recv.toFixed(3)}</TableCell>
+											<TableCell className="text-right font-medium tabular-nums">{(qty - recv).toFixed(3)}</TableCell>
 										</TableRow>
 									);
 								})}
@@ -892,17 +915,10 @@ function ReceiveDialog({
 				)}
 
 				<DialogFooter>
-					<Button
-						variant="outline"
-						onClick={() => onOpenChange(false)}
-						disabled={isPending}
-					>
+					<Button variant="outline" onClick={() => onOpenChange(false)} disabled={isPending}>
 						{tr("common.cancel")}
 					</Button>
-					<Button
-						onClick={onConfirm}
-						disabled={isPending || allAlreadyReceived}
-					>
+					<Button onClick={onConfirm} disabled={isPending || allAlreadyReceived}>
 						{isPending && <Loader2 className="size-4 mr-1 animate-spin" />}
 						{allAlreadyReceived
 							? tr("common.close")

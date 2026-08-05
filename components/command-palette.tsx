@@ -1,9 +1,11 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { type LucideIcon, Search } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { type LucideIcon, Search } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
+import type { RouteConfig } from "@/components/layout/App-Sidebar";
+import { Button } from "@/components/ui/button";
 import {
 	CommandDialog,
 	CommandEmpty,
@@ -13,11 +15,9 @@ import {
 	CommandList,
 	CommandSeparator,
 } from "@/components/ui/command";
-import { apps } from "@/lib/apps";
 import { Kbd } from "@/components/ui/kbd";
-import { Button } from "@/components/ui/button";
 import { usePaletteActions } from "@/lib/actions";
-import type { RouteConfig } from "@/components/layout/App-Sidebar";
+import { apps } from "@/lib/apps";
 
 interface FlatItem {
 	id: string;

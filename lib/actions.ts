@@ -18,6 +18,7 @@ import {
 	Percent,
 	Ruler,
 	Shield,
+	ShoppingCart,
 	Sun,
 	User,
 	Users,
@@ -26,6 +27,7 @@ import { useTheme } from "next-themes";
 import { useRouter } from "next/navigation";
 import { useCallback } from "react";
 import { signOut } from "@/auth/auth-client";
+import { usePOForm } from "@/components/dialogs";
 import { useLocaleSwitcher } from "@/hooks/use-locale";
 
 // --- Types ---
@@ -178,8 +180,22 @@ export function useActionHandlers() {
 export function usePaletteActions(t: (key: string) => string): PaletteGroup[] {
 	const { handleSignOut, handleToggleTheme, handleSwitchLocale, theme } =
 		useActionHandlers();
+	const { openCreate } = usePOForm();
 
 	return [
+		{
+			id: "quick-actions",
+			label: t("layout.quickActions") || "Quick Actions",
+			items: [
+				{
+					id: "create-po",
+					label: t("purchaseOrders.createPO") || "Create Purchase Order",
+					icon: ShoppingCart,
+					keywords: ["purchase", "order", "po", "create", "new"],
+					onSelect: openCreate,
+				},
+			],
+		},
 		{
 			id: "settings",
 			label: t("settings.title"),

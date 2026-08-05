@@ -242,6 +242,7 @@
 		"dialogTitle": "Copy this text"
 	},
 	"layout": {
+		"quickActions": "Quick Actions",
 		"navigation": "Navigation",
 		"sales": "Sales",
 		"actions": "Actions",
@@ -1107,7 +1108,6 @@
 		"income": "Income",
 		"costOfSales": "Cost of Sales",
 		"expensesCategory": "Expenses",
-		"invoiceCount": "{count} invoices",
 		"marginPercent": "Margin {percent}%",
 		"afterExpenses": "After {amount} expenses",
 		"openInvoiceCount": "{count} open invoices",
@@ -1494,7 +1494,6 @@
 		"leave": "Leave Management",
 		"compensation": "Compensation",
 		"payroll": "Payroll",
-		"salaryComponents": "Salary Components",
 		"recruitment": "Recruitment",
 		"talentManagement": "Talent Management",
 		"performance": "Performance",

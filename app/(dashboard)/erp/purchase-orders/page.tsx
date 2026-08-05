@@ -2,11 +2,8 @@
 
 import { useTranslations } from "next-intl";
 import { ShoppingCart } from "lucide-react";
-import { usePOForm } from "@/components/dialogs";
-import { Button } from "@/components/ui/button";
 
 export default function PurchaseOrdersPage() {
-	const { openCreate } = usePOForm();
 	const t = useTranslations();
 
 	return (
@@ -20,9 +17,6 @@ export default function PurchaseOrdersPage() {
 					{t("purchaseOrders.selectDescription")}
 				</p>
 			</div>
-			<Button onClick={() => openCreate()}>
-				{t("purchaseOrders.createPO")}
-			</Button>
 		</div>
 	);
 }

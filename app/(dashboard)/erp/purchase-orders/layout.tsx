@@ -37,7 +37,7 @@ const route = "purchase-orders";
 
 export default function POLayout({ children }: { children?: React.ReactNode }) {
 	const t = useTranslations();
-	const { openCreate, openEdit } = usePOForm();
+	const { openEdit } = usePOForm();
 	const { openDialog: openHardDelete } = useHardDeleteForm();
 	const { data: me } = trpc.auth.me.useQuery();
 	const isSuperAdmin = me?.platformRole === "SUPER_ADMIN";
@@ -209,12 +209,6 @@ export default function POLayout({ children }: { children?: React.ReactNode }) {
 			<Header
 				title={t("layout.purchaseOrders")}
 				icon={<ShoppingCart className="size-5" />}
-				onCreate={
-					ability?.can("po:create", "PurchaseOrder")
-						? () => openCreate()
-						: undefined
-				}
-				createLabel={t("purchaseOrders.createPO")}
 			/>
 			<div className="flex-1 min-h-0 w-full">
 				<ResizablePanelGroup className="h-full">
