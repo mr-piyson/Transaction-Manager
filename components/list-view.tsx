@@ -99,10 +99,10 @@ export function ListView<T extends Record<string, any>>({
 
 	return (
 		<div className={cn("flex flex-col", className)}>
-			<div className="p-2">
+			<div className="flex items-center px-3 h-14  shrink-0 border-b">
 				<div
 					className={cn(
-						"flex items-center rounded-md border bg-transparent shadow-xs transition-[color,box-shadow] focus-within:border-ring focus-within:ring-[3px] focus-within:ring-ring/50",
+						"flex w-full items-center rounded-md border bg-transparent shadow-xs transition-[color,box-shadow] focus-within:border-ring focus-within:ring-[3px] focus-within:ring-ring/50",
 						isRtl ? "flex-row-reverse" : "flex-row",
 					)}
 				>

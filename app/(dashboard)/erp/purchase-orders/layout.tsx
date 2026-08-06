@@ -57,6 +57,7 @@ export default function POLayout({ children }: { children?: React.ReactNode }) {
 	const pathname = usePathname();
 	const activeItem = pathname.split("/")[3];
 	const isListView = pathname === `/erp/${route}`;
+	const isPrintPage = pathname.endsWith("/print");
 
 	const deleteMutation = trpc.purchaseOrders.delete.useMutation({
 		onSuccess: () => {
@@ -215,89 +216,104 @@ export default function POLayout({ children }: { children?: React.ReactNode }) {
 	);
 
 	return (
-		<div className="flex h-screen flex-col overflow-hidden">
-			<Header
-				title={t("layout.purchaseOrders")}
-				icon={<ShoppingCart className="size-5" />}
-			/>
-			<div className="flex flex-row items-center justify-between border-b px-4 py-2 shrink-0">
-				<div className="flex gap-2 items-center">
-					<Button size="sm" onClick={() => openCreate()}>
-						<Plus className="size-3.5" />
-						<span className="hidden md:block">
-							{t("purchaseOrders.createPO")}
-						</span>
-					</Button>
-				</div>
-				<div className="flex gap-2 items-center md:hidden">
-					<DropdownMenu>
-						<DropdownMenuTrigger asChild>
-							<Button variant="outline" size="sm">
-								<MoreHorizontal className="size-3.5" />
-							</Button>
-						</DropdownMenuTrigger>
-						<DropdownMenuContent align="end">
-							<DropdownMenuItem onClick={() => openCreate()}>
-								<Plus className="size-3.5" />
-								{t("purchaseOrders.createPO")}
-							</DropdownMenuItem>
-						</DropdownMenuContent>
-					</DropdownMenu>
-				</div>
-			</div>
-			<div className="flex-1 min-h-0 w-full">
-				<ResizablePanelGroup className="h-full">
-					{(isListView || !isMobile) && (
-						<ResizablePanel
-							minSize={20}
-							defaultSize={30}
-							className={cn(
-								"h-full",
-								!isListView ? "hidden md:block" : "block",
-							)}
-						>
-							<aside className="flex h-full flex-col overflow-hidden border-r">
-								<div className="flex-1 overflow-y-auto">
-									<ListView
-										data={orders}
-										isLoading={isPending}
-										className="h-full"
-										useTheme
-										searchFields={["serial", "supplier.name", "status"]}
-										searchFieldLabels={{
-											serial: t("purchaseOrders.poNumber"),
-											"supplier.name": t("purchaseOrders.supplier"),
-											status: t("purchaseOrders.status"),
-										}}
-										rowHeight={73}
-										emptyTitle={t("purchaseOrders.noPOs")}
-										emptyDescription={t("purchaseOrders.createPO")}
-										emptyIcon={
-											<User2 className="size-20 text-muted-foreground" />
-										}
-										cardRenderer={renderCard}
-									/>
-								</div>
-							</aside>
-						</ResizablePanel>
-					)}
-
-					<ResizableHandle
-						className={cn("hidden md:flex", !isListView && "hidden md:flex")}
+		<div
+			className={cn(
+				"flex h-screen flex-col overflow-hidden",
+				isPrintPage && "print-layout",
+			)}
+		>
+			{!isPrintPage && (
+				<>
+					<Header
+						title={t("layout.purchaseOrders")}
+						icon={<ShoppingCart className="size-5" />}
 					/>
+					<div className="flex flex-row items-center justify-between border-b px-4 h-14 shrink-0">
+						<div className="flex gap-2 items-center">
+							<Button size="sm" onClick={() => openCreate()}>
+								<Plus className="size-3.5" />
+								<span className="hidden md:block">
+									{t("purchaseOrders.createPO")}
+								</span>
+							</Button>
+						</div>
+						<div className="flex gap-2 items-center md:hidden">
+							<DropdownMenu>
+								<DropdownMenuTrigger asChild>
+									<Button variant="outline" size="sm">
+										<MoreHorizontal className="size-3.5" />
+									</Button>
+								</DropdownMenuTrigger>
+								<DropdownMenuContent align="end">
+									<DropdownMenuItem onClick={() => openCreate()}>
+										<Plus className="size-3.5" />
+										{t("purchaseOrders.createPO")}
+									</DropdownMenuItem>
+								</DropdownMenuContent>
+							</DropdownMenu>
+						</div>
+					</div>
+				</>
+			)}
+			<div
+				className={cn("flex-1 min-h-0 w-full", isPrintPage && "overflow-auto")}
+			>
+				{isPrintPage ? (
+					children
+				) : (
+					<ResizablePanelGroup className="h-full">
+						{(isListView || !isMobile) && (
+							<ResizablePanel
+								minSize={20}
+								defaultSize={30}
+								className={cn(
+									"h-full",
+									!isListView ? "hidden md:block" : "block",
+								)}
+							>
+								<aside className="flex h-full flex-col overflow-hidden border-r">
+									<div className="flex-1 overflow-y-auto">
+										<ListView
+											data={orders}
+											isLoading={isPending}
+											className="h-full"
+											useTheme
+											searchFields={["serial", "supplier.name", "status"]}
+											searchFieldLabels={{
+												serial: t("purchaseOrders.poNumber"),
+												"supplier.name": t("purchaseOrders.supplier"),
+												status: t("purchaseOrders.status"),
+											}}
+											rowHeight={73}
+											emptyTitle={t("purchaseOrders.noPOs")}
+											emptyDescription={t("purchaseOrders.createPO")}
+											emptyIcon={
+												<User2 className="size-20 text-muted-foreground" />
+											}
+											cardRenderer={renderCard}
+										/>
+									</div>
+								</aside>
+							</ResizablePanel>
+						)}
 
-					{(!isListView || !isMobile) && (
-						<ResizablePanel
-							defaultSize={70}
-							className={cn(
-								"h-full w-full",
-								isListView ? "hidden md:block" : "flex flex-col",
-							)}
-						>
-							{children}
-						</ResizablePanel>
-					)}
-				</ResizablePanelGroup>
+						<ResizableHandle
+							className={cn("hidden md:flex", !isListView && "hidden md:flex")}
+						/>
+
+						{(!isListView || !isMobile) && (
+							<ResizablePanel
+								defaultSize={70}
+								className={cn(
+									"h-full w-full",
+									isListView ? "hidden md:block" : "flex flex-col",
+								)}
+							>
+								{children}
+							</ResizablePanel>
+						)}
+					</ResizablePanelGroup>
+				)}
 			</div>
 		</div>
 	);

@@ -10,6 +10,7 @@ import {
 	type LucideIcon,
 	MoreHorizontal,
 	Package,
+	Printer,
 	Send,
 	ShieldAlert,
 	ShoppingCart,
@@ -446,6 +447,13 @@ export default function PurchaseOrderDetailPage() {
 				</div>
 				{showActions && (
 					<div className="flex items-center gap-1 sm:gap-2 shrink-0">
+						<Button
+							variant="outline"
+							size="sm"
+							onClick={() => router.push(`/erp/purchase-orders/${po.id}/print`)}
+						>
+							<Printer className="size-4 mr-1" /> {t("common.print")}
+						</Button>
 						<DropdownMenu>
 							<DropdownMenuTrigger asChild>
 								<Button variant="ghost" size="icon">
