@@ -210,7 +210,9 @@ export default function POLayout({ children }: { children?: React.ReactNode }) {
 		],
 	);
 
-	const orders = Array.isArray(data) ? data : (data?.data ?? []);
+	const orders = (Array.isArray(data) ? data : (data?.data ?? [])).sort(
+		(a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
+	);
 
 	return (
 		<div className="flex h-screen flex-col overflow-hidden">

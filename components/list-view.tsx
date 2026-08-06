@@ -3,13 +3,13 @@
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { Search } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useDirection } from "@/components/ui/direction";
 import {
 	Empty,
 	EmptyContent,
 	EmptyDescription,
 	EmptyTitle,
 } from "@/components/ui/empty";
-import { useDirection } from "@/components/ui/direction";
 import { Input } from "@/components/ui/input";
 import {
 	Select,
@@ -99,35 +99,55 @@ export function ListView<T extends Record<string, any>>({
 
 	return (
 		<div className={cn("flex flex-col", className)}>
-			<div className="flex items-center gap-2 p-2">
-				{searchFields.length > 1 && (
-					<Select value={searchField} onValueChange={setSearchField}>
-						<SelectTrigger size="sm" className="h-8 w-auto shrink-0">
-							<SelectValue placeholder={isRtl ? "جميع الحقول" : "All fields"} />
-						</SelectTrigger>
-						<SelectContent align={isRtl ? "end" : "start"}>
-							<SelectItem value="__all__">
-								{isRtl ? "جميع الحقول" : "All fields"}
-							</SelectItem>
-							{searchFields.map((field) => (
-								<SelectItem key={field as string} value={field as string}>
-									{searchFieldLabels[field as string] ?? (field as string)}
+			<div className="p-2">
+				<div
+					className={cn(
+						"flex items-center rounded-md border bg-transparent shadow-xs transition-[color,box-shadow] focus-within:border-ring focus-within:ring-[3px] focus-within:ring-ring/50",
+						isRtl ? "flex-row-reverse" : "flex-row",
+					)}
+				>
+					{searchFields.length > 1 && (
+						<Select value={searchField} onValueChange={setSearchField}>
+							<SelectTrigger
+								size="sm"
+								className={cn(
+									"h-8 w-auto shrink-0 rounded-none border-0 bg-transparent shadow-none focus-visible:ring-0",
+									isRtl ? "border-l" : "border-r",
+								)}
+							>
+								<SelectValue
+									placeholder={isRtl ? "جميع الحقول" : "All fields"}
+								/>
+							</SelectTrigger>
+							<SelectContent align={isRtl ? "end" : "start"}>
+								<SelectItem value="__all__">
+									{isRtl ? "جميع الحقول" : "All fields"}
 								</SelectItem>
-							))}
-						</SelectContent>
-					</Select>
-				)}
-				<div className="relative flex-1">
-					<Search className={cn(
-						"absolute top-1/2 size-4 -translate-y-1/2 text-muted-foreground",
-						isRtl ? "right-2.5" : "left-2.5",
-					)} />
-					<Input
-						value={search}
-						onChange={(e) => setSearch(e.target.value)}
-						placeholder={searchPlaceholder}
-						className={cn("h-8 text-sm", isRtl ? "pr-8" : "pl-8")}
-					/>
+								{searchFields.map((field) => (
+									<SelectItem key={field as string} value={field as string}>
+										{searchFieldLabels[field as string] ?? (field as string)}
+									</SelectItem>
+								))}
+							</SelectContent>
+						</Select>
+					)}
+					<div className="relative flex-1">
+						<Search
+							className={cn(
+								"absolute top-1/2 size-4 -translate-y-1/2 text-muted-foreground",
+								isRtl ? "right-2.5" : "left-2.5",
+							)}
+						/>
+						<Input
+							value={search}
+							onChange={(e) => setSearch(e.target.value)}
+							placeholder={searchPlaceholder}
+							className={cn(
+								"h-8 border-0 bg-transparent shadow-none focus-visible:ring-0",
+								isRtl ? "pr-8 text-right" : "pl-8",
+							)}
+						/>
+					</div>
 				</div>
 			</div>
 			<div ref={setScrollRef} className="flex-1 overflow-y-auto">
