@@ -9,6 +9,249 @@ import { Spinner } from "@/components/ui/spinner";
 import { useDateFormat } from "@/hooks/use-date-format";
 import { trpc } from "@/lib/trpc/client";
 
+// ---------------------------------------------------------------------------
+// Safe HTML rendering (replaces dangerouslySetInnerHTML)
+// ---------------------------------------------------------------------------
+
+/** Tags we allow to render as their real element. Everything else is unwrapped. */
+const ALLOWED_TAGS = new Set([
+	"p",
+	"br",
+	"strong",
+	"b",
+	"em",
+	"i",
+	"u",
+	"ol",
+	"ul",
+	"li",
+	"a",
+	"span",
+]);
+
+/** Tags that are dangerous even as text containers — drop them AND their contents. */
+const DROP_ENTIRELY = new Set([
+	"script",
+	"style",
+	"iframe",
+	"object",
+	"embed",
+	"svg",
+	"math",
+	"noscript",
+	"link",
+	"meta",
+	"form",
+]);
+
+function isSafeHref(href: string): boolean {
+	try {
+		const url = new URL(href, window.location.origin);
+		return ["http:", "https:", "mailto:"].includes(url.protocol);
+	} catch {
+		return false;
+	}
+}
+
+function domNodeToReact(node: ChildNode, key: any): React.ReactNode {
+	if (node.nodeType === Node.TEXT_NODE) {
+		return node.textContent;
+	}
+
+	if (node.nodeType !== Node.ELEMENT_NODE) {
+		return null;
+	}
+
+	const el = node as Element;
+	const tag = el.tagName.toLowerCase();
+
+	if (DROP_ENTIRELY.has(tag)) {
+		return null;
+	}
+
+	const children = Array.from(el.childNodes).map((child, i) =>
+		domNodeToReact(child, `${key}-${i}`),
+	);
+
+	if (!ALLOWED_TAGS.has(tag)) {
+		// Unknown/unsafe tag: drop the wrapper but keep its safe children.
+		return children;
+	}
+
+	const props: Record<string, unknown> = { key };
+
+	if (tag === "a") {
+		const href = el.getAttribute("href") ?? "";
+		if (isSafeHref(href)) {
+			props.href = href;
+			props.target = "_blank";
+			props.rel = "noopener noreferrer";
+		}
+	}
+
+	return React.createElement(
+		tag,
+		props,
+		children.length ? children : undefined,
+	);
+}
+
+/** Parses a (possibly untrusted) HTML string into safe React nodes. */
+function parseSafeHtml(html: string): React.ReactNode[] {
+	if (!html) return [];
+	if (typeof window === "undefined") return []; // SSR guard, DOMParser is client-only
+	const doc = new DOMParser().parseFromString(html, "text/html");
+	return Array.from(doc.body.childNodes).map((node, i) =>
+		domNodeToReact(node, i),
+	);
+}
+
+/** Renders sanitized rich text (numbered/bulleted terms, etc.) without dangerouslySetInnerHTML. */
+function SafeRichText({
+	html,
+	className,
+}: {
+	html: string;
+	className?: string;
+}) {
+	const content = React.useMemo(() => parseSafeHtml(html), [html]);
+	return <div className={className}>{content}</div>;
+}
+
+// ---------------------------------------------------------------------------
+// Static label maps (hoisted so they aren't recreated every render)
+// ---------------------------------------------------------------------------
+
+const TYPE_LABEL_KEYS: Record<string, string> = {
+	QUOTE: "invoices.quote",
+	INVOICE: "invoices.invoice",
+	CREDIT_NOTE: "invoices.creditNote",
+	DELIVERY_NOTE: "invoices.deliveryNote",
+};
+
+// ---------------------------------------------------------------------------
+// Subcomponents
+// ---------------------------------------------------------------------------
+
+function LineItemsTable({
+	lines,
+	t,
+}: {
+	lines: any[];
+	t: ReturnType<typeof useTranslations>;
+}) {
+	return (
+		<table className="w-full text-sm">
+			<thead>
+				<tr className="border-b text-xs text-muted-foreground uppercase">
+					<th className="text-left py-2 pr-2 w-10">#</th>
+					<th className="text-left py-2 pr-2">{t("invoices.item")}</th>
+					<th className="text-right py-2 px-2">{t("invoices.qty")}</th>
+					<th className="text-right py-2 px-2">{t("invoices.unitPrice")}</th>
+					<th className="text-right py-2 px-2">{t("common.discount")}</th>
+					<th className="text-right py-2 px-2">{t("common.tax")} %</th>
+					<th className="text-right py-2 px-2">{t("common.tax")}</th>
+					<th className="text-right py-2 pl-2">{t("common.total")}</th>
+				</tr>
+			</thead>
+			<tbody>
+				{lines.map((line, idx) => (
+					<tr key={line.id} className="border-b last:border-0">
+						<td className="py-2 pr-2 text-muted-foreground align-top">
+							{idx + 1}
+						</td>
+						<td className="py-2 pr-2 align-top">
+							<span className="font-medium">{line.item?.name ?? "—"}</span>
+							{line.item?.sku && (
+								<p className="text-xs text-muted-foreground">
+									SKU: {line.item.sku}
+								</p>
+							)}
+							{line.description && (
+								<p className="text-xs text-muted-foreground">
+									{line.description}
+								</p>
+							)}
+						</td>
+						<td className="py-2 px-2 text-right align-top whitespace-nowrap">
+							{Number(line.quantity).toFixed(3)}
+						</td>
+						<td className="py-2 px-2 text-right align-top whitespace-nowrap">
+							{Number(line.unitPrice).toFixed(3)}
+						</td>
+						<td className="py-2 px-2 text-right align-top whitespace-nowrap">
+							{Number(line.discountAmt) > 0
+								? Number(line.discountAmt).toFixed(3)
+								: "—"}
+						</td>
+						<td className="py-2 px-2 text-right align-top whitespace-nowrap">
+							{line.taxRateSnapshot ? (
+								<span>{Number(line.taxRateSnapshot)}%</span>
+							) : (
+								"—"
+							)}
+						</td>
+						<td className="py-2 px-2 text-right align-top whitespace-nowrap">
+							{line.taxRateName ? Number(line.taxAmt).toFixed(3) : "—"}
+						</td>
+						<td className="py-2 pl-2 text-right align-top whitespace-nowrap font-medium">
+							{Number(line.total).toFixed(3)}
+						</td>
+					</tr>
+				))}
+				{lines.length === 0 && (
+					<tr>
+						<td colSpan={8} className="py-6 text-center text-muted-foreground">
+							{t("invoices.noLineItems")}
+						</td>
+					</tr>
+				)}
+			</tbody>
+		</table>
+	);
+}
+
+function PaymentsTable({
+	payments,
+	t,
+	formatDate,
+}: {
+	payments: any[];
+	t: ReturnType<typeof useTranslations>;
+	formatDate: (d: string | Date) => string;
+}) {
+	return (
+		<table className="w-full text-sm">
+			<thead>
+				<tr className="border-b text-xs text-muted-foreground">
+					<th className="text-left py-1 pr-2">{t("common.date")}</th>
+					<th className="text-left py-1 pr-2">{t("common.method")}</th>
+					<th className="text-right py-1 pl-2">{t("common.amount")}</th>
+					<th className="text-left py-1 pl-2">{t("common.reference")}</th>
+				</tr>
+			</thead>
+			<tbody>
+				{payments.map((p) => (
+					<tr key={p.id}>
+						<td className="py-1 pr-2">{formatDate(p.date)}</td>
+						<td className="py-1 pr-2">{p.method}</td>
+						<td className="py-1 pl-2 text-right">
+							{Number(p.amount).toFixed(3)}
+						</td>
+						<td className="py-1 pl-2 text-muted-foreground">
+							{p.reference ?? "—"}
+						</td>
+					</tr>
+				))}
+			</tbody>
+		</table>
+	);
+}
+
+// ---------------------------------------------------------------------------
+// Page
+// ---------------------------------------------------------------------------
+
 export default function DocumentPrintPage() {
 	const params = useParams<{ type: string; id: string }>();
 	const router = useRouter();
@@ -26,23 +269,39 @@ export default function DocumentPrintPage() {
 
 	const [printing, setPrinting] = React.useState(false);
 
-	const getTypeLabel = (ttype: string) => {
-		const labels: Record<string, string> = {
-			QUOTE: t("invoices.quote"),
-			INVOICE: t("invoices.invoice"),
-			CREDIT_NOTE: t("invoices.creditNote"),
-			DELIVERY_NOTE: t("invoices.deliveryNote"),
-		};
-		return labels[ttype] ?? ttype;
-	};
+	const getTypeLabel = React.useCallback(
+		(ttype: string) => {
+			const key = TYPE_LABEL_KEYS[ttype];
+			return key ? (t as any)(key) : ttype;
+		},
+		[t],
+	);
 
-	const handlePrint = () => {
+	const handlePrint = React.useCallback(() => {
 		setPrinting(true);
 		setTimeout(() => {
 			window.print();
 			setPrinting(false);
 		}, 100);
-	};
+	}, []);
+
+	const lines = invoice?.lines ?? [];
+	const hasPayments = (invoice?.payments?.length ?? 0) > 0;
+
+	const paymentStatusLabel = React.useMemo(() => {
+		if (!invoice) return "";
+		if (invoice.status === "CANCELLED") return t("common.cancelled");
+		if (invoice.status === "DELETED") return t("common.deleted");
+		if (Number(invoice.amountPaid) >= Number(invoice.total))
+			return t("common.paid");
+		if (Number(invoice.amountPaid) > 0)
+			return `${t("common.partial")} (${Number(invoice.amountPaid).toFixed(3)} ${invoice.currency})`;
+		if (invoice.dueDate && new Date(invoice.dueDate) < new Date())
+			return t("common.overdue");
+		return t("common.unpaid");
+	}, [invoice, t]);
+
+	const termsHtml = invoice?.termsText || org?.defaultTermsText || "";
 
 	if (isLoading) {
 		return (
@@ -61,21 +320,6 @@ export default function DocumentPrintPage() {
 			</div>
 		);
 	}
-
-	const lines = invoice.lines ?? [];
-	const hasPayments = (invoice.payments?.length ?? 0) > 0;
-
-	const getPaymentStatusLabel = () => {
-		if (invoice.status === "CANCELLED") return t("common.cancelled");
-		if (invoice.status === "DELETED") return t("common.deleted");
-		if (Number(invoice.amountPaid) >= Number(invoice.total))
-			return t("common.paid");
-		if (Number(invoice.amountPaid) > 0)
-			return `${t("common.partial")} (${Number(invoice.amountPaid).toFixed(3)} ${invoice.currency})`;
-		if (invoice.dueDate && new Date(invoice.dueDate) < new Date())
-			return t("common.overdue");
-		return t("common.unpaid");
-	};
 
 	const backHref = `/erp/documents/${type}/${invoice.id}`;
 
@@ -178,7 +422,7 @@ export default function DocumentPrintPage() {
 						</div>
 						<div className="mt-2">
 							<span className="inline-block text-xs font-semibold px-2 py-0.5 rounded border border-current">
-								{getPaymentStatusLabel()}
+								{paymentStatusLabel}
 							</span>
 						</div>
 					</div>
@@ -219,84 +463,7 @@ export default function DocumentPrintPage() {
 
 				{/* Line items */}
 				<div className="px-8 py-4 print:px-6">
-					<table className="w-full text-sm">
-						<thead>
-							<tr className="border-b text-xs text-muted-foreground uppercase">
-								<th className="text-left py-2 pr-2 w-10">#</th>
-								<th className="text-left py-2 pr-2">{t("invoices.item")}</th>
-								<th className="text-right py-2 px-2">{t("invoices.qty")}</th>
-								<th className="text-right py-2 px-2">
-									{t("invoices.unitPrice")}
-								</th>
-								<th className="text-right py-2 px-2">{t("common.discount")}</th>
-								<th className="text-right py-2 px-2">{t("common.tax")} %</th>
-								<th className="text-right py-2 px-2">{t("common.tax")}</th>
-								<th className="text-right py-2 pl-2">{t("common.total")}</th>
-							</tr>
-						</thead>
-						<tbody>
-							{lines.map((line: any, idx: number) => (
-								<tr key={line.id} className="border-b last:border-0">
-									<td className="py-2 pr-2 text-muted-foreground align-top">
-										{idx + 1}
-									</td>
-									<td className="py-2 pr-2 align-top">
-										<span className="font-medium">
-											{line.item?.name ?? "—"}
-										</span>
-										{line.item?.sku && (
-											<p className="text-xs text-muted-foreground">
-												SKU: {line.item.sku}
-											</p>
-										)}
-										{line.description && (
-											<p className="text-xs text-muted-foreground">
-												{line.description}
-											</p>
-										)}
-									</td>
-									<td className="py-2 px-2 text-right align-top whitespace-nowrap">
-										{Number(line.quantity).toFixed(3)}
-									</td>
-									<td className="py-2 px-2 text-right align-top whitespace-nowrap">
-										{Number(line.unitPrice).toFixed(3)}
-									</td>
-									<td className="py-2 px-2 text-right align-top whitespace-nowrap">
-										{Number(line.discountAmt) > 0
-											? Number(line.discountAmt).toFixed(3)
-											: "—"}
-									</td>
-									<td className="py-2 px-2 text-right align-top whitespace-nowrap">
-										{line.taxRateSnapshot ? (
-											<span>{Number(line.taxRateSnapshot)}%</span>
-										) : (
-											"—"
-										)}
-									</td>
-									<td className="py-2 px-2 text-right align-top whitespace-nowrap">
-										{line.taxRateName ? (
-											<span>{Number(line.taxAmt).toFixed(3)}</span>
-										) : (
-											"—"
-										)}
-									</td>
-									<td className="py-2 pl-2 text-right align-top whitespace-nowrap font-medium">
-										{Number(line.total).toFixed(3)}
-									</td>
-								</tr>
-							))}
-							{lines.length === 0 && (
-								<tr>
-									<td
-										colSpan={8}
-										className="py-6 text-center text-muted-foreground"
-									>
-										{t("invoices.noLineItems")}
-									</td>
-								</tr>
-							)}
-						</tbody>
-					</table>
+					<LineItemsTable lines={lines} t={t} />
 				</div>
 
 				{/* Totals */}
@@ -378,17 +545,15 @@ export default function DocumentPrintPage() {
 					</div>
 				)}
 
-				{/* Terms — always on its own last page */}
-				{(invoice.termsText || org?.defaultTermsText) && (
+				{/* Terms — always on its own last page. Rendered via safe parser, no dangerouslySetInnerHTML. */}
+				{termsHtml && (
 					<div className="px-8 py-3 border-t print:px-6 print:break-before-page">
 						<h3 className="text-xs font-semibold text-muted-foreground uppercase mb-1">
 							{t("invoices.termsAndConditions")}
 						</h3>
-						<div
+						<SafeRichText
+							html={termsHtml}
 							className="text-sm [&_ol]:list-decimal [&_ul]:list-disc [&_ol,&_ul]:pl-5 [&_li]:mb-0.5"
-							dangerouslySetInnerHTML={{
-								__html: invoice.termsText || org?.defaultTermsText || "",
-							}}
 						/>
 					</div>
 				)}
@@ -401,36 +566,11 @@ export default function DocumentPrintPage() {
 							<h3 className="text-xs font-semibold text-muted-foreground uppercase mb-1">
 								{t("invoices.paymentHistory")}
 							</h3>
-							<table className="w-full text-sm">
-								<thead>
-									<tr className="border-b text-xs text-muted-foreground">
-										<th className="text-left py-1 pr-2">{t("common.date")}</th>
-										<th className="text-left py-1 pr-2">
-											{t("common.method")}
-										</th>
-										<th className="text-right py-1 pl-2">
-											{t("common.amount")}
-										</th>
-										<th className="text-left py-1 pl-2">
-											{t("common.reference")}
-										</th>
-									</tr>
-								</thead>
-								<tbody>
-									{invoice.payments.map((p: any) => (
-										<tr key={p.id}>
-											<td className="py-1 pr-2">{formatDate(p.date)}</td>
-											<td className="py-1 pr-2">{p.method}</td>
-											<td className="py-1 pl-2 text-right">
-												{Number(p.amount).toFixed(3)}
-											</td>
-											<td className="py-1 pl-2 text-muted-foreground">
-												{p.reference ?? "—"}
-											</td>
-										</tr>
-									))}
-								</tbody>
-							</table>
+							<PaymentsTable
+								payments={invoice.payments}
+								t={t}
+								formatDate={formatDate}
+							/>
 						</div>
 					)}
 
