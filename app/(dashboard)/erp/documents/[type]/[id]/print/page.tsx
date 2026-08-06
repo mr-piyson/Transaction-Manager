@@ -229,6 +229,7 @@ export default function DocumentPrintPage() {
 									{t("invoices.unitPrice")}
 								</th>
 								<th className="text-right py-2 px-2">{t("common.discount")}</th>
+								<th className="text-right py-2 px-2">{t("common.tax")} %</th>
 								<th className="text-right py-2 px-2">{t("common.tax")}</th>
 								<th className="text-right py-2 pl-2">{t("common.total")}</th>
 							</tr>
@@ -266,13 +267,11 @@ export default function DocumentPrintPage() {
 											: "—"}
 									</td>
 									<td className="py-2 px-2 text-right align-top whitespace-nowrap">
+										{line.taxRateName ? <span>{line.taxRateName}</span> : "—"}
+									</td>
+									<td className="py-2 px-2 text-right align-top whitespace-nowrap">
 										{line.taxRateName ? (
-											<span>
-												{Number(line.taxAmt).toFixed(3)}
-												<span className="text-xs text-muted-foreground ml-0.5">
-													({line.taxRateName})
-												</span>
-											</span>
+											<span>{Number(line.taxAmt).toFixed(3)}</span>
 										) : (
 											"—"
 										)}
@@ -285,7 +284,7 @@ export default function DocumentPrintPage() {
 							{lines.length === 0 && (
 								<tr>
 									<td
-										colSpan={7}
+										colSpan={8}
 										className="py-6 text-center text-muted-foreground"
 									>
 										{t("invoices.noLineItems")}
