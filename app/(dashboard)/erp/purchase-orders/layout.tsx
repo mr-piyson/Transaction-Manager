@@ -3,6 +3,8 @@
 import {
 	Edit,
 	Eye,
+	MoreHorizontal,
+	Plus,
 	ShieldAlert,
 	ShoppingCart,
 	Trash2,
@@ -22,6 +24,13 @@ import { useHardDeleteForm } from "@/components/dialogs/hardDeleteForm";
 import { Header } from "@/components/layout/App-Header";
 import { ListView } from "@/components/list-view";
 import { POListItem } from "@/components/purchase-orders/po-list-item";
+import { Button } from "@/components/ui/button";
+import {
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuItem,
+	DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import {
 	ResizableHandle,
 	ResizablePanel,
@@ -32,12 +41,11 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { trpc } from "@/lib/trpc/client";
 import { cn } from "@/lib/utils";
 
-const title = "Purchase Orders";
 const route = "purchase-orders";
 
 export default function POLayout({ children }: { children?: React.ReactNode }) {
 	const t = useTranslations();
-	const { openEdit } = usePOForm();
+	const { openCreate, openEdit } = usePOForm();
 	const { openDialog: openHardDelete } = useHardDeleteForm();
 	const { data: me } = trpc.auth.me.useQuery();
 	const isSuperAdmin = me?.platformRole === "SUPER_ADMIN";
@@ -210,6 +218,31 @@ export default function POLayout({ children }: { children?: React.ReactNode }) {
 				title={t("layout.purchaseOrders")}
 				icon={<ShoppingCart className="size-5" />}
 			/>
+			<div className="flex flex-row items-center justify-between border-b px-4 py-2 shrink-0">
+				<div className="flex gap-2 items-center">
+					<Button size="sm" onClick={() => openCreate()}>
+						<Plus className="size-3.5" />
+						<span className="hidden md:block">
+							{t("purchaseOrders.createPO")}
+						</span>
+					</Button>
+				</div>
+				<div className="flex gap-2 items-center md:hidden">
+					<DropdownMenu>
+						<DropdownMenuTrigger asChild>
+							<Button variant="outline" size="sm">
+								<MoreHorizontal className="size-3.5" />
+							</Button>
+						</DropdownMenuTrigger>
+						<DropdownMenuContent align="end">
+							<DropdownMenuItem onClick={() => openCreate()}>
+								<Plus className="size-3.5" />
+								{t("purchaseOrders.createPO")}
+							</DropdownMenuItem>
+						</DropdownMenuContent>
+					</DropdownMenu>
+				</div>
+			</div>
 			<div className="flex-1 min-h-0 w-full">
 				<ResizablePanelGroup className="h-full">
 					{(isListView || !isMobile) && (
@@ -228,7 +261,12 @@ export default function POLayout({ children }: { children?: React.ReactNode }) {
 										isLoading={isPending}
 										className="h-full"
 										useTheme
-										searchFields={["serial"] as any}
+										searchFields={["serial", "supplier.name", "status"]}
+										searchFieldLabels={{
+											serial: t("purchaseOrders.poNumber"),
+											"supplier.name": t("purchaseOrders.supplier"),
+											status: t("purchaseOrders.status"),
+										}}
 										rowHeight={73}
 										emptyTitle={t("purchaseOrders.noPOs")}
 										emptyDescription={t("purchaseOrders.createPO")}

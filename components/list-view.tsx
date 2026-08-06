@@ -9,7 +9,15 @@ import {
 	EmptyDescription,
 	EmptyTitle,
 } from "@/components/ui/empty";
+import { useDirection } from "@/components/ui/direction";
 import { Input } from "@/components/ui/input";
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "@/components/ui/select";
 import { Spinner } from "@/components/ui/spinner";
 import { cn } from "@/lib/utils";
 
@@ -19,6 +27,7 @@ interface ListViewProps<T> {
 	className?: string;
 	useTheme?: boolean;
 	searchFields?: (keyof T | string)[];
+	searchFieldLabels?: Record<string, string>;
 	rowHeight?: number;
 	emptyTitle?: string;
 	emptyDescription?: string;
@@ -36,6 +45,7 @@ export function ListView<T extends Record<string, any>>({
 	isLoading = false,
 	className,
 	searchFields = [],
+	searchFieldLabels = {},
 	rowHeight = 72,
 	emptyTitle = "No items found",
 	emptyDescription,
@@ -44,8 +54,11 @@ export function ListView<T extends Record<string, any>>({
 	searchPlaceholder = "Search...",
 }: ListViewProps<T>) {
 	const [search, setSearch] = useState("");
+	const [searchField, setSearchField] = useState("__all__");
 	const [scrollReady, setScrollReady] = useState(false);
 	const scrollRef = useRef<HTMLDivElement>(null);
+	const dir = useDirection();
+	const isRtl = dir === "rtl";
 
 	const setScrollRef = useCallback((node: HTMLDivElement | null) => {
 		scrollRef.current = node;
@@ -58,13 +71,18 @@ export function ListView<T extends Record<string, any>>({
 		if (!search.trim()) return data;
 
 		const query = search.toLowerCase();
+		const fieldsToSearch =
+			searchField === "__all__"
+				? searchFields
+				: [searchField as keyof T | string];
+
 		return data.filter((item) =>
-			searchFields.some((field) => {
+			fieldsToSearch.some((field) => {
 				const value = getNestedValue(item, field as string);
 				return value != null && String(value).toLowerCase().includes(query);
 			}),
 		);
-	}, [data, search, searchFields]);
+	}, [data, search, searchFields, searchField]);
 
 	const virtualizer = useVirtualizer({
 		count: filteredData.length,
@@ -81,14 +99,34 @@ export function ListView<T extends Record<string, any>>({
 
 	return (
 		<div className={cn("flex flex-col", className)}>
-			<div className="p-2">
-				<div className="relative">
-					<Search className="absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+			<div className="flex items-center gap-2 p-2">
+				{searchFields.length > 1 && (
+					<Select value={searchField} onValueChange={setSearchField}>
+						<SelectTrigger size="sm" className="h-8 w-auto shrink-0">
+							<SelectValue placeholder={isRtl ? "جميع الحقول" : "All fields"} />
+						</SelectTrigger>
+						<SelectContent align={isRtl ? "end" : "start"}>
+							<SelectItem value="__all__">
+								{isRtl ? "جميع الحقول" : "All fields"}
+							</SelectItem>
+							{searchFields.map((field) => (
+								<SelectItem key={field as string} value={field as string}>
+									{searchFieldLabels[field as string] ?? (field as string)}
+								</SelectItem>
+							))}
+						</SelectContent>
+					</Select>
+				)}
+				<div className="relative flex-1">
+					<Search className={cn(
+						"absolute top-1/2 size-4 -translate-y-1/2 text-muted-foreground",
+						isRtl ? "right-2.5" : "left-2.5",
+					)} />
 					<Input
 						value={search}
 						onChange={(e) => setSearch(e.target.value)}
 						placeholder={searchPlaceholder}
-						className="h-8 pl-8 text-sm"
+						className={cn("h-8 text-sm", isRtl ? "pr-8" : "pl-8")}
 					/>
 				</div>
 			</div>
