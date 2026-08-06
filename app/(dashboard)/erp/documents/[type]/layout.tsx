@@ -135,8 +135,7 @@ export default function DocumentsLayout({
 								id: "edit",
 								label: t("common.edit"),
 								icon: Edit,
-								onClick: () =>
-									router.push(`/erp/documents/${type}/${item.id}`),
+								onClick: () => router.push(`/erp/documents/${type}/${item.id}`),
 							},
 						]
 					: []),
@@ -191,9 +190,7 @@ export default function DocumentsLayout({
 							data={item}
 							className={cn(
 								"hover:bg-muted/40 border border-transparent rounded-lg",
-								activeItem === item.id
-									? "border-primary bg-primary/10"
-									: "",
+								activeItem === item.id ? "border-primary bg-primary/10" : "",
 							)}
 						/>
 					</Link>
@@ -260,9 +257,7 @@ export default function DocumentsLayout({
 										size="sm"
 										className="h-8 text-xs"
 										onClick={() =>
-											setPaymentStatusFilter(
-												f.value === "all" ? null : f.value,
-											)
+											setPaymentStatusFilter(f.value === "all" ? null : f.value)
 										}
 									>
 										{t(f.labelKey)}
@@ -315,10 +310,7 @@ export default function DocumentsLayout({
 						)}
 
 						<ResizableHandle
-							className={cn(
-								"hidden md:flex",
-								!isListRoute && "hidden md:flex",
-							)}
+							className={cn("hidden md:flex", !isListRoute && "hidden md:flex")}
 						/>
 
 						{(!isListRoute || !isMobile) && (

@@ -25,7 +25,7 @@ export function InvoiceListItem({
 	const { serial, status, customer, date, total, currency } = data || {};
 
 	return (
-		<div className={cn("flex items-center gap-3 h-18", className)} {...props}>
+		<div className={cn("flex items-center gap-3 p-3", className)} {...props}>
 			<div className="size-11 rounded-lg bg-muted flex items-center justify-center shrink-0">
 				<Receipt className="size-5 text-muted-foreground" />
 			</div>
@@ -33,7 +33,7 @@ export function InvoiceListItem({
 				<div className="flex items-center gap-2">
 					<p className="font-semibold truncate">{serial}</p>
 					<Badge variant="outline" className={STATUS_COLORS[status] ?? ""}>
-						{status}
+						{status?.replace(/_/g, " ")}
 					</Badge>
 				</div>
 				<p className="text-sm text-muted-foreground truncate">
