@@ -89,7 +89,7 @@ export default function PurchaseOrderPrintPage() {
 	return (
 		<div className="min-h-screen bg-muted/30 print:bg-white">
 			{/* Toolbar — hidden when printing */}
-			<div className="sticky top-0 z-50 flex items-center gap-2 border-b bg-background px-4 py-2 print:hidden">
+			<div className="sticky top-0 z-50 flex items-center gap-1.5 sm:gap-2 border-b bg-background px-2 sm:px-4 py-2 print:hidden">
 				<Button
 					variant="ghost"
 					size="icon"
@@ -97,25 +97,25 @@ export default function PurchaseOrderPrintPage() {
 				>
 					<ArrowLeft className="size-5" />
 				</Button>
-				<span className="text-sm text-muted-foreground">|</span>
-				<span className="text-sm font-medium truncate flex-1">
+				<span className="text-sm text-muted-foreground hidden sm:inline">|</span>
+				<span className="text-sm font-medium truncate flex-1 min-w-0">
 					{po.serial} — {t("purchaseOrders.title")}
 				</span>
-				<Button onClick={handlePrint} disabled={printing}>
+				<Button onClick={handlePrint} disabled={printing} size="sm">
 					{printing ? (
-						<Loader2 className="size-4 mr-1 animate-spin" />
+						<Loader2 className="size-4 animate-spin" />
 					) : (
-						<Printer className="size-4 mr-1" />
+						<Printer className="size-4" />
 					)}
-					{t("common.print")}
+					<span className="hidden sm:inline ml-1">{t("common.print")}</span>
 				</Button>
-				<Button onClick={handleDownloadPdf} disabled={downloading} variant="outline">
+				<Button onClick={handleDownloadPdf} disabled={downloading} variant="outline" size="sm">
 					{downloading ? (
-						<Loader2 className="size-4 mr-1 animate-spin" />
+						<Loader2 className="size-4 animate-spin" />
 					) : (
-						<Download className="size-4 mr-1" />
+						<Download className="size-4" />
 					)}
-					{t("common.downloadPdf")}
+					<span className="hidden sm:inline ml-1">{t("common.downloadPdf")}</span>
 				</Button>
 			</div>
 
