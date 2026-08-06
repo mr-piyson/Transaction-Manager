@@ -97,7 +97,7 @@ export default function PurchaseOrderPrintPage() {
 
 			{/* Document — always light theme regardless of system theme */}
 			<div
-				className="mx-auto max-w-[210mm] bg-white shadow-sm print:shadow-none print:mx-0 print:max-w-none"
+				className="mx-auto max-w-[210mm] bg-white shadow-sm print:shadow-none print:mx-0 print:max-w-none print:p-[15mm_10mm]"
 				style={
 					{
 						colorScheme: "light",
@@ -248,9 +248,9 @@ export default function PurchaseOrderPrintPage() {
 											{line.item?.name ?? "—"}
 										</span>
 										{line.item?.sku && (
-											<span className="text-xs text-muted-foreground ml-1">
-												({line.item.sku})
-											</span>
+											<p className="text-xs text-muted-foreground">
+												SKU: {line.item.sku}
+											</p>
 										)}
 										{line.description && (
 											<p className="text-xs text-muted-foreground">
@@ -270,7 +270,11 @@ export default function PurchaseOrderPrintPage() {
 										{Number(line.unitCost).toFixed(3)}
 									</td>
 									<td className="py-2 px-2 text-right align-top whitespace-nowrap">
-										{line.taxRateName ? <span>{line.taxRateName}</span> : "—"}
+										{line.taxRateSnapshot ? (
+											<span>{Number(line.taxRateSnapshot)}%</span>
+										) : (
+											"—"
+										)}
 									</td>
 									<td className="py-2 px-2 text-right align-top whitespace-nowrap">
 										{line.taxRateName ? (
@@ -399,7 +403,7 @@ export default function PurchaseOrderPrintPage() {
 			<style jsx global>{`
         @media print {
           @page {
-            margin: 15mm 10mm;
+            margin: 0;
             size: A4;
           }
           body {
