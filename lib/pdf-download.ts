@@ -1,40 +1,53 @@
-import html2canvas from "html2canvas-pro";
+import domtoimage from "dom-to-image-more";
 import { jsPDF } from "jspdf";
 
 /**
  * Captures an HTML element and downloads it as a PDF file.
+ * Uses dom-to-image-more for better cross-browser/mobile compatibility.
  */
 export async function downloadElementAsPdf(
 	element: HTMLElement,
 	filename: string,
 ): Promise<void> {
-	const canvas = await html2canvas(element, {
-		scale: 2,
-		useCORS: true,
-		backgroundColor: "#ffffff",
+	const imgData = await domtoimage.toPng(element, {
+		quality: 1,
+		pixelRatio: 2,
+		bgcolor: "#ffffff",
+		style: {
+			"print-color-adjust": "exact",
+			"-webkit-print-color-adjust": "exact",
+		},
 	});
 
-	const imgWidth = 210; // A4 width in mm
-	const imgHeight = (canvas.height * imgWidth) / canvas.width;
+	const img = new Image();
+	await new Promise<void>((resolve, reject) => {
+		img.onload = () => resolve();
+		img.onerror = reject;
+		img.src = imgData;
+	});
 
 	const pdf = new jsPDF({
-		orientation: imgHeight > 297 ? "portrait" : "portrait",
+		orientation: "portrait",
 		unit: "mm",
 		format: "a4",
 	});
 
-	const imgData = canvas.toDataURL("image/png");
+	const pdfWidth = 210;
+	const pdfHeight = 297;
+	const imgWidth = pdfWidth;
+	const imgHeight = (img.height * pdfWidth) / img.width;
+
 	let heightLeft = imgHeight;
 	let position = 0;
 
 	pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
-	heightLeft -= 297;
+	heightLeft -= pdfHeight;
 
 	while (heightLeft > 0) {
-		position = -(297 * (Math.ceil(imgHeight / 297) - Math.ceil(heightLeft / 297)));
+		position = heightLeft - imgHeight;
 		pdf.addPage();
 		pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
-		heightLeft -= 297;
+		heightLeft -= pdfHeight;
 	}
 
 	pdf.save(filename);
