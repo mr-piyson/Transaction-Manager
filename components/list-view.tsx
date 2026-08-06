@@ -1,7 +1,8 @@
 "use client";
 
+import { useVirtualizer } from "@tanstack/react-virtual";
 import { Search } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
 	Empty,
 	EmptyContent,
@@ -43,6 +44,15 @@ export function ListView<T extends Record<string, any>>({
 	searchPlaceholder = "Search...",
 }: ListViewProps<T>) {
 	const [search, setSearch] = useState("");
+	const [scrollReady, setScrollReady] = useState(false);
+	const scrollRef = useRef<HTMLDivElement>(null);
+
+	const setScrollRef = useCallback((node: HTMLDivElement | null) => {
+		scrollRef.current = node;
+		if (node) {
+			setScrollReady(true);
+		}
+	}, []);
 
 	const filteredData = useMemo(() => {
 		if (!search.trim()) return data;
@@ -56,18 +66,18 @@ export function ListView<T extends Record<string, any>>({
 		);
 	}, [data, search, searchFields]);
 
-	if (isLoading) {
-		return (
-			<div
-				className={cn(
-					"flex flex-col items-center justify-center p-6",
-					className,
-				)}
-			>
-				<Spinner className="size-6 text-muted-foreground" />
-			</div>
-		);
-	}
+	const virtualizer = useVirtualizer({
+		count: filteredData.length,
+		getScrollElement: () => scrollRef.current,
+		estimateSize: () => rowHeight,
+		overscan: 5,
+	});
+
+	useEffect(() => {
+		if (scrollReady && filteredData.length > 0) {
+			virtualizer.scrollToIndex(0);
+		}
+	}, [scrollReady, filteredData.length, virtualizer]);
 
 	return (
 		<div className={cn("flex flex-col", className)}>
@@ -82,8 +92,12 @@ export function ListView<T extends Record<string, any>>({
 					/>
 				</div>
 			</div>
-			<div className="flex-1 overflow-y-auto">
-				{filteredData.length === 0 ? (
+			<div ref={setScrollRef} className="flex-1 overflow-y-auto">
+				{isLoading ? (
+					<div className="flex items-center justify-center p-6">
+						<Spinner className="size-6 text-muted-foreground" />
+					</div>
+				) : filteredData.length === 0 ? (
 					<Empty className="p-6">
 						{emptyIcon && <>{emptyIcon}</>}
 						<EmptyContent>
@@ -94,12 +108,32 @@ export function ListView<T extends Record<string, any>>({
 						</EmptyContent>
 					</Empty>
 				) : (
-					<div className="flex flex-col">
-						{filteredData.map((item, index) => (
-							<div key={item.id ?? index} style={{ minHeight: rowHeight }}>
-								{cardRenderer(item)}
-							</div>
-						))}
+					<div
+						style={{
+							height: `${virtualizer.getTotalSize()}px`,
+							position: "relative",
+							width: "100%",
+						}}
+					>
+						{virtualizer.getVirtualItems().map((virtualRow) => {
+							const item = filteredData[virtualRow.index];
+							return (
+								<div
+									key={item.id ?? virtualRow.index}
+									data-index={virtualRow.index}
+									ref={virtualizer.measureElement}
+									style={{
+										position: "absolute",
+										top: 0,
+										left: 0,
+										width: "100%",
+										transform: `translateY(${virtualRow.start}px)`,
+									}}
+								>
+									{cardRenderer(item)}
+								</div>
+							);
+						})}
 					</div>
 				)}
 			</div>
