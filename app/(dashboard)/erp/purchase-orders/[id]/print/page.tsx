@@ -1,12 +1,13 @@
 "use client";
 
-import { ArrowLeft, Loader2, Printer } from "lucide-react";
+import { ArrowLeft, Download, Loader2, Printer } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import * as React from "react";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { useDateFormat } from "@/hooks/use-date-format";
+import { downloadElementAsPdf } from "@/lib/pdf-download";
 import { trpc } from "@/lib/trpc/client";
 
 const STATUS_STYLES: Record<string, string> = {
@@ -39,6 +40,8 @@ export default function PurchaseOrderPrintPage() {
 	const { data: org } = trpc.organizations.get.useQuery();
 
 	const [printing, setPrinting] = React.useState(false);
+	const [downloading, setDownloading] = React.useState(false);
+	const documentRef = React.useRef<HTMLDivElement>(null);
 
 	const handlePrint = () => {
 		setPrinting(true);
@@ -46,6 +49,19 @@ export default function PurchaseOrderPrintPage() {
 			window.print();
 			setPrinting(false);
 		}, 100);
+	};
+
+	const handleDownloadPdf = async () => {
+		if (!documentRef.current) return;
+		setDownloading(true);
+		try {
+			await downloadElementAsPdf(
+				documentRef.current,
+				`${po.serial}.pdf`,
+			);
+		} finally {
+			setDownloading(false);
+		}
 	};
 
 	if (isLoading) {
@@ -93,10 +109,19 @@ export default function PurchaseOrderPrintPage() {
 					)}
 					{t("common.print")}
 				</Button>
+				<Button onClick={handleDownloadPdf} disabled={downloading} variant="outline">
+					{downloading ? (
+						<Loader2 className="size-4 mr-1 animate-spin" />
+					) : (
+						<Download className="size-4 mr-1" />
+					)}
+					{t("common.downloadPdf")}
+				</Button>
 			</div>
 
 			{/* Document — always light theme regardless of system theme */}
 			<div
+				ref={documentRef}
 				className="mx-auto max-w-[210mm] bg-white shadow-sm print:shadow-none print:mx-0 print:max-w-none print:p-[15mm_10mm]"
 				style={
 					{
