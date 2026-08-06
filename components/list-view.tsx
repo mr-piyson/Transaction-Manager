@@ -187,6 +187,7 @@ export function ListView<T extends Record<string, any>>({
 										width: "100%",
 										transform: `translateY(${virtualRow.start}px)`,
 									}}
+									className="border-b border-border/50"
 								>
 									{cardRenderer(item)}
 								</div>

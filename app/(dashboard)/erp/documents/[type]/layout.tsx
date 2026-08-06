@@ -1,58 +1,39 @@
 "use client";
 
 import {
-	AllCommunityModule,
-	type ColDef,
-	type FilterModel,
-	type GridApi,
-	ModuleRegistry,
-} from "ag-grid-community";
-import { AgGridReact } from "ag-grid-react";
-import {
 	Edit,
 	Eye,
 	FileText,
-	MoreHorizontal,
 	Plus,
 	Receipt,
 	ShieldAlert,
 	Trash2,
+	User2,
 } from "lucide-react";
 import Link from "next/link";
 import { useParams, usePathname, useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { parseAsString, useQueryState } from "nuqs";
-import type * as React from "react";
-import { useCallback, useEffect, useMemo, useRef } from "react";
+import { useCallback } from "react";
 import { toast } from "sonner";
 import { alert } from "@/components/Alert-dialog";
+import type { ContextMenuItemSchema } from "@/components/context-menu";
+import { UniversalContextMenu } from "@/components/context-menu";
 import { useInvoiceForm } from "@/components/dialogs";
 import { useHardDeleteForm } from "@/components/dialogs/hardDeleteForm";
-import { DocumentFilterBar } from "@/components/erp/document-filter-bar";
 import { InvoiceListItem } from "@/components/invoices/invoice-list-item";
 import { Header } from "@/components/layout/App-Header";
-import { Badge } from "@/components/ui/badge";
+import { ListView } from "@/components/list-view";
 import { Button } from "@/components/ui/button";
 import {
-	ContextMenu,
-	ContextMenuContent,
-	ContextMenuItem,
-	ContextMenuSeparator,
-	ContextMenuTrigger,
-} from "@/components/ui/context-menu";
-import {
-	DropdownMenu,
-	DropdownMenuContent,
-	DropdownMenuItem,
-	DropdownMenuSeparator,
-	DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { useDateFormat } from "@/hooks/use-date-format";
-import { useTableTheme } from "@/hooks/use-table-theme";
+	ResizableHandle,
+	ResizablePanel,
+	ResizablePanelGroup,
+} from "@/components/ui/resizable";
+import { useAppAbility } from "@/hooks/use-app-ability";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { trpc } from "@/lib/trpc/client";
 import { cn } from "@/lib/utils";
-
-ModuleRegistry.registerModules([AllCommunityModule]);
 
 const DOCUMENT_CONFIG: Record<
 	string,
@@ -62,36 +43,21 @@ const DOCUMENT_CONFIG: Record<
 	quotations: { icon: FileText, trpcType: "QUOTE" },
 };
 
-const STATUS_STYLES: Record<string, { bg: string; fg: string }> = {
-	DRAFT: {
-		bg: "bg-zinc-100 dark:bg-zinc-900/40",
-		fg: "text-zinc-700 dark:text-zinc-300",
-	},
-	SENT: {
-		bg: "bg-blue-100 dark:bg-blue-900/40",
-		fg: "text-blue-700 dark:text-blue-300",
-	},
-	APPROVED: {
-		bg: "bg-emerald-100 dark:bg-emerald-900/40",
-		fg: "text-emerald-700 dark:text-emerald-300",
-	},
-	PARTIAL: {
-		bg: "bg-amber-100 dark:bg-amber-900/40",
-		fg: "text-amber-700 dark:text-amber-300",
-	},
-	PAID: {
-		bg: "bg-green-100 dark:bg-green-900/40",
-		fg: "text-green-700 dark:text-green-300",
-	},
-	OVERDUE: {
-		bg: "bg-red-100 dark:bg-red-900/40",
-		fg: "text-red-700 dark:text-red-300",
-	},
-	CANCELLED: {
-		bg: "bg-red-100 dark:bg-red-900/40",
-		fg: "text-red-700 dark:text-red-300",
-	},
-};
+const STATUS_FILTERS = [
+	{ value: "", labelKey: "common.all" as const },
+	{ value: "DRAFT", labelKey: "invoices.draft" as const },
+	{ value: "SENT", labelKey: "invoices.sent" as const },
+	{ value: "APPROVED", labelKey: "invoices.approved" as const },
+	{ value: "CANCELLED", labelKey: "invoices.cancelled" as const },
+];
+
+const PAYMENT_STATUS_FILTERS = [
+	{ value: "all", labelKey: "common.all" as const },
+	{ value: "PENDING", labelKey: "common.pending" as const },
+	{ value: "PARTIAL", labelKey: "common.partial" as const },
+	{ value: "PAID", labelKey: "common.paid" as const },
+	{ value: "OVERDUE", labelKey: "common.overdue" as const },
+];
 
 export default function DocumentsLayout({
 	children,
@@ -102,45 +68,35 @@ export default function DocumentsLayout({
 	const params = useParams<{ type: string }>();
 	const type = params.type;
 	const config = DOCUMENT_CONFIG[type] ?? DOCUMENT_CONFIG.invoices;
-	const tableTheme = useTableTheme();
 	const { openCreate } = useInvoiceForm();
 	const { openDialog: openHardDelete } = useHardDeleteForm();
 	const { data: me } = trpc.auth.me.useQuery();
 	const isSuperAdmin = me?.platformRole === "SUPER_ADMIN";
-	const { formatDate } = useDateFormat();
+	const ability = useAppAbility();
+	const isMobile = useIsMobile();
 
-	const [statusFilter] = useQueryState("status", parseAsString.withDefault(""));
-	const [paymentStatusFilter] = useQueryState(
+	const [statusFilter, setStatusFilter] = useQueryState(
+		"status",
+		parseAsString.withDefault(""),
+	);
+	const [paymentStatusFilter, setPaymentStatusFilter] = useQueryState(
 		"paymentStatus",
 		parseAsString.withDefault("all"),
 	);
-	const [viewMode] = useQueryState("view", parseAsString.withDefault("list"));
-	const [searchQuery] = useQueryState("q", parseAsString.withDefault(""));
 
 	const showPaymentFilter = type === "invoices";
-
-	const STATUS_LABELS: Record<string, string> = {
-		DRAFT: t("invoices.draft"),
-		SENT: t("invoices.sent"),
-		APPROVED: t("invoices.approved"),
-		PARTIAL: t("invoices.partial"),
-		PAID: t("invoices.paid"),
-		OVERDUE: t("invoices.overdue"),
-		CANCELLED: t("invoices.cancelled"),
-	};
 
 	const { data, isPending } = trpc.invoices.list.useQuery({
 		type: config.trpcType,
 		status: (statusFilter || undefined) as any,
 		paymentStatus:
 			paymentStatusFilter === "all" ? undefined : (paymentStatusFilter as any),
-		search: searchQuery || undefined,
 	});
+
 	const router = useRouter();
 	const pathname = usePathname();
-	const segments = pathname.split("/");
-	const activeItem = segments[4];
-	const isListRoute = segments.length === 4;
+	const activeItem = pathname.split("/")[4];
+	const isListRoute = pathname === `/erp/documents/${type}`;
 	const isPrintRoute = pathname.endsWith("/print");
 
 	const utils = trpc.useUtils();
@@ -153,305 +109,230 @@ export default function DocumentsLayout({
 		onError: (e) => toast.error(e.message),
 	});
 
-	const documents = Array.isArray(data) ? data : (data?.data ?? []);
+	const documents = (Array.isArray(data) ? data : (data?.data ?? [])).sort(
+		(a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
+	);
 
-	const listColumnDefs = useMemo<ColDef[]>(
-		() => [
-			{
-				field: "item",
-				flex: 1,
-				sortable: false,
-				filter: false,
-				suppressMenu: true,
-				cellRenderer: (params: { data: any }) => {
-					const item = params.data;
-					const isDeletable = ["DRAFT", "CANCELLED", "DELETED"].includes(
-						item.status,
-					);
-					return (
-						<ContextMenu>
-							<ContextMenuTrigger asChild>
-								<Link
-									href={`/erp/documents/${type}/${item.id}`}
-									scroll={false}
-									draggable={false}
-									className="block w-full h-full"
-								>
-									<InvoiceListItem
-										data={item}
-										className={cn(
-											"hover:bg-muted/40 border border-transparent rounded-lg",
-											activeItem === item.id
-												? "border-primary bg-primary/10"
-												: "",
-										)}
-									/>
-								</Link>
-							</ContextMenuTrigger>
-							<ContextMenuContent>
-								<ContextMenuItem
-									onClick={() =>
-										router.push(`/erp/documents/${type}/${item.id}`)
-									}
-								>
-									<Eye className="size-4 mr-2" />
-									{t("common.viewDetails")}
-								</ContextMenuItem>
-								<ContextMenuItem
-									onClick={() =>
-										router.push(`/erp/documents/${type}/${item.id}`)
-									}
-								>
-									<Edit className="size-4 mr-2" />
-									{t("common.edit")}
-								</ContextMenuItem>
-								<ContextMenuSeparator />
-								<ContextMenuItem
-									onClick={() =>
-										alert.delete({
-											title: t("common.confirmDeleteTitle"),
-											description: "This action cannot be undone.",
-											confirmText: t("common.delete"),
-											onConfirm: async () => {
-												await deleteMutation.mutateAsync({ id: item.id });
-											},
-										})
-									}
-									disabled={!isDeletable}
-									variant="destructive"
-								>
-									<Trash2 className="size-4 mr-2" />
-									{t("common.delete")}
-								</ContextMenuItem>
-								{isSuperAdmin && (
-									<>
-										<ContextMenuSeparator />
-										<ContextMenuItem
-											onClick={() =>
-												openHardDelete({
-													kind: "invoice",
-													id: item.id,
-													title: item.serial,
-												})
-											}
-											variant="destructive"
-										>
-											<ShieldAlert className="size-4 mr-2" />
-											{t("hardDelete.menu")}
-										</ContextMenuItem>
-									</>
-								)}
-							</ContextMenuContent>
-						</ContextMenu>
-					);
+	const renderCard = useCallback(
+		(item: any) => {
+			const isDeletable = ["DRAFT", "CANCELLED", "DELETED"].includes(
+				item.status,
+			);
+
+			const canEdit = ability?.can("invoice:update", "Invoice");
+			const canDelete = ability?.can("invoice:delete", "Invoice");
+
+			const menuItems: ContextMenuItemSchema[] = [
+				{
+					id: "view",
+					label: t("common.viewDetails"),
+					icon: Eye,
+					onClick: () => router.push(`/erp/documents/${type}/${item.id}`),
 				},
-			},
+				...(canEdit
+					? [
+							{
+								id: "edit",
+								label: t("common.edit"),
+								icon: Edit,
+								onClick: () =>
+									router.push(`/erp/documents/${type}/${item.id}`),
+							},
+						]
+					: []),
+				...(canDelete
+					? [
+							{ id: "sep1", type: "separator" as const },
+							{
+								id: "delete",
+								label: t("common.delete"),
+								icon: Trash2,
+								onClick: () =>
+									alert.delete({
+										title: t("common.confirmDeleteTitle"),
+										description: "This action cannot be undone.",
+										confirmText: t("common.delete"),
+										onConfirm: async () => {
+											await deleteMutation.mutateAsync({ id: item.id });
+										},
+									}),
+								disabled: !isDeletable,
+							},
+						]
+					: []),
+				...(isSuperAdmin
+					? [
+							{ id: "sep2", type: "separator" as const },
+							{
+								id: "hardDelete",
+								label: t("hardDelete.menu"),
+								icon: ShieldAlert,
+								destructive: true,
+								onClick: () =>
+									openHardDelete({
+										kind: "invoice",
+										id: item.id,
+										title: item.serial,
+									}),
+							},
+						]
+					: []),
+			];
+
+			return (
+				<UniversalContextMenu items={menuItems}>
+					<Link
+						href={`/erp/documents/${type}/${item.id}`}
+						scroll={false}
+						draggable={false}
+						className="block w-full h-full"
+					>
+						<InvoiceListItem
+							data={item}
+							className={cn(
+								"hover:bg-muted/40 border border-transparent rounded-lg",
+								activeItem === item.id
+									? "border-primary bg-primary/10"
+									: "",
+							)}
+						/>
+					</Link>
+				</UniversalContextMenu>
+			);
+		},
+		[
+			activeItem,
+			type,
+			ability,
+			deleteMutation,
+			router,
+			isSuperAdmin,
+			openHardDelete,
+			t,
 		],
-		[activeItem, type, router, t, deleteMutation, isSuperAdmin, openHardDelete],
 	);
-
-	const tableColumnDefs = useMemo<ColDef[]>(
-		() => [
-			{
-				headerName: "Serial",
-				field: "serial",
-				width: 160,
-				cellClass: "font-mono text-[11px]",
-			},
-			{
-				headerName: "Customer",
-				field: "customer.name",
-				flex: 1,
-				filter: "agTextColumnFilter",
-				cellClass: "font-medium text-[12px]",
-				valueFormatter: (params) => params.data?.customer?.name ?? "—",
-			},
-			{
-				headerName: "Date",
-				field: "date",
-				width: 110,
-				filter: "agDateColumnFilter",
-				cellClass: "text-[12px]",
-				valueFormatter: (params) => {
-					if (!params.value) return "—";
-					return formatDate(params.value);
-				},
-			},
-			{
-				headerName: "Total",
-				field: "total",
-				width: 120,
-				type: "numericColumn",
-				filter: "agNumberColumnFilter",
-				cellClass: "tabular-nums text-[12px] font-medium",
-				valueFormatter: (params) => {
-					const val = Number(params.value) || 0;
-					return `${val.toFixed(3)} ${params.data?.currency ?? ""}`;
-				},
-			},
-			{
-				headerName: "Status",
-				field: "status",
-				width: 120,
-				filter: "agTextColumnFilter",
-				cellRenderer: (params: { value: string }) => {
-					const style = STATUS_STYLES[params.value];
-					return (
-						<Badge
-							variant="outline"
-							className={cn("gap-1 font-medium", style?.fg)}
-						>
-							{STATUS_LABELS[params.value] ?? params.value}
-						</Badge>
-					);
-				},
-			},
-			{
-				headerName: "",
-				field: "id",
-				width: 50,
-				sortable: false,
-				filter: false,
-				suppressMenu: true,
-				cellRenderer: (params: { data: any }) => {
-					const item = params.data;
-					const isDeletable = ["DRAFT", "CANCELLED", "DELETED"].includes(
-						item.status,
-					);
-					return (
-						<DropdownMenu>
-							<DropdownMenuTrigger asChild>
-								<Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-									<MoreHorizontal className="size-4" />
-								</Button>
-							</DropdownMenuTrigger>
-							<DropdownMenuContent align="end">
-								<DropdownMenuItem
-									onClick={() =>
-										router.push(`/erp/documents/${type}/${item.id}`)
-									}
-								>
-									<Eye className="size-4 mr-2" />
-									{t("common.viewDetails")}
-								</DropdownMenuItem>
-								<DropdownMenuItem
-									onClick={() =>
-										router.push(`/erp/documents/${type}/${item.id}`)
-									}
-								>
-									<Edit className="size-4 mr-2" />
-									{t("common.edit")}
-								</DropdownMenuItem>
-								<DropdownMenuSeparator />
-								<DropdownMenuItem
-									onClick={() =>
-										alert.delete({
-											title: t("common.confirmDeleteTitle"),
-											description: "This action cannot be undone.",
-											confirmText: t("common.delete"),
-											onConfirm: async () => {
-												await deleteMutation.mutateAsync({ id: item.id });
-											},
-										})
-									}
-									disabled={!isDeletable}
-								>
-									<Trash2 className="size-4 mr-2 text-destructive" />
-									<span className="text-destructive">{t("common.delete")}</span>
-								</DropdownMenuItem>
-								{isSuperAdmin && (
-									<>
-										<DropdownMenuSeparator />
-										<DropdownMenuItem
-											onClick={() =>
-												openHardDelete({
-													kind: "invoice",
-													id: item.id,
-													title: item.serial,
-												})
-											}
-										>
-											<ShieldAlert className="size-4 mr-2 text-destructive" />
-											<span className="text-destructive">
-												{t("hardDelete.menu")}
-											</span>
-										</DropdownMenuItem>
-									</>
-								)}
-							</DropdownMenuContent>
-						</DropdownMenu>
-					);
-				},
-			},
-		],
-		[router, activeItem, t, deleteMutation, type, isSuperAdmin, openHardDelete],
-	);
-
-	const defaultColDef = useMemo(
-		() => ({
-			sortable: true,
-			filter: true,
-			resizable: true,
-			minWidth: 60,
-		}),
-		[],
-	);
-
-	const gridApiRef = useRef<GridApi | null>(null);
-	const gridRef = useRef<any>(null);
-
-	const columnDefs = viewMode === "list" ? listColumnDefs : tableColumnDefs;
 
 	const Icon = config.icon;
 	const headerTitle =
 		type === "invoices" ? t("layout.invoices") : t("layout.quotations");
 
-	// Sync nuqs status filter to ag-grid filter model for table view
-	const onFilterChanged = useCallback(() => {
-		const api = gridApiRef.current;
-		if (!api || viewMode !== "table") return;
-		// When user changes ag-grid filters, we could sync back to nuqs
-		// For now, the server-side filter from nuqs takes precedence
-	}, [viewMode]);
-
-	if (isPrintRoute) return <>{children}</>;
-
 	return (
-		<div className="flex h-screen flex-col overflow-hidden">
-			<Header title={headerTitle} icon={<Icon className="size-5" />} />
-			<div className="flex-1 min-h-0 w-full">
-				{isListRoute ? (
-					<div className="h-full w-full flex flex-col">
-						<DocumentFilterBar
-							type={type}
-							showPaymentFilter={showPaymentFilter}
-							onCreate={() =>
-								openCreate({ defaults: { type: config.trpcType } })
-							}
-						/>
-						<AgGridReact
-							ref={gridRef}
-							rowData={documents}
-							columnDefs={columnDefs}
-							defaultColDef={viewMode === "list" ? undefined : defaultColDef}
-							theme={tableTheme}
-							animateRows
-							onGridReady={(params) => {
-								gridApiRef.current = params.api;
-							}}
-							onFilterChanged={onFilterChanged}
-							domLayout="normal"
-							getRowId={(params) => params.data.id}
-							suppressScrollOnNewData
-							enableCellTextSelection
-							ensureDomOrder
-							loading={isPending}
-							headerHeight={viewMode === "list" ? 0 : undefined}
-							rowHeight={viewMode === "list" ? 72 : undefined}
-						/>
+		<div
+			className={cn(
+				"flex h-screen flex-col overflow-hidden",
+				isPrintRoute && "print-layout",
+			)}
+		>
+			{!isPrintRoute && (
+				<>
+					<Header title={headerTitle} icon={<Icon className="size-5" />} />
+					<div className="flex flex-row items-center justify-between border-b px-4 h-14 shrink-0">
+						<div className="flex gap-2 items-center flex-wrap">
+							<Button
+								size="sm"
+								onClick={() =>
+									openCreate({ defaults: { type: config.trpcType } })
+								}
+							>
+								<Plus className="size-3.5" />
+								<span className="hidden md:block">
+									{t("invoices.newInvoice")}
+								</span>
+							</Button>
+							{STATUS_FILTERS.map((f) => (
+								<Button
+									key={f.value}
+									variant={statusFilter === f.value ? "default" : "outline"}
+									size="sm"
+									className="h-8 text-xs"
+									onClick={() => setStatusFilter(f.value || null)}
+								>
+									{t(f.labelKey)}
+								</Button>
+							))}
+							{showPaymentFilter &&
+								PAYMENT_STATUS_FILTERS.map((f) => (
+									<Button
+										key={f.value}
+										variant={
+											paymentStatusFilter === f.value ? "default" : "outline"
+										}
+										size="sm"
+										className="h-8 text-xs"
+										onClick={() =>
+											setPaymentStatusFilter(
+												f.value === "all" ? null : f.value,
+											)
+										}
+									>
+										{t(f.labelKey)}
+									</Button>
+								))}
+						</div>
 					</div>
+				</>
+			)}
+			<div
+				className={cn("flex-1 min-h-0 w-full", isPrintRoute && "overflow-auto")}
+			>
+				{isPrintRoute ? (
+					children
 				) : (
-					<div className="h-full w-full overflow-y-auto">{children}</div>
+					<ResizablePanelGroup className="h-full">
+						{(isListRoute || !isMobile) && (
+							<ResizablePanel
+								minSize={20}
+								defaultSize={30}
+								className={cn(
+									"h-full",
+									!isListRoute ? "hidden md:block" : "block",
+								)}
+							>
+								<aside className="flex h-full flex-col overflow-hidden border-r">
+									<div className="flex-1 overflow-y-auto">
+										<ListView
+											data={documents}
+											isLoading={isPending}
+											className="h-full"
+											useTheme
+											searchFields={["serial", "customer.name", "status"]}
+											searchFieldLabels={{
+												serial: t("common.serial"),
+												"customer.name": t("common.customer"),
+												status: t("common.status"),
+											}}
+											rowHeight={72}
+											emptyTitle={t("invoices.noInvoices")}
+											emptyDescription={t("invoices.selectDescription")}
+											emptyIcon={
+												<User2 className="size-20 text-muted-foreground" />
+											}
+											cardRenderer={renderCard}
+										/>
+									</div>
+								</aside>
+							</ResizablePanel>
+						)}
+
+						<ResizableHandle
+							className={cn(
+								"hidden md:flex",
+								!isListRoute && "hidden md:flex",
+							)}
+						/>
+
+						{(!isListRoute || !isMobile) && (
+							<ResizablePanel
+								defaultSize={70}
+								className={cn(
+									"h-full w-full",
+									isListRoute ? "hidden md:block" : "flex flex-col",
+								)}
+							>
+								{children}
+							</ResizablePanel>
+						)}
+					</ResizablePanelGroup>
 				)}
 			</div>
 		</div>
