@@ -52,13 +52,10 @@ export default function PurchaseOrderPrintPage() {
 	};
 
 	const handleDownloadPdf = async () => {
-		if (!documentRef.current) return;
+		if (!documentRef.current || !po) return;
 		setDownloading(true);
 		try {
-			await downloadElementAsPdf(
-				documentRef.current,
-				`${po.serial}.pdf`,
-			);
+			await downloadElementAsPdf(documentRef.current, `${po.serial}.pdf`);
 		} finally {
 			setDownloading(false);
 		}
@@ -97,7 +94,9 @@ export default function PurchaseOrderPrintPage() {
 				>
 					<ArrowLeft className="size-5" />
 				</Button>
-				<span className="text-sm text-muted-foreground hidden sm:inline">|</span>
+				<span className="text-sm text-muted-foreground hidden sm:inline">
+					|
+				</span>
 				<span className="text-sm font-medium truncate flex-1 min-w-0">
 					{po.serial} — {t("purchaseOrders.title")}
 				</span>
@@ -109,13 +108,20 @@ export default function PurchaseOrderPrintPage() {
 					)}
 					<span className="hidden sm:inline ml-1">{t("common.print")}</span>
 				</Button>
-				<Button onClick={handleDownloadPdf} disabled={downloading} variant="outline" size="sm">
+				<Button
+					onClick={handleDownloadPdf}
+					disabled={downloading}
+					variant="outline"
+					size="sm"
+				>
 					{downloading ? (
 						<Loader2 className="size-4 animate-spin" />
 					) : (
 						<Download className="size-4" />
 					)}
-					<span className="hidden sm:inline ml-1">{t("common.downloadPdf")}</span>
+					<span className="hidden sm:inline ml-1">
+						{t("common.downloadPdf")}
+					</span>
 				</Button>
 			</div>
 
