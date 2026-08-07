@@ -2,14 +2,12 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
-	Calculator,
 	Loader2,
 	Package,
 	Pencil,
 	Plus,
 	Trash2,
 	TriangleAlert,
-	User,
 	Wrench,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -22,13 +20,13 @@ import {
 } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
+import { InvoiceItemSelectDialog } from "@/components/dialogs/invoiceItemSelectDialog";
 import {
 	type InvoiceLineData,
 	InvoiceLineDialog,
 } from "@/components/dialogs/invoiceLineDialog";
 import { RichtextEditor } from "@/components/richtext-editor";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { DateInputField } from "@/components/ui/date-picker";
@@ -142,7 +140,9 @@ export function InvoiceFormDialog({
 	const { data: warehousesData } = trpc.warehouses.list.useQuery({
 		limit: 200,
 	});
-	const { data: itemsData } = trpc.items.list.useQuery({ isSaleable: true });
+	const { data: itemsData, isLoading: itemsLoading } = trpc.items.list.useQuery(
+		{ isSaleable: true },
+	);
 	const { data: taxRatesData } = trpc.settings.taxRates.list.useQuery();
 	const { data: orgData } = trpc.settings.getOrg.useQuery();
 
@@ -365,176 +365,305 @@ export function InvoiceFormDialog({
 	];
 
 	return (
-		<>
-			<Dialog open={open} onOpenChange={(v) => !isPending && onOpenChange(v)}>
-				<DialogContent className="sm:max-w-200">
-					<DialogHeader>
-						<DialogTitle>
-							{isEdit
-								? t("invoices.editInvoice")
-								: invoiceType === "CREDIT_NOTE"
-									? t("invoices.createCreditNote")
-									: t("invoices.createInvoice")}
-						</DialogTitle>
-						<DialogDescription>
-							{isEdit
-								? t("invoices.editInvoiceDesc")
-								: invoiceType === "CREDIT_NOTE"
-									? t("invoices.createCreditNoteDesc")
-									: t("invoices.createInvoiceDesc")}
-						</DialogDescription>
-					</DialogHeader>
+		<Dialog open={open} onOpenChange={(v) => !isPending && onOpenChange(v)}>
+			<DialogContent className="sm:max-w-200">
+				<DialogHeader>
+					<DialogTitle>
+						{isEdit
+							? t("invoices.editInvoice")
+							: invoiceType === "CREDIT_NOTE"
+								? t("invoices.createCreditNote")
+								: t("invoices.createInvoice")}
+					</DialogTitle>
+					<DialogDescription>
+						{isEdit
+							? t("invoices.editInvoiceDesc")
+							: invoiceType === "CREDIT_NOTE"
+								? t("invoices.createCreditNoteDesc")
+								: t("invoices.createInvoiceDesc")}
+					</DialogDescription>
+				</DialogHeader>
 
-					<form onSubmit={handleSubmit(onSubmit)} noValidate>
-						<ValidationAlert errors={errors as any} />
+				<form onSubmit={handleSubmit(onSubmit)} noValidate>
+					<ValidationAlert errors={errors as any} />
 
-						<div className="space-y-4 max-h-110 sm:max-h-110 max-sm:max-h-[calc(100dvh-14rem)] overflow-y-auto pr-2">
-							{/* Type + Currency */}
-							<div className="grid grid-cols-2 gap-3">
-								<Field>
-									<Label htmlFor="type">{t("invoices.type")} *</Label>
-									<Select
-										value={watch("type")}
-										onValueChange={(v) => setValue("type", v as any)}
-									>
-										<SelectTrigger>
-											<SelectValue />
-										</SelectTrigger>
-										<SelectContent>
-											{invoiceTypeOptions.map((opt) => (
-												<SelectItem key={opt.value} value={opt.value}>
-													{opt.label}
-												</SelectItem>
-											))}
-										</SelectContent>
-									</Select>
-								</Field>
-								<Field>
-									<Label htmlFor="currency">{t("invoices.currency")}</Label>
-									<Select
-										value={watch("currency")}
-										onValueChange={(v) => setValue("currency", v as any)}
-									>
-										<SelectTrigger>
-											<SelectValue />
-										</SelectTrigger>
-										<SelectContent>
-											{Object.keys(CURRENCIES).map((c) => (
-												<SelectItem key={c} value={c}>
-													{c}
-												</SelectItem>
-											))}
-										</SelectContent>
-									</Select>
-								</Field>
-							</div>
-
-							{/* Dates */}
+					<div className="space-y-4 max-h-110 sm:max-h-110 max-sm:max-h-[calc(100dvh-14rem)] overflow-y-auto pr-2">
+						{/* Type + Currency */}
+						<div className="grid grid-cols-2 gap-3">
 							<Field>
-								<Label htmlFor="date">{t("invoices.issueDate")} *</Label>
-								<DateInputField
-									control={control}
-									name="date"
-									rules={{ required: "Date is required" }}
-									required
-									showTodayButton
-								/>
+								<Label htmlFor="type">{t("invoices.type")} *</Label>
+								<Select
+									value={watch("type")}
+									onValueChange={(v) => setValue("type", v as any)}
+								>
+									<SelectTrigger>
+										<SelectValue />
+									</SelectTrigger>
+									<SelectContent>
+										{invoiceTypeOptions.map((opt) => (
+											<SelectItem key={opt.value} value={opt.value}>
+												{opt.label}
+											</SelectItem>
+										))}
+									</SelectContent>
+								</Select>
 							</Field>
+							<Field>
+								<Label htmlFor="currency">{t("invoices.currency")}</Label>
+								<Select
+									value={watch("currency")}
+									onValueChange={(v) => setValue("currency", v as any)}
+								>
+									<SelectTrigger>
+										<SelectValue />
+									</SelectTrigger>
+									<SelectContent>
+										{Object.keys(CURRENCIES).map((c) => (
+											<SelectItem key={c} value={c}>
+												{c}
+											</SelectItem>
+										))}
+									</SelectContent>
+								</Select>
+							</Field>
+						</div>
 
-							{/* Customer */}
-							{needsCustomer && (
-								<div className="space-y-2">
-									<div className="flex items-center gap-3">
-										<div className="flex-1">
-											<Field>
-												<Label htmlFor="customerId">
-													{isWalkIn
-														? t("invoices.walkInCustomerName")
-														: t("invoices.customer")}
-												</Label>
-												{isWalkIn ? (
-													<Input
-														id="customerId"
-														placeholder={t(
-															"invoices.walkInCustomerPlaceholder",
-														)}
-														{...register("customerId")}
-													/>
-												) : (
-													<Select
-														value={watch("customerId") || ""}
-														onValueChange={(v) => setValue("customerId", v)}
-													>
-														<SelectTrigger>
-															<SelectValue
-																placeholder={t("invoices.selectCustomer")}
-															/>
-														</SelectTrigger>
-														<SelectContent>
-															{customers.map((c: any) => (
-																<SelectItem key={c.id} value={c.id}>
-																	{c.name}
-																</SelectItem>
-															))}
-														</SelectContent>
-													</Select>
-												)}
-											</Field>
-										</div>
-										<div className="flex items-center gap-2 pt-5">
-											<Checkbox
-												id="isWalkIn"
-												checked={isWalkIn}
-												onCheckedChange={(checked) => {
-													setValue("isWalkIn", checked === true);
-													if (checked) setValue("customerId", "");
-												}}
-											/>
-											<Label
-												htmlFor="isWalkIn"
-												className="text-sm font-normal cursor-pointer"
-											>
-												{t("invoices.walkInCustomer")}
+						{/* Dates */}
+						<Field>
+							<Label htmlFor="date">{t("invoices.issueDate")} *</Label>
+							<DateInputField
+								control={control}
+								name="date"
+								rules={{ required: "Date is required" }}
+								required
+								showTodayButton
+							/>
+						</Field>
+
+						{/* Customer */}
+						{needsCustomer && (
+							<div className="space-y-2">
+								<div className="flex items-center gap-3">
+									<div className="flex-1">
+										<Field>
+											<Label htmlFor="customerId">
+												{isWalkIn
+													? t("invoices.walkInCustomerName")
+													: t("invoices.customer")}
 											</Label>
-										</div>
+											{isWalkIn ? (
+												<Input
+													id="customerId"
+													placeholder={t("invoices.walkInCustomerPlaceholder")}
+													{...register("customerId")}
+												/>
+											) : (
+												<Select
+													value={watch("customerId") || ""}
+													onValueChange={(v) => setValue("customerId", v)}
+												>
+													<SelectTrigger>
+														<SelectValue
+															placeholder={t("invoices.selectCustomer")}
+														/>
+													</SelectTrigger>
+													<SelectContent>
+														{customers.map((c: any) => (
+															<SelectItem key={c.id} value={c.id}>
+																{c.name}
+															</SelectItem>
+														))}
+													</SelectContent>
+												</Select>
+											)}
+										</Field>
+									</div>
+									<div className="flex items-center gap-2 pt-5">
+										<Checkbox
+											id="isWalkIn"
+											checked={isWalkIn}
+											onCheckedChange={(checked) => {
+												setValue("isWalkIn", checked === true);
+												if (checked) setValue("customerId", "");
+											}}
+										/>
+										<Label
+											htmlFor="isWalkIn"
+											className="text-sm font-normal cursor-pointer"
+										>
+											{t("invoices.walkInCustomer")}
+										</Label>
 									</div>
 								</div>
-							)}
+							</div>
+						)}
 
-							{/* Warehouse (for INVOICE type) */}
-							{needsWarehouse && (
-								<Field>
-									<Label htmlFor="warehouseId">{t("invoices.warehouse")}</Label>
-									<Select
-										value={watch("warehouseId") || ""}
-										onValueChange={(v) => setValue("warehouseId", v)}
+						{/* Warehouse (for INVOICE type) */}
+						{needsWarehouse && (
+							<Field>
+								<Label htmlFor="warehouseId">{t("invoices.warehouse")}</Label>
+								<Select
+									value={watch("warehouseId") || ""}
+									onValueChange={(v) => setValue("warehouseId", v)}
+								>
+									<SelectTrigger>
+										<SelectValue placeholder={t("invoices.selectWarehouse")} />
+									</SelectTrigger>
+									<SelectContent>
+										{warehouses.map((w: any) => (
+											<SelectItem key={w.id} value={w.id}>
+												{w.name}
+											</SelectItem>
+										))}
+									</SelectContent>
+								</Select>
+							</Field>
+						)}
+
+						{/* Line Items */}
+						<div className="space-y-3">
+							<div className="flex items-center justify-between">
+								<Label className="text-base font-semibold">
+									{t("invoices.lineItems")} *
+								</Label>
+								<div className="flex gap-2">
+									<Button
+										type="button"
+										variant="outline"
+										size="sm"
+										onClick={() => setEditingLineIndex(fields.length)}
 									>
-										<SelectTrigger>
-											<SelectValue
-												placeholder={t("invoices.selectWarehouse")}
-											/>
-										</SelectTrigger>
-										<SelectContent>
-											{warehouses.map((w: any) => (
-												<SelectItem key={w.id} value={w.id}>
-													{w.name}
-												</SelectItem>
-											))}
-										</SelectContent>
-									</Select>
-								</Field>
-							)}
+										<Plus className="h-4 w-4 sm:mr-1" />
+										<span className="hidden sm:inline">
+											{t("invoices.addLine")}
+										</span>
+									</Button>
+									<Button
+										type="button"
+										variant="outline"
+										size="sm"
+										onClick={() => setItemPickerOpen(true)}
+									>
+										<Package className="h-4 w-4 sm:mr-1" />
+										<span className="hidden sm:inline">
+											{t("invoices.browse")}
+										</span>
+									</Button>
+								</div>
+							</div>
 
-							{/* Line Items */}
-							<div className="space-y-3">
-								<div className="flex items-center justify-between">
-									<Label className="text-base font-semibold">
-										{t("invoices.lineItems")} *
-									</Label>
-									<div className="flex gap-2">
+							{fields.map((field, index) => {
+								const isManual = !field.itemId;
+								const item = itemsMap[field.itemId || ""] as any;
+								const lineWatch = watch(`lines.${index}`);
+								const qty = Number(lineWatch?.quantity) || 0;
+								const price = Number(lineWatch?.unitPrice) || 0;
+								const costBasis = Number(lineWatch?.purchasePrice) || 0;
+								const discount = Number(lineWatch?.discountAmt) || 0;
+								const lineSubtotal = qty * price;
+								const lineTotal = lineSubtotal - discount;
+								const lineTax = lineWatch?.taxRateSnapshot
+									? lineTotal * (Number(lineWatch.taxRateSnapshot) / 100)
+									: 0;
+								const lineCogs = qty * costBasis;
+								const grossProfit = lineTotal - lineCogs;
+								const margin =
+									lineTotal > 0 ? (grossProfit / lineTotal) * 100 : 0;
+
+								return (
+									<div
+										key={field.id}
+										className="border rounded-lg p-3 bg-muted/20 space-y-2"
+									>
+										{/* Compact card header */}
+										<div className="flex items-center justify-between gap-2">
+											<div className="flex-1 min-w-0">
+												<div className="flex items-center gap-2">
+													{isManual ? (
+														<Wrench className="h-4 w-4 text-muted-foreground shrink-0" />
+													) : (
+														<Package className="h-4 w-4 text-muted-foreground shrink-0" />
+													)}
+													<p className="text-sm font-medium truncate">
+														{isManual
+															? lineWatch?.description ||
+																t("invoices.manualEntry")
+															: item?.name || field.itemId}
+													</p>
+												</div>
+												<p className="text-xs text-muted-foreground">
+													{qty} × {price.toFixed(3)}
+													{discount > 0 && (
+														<span className="text-destructive ml-1">
+															(-{discount.toFixed(3)})
+														</span>
+													)}
+												</p>
+											</div>
+											<div className="text-right shrink-0">
+												<p className="text-sm font-semibold">
+													{(lineTotal + lineTax).toFixed(3)}
+												</p>
+											</div>
+											<div className="flex items-center gap-0.5 shrink-0">
+												<Button
+													type="button"
+													variant="ghost"
+													size="icon"
+													className="size-7"
+													onClick={() => setEditingLineIndex(index)}
+												>
+													<Pencil className="h-3.5 w-3.5" />
+												</Button>
+												<Button
+													type="button"
+													variant="ghost"
+													size="icon"
+													className="size-7"
+													onClick={() => remove(index)}
+												>
+													<Trash2 className="h-3.5 w-3.5 text-destructive" />
+												</Button>
+											</div>
+										</div>
+
+										{/* Profit info */}
+										{lineTotal > 0 && (
+											<div className="flex items-center gap-3 text-xs text-muted-foreground border-t pt-1.5">
+												<span>
+													{t("invoices.revenue")}:{" "}
+													<span className="font-medium text-foreground">
+														{lineTotal.toFixed(3)}
+													</span>
+												</span>
+												<span>
+													{t("invoices.cogs")}:{" "}
+													<span className="font-medium text-foreground">
+														{lineCogs.toFixed(3)}
+													</span>
+												</span>
+												<span
+													className={
+														grossProfit >= 0 ? "text-green-600" : "text-red-600"
+													}
+												>
+													{t("invoices.gp")}: {grossProfit.toFixed(3)} (
+													{margin.toFixed(1)}%)
+												</span>
+											</div>
+										)}
+									</div>
+								);
+							})}
+
+							{fields.length === 0 && (
+								<div className="text-sm text-muted-foreground text-center py-8 space-y-2 border rounded-lg">
+									<Package className="h-8 w-8 mx-auto opacity-30" />
+									<p>{t("invoices.noLineItems")}</p>
+									<div className="flex gap-2 justify-center">
 										<Button
 											type="button"
-											variant="outline"
+											variant="secondary"
 											size="sm"
 											onClick={() => setEditingLineIndex(fields.length)}
 										>
@@ -545,305 +674,170 @@ export function InvoiceFormDialog({
 										</Button>
 										<Button
 											type="button"
-											variant="outline"
+											variant="secondary"
 											size="sm"
 											onClick={() => setItemPickerOpen(true)}
 										>
 											<Package className="h-4 w-4 sm:mr-1" />
 											<span className="hidden sm:inline">
-												{t("invoices.browse")}
+												{t("invoices.browseCatalogue")}
 											</span>
 										</Button>
 									</div>
 								</div>
-
-								{fields.map((field, index) => {
-									const isManual = !field.itemId;
-									const item = itemsMap[field.itemId || ""] as any;
-									const lineWatch = watch(`lines.${index}`);
-									const qty = Number(lineWatch?.quantity) || 0;
-									const price = Number(lineWatch?.unitPrice) || 0;
-									const costBasis = Number(lineWatch?.purchasePrice) || 0;
-									const discount = Number(lineWatch?.discountAmt) || 0;
-									const lineSubtotal = qty * price;
-									const lineTotal = lineSubtotal - discount;
-									const lineTax = lineWatch?.taxRateSnapshot
-										? lineTotal * (Number(lineWatch.taxRateSnapshot) / 100)
-										: 0;
-									const lineCogs = qty * costBasis;
-									const grossProfit = lineTotal - lineCogs;
-									const margin =
-										lineTotal > 0 ? (grossProfit / lineTotal) * 100 : 0;
-
-									return (
-										<div
-											key={field.id}
-											className="border rounded-lg p-3 bg-muted/20 space-y-2"
-										>
-											{/* Compact card header */}
-											<div className="flex items-center justify-between gap-2">
-												<div className="flex-1 min-w-0">
-													<div className="flex items-center gap-2">
-														{isManual ? (
-															<Wrench className="h-4 w-4 text-muted-foreground shrink-0" />
-														) : (
-															<Package className="h-4 w-4 text-muted-foreground shrink-0" />
-														)}
-														<p className="text-sm font-medium truncate">
-															{isManual
-																? lineWatch?.description ||
-																	t("invoices.manualEntry")
-																: item?.name || field.itemId}
-														</p>
-													</div>
-													<p className="text-xs text-muted-foreground">
-														{qty} × {price.toFixed(3)}
-														{discount > 0 && (
-															<span className="text-destructive ml-1">
-																(-{discount.toFixed(3)})
-															</span>
-														)}
-													</p>
-												</div>
-												<div className="text-right shrink-0">
-													<p className="text-sm font-semibold">
-														{(lineTotal + lineTax).toFixed(3)}
-													</p>
-												</div>
-												<div className="flex items-center gap-0.5 shrink-0">
-													<Button
-														type="button"
-														variant="ghost"
-														size="icon"
-														className="size-7"
-														onClick={() => setEditingLineIndex(index)}
-													>
-														<Pencil className="h-3.5 w-3.5" />
-													</Button>
-													<Button
-														type="button"
-														variant="ghost"
-														size="icon"
-														className="size-7"
-														onClick={() => remove(index)}
-													>
-														<Trash2 className="h-3.5 w-3.5 text-destructive" />
-													</Button>
-												</div>
-											</div>
-
-											{/* Profit info */}
-											{lineTotal > 0 && (
-												<div className="flex items-center gap-3 text-xs text-muted-foreground border-t pt-1.5">
-													<span>
-														{t("invoices.revenue")}:{" "}
-														<span className="font-medium text-foreground">
-															{lineTotal.toFixed(3)}
-														</span>
-													</span>
-													<span>
-														{t("invoices.cogs")}:{" "}
-														<span className="font-medium text-foreground">
-															{lineCogs.toFixed(3)}
-														</span>
-													</span>
-													<span
-														className={
-															grossProfit >= 0
-																? "text-green-600"
-																: "text-red-600"
-														}
-													>
-														{t("invoices.gp")}: {grossProfit.toFixed(3)} (
-														{margin.toFixed(1)}%)
-													</span>
-												</div>
-											)}
-										</div>
-									);
-								})}
-
-								{fields.length === 0 && (
-									<div className="text-sm text-muted-foreground text-center py-8 space-y-2 border rounded-lg">
-										<Package className="h-8 w-8 mx-auto opacity-30" />
-										<p>{t("invoices.noLineItems")}</p>
-										<div className="flex gap-2 justify-center">
-											<Button
-												type="button"
-												variant="secondary"
-												size="sm"
-												onClick={() => setEditingLineIndex(fields.length)}
-											>
-												<Plus className="h-4 w-4 sm:mr-1" />
-												<span className="hidden sm:inline">
-													{t("invoices.addLine")}
-												</span>
-											</Button>
-											<Button
-												type="button"
-												variant="secondary"
-												size="sm"
-												onClick={() => setItemPickerOpen(true)}
-											>
-												<Package className="h-4 w-4 sm:mr-1" />
-												<span className="hidden sm:inline">
-													{t("invoices.browseCatalogue")}
-												</span>
-											</Button>
-										</div>
-									</div>
-								)}
-							</div>
-
-							{/* Totals */}
-							{fields.length > 0 && (
-								<div className="flex justify-end border-t pt-3">
-									<div className="text-right space-y-1 min-w-60">
-										<div className="flex justify-between gap-8 text-sm">
-											<span className="text-muted-foreground">
-												{t("invoices.subtotal")}
-											</span>
-											<span className="font-medium">
-												{totals.subtotal.toFixed(3)} {currency}
-											</span>
-										</div>
-										<div className="flex justify-between gap-8 text-sm">
-											<span className="text-muted-foreground">
-												{t("invoices.discount")}
-											</span>
-											<span className="font-medium text-destructive">
-												-{totals.discountTotal.toFixed(3)} {currency}
-											</span>
-										</div>
-										<div className="flex justify-between gap-8 text-sm">
-											<span className="text-muted-foreground">
-												{t("invoices.tax")}
-											</span>
-											<span className="font-medium">
-												+{totals.taxTotal.toFixed(3)} {currency}
-											</span>
-										</div>
-										<div className="flex justify-between gap-8 text-sm">
-											<span className="text-muted-foreground">
-												{t("invoices.cogs")}
-											</span>
-											<span className="font-medium">
-												{totals.costTotal.toFixed(3)} {currency}
-											</span>
-										</div>
-										<div className="flex justify-between gap-8 text-sm border-t pt-1">
-											<span>{t("invoices.grossProfit")}</span>
-											<span
-												className={
-													totals.total - totals.costTotal >= 0
-														? "text-green-600 font-medium"
-														: "text-red-600 font-medium"
-												}
-											>
-												{(totals.total - totals.costTotal).toFixed(3)}{" "}
-												{currency}
-												{totals.total > 0 && (
-													<span className="text-xs ms-1">
-														(
-														{(
-															((totals.total - totals.costTotal) /
-																totals.total) *
-															100
-														).toFixed(1)}
-														%)
-													</span>
-												)}
-											</span>
-										</div>
-										<div className="flex justify-between gap-8 text-base font-bold border-t pt-1">
-											<span>{t("invoices.total")}</span>
-											<span>
-												{totals.total.toFixed(3)} {currency}
-											</span>
-										</div>
-									</div>
-								</div>
 							)}
-
-							{/* Terms */}
-							<Field>
-								<Label htmlFor="termsText">
-									{t("invoices.termsAndConditions")}
-								</Label>
-								<RichtextEditor
-									value={watch("termsText")}
-									onChange={(html) => setValue("termsText", html)}
-									placeholder={t("invoices.termsPlaceholder")}
-									minHeight="100px"
-								/>
-							</Field>
 						</div>
 
-						<DialogFooter className="mt-6">
-							<Button
-								type="button"
-								variant="outline"
-								onClick={() => onOpenChange(false)}
-								disabled={isPending}
-							>
-								{t("common.cancel")}
-							</Button>
-							<Button type="submit" disabled={isPending}>
-								{isPending && <Loader2 className="me-2 h-4 w-4 animate-spin" />}
-								{isEdit
-									? t("invoices.saveChanges")
-									: t("common.create", {
-											type:
-												invoiceTypeOptions.find((o) => o.value === invoiceType)
-													?.label ?? t("invoices.invoice"),
-										})}
-							</Button>
-						</DialogFooter>
-					</form>
+						{/* Totals */}
+						{fields.length > 0 && (
+							<div className="flex justify-end border-t pt-3">
+								<div className="text-right space-y-1 min-w-60">
+									<div className="flex justify-between gap-8 text-sm">
+										<span className="text-muted-foreground">
+											{t("invoices.subtotal")}
+										</span>
+										<span className="font-medium">
+											{totals.subtotal.toFixed(3)} {currency}
+										</span>
+									</div>
+									<div className="flex justify-between gap-8 text-sm">
+										<span className="text-muted-foreground">
+											{t("invoices.discount")}
+										</span>
+										<span className="font-medium text-destructive">
+											-{totals.discountTotal.toFixed(3)} {currency}
+										</span>
+									</div>
+									<div className="flex justify-between gap-8 text-sm">
+										<span className="text-muted-foreground">
+											{t("invoices.tax")}
+										</span>
+										<span className="font-medium">
+											+{totals.taxTotal.toFixed(3)} {currency}
+										</span>
+									</div>
+									<div className="flex justify-between gap-8 text-sm">
+										<span className="text-muted-foreground">
+											{t("invoices.cogs")}
+										</span>
+										<span className="font-medium">
+											{totals.costTotal.toFixed(3)} {currency}
+										</span>
+									</div>
+									<div className="flex justify-between gap-8 text-sm border-t pt-1">
+										<span>{t("invoices.grossProfit")}</span>
+										<span
+											className={
+												totals.total - totals.costTotal >= 0
+													? "text-green-600 font-medium"
+													: "text-red-600 font-medium"
+											}
+										>
+											{(totals.total - totals.costTotal).toFixed(3)} {currency}
+											{totals.total > 0 && (
+												<span className="text-xs ms-1">
+													(
+													{(
+														((totals.total - totals.costTotal) / totals.total) *
+														100
+													).toFixed(1)}
+													%)
+												</span>
+											)}
+										</span>
+									</div>
+									<div className="flex justify-between gap-8 text-base font-bold border-t pt-1">
+										<span>{t("invoices.total")}</span>
+										<span>
+											{totals.total.toFixed(3)} {currency}
+										</span>
+									</div>
+								</div>
+							</div>
+						)}
 
-					{/* Line edit / create dialog (nested inside invoice DialogContent so Radix layers properly) */}
-					{editingLineIndex !== null && (
-						<InvoiceLineDialog
-							open={editingLineIndex !== null}
-							onOpenChange={(v) => {
-								if (!v) setEditingLineIndex(null);
-							}}
-							index={editingLineIndex}
-							initial={
-								editingLineIndex < fields.length
-									? {
-											itemId: fields[editingLineIndex]?.itemId ?? null,
-											description:
-												fields[editingLineIndex]?.description ?? null,
-											quantity: Number(fields[editingLineIndex]?.quantity) || 1,
-											unitPrice:
-												Number(fields[editingLineIndex]?.unitPrice) || 0,
-											discountAmt:
-												Number(fields[editingLineIndex]?.discountAmt) || 0,
-											purchasePrice:
-												Number(fields[editingLineIndex]?.purchasePrice) || null,
-											taxRateId: fields[editingLineIndex]?.taxRateId ?? null,
-											taxRateSnapshot:
-												Number(fields[editingLineIndex]?.taxRateSnapshot) ||
-												null,
-											taxRateName:
-												fields[editingLineIndex]?.taxRateName ?? null,
-										}
-									: {
-											quantity: 1,
-											unitPrice: 0,
-											discountAmt: 0,
-											purchasePrice: 0,
-										}
-							}
-							onSave={handleLineSave}
-						/>
-					)}
-				</DialogContent>
-			</Dialog>
+						{/* Terms */}
+						<Field>
+							<Label htmlFor="termsText">
+								{t("invoices.termsAndConditions")}
+							</Label>
+							<RichtextEditor
+								value={watch("termsText")}
+								onChange={(html) => setValue("termsText", html)}
+								placeholder={t("invoices.termsPlaceholder")}
+								minHeight="100px"
+							/>
+						</Field>
+					</div>
 
-			{/* Item selection dialog */}
-		</>
+					<DialogFooter className="mt-6">
+						<Button
+							type="button"
+							variant="outline"
+							onClick={() => onOpenChange(false)}
+							disabled={isPending}
+						>
+							{t("common.cancel")}
+						</Button>
+						<Button type="submit" disabled={isPending}>
+							{isPending && <Loader2 className="me-2 h-4 w-4 animate-spin" />}
+							{isEdit
+								? t("invoices.saveChanges")
+								: t("common.create", {
+										type:
+											invoiceTypeOptions.find((o) => o.value === invoiceType)
+												?.label ?? t("invoices.invoice"),
+									})}
+						</Button>
+					</DialogFooter>
+				</form>
+
+				{/* Line edit / create dialog (nested inside invoice DialogContent so Radix layers properly) */}
+				{editingLineIndex !== null && (
+					<InvoiceLineDialog
+						open={editingLineIndex !== null}
+						onOpenChange={(v) => {
+							if (!v) setEditingLineIndex(null);
+						}}
+						index={editingLineIndex}
+						initial={
+							editingLineIndex < fields.length
+								? {
+										itemId: fields[editingLineIndex]?.itemId ?? null,
+										description: fields[editingLineIndex]?.description ?? null,
+										quantity: Number(fields[editingLineIndex]?.quantity) || 1,
+										unitPrice: Number(fields[editingLineIndex]?.unitPrice) || 0,
+										discountAmt:
+											Number(fields[editingLineIndex]?.discountAmt) || 0,
+										purchasePrice:
+											Number(fields[editingLineIndex]?.purchasePrice) || null,
+										taxRateId: fields[editingLineIndex]?.taxRateId ?? null,
+										taxRateSnapshot:
+											Number(fields[editingLineIndex]?.taxRateSnapshot) || null,
+										taxRateName: fields[editingLineIndex]?.taxRateName ?? null,
+									}
+								: {
+										quantity: 1,
+										unitPrice: 0,
+										discountAmt: 0,
+										purchasePrice: 0,
+									}
+						}
+						onSave={handleLineSave}
+					/>
+				)}
+
+				{/* Item selection dialog (nested inside invoice DialogContent so Radix layers properly) */}
+				<InvoiceItemSelectDialog
+					open={itemPickerOpen}
+					onOpenChange={setItemPickerOpen}
+					items={items}
+					isLoading={itemsLoading}
+					existingItemIds={fields.map((f) => f.itemId || "")}
+					onSelect={handleItemsSelected}
+				/>
+			</DialogContent>
+		</Dialog>
 	);
 }
 
