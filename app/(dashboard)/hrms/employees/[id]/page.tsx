@@ -42,6 +42,7 @@ import {
 	EmptyMedia,
 	EmptyTitle,
 } from "@/components/ui/empty";
+import { Label } from "@/components/ui/label";
 import { Spinner } from "@/components/ui/spinner";
 import {
 	Table,
@@ -597,7 +598,7 @@ export default function EmployeeDetailPage() {
 
 					<div className="space-y-4">
 						<div>
-							<label className="text-sm font-medium">Reason (optional)</label>
+							<Label className="text-sm font-medium">Reason (optional)</Label>
 							<textarea
 								className="w-full min-h-[100px] rounded-md border border-input bg-background px-3 py-2 text-sm mt-1"
 								placeholder="Enter reason for status change..."

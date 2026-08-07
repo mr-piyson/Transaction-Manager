@@ -28,7 +28,8 @@
 				"useSemanticElements": "off",
 				"noRedundantRoles": "off",
 				"noStaticElementInteractions": "off",
-				"useKeyWithClickEvents": "off"
+				"useKeyWithClickEvents": "off",
+				"noSvgWithoutTitle": "off"
 			},
 			"preset": "recommended",
 			"correctness": {
