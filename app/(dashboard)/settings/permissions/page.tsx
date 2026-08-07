@@ -963,7 +963,7 @@ export default function PermissionsPage() {
 														allPermissions?.find((p) => p.code === perm.code)
 															?.id ?? "";
 													return (
-														<label
+														<Label
 															key={perm.code}
 															className="flex items-start gap-3 rounded-lg px-2.5 py-1.5 hover:bg-muted/50 cursor-pointer transition-colors"
 														>
@@ -987,7 +987,7 @@ export default function PermissionsPage() {
 																	</div>
 																)}
 															</div>
-														</label>
+														</Label>
 													);
 												})}
 											</div>

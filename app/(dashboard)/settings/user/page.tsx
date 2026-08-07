@@ -72,17 +72,6 @@ export default function UserSettingsPage() {
 		),
 	});
 
-	if (!user) {
-		return (
-			<p className="text-muted-foreground text-sm">{t("errors.generic")}</p>
-		);
-	}
-
-	const hasProfileChanges =
-		profile.firstName !== ((user as any).firstName ?? "") ||
-		profile.lastName !== ((user as any).lastName ?? "") ||
-		profile.name !== (user.name ?? "");
-
 	const handleSaveProfile = useCallback(() => {
 		updateProfileMutation.mutate({
 			name: profile.name || undefined,
@@ -110,6 +99,17 @@ export default function UserSettingsPage() {
 			newPassword: passwordForm.newPassword,
 		});
 	}, [passwordForm, t, changePasswordMutation]);
+
+	if (!user) {
+		return (
+			<p className="text-muted-foreground text-sm">{t("errors.generic")}</p>
+		);
+	}
+
+	const hasProfileChanges =
+		profile.firstName !== ((user as any).firstName ?? "") ||
+		profile.lastName !== ((user as any).lastName ?? "") ||
+		profile.name !== (user.name ?? "");
 
 	const initial =
 		((user as any).firstName ?? user.name ?? "")[0]?.toUpperCase() ?? "?";
