@@ -89,6 +89,7 @@ function KpiCard({
 	title,
 	value,
 	sub,
+	description,
 	icon,
 	trend,
 	loading,
@@ -96,6 +97,7 @@ function KpiCard({
 	title: string;
 	value: string;
 	sub?: string;
+	description?: string;
 	icon: React.ReactNode;
 	trend?: { dir: "up" | "down"; label: string };
 	loading?: boolean;
@@ -121,6 +123,11 @@ function KpiCard({
 						<div className="text-2xl font-bold tracking-tight">{value}</div>
 						{sub && (
 							<p className="text-xs text-muted-foreground mt-0.5">{sub}</p>
+						)}
+						{description && (
+							<p className="text-[11px] text-muted-foreground/70 mt-1 leading-tight">
+								{description}
+							</p>
 						)}
 						{trend && (
 							<div
@@ -417,6 +424,7 @@ export default function ReportsPage() {
 							sub={t("reports.invoiceCount", {
 								count: summary?.revenue.count ?? 0,
 							})}
+							description={t("reports.totalRevenueDesc")}
 							icon={<TrendingUp className="size-4" />}
 							loading={summaryLoadingState}
 						/>
@@ -431,6 +439,7 @@ export default function ReportsPage() {
 										).toFixed(1)
 									: 0,
 							})}
+							description={t("reports.grossProfitDesc")}
 							icon={<Wallet className="size-4" />}
 							loading={summaryLoadingState}
 							trend={
@@ -448,6 +457,7 @@ export default function ReportsPage() {
 							sub={t("reports.afterExpenses", {
 								amount: summary ? format(summary.expenses) : 0,
 							})}
+							description={t("reports.netProfitDesc")}
 							icon={<DollarSign className="size-4" />}
 							loading={summaryLoadingState}
 							trend={
@@ -465,6 +475,7 @@ export default function ReportsPage() {
 							sub={t("reports.openInvoiceCount", {
 								count: summary?.outstanding.count ?? 0,
 							})}
+							description={t("reports.outstandingDesc")}
 							icon={<Receipt className="size-4" />}
 							loading={summaryLoadingState}
 							trend={
@@ -476,6 +487,7 @@ export default function ReportsPage() {
 						<KpiCard
 							title={t("reports.totalExpenses")}
 							value={summary ? format(summary.expenses) : "-"}
+							description={t("reports.totalExpensesDesc")}
 							icon={<ShoppingCart className="size-4" />}
 							loading={summaryLoadingState}
 						/>
@@ -484,6 +496,7 @@ export default function ReportsPage() {
 						<KpiCard
 							title={t("invoices.totalCollected")}
 							value={summary ? format(summary.collected.total) : "-"}
+							description={t("reports.totalCollectedDesc")}
 							icon={<IndianRupee className="size-4" />}
 							loading={summaryLoadingState}
 						/>
@@ -493,6 +506,7 @@ export default function ReportsPage() {
 							sub={t("reports.orderCount", {
 								count: summary?.purchases.count ?? 0,
 							})}
+							description={t("reports.purchaseReportDesc")}
 							icon={<Package className="size-4" />}
 							loading={summaryLoadingState}
 						/>
@@ -502,6 +516,7 @@ export default function ReportsPage() {
 							sub={t("reports.lowStockCount", {
 								count: summary?.inventory.lowStockCount ?? 0,
 							})}
+							description={t("reports.inventoryDesc")}
 							icon={<Box className="size-4" />}
 							loading={summaryLoadingState}
 						/>
@@ -511,6 +526,7 @@ export default function ReportsPage() {
 							sub={t("reports.supplierCount", {
 								count: summary?.suppliers.activeCount ?? 0,
 							})}
+							description={t("reports.customerReportDesc")}
 							icon={<Users className="size-4" />}
 							loading={summaryLoadingState}
 						/>
@@ -556,13 +572,12 @@ export default function ReportsPage() {
 												<TrendingUp className="size-6" />
 											</div>
 											<div>
-												<h3 className="font-semibold">
-													{t("reports.profitAndLoss")}
-												</h3>
-												<p className="text-xs text-muted-foreground mt-0.5">
-													{t("reports.revenueAccounts")} ·{" "}
-													{t("reports.expenseAccounts")}
-												</p>
+											<h3 className="font-semibold">
+												{t("reports.profitAndLoss")}
+											</h3>
+											<p className="text-xs text-muted-foreground mt-0.5">
+												{t("reports.profitAndLossDescription")}
+											</p>
 											</div>
 										</div>
 									</CardContent>
@@ -577,12 +592,12 @@ export default function ReportsPage() {
 												<Landmark className="size-6" />
 											</div>
 											<div>
-												<h3 className="font-semibold">
-													{t("reports.balanceSheet")}
-												</h3>
-												<p className="text-xs text-muted-foreground mt-0.5">
-													{t("reports.accountingEquation")}
-												</p>
+											<h3 className="font-semibold">
+												{t("reports.balanceSheet")}
+											</h3>
+											<p className="text-xs text-muted-foreground mt-0.5">
+												{t("reports.balanceSheetDescription")}
+											</p>
 											</div>
 										</div>
 									</CardContent>
@@ -617,12 +632,12 @@ export default function ReportsPage() {
 												<Clock className="size-6" />
 											</div>
 											<div>
-												<h3 className="font-semibold">
-													{t("reports.apAging")}
-												</h3>
-												<p className="text-xs text-muted-foreground mt-0.5">
-													{t("reports.apAgingDescription")}
-												</p>
+											<h3 className="font-semibold">
+												{t("reports.apAging")}
+											</h3>
+											<p className="text-xs text-muted-foreground mt-0.5">
+												{t("reports.apAgingDescriptionDetail")}
+											</p>
 											</div>
 										</div>
 									</CardContent>
@@ -637,12 +652,12 @@ export default function ReportsPage() {
 												<Receipt className="size-6" />
 											</div>
 											<div>
-												<h3 className="font-semibold">
-													{t("reports.arAging")}
-												</h3>
-												<p className="text-xs text-muted-foreground mt-0.5">
-													{t("reports.arAgingDescription")}
-												</p>
+											<h3 className="font-semibold">
+												{t("reports.arAging")}
+											</h3>
+											<p className="text-xs text-muted-foreground mt-0.5">
+												{t("reports.arAgingDescriptionDetail")}
+											</p>
 											</div>
 										</div>
 									</CardContent>
@@ -657,12 +672,12 @@ export default function ReportsPage() {
 												<BookOpen className="size-6" />
 											</div>
 											<div>
-												<h3 className="font-semibold">
-													{t("reports.generalLedger")}
-												</h3>
-												<p className="text-xs text-muted-foreground mt-0.5">
-													{t("reports.selectAccountToView")}
-												</p>
+											<h3 className="font-semibold">
+												{t("reports.generalLedger")}
+											</h3>
+											<p className="text-xs text-muted-foreground mt-0.5">
+												{t("reports.generalLedgerDescription")}
+											</p>
 											</div>
 										</div>
 									</CardContent>
@@ -677,12 +692,12 @@ export default function ReportsPage() {
 												<Package className="size-6" />
 											</div>
 											<div>
-												<h3 className="font-semibold">
-													{t("layout.itemReport") ?? "Item Report"}
-												</h3>
-												<p className="text-xs text-muted-foreground mt-0.5">
-													{t("layout.inventory")}
-												</p>
+											<h3 className="font-semibold">
+												{t("layout.itemReport") ?? "Item Report"}
+											</h3>
+											<p className="text-xs text-muted-foreground mt-0.5">
+												{t("reports.itemReportDescription")}
+											</p>
 											</div>
 										</div>
 									</CardContent>
