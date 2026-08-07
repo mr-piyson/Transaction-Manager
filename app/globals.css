@@ -161,7 +161,7 @@
 		@apply border-border outline-ring/50;
 	}
 	body {
-		@apply bg-background text-foreground;
+		@apply bg-background text-foreground overflow-x-hidden;
 	}
 }
 
@@ -232,4 +232,20 @@
 
 [dir="rtl"] .space-x-reverse > :not([hidden]) ~ :not([hidden]) {
 	--tw-space-x-reverse: 1;
+}
+
+/* Mobile overflow fixes */
+@media (max-width: 768px) {
+	.ag-root-wrapper {
+		overflow-x: auto !important;
+		max-width: 100vw !important;
+	}
+
+	.ag-body-viewport {
+		overflow-x: auto !important;
+	}
+
+	.ag-center-cols-container {
+		min-width: unset !important;
+	}
 }

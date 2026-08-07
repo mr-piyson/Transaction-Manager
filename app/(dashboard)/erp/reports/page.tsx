@@ -46,6 +46,13 @@ import { Header } from "@/components/layout/App-Header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
+	Carousel,
+	CarouselContent,
+	CarouselItem,
+	CarouselNext,
+	CarouselPrevious,
+} from "@/components/ui/carousel";
+import {
 	Card,
 	CardContent,
 	CardDescription,
@@ -417,119 +424,268 @@ export default function ReportsPage() {
 			<main className="flex-1 p-4 lg:p-8 space-y-8 max-w-360 mx-auto w-full">
 				{/* ── KPI Cards Row ──────────────────────────────────────────────── */}
 				<section>
-					<div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
-						<KpiCard
-							title={t("reports.totalRevenue")}
-							value={summary ? format(summary.revenue.total) : "-"}
-							sub={t("reports.invoiceCount", {
-								count: summary?.revenue.count ?? 0,
-							})}
-							description={t("reports.totalRevenueDesc")}
-							icon={<TrendingUp className="size-4" />}
-							loading={summaryLoadingState}
-						/>
-						<KpiCard
-							title={t("reports.grossProfit")}
-							value={summary ? format(summary.grossProfit) : "-"}
-							sub={t("reports.marginPercent", {
-								percent: summary
-									? (
-											(summary.grossProfit / summary.revenue.total) *
-											100
-										).toFixed(1)
-									: 0,
-							})}
-							description={t("reports.grossProfitDesc")}
-							icon={<Wallet className="size-4" />}
-							loading={summaryLoadingState}
-							trend={
-								summary?.grossProfit
-									? {
-											dir: summary.grossProfit > 0 ? "up" : "down",
-											label: t("reports.beforeExpenses"),
+					{/* Mobile Carousel */}
+					<div className="md:hidden">
+						<Carousel
+							opts={{
+								align: "start",
+								loop: true,
+							}}
+							className="w-full"
+						>
+							<CarouselContent className="-ml-2">
+								<CarouselItem className="pl-2 basis-[85%]">
+									<KpiCard
+										title={t("reports.totalRevenue")}
+										value={summary ? format(summary.revenue.total) : "-"}
+										sub={t("reports.invoiceCount", {
+											count: summary?.revenue.count ?? 0,
+										})}
+										description={t("reports.totalRevenueDesc")}
+										icon={<TrendingUp className="size-4" />}
+										loading={summaryLoadingState}
+									/>
+								</CarouselItem>
+								<CarouselItem className="pl-2 basis-[85%]">
+									<KpiCard
+										title={t("reports.grossProfit")}
+										value={summary ? format(summary.grossProfit) : "-"}
+										sub={t("reports.marginPercent", {
+											percent: summary
+												? (
+														(summary.grossProfit / summary.revenue.total) *
+														100
+													).toFixed(1)
+												: 0,
+										})}
+										description={t("reports.grossProfitDesc")}
+										icon={<Wallet className="size-4" />}
+										loading={summaryLoadingState}
+										trend={
+											summary?.grossProfit
+												? {
+														dir: summary.grossProfit > 0 ? "up" : "down",
+														label: t("reports.beforeExpenses"),
+													}
+												: undefined
 										}
-									: undefined
-							}
-						/>
-						<KpiCard
-							title={t("reports.netProfit")}
-							value={summary ? format(summary.netProfit) : "-"}
-							sub={t("reports.afterExpenses", {
-								amount: summary ? format(summary.expenses) : 0,
-							})}
-							description={t("reports.netProfitDesc")}
-							icon={<DollarSign className="size-4" />}
-							loading={summaryLoadingState}
-							trend={
-								summary?.netProfit
-									? {
-											dir: summary.netProfit > 0 ? "up" : "down",
-											label: t("reports.netResult"),
+									/>
+								</CarouselItem>
+								<CarouselItem className="pl-2 basis-[85%]">
+									<KpiCard
+										title={t("reports.netProfit")}
+										value={summary ? format(summary.netProfit) : "-"}
+										sub={t("reports.afterExpenses", {
+											amount: summary ? format(summary.expenses) : 0,
+										})}
+										description={t("reports.netProfitDesc")}
+										icon={<DollarSign className="size-4" />}
+										loading={summaryLoadingState}
+										trend={
+											summary?.netProfit
+												? {
+														dir: summary.netProfit > 0 ? "up" : "down",
+														label: t("reports.netResult"),
+													}
+												: undefined
 										}
-									: undefined
-							}
-						/>
-						<KpiCard
-							title={t("invoices.outstanding")}
-							value={summary ? format(summary.outstanding.total) : "-"}
-							sub={t("reports.openInvoiceCount", {
-								count: summary?.outstanding.count ?? 0,
-							})}
-							description={t("reports.outstandingDesc")}
-							icon={<Receipt className="size-4" />}
-							loading={summaryLoadingState}
-							trend={
-								summary?.outstanding.total
-									? { dir: "down", label: t("reports.needsCollection") }
-									: undefined
-							}
-						/>
-						<KpiCard
-							title={t("reports.totalExpenses")}
-							value={summary ? format(summary.expenses) : "-"}
-							description={t("reports.totalExpensesDesc")}
-							icon={<ShoppingCart className="size-4" />}
-							loading={summaryLoadingState}
-						/>
+									/>
+								</CarouselItem>
+								<CarouselItem className="pl-2 basis-[85%]">
+									<KpiCard
+										title={t("invoices.outstanding")}
+										value={summary ? format(summary.outstanding.total) : "-"}
+										sub={t("reports.openInvoiceCount", {
+											count: summary?.outstanding.count ?? 0,
+										})}
+										description={t("reports.outstandingDesc")}
+										icon={<Receipt className="size-4" />}
+										loading={summaryLoadingState}
+										trend={
+											summary?.outstanding.total
+												? { dir: "down", label: t("reports.needsCollection") }
+												: undefined
+										}
+									/>
+								</CarouselItem>
+								<CarouselItem className="pl-2 basis-[85%]">
+									<KpiCard
+										title={t("reports.totalExpenses")}
+										value={summary ? format(summary.expenses) : "-"}
+										description={t("reports.totalExpensesDesc")}
+										icon={<ShoppingCart className="size-4" />}
+										loading={summaryLoadingState}
+									/>
+								</CarouselItem>
+								<CarouselItem className="pl-2 basis-[85%]">
+									<KpiCard
+										title={t("invoices.totalCollected")}
+										value={summary ? format(summary.collected.total) : "-"}
+										description={t("reports.totalCollectedDesc")}
+										icon={<IndianRupee className="size-4" />}
+										loading={summaryLoadingState}
+									/>
+								</CarouselItem>
+								<CarouselItem className="pl-2 basis-[85%]">
+									<KpiCard
+										title={t("reports.purchaseReport")}
+										value={summary ? format(summary.purchases.total) : "-"}
+										sub={t("reports.orderCount", {
+											count: summary?.purchases.count ?? 0,
+										})}
+										description={t("reports.purchaseReportDesc")}
+										icon={<Package className="size-4" />}
+										loading={summaryLoadingState}
+									/>
+								</CarouselItem>
+								<CarouselItem className="pl-2 basis-[85%]">
+									<KpiCard
+										title={t("layout.inventory")}
+										value={String(summary?.inventory.itemCount ?? "-")}
+										sub={t("reports.lowStockCount", {
+											count: summary?.inventory.lowStockCount ?? 0,
+										})}
+										description={t("reports.inventoryDesc")}
+										icon={<Box className="size-4" />}
+										loading={summaryLoadingState}
+									/>
+								</CarouselItem>
+								<CarouselItem className="pl-2 basis-[85%]">
+									<KpiCard
+										title={t("reports.customerReport")}
+										value={String(summary?.customers.activeCount ?? "-")}
+										sub={t("reports.supplierCount", {
+											count: summary?.suppliers.activeCount ?? 0,
+										})}
+										description={t("reports.customerReportDesc")}
+										icon={<Users className="size-4" />}
+										loading={summaryLoadingState}
+									/>
+								</CarouselItem>
+							</CarouselContent>
+							<div className="flex items-center justify-center gap-2 mt-4">
+								<CarouselPrevious className="static translate-y-0" />
+								<CarouselNext className="static translate-y-0" />
+							</div>
+						</Carousel>
 					</div>
-					<div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-3">
-						<KpiCard
-							title={t("invoices.totalCollected")}
-							value={summary ? format(summary.collected.total) : "-"}
-							description={t("reports.totalCollectedDesc")}
-							icon={<IndianRupee className="size-4" />}
-							loading={summaryLoadingState}
-						/>
-						<KpiCard
-							title={t("reports.purchaseReport")}
-							value={summary ? format(summary.purchases.total) : "-"}
-							sub={t("reports.orderCount", {
-								count: summary?.purchases.count ?? 0,
-							})}
-							description={t("reports.purchaseReportDesc")}
-							icon={<Package className="size-4" />}
-							loading={summaryLoadingState}
-						/>
-						<KpiCard
-							title={t("layout.inventory")}
-							value={String(summary?.inventory.itemCount ?? "-")}
-							sub={t("reports.lowStockCount", {
-								count: summary?.inventory.lowStockCount ?? 0,
-							})}
-							description={t("reports.inventoryDesc")}
-							icon={<Box className="size-4" />}
-							loading={summaryLoadingState}
-						/>
-						<KpiCard
-							title={t("reports.customerReport")}
-							value={String(summary?.customers.activeCount ?? "-")}
-							sub={t("reports.supplierCount", {
-								count: summary?.suppliers.activeCount ?? 0,
-							})}
-							description={t("reports.customerReportDesc")}
-							icon={<Users className="size-4" />}
-							loading={summaryLoadingState}
-						/>
+
+					{/* Desktop Grid */}
+					<div className="hidden md:block">
+						<div className="grid grid-cols-3 lg:grid-cols-5 gap-3">
+							<KpiCard
+								title={t("reports.totalRevenue")}
+								value={summary ? format(summary.revenue.total) : "-"}
+								sub={t("reports.invoiceCount", {
+									count: summary?.revenue.count ?? 0,
+								})}
+								description={t("reports.totalRevenueDesc")}
+								icon={<TrendingUp className="size-4" />}
+								loading={summaryLoadingState}
+							/>
+							<KpiCard
+								title={t("reports.grossProfit")}
+								value={summary ? format(summary.grossProfit) : "-"}
+								sub={t("reports.marginPercent", {
+									percent: summary
+										? (
+												(summary.grossProfit / summary.revenue.total) *
+												100
+											).toFixed(1)
+										: 0,
+								})}
+								description={t("reports.grossProfitDesc")}
+								icon={<Wallet className="size-4" />}
+								loading={summaryLoadingState}
+								trend={
+									summary?.grossProfit
+										? {
+												dir: summary.grossProfit > 0 ? "up" : "down",
+												label: t("reports.beforeExpenses"),
+											}
+										: undefined
+								}
+							/>
+							<KpiCard
+								title={t("reports.netProfit")}
+								value={summary ? format(summary.netProfit) : "-"}
+								sub={t("reports.afterExpenses", {
+									amount: summary ? format(summary.expenses) : 0,
+								})}
+								description={t("reports.netProfitDesc")}
+								icon={<DollarSign className="size-4" />}
+								loading={summaryLoadingState}
+								trend={
+									summary?.netProfit
+										? {
+												dir: summary.netProfit > 0 ? "up" : "down",
+												label: t("reports.netResult"),
+											}
+										: undefined
+								}
+							/>
+							<KpiCard
+								title={t("invoices.outstanding")}
+								value={summary ? format(summary.outstanding.total) : "-"}
+								sub={t("reports.openInvoiceCount", {
+									count: summary?.outstanding.count ?? 0,
+								})}
+								description={t("reports.outstandingDesc")}
+								icon={<Receipt className="size-4" />}
+								loading={summaryLoadingState}
+								trend={
+									summary?.outstanding.total
+										? { dir: "down", label: t("reports.needsCollection") }
+										: undefined
+								}
+							/>
+							<KpiCard
+								title={t("reports.totalExpenses")}
+								value={summary ? format(summary.expenses) : "-"}
+								description={t("reports.totalExpensesDesc")}
+								icon={<ShoppingCart className="size-4" />}
+								loading={summaryLoadingState}
+							/>
+						</div>
+						<div className="grid grid-cols-4 gap-3 mt-3">
+							<KpiCard
+								title={t("invoices.totalCollected")}
+								value={summary ? format(summary.collected.total) : "-"}
+								description={t("reports.totalCollectedDesc")}
+								icon={<IndianRupee className="size-4" />}
+								loading={summaryLoadingState}
+							/>
+							<KpiCard
+								title={t("reports.purchaseReport")}
+								value={summary ? format(summary.purchases.total) : "-"}
+								sub={t("reports.orderCount", {
+									count: summary?.purchases.count ?? 0,
+								})}
+								description={t("reports.purchaseReportDesc")}
+								icon={<Package className="size-4" />}
+								loading={summaryLoadingState}
+							/>
+							<KpiCard
+								title={t("layout.inventory")}
+								value={String(summary?.inventory.itemCount ?? "-")}
+								sub={t("reports.lowStockCount", {
+									count: summary?.inventory.lowStockCount ?? 0,
+								})}
+								description={t("reports.inventoryDesc")}
+								icon={<Box className="size-4" />}
+								loading={summaryLoadingState}
+							/>
+							<KpiCard
+								title={t("reports.customerReport")}
+								value={String(summary?.customers.activeCount ?? "-")}
+								sub={t("reports.supplierCount", {
+									count: summary?.suppliers.activeCount ?? 0,
+								})}
+								description={t("reports.customerReportDesc")}
+								icon={<Users className="size-4" />}
+								loading={summaryLoadingState}
+							/>
+						</div>
 					</div>
 				</section>
 
