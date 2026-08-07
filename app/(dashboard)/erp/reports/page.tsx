@@ -110,12 +110,12 @@ function KpiCard({
 	loading?: boolean;
 }) {
 	return (
-		<Card className="relative overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5 group">
+		<Card className="relative overflow-hidden">
 			<CardHeader className="pb-2 flex flex-row items-center justify-between">
 				<CardTitle className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
 					{title}
 				</CardTitle>
-				<div className="size-9 rounded-xl bg-primary/10 flex items-center justify-center text-primary transition-colors group-hover:bg-primary/20">
+				<div className="size-9 rounded-xl bg-primary/10 flex items-center justify-center text-primary transition-colors">
 					{icon}
 				</div>
 			</CardHeader>
@@ -721,10 +721,10 @@ export default function ReportsPage() {
 					<TabsContent value="reports" className="space-y-6 mt-0">
 						<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
 							<Link href="/erp/reports/profit-and-loss">
-								<Card className="transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5 cursor-pointer group">
+								<Card className="cursor-pointer">
 									<CardContent className="p-6">
 										<div className="flex items-center gap-4">
-											<div className="size-12 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-600 dark:text-emerald-500 group-hover:bg-emerald-500/20 transition-colors">
+											<div className="size-12 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-600 dark:text-emerald-500 transition-colors">
 												<TrendingUp className="size-6" />
 											</div>
 											<div>
@@ -741,10 +741,10 @@ export default function ReportsPage() {
 							</Link>
 
 							<Link href="/erp/reports/balance-sheet">
-								<Card className="transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5 cursor-pointer group">
+								<Card className="cursor-pointer">
 									<CardContent className="p-6">
 										<div className="flex items-center gap-4">
-											<div className="size-12 rounded-xl bg-blue-500/10 flex items-center justify-center text-blue-600 dark:text-blue-500 group-hover:bg-blue-500/20 transition-colors">
+											<div className="size-12 rounded-xl bg-blue-500/10 flex items-center justify-center text-blue-600 dark:text-blue-500 transition-colors">
 												<Landmark className="size-6" />
 											</div>
 											<div>
@@ -761,10 +761,10 @@ export default function ReportsPage() {
 							</Link>
 
 							<Link href="/erp/reports/trial-balance">
-								<Card className="transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5 cursor-pointer group">
+								<Card className="cursor-pointer">
 									<CardContent className="p-6">
 										<div className="flex items-center gap-4">
-											<div className="size-12 rounded-xl bg-purple-500/10 flex items-center justify-center text-purple-600 dark:text-purple-500 group-hover:bg-purple-500/20 transition-colors">
+											<div className="size-12 rounded-xl bg-purple-500/10 flex items-center justify-center text-purple-600 dark:text-purple-500 transition-colors">
 												<Scale className="size-6" />
 											</div>
 											<div>
@@ -781,10 +781,10 @@ export default function ReportsPage() {
 							</Link>
 
 							<Link href="/erp/reports/ap-aging">
-								<Card className="transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5 cursor-pointer group">
+								<Card className="cursor-pointer">
 									<CardContent className="p-6">
 										<div className="flex items-center gap-4">
-											<div className="size-12 rounded-xl bg-amber-500/10 flex items-center justify-center text-amber-600 dark:text-amber-500 group-hover:bg-amber-500/20 transition-colors">
+											<div className="size-12 rounded-xl bg-amber-500/10 flex items-center justify-center text-amber-600 dark:text-amber-500 transition-colors">
 												<Clock className="size-6" />
 											</div>
 											<div>
@@ -801,10 +801,10 @@ export default function ReportsPage() {
 							</Link>
 
 							<Link href="/erp/reports/ar-aging">
-								<Card className="transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5 cursor-pointer group">
+								<Card className="cursor-pointer">
 									<CardContent className="p-6">
 										<div className="flex items-center gap-4">
-											<div className="size-12 rounded-xl bg-orange-500/10 flex items-center justify-center text-orange-600 dark:text-orange-500 group-hover:bg-orange-500/20 transition-colors">
+											<div className="size-12 rounded-xl bg-orange-500/10 flex items-center justify-center text-orange-600 dark:text-orange-500 transition-colors">
 												<Receipt className="size-6" />
 											</div>
 											<div>
@@ -821,10 +821,10 @@ export default function ReportsPage() {
 							</Link>
 
 							<Link href="/erp/reports/general-ledger">
-								<Card className="transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5 cursor-pointer group">
+								<Card className="cursor-pointer">
 									<CardContent className="p-6">
 										<div className="flex items-center gap-4">
-											<div className="size-12 rounded-xl bg-cyan-500/10 flex items-center justify-center text-cyan-600 dark:text-cyan-500 group-hover:bg-cyan-500/20 transition-colors">
+											<div className="size-12 rounded-xl bg-cyan-500/10 flex items-center justify-center text-cyan-600 dark:text-cyan-500 transition-colors">
 												<BookOpen className="size-6" />
 											</div>
 											<div>
@@ -841,10 +841,10 @@ export default function ReportsPage() {
 							</Link>
 
 							<Link href="/erp/reports/items">
-								<Card className="transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5 cursor-pointer group">
+								<Card className="cursor-pointer">
 									<CardContent className="p-6">
 										<div className="flex items-center gap-4">
-											<div className="size-12 rounded-xl bg-indigo-500/10 flex items-center justify-center text-indigo-600 dark:text-indigo-500 group-hover:bg-indigo-500/20 transition-colors">
+											<div className="size-12 rounded-xl bg-indigo-500/10 flex items-center justify-center text-indigo-600 dark:text-indigo-500 transition-colors">
 												<Package className="size-6" />
 											</div>
 											<div>
