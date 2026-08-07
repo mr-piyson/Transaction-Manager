@@ -26,7 +26,9 @@
 				"useButtonType": "off",
 				"useFocusableInteractive": "off",
 				"useSemanticElements": "off",
-				"noRedundantRoles": "off"
+				"noRedundantRoles": "off",
+				"noStaticElementInteractions": "off",
+				"useKeyWithClickEvents": "off"
 			},
 			"preset": "recommended",
 			"correctness": {

@@ -2,6 +2,7 @@
 
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { Check, Package, SearchIcon } from "lucide-react";
+import Image from "next/image";
 import * as React from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -106,7 +107,7 @@ export function POItemSelectDialog({
 
 	return (
 		<Dialog open={open} onOpenChange={onOpenChange}>
-			<DialogContent className="sm:max-w-2xl gap-0 p-0 h-[100dvh] sm:h-auto sm:max-h-[85vh] max-w-full sm:rounded-lg flex flex-col">
+			<DialogContent className="sm:max-w-2xl gap-0 p-0 h-dvh sm:h-auto sm:max-h-[85vh] max-w-full sm:rounded-lg flex flex-col">
 				<DialogHeader className="shrink-0 px-4 pt-4 pb-3 sm:px-6 sm:pt-6 sm:pb-4">
 					<DialogTitle>Select Items</DialogTitle>
 					<DialogDescription>
@@ -208,9 +209,11 @@ export function POItemSelectDialog({
 										{/* Image preview */}
 										<div className="size-8 shrink-0 overflow-hidden rounded-md border bg-muted sm:size-10">
 											{item.image ? (
-												<img
+												<Image
 													src={item.image}
 													alt={item.name}
+													width={80}
+													height={80}
 													className="size-full object-cover"
 												/>
 											) : (
