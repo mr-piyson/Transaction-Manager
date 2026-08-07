@@ -189,7 +189,7 @@ export default function DocumentsLayout({
 						<InvoiceListItem
 							data={item}
 							className={cn(
-								"hover:bg-muted/40 border border-transparent rounded-lg",
+								"hover:bg-muted/40 border border-transparent rounded-lg ",
 								activeItem === item.id ? "border-primary bg-primary/10" : "",
 							)}
 						/>
