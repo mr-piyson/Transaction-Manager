@@ -41,7 +41,7 @@ export function Header({
 	createLabel,
 	children,
 }: HeaderProps) {
-	const t = useTranslations();
+	const _t = useTranslations();
 	return (
 		<header
 			className={cn(

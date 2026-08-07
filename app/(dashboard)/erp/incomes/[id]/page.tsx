@@ -15,7 +15,6 @@ import {
 } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import * as React from "react";
 import { toast } from "sonner";
 import { alert } from "@/components/Alert-dialog";
 import { useHardDeleteForm, useIncomeForm } from "@/components/dialogs";

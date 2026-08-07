@@ -3,7 +3,6 @@
 import {
 	Briefcase,
 	Calendar,
-	Clock,
 	FileText,
 	Loader2,
 	Plus,
@@ -496,7 +495,7 @@ export default function CandidateDetailPage() {
 										| "FINAL",
 									scheduledAt: new Date(interviewScheduledAt),
 									durationMin: interviewDuration
-										? parseInt(interviewDuration)
+										? parseInt(interviewDuration, 10)
 										: undefined,
 									interviewerId: interviewerId || undefined,
 								});
@@ -578,7 +577,9 @@ export default function CandidateDetailPage() {
 										| "FAILED"
 										| undefined,
 									feedback: interviewFeedback || undefined,
-									score: interviewScore ? parseInt(interviewScore) : undefined,
+									score: interviewScore
+										? parseInt(interviewScore, 10)
+										: undefined,
 								});
 							}}
 							disabled={updateInterviewMutation.isPending}

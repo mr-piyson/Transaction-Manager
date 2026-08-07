@@ -52,7 +52,7 @@ export default function DateTimePage() {
 	}, [settings, initialized]);
 
 	const today = new Date();
-	const todayFormatted = format(today, "yyyy-MM-dd");
+	const _todayFormatted = format(today, "yyyy-MM-dd");
 
 	const handleInputFormatChange = useCallback(
 		(fmt: DateInputFormat) => {

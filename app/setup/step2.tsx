@@ -15,7 +15,7 @@ export function Step2Organization() {
 	} = useFormContext<SetupData>();
 
 	const orgName = watch("orgName");
-	const slug = watch("slug");
+	const _slug = watch("slug");
 
 	const [isSlugManuallyEdited, setIsSlugManuallyEdited] = useState(false);
 

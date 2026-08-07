@@ -121,7 +121,7 @@ export default function ItemsLayout({
 				suppressMenu: true,
 				cellRenderer: (params: { data: any }) => {
 					const item = params.data;
-					const isDeletable = ["PRODUCT", "SERVICE"].includes(item.type);
+					const _isDeletable = ["PRODUCT", "SERVICE"].includes(item.type);
 					return (
 						<ContextMenu>
 							<ContextMenuTrigger asChild>

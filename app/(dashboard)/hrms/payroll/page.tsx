@@ -1,7 +1,7 @@
 "use client";
 
 import { format } from "date-fns";
-import { Loader2, MoreHorizontal, Plus, Search, Wallet } from "lucide-react";
+import { MoreHorizontal, Plus, Search, Wallet } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";

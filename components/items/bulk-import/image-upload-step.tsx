@@ -1,15 +1,7 @@
 "use client";
 
-import {
-	AlertCircle,
-	CheckCircle2,
-	ImageIcon,
-	Loader2,
-	Upload,
-	X,
-} from "lucide-react";
+import { AlertCircle, CheckCircle2, ImageIcon, Loader2, X } from "lucide-react";
 import { useCallback, useRef, useState } from "react";
-import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import type { ImportImage, ParsedItem } from "./types";
 

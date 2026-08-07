@@ -9,7 +9,6 @@ import {
 	hrListSchema,
 	hrOptionalDateField,
 	interviewStageSchema,
-	offerStatusSchema,
 } from "./hr.schemas";
 
 const jobPostingSchema = z.object({

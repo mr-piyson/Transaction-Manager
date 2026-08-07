@@ -5,7 +5,6 @@ import {
 	GraduationCap,
 	Loader2,
 	MoreHorizontal,
-	Plus,
 	User,
 	UserPlus,
 } from "lucide-react";
@@ -151,7 +150,7 @@ export default function TrainingDetailPage() {
 		? employees
 		: ((employees as any)?.data ?? []);
 
-	const isPending =
+	const _isPending =
 		enrollMutation.isPending ||
 		updateEnrollmentStatusMutation.isPending ||
 		unenrollMutation.isPending;
@@ -484,7 +483,7 @@ export default function TrainingDetailPage() {
 								updateEnrollmentStatusMutation.mutate({
 									id: selectedEnrollment?.id,
 									status: updateStatusValue as any,
-									score: updateScore ? parseInt(updateScore) : undefined,
+									score: updateScore ? parseInt(updateScore, 10) : undefined,
 									notes: updateNotes || undefined,
 								})
 							}

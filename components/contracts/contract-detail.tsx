@@ -2,7 +2,6 @@ import { differenceInDays } from "date-fns";
 import { useTranslations } from "next-intl";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useDateFormat } from "@/hooks/use-date-format";
-import { ContractStatusBadge } from "./contract-status-badge";
 
 interface ContractDetailProps {
 	contract: any;

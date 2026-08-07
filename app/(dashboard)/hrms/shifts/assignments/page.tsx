@@ -1,6 +1,6 @@
 "use client";
 
-import { Calendar, Loader2, Search, Trash2, UserPlus, X } from "lucide-react";
+import { Calendar, Loader2, Search, Trash2, UserPlus } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";

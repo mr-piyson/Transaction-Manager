@@ -1,6 +1,6 @@
 "use client";
 
-import { Boxes, SearchX } from "lucide-react";
+import { Boxes } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Header } from "@/components/layout/App-Header";
 import { ListView } from "@/components/list-view";

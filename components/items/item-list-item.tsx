@@ -1,4 +1,4 @@
-import { Box, FileText, type Package, Wrench } from "lucide-react";
+import { Box, type Package, Wrench } from "lucide-react";
 import type { HTMLAttributes } from "react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";

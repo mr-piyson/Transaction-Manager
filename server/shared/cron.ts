@@ -202,7 +202,7 @@ async function syncExchangeRates() {
 
 		try {
 			// Use the centralized full sync function
-			const result = await fullSyncCurrenciesAndRates(org.currency, org.id);
+			const _result = await fullSyncCurrenciesAndRates(org.currency, org.id);
 
 			// Update last synced timestamp
 			await db.organizationSetting.upsert({

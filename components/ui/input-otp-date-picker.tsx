@@ -260,7 +260,7 @@ export const DateInput = React.forwardRef<HTMLInputElement, DateInputProps>(
 			(date: Date) => {
 				if (minDateObj && date < minDateObj) return true;
 				if (maxDateObj && date > maxDateObj) return true;
-				if (disabledDaySet && disabledDaySet.has(startOfDay(date).getTime())) {
+				if (disabledDaySet?.has(startOfDay(date).getTime())) {
 					return true;
 				}
 				return false;

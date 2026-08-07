@@ -211,7 +211,6 @@ export function UnifiedItemDialog({
 				return "Add Supplier Price";
 			case "edit":
 				return "Edit Item";
-			case "create":
 			default:
 				return "Create Item";
 		}
@@ -225,7 +224,6 @@ export function UnifiedItemDialog({
 				return "Add Supplier Price";
 			case "edit":
 				return "Save Changes";
-			case "create":
 			default:
 				return "Create Item";
 		}

@@ -3,9 +3,7 @@
 import { Calendar, Clock } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useTimePunchForm } from "@/components/dialogs";
 import { Header } from "@/components/layout/App-Header";
-import { Button } from "@/components/ui/button";
 
 export default function AttendanceLayout({
 	children,
@@ -13,7 +11,6 @@ export default function AttendanceLayout({
 	children: React.ReactNode;
 }) {
 	const pathname = usePathname();
-	const { openCreate } = useTimePunchForm();
 	const currentTab = pathname.endsWith("/time-punches")
 		? "time-punches"
 		: "records";

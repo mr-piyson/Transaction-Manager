@@ -158,7 +158,7 @@ export default function ChartOfAccountsPage() {
 	}, []);
 
 	const handleUpdate = useCallback(() => {
-		if (!editForm || !editForm.code || !editForm.name) return;
+		if (!editForm?.code || !editForm.name) return;
 		updateMutation.mutate({
 			id: editForm.id,
 			code: editForm.code,

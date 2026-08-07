@@ -52,7 +52,6 @@ import {
 	EmptyMedia,
 	EmptyTitle,
 } from "@/components/ui/empty";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
@@ -148,7 +147,7 @@ export default function DocumentDetailPage() {
 		description: string;
 	}>({ open: false, action: "", title: "", description: "" });
 	const [historyOpen, setHistoryOpen] = React.useState(false);
-	const isMobile = useIsMobile();
+	const _isMobile = useIsMobile();
 
 	function invalidate() {
 		utils.invoices.byId.invalidate({ id: params.id });
@@ -645,7 +644,7 @@ export default function DocumentDetailPage() {
 		}
 	};
 
-	const totalQty = invoice.lines?.reduce(
+	const _totalQty = invoice.lines?.reduce(
 		(sum: number, l: any) => sum + Number(l.quantity),
 		0,
 	);

@@ -7,10 +7,8 @@ import {
 	Loader2,
 	Star,
 	Trash2,
-	User,
 } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
-import * as React from "react";
 import { toast } from "sonner";
 import { alert } from "@/components/Alert-dialog";
 import { usePerformanceReviewForm } from "@/components/dialogs";

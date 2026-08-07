@@ -21,7 +21,6 @@ import {
 	Package,
 	PiggyBank,
 	Scale,
-	Settings,
 	ShoppingCart,
 	Speech,
 	TrendingUp,

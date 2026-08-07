@@ -7,8 +7,8 @@ import { useEmployeeForm } from "@/components/dialogs";
 import { Button } from "@/components/ui/button";
 
 export default function EmployeesPage() {
-	const router = useRouter();
-	const t = useTranslations();
+	const _router = useRouter();
+	const _t = useTranslations();
 	const { openCreate } = useEmployeeForm();
 
 	return (

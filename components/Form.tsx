@@ -1,6 +1,5 @@
 "use client";
 
-import * as LabelPrimitive from "@base-ui/react"; // Fixed import
 import { Slot } from "@radix-ui/react-slot";
 import * as React from "react";
 import {

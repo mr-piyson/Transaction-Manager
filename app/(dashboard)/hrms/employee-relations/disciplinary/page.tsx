@@ -57,7 +57,7 @@ const typeBadge: Record<string, string> = {
 export default function DisciplinaryPage() {
 	const [page, setPage] = useState(1);
 	const [search, setSearch] = useState("");
-	const [employeeId, setEmployeeId] = useState("");
+	const [employeeId, _setEmployeeId] = useState("");
 	const [typeFilter, setTypeFilter] = useState("all");
 	const limit = 25;
 	const { formatDate } = useDateFormat();

@@ -1,9 +1,5 @@
 import { z } from "zod";
-import {
-	currencyCodeSchema,
-	offsetPaginationSchema,
-	sortOrderSchema,
-} from "@/lib/validations";
+import { offsetPaginationSchema, sortOrderSchema } from "@/lib/validations";
 
 export const employeeStatusSchema = z.enum([
 	"ACTIVE",

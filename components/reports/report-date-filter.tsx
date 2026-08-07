@@ -1,10 +1,10 @@
 "use client";
 
-import { Calendar, X } from "lucide-react";
+import { X } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { useDateFormat } from "@/hooks/use-date-format";
+import { Label } from "../ui/label";
 
 interface ReportDateFilterProps {
 	dateFrom?: string;
@@ -31,9 +31,9 @@ export function ReportDateFilter({
 			<CardContent className="p-4">
 				<div className="flex flex-wrap items-end gap-4">
 					<div className="flex flex-col gap-1.5">
-						<label className="text-xs font-medium text-muted-foreground">
+						<Label className="text-xs font-medium text-muted-foreground">
 							{t("common.from")}
-						</label>
+						</Label>
 						<input
 							type="date"
 							value={dateFrom ?? ""}
@@ -42,9 +42,9 @@ export function ReportDateFilter({
 						/>
 					</div>
 					<div className="flex flex-col gap-1.5">
-						<label className="text-xs font-medium text-muted-foreground">
+						<Label className="text-xs font-medium text-muted-foreground">
 							{t("common.to")}
-						</label>
+						</Label>
 						<input
 							type="date"
 							value={dateTo ?? ""}
@@ -95,9 +95,9 @@ export function ReportAsOfFilter({
 			<CardContent className="p-4">
 				<div className="flex flex-wrap items-end gap-4">
 					<div className="flex flex-col gap-1.5">
-						<label className="text-xs font-medium text-muted-foreground">
+						<Label className="text-xs font-medium text-muted-foreground">
 							{label ?? t("reports.asOf")}
-						</label>
+						</Label>
 						<input
 							type="date"
 							value={asOfDate ?? ""}

@@ -7,7 +7,7 @@ import {
 	ModuleRegistry,
 } from "ag-grid-community";
 import { AgGridReact } from "ag-grid-react";
-import { Clock, FileDown, Receipt, TrendingUp, Users } from "lucide-react";
+import { Clock, FileDown, Receipt } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useMemo, useRef, useState } from "react";
@@ -135,8 +135,7 @@ export default function ARAgingPage() {
 				cellClass: (p) => {
 					if (!p.value) return "";
 					const days = Math.floor(
-						(new Date().getTime() - new Date(p.value).getTime()) /
-							(1000 * 60 * 60 * 24),
+						(Date.now() - new Date(p.value).getTime()) / (1000 * 60 * 60 * 24),
 					);
 					if (days > 90) return "text-red-600 dark:text-red-500 font-bold";
 					if (days > 60) return "text-red-600 dark:text-red-500";

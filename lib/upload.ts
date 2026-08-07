@@ -11,7 +11,7 @@ interface UploadResponse {
 
 interface HandleImageUploadOptions<T> {
 	file: File | any;
-	onMutation: (uploadResult?: UploadResponse) => Promise<T> | void;
+	onMutation: (uploadResult?: UploadResponse) => Promise<T> | undefined;
 	onSuccess?: () => void;
 	onError?: (error: any) => void;
 }

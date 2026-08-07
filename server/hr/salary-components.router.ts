@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { NotFoundError, UnprocessableError } from "@/lib/error";
+import { NotFoundError } from "@/lib/error";
 import { assertCan, orgProcedure, router } from "@/lib/trpc/context";
 import { writeAuditLog } from "../shared/audit.service";
 

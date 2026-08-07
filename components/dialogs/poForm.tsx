@@ -1,14 +1,13 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Loader2, Package, Plus, Trash2, TriangleAlert } from "lucide-react";
+import { Loader2, Package, Trash2, TriangleAlert } from "lucide-react";
 import { useRouter } from "next/navigation";
 import * as React from "react";
 import { type SubmitHandler, useFieldArray, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { DateInputField } from "@/components/ui/date-picker";
 import {

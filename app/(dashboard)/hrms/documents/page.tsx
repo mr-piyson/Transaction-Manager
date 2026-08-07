@@ -1,13 +1,6 @@
 "use client";
 
-import {
-	Edit,
-	ExternalLink,
-	FileText,
-	Plus,
-	Search,
-	Trash2,
-} from "lucide-react";
+import { ExternalLink, FileText, Plus, Search, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { alert } from "@/components/Alert-dialog";

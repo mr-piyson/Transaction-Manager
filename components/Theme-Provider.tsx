@@ -1,8 +1,7 @@
 "use client";
 
-import { ThemeProvider as NextThemesProvider, useTheme } from "next-themes";
+import { ThemeProvider as NextThemesProvider } from "next-themes";
 import type * as React from "react";
-import { Switch } from "./ui/switch";
 
 export function ThemeProvider({
 	children,

@@ -1,14 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import {
-	Check,
-	ChevronsUpDown,
-	Loader2,
-	Search,
-	TriangleAlert,
-	X,
-} from "lucide-react";
+import { Check, ChevronsUpDown, Loader2, TriangleAlert } from "lucide-react";
 import * as React from "react";
 import { type SubmitHandler, useForm } from "react-hook-form";
 import { toast } from "sonner";

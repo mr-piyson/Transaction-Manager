@@ -24,7 +24,6 @@ import { Tree, TreeItem, TreeItemLabel } from "@/components/reui/tree";
 import {
 	Sidebar,
 	SidebarContent,
-	SidebarFooter,
 	SidebarHeader,
 	SidebarMenu,
 	SidebarMenuButton,
@@ -52,7 +51,6 @@ import {
 	InputGroupInput,
 } from "../ui/input-group";
 import { Kbd } from "../ui/kbd";
-import { NavUser } from "./User-Options";
 
 export type RouteConfig = {
 	type: "item" | "group";
@@ -141,7 +139,7 @@ function buildSidebarItems(
 		}
 	}
 
-	items["__root__"] = {
+	items.__root__ = {
 		name: "Root",
 		children: rootChildren,
 		type: "group",
@@ -465,7 +463,7 @@ export function AppSidebar({ ...props }: AppSidebarProps) {
 				{/* Navigation */}
 				<div className="overflow-auto">
 					<Tree tree={tree} indent={indent} toggleIconType="chevron">
-						{tree.getItems().map((item, itemIndex) => {
+						{tree.getItems().map((item, _itemIndex) => {
 							const itemData = item.getItemData();
 							const isFolder = item.isFolder();
 							const active =

@@ -26,7 +26,7 @@ export async function generateEmployeeCode(
 	if (currentMax) {
 		const parts = currentMax.split("-");
 		const numPart = parseInt(parts[parts.length - 1], 10);
-		if (!isNaN(numPart)) {
+		if (!Number.isNaN(numPart)) {
 			nextNum = numPart + 1;
 		}
 	}

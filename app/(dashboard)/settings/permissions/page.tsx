@@ -4,7 +4,6 @@ import {
 	CheckCircle2,
 	ChevronDown,
 	ChevronUp,
-	Crown,
 	Loader2,
 	MoreHorizontal,
 	Pencil,
@@ -352,10 +351,7 @@ export default function PermissionsPage() {
 		return roles.filter(
 			(role) =>
 				role.name.toLowerCase().includes(roleSearchQuery.toLowerCase()) ||
-				(role.description &&
-					role.description
-						.toLowerCase()
-						.includes(roleSearchQuery.toLowerCase())),
+				role.description?.toLowerCase().includes(roleSearchQuery.toLowerCase()),
 		);
 	}, [roles, roleSearchQuery]);
 
@@ -386,7 +382,7 @@ export default function PermissionsPage() {
 				(p) =>
 					p.label.toLowerCase().includes(query) ||
 					p.code.toLowerCase().includes(query) ||
-					(p.description && p.description.toLowerCase().includes(query)),
+					p.description?.toLowerCase().includes(query),
 			);
 			if (matched.length > 0) {
 				result[module] = matched;

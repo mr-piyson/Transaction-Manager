@@ -227,7 +227,7 @@ export async function postDraftEntry(
 	tx: TransactionClient,
 	entryId: string,
 	organizationId: string,
-	userId: string,
+	_userId: string,
 ) {
 	const entry = await tx.journalEntry.findFirst({
 		where: { id: entryId, organizationId },

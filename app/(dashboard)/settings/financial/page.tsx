@@ -269,7 +269,7 @@ function ExchangeRateSection({ baseCurrency }: { baseCurrency: CurrencyCode }) {
 				await utils.client.exchangeRates.delete.mutate({ id });
 				utils.exchangeRates.list.invalidate();
 				toast.success("Exchange rate deleted");
-			} catch (error) {
+			} catch (_error) {
 				toast.error("Failed to delete exchange rate");
 			}
 		},

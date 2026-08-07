@@ -51,7 +51,7 @@ export default function JobPostingsPage() {
 	const [page, setPage] = useState(1);
 	const [search, setSearch] = useState("");
 	const [activeFilter, setActiveFilter] = useState("all");
-	const [departmentFilter, setDepartmentFilter] = useState("");
+	const [departmentFilter, _setDepartmentFilter] = useState("");
 	const limit = 25;
 	const { formatDate } = useDateFormat();
 

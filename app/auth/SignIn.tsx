@@ -6,7 +6,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import z from "zod";
-import { authClient, signIn } from "@/auth/auth-client";
+import { authClient } from "@/auth/auth-client";
 import { Button } from "@/components/ui/button";
 import {
 	Card,

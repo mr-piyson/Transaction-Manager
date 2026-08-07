@@ -45,6 +45,9 @@
 				"noImplicitAnyLet": "off",
 				"noExplicitAny": "off",
 				"noArrayIndexKey": "off"
+			},
+			"security": {
+				"noDangerouslySetInnerHtml": "off"
 			}
 		}
 	},

@@ -76,7 +76,7 @@ export default function GrievancesPage() {
 	const [page, setPage] = useState(1);
 	const [search, setSearch] = useState("");
 	const [statusFilter, setStatusFilter] = useState("all");
-	const [employeeFilter, setEmployeeFilter] = useState("");
+	const [employeeFilter, _setEmployeeFilter] = useState("");
 	const limit = 25;
 	const [viewGrievance, setViewGrievance] = useState<any>(null);
 	const [assignDialog, setAssignDialog] = useState(false);

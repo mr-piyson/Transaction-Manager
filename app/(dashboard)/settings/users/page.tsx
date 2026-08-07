@@ -1,10 +1,8 @@
 "use client";
 
 import {
-	CheckCircle2,
 	ChevronLeft,
 	ChevronRight,
-	Crown,
 	KeyRound,
 	Loader2,
 	Mail,
@@ -500,10 +498,8 @@ export default function UsersSettingsPage() {
 			const matchesSearch =
 				user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
 				user.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-				(user.firstName &&
-					user.firstName.toLowerCase().includes(searchQuery.toLowerCase())) ||
-				(user.lastName &&
-					user.lastName.toLowerCase().includes(searchQuery.toLowerCase()));
+				user.firstName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+				user.lastName?.toLowerCase().includes(searchQuery.toLowerCase());
 
 			const userRoleId = user.userOrganizationRoles?.[0]?.roleId ?? "none";
 			const matchesRole =

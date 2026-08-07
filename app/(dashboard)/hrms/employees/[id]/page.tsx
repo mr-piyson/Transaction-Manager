@@ -42,7 +42,6 @@ import {
 	EmptyMedia,
 	EmptyTitle,
 } from "@/components/ui/empty";
-import { Separator } from "@/components/ui/separator";
 import { Spinner } from "@/components/ui/spinner";
 import {
 	Table,
@@ -124,7 +123,7 @@ export default function EmployeeDetailPage() {
 		onError: (e) => toast.error(e.message),
 	});
 
-	const isPending = deleteMutation.isPending || updateStatusMutation.isPending;
+	const _isPending = deleteMutation.isPending || updateStatusMutation.isPending;
 
 	if (isLoading) {
 		return (

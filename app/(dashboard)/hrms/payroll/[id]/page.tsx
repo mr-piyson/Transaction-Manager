@@ -2,8 +2,6 @@
 
 import {
 	ArrowLeft,
-	Banknote,
-	DollarSign,
 	Edit3,
 	Loader2,
 	Trash2,
@@ -26,12 +24,6 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from "@/components/ui/dialog";
-import {
-	DropdownMenu,
-	DropdownMenuContent,
-	DropdownMenuItem,
-	DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import {
 	Empty,
 	EmptyDescription,
@@ -169,7 +161,7 @@ export default function PayrollDetailPage() {
 		(s: number, i: any) => s + Number(i.baseSalary ?? 0),
 		0,
 	);
-	const totalAllowances = items.reduce(
+	const _totalAllowances = items.reduce(
 		(s: number, i: any) => s + Number(i.allowances ?? 0),
 		0,
 	);

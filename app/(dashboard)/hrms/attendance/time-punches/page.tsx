@@ -19,13 +19,6 @@ import {
 	PaginationNext,
 	PaginationPrevious,
 } from "@/components/ui/pagination";
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "@/components/ui/select";
 import { Spinner } from "@/components/ui/spinner";
 import {
 	Table,
@@ -41,7 +34,7 @@ import { trpc } from "@/lib/trpc/client";
 export default function TimePunchesPage() {
 	const [page, setPage] = useState(1);
 	const [search, setSearch] = useState("");
-	const [employeeFilter, setEmployeeFilter] = useState("");
+	const [employeeFilter, _setEmployeeFilter] = useState("");
 	const limit = 25;
 	const { formatDateTime } = useDateFormat();
 

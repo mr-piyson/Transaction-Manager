@@ -44,7 +44,7 @@ export default function EmployeesLayout({
 		onError: (e) => toast.error(e.message),
 	});
 
-	const updateStatusMutation = trpc.hr.employees.updateStatus.useMutation({
+	const _updateStatusMutation = trpc.hr.employees.updateStatus.useMutation({
 		onSuccess: () => {
 			utils.hr.employees.list.invalidate();
 			if (activeItem) utils.hr.employees.byId.invalidate({ id: activeItem });

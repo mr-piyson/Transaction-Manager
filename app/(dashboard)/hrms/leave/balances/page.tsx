@@ -1,6 +1,6 @@
 "use client";
 
-import { Calculator, Loader2, Plus, Search } from "lucide-react";
+import { Calculator, Loader2, Plus } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { useLeaveAllocateForm } from "@/components/dialogs";
@@ -64,7 +64,7 @@ export default function LeaveBalancesPage() {
 		page,
 		limit,
 		employeeId: employeeId || undefined,
-		year: year ? parseInt(year) : undefined,
+		year: year ? parseInt(year, 10) : undefined,
 		leaveTypeId: leaveTypeId || undefined,
 	});
 
@@ -316,7 +316,7 @@ export default function LeaveBalancesPage() {
 								}
 								adjustMutation.mutate({
 									id: adjustTargetId,
-									adjustmentDays: parseInt(adjustmentDays),
+									adjustmentDays: parseInt(adjustmentDays, 10),
 								});
 							}}
 							disabled={adjustMutation.isPending}

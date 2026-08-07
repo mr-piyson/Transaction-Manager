@@ -22,7 +22,6 @@ import {
 	clearPending,
 	getPendingFileIds,
 	markForCleanup,
-	removeFromCleanup,
 } from "./upload-cleanup";
 
 const STEPS: { key: ImportStep; label: string; icon: typeof Upload }[] = [
@@ -93,7 +92,7 @@ export function ItemImportWizard() {
 		updated: number;
 		skipped: number;
 	} | null>(null);
-	const cleanupRef = useRef(false);
+	const _cleanupRef = useRef(false);
 
 	const { data: suppliersData, isLoading: suppliersLoading } =
 		trpc.suppliers.list.useQuery(
@@ -241,7 +240,7 @@ export function ItemImportWizard() {
 		});
 	}, [items, images, bulkImport, supplierId]);
 
-	const currentIdx = STEPS.findIndex((s) => s.key === step);
+	const _currentIdx = STEPS.findIndex((s) => s.key === step);
 
 	if (step === "done" && result) {
 		return (

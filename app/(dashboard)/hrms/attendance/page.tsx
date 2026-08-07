@@ -1,20 +1,12 @@
 "use client";
 
 import { format } from "date-fns";
-import {
-	Calendar,
-	CheckCircle2,
-	Clock,
-	Loader2,
-	Search,
-	XCircle,
-} from "lucide-react";
+import { Calendar, CheckCircle2, Search, XCircle } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
-import { useTimePunchForm } from "@/components/dialogs";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import {
 	DropdownMenu,
 	DropdownMenuContent,
@@ -58,9 +50,8 @@ import { trpc } from "@/lib/trpc/client";
 export default function AttendanceRecordsPage() {
 	const [page, setPage] = useState(1);
 	const [search, setSearch] = useState("");
-	const [employeeFilter, setEmployeeFilter] = useState("");
+	const [employeeFilter, _] = useState("");
 	const [lateFilter, setLateFilter] = useState("all");
-	const { openCreate } = useTimePunchForm();
 	const { formatDate } = useDateFormat();
 	const limit = 25;
 

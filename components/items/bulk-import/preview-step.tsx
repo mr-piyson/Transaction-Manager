@@ -83,7 +83,7 @@ export function PreviewStep({
 	onSupplierChange,
 }: PreviewStepProps) {
 	const tableTheme = useTableTheme();
-	const [tab, setTab] = useState<"grid" | "cards">("grid");
+	const [_tab, _setTab] = useState<"grid" | "cards">("grid");
 	const itemsWithImages = items.filter((i) => i.hasImage).length;
 	const selectedSupplier = suppliers.find((s) => s.id === supplierId);
 

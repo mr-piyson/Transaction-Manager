@@ -191,7 +191,7 @@ export default function TrialBalancePage() {
 						data ? format(Math.abs(data.totalDebit - data.totalCredit)) : "-"
 					}
 					icon={<Scale className="size-4" />}
-					variant={data && data.isBalanced ? "success" : "danger"}
+					variant={data?.isBalanced ? "success" : "danger"}
 					loading={isLoading}
 				/>
 			</div>

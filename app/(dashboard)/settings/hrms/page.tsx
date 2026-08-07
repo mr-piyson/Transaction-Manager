@@ -17,7 +17,7 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { trpc } from "@/lib/trpc/client";
 
-const HRMS_SETTING_KEYS = [
+const _HRMS_SETTING_KEYS = [
 	"hrms.probationPeriodMonths",
 	"hrms.workingDaysPerWeek",
 	"hrms.overtimeRateMultiplier",

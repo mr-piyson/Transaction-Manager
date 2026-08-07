@@ -77,7 +77,7 @@ export default function LeaveRequestsPage() {
 	const [page, setPage] = useState(1);
 	const [search, setSearch] = useState("");
 	const [statusFilter, setStatusFilter] = useState("all");
-	const [employeeFilter, setEmployeeFilter] = useState("");
+	const [employeeFilter, _setEmployeeFilter] = useState("");
 	const [leaveTypeFilter, setLeaveTypeFilter] = useState("");
 	const [dateFrom, setDateFrom] = useState("");
 	const [dateTo, setDateTo] = useState("");

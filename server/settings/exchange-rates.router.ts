@@ -5,7 +5,6 @@ import { currencyCodeSchema } from "@/lib/validations";
 import {
 	fetchLatestRates,
 	fullSyncCurrenciesAndRates,
-	transformRates,
 } from "../shared/frankfurter";
 
 const SYNC_SETTINGS_KEYS = {

@@ -1,13 +1,6 @@
 "use client";
 
-import {
-	AlertCircle,
-	CheckCircle2,
-	Download,
-	FileSpreadsheet,
-	Upload,
-	X,
-} from "lucide-react";
+import { AlertCircle, CheckCircle2, Download, Upload, X } from "lucide-react";
 import { useCallback, useRef, useState } from "react";
 import * as XLSX from "xlsx";
 import { Button } from "@/components/ui/button";
@@ -48,7 +41,7 @@ function downloadCsvTemplate() {
 		"\n",
 	);
 
-	const blob = new Blob(["\uFEFF" + csvContent], {
+	const blob = new Blob([`\uFEFF${csvContent}`], {
 		type: "text/csv;charset=utf-8;",
 	});
 	const url = URL.createObjectURL(blob);
@@ -198,7 +191,7 @@ export function FileUploadStep({
 						`Skipped ${missingSkuRows.length} row(s) with missing SKU (rows: ${missingSkuRows.slice(0, 5).join(", ")}${missingSkuRows.length > 5 ? "..." : ""})`,
 					);
 				}
-			} catch (e) {
+			} catch (_e) {
 				setError(
 					"Failed to parse file. Check that it is a valid Excel or CSV file.",
 				);

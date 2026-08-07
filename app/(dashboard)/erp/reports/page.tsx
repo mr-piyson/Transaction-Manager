@@ -6,7 +6,6 @@ import {
 	type GridApi,
 	ModuleRegistry,
 } from "ag-grid-community";
-import { AgGridReact } from "ag-grid-react";
 import {
 	ArrowDown,
 	ArrowUp,
@@ -23,14 +22,12 @@ import {
 	Scale,
 	ShoppingCart,
 	TrendingUp,
-	Truck,
 	Users,
 	Wallet,
 } from "lucide-react";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
-import { useTheme } from "next-themes";
-import { useMemo, useRef, useState } from "react";
+import { useMemo, useRef } from "react";
 import {
 	Area,
 	AreaChart,
@@ -44,14 +41,6 @@ import {
 } from "recharts";
 import { Header } from "@/components/layout/App-Header";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import {
-	Carousel,
-	CarouselContent,
-	CarouselItem,
-	CarouselNext,
-	CarouselPrevious,
-} from "@/components/ui/carousel";
 import {
 	Card,
 	CardContent,
@@ -60,13 +49,19 @@ import {
 	CardTitle,
 } from "@/components/ui/card";
 import {
+	Carousel,
+	CarouselContent,
+	CarouselItem,
+	CarouselNext,
+	CarouselPrevious,
+} from "@/components/ui/carousel";
+import {
 	ChartContainer,
 	ChartLegend,
 	ChartLegendContent,
 	ChartTooltip,
 	ChartTooltipContent,
 } from "@/components/ui/chart";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useCurrency } from "@/hooks/use-currency";
@@ -204,7 +199,7 @@ export default function ReportsPage() {
 	const { data: topItems, isLoading: itemsLoading } =
 		trpc.reports.topItems.useQuery();
 
-	const chartHeight = 300;
+	const _chartHeight = 300;
 
 	// ── Revenue Chart Config ─────────────────────────────────────────────────
 	const revenueChartConfig = useMemo(
@@ -306,10 +301,10 @@ export default function ReportsPage() {
 	const topItemsData = useMemo(() => topItems?.slice(0, 10) ?? [], [topItems]);
 
 	// ── ag-Grid Financial Transactions ──────────────────────────────────────
-	const theme = useTableTheme();
-	const gridApiRef = useRef<GridApi | null>(null);
+	const _theme = useTableTheme();
+	const _gridApiRef = useRef<GridApi | null>(null);
 
-	const transactionData = useMemo(() => {
+	const _transactionData = useMemo(() => {
 		const rows: any[] = [];
 
 		if (monthlyRevenue) {
@@ -362,7 +357,7 @@ export default function ReportsPage() {
 		return rows.sort((a, b) => b.date.localeCompare(a.date));
 	}, [monthlyRevenue, revVsExp]);
 
-	const columnDefs = useMemo<ColDef[]>(
+	const _columnDefs = useMemo<ColDef[]>(
 		() => [
 			{ field: "date", headerName: t("common.date"), width: 100 },
 			{ field: "type", headerName: t("common.type"), width: 100 },
@@ -398,7 +393,7 @@ export default function ReportsPage() {
 		[],
 	);
 
-	const defaultColDef = useMemo(
+	const _defaultColDef = useMemo(
 		() => ({
 			resizable: true,
 			sortable: true,
@@ -728,12 +723,12 @@ export default function ReportsPage() {
 												<TrendingUp className="size-6" />
 											</div>
 											<div>
-											<h3 className="font-semibold">
-												{t("reports.profitAndLoss")}
-											</h3>
-											<p className="text-xs text-muted-foreground mt-0.5">
-												{t("reports.profitAndLossDescription")}
-											</p>
+												<h3 className="font-semibold">
+													{t("reports.profitAndLoss")}
+												</h3>
+												<p className="text-xs text-muted-foreground mt-0.5">
+													{t("reports.profitAndLossDescription")}
+												</p>
 											</div>
 										</div>
 									</CardContent>
@@ -748,12 +743,12 @@ export default function ReportsPage() {
 												<Landmark className="size-6" />
 											</div>
 											<div>
-											<h3 className="font-semibold">
-												{t("reports.balanceSheet")}
-											</h3>
-											<p className="text-xs text-muted-foreground mt-0.5">
-												{t("reports.balanceSheetDescription")}
-											</p>
+												<h3 className="font-semibold">
+													{t("reports.balanceSheet")}
+												</h3>
+												<p className="text-xs text-muted-foreground mt-0.5">
+													{t("reports.balanceSheetDescription")}
+												</p>
 											</div>
 										</div>
 									</CardContent>
@@ -788,12 +783,12 @@ export default function ReportsPage() {
 												<Clock className="size-6" />
 											</div>
 											<div>
-											<h3 className="font-semibold">
-												{t("reports.apAging")}
-											</h3>
-											<p className="text-xs text-muted-foreground mt-0.5">
-												{t("reports.apAgingDescriptionDetail")}
-											</p>
+												<h3 className="font-semibold">
+													{t("reports.apAging")}
+												</h3>
+												<p className="text-xs text-muted-foreground mt-0.5">
+													{t("reports.apAgingDescriptionDetail")}
+												</p>
 											</div>
 										</div>
 									</CardContent>
@@ -808,12 +803,12 @@ export default function ReportsPage() {
 												<Receipt className="size-6" />
 											</div>
 											<div>
-											<h3 className="font-semibold">
-												{t("reports.arAging")}
-											</h3>
-											<p className="text-xs text-muted-foreground mt-0.5">
-												{t("reports.arAgingDescriptionDetail")}
-											</p>
+												<h3 className="font-semibold">
+													{t("reports.arAging")}
+												</h3>
+												<p className="text-xs text-muted-foreground mt-0.5">
+													{t("reports.arAgingDescriptionDetail")}
+												</p>
 											</div>
 										</div>
 									</CardContent>
@@ -828,12 +823,12 @@ export default function ReportsPage() {
 												<BookOpen className="size-6" />
 											</div>
 											<div>
-											<h3 className="font-semibold">
-												{t("reports.generalLedger")}
-											</h3>
-											<p className="text-xs text-muted-foreground mt-0.5">
-												{t("reports.generalLedgerDescription")}
-											</p>
+												<h3 className="font-semibold">
+													{t("reports.generalLedger")}
+												</h3>
+												<p className="text-xs text-muted-foreground mt-0.5">
+													{t("reports.generalLedgerDescription")}
+												</p>
 											</div>
 										</div>
 									</CardContent>
@@ -848,12 +843,12 @@ export default function ReportsPage() {
 												<Package className="size-6" />
 											</div>
 											<div>
-											<h3 className="font-semibold">
-												{t("layout.itemReport") ?? "Item Report"}
-											</h3>
-											<p className="text-xs text-muted-foreground mt-0.5">
-												{t("reports.itemReportDescription")}
-											</p>
+												<h3 className="font-semibold">
+													{t("layout.itemReport") ?? "Item Report"}
+												</h3>
+												<p className="text-xs text-muted-foreground mt-0.5">
+													{t("reports.itemReportDescription")}
+												</p>
 											</div>
 										</div>
 									</CardContent>

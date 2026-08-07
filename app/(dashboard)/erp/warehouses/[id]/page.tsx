@@ -52,7 +52,6 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
-import { Separator } from "@/components/ui/separator";
 import { Spinner } from "@/components/ui/spinner";
 import {
 	Table,
@@ -137,7 +136,7 @@ export default function WarehouseDetailPage() {
 		utils.warehouses.byId.invalidate({ id: params.id });
 	}
 
-	const isPending = deleteMutation.isPending || transferMutation.isPending;
+	const _isPending = deleteMutation.isPending || transferMutation.isPending;
 
 	if (isLoading) {
 		return (

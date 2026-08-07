@@ -28,7 +28,7 @@ export function ContractListItem({
 		renewalAlertDays,
 		renewalDate,
 	} = data || {};
-	const expired = status === "EXPIRED" || status === "TERMINATED";
+	const _expired = status === "EXPIRED" || status === "TERMINATED";
 	const isActive = status === "ACTIVE";
 
 	const totalDays =

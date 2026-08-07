@@ -16,7 +16,6 @@ import {
 	Maximize2,
 	Minimize2,
 	Package,
-	Printer,
 	RefreshCw,
 	Search,
 	ShoppingCart,
@@ -28,7 +27,7 @@ import {
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import { Bar, BarChart, Cell, Pie, PieChart, XAxis, YAxis } from "recharts";
 import { toast } from "sonner";
 import { Header } from "@/components/layout/App-Header";
@@ -421,7 +420,7 @@ function exportCsv(api: GridApi, fileName: string) {
 
 export default function ItemReportPage() {
 	const t = useTranslations();
-	const router = useRouter();
+	const _router = useRouter();
 	const { format } = useCurrency();
 	const tableTheme = useTableTheme();
 
@@ -643,7 +642,7 @@ export default function ItemReportPage() {
 							style={
 								params.data.categoryColor
 									? {
-											backgroundColor: params.data.categoryColor + "18",
+											backgroundColor: `${params.data.categoryColor}18`,
 											color: params.data.categoryColor,
 										}
 									: undefined
@@ -811,7 +810,7 @@ export default function ItemReportPage() {
 
 	// ── Filter Handlers ──────────────────────────────────────────────────
 
-	const handleClearAll = useCallback(() => {
+	const _handleClearAll = useCallback(() => {
 		setQuickFilter("all");
 		setSearchQuery("");
 		if (gridApiRef.current) {

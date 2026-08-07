@@ -322,7 +322,7 @@ export function parseDateTimeFromInput(
 	if (!date) return null;
 	if (timePart) {
 		const [h, m] = timePart.split(":").map(Number);
-		if (!isNaN(h) && !isNaN(m)) {
+		if (!Number.isNaN(h) && !Number.isNaN(m)) {
 			return set(date, { hours: h, minutes: m, seconds: 0, milliseconds: 0 });
 		}
 	}

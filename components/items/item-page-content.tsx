@@ -5,7 +5,6 @@ import {
 	ArrowLeft,
 	Box,
 	Camera,
-	Check,
 	Cuboid,
 	Download,
 	Edit,
@@ -58,7 +57,6 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
-import { Spinner } from "@/components/ui/spinner";
 import { Textarea } from "@/components/ui/textarea";
 import { Toggle } from "@/components/ui/toggle";
 import { useDateFormat } from "@/hooks/use-date-format";
@@ -280,7 +278,7 @@ export function ItemPageContent({ item, defaultMode }: ItemPageContentProps) {
 		);
 	};
 
-	const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+	const _handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
 		const file = e.target.files?.[0];
 		if (!file) return;
 
@@ -444,7 +442,7 @@ export function ItemPageContent({ item, defaultMode }: ItemPageContentProps) {
 		: TYPE_CONFIG.PRODUCT;
 	const TypeIcon = typeConfig.icon;
 
-	const v = (val: any) => (val !== undefined && val !== null ? val : "—");
+	const _v = (val: any) => (val !== undefined && val !== null ? val : "—");
 
 	// ── Render ───────────────────────────────────────────────────────────────
 	return (

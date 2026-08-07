@@ -21,7 +21,6 @@ import {
 import { useDateFormat } from "@/hooks/use-date-format";
 import {
 	DATE_INPUT_FORMATS,
-	type DateInputFormat,
 	parseDateFromInput,
 	parseDateTimeFromInput,
 	safeParseISO,
@@ -183,7 +182,7 @@ export const DateInput = React.forwardRef<HTMLInputElement, DateInputProps>(
 			(date: Date) => {
 				if (minDateObj && date < minDateObj) return true;
 				if (maxDateObj && date > maxDateObj) return true;
-				if (disabledDaySet && disabledDaySet.has(startOfDay(date).getTime())) {
+				if (disabledDaySet?.has(startOfDay(date).getTime())) {
 					return true;
 				}
 				return false;

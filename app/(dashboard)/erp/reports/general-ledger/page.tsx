@@ -21,6 +21,7 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useCurrency } from "@/hooks/use-currency";
 import { useDateFormat } from "@/hooks/use-date-format";
@@ -167,9 +168,9 @@ export default function GeneralLedgerPage() {
 				<CardContent className="p-4">
 					<div className="flex flex-wrap items-end gap-4">
 						<div className="flex flex-col gap-1.5 flex-1 min-w-[250px]">
-							<label className="text-xs font-medium text-muted-foreground">
+							<Label className="text-xs font-medium text-muted-foreground">
 								{t("common.account")}
-							</label>
+							</Label>
 							{accountsLoading ? (
 								<Skeleton className="h-9 w-full" />
 							) : (
@@ -188,9 +189,9 @@ export default function GeneralLedgerPage() {
 							)}
 						</div>
 						<div className="flex flex-col gap-1.5">
-							<label className="text-xs font-medium text-muted-foreground">
+							<Label className="text-xs font-medium text-muted-foreground">
 								{t("common.from")}
-							</label>
+							</Label>
 							<input
 								type="date"
 								value={dateFrom}
@@ -199,9 +200,9 @@ export default function GeneralLedgerPage() {
 							/>
 						</div>
 						<div className="flex flex-col gap-1.5">
-							<label className="text-xs font-medium text-muted-foreground">
+							<Label className="text-xs font-medium text-muted-foreground">
 								{t("common.to")}
-							</label>
+							</Label>
 							<input
 								type="date"
 								value={dateTo}

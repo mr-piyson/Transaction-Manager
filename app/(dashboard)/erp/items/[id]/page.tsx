@@ -5,17 +5,14 @@ import {
 	Box,
 	Download,
 	Edit,
-	Hash,
 	Loader2,
 	MoreHorizontal,
 	Package,
 	Printer,
 	QrCode,
 	ShieldAlert,
-	ShoppingCart,
 	Tag,
 	Trash,
-	Truck,
 	Wrench,
 } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";

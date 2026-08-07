@@ -50,7 +50,6 @@ import {
 	EmptyMedia,
 	EmptyTitle,
 } from "@/components/ui/empty";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Spinner } from "@/components/ui/spinner";
@@ -399,8 +398,7 @@ export default function PurchaseOrderDetailPage() {
 	const showActions = visibleActions.length > 0;
 
 	const canCreateExpense =
-		ability !== null &&
-		ability.can("expense:create", "Expense") &&
+		ability?.can("expense:create", "Expense") &&
 		[
 			"APPROVED",
 			"ORDERED",
@@ -412,7 +410,7 @@ export default function PurchaseOrderDetailPage() {
 	const remainingLines = po.lines.filter(
 		(l: any) => Number(l.quantity) > Number(l.receivedQty),
 	);
-	const allReceived = remainingLines.length === 0;
+	const _allReceived = remainingLines.length === 0;
 
 	return (
 		<div className="flex flex-col h-screen">

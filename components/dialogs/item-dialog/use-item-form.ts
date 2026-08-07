@@ -206,7 +206,7 @@ export function useItemForm({
 	const { data: taxRates } = trpc.settings.taxRates.list.useQuery(undefined, {
 		enabled: open,
 	});
-	const generateSku = trpc.categories.generateSku.useMutation();
+	const _generateSku = trpc.categories.generateSku.useMutation();
 
 	// Fetch item data for edit mode
 	const { data: editItemData, isLoading: isEditItemLoading } =
@@ -520,7 +520,7 @@ export function useItemForm({
 	// ── Submit ──────────────────────────────────────────────────────────────
 
 	const submit = React.useCallback(
-		async (keepOpen = false) => {
+		async (_keepOpen = false) => {
 			if (!validate()) return;
 
 			// Upload pending image before creating item

@@ -72,9 +72,6 @@ function resolveBankAccountCode(method: string): string {
 		case "CASH":
 		case "CHEQUE":
 			return ACCOUNTS.CASH;
-		case "BANK_TRANSFER":
-		case "CARD":
-		case "ONLINE":
 		default:
 			return ACCOUNTS.BANK;
 	}

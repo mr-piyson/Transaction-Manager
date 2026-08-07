@@ -237,15 +237,15 @@
 /* Mobile overflow fixes */
 @media (max-width: 768px) {
 	.ag-root-wrapper {
-		overflow-x: auto !important;
-		max-width: 100vw !important;
+		overflow-x: auto;
+		max-width: 100vw;
 	}
 
 	.ag-body-viewport {
-		overflow-x: auto !important;
+		overflow-x: auto;
 	}
 
 	.ag-center-cols-container {
-		min-width: unset !important;
+		min-width: unset;
 	}
 }
