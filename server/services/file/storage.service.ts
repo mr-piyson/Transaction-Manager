@@ -1,11 +1,12 @@
 import { promises as fs } from "fs";
 import path from "path";
+import { env } from "@/lib/env";
 
 // Uploads live outside `public/` so they are not frozen at build time and are
 // streamed through the `/api/files/...` route handler instead.
-const DATA_ROOT = path.join(process.cwd(), ".data");
+const DATA_ROOT = path.resolve(env.DATA_DIR);
 const UPLOAD_ROOT = path.join(DATA_ROOT, "uploads");
-const LEGACY_ROOT = path.join(process.cwd(), "public");
+const LEGACY_ROOT = path.resolve("public");
 
 export interface StorageResult {
 	storagePath: string;

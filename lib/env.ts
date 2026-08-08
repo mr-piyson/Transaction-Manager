@@ -15,6 +15,8 @@ export const env = createEnv({
 			])
 			.default("postgresql"),
 		BETTER_AUTH_SECRET: z.string(),
+		BETTER_AUTH_URL: z.string().url().default("http://localhost:3000"),
+		DATA_DIR: z.string().default(".data"),
 		NODE_ENV: z.enum(["development", "production"]).optional(),
 	},
 	runtimeEnv: process.env,

@@ -7,6 +7,7 @@ import db from "@/lib/db";
 import { env } from "@/lib/env";
 
 export const auth = betterAuth({
+	baseURL: env.BETTER_AUTH_URL,
 	trustedProxyHeaders: true,
 	advanced: {
 		disableOriginCheck: true,
