@@ -34,6 +34,7 @@ interface ListViewProps<T> {
 	emptyIcon?: React.ReactNode;
 	cardRenderer: (item: T) => React.ReactNode;
 	searchPlaceholder?: string;
+	searchTrailing?: React.ReactNode;
 }
 
 function getNestedValue(obj: any, path: string): any {
@@ -52,6 +53,7 @@ export function ListView<T extends Record<string, any>>({
 	emptyIcon,
 	cardRenderer,
 	searchPlaceholder = "Search...",
+	searchTrailing,
 }: ListViewProps<T>) {
 	const [search, setSearch] = useState("");
 	const [searchField, setSearchField] = useState("__all__");
@@ -148,6 +150,7 @@ export function ListView<T extends Record<string, any>>({
 							)}
 						/>
 					</div>
+					{searchTrailing}
 				</div>
 			</div>
 			<div ref={setScrollRef} className="flex-1 overflow-y-auto">

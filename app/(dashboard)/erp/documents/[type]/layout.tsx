@@ -4,7 +4,6 @@ import {
 	Edit,
 	Eye,
 	FileText,
-	Plus,
 	Receipt,
 	ShieldAlert,
 	Trash2,
@@ -21,10 +20,13 @@ import type { ContextMenuItemSchema } from "@/components/context-menu";
 import { UniversalContextMenu } from "@/components/context-menu";
 import { useInvoiceForm } from "@/components/dialogs";
 import { useHardDeleteForm } from "@/components/dialogs/hardDeleteForm";
+import {
+	DocumentFilterBar,
+	DocumentFilterTrigger,
+} from "@/components/erp/document-filter-bar";
 import { InvoiceListItem } from "@/components/invoices/invoice-list-item";
 import { Header } from "@/components/layout/App-Header";
 import { ListView } from "@/components/list-view";
-import { Button } from "@/components/ui/button";
 import {
 	ResizableHandle,
 	ResizablePanel,
@@ -43,22 +45,6 @@ const DOCUMENT_CONFIG: Record<
 	quotations: { icon: FileText, trpcType: "QUOTE" },
 };
 
-const STATUS_FILTERS = [
-	{ value: "", labelKey: "common.all" as const },
-	{ value: "DRAFT", labelKey: "invoices.draft" as const },
-	{ value: "SENT", labelKey: "invoices.sent" as const },
-	{ value: "APPROVED", labelKey: "invoices.approved" as const },
-	{ value: "CANCELLED", labelKey: "invoices.cancelled" as const },
-];
-
-const PAYMENT_STATUS_FILTERS = [
-	{ value: "all", labelKey: "common.all" as const },
-	{ value: "PENDING", labelKey: "common.pending" as const },
-	{ value: "PARTIAL", labelKey: "common.partial" as const },
-	{ value: "PAID", labelKey: "common.paid" as const },
-	{ value: "OVERDUE", labelKey: "common.overdue" as const },
-];
-
 export default function DocumentsLayout({
 	children,
 }: {
@@ -75,16 +61,11 @@ export default function DocumentsLayout({
 	const ability = useAppAbility();
 	const isMobile = useIsMobile();
 
-	const [statusFilter, setStatusFilter] = useQueryState(
-		"status",
-		parseAsString.withDefault(""),
-	);
-	const [paymentStatusFilter, setPaymentStatusFilter] = useQueryState(
+	const [statusFilter] = useQueryState("status", parseAsString.withDefault(""));
+	const [paymentStatusFilter] = useQueryState(
 		"paymentStatus",
 		parseAsString.withDefault("all"),
 	);
-
-	const showPaymentFilter = type === "invoices";
 
 	const { data, isPending } = trpc.invoices.list.useQuery({
 		type: config.trpcType,
@@ -223,48 +204,10 @@ export default function DocumentsLayout({
 			{!isPrintRoute && (
 				<>
 					<Header title={headerTitle} icon={<Icon className="size-5" />} />
-					<div className="flex flex-row items-center justify-between border-b px-4 h-14 shrink-0">
-						<div className="flex gap-2 items-center flex-wrap">
-							<Button
-								size="sm"
-								onClick={() =>
-									openCreate({ defaults: { type: config.trpcType } })
-								}
-							>
-								<Plus className="size-3.5" />
-								<span className="hidden md:block">
-									{t("invoices.newInvoice")}
-								</span>
-							</Button>
-							{STATUS_FILTERS.map((f) => (
-								<Button
-									key={f.value}
-									variant={statusFilter === f.value ? "default" : "outline"}
-									size="sm"
-									className="h-8 text-xs"
-									onClick={() => setStatusFilter(f.value || null)}
-								>
-									{t(f.labelKey)}
-								</Button>
-							))}
-							{showPaymentFilter &&
-								PAYMENT_STATUS_FILTERS.map((f) => (
-									<Button
-										key={f.value}
-										variant={
-											paymentStatusFilter === f.value ? "default" : "outline"
-										}
-										size="sm"
-										className="h-8 text-xs"
-										onClick={() =>
-											setPaymentStatusFilter(f.value === "all" ? null : f.value)
-										}
-									>
-										{t(f.labelKey)}
-									</Button>
-								))}
-						</div>
-					</div>
+					<DocumentFilterBar
+						type={type as "invoices" | "quotations"}
+						onCreate={() => openCreate({ defaults: { type: config.trpcType } })}
+					/>
 				</>
 			)}
 			<div
@@ -303,6 +246,11 @@ export default function DocumentsLayout({
 												<User2 className="size-20 text-muted-foreground" />
 											}
 											cardRenderer={renderCard}
+											searchTrailing={
+												<DocumentFilterTrigger
+													type={type as "invoices" | "quotations"}
+												/>
+											}
 										/>
 									</div>
 								</aside>
