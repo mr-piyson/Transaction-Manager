@@ -1,5 +1,5 @@
 import { Box, type Package, Wrench } from "lucide-react";
-import type { HTMLAttributes } from "react";
+import { type HTMLAttributes, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 
@@ -25,6 +25,7 @@ const TYPE_STYLES: Record<
 
 export function ItemListItem({ data, className, ...props }: ItemListItemProps) {
 	const { name, sku, type, image } = data || {};
+	const [imgError, setImgError] = useState(false);
 	const style = TYPE_STYLES[type as string] ?? TYPE_STYLES.PRODUCT;
 	const Icon = style.icon;
 
@@ -36,8 +37,13 @@ export function ItemListItem({ data, className, ...props }: ItemListItemProps) {
 					style.bg,
 				)}
 			>
-				{image ? (
-					<img src={image} alt={name} className="size-full object-cover" />
+				{image && !imgError ? (
+					<img
+						src={image}
+						alt={name}
+						className="size-full object-cover"
+						onError={() => setImgError(true)}
+					/>
 				) : (
 					<Icon className={cn("size-5", style.fg)} />
 				)}
