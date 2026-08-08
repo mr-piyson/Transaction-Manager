@@ -3,6 +3,7 @@
 import {
 	Check,
 	CircleDollarSign,
+	DollarSign,
 	ListFilter,
 	Plus,
 	SlidersHorizontal,
@@ -293,7 +294,7 @@ function DrawerBody({ type }: { type: "invoices" | "quotations" }) {
 				<Card className="gap-0 py-2">
 					<CardHeader className="py-0 px-2.5">
 						<CardTitle className="flex items-center gap-2 text-sm font-semibold text-foreground">
-							<CircleDollarSign size={14} />
+							<DollarSign size={14} />
 							{t("invoices.paymentStatus")}
 						</CardTitle>
 					</CardHeader>
