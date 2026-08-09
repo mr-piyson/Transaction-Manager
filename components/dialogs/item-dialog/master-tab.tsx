@@ -67,6 +67,21 @@ export function MasterTab({ form, canManageMaster }: MasterTabProps) {
 
 	return (
 		<div className="space-y-4">
+			{/* Image */}
+			{!isLocked && (
+				<ImageUpload
+					value={master.image}
+					file={pendingImageFile}
+					onFileChange={(f) => {
+						setPendingImageFile(f);
+						if (f) setImageRemoved(false);
+					}}
+					onRemove={() => setImageRemoved(true)}
+					disabled={isLocked}
+					imageRemoved={imageRemoved}
+				/>
+			)}
+
 			{/* Name */}
 			<Field>
 				<Label htmlFor="master-name">Item Name *</Label>
@@ -84,21 +99,6 @@ export function MasterTab({ form, canManageMaster }: MasterTabProps) {
 					<p className="text-sm text-destructive mt-1">{errors.master.name}</p>
 				)}
 			</Field>
-
-			{/* Image */}
-			{!isLocked && (
-				<ImageUpload
-					value={master.image}
-					file={pendingImageFile}
-					onFileChange={(f) => {
-						setPendingImageFile(f);
-						if (f) setImageRemoved(false);
-					}}
-					onRemove={() => setImageRemoved(true)}
-					disabled={isLocked}
-					imageRemoved={imageRemoved}
-				/>
-			)}
 
 			{/* SKU + Barcode */}
 			<div className="grid grid-cols-2 gap-3">
