@@ -167,6 +167,43 @@ export function InvoiceLineDialog({
 					noValidate
 					className="space-y-4"
 				>
+					{/* Profit preview */}
+					<div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground bg-muted/30 rounded-lg p-3">
+						<span>
+							{t("invoices.subtotal")}:{" "}
+							<span className="font-medium text-foreground">
+								{lineSubtotal.toFixed(3)}
+							</span>
+						</span>
+						<span>
+							{t("invoices.discount")}:{" "}
+							<span className="font-medium text-destructive">
+								-{discount.toFixed(3)}
+							</span>
+						</span>
+						<span>
+							{t("invoices.tax")}:{" "}
+							<span className="font-medium text-foreground">
+								+{lineTax.toFixed(3)}
+							</span>
+						</span>
+						<span>
+							{t("invoices.cogs")}:{" "}
+							<span className="font-medium text-foreground">
+								{lineCogs.toFixed(3)}
+							</span>
+						</span>
+						<span
+							className={grossProfit >= 0 ? "text-green-600" : "text-red-600"}
+						>
+							{t("invoices.gp")}: {grossProfit.toFixed(3)} (
+							{margin.toFixed(1)}%)
+						</span>
+						<span className="text-sm font-bold text-foreground border-t pt-0.5 w-full">
+							{t("common.total")}: {(lineTotal + lineTax).toFixed(3)}
+						</span>
+					</div>
+
 					{/* Item selector / Description */}
 					{isManual ? (
 						<div className="space-y-1.5">
@@ -297,45 +334,6 @@ export function InvoiceLineDialog({
 							</SelectContent>
 						</Select>
 					</div>
-
-					{/* Profit preview */}
-					{lineTotal > 0 && (
-						<div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground bg-muted/30 rounded-lg p-3">
-							<span>
-								{t("invoices.subtotal")}:{" "}
-								<span className="font-medium text-foreground">
-									{lineSubtotal.toFixed(3)}
-								</span>
-							</span>
-							<span>
-								{t("invoices.discount")}:{" "}
-								<span className="font-medium text-destructive">
-									-{discount.toFixed(3)}
-								</span>
-							</span>
-							<span>
-								{t("invoices.tax")}:{" "}
-								<span className="font-medium text-foreground">
-									+{lineTax.toFixed(3)}
-								</span>
-							</span>
-							<span>
-								{t("invoices.cogs")}:{" "}
-								<span className="font-medium text-foreground">
-									{lineCogs.toFixed(3)}
-								</span>
-							</span>
-							<span
-								className={grossProfit >= 0 ? "text-green-600" : "text-red-600"}
-							>
-								{t("invoices.gp")}: {grossProfit.toFixed(3)} (
-								{margin.toFixed(1)}%)
-							</span>
-							<span className="text-sm font-bold text-foreground border-t pt-0.5 w-full">
-								{t("common.total")}: {(lineTotal + lineTax).toFixed(3)}
-							</span>
-						</div>
-					)}
 
 					<DialogFooter>
 						<Button
