@@ -13,7 +13,7 @@ import {
 	DialogTitle,
 	DialogTrigger,
 } from "@/components/ui/dialog";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+
 import { useAppAbility } from "@/hooks/use-app-ability";
 import { trpc } from "@/lib/trpc/client";
 import { MasterTab } from "./master-tab";
@@ -99,8 +99,7 @@ function ExistingPreview({ item }: { item: any }) {
 				</div>
 			</div>
 			<p className="text-sm text-muted-foreground">
-				This item already exists. You can add supplier prices to it on the
-				Suppliers tab.
+				This item already exists. You can add supplier prices below.
 			</p>
 		</div>
 	);
@@ -192,17 +191,6 @@ export function UnifiedItemDialog({
 		}
 	}, [open, initialMode]); // eslint-disable-line react-hooks/exhaustive-deps
 
-	// Determine default tab and track active tab
-	const defaultTab = mode === "add-supplier" ? "suppliers" : "master";
-	const [activeTab, setActiveTab] = React.useState<string>(defaultTab);
-
-	// Reset active tab when dialog opens or mode changes
-	React.useEffect(() => {
-		if (open) {
-			setActiveTab(mode === "add-supplier" ? "suppliers" : "master");
-		}
-	}, [open, mode]);
-
 	const getTitle = () => {
 		switch (mode) {
 			case "existing":
@@ -236,7 +224,7 @@ export function UnifiedItemDialog({
 	return (
 		<Dialog open={open} onOpenChange={(v) => !isSubmitting && handleClose(v)}>
 			{children && <DialogTrigger asChild>{children}</DialogTrigger>}
-			<DialogContent className="sm:max-w-120">
+			<DialogContent className="sm:max-w-2xl">
 				<DialogHeader>
 					<DialogTitle>{getTitle()}</DialogTitle>
 					<DialogDescription>
@@ -250,44 +238,29 @@ export function UnifiedItemDialog({
 
 				{hasErrors && <ValidationAlert errors={errors} />}
 
-				<Tabs value={activeTab} onValueChange={setActiveTab}>
-					<TabsList>
-						<TabsTrigger value="master" disabled={mode === "add-supplier"}>
-							Item Master
-						</TabsTrigger>
-						<TabsTrigger value="suppliers">Suppliers</TabsTrigger>
-						{(mode === "existing" ||
-							mode === "add-supplier" ||
-							mode === "edit") && (
-							<TabsTrigger value="existing">Existing</TabsTrigger>
-						)}
-					</TabsList>
+				<div className="max-h-[70vh] overflow-y-auto pr-2 space-y-6">
+					{(mode === "existing" ||
+						mode === "add-supplier" ||
+						mode === "edit") && (
+						<ExistingPreview
+							item={mode === "edit" ? form.editingItem : form.existingMaster}
+						/>
+					)}
 
-					<TabsContent value="master" className="max-h-96 overflow-y-auto pr-2">
+					<div>
+						<h3 className="text-sm font-medium mb-3">Item Details</h3>
 						<MasterTab form={form} canManageMaster={canManageMaster} />
-					</TabsContent>
+					</div>
 
-					<TabsContent
-						value="suppliers"
-						className="max-h-96 overflow-y-auto pr-2"
-					>
+					<div>
+						<h3 className="text-sm font-medium mb-3">Supplier Prices</h3>
 						<SuppliersTab
 							form={form}
 							suppliers={suppliers}
 							canManageSupplierItems={canManageSupplierItems}
 						/>
-					</TabsContent>
-
-					{(mode === "existing" ||
-						mode === "add-supplier" ||
-						mode === "edit") && (
-						<TabsContent value="existing">
-							<ExistingPreview
-								item={mode === "edit" ? form.editingItem : form.existingMaster}
-							/>
-						</TabsContent>
-					)}
-				</Tabs>
+					</div>
+				</div>
 
 				<DialogFooter>
 					<Button
