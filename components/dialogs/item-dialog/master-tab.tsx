@@ -1,6 +1,7 @@
 "use client";
 
 import { Loader2, Wand2 } from "lucide-react";
+import * as React from "react";
 import { Button } from "@/components/ui/button";
 import { Field } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
@@ -49,7 +50,7 @@ export function MasterTab({ form, canManageMaster }: MasterTabProps) {
 		: [];
 	const taxRateList = Array.isArray(taxRates) ? taxRates : [];
 
-	const handleGenerateSku = () => {
+	const handleGenerateSku = React.useCallback(() => {
 		const selectedCat = categoryList.find(
 			(c: any) => c.id === master.categoryId,
 		);
@@ -63,7 +64,7 @@ export function MasterTab({ form, canManageMaster }: MasterTabProps) {
 				onSuccess: (data) => setMasterField("sku", data.sku),
 			},
 		);
-	};
+	}, [categoryList, master.categoryId, generateSku, setMasterField]);
 
 	return (
 		<div className="space-y-4">

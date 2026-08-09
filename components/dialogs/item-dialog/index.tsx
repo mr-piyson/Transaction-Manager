@@ -15,7 +15,6 @@ import {
 } from "@/components/ui/dialog";
 
 import { useAppAbility } from "@/hooks/use-app-ability";
-import { trpc } from "@/lib/trpc/client";
 import { MasterTab } from "./master-tab";
 import { SuppliersTab } from "./suppliers-tab";
 import type { Mode } from "./use-item-form";
@@ -162,17 +161,6 @@ export function UnifiedItemDialog({
 		? ability.can("po:update", "all")
 		: true;
 
-	const { data: suppliersData } = trpc.suppliers.list.useQuery(
-		{ limit: 200 },
-		{ enabled: open },
-	);
-	const suppliers = React.useMemo(() => {
-		const list = Array.isArray(suppliersData)
-			? suppliersData
-			: (suppliersData?.data ?? []);
-		return list;
-	}, [suppliersData]);
-
 	const form = useItemForm({
 		open,
 		onOpenChange: handleClose,
@@ -191,10 +179,9 @@ export function UnifiedItemDialog({
 		}
 	}, [open, initialMode]); // eslint-disable-line react-hooks/exhaustive-deps
 
-	const getTitle = () => {
+	const title = React.useMemo(() => {
 		switch (mode) {
 			case "existing":
-				return "Add Supplier Price";
 			case "add-supplier":
 				return "Add Supplier Price";
 			case "edit":
@@ -202,12 +189,11 @@ export function UnifiedItemDialog({
 			default:
 				return "Create Item";
 		}
-	};
+	}, [mode]);
 
-	const getSubmitLabel = () => {
+	const submitLabel = React.useMemo(() => {
 		switch (mode) {
 			case "existing":
-				return "Add Supplier Price";
 			case "add-supplier":
 				return "Add Supplier Price";
 			case "edit":
@@ -215,7 +201,7 @@ export function UnifiedItemDialog({
 			default:
 				return "Create Item";
 		}
-	};
+	}, [mode]);
 
 	const hasErrors =
 		Object.keys(errors.master).length > 0 ||
@@ -226,7 +212,7 @@ export function UnifiedItemDialog({
 			{children && <DialogTrigger asChild>{children}</DialogTrigger>}
 			<DialogContent className="sm:max-w-2xl">
 				<DialogHeader>
-					<DialogTitle>{getTitle()}</DialogTitle>
+					<DialogTitle>{title}</DialogTitle>
 					<DialogDescription>
 						{mode === "existing" || mode === "add-supplier"
 							? "Add supplier pricing to an existing item."
@@ -254,11 +240,11 @@ export function UnifiedItemDialog({
 
 					<div>
 						<h3 className="text-sm font-medium mb-3">Supplier Prices</h3>
-						<SuppliersTab
-							form={form}
-							suppliers={suppliers}
-							canManageSupplierItems={canManageSupplierItems}
-						/>
+					<SuppliersTab
+						form={form}
+						suppliers={form.suppliers}
+						canManageSupplierItems={canManageSupplierItems}
+					/>
 					</div>
 				</div>
 
@@ -286,7 +272,7 @@ export function UnifiedItemDialog({
 						disabled={isSubmitting}
 					>
 						{isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-						{getSubmitLabel()}
+						{submitLabel}
 					</Button>
 				</DialogFooter>
 			</DialogContent>

@@ -33,6 +33,7 @@ export interface UseItemFormReturn {
 	existingMaster: any | null;
 	editingItem: any | null;
 	supplierDrafts: SupplierItemDraft[];
+	suppliers: any[];
 	errors: FormErrors;
 	isSubmitting: boolean;
 	pendingImageFile: File | null;
@@ -197,16 +198,9 @@ export function useItemForm({
 		return list;
 	}, [existingItemsData]);
 
-	const { data: categories } = trpc.categories.list.useQuery(undefined, {
-		enabled: open,
-	});
 	const { data: units } = trpc.units.list.useQuery(undefined, {
 		enabled: open,
 	});
-	const { data: taxRates } = trpc.settings.taxRates.list.useQuery(undefined, {
-		enabled: open,
-	});
-	const _generateSku = trpc.categories.generateSku.useMutation();
 
 	// Fetch item data for edit mode
 	const { data: editItemData, isLoading: isEditItemLoading } =
@@ -735,6 +729,7 @@ export function useItemForm({
 		existingMaster,
 		editingItem,
 		supplierDrafts,
+		suppliers,
 		errors,
 		isSubmitting:
 			createMutation.isPending ||

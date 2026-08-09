@@ -1,6 +1,7 @@
 "use client";
 
 import { Plus, UserPlus } from "lucide-react";
+import * as React from "react";
 import { useSupplierForm } from "@/components/dialogs";
 import { Button } from "@/components/ui/button";
 import { SupplierCard } from "./supplier-card";
@@ -27,16 +28,18 @@ export function SuppliersTab({
 	} = form;
 	const { openCreate } = useSupplierForm();
 
-	// Detect duplicate supplier IDs across drafts
-	const supplierIdCounts = new Map<string, number>();
-	for (const draft of supplierDrafts) {
-		if (draft.supplierId) {
-			supplierIdCounts.set(
-				draft.supplierId,
-				(supplierIdCounts.get(draft.supplierId) ?? 0) + 1,
-			);
+	const supplierIdCounts = React.useMemo(() => {
+		const counts = new Map<string, number>();
+		for (const draft of supplierDrafts) {
+			if (draft.supplierId) {
+				counts.set(
+					draft.supplierId,
+					(counts.get(draft.supplierId) ?? 0) + 1,
+				);
+			}
 		}
-	}
+		return counts;
+	}, [supplierDrafts]);
 
 	return (
 		<div className="space-y-3">
