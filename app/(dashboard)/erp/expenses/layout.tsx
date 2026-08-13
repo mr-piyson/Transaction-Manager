@@ -380,11 +380,17 @@ export default function ExpensesLayout({
 			<Header
 				title={t("layout.expenses")}
 				icon={<Wallet className="size-5" />}
+				actions={[
+					{
+						label: t("expenses.newExpense"),
+						onClick: () => openCreate(),
+					},
+				]}
 			/>
 			<div className="flex-1 min-h-0 w-full">
 				{isListRoute ? (
 					<div className="h-full w-full flex flex-col">
-						<MoneyEntryFilterBar kind="expense" onCreate={() => openCreate()} />
+						<MoneyEntryFilterBar kind="expense" />
 						<AgGridReact
 							ref={gridRef}
 							rowData={expenses}

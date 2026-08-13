@@ -1,13 +1,14 @@
 "use client";
 
 import type { ReactNode } from "react";
+import type { PageAction } from "@/components/layout/App-Header";
 import { Header } from "@/components/layout/App-Header";
 
 interface ReportLayoutProps {
 	title: string;
 	icon: ReactNode;
 	children: ReactNode;
-	actions?: ReactNode;
+	actions?: PageAction[];
 	rightContent?: ReactNode;
 }
 

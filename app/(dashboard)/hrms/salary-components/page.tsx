@@ -1,6 +1,6 @@
 "use client";
 
-import { DollarSign, Edit, Plus, Trash2 } from "lucide-react";
+import { DollarSign, Edit, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { alert } from "@/components/Alert-dialog";
@@ -79,12 +79,12 @@ export default function SalaryComponentsPage() {
 			<Header
 				title="Salary Components"
 				description="Manage salary components for employees"
-				actions={
-					<Button onClick={() => openCreate()}>
-						<Plus className="size-4 mr-2" />
-						Add Component
-					</Button>
-				}
+				actions={[
+					{
+						label: "Add Component",
+						onClick: () => openCreate(),
+					},
+				]}
 			/>
 
 			<div className="flex items-center gap-4">

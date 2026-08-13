@@ -1,6 +1,6 @@
 "use client";
 
-import { Briefcase, Edit, Plus, Search, Trash2 } from "lucide-react";
+import { Briefcase, Edit, Search, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { alert } from "@/components/Alert-dialog";
@@ -81,12 +81,12 @@ export default function JobPositionsPage() {
 			<Header
 				title="Job Positions"
 				description="Manage job positions and hierarchy"
-				actions={
-					<Button onClick={() => openCreate()}>
-						<Plus className="size-4 mr-2" />
-						Add Position
-					</Button>
-				}
+				actions={[
+					{
+						label: "Add Position",
+						onClick: () => openCreate(),
+					},
+				]}
 			/>
 
 			<div className="flex items-center gap-4">

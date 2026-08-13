@@ -3,8 +3,6 @@
 import {
 	Edit,
 	Eye,
-	MoreHorizontal,
-	Plus,
 	ShieldAlert,
 	ShoppingCart,
 	Trash2,
@@ -24,13 +22,6 @@ import { useHardDeleteForm } from "@/components/dialogs/hardDeleteForm";
 import { Header } from "@/components/layout/App-Header";
 import { ListView } from "@/components/list-view";
 import { POListItem } from "@/components/purchase-orders/po-list-item";
-import { Button } from "@/components/ui/button";
-import {
-	DropdownMenu,
-	DropdownMenuContent,
-	DropdownMenuItem,
-	DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import {
 	ResizableHandle,
 	ResizablePanel,
@@ -223,37 +214,16 @@ export default function POLayout({ children }: { children?: React.ReactNode }) {
 			)}
 		>
 			{!isPrintPage && (
-				<>
-					<Header
-						title={t("layout.purchaseOrders")}
-						icon={<ShoppingCart className="size-5" />}
-					/>
-					<div className="flex flex-row items-center justify-between border-b px-4 h-14 shrink-0">
-						<div className="flex gap-2 items-center">
-							<Button size="sm" onClick={() => openCreate()}>
-								<Plus className="size-3.5" />
-								<span className="hidden md:block">
-									{t("purchaseOrders.createPO")}
-								</span>
-							</Button>
-						</div>
-						<div className="flex gap-2 items-center md:hidden">
-							<DropdownMenu>
-								<DropdownMenuTrigger asChild>
-									<Button variant="outline" size="sm">
-										<MoreHorizontal className="size-3.5" />
-									</Button>
-								</DropdownMenuTrigger>
-								<DropdownMenuContent align="end">
-									<DropdownMenuItem onClick={() => openCreate()}>
-										<Plus className="size-3.5" />
-										{t("purchaseOrders.createPO")}
-									</DropdownMenuItem>
-								</DropdownMenuContent>
-							</DropdownMenu>
-						</div>
-					</div>
-				</>
+				<Header
+					title={t("layout.purchaseOrders")}
+					icon={<ShoppingCart className="size-5" />}
+					actions={[
+						{
+							label: t("purchaseOrders.createPO"),
+							onClick: () => openCreate(),
+						},
+					]}
+				/>
 			)}
 			<div
 				className={cn("flex-1 min-h-0 w-full", isPrintPage && "overflow-auto")}

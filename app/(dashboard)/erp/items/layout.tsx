@@ -16,7 +16,6 @@ import {
 	List,
 	MoreHorizontal,
 	Package,
-	Plus,
 	ShieldAlert,
 	Table2,
 	Trash2,
@@ -29,7 +28,7 @@ import type * as React from "react";
 import { useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { alert } from "@/components/Alert-dialog";
-import { UnifiedItemDialog, useUnifiedItemForm } from "@/components/dialogs";
+import { useUnifiedItemForm } from "@/components/dialogs";
 import { useHardDeleteForm } from "@/components/dialogs/hardDeleteForm";
 import { ItemListItem } from "@/components/items/item-list-item";
 import { Header } from "@/components/layout/App-Header";
@@ -72,7 +71,7 @@ export default function ItemsLayout({
 	const t = useTranslations();
 	const { format } = useCurrency();
 	const tableTheme = useTableTheme();
-	const { openEdit } = useUnifiedItemForm();
+	const { openCreate, openEdit } = useUnifiedItemForm();
 	const { openDialog: openHardDelete } = useHardDeleteForm();
 	const { data: me } = trpc.auth.me.useQuery();
 	const isSuperAdmin = me?.platformRole === "SUPER_ADMIN";
@@ -424,21 +423,22 @@ export default function ItemsLayout({
 
 	return (
 		<div className="flex h-screen flex-col overflow-hidden">
-			<Header title={t("layout.items")} icon={<Package className="size-5" />} />
+			<Header
+				title={t("layout.items")}
+				icon={<Package className="size-5" />}
+				actions={[
+					{
+						label: t("items.createItem"),
+						onClick: () => openCreate(),
+					},
+				]}
+			/>
 			<div className="flex-1 min-h-0 w-full">
 				{isListRoute ? (
 					<div className="h-full w-full flex flex-col">
 						<div className="w-full flex flex-row justify-between border-b px-4 py-2 shrink-0">
 							{/* Start Actions */}
 							<div className="flex gap-2 items-center">
-								<UnifiedItemDialog>
-									<Button size={"sm"}>
-										<Plus className="size-3.5" />
-										<span className="hidden md:block">
-											{t("items.createItem")}
-										</span>
-									</Button>
-								</UnifiedItemDialog>
 								<Tabs value={typeFilter} onValueChange={setTypeFilter}>
 									<TabsList className="h-auto  justify-start">
 										{TYPE_FILTERS.map((filter) => (

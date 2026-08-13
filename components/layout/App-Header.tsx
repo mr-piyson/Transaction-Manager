@@ -1,14 +1,27 @@
 "use client";
 
-import { Plus } from "lucide-react";
+import { type LucideIcon, MoreHorizontal, Plus } from "lucide-react";
 import { useTranslations } from "next-intl";
 import type { ReactNode } from "react";
 import { CommandPaletteTrigger } from "@/components/command-palette";
 import { NavUser } from "@/components/layout/User-Options";
 import { Button } from "@/components/ui/button";
+import {
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuItem,
+	DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
 import { SidebarToggleButton } from "./App-Sidebar";
+
+export interface PageAction {
+	label: string;
+	icon?: LucideIcon;
+	onClick?: () => void;
+	variant?: "default" | "outline" | "ghost";
+}
 
 interface HeaderProps {
 	title?: ReactNode;
@@ -19,7 +32,7 @@ interface HeaderProps {
 	transparent?: boolean;
 	className?: string;
 	description?: string;
-	actions?: ReactNode;
+	actions?: PageAction[];
 	rightContent?: ReactNode;
 	onCreate?: () => void;
 	createLabel?: string;
@@ -92,21 +105,48 @@ export function Header({
 			{children && (
 				<div className="flex items-center gap-2 shrink-0">{children}</div>
 			)}
-			{actions && (
-				<div className="flex items-center gap-2 shrink-0">{actions}</div>
+			{actions && actions.length > 0 && (
+				<div className="flex items-center gap-2 shrink-0">
+					{actions.slice(0, 1).map((action, i) => {
+						const Icon = action.icon ?? Plus;
+						return (
+							<Button
+								key={i}
+								size="sm"
+								variant={action.variant ?? "default"}
+								onClick={action.onClick}
+							>
+								<Icon className="size-4 mr-1" />
+								<span className="hidden sm:block">{action.label}</span>
+							</Button>
+						);
+					})}
+					{actions.length > 1 ? (
+						<DropdownMenu>
+							<DropdownMenuTrigger asChild>
+								<Button variant="outline" size="icon" className="size-8">
+									<MoreHorizontal className="size-4" />
+								</Button>
+							</DropdownMenuTrigger>
+							<DropdownMenuContent align="end">
+								{actions.slice(1).map((action, i) => {
+									const Icon = action.icon ?? Plus;
+									return (
+										<DropdownMenuItem
+											key={i}
+											onClick={action.onClick}
+											className="cursor-pointer"
+										>
+											<Icon className="size-4 mr-2" />
+											{action.label}
+										</DropdownMenuItem>
+									);
+								})}
+							</DropdownMenuContent>
+						</DropdownMenu>
+					) : null}
+				</div>
 			)}
-			{onCreate && (
-				<Button size="sm" onClick={onCreate}>
-					<Plus className="size-4 mr-1" />
-					{createLabel ?? "Create"}
-				</Button>
-			)}
-
-			{/* Right Content */}
-			{rightContent && (
-				<div className="flex items-center gap-2 shrink-0">{rightContent}</div>
-			)}
-
 			{/* Command Palette */}
 			<CommandPaletteTrigger />
 			{/* User DropDown */}

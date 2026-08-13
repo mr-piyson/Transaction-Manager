@@ -1,6 +1,6 @@
 "use client";
 
-import { List, Plus, Search, SlidersHorizontal, Table2, X } from "lucide-react";
+import { List, Search, SlidersHorizontal, Table2, X } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { parseAsString, useQueryState } from "nuqs";
 import { Badge } from "@/components/ui/badge";
@@ -34,13 +34,9 @@ import { trpc } from "@/lib/trpc/client";
 
 interface MoneyEntryFilterBarProps {
 	kind: "expense" | "income";
-	onCreate: () => void;
 }
 
-export function MoneyEntryFilterBar({
-	kind,
-	onCreate,
-}: MoneyEntryFilterBarProps) {
+export function MoneyEntryFilterBar({ kind }: MoneyEntryFilterBarProps) {
 	const t = useTranslations();
 	const isExpense = kind === "expense";
 
@@ -95,15 +91,8 @@ export function MoneyEntryFilterBar({
 
 	return (
 		<div className="w-full flex items-center justify-between gap-2 border-b px-4 py-2 shrink-0">
-			{/* Left: Create Button + Filter Drawer */}
+			{/* Left: Filter Drawer */}
 			<div className="flex items-center gap-2">
-				<Button size="sm" onClick={onCreate}>
-					<Plus className="size-3.5" />
-					<span className="hidden sm:inline">
-						{isExpense ? t("expenses.newExpense") : t("incomes.newIncome")}
-					</span>
-				</Button>
-
 				<Separator orientation="vertical" className="h-5" />
 
 				<Drawer direction="right">

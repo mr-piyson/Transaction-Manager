@@ -1,6 +1,6 @@
 "use client";
 
-import { ExternalLink, FileText, Plus, Search, Trash2 } from "lucide-react";
+import { ExternalLink, FileText, Search, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { alert } from "@/components/Alert-dialog";
@@ -103,12 +103,12 @@ export default function DocumentsPage() {
 			<Header
 				title="Documents"
 				description="Manage employee documents"
-				actions={
-					<Button onClick={() => openCreate()}>
-						<Plus className="size-4 mr-2" />
-						Add Document
-					</Button>
-				}
+				actions={[
+					{
+						label: "Add Document",
+						onClick: () => openCreate(),
+					},
+				]}
 			/>
 
 			<div className="flex items-center gap-4 flex-wrap">

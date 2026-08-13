@@ -1,6 +1,6 @@
 "use client";
 
-import { Building2, Edit, Plus, Search, Trash2 } from "lucide-react";
+import { Building2, Edit, Search, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { alert } from "@/components/Alert-dialog";
@@ -81,12 +81,12 @@ export default function DepartmentsPage() {
 			<Header
 				title="Departments"
 				description="Manage organization departments"
-				actions={
-					<Button onClick={() => openCreate()}>
-						<Plus className="size-4 mr-2" />
-						Add Department
-					</Button>
-				}
+				actions={[
+					{
+						label: "Add Department",
+						onClick: () => openCreate(),
+					},
+				]}
 			/>
 
 			<div className="flex items-center gap-4">

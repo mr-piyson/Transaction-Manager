@@ -1,6 +1,6 @@
 "use client";
 
-import { Edit, Plus, Search, Trash2, UserCheck } from "lucide-react";
+import { Edit, Search, Trash2, UserCheck } from "lucide-react";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { alert } from "@/components/Alert-dialog";
@@ -75,12 +75,12 @@ export default function EmployeeTypesPage() {
 			<Header
 				title="Employee Types"
 				description="Manage employee type classifications"
-				actions={
-					<Button onClick={() => openCreate()}>
-						<Plus className="size-4 mr-2" />
-						Add Type
-					</Button>
-				}
+				actions={[
+					{
+						label: "Add Type",
+						onClick: () => openCreate(),
+					},
+				]}
 			/>
 
 			<div className="flex items-center gap-4">
