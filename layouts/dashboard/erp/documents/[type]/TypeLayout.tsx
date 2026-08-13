@@ -1,0 +1,280 @@
+"use client";
+
+import {
+	Edit,
+	Eye,
+	FileText,
+	Receipt,
+	ShieldAlert,
+	Trash2,
+	User2,
+} from "lucide-react";
+import Link from "next/link";
+import { useParams, usePathname, useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
+import { parseAsString, useQueryState } from "nuqs";
+import { useCallback } from "react";
+import { toast } from "sonner";
+import { alert } from "@/components/Alert-dialog";
+import type { ContextMenuItemSchema } from "@/components/context-menu";
+import { UniversalContextMenu } from "@/components/context-menu";
+import { useInvoiceForm } from "@/components/dialogs";
+import { useHardDeleteForm } from "@/components/dialogs/hardDeleteForm";
+import {
+	DocumentFilterBar,
+	DocumentFilterTrigger,
+} from "@/components/erp/document-filter-bar";
+import { InvoiceListItem } from "@/components/invoices/invoice-list-item";
+import { Header } from "@/components/layout/App-Header";
+import { ListView } from "@/components/list-view";
+import {
+	ResizableHandle,
+	ResizablePanel,
+	ResizablePanelGroup,
+} from "@/components/ui/resizable";
+import { useAppAbility } from "@/hooks/use-app-ability";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { trpc } from "@/lib/trpc/client";
+import { cn } from "@/lib/utils";
+
+const DOCUMENT_CONFIG: Record<
+	string,
+	{ icon: typeof Receipt; trpcType: "INVOICE" | "QUOTE" }
+> = {
+	invoices: { icon: Receipt, trpcType: "INVOICE" },
+	quotations: { icon: FileText, trpcType: "QUOTE" },
+};
+
+export default function DocumentsLayout({
+	children,
+}: {
+	children?: React.ReactNode;
+}) {
+	const t = useTranslations();
+	const params = useParams<{ type: string }>();
+	const type = params.type;
+	const config = DOCUMENT_CONFIG[type] ?? DOCUMENT_CONFIG.invoices;
+	const { openCreate } = useInvoiceForm();
+	const { openDialog: openHardDelete } = useHardDeleteForm();
+	const { data: me } = trpc.auth.me.useQuery();
+	const isSuperAdmin = me?.platformRole === "SUPER_ADMIN";
+	const ability = useAppAbility();
+	const isMobile = useIsMobile();
+
+	const [statusFilter] = useQueryState("status", parseAsString.withDefault(""));
+	const [paymentStatusFilter] = useQueryState(
+		"paymentStatus",
+		parseAsString.withDefault("all"),
+	);
+
+	const { data, isPending } = trpc.invoices.list.useQuery({
+		type: config.trpcType,
+		status: (statusFilter || undefined) as any,
+		paymentStatus:
+			paymentStatusFilter === "all" ? undefined : (paymentStatusFilter as any),
+	});
+
+	const router = useRouter();
+	const pathname = usePathname();
+	const activeItem = pathname.split("/")[4];
+	const isListRoute = pathname === `/erp/documents/${type}`;
+	const isPrintRoute = pathname.endsWith("/print");
+
+	const utils = trpc.useUtils();
+	const deleteMutation = trpc.invoices.delete.useMutation({
+		onSuccess: () => {
+			utils.invoices.list.invalidate();
+			toast.success(t("invoices.invoiceDeleted"));
+			if (activeItem) router.push(`/erp/documents/${type}`);
+		},
+		onError: (e) => toast.error(e.message),
+	});
+
+	const documents = (Array.isArray(data) ? data : (data?.data ?? [])).sort(
+		(a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
+	);
+
+	const renderCard = useCallback(
+		(item: any) => {
+			const isDeletable = ["DRAFT", "CANCELLED", "DELETED"].includes(
+				item.status,
+			);
+
+			const canEdit = ability?.can("invoice:update", "Invoice");
+			const canDelete = ability?.can("invoice:delete", "Invoice");
+
+			const menuItems: ContextMenuItemSchema[] = [
+				{
+					id: "view",
+					label: t("common.viewDetails"),
+					icon: Eye,
+					onClick: () => router.push(`/erp/documents/${type}/${item.id}`),
+				},
+				...(canEdit
+					? [
+							{
+								id: "edit",
+								label: t("common.edit"),
+								icon: Edit,
+								onClick: () => router.push(`/erp/documents/${type}/${item.id}`),
+							},
+						]
+					: []),
+				...(canDelete
+					? [
+							{ id: "sep1", type: "separator" as const },
+							{
+								id: "delete",
+								label: t("common.delete"),
+								icon: Trash2,
+								onClick: () =>
+									alert.delete({
+										title: t("common.confirmDeleteTitle"),
+										description: "This action cannot be undone.",
+										confirmText: t("common.delete"),
+										onConfirm: async () => {
+											await deleteMutation.mutateAsync({ id: item.id });
+										},
+									}),
+								disabled: !isDeletable,
+							},
+						]
+					: []),
+				...(isSuperAdmin
+					? [
+							{ id: "sep2", type: "separator" as const },
+							{
+								id: "hardDelete",
+								label: t("hardDelete.menu"),
+								icon: ShieldAlert,
+								destructive: true,
+								onClick: () =>
+									openHardDelete({
+										kind: "invoice",
+										id: item.id,
+										title: item.serial,
+									}),
+							},
+						]
+					: []),
+			];
+
+			return (
+				<UniversalContextMenu items={menuItems}>
+					<Link
+						href={`/erp/documents/${type}/${item.id}`}
+						scroll={false}
+						draggable={false}
+						className="block w-full h-full"
+					>
+						<InvoiceListItem
+							data={item}
+							className={cn(
+								"hover:bg-muted/40 border border-transparent rounded-lg ",
+								activeItem === item.id ? "border-primary bg-primary/10" : "",
+							)}
+						/>
+					</Link>
+				</UniversalContextMenu>
+			);
+		},
+		[
+			activeItem,
+			type,
+			ability,
+			deleteMutation,
+			router,
+			isSuperAdmin,
+			openHardDelete,
+			t,
+		],
+	);
+
+	const Icon = config.icon;
+	const headerTitle =
+		type === "invoices" ? t("layout.invoices") : t("layout.quotations");
+
+	return (
+		<div
+			className={cn(
+				"flex h-screen flex-col overflow-hidden",
+				isPrintRoute && "print-layout",
+			)}
+		>
+			{!isPrintRoute && (
+				<>
+					<Header title={headerTitle} icon={<Icon className="size-5" />} />
+					<DocumentFilterBar
+						type={type as "invoices" | "quotations"}
+						onCreate={() => openCreate({ defaults: { type: config.trpcType } })}
+					/>
+				</>
+			)}
+			<div
+				className={cn("flex-1 min-h-0 w-full", isPrintRoute && "overflow-auto")}
+			>
+				{isPrintRoute ? (
+					children
+				) : (
+					<ResizablePanelGroup className="h-full">
+						{(isListRoute || !isMobile) && (
+							<ResizablePanel
+								minSize={20}
+								defaultSize={30}
+								className={cn(
+									"h-full",
+									!isListRoute ? "hidden md:block" : "block",
+								)}
+							>
+								<aside className="flex h-full flex-col overflow-hidden border-r">
+									<div className="flex-1 overflow-y-auto">
+										<ListView
+											data={documents}
+											isLoading={isPending}
+											className="h-full"
+											useTheme
+											searchFields={["serial", "customer.name", "status"]}
+											searchFieldLabels={{
+												serial: t("common.serial"),
+												"customer.name": t("common.customer"),
+												status: t("common.status"),
+											}}
+											rowHeight={72}
+											emptyTitle={t("invoices.noInvoices")}
+											emptyDescription={t("invoices.selectDescription")}
+											emptyIcon={
+												<User2 className="size-20 text-muted-foreground" />
+											}
+											cardRenderer={renderCard}
+											searchTrailing={
+												<DocumentFilterTrigger
+													type={type as "invoices" | "quotations"}
+												/>
+											}
+										/>
+									</div>
+								</aside>
+							</ResizablePanel>
+						)}
+
+						<ResizableHandle
+							className={cn("hidden md:flex", !isListRoute && "hidden md:flex")}
+						/>
+
+						{(!isListRoute || !isMobile) && (
+							<ResizablePanel
+								defaultSize={70}
+								className={cn(
+									"h-full w-full",
+									isListRoute ? "hidden md:block" : "flex flex-col",
+								)}
+							>
+								{children}
+							</ResizablePanel>
+						)}
+					</ResizablePanelGroup>
+				)}
+			</div>
+		</div>
+	);
+}

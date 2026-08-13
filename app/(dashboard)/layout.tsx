@@ -1,9 +1,6 @@
 import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/auth/auth-server";
-import { AlertProvider } from "@/components/Alert-dialog";
-import { DashboardShell } from "@/components/layout/Dashboard-Shell";
-import { SplashScreen } from "@/components/Splash-Screen";
-import { CurrencyProvider } from "@/hooks/use-currency";
+import DashboardLayoutClient from "@/layouts/dashboard/DashboardLayout";
 import db from "@/lib/db";
 
 export default async function DashboardLayout({
@@ -19,13 +16,5 @@ export default async function DashboardLayout({
 		redirect("/auth");
 	}
 
-	return (
-		<SplashScreen>
-			<AlertProvider>
-				<CurrencyProvider>
-					<DashboardShell>{children}</DashboardShell>
-				</CurrencyProvider>
-			</AlertProvider>
-		</SplashScreen>
-	);
+	return <DashboardLayoutClient>{children}</DashboardLayoutClient>;
 }

@@ -1,13 +1,14 @@
 import { redirect } from "next/navigation";
 import { getSession } from "@/auth/auth-server";
+import AuthLayoutClient from "@/layouts/auth/AuthLayout";
 
-type AuthLayoutProps = {
+export default async function AuthLayout({
+	children,
+}: {
 	children?: React.ReactNode;
-};
-
-export default async function AuthLayout(props: AuthLayoutProps) {
+}) {
 	const session = await getSession();
 	if (session) redirect("/erp");
 
-	return <div>{props.children}</div>;
+	return <AuthLayoutClient>{children}</AuthLayoutClient>;
 }
