@@ -3,6 +3,7 @@
 import {
 	Edit,
 	Eye,
+	File,
 	FileText,
 	Receipt,
 	ShieldAlert,
@@ -20,10 +21,7 @@ import type { ContextMenuItemSchema } from "@/components/context-menu";
 import { UniversalContextMenu } from "@/components/context-menu";
 import { useInvoiceForm } from "@/components/dialogs";
 import { useHardDeleteForm } from "@/components/dialogs/hardDeleteForm";
-import {
-	DocumentFilterBar,
-	DocumentFilterTrigger,
-} from "@/components/erp/document-filter-bar";
+import { DocumentFilterTrigger } from "@/components/erp/document-filter-bar";
 import { InvoiceListItem } from "@/components/invoices/invoice-list-item";
 import { Header } from "@/components/layout/App-Header";
 import { ListView } from "@/components/list-view";
@@ -202,13 +200,7 @@ export default function DocumentsLayout({
 			)}
 		>
 			{!isPrintRoute && (
-				<>
-					<Header title={headerTitle} icon={<Icon className="size-5" />} />
-					<DocumentFilterBar
-						type={type as "invoices" | "quotations"}
-						onCreate={() => openCreate({ defaults: { type: config.trpcType } })}
-					/>
-				</>
+				<Header title={headerTitle} icon={<Icon className="size-5" />} />
 			)}
 			<div
 				className={cn("flex-1 min-h-0 w-full", isPrintRoute && "overflow-auto")}
@@ -243,7 +235,7 @@ export default function DocumentsLayout({
 											emptyTitle={t("invoices.noInvoices")}
 											emptyDescription={t("invoices.selectDescription")}
 											emptyIcon={
-												<User2 className="size-20 text-muted-foreground" />
+												<File className="size-20 text-muted-foreground" />
 											}
 											cardRenderer={renderCard}
 											searchTrailing={

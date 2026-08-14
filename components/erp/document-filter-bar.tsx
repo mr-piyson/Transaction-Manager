@@ -2,10 +2,8 @@
 
 import {
 	Check,
-	CircleDollarSign,
 	DollarSign,
 	ListFilter,
-	Plus,
 	SlidersHorizontal,
 	X,
 } from "lucide-react";
@@ -72,68 +70,6 @@ function useDocumentFilters(type: "invoices" | "quotations") {
 		activeFilterCount,
 		clearFilters,
 	};
-}
-
-interface DocumentFilterBarProps {
-	type: "invoices" | "quotations";
-	onCreate: () => void;
-}
-
-export function DocumentFilterBar({ type, onCreate }: DocumentFilterBarProps) {
-	const t = useTranslations();
-	const {
-		statusFilter,
-		setStatusFilter,
-		paymentStatusFilter,
-		setPaymentStatusFilter,
-		showPaymentFilter,
-	} = useDocumentFilters(type);
-
-	return (
-		<div className="flex flex-row items-center justify-between border-b px-4 h-14 shrink-0">
-			<div className="flex items-center gap-2">
-				<Button size="sm" onClick={onCreate}>
-					<Plus className="size-3.5" />
-					<span className="hidden md:block">{t("invoices.newInvoice")}</span>
-				</Button>
-
-				<div className="hidden md:flex items-center gap-1">
-					<Separator orientation="vertical" className="h-5" />
-					{STATUS_FILTERS.map((f) => (
-						<Button
-							key={f.value}
-							variant={statusFilter === f.value ? "default" : "outline"}
-							size="sm"
-							className="h-8 text-xs"
-							onClick={() => setStatusFilter(f.value || null)}
-						>
-							{t(f.labelKey)}
-						</Button>
-					))}
-					{showPaymentFilter && (
-						<>
-							<Separator orientation="vertical" className="h-5" />
-							{PAYMENT_STATUS_FILTERS.map((f) => (
-								<Button
-									key={f.value}
-									variant={
-										paymentStatusFilter === f.value ? "default" : "outline"
-									}
-									size="sm"
-									className="h-8 text-xs"
-									onClick={() =>
-										setPaymentStatusFilter(f.value === "all" ? null : f.value)
-									}
-								>
-									{t(f.labelKey)}
-								</Button>
-							))}
-						</>
-					)}
-				</div>
-			</div>
-		</div>
-	);
 }
 
 export function DocumentFilterTrigger({

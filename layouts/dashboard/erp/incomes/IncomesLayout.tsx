@@ -26,7 +26,7 @@ import { alert } from "@/components/Alert-dialog";
 import { useIncomeForm } from "@/components/dialogs";
 import { useHardDeleteForm } from "@/components/dialogs/hardDeleteForm";
 import { MoneyEntryFilterBar } from "@/components/erp/money-entry-filter-bar";
-import { IncomeListItem } from "@/components/incomes/income-list-item";
+import { IncomeListItem } from "@/layouts/dashboard/erp/incomes/income-list-item";
 import { Header } from "@/components/layout/App-Header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";

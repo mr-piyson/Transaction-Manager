@@ -88,6 +88,7 @@
 		"@types/node-cron": "^3.0.11",
 		"@types/react": "^19.2.14",
 		"@types/react-dom": "^19.2.3",
+		"knip": "^6.32.2",
 		"prisma": "^7.8.0",
 		"tailwindcss": "^4.2.2",
 		"typescript": "^5.9.3",
