@@ -333,8 +333,6 @@
 		"statusMix": "Invoice status mix",
 		"stockHealth": "Stock health",
 		"inStock": "in stock",
-		"recentActivity": "Recent Activity",
-		"noActivity": "No recent activity yet",
 		"modules": "Modules",
 		"addCustomer": "Add customer",
 		"recordIncome": "Record income",

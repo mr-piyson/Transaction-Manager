@@ -5,17 +5,19 @@ import {
 	ArrowUpRight,
 	Banknote,
 	Boxes,
+	Clock,
 	FilePenLine,
 	Package,
 	Receipt,
 	ShoppingCart,
+	TriangleAlert,
 	Truck,
 	UserPlus,
 } from "lucide-react";
 import Link from "next/link";
 import { useLocale, useTranslations } from "next-intl";
 import { useTheme } from "next-themes";
-import { useMemo } from "react";
+import { type ReactNode, useMemo } from "react";
 import {
 	Bar,
 	BarChart,
@@ -35,8 +37,14 @@ import {
 	usePOForm,
 } from "@/components/dialogs";
 import { Header } from "@/components/layout/App-Header";
-import { Button } from "@/components/ui/button";
-import { useDateFormat } from "@/hooks/use-date-format";
+import { Badge } from "@/components/ui/badge";
+import {
+	Card,
+	CardAction,
+	CardContent,
+	CardHeader,
+	CardTitle,
+} from "@/components/ui/card";
 import { trpc } from "@/lib/trpc/client";
 import { cn } from "@/lib/utils";
 
@@ -45,9 +53,9 @@ import { cn } from "@/lib/utils";
  * Counts-only ERP overview — no revenue, balances, or currency figures.
  * Every metric is a COUNT or a PERCENTAGE (documents, statuses, stock health).
  *
- * Layout targets a single viewport at typical desktop heights; on shorter
- * viewports it reflows and scrolls naturally. All colors come from the app
- * theme tokens (light/dark aware); charts resolve CSS variables at render.
+ * Symmetric layout rhythm: 4 KPI cards → 3 chart cards → 2 action cards.
+ * All colors come from app theme tokens (light/dark aware); charts resolve
+ * CSS variables at render time.
  * ---------------------------------------------------------------------------
  */
 
@@ -130,14 +138,6 @@ const TONE_COLOR: Record<Tone, keyof Palette> = {
 	muted: "mutedForeground",
 };
 
-const TONE_CLASS: Record<Tone, string> = {
-	success: "text-success bg-success/10",
-	warning: "text-warning bg-warning/10",
-	destructive: "text-destructive bg-destructive/10",
-	neutral: "text-foreground/70 bg-muted",
-	muted: "text-muted-foreground bg-muted",
-};
-
 const tooltipStyle = (p: Palette) =>
 	({
 		backgroundColor: p.popover,
@@ -187,11 +187,38 @@ function statusLabelKey(status: string): StatusLabelKey {
 	}
 }
 
+// ── Shared bits ─────────────────────────────────────────────────────────────
+
+function IconChip({
+	children,
+	tone = "primary",
+}: {
+	children: ReactNode;
+	tone?: "primary" | "destructive" | "success" | "warning" | "muted";
+}) {
+	return (
+		<div
+			className={cn(
+				"flex size-9 shrink-0 items-center justify-center rounded-lg",
+				tone === "primary" && "bg-primary/10 text-primary",
+				tone === "destructive" && "bg-destructive/10 text-destructive",
+				tone === "success" && "bg-success/10 text-success",
+				tone === "warning" && "bg-warning/10 text-warning",
+				tone === "muted" && "bg-muted text-muted-foreground",
+			)}
+		>
+			{children}
+		</div>
+	);
+}
+
+const tileClass =
+	"group flex flex-col items-start gap-2 rounded-lg border border-border/60 bg-background/40 p-3 text-left transition-all hover:border-primary/30 hover:bg-accent hover:shadow-sm focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 outline-none";
+
 export default function ErpDashboard() {
 	const t = useTranslations();
 	const locale = useLocale();
 	const p = useChartPalette();
-	const { formatShortDate } = useDateFormat();
 
 	const { data: sessionData } = trpc.auth.session.useQuery();
 	const { data: org } = trpc.organizations.get.useQuery();
@@ -273,24 +300,28 @@ export default function ErpDashboard() {
 				label: t("dashboard.invoicesThisMonth"),
 				value: thisMonth,
 				delta: thisMonth - lastMonth,
+				icon: FilePenLine,
 				warn: false,
 			},
 			{
 				label: t("dashboard.poAwaitingApproval"),
 				value: pendingApprovalPOs,
 				delta: undefined,
+				icon: Clock,
 				warn: false,
 			},
 			{
 				label: t("dashboard.openPurchaseOrders"),
 				value: openPOs,
 				delta: undefined,
+				icon: ShoppingCart,
 				warn: false,
 			},
 			{
 				label: t("dashboard.belowReorderPoint"),
 				value: lowStockCount,
 				delta: undefined,
+				icon: TriangleAlert,
 				warn: true,
 			},
 		];
@@ -358,35 +389,6 @@ export default function ErpDashboard() {
 			: 0;
 	const stockTone: Tone =
 		stockPct >= 80 ? "success" : stockPct >= 50 ? "warning" : "destructive";
-
-	// ── Recent activity (merged invoices + POs) ───────────────────────────────
-
-	const activity = useMemo(() => {
-		const rows = [
-			...invoiceList.slice(0, 4).map((inv) => ({
-				key: `inv-${inv.id}`,
-				href: `/erp/documents/invoices/${inv.id}`,
-				title: inv.serial,
-				desc: inv.customer?.name ?? "—",
-				status: inv.status,
-				date: inv.date,
-			})),
-			...poList.slice(0, 4).map((po) => ({
-				key: `po-${po.id}`,
-				href: `/erp/purchase-orders/${po.id}`,
-				title: po.serial,
-				desc: po.supplier?.name ?? "—",
-				status: po.status,
-				date: po.date,
-			})),
-		];
-		return rows
-			.sort(
-				(a, b) =>
-					new Date(b.date ?? 0).getTime() - new Date(a.date ?? 0).getTime(),
-			)
-			.slice(0, 5);
-	}, [invoiceList, poList]);
 
 	// ── Module shelf ──────────────────────────────────────────────────────────
 
@@ -457,86 +459,94 @@ export default function ErpDashboard() {
 
 			<Header title={t("dashboard.title")} />
 
-			<main className="mx-auto w-full max-w-360 flex-1 space-y-3 p-4 lg:p-6">
+			<main className="mx-auto w-full max-w-360 flex-1 space-y-4 p-4 lg:p-6">
 				{/* ---------------- header ---------------- */}
-				<div className="flex items-center justify-between border-b border-border pb-3">
-					<div>
-						<p className="text-[10px] tracking-[0.16em] text-muted-foreground uppercase">
+				<section className="flex items-center justify-between gap-4">
+					<div className="min-w-0">
+						<p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
 							{todayLabel}
 						</p>
-						<h1 className="mt-0.5 text-2xl leading-tight font-semibold tracking-tight lg:text-3xl">
+						<h1 className="mt-1 truncate text-2xl leading-tight font-bold tracking-tight lg:text-3xl">
 							{greeting}
 							{firstName ? `, ${firstName}.` : ""}
 						</h1>
+						<p className="mt-1 hidden text-sm text-muted-foreground sm:block">
+							{t("dashboard.greetingDescription")}
+						</p>
 					</div>
-				</div>
+				</section>
 
 				{/* ---------------- KPI strip ---------------- */}
-				<div className="grid shrink-0 grid-cols-2 gap-px overflow-hidden rounded-lg border border-border bg-border lg:grid-cols-4">
+				<section className="grid grid-cols-2 gap-3 xl:grid-cols-4">
 					{kpis.map((k, i) => (
-						<div
+						<Card
 							key={k.label}
-							className="erp-fade-up flex flex-col justify-center gap-1 bg-card px-4 py-3"
-							style={{ animationDelay: `${i * 50}ms` }}
+							className="erp-fade-up gap-0 rounded-xl py-4 shadow-xs transition-shadow hover:shadow-md"
+							style={{ animationDelay: `${i * 60}ms` }}
 						>
-							<p className="text-[10px] leading-tight text-muted-foreground">
-								{k.label}
-							</p>
-							<div className="flex items-center gap-2">
-								<span
-									className={cn(
-										"font-mono text-xl font-medium tabular-nums",
-										k.warn ? "text-destructive" : "text-foreground",
-									)}
-								>
-									{k.value}
-								</span>
-								{k.delta !== undefined && k.delta !== 0 && (
-									<span
-										className={cn(
-											"flex items-center gap-0.5 font-mono text-[10px]",
-											k.warn
-												? k.delta > 0
-													? "text-destructive"
-													: "text-success"
-												: k.delta > 0
-													? "text-success"
-													: "text-destructive",
+							<CardContent className="flex items-start justify-between gap-3 px-4">
+								<div className="min-w-0">
+									<p className="truncate text-xs text-muted-foreground">
+										{k.label}
+									</p>
+									<div className="mt-2 flex flex-wrap items-baseline gap-x-2 gap-y-1">
+										<span
+											className={cn(
+												"font-mono text-2xl leading-none font-semibold tabular-nums",
+												k.warn ? "text-destructive" : "text-foreground",
+											)}
+										>
+											{k.value}
+										</span>
+										{k.delta !== undefined && k.delta !== 0 && (
+											<span
+												className={cn(
+													"inline-flex items-center gap-0.5 rounded-full px-1.5 py-0.5 text-[11px] font-medium tabular-nums",
+													k.delta > 0
+														? "bg-success/10 text-success"
+														: "bg-destructive/10 text-destructive",
+												)}
+											>
+												{k.delta > 0 ? (
+													<ArrowUpRight className="size-3" />
+												) : (
+													<ArrowDownRight className="size-3" />
+												)}
+												{Math.abs(k.delta)}
+											</span>
 										)}
-									>
-										{k.delta > 0 ? (
-											<ArrowUpRight className="size-3" />
-										) : (
-											<ArrowDownRight className="size-3" />
-										)}
-										{Math.abs(k.delta)}
-									</span>
-								)}
-							</div>
-						</div>
+									</div>
+								</div>
+								<IconChip tone={k.warn ? "destructive" : "primary"}>
+									<k.icon className="size-4" />
+								</IconChip>
+							</CardContent>
+						</Card>
 					))}
-				</div>
+				</section>
 
 				{/* ---------------- charts row ---------------- */}
-				<div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
+				<section className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
 					{/* weekly document volume */}
-					<div className="flex h-64 flex-col rounded-lg border border-border bg-card p-3">
-						<div className="flex items-center justify-between">
-							<h2 className="text-xs font-medium text-foreground">
+					<Card className="h-72 gap-2 rounded-xl py-4">
+						<CardHeader className="px-4">
+							<CardTitle className="text-sm font-medium">
 								{t("dashboard.documentsThisWeek")}
-							</h2>
-							<div className="flex items-center gap-3 text-[10px] text-muted-foreground">
-								<span className="flex items-center gap-1">
-									<span className="inline-block size-2 rounded-full bg-success" />
-									{t("dashboard.legendInvoices")}
-								</span>
-								<span className="flex items-center gap-1">
-									<span className="inline-block size-2 rounded-full bg-warning" />
-									{t("dashboard.legendPOs")}
-								</span>
-							</div>
-						</div>
-						<div className="mt-1 min-h-0 flex-1">
+							</CardTitle>
+							<CardAction>
+								<div className="flex items-center gap-3 text-[10px] text-muted-foreground">
+									<span className="flex items-center gap-1">
+										<span className="inline-block size-2 rounded-full bg-success" />
+										{t("dashboard.legendInvoices")}
+									</span>
+									<span className="flex items-center gap-1">
+										<span className="inline-block size-2 rounded-full bg-warning" />
+										{t("dashboard.legendPOs")}
+									</span>
+								</div>
+							</CardAction>
+						</CardHeader>
+						<CardContent className="min-h-0 flex-1 px-4">
 							<ResponsiveContainer height="100%" width="100%">
 								<BarChart
 									data={weeklyDocs}
@@ -567,15 +577,17 @@ export default function ErpDashboard() {
 									/>
 								</BarChart>
 							</ResponsiveContainer>
-						</div>
-					</div>
+						</CardContent>
+					</Card>
 
 					{/* invoice status mix */}
-					<div className="flex h-64 flex-col rounded-lg border border-border bg-card p-3">
-						<h2 className="text-xs font-medium text-foreground">
-							{t("dashboard.statusMix")}
-						</h2>
-						<div className="flex min-h-0 flex-1 items-center gap-3">
+					<Card className="h-72 gap-2 rounded-xl py-4">
+						<CardHeader className="px-4">
+							<CardTitle className="text-sm font-medium">
+								{t("dashboard.statusMix")}
+							</CardTitle>
+						</CardHeader>
+						<CardContent className="flex min-h-0 flex-1 items-center gap-4 px-4">
 							<div className="h-full min-h-0 w-1/2">
 								<ResponsiveContainer height="100%" width="100%">
 									<PieChart>
@@ -583,8 +595,8 @@ export default function ErpDashboard() {
 											data={statusMix}
 											dataKey="value"
 											nameKey="name"
-											innerRadius="60%"
-											outerRadius="90%"
+											innerRadius="62%"
+											outerRadius="92%"
 											paddingAngle={2}
 											stroke="none"
 										>
@@ -596,37 +608,36 @@ export default function ErpDashboard() {
 									</PieChart>
 								</ResponsiveContainer>
 							</div>
-							<div className="flex flex-1 flex-col gap-1.5 overflow-hidden">
+							<div className="flex min-w-0 flex-1 flex-col gap-2">
 								{statusMix.length === 0 && (
-									<p className="text-[11px] text-muted-foreground">—</p>
+									<p className="text-xs text-muted-foreground">—</p>
 								)}
 								{statusMix.map((s) => (
-									<div
-										key={s.name}
-										className="flex items-center justify-between gap-2 text-[11px]"
-									>
-										<span className="flex min-w-0 items-center gap-1.5 text-muted-foreground">
-											<span
-												className="inline-block size-2 shrink-0 rounded-full"
-												style={{ background: s.color }}
-											/>
-											<span className="truncate">{s.name}</span>
+									<div key={s.name} className="flex items-center gap-2 text-xs">
+										<span
+											className="inline-block size-2 shrink-0 rounded-full"
+											style={{ background: s.color }}
+										/>
+										<span className="min-w-0 flex-1 truncate text-muted-foreground">
+											{s.name}
 										</span>
-										<span className="font-mono tabular-nums text-foreground">
+										<span className="font-mono font-medium tabular-nums text-foreground">
 											{s.value}
 										</span>
 									</div>
 								))}
 							</div>
-						</div>
-					</div>
+						</CardContent>
+					</Card>
 
 					{/* stock health gauge */}
-					<div className="flex h-64 flex-col rounded-lg border border-border bg-card p-3 md:col-span-2 xl:col-span-1">
-						<h2 className="text-xs font-medium text-foreground">
-							{t("dashboard.stockHealth")}
-						</h2>
-						<div className="relative min-h-0 flex-1">
+					<Card className="h-72 gap-2 rounded-xl py-4 md:col-span-2 md:max-xl:h-56 xl:col-span-1 xl:h-72">
+						<CardHeader className="px-4">
+							<CardTitle className="text-sm font-medium">
+								{t("dashboard.stockHealth")}
+							</CardTitle>
+						</CardHeader>
+						<CardContent className="relative min-h-0 flex-1 px-4">
 							<ResponsiveContainer height="100%" width="100%">
 								<RadialBarChart
 									data={[
@@ -656,7 +667,7 @@ export default function ErpDashboard() {
 							<div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
 								<span
 									className={cn(
-										"font-mono text-lg font-medium tabular-nums",
+										"font-mono text-2xl font-semibold tabular-nums",
 										stockTone === "success" && "text-success",
 										stockTone === "warning" && "text-warning",
 										stockTone === "destructive" && "text-destructive",
@@ -664,135 +675,110 @@ export default function ErpDashboard() {
 								>
 									{stockPct}%
 								</span>
-								<span className="text-[9px] text-muted-foreground">
+								<span className="text-xs text-muted-foreground">
 									{t("dashboard.inStock")}
 								</span>
 							</div>
-						</div>
-					</div>
-				</div>
+						</CardContent>
+					</Card>
+				</section>
 
-				{/* ---------------- actions + activity + modules ---------------- */}
-				<div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4">
+				{/* ---------------- actions + modules ---------------- */}
+				<section className="grid grid-cols-1 gap-3 lg:grid-cols-2">
 					{/* quick actions */}
-					<div className="grid grid-cols-2 content-start gap-1.5">
-						<button
-							type="button"
-							onClick={() =>
-								openInvoiceCreate({ defaults: { type: "INVOICE" } })
-							}
-							className="flex flex-col items-start gap-2 rounded-lg border border-border bg-card px-2.5 py-2 transition-colors hover:bg-accent"
-						>
-							<Receipt className="size-4 text-primary" />
-							<span className="text-left text-[10px] leading-none text-foreground">
-								{t("dashboard.newInvoice")}
-							</span>
-						</button>
-						<button
-							type="button"
-							onClick={() => openPOCreate()}
-							className="flex flex-col items-start gap-2 rounded-lg border border-border bg-card px-2.5 py-2 transition-colors hover:bg-accent"
-						>
-							<ShoppingCart className="size-4 text-primary" />
-							<span className="text-left text-[10px] leading-none text-foreground">
-								{t("dashboard.newPO")}
-							</span>
-						</button>
-						<button
-							type="button"
-							onClick={() => openCustomerCreate()}
-							className="flex flex-col items-start gap-2 rounded-lg border border-border bg-card px-2.5 py-2 transition-colors hover:bg-accent"
-						>
-							<UserPlus className="size-4 text-primary" />
-							<span className="text-left text-[10px] leading-none text-foreground">
-								{t("dashboard.addCustomer")}
-							</span>
-						</button>
-						<Button
-							asChild
-							variant="outline"
-							className="h-auto flex-col items-start gap-2 rounded-lg border-border bg-card px-2.5 py-2 hover:bg-accent"
-						>
-							<Link href="/erp/incomes">
-								<Banknote className="size-4 text-primary" />
-								<span className="text-[10px] leading-none text-foreground">
+					<Card className="gap-3 rounded-xl py-4">
+						<CardHeader className="px-4">
+							<CardTitle className="text-sm font-medium">
+								{t("layout.quickActions")}
+							</CardTitle>
+						</CardHeader>
+						<CardContent className="grid grid-cols-2 gap-2 px-4">
+							<button
+								type="button"
+								onClick={() =>
+									openInvoiceCreate({ defaults: { type: "INVOICE" } })
+								}
+								className={tileClass}
+							>
+								<IconChip>
+									<Receipt className="size-4" />
+								</IconChip>
+								<span className="text-xs font-medium text-foreground">
+									{t("dashboard.newInvoice")}
+								</span>
+							</button>
+							<button
+								type="button"
+								onClick={() => openPOCreate()}
+								className={tileClass}
+							>
+								<IconChip>
+									<ShoppingCart className="size-4" />
+								</IconChip>
+								<span className="text-xs font-medium text-foreground">
+									{t("dashboard.newPO")}
+								</span>
+							</button>
+							<button
+								type="button"
+								onClick={() => openCustomerCreate()}
+								className={tileClass}
+							>
+								<IconChip>
+									<UserPlus className="size-4" />
+								</IconChip>
+								<span className="text-xs font-medium text-foreground">
+									{t("dashboard.addCustomer")}
+								</span>
+							</button>
+							<Link href="/erp/incomes" className={tileClass}>
+								<IconChip tone="success">
+									<Banknote className="size-4" />
+								</IconChip>
+								<span className="text-xs font-medium text-foreground">
 									{t("dashboard.recordIncome")}
 								</span>
 							</Link>
-						</Button>
-					</div>
-
-					{/* recent activity */}
-					<div className="overflow-hidden rounded-lg border border-border bg-card xl:col-span-2">
-						<p className="border-b border-border px-3 py-2 text-[10px] font-medium tracking-wide text-muted-foreground uppercase">
-							{t("dashboard.recentActivity")}
-						</p>
-						{activity.length === 0 ? (
-							<p className="px-3 py-6 text-center text-xs text-muted-foreground">
-								{t("dashboard.noActivity")}
-							</p>
-						) : (
-							activity.map((row) => {
-								const tone = STATUS_TONE[row.status] ?? "muted";
-								return (
-									<Link
-										key={row.key}
-										href={row.href}
-										className="flex items-center gap-2 border-b border-border px-3 py-1.5 text-[11px] transition-colors last:border-b-0 hover:bg-accent/50"
-									>
-										<span className="w-16 shrink-0 font-mono text-[10px] tabular-nums text-muted-foreground">
-											{formatShortDate(row.date)}
-										</span>
-										<span className="shrink-0 max-w-36 truncate font-medium text-foreground">
-											{row.title}
-										</span>
-										<span className="min-w-0 flex-1 truncate text-muted-foreground">
-											{row.desc}
-										</span>
-										<span
-											className={cn(
-												"shrink-0 rounded-full px-1.5 py-0.5 text-[9px] whitespace-nowrap",
-												TONE_CLASS[tone],
-											)}
-										>
-											{t(statusLabelKey(row.status))}
-										</span>
-									</Link>
-								);
-							})
-						)}
-					</div>
+						</CardContent>
+					</Card>
 
 					{/* module shelf */}
-					<div className="grid grid-cols-3 content-start gap-1.5">
-						{modules.map(({ labelKey, href, icon: Icon, count, warn }) => (
-							<Link
-								key={labelKey}
-								href={href}
-								className="flex flex-col items-start gap-1 rounded-lg border border-border bg-card px-2 py-1.5 transition-colors hover:bg-accent"
-							>
-								<div className="flex w-full items-center justify-between">
-									<Icon className="size-3 text-foreground" />
-									<span
+					<Card className="gap-3 rounded-xl py-4">
+						<CardHeader className="px-4">
+							<CardTitle className="text-sm font-medium">
+								{t("dashboard.modules")}
+							</CardTitle>
+						</CardHeader>
+						<CardContent className="grid grid-cols-1 gap-2 px-4 sm:grid-cols-2">
+							{modules.map(({ labelKey, href, icon: Icon, count, warn }) => (
+								<Link
+									key={labelKey}
+									href={href}
+									className="group flex items-center justify-between gap-2 rounded-lg border border-border/60 bg-background/40 px-3 py-2.5 transition-all hover:border-primary/30 hover:bg-accent hover:shadow-sm"
+								>
+									<span className="flex min-w-0 items-center gap-2">
+										<Icon className="size-4 shrink-0 text-muted-foreground transition-colors group-hover:text-primary" />
+										<span className="truncate text-xs font-medium text-foreground">
+											{t(labelKey)}
+										</span>
+									</span>
+									<Badge
+										variant="secondary"
 										className={cn(
-											"rounded-full px-1 font-mono text-[8px] tabular-nums",
-											warn
-												? "bg-destructive/10 text-destructive"
-												: "bg-primary/10 text-primary",
+											"shrink-0 font-mono tabular-nums",
+											warn &&
+												"border-destructive/20 bg-destructive/10 text-destructive",
 										)}
 									>
 										{count}
-									</span>
-								</div>
-								<p className="truncate text-[10px] leading-none text-foreground">
-									{t(labelKey)}
-								</p>
-							</Link>
-						))}
-					</div>
-				</div>
+									</Badge>
+								</Link>
+							))}
+						</CardContent>
+					</Card>
+				</section>
 
-				<p className="pt-1 text-center text-[9px] text-muted-foreground">
+				<p className="pt-1 text-center text-[11px] text-muted-foreground">
 					{t("dashboard.countsOnlyNote")}
 				</p>
 			</main>
