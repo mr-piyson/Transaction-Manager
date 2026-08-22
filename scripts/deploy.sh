@@ -167,7 +167,7 @@ deploy() {
 		log "Generating Prisma client"
 		bunx prisma generate >/dev/null
 		log "Pushing schema to database (prompts on destructive changes)"
-		bunx prisma db push --skip-generate
+		bunx prisma db push
 		ok "Database schema in sync"
 	fi
 
