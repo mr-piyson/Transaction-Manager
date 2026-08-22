@@ -18,7 +18,7 @@
 //  11. Attachment model — file references scoped to any entity via polymorphic
 //      entityType + entityId pattern (avoids nullable FK explosion).
 //  12. AuditLog — immutable event log for compliance / SOC-2 readiness.
-//  13. Tag / tagging system for ad-hoc categorisation without schema changes.
+//  13. Tag / tagging system for ad-hoc categorization without schema changes.
 //  14. Feature flags per org via OrganizationSetting key-value store.
 //  15. Notification model for in-app alert delivery.
 // =============================================================================
@@ -105,7 +105,7 @@ enum InvoiceType {
   INVOICE
   CREDIT_NOTE
   PROFORMA // Proforma invoice — not a legal tax document
-  DELIVERY_NOTE // Packing slip — no financials
+  DELIVERY_NOTE // Packing slip — no financial
 
   @@schema("public")
 }
@@ -126,7 +126,7 @@ enum InvoiceStatus {
   @@schema("public")
 }
 
-/// Accounts Receivable payment status — denormalised for fast AR aging queries.
+/// Accounts Receivable payment status — denormalized for fast AR aging queries.
 enum PaymentStatus {
   PENDING
   PARTIAL
@@ -426,7 +426,7 @@ model Organization {
 model OrganizationSetting {
   id    String @id @default(cuid())
   key   String // e.g. "feature.approvals", "invoice.autoSendEmail"
-  value String // JSON-serialised value
+  value String // JSON-serialized value
 
   organizationId String
   organization   Organization @relation(fields: [organizationId], references: [id])
