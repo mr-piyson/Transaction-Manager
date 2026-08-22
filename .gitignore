@@ -49,6 +49,10 @@ next-env.d.ts
 /public/uploads/*
 /.data/
 
+# deploy artifacts
+.deploy-logs
+.deploy-history.log
+
 # skills output
 graphify-out
 

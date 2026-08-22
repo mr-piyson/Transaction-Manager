@@ -6,7 +6,9 @@
 		"dev": "open http://localhost:3005 && next dev --port 3005 ",
 		"build": "next build",
 		"start": "next start",
-		"update": "git reset --hard HEAD && git clean -fd && git pull origin main && bun install && sudo systemctl restart transaction-manager",
+		"deploy": "bash ./scripts/deploy.sh",
+		"deploy:yes": "bash ./scripts/deploy.sh --yes",
+		"update": "bun run deploy:yes",
 		"lint": "biome check .",
 		"format": "biome format --write .",
 		"sync": "bunx prisma generate && bunx prisma db push "
