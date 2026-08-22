@@ -6,7 +6,6 @@ import { contractsRouter } from "./contracts/contracts.router";
 import { currenciesRouter } from "./currencies/currencies.router";
 import { customersRouter } from "./customers/customers.router";
 import { expensesRouter } from "./expenses/expenses.router";
-import { hrRouter } from "./hr/hr.router";
 import { incomesRouter } from "./incomes/incomes.router";
 import { invoicesRouter } from "./invoices/invoices.router";
 import { itemsRouter } from "./items/items.router";
@@ -33,7 +32,6 @@ export const appRouter = t.router({
 	customers: customersRouter,
 	expenses: expensesRouter,
 	exchangeRates: exchangeRatesRouter,
-	hr: hrRouter,
 	incomes: incomesRouter,
 	invoices: invoicesRouter,
 	journals: journalsRouter,
