@@ -98,9 +98,7 @@ export const itemsRouter = router({
 			sortBy,
 			sortOrder,
 			withStock,
-			...pagination
 		} = input;
-		const { skip, take } = toPrismaPage(pagination);
 		const orgId = ctx.user.organizationId;
 
 		const where = {
@@ -134,11 +132,9 @@ export const itemsRouter = router({
 				: {}),
 		};
 
-		const [items, total] = await ctx.db.$transaction([
+		const [items] = await ctx.db.$transaction([
 			ctx.db.item.findMany({
 				where,
-				skip,
-				take,
 				orderBy: { [sortBy]: sortOrder },
 				select: {
 					id: true,
@@ -206,7 +202,7 @@ export const itemsRouter = router({
 		const filtered =
 			lowStock && withStock ? enriched.filter((i) => i.isLowStock) : enriched;
 
-		return paginatedResponse(filtered, total, pagination);
+		return filtered;
 	}),
 
 	// ── GET BY ID ─────────────────────────────────────────────────────────────
