@@ -117,10 +117,10 @@ export function SupplierItemFormDialog({
 	const [itemPopoverOpen, setItemPopoverOpen] = React.useState(false);
 
 	const { data: itemsData } = trpc.items.list.useQuery(
-		{ limit: 50, search: itemSearch || undefined },
+		{ search: itemSearch || undefined },
 		{ enabled: open },
 	);
-	const items = Array.isArray(itemsData) ? itemsData : (itemsData?.data ?? []);
+	const items = itemsData ?? [];
 
 	const {
 		register,

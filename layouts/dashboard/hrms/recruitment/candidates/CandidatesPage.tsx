@@ -103,10 +103,8 @@ export default function CandidatesPage() {
 	const { data: postingsData } = trpc.hr.recruitment.jobPostings.list.useQuery(
 		{},
 	);
-	const postings = Array.isArray(postingsData)
-		? postingsData
-		: ((postingsData as any)?.data ?? []);
-	const candidates = Array.isArray(data) ? data : ((data as any)?.data ?? []);
+	const postings = postingsData ?? [];
+	const candidates = data ?? [];
 	const total = (data as any)?.total ?? 0;
 	const totalPages = Math.ceil(total / limit);
 

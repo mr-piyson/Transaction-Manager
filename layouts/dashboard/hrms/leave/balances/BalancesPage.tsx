@@ -81,13 +81,9 @@ export default function LeaveBalancesPage() {
 	const { data: employeesData } = trpc.hr.employees.list.useQuery({});
 	const { data: leaveTypesData } = trpc.hr.leave.types.list.useQuery({});
 
-	const employees = Array.isArray(employeesData)
-		? employeesData
-		: ((employeesData as any)?.data ?? []);
-	const leaveTypes = Array.isArray(leaveTypesData)
-		? leaveTypesData
-		: ((leaveTypesData as any)?.data ?? []);
-	const balances = Array.isArray(data) ? data : ((data as any)?.data ?? []);
+	const employees = employeesData ?? [];
+	const leaveTypes = leaveTypesData ?? [];
+	const balances = data ?? [];
 	const total = (data as any)?.total ?? 0;
 	const totalPages = Math.ceil(total / limit);
 

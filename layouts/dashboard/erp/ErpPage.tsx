@@ -165,21 +165,15 @@ export default function ErpDashboard() {
 	const { formatShortDate } = useDateFormat();
 	const { data: topItems } = trpc.reports.topItems.useQuery();
 	const { data: recentPOs } = trpc.purchaseOrders.list.useQuery({
-		limit: 5,
 		sortBy: "date",
 		sortOrder: "desc",
 	});
 	const { data: recentInvoices } = trpc.invoices.list.useQuery({
-		limit: 5,
 		sortBy: "date",
 		sortOrder: "desc",
 	});
-	const poList = Array.isArray(recentPOs)
-		? recentPOs
-		: ((recentPOs as any)?.data ?? []);
-	const invoiceList = Array.isArray(recentInvoices)
-		? recentInvoices
-		: ((recentInvoices as any)?.data ?? []);
+	const poList = recentPOs ?? [];
+	const invoiceList = recentInvoices ?? [];
 
 	const pendingPOs = poList.filter((p: any) =>
 		["DRAFT", "PENDING_APPROVAL", "APPROVED"].includes(p.status),

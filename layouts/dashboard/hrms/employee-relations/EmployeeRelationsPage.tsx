@@ -135,10 +135,8 @@ export default function GrievancesPage() {
 		});
 
 	const { data: employeesData } = trpc.hr.employees.list.useQuery({});
-	const employees = Array.isArray(employeesData)
-		? employeesData
-		: ((employeesData as any)?.data ?? []);
-	const grievances = Array.isArray(data) ? data : ((data as any)?.data ?? []);
+	const employees = employeesData ?? [];
+	const grievances = data ?? [];
 	const total = (data as any)?.total ?? 0;
 	const totalPages = Math.ceil(total / limit);
 

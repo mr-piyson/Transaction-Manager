@@ -76,12 +76,10 @@ export default function DocumentsPage() {
 		onError: (e) => toast.error(e.message),
 	});
 
-	const records = Array.isArray(data) ? data : ((data as any)?.data ?? []);
+	const records = data ?? [];
 	const total = (data as any)?.total ?? 0;
 	const totalPages = Math.ceil(total / limit);
-	const employees = Array.isArray(employeesData)
-		? employeesData
-		: ((employeesData as any)?.data ?? []);
+	const employees = employeesData ?? [];
 
 	const documentTypes = [
 		...new Set(records.map((r: any) => r.type).filter(Boolean)),

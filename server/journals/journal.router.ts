@@ -1,7 +1,6 @@
 import { z } from "zod";
 import { UnprocessableError } from "@/lib/error";
 import { assertCan, orgProcedure, router } from "@/lib/trpc/context";
-import { paginatedResponse, toPrismaPage } from "@/lib/validations";
 import { writeAuditLog } from "../shared/audit.service";
 import {
 	createJournalEntrySchema,
@@ -22,17 +21,8 @@ export const journalsRouter = router({
 		.query(async ({ ctx, input }) => {
 			assertCan(ctx.ability, "journal:entry", "JournalEntry");
 
-			const {
-				search,
-				status,
-				accountId,
-				dateFrom,
-				dateTo,
-				sortBy,
-				sortOrder,
-				...pagination
-			} = input;
-			const { skip, take } = toPrismaPage(pagination);
+			const { search, status, accountId, dateFrom, dateTo, sortBy, sortOrder } =
+				input;
 			const orgId = ctx.user.organizationId;
 
 			const where = {
@@ -70,30 +60,25 @@ export const journalsRouter = router({
 					: {}),
 			};
 
-			const [entries, total] = await ctx.db.$transaction([
-				ctx.db.journalEntry.findMany({
-					where,
-					skip,
-					take,
-					orderBy: { [sortBy]: sortOrder },
-					select: {
-						id: true,
-						entryNumber: true,
-						status: true,
-						date: true,
-						description: true,
-						reference: true,
-						currency: true,
-						postedAt: true,
-						createdAt: true,
-						_count: { select: { lines: true } },
-						lines: {
-							select: { debit: true, credit: true },
-						},
+			const entries = await ctx.db.journalEntry.findMany({
+				where,
+				orderBy: { [sortBy]: sortOrder },
+				select: {
+					id: true,
+					entryNumber: true,
+					status: true,
+					date: true,
+					description: true,
+					reference: true,
+					currency: true,
+					postedAt: true,
+					createdAt: true,
+					_count: { select: { lines: true } },
+					lines: {
+						select: { debit: true, credit: true },
 					},
-				}),
-				ctx.db.journalEntry.count({ where }),
-			]);
+				},
+			});
 
 			// Compute total debit/credit for each entry
 			const entriesWithTotals = entries.map((e) => ({
@@ -103,7 +88,7 @@ export const journalsRouter = router({
 				lines: undefined, // remove raw lines from list response
 			}));
 
-			return paginatedResponse(entriesWithTotals, total, pagination);
+			return entriesWithTotals;
 		}),
 
 	// ── GET BY ID ──────────────────────────────────────────────────────────────

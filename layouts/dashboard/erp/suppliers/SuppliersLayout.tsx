@@ -157,7 +157,7 @@ export default function SuppliersLayout({
 		],
 	);
 
-	const suppliers = Array.isArray(data) ? data : (data?.data ?? []);
+	const suppliers = data ?? [];
 
 	return (
 		<div className="flex h-screen flex-col overflow-hidden">

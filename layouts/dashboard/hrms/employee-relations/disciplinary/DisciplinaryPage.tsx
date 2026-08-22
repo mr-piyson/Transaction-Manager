@@ -87,7 +87,7 @@ export default function DisciplinaryPage() {
 			onError: (e) => toast.error(e.message),
 		});
 
-	const actions = Array.isArray(data) ? data : ((data as any)?.data ?? []);
+	const actions = data ?? [];
 	const total = (data as any)?.total ?? 0;
 	const totalPages = Math.ceil(total / limit);
 

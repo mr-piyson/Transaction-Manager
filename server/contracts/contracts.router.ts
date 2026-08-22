@@ -2,13 +2,7 @@ import { z } from "zod";
 import { ForbiddenError, NotFoundError, UnprocessableError } from "@/lib/error";
 import { generateSerial } from "@/lib/sequences";
 import { assertCan, orgProcedure, router } from "@/lib/trpc/context";
-import {
-	currencyCodeSchema,
-	offsetPaginationSchema,
-	paginatedResponse,
-	sortOrderSchema,
-	toPrismaPage,
-} from "@/lib/validations";
+import { currencyCodeSchema, sortOrderSchema } from "@/lib/validations";
 import { writeAuditLog } from "../shared/audit.service";
 import {
 	getHardDeleteInfo,
@@ -35,7 +29,6 @@ const updateContractSchema = contractBaseSchema.partial().extend({
 });
 
 const listContractsSchema = z.object({
-	...offsetPaginationSchema.shape,
 	search: z.string().optional(),
 	status: z.enum(["DRAFT", "ACTIVE", "EXPIRED", "TERMINATED"]).optional(),
 	customerId: z.string().optional(),
@@ -52,16 +45,8 @@ export const contractsRouter = router({
 		.query(async ({ ctx, input }) => {
 			assertCan(ctx.ability, "invoice:read", "Invoice");
 
-			const {
-				search,
-				status,
-				customerId,
-				expiringSoon,
-				sortBy,
-				sortOrder,
-				...pagination
-			} = input;
-			const { skip, take } = toPrismaPage(pagination);
+			const { search, status, customerId, expiringSoon, sortBy, sortOrder } =
+				input;
 			const orgId = ctx.user.organizationId;
 
 			const thirtyDaysFromNow = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
@@ -89,31 +74,26 @@ export const contractsRouter = router({
 					: {}),
 			};
 
-			const [contracts, total] = await ctx.db.$transaction([
-				ctx.db.contract.findMany({
-					where,
-					skip,
-					take,
-					orderBy: { [sortBy]: sortOrder },
-					select: {
-						id: true,
-						serial: true,
-						title: true,
-						status: true,
-						contractValue: true,
-						currency: true,
-						startDate: true,
-						endDate: true,
-						renewalDate: true,
-						renewalAlertDays: true,
-						customer: { select: { id: true, name: true } },
-						createdAt: true,
-					},
-				}),
-				ctx.db.contract.count({ where }),
-			]);
+			const contracts = await ctx.db.contract.findMany({
+				where,
+				orderBy: { [sortBy]: sortOrder },
+				select: {
+					id: true,
+					serial: true,
+					title: true,
+					status: true,
+					contractValue: true,
+					currency: true,
+					startDate: true,
+					endDate: true,
+					renewalDate: true,
+					renewalAlertDays: true,
+					customer: { select: { id: true, name: true } },
+					createdAt: true,
+				},
+			});
 
-			return paginatedResponse(contracts, total, pagination);
+			return contracts;
 		}),
 
 	byId: orgProcedure

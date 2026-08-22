@@ -49,7 +49,7 @@ export default function EmployeeTypesPage() {
 	});
 
 	const records = useMemo(() => {
-		const items = Array.isArray(data) ? data : [];
+		const items = data ?? [];
 		if (!search) return items;
 		const q = search.toLowerCase();
 		return items.filter(

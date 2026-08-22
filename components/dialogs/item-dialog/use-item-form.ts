@@ -177,26 +177,19 @@ export function useItemForm({
 
 	// Data queries
 	const { data: suppliersData } = trpc.suppliers.list.useQuery(
-		{ limit: 200 },
+		{},
 		{ enabled: open },
 	);
-	const suppliers = React.useMemo(() => {
-		const list = Array.isArray(suppliersData)
-			? suppliersData
-			: (suppliersData?.data ?? []);
-		return list;
-	}, [suppliersData]);
+	const suppliers = React.useMemo(() => suppliersData ?? [], [suppliersData]);
 
 	const { data: existingItemsData } = trpc.items.list.useQuery(
-		{ limit: 200 },
+		{},
 		{ enabled: open },
 	);
-	const existingItems = React.useMemo(() => {
-		const list = Array.isArray(existingItemsData)
-			? existingItemsData
-			: (existingItemsData?.data ?? []);
-		return list;
-	}, [existingItemsData]);
+	const existingItems = React.useMemo(
+		() => existingItemsData ?? [],
+		[existingItemsData],
+	);
 
 	const { data: units } = trpc.units.list.useQuery(undefined, {
 		enabled: open,
@@ -317,7 +310,7 @@ export function useItemForm({
 			setExistingMaster(initialItem);
 			setEditingItem(null);
 		} else {
-			const unitList = Array.isArray(units) ? units : [];
+			const unitList = units ?? [];
 			const defaultUnit = unitList.find((u: any) => u.isDefault);
 			const defaults = getItemMasterDefaults();
 			if (defaultUnit) {

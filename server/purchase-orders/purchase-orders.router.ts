@@ -8,13 +8,7 @@ import {
 } from "@/lib/error";
 import { generateSerial } from "@/lib/sequences";
 import { assertCan, orgProcedure, router } from "@/lib/trpc/context";
-import {
-	currencyCodeSchema,
-	offsetPaginationSchema,
-	paginatedResponse,
-	sortOrderSchema,
-	toPrismaPage,
-} from "@/lib/validations";
+import { currencyCodeSchema, sortOrderSchema } from "@/lib/validations";
 import {
 	postPOPayment,
 	postPOReceived,
@@ -65,7 +59,6 @@ const updatePurchaseOrderSchema = purchaseOrderBaseSchema.partial().extend({
 });
 
 const listPurchaseOrdersSchema = z.object({
-	...offsetPaginationSchema.shape,
 	search: z.string().optional(),
 	status: z
 		.enum([
@@ -93,9 +86,7 @@ export const purchaseOrdersRouter = router({
 		.query(async ({ ctx, input }) => {
 			assertCan(ctx.ability, "po:read", "PurchaseOrder");
 
-			const { search, status, supplierId, sortBy, sortOrder, ...pagination } =
-				input;
-			const { skip, take } = toPrismaPage(pagination);
+			const { search, status, supplierId, sortBy, sortOrder } = input;
 			const orgId = ctx.user.organizationId;
 
 			const where: Record<string, unknown> = {
@@ -117,32 +108,27 @@ export const purchaseOrdersRouter = router({
 					: {}),
 			};
 
-			const [orders, total] = await ctx.db.$transaction([
-				ctx.db.purchaseOrder.findMany({
-					where,
-					skip,
-					take,
-					orderBy: { [sortBy]: sortOrder },
-					select: {
-						id: true,
-						serial: true,
-						status: true,
-						version: true,
-						date: true,
-						expectedDate: true,
-						total: true,
-						amountOwed: true,
-						currency: true,
-						supplier: { select: { id: true, name: true } },
-						warehouse: { select: { id: true, name: true } },
-						createdAt: true,
-						_count: { select: { lines: true, payments: true } },
-					},
-				}),
-				ctx.db.purchaseOrder.count({ where }),
-			]);
+			const orders = await ctx.db.purchaseOrder.findMany({
+				where,
+				orderBy: { [sortBy]: sortOrder },
+				select: {
+					id: true,
+					serial: true,
+					status: true,
+					version: true,
+					date: true,
+					expectedDate: true,
+					total: true,
+					amountOwed: true,
+					currency: true,
+					supplier: { select: { id: true, name: true } },
+					warehouse: { select: { id: true, name: true } },
+					createdAt: true,
+					_count: { select: { lines: true, payments: true } },
+				},
+			});
 
-			return paginatedResponse(orders, total, pagination);
+			return orders;
 		}),
 
 	byId: orgProcedure

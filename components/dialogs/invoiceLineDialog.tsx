@@ -70,10 +70,8 @@ export function InvoiceLineDialog({
 	const { data: itemsData } = trpc.items.list.useQuery({ isSaleable: true });
 	const { data: taxRatesData } = trpc.settings.taxRates.list.useQuery();
 
-	const items: any[] = Array.isArray(itemsData)
-		? itemsData
-		: (itemsData?.data ?? []);
-	const taxRates: any[] = Array.isArray(taxRatesData) ? taxRatesData : [];
+	const items: any[] = itemsData ?? [];
+	const taxRates: any[] = taxRatesData ?? [];
 
 	const itemsMap = React.useMemo(
 		() => Object.fromEntries(items.map((i: any) => [i.id, i])),
@@ -196,8 +194,8 @@ export function InvoiceLineDialog({
 						<span
 							className={grossProfit >= 0 ? "text-green-600" : "text-red-600"}
 						>
-							{t("invoices.gp")}: {grossProfit.toFixed(3)} (
-							{margin.toFixed(1)}%)
+							{t("invoices.gp")}: {grossProfit.toFixed(3)} ({margin.toFixed(1)}
+							%)
 						</span>
 						<span className="text-sm font-bold text-foreground border-t pt-0.5 w-full">
 							{t("common.total")}: {(lineTotal + lineTax).toFixed(3)}

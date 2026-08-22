@@ -1,16 +1,10 @@
 import { z } from "zod";
 import { NotFoundError, UnprocessableError } from "@/lib/error";
 import { assertCan, orgProcedure, router } from "@/lib/trpc/context";
-import {
-	offsetPaginationSchema,
-	paginatedResponse,
-	sortOrderSchema,
-	toPrismaPage,
-} from "@/lib/validations";
+import { sortOrderSchema } from "@/lib/validations";
 import { writeAuditLog } from "../shared/audit.service";
 
 const listStockSchema = z.object({
-	...offsetPaginationSchema.shape,
 	search: z.string().optional(),
 	warehouseId: z.string().optional(),
 	categoryId: z.string().optional(),
@@ -37,7 +31,6 @@ const transferStockSchema = z.object({
 });
 
 const listMovementsSchema = z.object({
-	...offsetPaginationSchema.shape,
 	itemId: z.string().optional(),
 	type: z.string().optional(),
 	warehouseId: z.string().optional(),
@@ -51,16 +44,8 @@ export const stockRouter = router({
 	list: orgProcedure.input(listStockSchema).query(async ({ ctx, input }) => {
 		assertCan(ctx.ability, "stock:read", "Stock");
 
-		const {
-			search,
-			warehouseId,
-			categoryId,
-			lowStock,
-			sortBy,
-			sortOrder,
-			...pagination
-		} = input;
-		const { skip, take } = toPrismaPage(pagination);
+		const { search, warehouseId, categoryId, lowStock, sortBy, sortOrder } =
+			input;
 		const orgId = ctx.user.organizationId;
 
 		const itemWhere: Record<string, unknown> = {
@@ -83,33 +68,28 @@ export const stockRouter = router({
 			item: itemWhere,
 		};
 
-		const [stockRows, total] = await ctx.db.$transaction([
-			ctx.db.stock.findMany({
-				where: stockWhere,
-				skip,
-				take,
-				orderBy:
-					sortBy === "itemName"
-						? { item: { name: sortOrder } }
-						: sortBy === "warehouseName"
-							? { warehouse: { name: sortOrder } }
-							: { [sortBy]: sortOrder },
-				include: {
-					item: {
-						select: {
-							id: true,
-							sku: true,
-							name: true,
-							unit: true,
-							reorderPoint: true,
-							image: true,
-						},
+		const stockRows = await ctx.db.stock.findMany({
+			where: stockWhere,
+			orderBy:
+				sortBy === "itemName"
+					? { item: { name: sortOrder } }
+					: sortBy === "warehouseName"
+						? { warehouse: { name: sortOrder } }
+						: { [sortBy]: sortOrder },
+			include: {
+				item: {
+					select: {
+						id: true,
+						sku: true,
+						name: true,
+						unit: true,
+						reorderPoint: true,
+						image: true,
 					},
-					warehouse: { select: { id: true, name: true } },
 				},
-			}),
-			ctx.db.stock.count({ where: stockWhere }),
-		]);
+				warehouse: { select: { id: true, name: true } },
+			},
+		});
 
 		let enriched = stockRows.map((s) => ({
 			...s,
@@ -119,7 +99,7 @@ export const stockRouter = router({
 
 		if (lowStock) enriched = enriched.filter((s) => s.isLowStock);
 
-		return paginatedResponse(enriched, total, pagination);
+		return enriched;
 	}),
 
 	byItem: orgProcedure
@@ -148,17 +128,8 @@ export const stockRouter = router({
 		.query(async ({ ctx, input }) => {
 			assertCan(ctx.ability, "stock:read", "Stock");
 
-			const {
-				itemId,
-				type,
-				warehouseId,
-				dateFrom,
-				dateTo,
-				sortBy,
-				sortOrder,
-				...pagination
-			} = input;
-			const { skip, take } = toPrismaPage(pagination);
+			const { itemId, type, warehouseId, dateFrom, dateTo, sortBy, sortOrder } =
+				input;
 			const orgId = ctx.user.organizationId;
 
 			const where: Record<string, unknown> = {
@@ -183,23 +154,18 @@ export const stockRouter = router({
 					: {}),
 			};
 
-			const [movements, total] = await ctx.db.$transaction([
-				ctx.db.stockMovement.findMany({
-					where,
-					skip,
-					take,
-					orderBy: { [sortBy]: sortOrder },
-					include: {
-						item: { select: { id: true, sku: true, name: true } },
-						fromWarehouse: { select: { id: true, name: true } },
-						toWarehouse: { select: { id: true, name: true } },
-						user: { select: { id: true, name: true } },
-					},
-				}),
-				ctx.db.stockMovement.count({ where }),
-			]);
+			const movements = await ctx.db.stockMovement.findMany({
+				where,
+				orderBy: { [sortBy]: sortOrder },
+				include: {
+					item: { select: { id: true, sku: true, name: true } },
+					fromWarehouse: { select: { id: true, name: true } },
+					toWarehouse: { select: { id: true, name: true } },
+					user: { select: { id: true, name: true } },
+				},
+			});
 
-			return paginatedResponse(movements, total, pagination);
+			return movements;
 		}),
 
 	adjust: orgProcedure

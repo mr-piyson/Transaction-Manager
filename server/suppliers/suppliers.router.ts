@@ -4,10 +4,7 @@ import { assertCan, orgProcedure, router } from "@/lib/trpc/context";
 import {
 	currencyCodeSchema,
 	decimalSchema,
-	offsetPaginationSchema,
-	paginatedResponse,
 	sortOrderSchema,
-	toPrismaPage,
 } from "@/lib/validations";
 import { writeAuditLog } from "../shared/audit.service";
 import {
@@ -35,7 +32,6 @@ const updateSupplierSchema = supplierBaseSchema.partial().extend({
 });
 
 const listSuppliersSchema = z.object({
-	...offsetPaginationSchema.shape,
 	search: z.string().optional(),
 	isActive: z.boolean().optional(),
 	includeSystem: z.boolean().default(false),
@@ -49,15 +45,7 @@ export const suppliersRouter = router({
 		.query(async ({ ctx, input }) => {
 			assertCan(ctx.ability, "po:read", "all");
 
-			const {
-				search,
-				isActive,
-				includeSystem,
-				sortBy,
-				sortOrder,
-				...pagination
-			} = input;
-			const { skip, take } = toPrismaPage(pagination);
+			const { search, isActive, includeSystem, sortBy, sortOrder } = input;
 			const orgId = ctx.user.organizationId;
 
 			const where: Record<string, unknown> = {
@@ -77,29 +65,24 @@ export const suppliersRouter = router({
 					: {}),
 			};
 
-			const [suppliers, total] = await ctx.db.$transaction([
-				ctx.db.supplier.findMany({
-					where,
-					skip,
-					take,
-					orderBy: { [sortBy]: sortOrder },
-					select: {
-						id: true,
-						name: true,
-						code: true,
-						email: true,
-						phone: true,
-						contactName: true,
-						isActive: true,
-						currencyCode: true,
-						paymentTermsDays: true,
-						_count: { select: { supplierItems: true, purchaseOrders: true } },
-					},
-				}),
-				ctx.db.supplier.count({ where }),
-			]);
+			const suppliers = await ctx.db.supplier.findMany({
+				where,
+				orderBy: { [sortBy]: sortOrder },
+				select: {
+					id: true,
+					name: true,
+					code: true,
+					email: true,
+					phone: true,
+					contactName: true,
+					isActive: true,
+					currencyCode: true,
+					paymentTermsDays: true,
+					_count: { select: { supplierItems: true, purchaseOrders: true } },
+				},
+			});
 
-			return paginatedResponse(suppliers, total, pagination);
+			return suppliers;
 		}),
 
 	byId: orgProcedure

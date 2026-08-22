@@ -136,10 +136,8 @@ export function InvoiceFormDialog({
 		null,
 	);
 
-	const { data: customersData } = trpc.customers.list.useQuery({ limit: 200 });
-	const { data: warehousesData } = trpc.warehouses.list.useQuery({
-		limit: 200,
-	});
+	const { data: customersData } = trpc.customers.list.useQuery({});
+	const { data: warehousesData } = trpc.warehouses.list.useQuery({});
 	const { data: itemsData, isLoading: itemsLoading } = trpc.items.list.useQuery(
 		{ isSaleable: true },
 	);
@@ -202,10 +200,7 @@ export function InvoiceFormDialog({
 
 	React.useEffect(() => {
 		if (!watch("warehouseId") && warehousesData) {
-			const list = Array.isArray(warehousesData)
-				? warehousesData
-				: (warehousesData?.data ?? []);
-			const def = list.find((w: any) => w.isDefault);
+			const def = warehousesData.find((w: any) => w.isDefault);
 			if (def) setValue("warehouseId", def.id);
 		}
 	}, [warehousesData, watch, setValue]);
@@ -289,14 +284,10 @@ export function InvoiceFormDialog({
 		}
 	};
 
-	const customers = Array.isArray(customersData)
-		? customersData
-		: (customersData?.data ?? []);
-	const warehouses = Array.isArray(warehousesData)
-		? warehousesData
-		: (warehousesData?.data ?? []);
-	const items = Array.isArray(itemsData) ? itemsData : (itemsData?.data ?? []);
-	const taxRates = Array.isArray(taxRatesData) ? taxRatesData : [];
+	const customers = customersData ?? [];
+	const warehouses = warehousesData ?? [];
+	const items = itemsData ?? [];
+	const taxRates = taxRatesData ?? [];
 
 	const itemsMap = React.useMemo(
 		() => Object.fromEntries(items.map((i: any) => [i.id, i])),
@@ -923,9 +914,7 @@ function defaults(
 	org?: { defaultTermsText?: string | null; currency?: string },
 ): InvoiceFormValues {
 	const today = toDateInputValue(new Date());
-	const list = Array.isArray(warehousesData)
-		? warehousesData
-		: ((warehousesData as any)?.data ?? []);
+	const list = warehousesData ?? [];
 	const defaultWarehouse = list.find((w: any) => w.isDefault);
 	return {
 		type: invoice?.type ?? "INVOICE",

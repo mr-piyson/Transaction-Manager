@@ -72,7 +72,7 @@ export default function JobPostingsPage() {
 		onError: (e) => toast.error(e.message),
 	});
 
-	const postings = Array.isArray(data) ? data : ((data as any)?.data ?? []);
+	const postings = data ?? [];
 	const total = (data as any)?.total ?? 0;
 	const totalPages = Math.ceil(total / limit);
 

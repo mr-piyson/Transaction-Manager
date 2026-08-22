@@ -89,7 +89,6 @@ export default function ItemsLayout({
 
 	const { data: categoryList } = trpc.categories.list.useQuery();
 	const { data, isPending } = trpc.items.list.useQuery({
-		limit: 500,
 		type: (typeFilter || undefined) as "PRODUCT" | "SERVICE" | undefined,
 		categoryId: categoryFilter ?? undefined,
 	});
@@ -108,7 +107,7 @@ export default function ItemsLayout({
 		onError: (e) => toast.error(e.message),
 	});
 
-	const items = Array.isArray(data) ? data : (data?.data ?? []);
+	const items = data ?? [];
 
 	const listColumnDefs = useMemo<ColDef[]>(
 		() => [

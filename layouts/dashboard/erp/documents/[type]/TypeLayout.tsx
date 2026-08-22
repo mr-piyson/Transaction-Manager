@@ -88,7 +88,7 @@ export default function DocumentsLayout({
 		onError: (e) => toast.error(e.message),
 	});
 
-	const documents = (Array.isArray(data) ? data : (data?.data ?? [])).sort(
+	const documents = (data ?? []).sort(
 		(a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
 	);
 

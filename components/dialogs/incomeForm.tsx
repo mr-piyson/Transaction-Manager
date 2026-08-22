@@ -142,13 +142,10 @@ export function IncomeFormDialog({
 	}, [open, income, reset]);
 
 	const { data: customers } = trpc.customers.list.useQuery(
-		{ page: 1, limit: 500 },
+		{},
 		{ enabled: open },
 	);
-	const { data: invoices } = trpc.invoices.list.useQuery(
-		{ page: 1, limit: 500 },
-		{ enabled: open },
-	);
+	const { data: invoices } = trpc.invoices.list.useQuery({}, { enabled: open });
 
 	const createMutation = trpc.incomes.create.useMutation({
 		onSuccess(data) {
@@ -276,7 +273,7 @@ export function IncomeFormDialog({
 								onChange={(e) => setValue("customerId", e.target.value)}
 							>
 								<NativeSelectOption value="">No customer</NativeSelectOption>
-								{(customers?.data ?? []).map((c) => (
+								{(customers ?? []).map((c) => (
 									<NativeSelectOption key={c.id} value={c.id}>
 										{c.name}
 									</NativeSelectOption>
@@ -288,7 +285,7 @@ export function IncomeFormDialog({
 							<Label htmlFor="invoiceId">Invoice</Label>
 							<NativeSelect id="invoiceId" {...register("invoiceId")}>
 								<NativeSelectOption value="">No invoice</NativeSelectOption>
-								{(invoices?.data ?? []).map((inv) => (
+								{(invoices ?? []).map((inv) => (
 									<NativeSelectOption key={inv.id} value={inv.id}>
 										{inv.serial}
 									</NativeSelectOption>

@@ -34,8 +34,6 @@ export const createJournalEntrySchema = z
 	);
 
 export const listJournalEntriesSchema = z.object({
-	page: z.number().int().min(1).default(1),
-	limit: z.number().int().min(1).max(100).default(25),
 	search: z.string().optional(),
 	status: z.enum(["DRAFT", "POSTED", "REVERSED", "VOID"]).optional(),
 	accountId: z.string().optional(),

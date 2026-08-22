@@ -1,12 +1,7 @@
 import { z } from "zod";
 import { NotFoundError } from "@/lib/error";
 import { orgProcedure, router } from "@/lib/trpc/context";
-import {
-	cuidSchema,
-	offsetPaginationSchema,
-	paginatedResponse,
-	toPrismaPage,
-} from "@/lib/validations";
+import { cuidSchema } from "@/lib/validations";
 
 const notificationStatusSchema = z.enum([
 	"UNREAD",
@@ -16,15 +11,13 @@ const notificationStatusSchema = z.enum([
 ]);
 
 const listSchema = z.object({
-	...offsetPaginationSchema.shape,
 	status: notificationStatusSchema.optional(),
 	search: z.string().optional(),
 });
 
 export const notificationsRouter = router({
 	list: orgProcedure.input(listSchema).query(async ({ ctx, input }) => {
-		const { search, status, ...pagination } = input;
-		const { skip, take } = toPrismaPage(pagination);
+		const { search, status } = input;
 
 		const where: Record<string, unknown> = {
 			userId: ctx.user.id,
@@ -37,17 +30,12 @@ export const notificationsRouter = router({
 				{ body: { contains: search, mode: "insensitive" } },
 			];
 
-		const [data, total] = await Promise.all([
-			ctx.db.notification.findMany({
-				where: where as any,
-				orderBy: { createdAt: "desc" },
-				skip,
-				take,
-			}),
-			ctx.db.notification.count({ where: where as any }),
-		]);
+		const data = await ctx.db.notification.findMany({
+			where: where as any,
+			orderBy: { createdAt: "desc" },
+		});
 
-		return paginatedResponse(data, total, pagination);
+		return data;
 	}),
 
 	getUnreadCount: orgProcedure.query(async ({ ctx }) => {

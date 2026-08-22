@@ -67,7 +67,7 @@ export default function HolidaysPage() {
 
 	const { openCreate } = useHolidayForm();
 
-	const holidays = Array.isArray(data) ? data : ((data as any)?.data ?? []);
+	const holidays = data ?? [];
 	const total = (data as any)?.total ?? 0;
 	const totalPages = Math.ceil(total / limit);
 

@@ -25,7 +25,7 @@ export default function StockPage() {
 	const t = useTranslations();
 	const { data = [], isLoading } = trpc.stock.list.useQuery({});
 
-	const stock = Array.isArray(data) ? data : (data?.data ?? []);
+	const stock = data ?? [];
 
 	return (
 		<div className="flex flex-col h-screen">

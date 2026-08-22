@@ -58,10 +58,8 @@ export default function SalaryComponentsPage() {
 		onError: (e) => toast.error(e.message),
 	});
 
-	const records = Array.isArray(data) ? data : [];
-	const employees = Array.isArray(employeesData)
-		? employeesData
-		: ((employeesData as any)?.data ?? []);
+	const records = data ?? [];
+	const employees = employeesData ?? [];
 
 	const handleDelete = (sc: any) => {
 		alert.delete({

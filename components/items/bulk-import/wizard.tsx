@@ -95,13 +95,8 @@ export function ItemImportWizard() {
 	const _cleanupRef = useRef(false);
 
 	const { data: suppliersData, isLoading: suppliersLoading } =
-		trpc.suppliers.list.useQuery(
-			{ limit: 200 },
-			{ enabled: step === "preview" },
-		);
-	const suppliers = Array.isArray(suppliersData)
-		? suppliersData
-		: (suppliersData?.data ?? []);
+		trpc.suppliers.list.useQuery({}, { enabled: step === "preview" });
+	const suppliers = suppliersData ?? [];
 
 	useEffect(() => {
 		return () => {

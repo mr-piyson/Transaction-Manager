@@ -124,7 +124,7 @@ export default function ContractsLayout({
 		[activeItem, router, t, isSuperAdmin, openHardDelete],
 	);
 
-	const contracts = Array.isArray(data) ? data : (data?.data ?? []);
+	const contracts = data ?? [];
 
 	return (
 		<div className="flex h-screen flex-col overflow-hidden">

@@ -98,10 +98,7 @@ export default function TrainingDetailPage() {
 		{ enabled: !!params.id },
 	);
 
-	const { data: employees } = trpc.hr.employees.list.useQuery({
-		page: 1,
-		limit: 500,
-	});
+	const { data: employees } = trpc.hr.employees.list.useQuery();
 
 	const { data: enrollmentsData, refetch: refetchEnrollments } =
 		trpc.hr.training.enrollments.list.useQuery(
@@ -143,12 +140,8 @@ export default function TrainingDetailPage() {
 		onError: (e) => toast.error(e.message),
 	});
 
-	const enrollments = Array.isArray(enrollmentsData)
-		? enrollmentsData
-		: ((enrollmentsData as any)?.data ?? []);
-	const employeeList = Array.isArray(employees)
-		? employees
-		: ((employees as any)?.data ?? []);
+	const enrollments = enrollmentsData ?? [];
+	const employeeList = employees ?? [];
 
 	const _isPending =
 		enrollMutation.isPending ||

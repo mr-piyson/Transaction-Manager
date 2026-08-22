@@ -44,11 +44,9 @@ export function MasterTab({ form, canManageMaster }: MasterTabProps) {
 	const { data: taxRates } = trpc.settings.taxRates.list.useQuery();
 	const generateSku = trpc.categories.generateSku.useMutation();
 
-	const categoryList = Array.isArray(categories) ? categories : [];
-	const unitList = Array.isArray(units)
-		? units.filter((u: any) => u.isActive)
-		: [];
-	const taxRateList = Array.isArray(taxRates) ? taxRates : [];
+	const categoryList = categories ?? [];
+	const unitList = (units ?? []).filter((u: any) => u.isActive);
+	const taxRateList = taxRates ?? [];
 
 	const handleGenerateSku = React.useCallback(() => {
 		const selectedCat = categoryList.find(

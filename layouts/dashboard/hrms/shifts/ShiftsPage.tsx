@@ -60,7 +60,7 @@ export default function ShiftsPage() {
 
 	const { openCreate } = useShiftForm();
 
-	const shifts = Array.isArray(data) ? data : ((data as any)?.data ?? []);
+	const shifts = data ?? [];
 	const total = (data as any)?.total ?? 0;
 	const totalPages = Math.ceil(total / limit);
 

@@ -68,13 +68,13 @@ export function MoneyEntryFilterBar({ kind }: MoneyEntryFilterBarProps) {
 		},
 	);
 	const { data: customers } = trpc.customers.list.useQuery(
-		{ page: 1, limit: 500 },
+		{},
 		{ enabled: !isExpense },
 	);
 
 	const entityOptions = isExpense
 		? (categories ?? []).map((c) => ({ id: c.id, name: c.name }))
-		: (customers?.data ?? []).map((c) => ({ id: c.id, name: c.name }));
+		: (customers ?? []).map((c) => ({ id: c.id, name: c.name }));
 
 	const activeFilterCount =
 		(searchQuery ? 1 : 0) +

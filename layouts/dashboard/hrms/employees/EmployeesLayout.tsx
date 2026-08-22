@@ -117,7 +117,7 @@ export default function EmployeesLayout({
 		[activeItem, deleteMutation, openEdit, router, utils],
 	);
 
-	const employees = Array.isArray(data) ? data : ((data as any)?.data ?? []);
+	const employees = data ?? [];
 
 	return (
 		<div className="flex h-screen flex-col overflow-hidden">

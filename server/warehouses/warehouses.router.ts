@@ -1,12 +1,7 @@
 import { z } from "zod";
 import { ConflictError, ForbiddenError, NotFoundError } from "@/lib/error";
 import { assertCan, orgProcedure, router } from "@/lib/trpc/context";
-import {
-	offsetPaginationSchema,
-	paginatedResponse,
-	sortOrderSchema,
-	toPrismaPage,
-} from "@/lib/validations";
+import { sortOrderSchema } from "@/lib/validations";
 import { writeAuditLog } from "../shared/audit.service";
 import {
 	getHardDeleteInfo,
@@ -26,7 +21,6 @@ const updateWarehouseSchema = warehouseBaseSchema.partial().extend({
 });
 
 const listWarehousesSchema = z.object({
-	...offsetPaginationSchema.shape,
 	search: z.string().optional(),
 	isActive: z.boolean().optional(),
 	sortBy: z.enum(["name", "createdAt", "updatedAt"]).default("name"),
@@ -39,8 +33,7 @@ export const warehousesRouter = router({
 		.query(async ({ ctx, input }) => {
 			assertCan(ctx.ability, "stock:read", "all");
 
-			const { search, isActive, sortBy, sortOrder, ...pagination } = input;
-			const { skip, take } = toPrismaPage(pagination);
+			const { search, isActive, sortBy, sortOrder } = input;
 			const orgId = ctx.user.organizationId;
 
 			const where: Record<string, unknown> = {
@@ -57,18 +50,13 @@ export const warehousesRouter = router({
 					: {}),
 			};
 
-			const [warehouses, total] = await ctx.db.$transaction([
-				ctx.db.warehouse.findMany({
-					where,
-					skip,
-					take,
-					orderBy: { [sortBy]: sortOrder },
-					include: { _count: { select: { stock: true } } },
-				}),
-				ctx.db.warehouse.count({ where }),
-			]);
+			const warehouses = await ctx.db.warehouse.findMany({
+				where,
+				orderBy: { [sortBy]: sortOrder },
+				include: { _count: { select: { stock: true } } },
+			});
 
-			return paginatedResponse(warehouses, total, pagination);
+			return warehouses;
 		}),
 
 	byId: orgProcedure

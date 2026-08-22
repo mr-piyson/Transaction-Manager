@@ -202,7 +202,7 @@ export default function POLayout({ children }: { children?: React.ReactNode }) {
 		],
 	);
 
-	const orders = (Array.isArray(data) ? data : (data?.data ?? [])).sort(
+	const orders = (data ?? []).sort(
 		(a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
 	);
 

@@ -160,7 +160,7 @@ export function ItemPageContent({ item, defaultMode }: ItemPageContentProps) {
 	const [isEditing, setIsEditing] = React.useState(
 		defaultMode === "edit" || isCreate,
 	);
-	const { data: categories } = trpc.items.list.useQuery({ limit: 200 });
+	const { data: categories } = trpc.items.list.useQuery({});
 	const { data: categoryTree } = trpc.categories.list.useQuery();
 	const { data: taxRates } = trpc.settings.taxRates.list.useQuery();
 	const generateSku = trpc.categories.generateSku.useMutation();
@@ -641,9 +641,9 @@ export function ItemPageContent({ item, defaultMode }: ItemPageContentProps) {
 													value={watch("unitId") ?? ""}
 													onValueChange={(v) => {
 														setValue("unitId", v || undefined);
-														const unit = (
-															Array.isArray(units) ? units : []
-														).find((u: any) => u.id === v);
+														const unit = (units ?? []).find(
+															(u: any) => u.id === v,
+														);
 														if (unit) setValue("unit", unit.code);
 													}}
 												>
@@ -651,13 +651,11 @@ export function ItemPageContent({ item, defaultMode }: ItemPageContentProps) {
 														<SelectValue placeholder="Select unit" />
 													</SelectTrigger>
 													<SelectContent>
-														{(Array.isArray(units) ? units : []).map(
-															(u: any) => (
-																<SelectItem key={u.id} value={u.id}>
-																	{u.code} — {u.name}
-																</SelectItem>
-															),
-														)}
+														{(units ?? []).map((u: any) => (
+															<SelectItem key={u.id} value={u.id}>
+																{u.code} — {u.name}
+															</SelectItem>
+														))}
 													</SelectContent>
 												</Select>
 											</Field>
@@ -864,13 +862,11 @@ export function ItemPageContent({ item, defaultMode }: ItemPageContentProps) {
 														<SelectValue placeholder="Select tax rate" />
 													</SelectTrigger>
 													<SelectContent>
-														{(Array.isArray(taxRates) ? taxRates : []).map(
-															(tr: any) => (
-																<SelectItem key={tr.id} value={tr.id}>
-																	{tr.name} ({Number(tr.rate)}%)
-																</SelectItem>
-															),
-														)}
+														{(taxRates ?? []).map((tr: any) => (
+															<SelectItem key={tr.id} value={tr.id}>
+																{tr.name} ({Number(tr.rate)}%)
+															</SelectItem>
+														))}
 													</SelectContent>
 												</Select>
 											</Field>

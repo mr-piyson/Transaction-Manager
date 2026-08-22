@@ -152,12 +152,8 @@ export default function CandidateDetailPage() {
 			onError: (e) => toast.error(e.message),
 		});
 
-	const interviews = Array.isArray(interviewsData)
-		? interviewsData
-		: ((interviewsData as any)?.data ?? []);
-	const employees = Array.isArray(employeesData)
-		? employeesData
-		: ((employeesData as any)?.data ?? []);
+	const interviews = interviewsData ?? [];
+	const employees = employeesData ?? [];
 	const offer = offerData as any;
 
 	function resetInterviewForm() {

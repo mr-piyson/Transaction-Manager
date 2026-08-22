@@ -61,7 +61,7 @@ export default function JobPositionsPage() {
 		onError: (e) => toast.error(e.message),
 	});
 
-	const records = Array.isArray(data) ? data : ((data as any)?.data ?? []);
+	const records = data ?? [];
 	const total = (data as any)?.total ?? 0;
 	const totalPages = Math.ceil(total / limit);
 

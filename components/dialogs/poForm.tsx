@@ -100,10 +100,8 @@ export function POFormDialog({
 	const [itemPickerOpen, setItemPickerOpen] = React.useState(false);
 	const [supplierPickerOpen, setSupplierPickerOpen] = React.useState(false);
 
-	const { data: suppliersData } = trpc.suppliers.list.useQuery({ limit: 200 });
-	const { data: warehousesData } = trpc.warehouses.list.useQuery({
-		limit: 200,
-	});
+	const { data: suppliersData } = trpc.suppliers.list.useQuery({});
+	const { data: warehousesData } = trpc.warehouses.list.useQuery({});
 
 	const {
 		register,
@@ -145,10 +143,7 @@ export function POFormDialog({
 	// Auto-select default warehouse when data loads
 	React.useEffect(() => {
 		if (!watch("warehouseId") && warehousesData) {
-			const list = Array.isArray(warehousesData)
-				? warehousesData
-				: (warehousesData?.data ?? []);
-			const def = list.find((w: any) => w.isDefault);
+			const def = warehousesData.find((w: any) => w.isDefault);
 			if (def) setValue("warehouseId", def.id);
 		}
 	}, [warehousesData, watch, setValue]);
@@ -224,13 +219,9 @@ export function POFormDialog({
 		}
 	};
 
-	const suppliers = Array.isArray(suppliersData)
-		? suppliersData
-		: (suppliersData?.data ?? []);
-	const warehouses = Array.isArray(warehousesData)
-		? warehousesData
-		: (warehousesData?.data ?? []);
-	const items = Array.isArray(itemsData) ? itemsData : (itemsData?.data ?? []);
+	const suppliers = suppliersData ?? [];
+	const warehouses = warehousesData ?? [];
+	const items = itemsData ?? [];
 
 	const itemsMap = React.useMemo(
 		() => Object.fromEntries(items.map((i: any) => [i.id, i])),
@@ -701,9 +692,7 @@ function defaults(
 	orgCurrency?: string,
 ): POFormValues {
 	const today = toDateInputValue(new Date());
-	const list = Array.isArray(warehousesData)
-		? warehousesData
-		: ((warehousesData as any)?.data ?? []);
+	const list = warehousesData ?? [];
 	const defaultWarehouse = list.find((w: any) => w.isDefault);
 	return {
 		supplierId: po?.supplierId ?? "",

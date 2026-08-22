@@ -22,14 +22,12 @@ export const incomesRouter = router({
 				customerId: z.string().optional(),
 				dateFrom: z.coerce.date().optional(),
 				dateTo: z.coerce.date().optional(),
-				limit: z.number().int().positive().max(500).default(50),
-				cursor: z.string().optional(),
 			}),
 		)
 		.query(async ({ ctx, input }) => {
 			assertCan(ctx.ability, "income:read", "Income");
 
-			const { search, customerId, dateFrom, dateTo, limit, cursor } = input;
+			const { search, customerId, dateFrom, dateTo } = input;
 			const orgId = ctx.user.organizationId;
 
 			const where: Record<string, unknown> = {
@@ -63,8 +61,6 @@ export const incomesRouter = router({
 
 			const incomes = await ctx.db.income.findMany({
 				where,
-				take: limit + 1,
-				cursor: cursor ? { id: cursor } : undefined,
 				orderBy: { date: "desc" },
 				include: {
 					customer: { select: { id: true, name: true } },
@@ -73,13 +69,7 @@ export const incomesRouter = router({
 				},
 			});
 
-			let nextCursor: string | undefined;
-			if (incomes.length > limit) {
-				const nextItem = incomes.pop();
-				nextCursor = nextItem?.id;
-			}
-
-			return { items: incomes, nextCursor };
+			return incomes;
 		}),
 
 	byId: orgProcedure

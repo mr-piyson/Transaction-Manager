@@ -88,17 +88,17 @@ export default function WarehouseDetailPage() {
 	);
 
 	const { data: stockData } = trpc.stock.list.useQuery(
-		{ warehouseId: params.id, limit: 200 },
+		{ warehouseId: params.id },
 		{ enabled: !!params.id },
 	);
 
 	const { data: movementsData } = trpc.stock.movements.useQuery(
-		{ warehouseId: params.id, limit: 50 },
+		{ warehouseId: params.id },
 		{ enabled: !!params.id },
 	);
 
 	const { data: warehousesList } = trpc.warehouses.list.useQuery(
-		{ limit: 200 },
+		{},
 		{ enabled: !!params.id },
 	);
 
@@ -238,9 +238,9 @@ export default function WarehouseDetailPage() {
 		});
 	};
 
-	const stockItems = stockData?.data ?? [];
-	const movements = movementsData?.data ?? [];
-	const otherWarehouses = (warehousesList?.data ?? []).filter(
+	const stockItems = stockData ?? [];
+	const movements = movementsData ?? [];
+	const otherWarehouses = (warehousesList ?? []).filter(
 		(w: any) => w.id !== warehouse.id,
 	);
 

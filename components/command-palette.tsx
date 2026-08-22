@@ -1,6 +1,12 @@
 "use client";
 
-import { type LucideIcon, Search } from "lucide-react";
+import {
+	ArrowDownIcon,
+	ArrowUpIcon,
+	type LucideIcon,
+	Search,
+	Undo2Icon,
+} from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useState } from "react";
@@ -168,7 +174,7 @@ function CommandPalette({
 										value={`${item.label} ${item.keywords.join(" ")}`}
 										onSelect={() => handleSelect(item)}
 									>
-										{Icon && <Icon className="size-4" />}
+										{Icon && <Icon />}
 										<span>{item.label}</span>
 									</CommandItem>
 								);
@@ -177,6 +183,28 @@ function CommandPalette({
 					</span>
 				))}
 			</CommandList>
+			<CommandSeparator />
+			<div className="text-muted-foreground flex flex-wrap items-center gap-4 p-4">
+				<div className="flex flex-1 items-center gap-2">
+					<kbd className="rounded border px-1 text-sm">esc</kbd>
+					<span>To close</span>
+				</div>
+				<div className="flex items-center gap-2">
+					<div className="flex size-5 items-center justify-center rounded border">
+						<Undo2Icon className="size-4" />
+					</div>
+					<span>To Select</span>
+				</div>
+				<div className="flex items-center gap-2">
+					<div className="flex size-5 items-center justify-center rounded border">
+						<ArrowUpIcon className="size-4" />
+					</div>
+					<div className="flex size-5 items-center justify-center rounded border">
+						<ArrowDownIcon className="size-4" />
+					</div>
+					<span>To Navigate</span>
+				</div>
+			</div>
 		</CommandDialog>
 	);
 }

@@ -26,7 +26,6 @@ import { alert } from "@/components/Alert-dialog";
 import { useIncomeForm } from "@/components/dialogs";
 import { useHardDeleteForm } from "@/components/dialogs/hardDeleteForm";
 import { MoneyEntryFilterBar } from "@/components/erp/money-entry-filter-bar";
-import { IncomeListItem } from "@/layouts/dashboard/erp/incomes/income-list-item";
 import { Header } from "@/components/layout/App-Header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -47,6 +46,7 @@ import {
 import { useCurrency } from "@/hooks/use-currency";
 import { useDateFormat } from "@/hooks/use-date-format";
 import { useTableTheme } from "@/hooks/use-table-theme";
+import { IncomeListItem } from "@/layouts/dashboard/erp/incomes/income-list-item";
 import { trpc } from "@/lib/trpc/client";
 import { cn } from "@/lib/utils";
 
@@ -81,7 +81,6 @@ export default function IncomesLayout({
 	const [viewMode] = useQueryState("view", parseAsString.withDefault("table"));
 
 	const { data, isPending } = trpc.incomes.list.useQuery({
-		limit: 500,
 		search: searchQuery || undefined,
 		customerId: customerFilter || undefined,
 		dateFrom: dateFrom ? new Date(dateFrom) : undefined,
@@ -98,7 +97,7 @@ export default function IncomesLayout({
 		onError: (e) => toast.error(e.message),
 	});
 
-	const incomes = data?.items ?? [];
+	const incomes = data ?? [];
 
 	const handleEdit = (item: any) => {
 		openEdit(

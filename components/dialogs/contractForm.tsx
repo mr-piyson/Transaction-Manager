@@ -89,7 +89,7 @@ export function ContractFormDialog({
 	const isEdit = Boolean(contract?.id);
 	const utils = trpc.useUtils();
 	const { currency: orgCurrency } = useCurrency();
-	const { data: customersData } = trpc.customers.list.useQuery({ limit: 200 });
+	const { data: customersData } = trpc.customers.list.useQuery({});
 
 	const {
 		register,
@@ -155,9 +155,7 @@ export function ContractFormDialog({
 		}
 	};
 
-	const customers = Array.isArray(customersData)
-		? customersData
-		: (customersData?.data ?? []);
+	const customers = customersData ?? [];
 
 	return (
 		<Dialog open={open} onOpenChange={(v) => !isPending && onOpenChange(v)}>

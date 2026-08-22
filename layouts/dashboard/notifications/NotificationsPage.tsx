@@ -18,13 +18,6 @@ import { Button } from "@/components/ui/button";
 import { Empty } from "@/components/ui/empty";
 import { Input } from "@/components/ui/input";
 import {
-	Pagination,
-	PaginationContent,
-	PaginationItem,
-	PaginationNext,
-	PaginationPrevious,
-} from "@/components/ui/pagination";
-import {
 	Select,
 	SelectContent,
 	SelectItem,
@@ -54,18 +47,15 @@ const STATUS_ICONS: Record<string, typeof Bell> = {
 export default function NotificationsPage() {
 	const t = useTranslations();
 	const router = useRouter();
-	const [page, setPage] = useState(1);
 	const [statusFilter, setStatusFilter] = useState<string>("");
 	const [search, setSearch] = useState("");
-	const limit = 25;
 
 	const { data, isLoading } = trpc.notifications.list.useQuery({
-		page,
-		limit,
 		status:
 			statusFilter === "all" ? undefined : (statusFilter as any) || undefined,
 		search: search || undefined,
 	});
+	const notifications = data ?? [];
 
 	const utils = trpc.useUtils();
 
@@ -142,18 +132,12 @@ export default function NotificationsPage() {
 				<Input
 					placeholder={t("common.search")}
 					value={search}
-					onChange={(e) => {
-						setSearch(e.target.value);
-						setPage(1);
-					}}
+					onChange={(e) => setSearch(e.target.value)}
 					className="max-w-xs h-9"
 				/>
 				<Select
 					value={statusFilter || "all"}
-					onValueChange={(v) => {
-						setStatusFilter(v === "all" ? "" : v);
-						setPage(1);
-					}}
+					onValueChange={(v) => setStatusFilter(v === "all" ? "" : v)}
 				>
 					<SelectTrigger className="w-32 h-9">
 						<SelectValue placeholder={t("common.filter")} />
@@ -174,7 +158,7 @@ export default function NotificationsPage() {
 					<div className="flex items-center justify-center h-full">
 						<Loader2 className="size-6 animate-spin text-muted-foreground" />
 					</div>
-				) : !data?.data.length ? (
+				) : !notifications.length ? (
 					<div className="flex items-center justify-center h-full">
 						<Empty>
 							<Bell className="size-8 text-muted-foreground" />
@@ -188,7 +172,7 @@ export default function NotificationsPage() {
 					</div>
 				) : (
 					<div className="divide-y">
-						{data.data.map((notification) => {
+						{notifications.map((notification) => {
 							const Icon = STATUS_ICONS[notification.type] || Bell;
 							const isUnread = notification.status === "UNREAD";
 
@@ -298,35 +282,6 @@ export default function NotificationsPage() {
 					</div>
 				)}
 			</div>
-
-			{data?.meta && data.meta.totalPages > 1 && (
-				<div className="border-t px-4 py-2">
-					<Pagination>
-						<PaginationContent>
-							<PaginationItem>
-								<PaginationPrevious
-									onClick={() => setPage((p) => Math.max(1, p - 1))}
-									isActive={page > 1}
-								/>
-							</PaginationItem>
-							<PaginationItem>
-								<span className="text-sm text-muted-foreground px-4">
-									{t("common.page")} {page} {t("common.of")}{" "}
-									{data.meta.totalPages}
-								</span>
-							</PaginationItem>
-							<PaginationItem>
-								<PaginationNext
-									onClick={() =>
-										setPage((p) => Math.min(data.meta.totalPages, p + 1))
-									}
-									isActive={page < data.meta.totalPages}
-								/>
-							</PaginationItem>
-						</PaginationContent>
-					</Pagination>
-				</div>
-			)}
 		</div>
 	);
 }

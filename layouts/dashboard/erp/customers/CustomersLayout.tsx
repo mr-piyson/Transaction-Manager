@@ -148,7 +148,7 @@ export default function CustomersLayout({
 		],
 	);
 
-	const items = Array.isArray(data) ? data : (data?.data ?? []);
+	const items = data ?? [];
 
 	return (
 		<div className="flex h-screen flex-col overflow-hidden">

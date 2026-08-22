@@ -81,7 +81,6 @@ export default function ExpensesLayout({
 	const [viewMode] = useQueryState("view", parseAsString.withDefault("table"));
 
 	const { data, isPending } = trpc.expenses.list.useQuery({
-		limit: 500,
 		search: searchQuery || undefined,
 		categoryId: categoryFilter || undefined,
 		dateFrom: dateFrom ? new Date(dateFrom) : undefined,
@@ -98,7 +97,7 @@ export default function ExpensesLayout({
 		onError: (e) => toast.error(e.message),
 	});
 
-	const expenses = data?.items ?? [];
+	const expenses = data ?? [];
 
 	const handleEdit = (item: any) => {
 		openEdit(

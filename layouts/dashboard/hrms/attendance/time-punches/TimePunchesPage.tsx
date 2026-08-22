@@ -45,7 +45,7 @@ export default function TimePunchesPage() {
 		search: search || undefined,
 	});
 
-	const punches = Array.isArray(data) ? data : ((data as any)?.data ?? []);
+	const punches = data ?? [];
 	const total = (data as any)?.total ?? 0;
 	const totalPages = Math.ceil(total / limit);
 

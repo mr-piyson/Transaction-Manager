@@ -97,13 +97,9 @@ export default function ShiftAssignmentsPage() {
 	const { data: employeesData } = trpc.hr.employees.list.useQuery({});
 	const { data: shiftsData } = trpc.hr.shifts.list.useQuery({});
 
-	const employees = Array.isArray(employeesData)
-		? employeesData
-		: ((employeesData as any)?.data ?? []);
-	const shifts = Array.isArray(shiftsData)
-		? shiftsData
-		: ((shiftsData as any)?.data ?? []);
-	const assignments = Array.isArray(data) ? data : ((data as any)?.data ?? []);
+	const employees = employeesData ?? [];
+	const shifts = shiftsData ?? [];
+	const assignments = data ?? [];
 	const total = (data as any)?.total ?? 0;
 	const totalPages = Math.ceil(total / limit);
 

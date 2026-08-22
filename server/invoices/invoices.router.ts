@@ -40,12 +40,7 @@ import {
 } from "@/lib/error";
 import { type DocumentPrefix, generateSerial } from "@/lib/sequences";
 import { assertCan, orgProcedure, router } from "@/lib/trpc/context";
-import {
-	paginatedResponse,
-	paymentMethodSchema,
-	toDateRangeFilter,
-	toPrismaPage,
-} from "@/lib/validations";
+import { paymentMethodSchema, toDateRangeFilter } from "@/lib/validations";
 import {
 	postCreditNoteSent,
 	postInvoiceSent,
@@ -96,9 +91,7 @@ export const invoicesRouter = router({
 			dueDateRange,
 			sortBy,
 			sortOrder,
-			...pagination
 		} = input;
-		const { skip, take } = toPrismaPage(pagination);
 		const orgId = ctx.user.organizationId;
 
 		const where = {
@@ -127,35 +120,30 @@ export const invoicesRouter = router({
 				: {}),
 		};
 
-		const [invoices, total] = await ctx.db.$transaction([
-			ctx.db.invoice.findMany({
-				where,
-				skip,
-				take,
-				orderBy: { [sortBy]: sortOrder },
-				select: {
-					id: true,
-					serial: true,
-					type: true,
-					status: true,
-					paymentStatus: true,
-					date: true,
-					dueDate: true,
-					total: true,
-					amountPaid: true,
-					amountDue: true,
-					currency: true,
-					isWalkIn: true,
-					customer: { select: { id: true, name: true, email: true } },
-					createdAt: true,
-					updatedAt: true,
-					_count: { select: { lines: true, payments: true } },
-				},
-			}),
-			ctx.db.invoice.count({ where }),
-		]);
+		const invoices = await ctx.db.invoice.findMany({
+			where,
+			orderBy: { [sortBy]: sortOrder },
+			select: {
+				id: true,
+				serial: true,
+				type: true,
+				status: true,
+				paymentStatus: true,
+				date: true,
+				dueDate: true,
+				total: true,
+				amountPaid: true,
+				amountDue: true,
+				currency: true,
+				isWalkIn: true,
+				customer: { select: { id: true, name: true, email: true } },
+				createdAt: true,
+				updatedAt: true,
+				_count: { select: { lines: true, payments: true } },
+			},
+		});
 
-		return paginatedResponse(invoices, total, pagination);
+		return invoices;
 	}),
 
 	// ── GET BY ID (full detail) ───────────────────────────────────────────────

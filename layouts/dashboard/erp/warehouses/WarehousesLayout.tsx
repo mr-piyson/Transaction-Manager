@@ -92,7 +92,7 @@ export default function WarehousesLayout({
 		[activeItem, router, t, isSuperAdmin, openHardDelete],
 	);
 
-	const warehouses = Array.isArray(data) ? data : (data?.data ?? []);
+	const warehouses = data ?? [];
 
 	return (
 		<div className="flex h-screen flex-col overflow-hidden">

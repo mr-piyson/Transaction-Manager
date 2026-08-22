@@ -38,9 +38,10 @@ export function NotificationBell() {
 	);
 
 	const { data, isLoading } = trpc.notifications.list.useQuery(
-		{ page: 1, limit: 10, status: "UNREAD" },
+		{ status: "UNREAD" },
 		{ enabled: open },
 	);
+	const notifications = data ?? [];
 
 	const utils = trpc.useUtils();
 
@@ -130,14 +131,14 @@ export function NotificationBell() {
 						<div className="flex items-center justify-center h-24">
 							<Loader2 className="size-5 animate-spin text-muted-foreground" />
 						</div>
-					) : !data?.data.length ? (
+					) : !notifications.length ? (
 						<div className="flex flex-col items-center justify-center h-24 text-sm text-muted-foreground">
 							<Bell className="size-6 mb-1 opacity-50" />
 							{t("notifications.noNotifications")}
 						</div>
 					) : (
 						<div className="divide-y">
-							{data.data.map((notification) => (
+							{notifications.map((notification) => (
 								<div
 									key={notification.id}
 									className={cn(

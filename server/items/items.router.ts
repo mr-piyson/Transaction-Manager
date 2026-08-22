@@ -19,10 +19,7 @@ import { assertCan, orgProcedure, router } from "@/lib/trpc/context";
 import {
 	currencyCodeSchema,
 	decimalSchema,
-	offsetPaginationSchema,
-	paginatedResponse,
 	sortOrderSchema,
-	toPrismaPage,
 } from "@/lib/validations";
 import { writeAuditLog } from "../shared/audit.service";
 import { getHardDeleteInfo, hardDeleteItemTree } from "./hard-delete.service";
@@ -65,7 +62,6 @@ const updateItemSchema = itemBaseSchema.partial().extend({
 });
 
 const listItemsSchema = z.object({
-	...offsetPaginationSchema.shape,
 	search: z.string().optional(),
 	type: z.enum(["PRODUCT", "SERVICE", "BUNDLE"]).optional(),
 	categoryId: z.string().optional(),

@@ -24,10 +24,7 @@ import { assertCan, orgProcedure, router } from "@/lib/trpc/context";
 import {
 	currencyCodeSchema,
 	decimalSchema,
-	offsetPaginationSchema,
-	paginatedResponse,
 	sortOrderSchema,
-	toPrismaPage,
 } from "@/lib/validations";
 import { writeAuditLog } from "../shared/audit.service";
 import {
@@ -59,7 +56,6 @@ const updateCustomerSchema = customerBaseSchema.partial().extend({
 });
 
 const listCustomersSchema = z.object({
-	...offsetPaginationSchema.shape,
 	search: z.string().optional(),
 	isActive: z.boolean().optional(),
 	sortBy: z.enum(["name", "createdAt", "updatedAt"]).default("name"),
@@ -77,8 +73,7 @@ export const customersRouter = router({
 		.query(async ({ ctx, input }) => {
 			assertCan(ctx.ability, "customer:read", "Customer");
 
-			const { search, isActive, sortBy, sortOrder, ...pagination } = input;
-			const { skip, take } = toPrismaPage(pagination);
+			const { search, isActive, sortBy, sortOrder } = input;
 			const orgId = ctx.user.organizationId;
 
 			const where = {
@@ -97,30 +92,25 @@ export const customersRouter = router({
 					: {}),
 			};
 
-			const [customers, total] = await ctx.db.$transaction([
-				ctx.db.customer.findMany({
-					where,
-					skip,
-					take,
-					orderBy: { [sortBy]: sortOrder },
-					select: {
-						id: true,
-						name: true,
-						code: true,
-						email: true,
-						phone: true,
-						isActive: true,
-						creditLimit: true,
-						creditTermsDays: true,
-						currencyCode: true,
-						createdAt: true,
-						_count: { select: { invoices: true } },
-					},
-				}),
-				ctx.db.customer.count({ where }),
-			]);
+			const customers = await ctx.db.customer.findMany({
+				where,
+				orderBy: { [sortBy]: sortOrder },
+				select: {
+					id: true,
+					name: true,
+					code: true,
+					email: true,
+					phone: true,
+					isActive: true,
+					creditLimit: true,
+					creditTermsDays: true,
+					currencyCode: true,
+					createdAt: true,
+					_count: { select: { invoices: true } },
+				},
+			});
 
-			return paginatedResponse(customers, total, pagination);
+			return customers;
 		}),
 
 	// ── GET BY ID ─────────────────────────────────────────────────────────────

@@ -2,7 +2,6 @@ import { z } from "zod";
 import {
 	currencyCodeSchema,
 	dateRangeSchema,
-	offsetPaginationSchema,
 	sortOrderSchema,
 } from "@/lib/validations";
 
@@ -60,7 +59,6 @@ export const updateInvoiceSchema = invoiceBaseSchema.partial().extend({
 });
 
 export const listInvoicesSchema = z.object({
-	...offsetPaginationSchema.shape,
 	search: z.string().optional(),
 	type: z
 		.enum(["QUOTE", "INVOICE", "CREDIT_NOTE", "PROFORMA", "DELIVERY_NOTE"])

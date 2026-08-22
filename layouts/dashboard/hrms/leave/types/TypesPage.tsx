@@ -60,7 +60,7 @@ export default function LeaveTypesPage() {
 
 	const { openCreate } = useLeaveTypeForm();
 
-	const types = Array.isArray(data) ? data : ((data as any)?.data ?? []);
+	const types = data ?? [];
 	const total = (data as any)?.total ?? 0;
 	const totalPages = Math.ceil(total / limit);
 
