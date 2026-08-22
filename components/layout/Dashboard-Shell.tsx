@@ -16,8 +16,8 @@ export function DashboardShell({
 	return (
 		<SidebarProvider className="flex">
 			{showSidebar && <AppSidebar />}
-			<div className="relative flex flex-col flex-1 min-h-full overflow-x-hidden">
-				<main className="flex flex-col flex-1 relative overflow-x-hidden">
+			<div className="relative flex flex-col flex-1 min-h-full">
+				<main className="flex flex-col flex-1 relative">
 					{children}
 				</main>
 			</div>

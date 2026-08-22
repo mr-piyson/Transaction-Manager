@@ -53,7 +53,11 @@ import { cn } from "@/lib/utils";
  * Counts-only ERP overview — no revenue, balances, or currency figures.
  * Every metric is a COUNT or a PERCENTAGE (documents, statuses, stock health).
  *
- * Symmetric layout rhythm: 4 KPI cards → 3 chart cards → 2 action cards.
+ * Layout: normal document flow (no forced viewport clipping), sized so a
+ * typical desktop viewport shows everything without scrolling, but the page
+ * scrolls naturally if content overflows (small laptop, many statuses, zoom,
+ * etc). On mobile, sections stack to a single column and scroll — no
+ * horizontal overflow, tap targets stay comfortable.
  * All colors come from app theme tokens (light/dark aware); charts resolve
  * CSS variables at render time.
  * ---------------------------------------------------------------------------
@@ -199,7 +203,7 @@ function IconChip({
 	return (
 		<div
 			className={cn(
-				"flex size-9 shrink-0 items-center justify-center rounded-lg",
+				"flex size-8 shrink-0 items-center justify-center rounded-lg",
 				tone === "primary" && "bg-primary/10 text-primary",
 				tone === "destructive" && "bg-destructive/10 text-destructive",
 				tone === "success" && "bg-success/10 text-success",
@@ -213,7 +217,7 @@ function IconChip({
 }
 
 const tileClass =
-	"group flex flex-col items-start gap-2 rounded-lg border border-border/60 bg-background/40 p-3 text-left transition-all hover:border-primary/30 hover:bg-accent hover:shadow-sm focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 outline-none";
+	"group flex flex-col items-start gap-1 rounded-lg border border-border/60 bg-background/40 p-2 text-left transition-all hover:border-primary/30 hover:bg-accent hover:shadow-sm focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 outline-none";
 
 export default function ErpDashboard() {
 	const t = useTranslations();
@@ -450,49 +454,46 @@ export default function ErpDashboard() {
 	];
 
 	return (
-		<div className="flex min-h-screen flex-col bg-background">
+		<div className="flex min-h-dvh flex-col bg-background">
 			<style>{`
-				.erp-fade-up { opacity: 0; transform: translateY(4px); animation: erpFadeUp .45s ease forwards; }
+				.erp-fade-up { opacity: 0; transform: translateY(4px); animation: erpFadeUp .35s ease forwards; }
 				@keyframes erpFadeUp { to { opacity: 1; transform: translateY(0); } }
 				@media (prefers-reduced-motion: reduce) { .erp-fade-up { animation: none; opacity: 1; transform: none; } }
 			`}</style>
 
 			<Header title={t("dashboard.title")} />
 
-			<main className="mx-auto w-full max-w-360 flex-1 space-y-4 p-4 lg:p-6">
+			<main className="mx-auto flex w-full max-w-360 flex-1 flex-col gap-3 p-3 lg:gap-3 lg:p-4">
 				{/* ---------------- header ---------------- */}
-				<section className="flex items-center justify-between gap-4">
+				<section className="flex shrink-0 items-center justify-between gap-4">
 					<div className="min-w-0">
-						<p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
+						<p className="text-[10px] font-medium tracking-wide text-muted-foreground uppercase">
 							{todayLabel}
 						</p>
-						<h1 className="mt-1 truncate text-2xl leading-tight font-bold tracking-tight lg:text-3xl">
+						<h1 className="truncate text-lg leading-tight font-bold tracking-tight lg:text-xl">
 							{greeting}
 							{firstName ? `, ${firstName}.` : ""}
 						</h1>
-						<p className="mt-1 hidden text-sm text-muted-foreground sm:block">
-							{t("dashboard.greetingDescription")}
-						</p>
 					</div>
 				</section>
 
 				{/* ---------------- KPI strip ---------------- */}
-				<section className="grid grid-cols-2 gap-3 xl:grid-cols-4">
+				<section className="grid shrink-0 grid-cols-2 gap-2 sm:grid-cols-4">
 					{kpis.map((k, i) => (
 						<Card
 							key={k.label}
-							className="erp-fade-up gap-0 rounded-xl py-4 shadow-xs transition-shadow hover:shadow-md"
-							style={{ animationDelay: `${i * 60}ms` }}
+							className="erp-fade-up gap-0 rounded-xl py-3 shadow-xs transition-shadow hover:shadow-md"
+							style={{ animationDelay: `${i * 50}ms` }}
 						>
-							<CardContent className="flex items-start justify-between gap-3 px-4">
+							<CardContent className="flex items-center justify-between gap-2 px-3">
 								<div className="min-w-0">
-									<p className="truncate text-xs text-muted-foreground">
+									<p className="truncate text-[11px] text-muted-foreground">
 										{k.label}
 									</p>
-									<div className="mt-2 flex flex-wrap items-baseline gap-x-2 gap-y-1">
+									<div className="mt-0.5 flex flex-wrap items-baseline gap-x-1.5 gap-y-0.5">
 										<span
 											className={cn(
-												"font-mono text-2xl leading-none font-semibold tabular-nums",
+												"font-mono text-xl leading-none font-semibold tabular-nums",
 												k.warn ? "text-destructive" : "text-foreground",
 											)}
 										>
@@ -501,16 +502,16 @@ export default function ErpDashboard() {
 										{k.delta !== undefined && k.delta !== 0 && (
 											<span
 												className={cn(
-													"inline-flex items-center gap-0.5 rounded-full px-1.5 py-0.5 text-[11px] font-medium tabular-nums",
+													"inline-flex items-center gap-0.5 rounded-full px-1.5 py-0.5 text-[10px] font-medium tabular-nums",
 													k.delta > 0
 														? "bg-success/10 text-success"
 														: "bg-destructive/10 text-destructive",
 												)}
 											>
 												{k.delta > 0 ? (
-													<ArrowUpRight className="size-3" />
+													<ArrowUpRight className="size-2.5" />
 												) : (
-													<ArrowDownRight className="size-3" />
+													<ArrowDownRight className="size-2.5" />
 												)}
 												{Math.abs(k.delta)}
 											</span>
@@ -526,31 +527,31 @@ export default function ErpDashboard() {
 				</section>
 
 				{/* ---------------- charts row ---------------- */}
-				<section className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
+				<section className="grid shrink-0 grid-cols-1 gap-3 md:grid-cols-3">
 					{/* weekly document volume */}
-					<Card className="h-72 gap-2 rounded-xl py-4">
-						<CardHeader className="px-4">
-							<CardTitle className="text-sm font-medium">
+					<Card className="flex h-64 flex-col gap-1 rounded-xl py-3 lg:h-56 xl:h-64">
+						<CardHeader className="px-3">
+							<CardTitle className="text-xs font-medium">
 								{t("dashboard.documentsThisWeek")}
 							</CardTitle>
 							<CardAction>
-								<div className="flex items-center gap-3 text-[10px] text-muted-foreground">
+								<div className="flex items-center gap-2 text-[10px] text-muted-foreground">
 									<span className="flex items-center gap-1">
-										<span className="inline-block size-2 rounded-full bg-success" />
+										<span className="inline-block size-1.5 rounded-full bg-success" />
 										{t("dashboard.legendInvoices")}
 									</span>
 									<span className="flex items-center gap-1">
-										<span className="inline-block size-2 rounded-full bg-warning" />
+										<span className="inline-block size-1.5 rounded-full bg-warning" />
 										{t("dashboard.legendPOs")}
 									</span>
 								</div>
 							</CardAction>
 						</CardHeader>
-						<CardContent className="min-h-0 flex-1 px-4">
+						<CardContent className="min-h-0 flex-1 px-3">
 							<ResponsiveContainer height="100%" width="100%">
 								<BarChart
 									data={weeklyDocs}
-									margin={{ top: 8, right: 4, bottom: 0, left: -18 }}
+									margin={{ top: 4, right: 4, bottom: 0, left: -18 }}
 									barGap={2}
 								>
 									<XAxis
@@ -581,13 +582,13 @@ export default function ErpDashboard() {
 					</Card>
 
 					{/* invoice status mix */}
-					<Card className="h-72 gap-2 rounded-xl py-4">
-						<CardHeader className="px-4">
-							<CardTitle className="text-sm font-medium">
+					<Card className="flex h-64 flex-col gap-1 rounded-xl py-3 lg:h-56 xl:h-64">
+						<CardHeader className="px-3">
+							<CardTitle className="text-xs font-medium">
 								{t("dashboard.statusMix")}
 							</CardTitle>
 						</CardHeader>
-						<CardContent className="flex min-h-0 flex-1 items-center gap-4 px-4">
+						<CardContent className="flex min-h-0 flex-1 items-center gap-3 px-3">
 							<div className="h-full min-h-0 w-1/2">
 								<ResponsiveContainer height="100%" width="100%">
 									<PieChart>
@@ -595,7 +596,7 @@ export default function ErpDashboard() {
 											data={statusMix}
 											dataKey="value"
 											nameKey="name"
-											innerRadius="62%"
+											innerRadius="60%"
 											outerRadius="92%"
 											paddingAngle={2}
 											stroke="none"
@@ -608,14 +609,17 @@ export default function ErpDashboard() {
 									</PieChart>
 								</ResponsiveContainer>
 							</div>
-							<div className="flex min-w-0 flex-1 flex-col gap-2">
+							<div className="flex min-w-0 flex-1 flex-col gap-1 overflow-y-auto">
 								{statusMix.length === 0 && (
-									<p className="text-xs text-muted-foreground">—</p>
+									<p className="text-[11px] text-muted-foreground">—</p>
 								)}
 								{statusMix.map((s) => (
-									<div key={s.name} className="flex items-center gap-2 text-xs">
+									<div
+										key={s.name}
+										className="flex items-center gap-1.5 text-[11px]"
+									>
 										<span
-											className="inline-block size-2 shrink-0 rounded-full"
+											className="inline-block size-1.5 shrink-0 rounded-full"
 											style={{ background: s.color }}
 										/>
 										<span className="min-w-0 flex-1 truncate text-muted-foreground">
@@ -631,13 +635,13 @@ export default function ErpDashboard() {
 					</Card>
 
 					{/* stock health gauge */}
-					<Card className="h-72 gap-2 rounded-xl py-4 md:col-span-2 md:max-xl:h-56 xl:col-span-1 xl:h-72">
-						<CardHeader className="px-4">
-							<CardTitle className="text-sm font-medium">
+					<Card className="flex h-64 flex-col gap-1 rounded-xl py-3 lg:h-56 xl:h-64">
+						<CardHeader className="px-3">
+							<CardTitle className="text-xs font-medium">
 								{t("dashboard.stockHealth")}
 							</CardTitle>
 						</CardHeader>
-						<CardContent className="relative min-h-0 flex-1 px-4">
+						<CardContent className="relative min-h-0 flex-1 px-3">
 							<ResponsiveContainer height="100%" width="100%">
 								<RadialBarChart
 									data={[
@@ -667,7 +671,7 @@ export default function ErpDashboard() {
 							<div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
 								<span
 									className={cn(
-										"font-mono text-2xl font-semibold tabular-nums",
+										"font-mono text-xl font-semibold tabular-nums",
 										stockTone === "success" && "text-success",
 										stockTone === "warning" && "text-warning",
 										stockTone === "destructive" && "text-destructive",
@@ -675,7 +679,7 @@ export default function ErpDashboard() {
 								>
 									{stockPct}%
 								</span>
-								<span className="text-xs text-muted-foreground">
+								<span className="text-[10px] text-muted-foreground">
 									{t("dashboard.inStock")}
 								</span>
 							</div>
@@ -684,15 +688,15 @@ export default function ErpDashboard() {
 				</section>
 
 				{/* ---------------- actions + modules ---------------- */}
-				<section className="grid grid-cols-1 gap-3 lg:grid-cols-2">
+				<section className="grid shrink-0 grid-cols-1 gap-3 lg:grid-cols-2">
 					{/* quick actions */}
-					<Card className="gap-3 rounded-xl py-4">
-						<CardHeader className="px-4">
-							<CardTitle className="text-sm font-medium">
+					<Card className="gap-2 rounded-xl py-3">
+						<CardHeader className="px-3">
+							<CardTitle className="text-xs font-medium">
 								{t("layout.quickActions")}
 							</CardTitle>
 						</CardHeader>
-						<CardContent className="grid grid-cols-2 gap-2 px-4">
+						<CardContent className="grid grid-cols-2 gap-1.5 px-3 sm:grid-cols-4">
 							<button
 								type="button"
 								onClick={() =>
@@ -703,7 +707,7 @@ export default function ErpDashboard() {
 								<IconChip>
 									<Receipt className="size-4" />
 								</IconChip>
-								<span className="text-xs font-medium text-foreground">
+								<span className="text-[11px] leading-tight font-medium text-foreground">
 									{t("dashboard.newInvoice")}
 								</span>
 							</button>
@@ -715,7 +719,7 @@ export default function ErpDashboard() {
 								<IconChip>
 									<ShoppingCart className="size-4" />
 								</IconChip>
-								<span className="text-xs font-medium text-foreground">
+								<span className="text-[11px] leading-tight font-medium text-foreground">
 									{t("dashboard.newPO")}
 								</span>
 							</button>
@@ -727,7 +731,7 @@ export default function ErpDashboard() {
 								<IconChip>
 									<UserPlus className="size-4" />
 								</IconChip>
-								<span className="text-xs font-medium text-foreground">
+								<span className="text-[11px] leading-tight font-medium text-foreground">
 									{t("dashboard.addCustomer")}
 								</span>
 							</button>
@@ -735,7 +739,7 @@ export default function ErpDashboard() {
 								<IconChip tone="success">
 									<Banknote className="size-4" />
 								</IconChip>
-								<span className="text-xs font-medium text-foreground">
+								<span className="text-[11px] leading-tight font-medium text-foreground">
 									{t("dashboard.recordIncome")}
 								</span>
 							</Link>
@@ -743,29 +747,29 @@ export default function ErpDashboard() {
 					</Card>
 
 					{/* module shelf */}
-					<Card className="gap-3 rounded-xl py-4">
-						<CardHeader className="px-4">
-							<CardTitle className="text-sm font-medium">
+					<Card className="gap-2 rounded-xl py-3">
+						<CardHeader className="px-3">
+							<CardTitle className="text-xs font-medium">
 								{t("dashboard.modules")}
 							</CardTitle>
 						</CardHeader>
-						<CardContent className="grid grid-cols-1 gap-2 px-4 sm:grid-cols-2">
+						<CardContent className="grid grid-cols-2 gap-1.5 px-3 xl:grid-cols-3">
 							{modules.map(({ labelKey, href, icon: Icon, count, warn }) => (
 								<Link
 									key={labelKey}
 									href={href}
-									className="group flex items-center justify-between gap-2 rounded-lg border border-border/60 bg-background/40 px-3 py-2.5 transition-all hover:border-primary/30 hover:bg-accent hover:shadow-sm"
+									className="group flex items-center justify-between gap-1.5 rounded-lg border border-border/60 bg-background/40 px-2.5 py-2 transition-all hover:border-primary/30 hover:bg-accent hover:shadow-sm"
 								>
-									<span className="flex min-w-0 items-center gap-2">
-										<Icon className="size-4 shrink-0 text-muted-foreground transition-colors group-hover:text-primary" />
-										<span className="truncate text-xs font-medium text-foreground">
+									<span className="flex min-w-0 items-center gap-1.5">
+										<Icon className="size-3.5 shrink-0 text-muted-foreground transition-colors group-hover:text-primary" />
+										<span className="truncate text-[11px] font-medium text-foreground">
 											{t(labelKey)}
 										</span>
 									</span>
 									<Badge
 										variant="secondary"
 										className={cn(
-											"shrink-0 font-mono tabular-nums",
+											"shrink-0 px-1.5 py-0 font-mono text-[10px] tabular-nums",
 											warn &&
 												"border-destructive/20 bg-destructive/10 text-destructive",
 										)}
@@ -777,10 +781,6 @@ export default function ErpDashboard() {
 						</CardContent>
 					</Card>
 				</section>
-
-				<p className="pt-1 text-center text-[11px] text-muted-foreground">
-					{t("dashboard.countsOnlyNote")}
-				</p>
 			</main>
 		</div>
 	);
