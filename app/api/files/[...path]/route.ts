@@ -12,11 +12,17 @@ export async function GET(
 		return NextResponse.json({ error: "Missing file path" }, { status: 400 });
 	}
 
-	if (segments.some((s) => s === ".." || s.includes("\\") || s.includes("/"))) {
+	// Rows uploaded on Windows may store `\` as a separator (e.g. `2026\08`);
+	// treat it like a regular separator, then re-check for traversal.
+	const parts = segments
+		.flatMap((s) => s.split(/[\\/]+/))
+		.filter((s) => s !== "" && s !== ".");
+
+	if (parts.length === 0 || parts.some((s) => s === "..")) {
 		return NextResponse.json({ error: "Invalid file path" }, { status: 400 });
 	}
 
-	const storagePath = `/uploads/${segments.join("/")}`;
+	const storagePath = `/uploads/${parts.join("/")}`;
 	const buffer = await readByStoragePath(storagePath);
 
 	if (!buffer) {

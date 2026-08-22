@@ -17,12 +17,16 @@ function datePath(): string {
 	const now = new Date();
 	const yyyy = String(now.getFullYear());
 	const mm = String(now.getMonth() + 1).padStart(2, "0");
-	return path.join(yyyy, mm);
+	// Always use forward slashes — `path.join` emits `\` on Windows, which
+	// would leak OS-specific separators into stored URLs.
+	return `${yyyy}/${mm}`;
 }
 
 /** Resolves a `/uploads/...` storage path inside `root`, rejecting traversal. */
 function toAbsolute(root: string, storagePath: string): string {
-	const clean = storagePath.replace(/^\/+/, "");
+	// Rows created on Windows may contain `\` separators (e.g. `2026\08`);
+	// normalize them before resolving.
+	const clean = storagePath.replace(/\\/g, "/").replace(/^\/+/, "");
 	const abs = path.resolve(root, clean);
 	const rel = path.relative(root, abs);
 	if (rel === "" || rel.startsWith("..") || path.isAbsolute(rel)) {
