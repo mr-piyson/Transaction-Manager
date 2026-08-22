@@ -1,32 +1,22 @@
 import {
-	Award,
-	BadgeCheck,
 	Banknote,
 	BarChart3,
 	Bell,
 	BookOpen,
 	Boxes,
-	Briefcase,
 	Building2,
-	Calendar,
 	Clock,
 	FilePenLine,
 	FileText,
-	Gavel,
-	GraduationCap,
 	Handshake,
 	Landmark,
 	LayoutDashboard,
 	type LucideIcon,
 	Package,
-	PiggyBank,
 	Scale,
 	ShoppingCart,
-	Speech,
 	TrendingUp,
 	Truck,
-	User,
-	UserPlus,
 	Users,
 	Wallet,
 	Warehouse,
@@ -202,190 +192,6 @@ function getErpRoutes(t: (key: string) => string): RouteConfig[] {
 	];
 }
 
-function getCrmRoutes(t: (key: string) => string): RouteConfig[] {
-	return [
-		{
-			type: "item",
-			label: t("crm.dashboard"),
-			href: "/crm",
-			icon: LayoutDashboard,
-		},
-		{
-			type: "group",
-			label: t("crm.sales"),
-			children: [
-				{
-					type: "item",
-					label: t("crm.leads"),
-					href: "/crm/leads",
-					icon: Users,
-				},
-				{
-					type: "item",
-					label: t("crm.opportunities"),
-					href: "/crm/opportunities",
-					icon: BarChart3,
-				},
-				{
-					type: "item",
-					label: t("crm.pipelines"),
-					href: "/crm/pipelines",
-					icon: LayoutDashboard,
-				},
-			],
-		},
-		{
-			type: "group",
-			label: t("crm.marketing"),
-			children: [
-				{
-					type: "item",
-					label: t("crm.campaigns"),
-					href: "/crm/campaigns",
-					icon: Calendar,
-				},
-				{
-					type: "item",
-					label: t("crm.contacts"),
-					href: "/crm/contacts",
-					icon: Users,
-				},
-			],
-		},
-	];
-}
-
-function getHrRoutes(t: (key: string) => string): RouteConfig[] {
-	return [
-		{
-			type: "item",
-			label: t("hr.dashboard"),
-			href: "/hrms",
-			icon: LayoutDashboard,
-		},
-		{
-			type: "group",
-			label: t("hr.workforce"),
-			children: [
-				{
-					type: "item",
-					label: t("hr.employees"),
-					href: "/hrms/employees",
-					icon: User,
-				},
-				{
-					type: "item",
-					label: t("hr.departments"),
-					href: "/hrms/departments",
-					icon: Building2,
-				},
-				{
-					type: "item",
-					label: t("hr.jobPositions"),
-					href: "/hrms/job-positions",
-					icon: Briefcase,
-				},
-				{
-					type: "item",
-					label: t("hr.employeeTypes"),
-					href: "/hrms/employee-types",
-					icon: BadgeCheck,
-				},
-			],
-		},
-		{
-			type: "group",
-			label: t("hr.timeManagement"),
-			children: [
-				{
-					type: "item",
-					label: t("hr.attendance"),
-					href: "/hrms/attendance",
-					icon: Calendar,
-				},
-				{
-					type: "item",
-					label: t("hr.leave"),
-					href: "/hrms/leave",
-					icon: Calendar,
-				},
-				{
-					type: "item",
-					label: t("hr.shifts"),
-					href: "/hrms/shifts",
-					icon: Clock,
-				},
-			],
-		},
-		{
-			type: "group",
-			label: t("hr.compensation"),
-			children: [
-				{
-					type: "item",
-					label: t("hr.payroll"),
-					href: "/hrms/payroll",
-					icon: Wallet,
-				},
-				{
-					type: "item",
-					label: t("hr.salaryComponents"),
-					href: "/hrms/salary-components",
-					icon: PiggyBank,
-				},
-			],
-		},
-		{
-			type: "group",
-			label: t("hr.talentManagement"),
-			children: [
-				{
-					type: "item",
-					label: t("hr.recruitment"),
-					href: "/hrms/recruitment",
-					icon: UserPlus,
-				},
-				{
-					type: "item",
-					label: t("hr.performance"),
-					href: "/hrms/performance",
-					icon: Award,
-				},
-				{
-					type: "item",
-					label: t("hr.training"),
-					href: "/hrms/training",
-					icon: GraduationCap,
-				},
-			],
-		},
-		{
-			type: "group",
-			label: t("hr.employeeRelations"),
-			children: [
-				{
-					type: "item",
-					label: t("hr.grievances"),
-					href: "/hrms/employee-relations",
-					icon: Speech,
-				},
-				{
-					type: "item",
-					label: t("hr.disciplinary"),
-					href: "/hrms/employee-relations/disciplinary",
-					icon: Gavel,
-				},
-				{
-					type: "item",
-					label: t("hr.documents"),
-					href: "/hrms/documents",
-					icon: FileText,
-				},
-			],
-		},
-	];
-}
-
 export const apps: AppInfo[] = [
 	{
 		slug: "erp",
@@ -393,20 +199,6 @@ export const apps: AppInfo[] = [
 		icon: Building2,
 		isActive: true,
 		getRoutes: getErpRoutes,
-	},
-	{
-		slug: "hrms",
-		nameKey: "apps.hr",
-		icon: Users,
-		isActive: true,
-		getRoutes: getHrRoutes,
-	},
-	{
-		slug: "crm",
-		nameKey: "apps.crm",
-		icon: Handshake,
-		isActive: false,
-		getRoutes: getCrmRoutes,
 	},
 ];
 

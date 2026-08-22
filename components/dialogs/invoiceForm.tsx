@@ -143,6 +143,7 @@ export function InvoiceFormDialog({
 	const { data: itemsData, isLoading: itemsLoading } = trpc.items.list.useQuery(
 		{ isSaleable: true },
 	);
+	const { data: categoriesData } = trpc.categories.list.useQuery();
 	const { data: taxRatesData } = trpc.settings.taxRates.list.useQuery();
 	const { data: orgData } = trpc.settings.getOrg.useQuery();
 
@@ -832,6 +833,7 @@ export function InvoiceFormDialog({
 					open={itemPickerOpen}
 					onOpenChange={setItemPickerOpen}
 					items={items}
+					categories={categoriesData}
 					isLoading={itemsLoading}
 					existingItemIds={fields.map((f) => f.itemId || "")}
 					onSelect={handleItemsSelected}

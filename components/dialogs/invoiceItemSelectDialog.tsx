@@ -1,7 +1,7 @@
 "use client";
 
 import { useVirtualizer } from "@tanstack/react-virtual";
-import { Check, Package, SearchIcon } from "lucide-react";
+import { Check, Filter, Package, SearchIcon } from "lucide-react";
 import Image from "next/image";
 import { useTranslations } from "next-intl";
 import * as React from "react";
@@ -21,6 +21,7 @@ export interface InvoiceItemSelectDialogProps {
 	open: boolean;
 	onOpenChange: (open: boolean) => void;
 	items: any[];
+	categories?: any[];
 	isLoading: boolean;
 	existingItemIds: string[];
 	onSelect: (items: any[]) => void;
@@ -30,12 +31,14 @@ export function InvoiceItemSelectDialog({
 	open,
 	onOpenChange,
 	items,
+	categories = [],
 	isLoading,
 	existingItemIds,
 	onSelect,
 }: InvoiceItemSelectDialogProps) {
 	const t = useTranslations();
 	const [search, setSearch] = React.useState("");
+	const [categoryFilter, setCategoryFilter] = React.useState<string | null>(null);
 	const [selected, setSelected] = React.useState<Set<string>>(new Set());
 	const [scrollReady, setScrollReady] = React.useState(false);
 	const scrollRef = React.useRef<HTMLDivElement>(null);
@@ -53,15 +56,21 @@ export function InvoiceItemSelectDialog({
 	);
 
 	const filtered = React.useMemo(() => {
-		if (!search) return items;
-		const q = search.toLowerCase();
-		return items.filter(
-			(item: any) =>
-				item.name?.toLowerCase().includes(q) ||
-				item.sku?.toLowerCase().includes(q) ||
-				item.barcode?.toLowerCase().includes(q),
-		);
-	}, [items, search]);
+		let result = items;
+		if (categoryFilter) {
+			result = result.filter((item: any) => item.category?.id === categoryFilter);
+		}
+		if (search) {
+			const q = search.toLowerCase();
+			result = result.filter(
+				(item: any) =>
+					item.name?.toLowerCase().includes(q) ||
+					item.sku?.toLowerCase().includes(q) ||
+					item.barcode?.toLowerCase().includes(q),
+			);
+		}
+		return result;
+	}, [items, search, categoryFilter]);
 
 	const virtualizer = useVirtualizer({
 		count: filtered.length,
@@ -74,6 +83,7 @@ export function InvoiceItemSelectDialog({
 		if (open) {
 			setSelected(new Set());
 			setSearch("");
+			setCategoryFilter(null);
 			setScrollReady(false);
 		}
 	}, [open]);
@@ -135,6 +145,48 @@ export function InvoiceItemSelectDialog({
 						</button>
 					)}
 				</div>
+
+				{/* Category filter bar */}
+				{categories.length > 0 && (
+					<div className="shrink-0 border-b px-4 py-1.5 sm:px-6">
+						<div className="flex items-center gap-2 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+							<Filter className="size-3.5 text-muted-foreground shrink-0" />
+							<button
+								className={cn(
+									"shrink-0 rounded-full px-3 py-1 text-xs font-medium transition-colors",
+									categoryFilter === null
+										? "bg-primary text-primary-foreground"
+										: "bg-muted text-muted-foreground hover:bg-muted/80",
+								)}
+								onClick={() => setCategoryFilter(null)}
+							>
+								{t("common.all")}
+							</button>
+							{categories.map((cat: any) => (
+								<button
+									key={cat.id}
+									className={cn(
+										"shrink-0 rounded-full px-3 py-1 text-xs font-medium transition-colors whitespace-nowrap flex items-center gap-1.5",
+										categoryFilter === cat.id
+											? "bg-primary text-primary-foreground"
+											: "bg-muted text-muted-foreground hover:bg-muted/80",
+									)}
+									onClick={() =>
+										setCategoryFilter(categoryFilter === cat.id ? null : cat.id)
+									}
+								>
+									{cat.color && (
+										<span
+											className="size-2 rounded-full shrink-0"
+											style={{ backgroundColor: cat.color }}
+										/>
+									)}
+									{cat.name}
+								</button>
+							))}
+						</div>
+					</div>
+				)}
 
 				{/* Virtualized list */}
 				<div ref={setScrollRef} className="flex-1 overflow-y-auto min-h-0">
