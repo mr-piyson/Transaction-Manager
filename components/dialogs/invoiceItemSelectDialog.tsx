@@ -2,7 +2,6 @@
 
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { Check, Filter, Package, SearchIcon } from "lucide-react";
-import Image from "next/image";
 import { useTranslations } from "next-intl";
 import * as React from "react";
 import { Badge } from "@/components/ui/badge";
@@ -38,8 +37,13 @@ export function InvoiceItemSelectDialog({
 }: InvoiceItemSelectDialogProps) {
 	const t = useTranslations();
 	const [search, setSearch] = React.useState("");
-	const [categoryFilter, setCategoryFilter] = React.useState<string | null>(null);
+	const [categoryFilter, setCategoryFilter] = React.useState<string | null>(
+		null,
+	);
 	const [selected, setSelected] = React.useState<Set<string>>(new Set());
+	const [brokenImages, setBrokenImages] = React.useState<Set<string>>(
+		new Set(),
+	);
 	const [scrollReady, setScrollReady] = React.useState(false);
 	const scrollRef = React.useRef<HTMLDivElement>(null);
 
@@ -58,7 +62,9 @@ export function InvoiceItemSelectDialog({
 	const filtered = React.useMemo(() => {
 		let result = items;
 		if (categoryFilter) {
-			result = result.filter((item: any) => item.category?.id === categoryFilter);
+			result = result.filter(
+				(item: any) => item.category?.id === categoryFilter,
+			);
 		}
 		if (search) {
 			const q = search.toLowerCase();
@@ -84,6 +90,7 @@ export function InvoiceItemSelectDialog({
 			setSelected(new Set());
 			setSearch("");
 			setCategoryFilter(null);
+			setBrokenImages(new Set());
 			setScrollReady(false);
 		}
 	}, [open]);
@@ -258,13 +265,20 @@ export function InvoiceItemSelectDialog({
 
 										{/* Image preview */}
 										<div className="size-8 shrink-0 overflow-hidden rounded-md border bg-muted sm:size-10">
-											{item.image ? (
-												<Image
+											{item.image && !brokenImages.has(item.id) ? (
+												// biome-ignore lint/performance/noImgElement: item images can be SVG/data URIs/external hosts that next/image cannot optimize; matches ItemListItem rendering
+												<img
 													src={item.image}
 													alt={item.name}
-													width={80}
-													height={80}
 													className="size-full object-cover"
+													onError={() =>
+														setBrokenImages((prev) => {
+															if (prev.has(item.id)) return prev;
+															const next = new Set(prev);
+															next.add(item.id);
+															return next;
+														})
+													}
 												/>
 											) : (
 												<div className="flex size-full items-center justify-center">
