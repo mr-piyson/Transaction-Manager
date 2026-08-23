@@ -91,6 +91,7 @@ export default function ItemsLayout({
 	const { data, isPending } = trpc.items.list.useQuery({
 		type: (typeFilter || undefined) as "PRODUCT" | "SERVICE" | undefined,
 		categoryId: categoryFilter ?? undefined,
+		withStock: true,
 	});
 	const router = useRouter();
 	const pathname = usePathname();

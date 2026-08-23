@@ -23,16 +23,47 @@ const TYPE_STYLES: Record<
 	},
 };
 
+const STOCK_STYLES = {
+	OUT_OF_STOCK: {
+		label: "Out of stock",
+		className: "bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-200",
+	},
+	BELOW_MINIMUM: {
+		label: "Below minimum",
+		className: "bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-200",
+	},
+	REORDER_SOON: {
+		label: "Reorder soon",
+		className:
+			"bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-200",
+	},
+	IN_STOCK: {
+		label: "In stock",
+		className:
+			"bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-200",
+	},
+} as const;
+
 export function ItemListItem({ data, className, ...props }: ItemListItemProps) {
-	const { name, sku, type, image } = data || {};
+	const { name, sku, type, image, totalStock, minStock, reorderPoint, unit } =
+		data || {};
 	const [imgError, setImgError] = useState(false);
 	const style = TYPE_STYLES[type as string] ?? TYPE_STYLES.PRODUCT;
 	const Icon = style.icon;
+	const stock = Number(totalStock ?? 0);
+	const stockStatus =
+		stock <= 0
+			? STOCK_STYLES.OUT_OF_STOCK
+			: stock <= Number(minStock ?? 0)
+				? STOCK_STYLES.BELOW_MINIMUM
+				: stock <= Number(reorderPoint ?? 0)
+					? STOCK_STYLES.REORDER_SOON
+					: STOCK_STYLES.IN_STOCK;
 
 	return (
 		<div
 			className={cn(
-				"grid grid-cols-[auto_minmax(0,1fr)] items-start gap-3 p-3",
+				"grid grid-cols-[auto_minmax(0,1fr)] items-center gap-3 p-1",
 				className,
 			)}
 			{...props}
@@ -55,15 +86,24 @@ export function ItemListItem({ data, className, ...props }: ItemListItemProps) {
 				)}
 			</div>
 			<div className="min-w-0">
-				<div className="flex items-center justify-between gap-2">
-					<p className="font-semibold truncate">{name}</p>
-					<Badge variant="outline" className="text-xs">
+				<div className="flex min-w-0 items-center gap-2">
+					<p className="min-w-0 flex-1 truncate font-semibold">{name}</p>
+					<Badge variant="outline" className={cn("text-xs", style.fg)}>
 						<Icon className={cn("size-5", style.fg)} />
-
 						{type}
 					</Badge>
 				</div>
-				<p className="text-sm text-muted-foreground truncate">{sku ?? "—"}</p>
+				<div className="flex min-w-0 items-center gap-2">
+					<p className="min-w-0 flex-1 truncate text-sm text-muted-foreground">
+						{sku ?? "—"}
+					</p>
+					<Badge
+						variant="outline"
+						className={cn("text-xs", stockStatus.className)}
+					>
+						{stockStatus.label}: {stock} {unit ?? ""}
+					</Badge>
+				</div>
 			</div>
 		</div>
 	);
