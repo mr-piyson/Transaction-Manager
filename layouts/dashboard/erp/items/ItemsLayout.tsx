@@ -11,10 +11,12 @@ import {
 	Edit,
 	Eye,
 	Filter,
-	MoreHorizontal,
 	Package,
+	Plus,
+	Search,
 	ShieldAlert,
 	Trash2,
+	X,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -26,6 +28,11 @@ import { alert } from "@/components/Alert-dialog";
 import { useUnifiedItemForm } from "@/components/dialogs";
 import { useHardDeleteForm } from "@/components/dialogs/hardDeleteForm";
 import { ItemDetailsSheet } from "@/components/items/item-details-sheet";
+import {
+	DEFAULT_ITEM_FILTERS,
+	ItemFilterSheet,
+	type ItemFilterValues,
+} from "@/components/items/item-filter-sheet";
 import { ItemListItem } from "@/components/items/item-list-item";
 import { Header } from "@/components/layout/App-Header";
 import { Badge } from "@/components/ui/badge";
@@ -38,14 +45,10 @@ import {
 	ContextMenuTrigger,
 } from "@/components/ui/context-menu";
 import {
-	DropdownMenu,
-	DropdownMenuContent,
-	DropdownMenuItem,
-	DropdownMenuSeparator,
-	DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useTableTheme } from "@/hooks/use-table-theme";
+	InputGroup,
+	InputGroupAddon,
+	InputGroupInput,
+} from "@/components/ui/input-group";
 import { trpc } from "@/lib/trpc/client";
 import { cn } from "@/lib/utils";
 
@@ -59,26 +62,28 @@ export default function ItemsLayout({
 	children?: React.ReactNode;
 }) {
 	const t = useTranslations();
-	const tableTheme = useTableTheme();
 	const { openCreate, openEdit } = useUnifiedItemForm();
 	const { openDialog: openHardDelete } = useHardDeleteForm();
 	const { data: me } = trpc.auth.me.useQuery();
 	const isSuperAdmin = me?.platformRole === "SUPER_ADMIN";
 
-	const TYPE_FILTERS = [
-		{ value: "", label: t("common.all") },
-		{ value: "PRODUCT", label: t("items.types.PRODUCT") },
-		{ value: "SERVICE", label: t("items.types.SERVICE") },
-	];
-
-	const [typeFilter, setTypeFilter] = useState("");
-	const [categoryFilter, setCategoryFilter] = useState<string | null>(null);
+	const [itemFilters, setItemFilters] =
+		useState<ItemFilterValues>(DEFAULT_ITEM_FILTERS);
+	const [isFilterOpen, setIsFilterOpen] = useState(false);
 	const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
+	const [searchQuery, setSearchQuery] = useState("");
 
 	const { data: categoryList } = trpc.categories.list.useQuery();
 	const { data, isPending } = trpc.items.list.useQuery({
-		type: (typeFilter || undefined) as "PRODUCT" | "SERVICE" | undefined,
-		categoryId: categoryFilter ?? undefined,
+		search: searchQuery.trim() || undefined,
+		type: itemFilters.type || undefined,
+		categoryId: itemFilters.categoryId ?? undefined,
+		isActive:
+			itemFilters.isActive === "all"
+				? undefined
+				: itemFilters.isActive === "active",
+		isSaleable: itemFilters.isSaleable ? true : undefined,
+		lowStock: itemFilters.lowStock ? true : undefined,
 		withStock: true,
 	});
 	const pathname = usePathname();
@@ -95,6 +100,13 @@ export default function ItemsLayout({
 	});
 
 	const items = data ?? [];
+	const activeFilterCount = [
+		itemFilters.type,
+		itemFilters.categoryId,
+		itemFilters.isActive !== "all" ? itemFilters.isActive : null,
+		itemFilters.isSaleable,
+		itemFilters.lowStock,
+	].filter(Boolean).length;
 
 	const listColumnDefs = useMemo<ColDef[]>(
 		() => [
@@ -188,37 +200,50 @@ export default function ItemsLayout({
 
 	return (
 		<div className="flex h-screen flex-col overflow-hidden">
-			<Header
-				title={t("layout.items")}
-				icon={<Package className="size-5" />}
-				actions={[
-					{
-						label: t("items.createItem"),
-						onClick: () => openCreate(),
-					},
-				]}
-			/>
+			<Header title={t("layout.items")} icon={<Package className="size-5" />} />
 			<div className="flex-1 min-h-0 w-full">
 				{isListRoute ? (
 					<div className="h-full w-full flex flex-col">
-						<div className="flex w-full min-w-0 flex-row flex-wrap items-center justify-between gap-2 border-b px-4 py-2 shrink-0">
-							{/* Start Actions */}
-							<div className="flex min-w-0 items-center gap-2 ">
-								<Tabs value={typeFilter} onValueChange={setTypeFilter}>
-									<TabsList className="h-auto  justify-start">
-										{TYPE_FILTERS.map((filter) => (
-											<TabsTrigger
-												key={filter.value}
-												value={filter.value}
-												className="text-xs px-3 py-1"
+						<div className="flex w-full min-w-0 flex-nowrap items-center gap-2 overflow-x-auto border-b px-4 py-2 shrink-0">
+							<div className="flex min-w-max flex-1 flex-nowrap items-center gap-2">
+								<Button size="sm" onClick={() => openCreate()}>
+									<Plus className="size-3.5" />
+									<span className="hidden sm:inline">
+										{t("items.createItem")}
+									</span>
+								</Button>
+								<InputGroup className="w-52 shrink-0 sm:w-64">
+									<InputGroupAddon align="inline-start">
+										<Search className="size-3.5" />
+									</InputGroupAddon>
+									<InputGroupInput
+										placeholder="Search items..."
+										value={searchQuery}
+										onChange={(event) => setSearchQuery(event.target.value)}
+									/>
+									{searchQuery && (
+										<InputGroupAddon align="inline-end">
+											<button
+												type="button"
+												aria-label="Clear search"
+												onClick={() => setSearchQuery("")}
+												className="flex size-5 items-center justify-center rounded hover:bg-muted"
 											>
-												{filter.label}
-											</TabsTrigger>
-										))}
-									</TabsList>
-								</Tabs>
+												<X className="size-3 text-muted-foreground" />
+											</button>
+										</InputGroupAddon>
+									)}
+								</InputGroup>
+								<Button
+									variant={activeFilterCount > 0 ? "secondary" : "outline"}
+									size="sm"
+									onClick={() => setIsFilterOpen(true)}
+								>
+									<Filter className="size-3.5" />
+									<span className="hidden sm:inline">Filters</span>
+									{activeFilterCount > 0 && <Badge>{activeFilterCount}</Badge>}
+								</Button>
 							</div>
-							{/* End Actions */}
 							<div className="ml-auto flex shrink-0 items-center gap-2">
 								<Link href="/erp/items/import">
 									<Button variant="outline" size="sm">
@@ -235,11 +260,16 @@ export default function ItemsLayout({
 								<button
 									className={cn(
 										"shrink-0 rounded-full px-3 py-1 text-xs font-medium transition-colors",
-										categoryFilter === null
+										itemFilters.categoryId === null
 											? "bg-primary text-primary-foreground"
 											: "bg-muted text-muted-foreground hover:bg-muted/80",
 									)}
-									onClick={() => setCategoryFilter(null)}
+									onClick={() =>
+										setItemFilters((current) => ({
+											...current,
+											categoryId: null,
+										}))
+									}
 								>
 									{t("common.all")}
 								</button>
@@ -248,14 +278,16 @@ export default function ItemsLayout({
 										key={cat.id}
 										className={cn(
 											"shrink-0 rounded-full px-3 py-1 text-xs font-medium transition-colors whitespace-nowrap flex items-center gap-1.5",
-											categoryFilter === cat.id
+											itemFilters.categoryId === cat.id
 												? "bg-primary text-primary-foreground"
 												: "bg-muted text-muted-foreground hover:bg-muted/80",
 										)}
 										onClick={() =>
-											setCategoryFilter(
-												categoryFilter === cat.id ? null : cat.id,
-											)
+											setItemFilters((current) => ({
+												...current,
+												categoryId:
+													current.categoryId === cat.id ? null : cat.id,
+											}))
 										}
 									>
 										{cat.color && (
@@ -292,6 +324,13 @@ export default function ItemsLayout({
 				onOpenChange={(open) => {
 					if (!open) setSelectedItemId(null);
 				}}
+			/>
+			<ItemFilterSheet
+				open={isFilterOpen}
+				filters={itemFilters}
+				categories={categoryList ?? []}
+				onOpenChange={setIsFilterOpen}
+				onApply={setItemFilters}
 			/>
 		</div>
 	);
