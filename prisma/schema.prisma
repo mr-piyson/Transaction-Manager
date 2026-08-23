@@ -116,6 +116,7 @@ enum InvoiceStatus {
   PENDING_APPROVAL // Awaiting internal sign-off before issue
   APPROVED // Approved, not yet sent
   SENT
+  INVOICED // Quote converted to an invoice
   PARTIAL
   PAID
   OVERDUE

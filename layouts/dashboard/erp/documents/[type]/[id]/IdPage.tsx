@@ -87,6 +87,8 @@ const STATUS_COLORS: Record<string, string> = {
 		"bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200",
 	APPROVED: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200",
 	SENT: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200",
+	INVOICED:
+		"bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-200",
 	PARTIAL: "bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200",
 	PAID: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200",
 	OVERDUE: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200",
@@ -121,29 +123,6 @@ export default function DocumentDetailPage({
 		error,
 		refetch,
 	} = trpc.invoices.byId.useQuery({ id: params.id }, { enabled: !!params.id });
-
-	const productItemIds = React.useMemo(() => {
-		if (!invoice) return [];
-		return invoice.lines
-			.filter((l: any) => l.item?.type === "PRODUCT")
-			.map((l: any) => l.itemId)
-			.filter(Boolean);
-	}, [invoice]);
-
-	const { data: stockData } = trpc.stock.forItems.useQuery(
-		{ itemIds: productItemIds, warehouseId: invoice?.warehouseId ?? "" },
-		{ enabled: productItemIds.length > 0 && !!invoice?.warehouseId },
-	);
-
-	const stockMap = React.useMemo(() => {
-		const map = new Map<string, number>();
-		if (stockData) {
-			for (const s of stockData) {
-				map.set(s.itemId, Number(s.quantity));
-			}
-		}
-		return map;
-	}, [stockData]);
 
 	const [sendOpen, setSendOpen] = React.useState(false);
 	const [cancelOpen, setCancelOpen] = React.useState(false);
@@ -826,9 +805,6 @@ export default function DocumentDetailPage({
 											{t("invoices.qty")}
 										</TableHead>
 										<TableHead className="text-right">
-											{t("invoices.stock")}
-										</TableHead>
-										<TableHead className="text-right">
 											{t("invoices.unitPrice")}
 										</TableHead>
 										<TableHead className="text-right">
@@ -865,25 +841,6 @@ export default function DocumentDetailPage({
 											</TableCell>
 											<TableCell className="text-right tabular-nums">
 												{Number(line.quantity).toFixed(3)}
-											</TableCell>
-											<TableCell className="text-right tabular-nums">
-												{line.item?.type === "PRODUCT" &&
-												invoice.warehouseId ? (
-													<span
-														className={
-															(stockMap.get(line.itemId) ?? 0) <
-															Number(line.quantity)
-																? "text-destructive font-medium"
-																: ""
-														}
-													>
-														{stockMap.has(line.itemId)
-															? Number(stockMap.get(line.itemId)).toFixed(3)
-															: "…"}
-													</span>
-												) : (
-													"—"
-												)}
 											</TableCell>
 											<TableCell className="text-right tabular-nums">
 												{Number(line.unitPrice).toFixed(3)}
@@ -1151,9 +1108,6 @@ export default function DocumentDetailPage({
 						</DialogTitle>
 						<DialogDescription>
 							{t("invoices.cancelDialogDesc", { serial: invoice.serial })}
-							{invoiceType === "INVOICE" &&
-								["SENT", "PARTIAL", "OVERDUE"].includes(status) &&
-								` ${t("invoices.stockReturned")}`}
 						</DialogDescription>
 					</DialogHeader>
 					<div className="space-y-3">

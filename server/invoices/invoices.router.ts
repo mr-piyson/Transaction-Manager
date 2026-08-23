@@ -1433,6 +1433,15 @@ export const invoicesRouter = router({
 					},
 				});
 
+				await tx.invoice.update({
+					where: { id: quote.id },
+					data: {
+						status: "INVOICED",
+						updatedById: ctx.user.id,
+						version: { increment: 1 },
+					},
+				});
+
 				await createNotification(tx, notifConverted?.value === "true", {
 					title: "Quote Converted",
 					body: `Quote ${quote.serial} has been converted to invoice ${serial}.`,
@@ -1449,6 +1458,19 @@ export const invoicesRouter = router({
 						entityId: created.id,
 						action: "CREATE",
 						diff: { convertedFrom: { before: null, after: input.quoteId } },
+						organizationId: orgId,
+						userId: ctx.user.id,
+						ipAddress: ctx.ipAddress,
+					},
+					tx,
+				);
+
+				await writeAuditLog(
+					{
+						entityType: "Invoice",
+						entityId: quote.id,
+						action: "STATUS_CHANGE",
+						diff: { status: { before: quote.status, after: "INVOICED" } },
 						organizationId: orgId,
 						userId: ctx.user.id,
 						ipAddress: ctx.ipAddress,

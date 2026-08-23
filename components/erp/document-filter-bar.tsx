@@ -29,6 +29,7 @@ const STATUS_FILTERS = [
 	{ value: "DRAFT", labelKey: "invoices.draft" as const },
 	{ value: "SENT", labelKey: "invoices.sent" as const },
 	{ value: "APPROVED", labelKey: "invoices.approved" as const },
+	{ value: "INVOICED", labelKey: "invoices.invoiced" as const },
 	{ value: "CANCELLED", labelKey: "invoices.cancelled" as const },
 ];
 
