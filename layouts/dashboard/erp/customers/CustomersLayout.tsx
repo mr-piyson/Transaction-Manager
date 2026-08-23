@@ -156,8 +156,6 @@ export default function CustomersLayout({
 			<Header
 				title={t("layout.customers")}
 				icon={<Users className="size-5" />}
-				onCreate={() => openCreate()}
-				createLabel={t("customers.createCustomer")}
 			/>
 			<div className="flex-1 min-h-0 w-full">
 				<ResizablePanelGroup className="h-full">

@@ -165,8 +165,6 @@ export default function SuppliersLayout({
 			<Header
 				title={t("layout.suppliers")}
 				icon={<Truck className="size-5" />}
-				onCreate={() => openCreate()}
-				createLabel={t("suppliers.createSupplier")}
 			/>
 			<div className="flex-1 min-h-0 w-full">
 				<ResizablePanelGroup className="h-full">

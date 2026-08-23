@@ -132,8 +132,6 @@ export default function ContractsLayout({
 				title={t("contracts.title")}
 				rightContent={<NotificationBell />}
 				icon={<Handshake className="size-5" />}
-				onCreate={() => openCreate()}
-				createLabel={t("contracts.createContract")}
 			/>
 			<div className="flex-1 min-h-0 w-full">
 				<ResizablePanelGroup className="h-full">

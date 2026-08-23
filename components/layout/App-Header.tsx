@@ -34,8 +34,6 @@ interface HeaderProps {
 	description?: string;
 	actions?: PageAction[];
 	rightContent?: ReactNode;
-	onCreate?: () => void;
-	createLabel?: string;
 	children?: ReactNode;
 }
 
@@ -50,8 +48,6 @@ export function Header({
 	description,
 	actions,
 	rightContent,
-	onCreate,
-	createLabel,
 	children,
 }: HeaderProps) {
 	const _t = useTranslations();

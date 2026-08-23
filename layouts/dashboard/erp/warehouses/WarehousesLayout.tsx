@@ -100,8 +100,6 @@ export default function WarehousesLayout({
 			<Header
 				title={t("warehouses.title")}
 				icon={<Warehouse className="size-5" />}
-				onCreate={() => openCreate()}
-				createLabel={t("warehouses.createWarehouse")}
 			/>
 			<div className="flex-1 min-h-0 w-full">
 				<ResizablePanelGroup className="h-full">
