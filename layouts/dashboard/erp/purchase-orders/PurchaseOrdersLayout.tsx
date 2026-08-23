@@ -22,6 +22,7 @@ import { useHardDeleteForm } from "@/components/dialogs/hardDeleteForm";
 import { Header } from "@/components/layout/App-Header";
 import { ListView } from "@/components/list-view";
 import { POListItem } from "@/components/purchase-orders/po-list-item";
+import { Button } from "@/components/ui/button";
 import {
 	ResizableHandle,
 	ResizablePanel,
@@ -266,6 +267,11 @@ export default function POLayout({ children }: { children?: React.ReactNode }) {
 													},
 												],
 											}}
+											toolbarStart={
+												<Button size="sm" onClick={() => openCreate()}>
+													{t("common.new")}
+												</Button>
+											}
 											rowHeight={73}
 											emptyTitle={t("purchaseOrders.noPOs")}
 											emptyDescription={t("purchaseOrders.createPO")}

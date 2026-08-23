@@ -167,6 +167,11 @@ export default function ContractsLayout({
 										isLoading={isPending}
 										className="h-full"
 										search={{ fields: ["serial", "title"] }}
+										toolbarStart={
+											<Button size="sm" onClick={() => openCreate()}>
+												{t("common.new")}
+											</Button>
+										}
 										rowHeight={80}
 										emptyTitle={t("contracts.noContracts")}
 										emptyDescription={t("contracts.createContract")}

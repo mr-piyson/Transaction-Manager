@@ -11,6 +11,7 @@ import { useWarehouseForm } from "@/components/dialogs";
 import { useHardDeleteForm } from "@/components/dialogs/hardDeleteForm";
 import { Header } from "@/components/layout/App-Header";
 import { ListView } from "@/components/list-view";
+import { Button } from "@/components/ui/button";
 import {
 	ResizableHandle,
 	ResizablePanel,
@@ -120,6 +121,11 @@ export default function WarehousesLayout({
 										isLoading={isPending}
 										className="h-full"
 										search={{ fields: ["name", "code"] }}
+										toolbarStart={
+											<Button size="sm" onClick={() => openCreate()}>
+												{t("common.new")}
+											</Button>
+										}
 										rowHeight={73}
 										emptyTitle={t("warehouses.noWarehouses")}
 										emptyDescription={t("warehouses.createWarehouse")}

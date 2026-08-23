@@ -14,6 +14,7 @@ import { useHardDeleteForm } from "@/components/dialogs/hardDeleteForm";
 import { Header } from "@/components/layout/App-Header";
 import { ListView } from "@/components/list-view";
 import { SupplierListItem } from "@/components/suppliers/supplier-list-item";
+import { Button } from "@/components/ui/button";
 import {
 	ResizableHandle,
 	ResizablePanel,
@@ -185,6 +186,11 @@ export default function SuppliersLayout({
 										isLoading={isPending}
 										className="h-full"
 										search={{ fields: ["name", "email", "phone", "code"] }}
+										toolbarStart={
+											<Button size="sm" onClick={() => openCreate()}>
+												{t("common.new")}
+											</Button>
+										}
 										rowHeight={73}
 										emptyTitle={t("suppliers.noSuppliers")}
 										emptyDescription={t("suppliers.createSupplier")}
