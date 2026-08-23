@@ -96,11 +96,15 @@ const STATUS_COLORS: Record<string, string> = {
 	DELETED: "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200",
 };
 
-export default function DocumentDetailPage() {
+export default function DocumentDetailPage({
+	documentType,
+}: {
+	documentType: "invoices" | "quotations";
+}) {
 	const t = useTranslations();
 	const router = useRouter();
-	const params = useParams<{ type: string; id: string }>();
-	const type = params.type;
+	const params = useParams<{ id: string }>();
+	const type = documentType;
 	const isInvoice = type === "invoices";
 	const { openEdit, openCreate } = useInvoiceForm();
 	const { openCreate: openPayment } = usePaymentForm();

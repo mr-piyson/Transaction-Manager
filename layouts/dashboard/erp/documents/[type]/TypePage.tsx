@@ -1,7 +1,6 @@
 "use client";
 
 import { FileText, Receipt } from "lucide-react";
-import { useParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useInvoiceForm } from "@/components/dialogs";
 import { Button } from "@/components/ui/button";
@@ -11,10 +10,13 @@ const TRPC_TYPE: Record<string, "INVOICE" | "QUOTE"> = {
 	quotations: "QUOTE",
 };
 
-export default function DocumentsPage() {
+export default function DocumentsPage({
+	documentType,
+}: {
+	documentType: "invoices" | "quotations";
+}) {
 	const t = useTranslations();
-	const params = useParams<{ type: string }>();
-	const type = params.type;
+	const type = documentType;
 	const { openCreate } = useInvoiceForm();
 
 	const Icon = type === "invoices" ? Receipt : FileText;

@@ -12,11 +12,10 @@ import {
 	User2,
 } from "lucide-react";
 import Link from "next/link";
-import { useParams, usePathname, useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { parseAsString, useQueryState } from "nuqs";
 import { useCallback } from "react";
-import { Separator } from "react-resizable-panels";
 import { toast } from "sonner";
 import { alert } from "@/components/Alert-dialog";
 import type { ContextMenuItemSchema } from "@/components/context-menu";
@@ -55,13 +54,14 @@ const DOCUMENT_CONFIG: Record<
 
 export default function DocumentsLayout({
 	children,
+	documentType,
 }: {
 	children?: React.ReactNode;
+	documentType: "invoices" | "quotations";
 }) {
 	const t = useTranslations();
-	const params = useParams<{ type: string }>();
-	const type = params.type;
-	const config = DOCUMENT_CONFIG[type] ?? DOCUMENT_CONFIG.invoices;
+	const type = documentType;
+	const config = DOCUMENT_CONFIG[type];
 	const { openCreate } = useInvoiceForm();
 	const { openDialog: openHardDelete } = useHardDeleteForm();
 	const { data: me } = trpc.auth.me.useQuery();

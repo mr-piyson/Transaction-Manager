@@ -253,12 +253,16 @@ function PaymentsTable({
 // Page
 // ---------------------------------------------------------------------------
 
-export default function DocumentPrintPage() {
-	const params = useParams<{ type: string; id: string }>();
+export default function DocumentPrintPage({
+	documentType,
+}: {
+	documentType: "invoices" | "quotations";
+}) {
+	const params = useParams<{ id: string }>();
 	const router = useRouter();
 	const t = useTranslations();
 	const { formatDate } = useDateFormat();
-	const type = params.type;
+	const type = documentType;
 
 	const {
 		data: invoice,
