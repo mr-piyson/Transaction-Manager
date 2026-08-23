@@ -7,7 +7,6 @@ import {
 } from "ag-grid-community";
 import { AgGridReact } from "ag-grid-react";
 import {
-	BarChart3,
 	Download,
 	Edit,
 	Eye,
@@ -221,14 +220,6 @@ export default function ItemsLayout({
 							</div>
 							{/* End Actions */}
 							<div className="ml-auto flex shrink-0 items-center gap-2">
-								<Link href="/erp/reports/items">
-									<Button variant="outline" size="sm">
-										<BarChart3 className="size-3.5" />
-										<span className="hidden md:block">
-											{t("layout.reports")}
-										</span>
-									</Button>
-								</Link>
 								<Link href="/erp/items/import">
 									<Button variant="outline" size="sm">
 										<Download className="size-3.5" />

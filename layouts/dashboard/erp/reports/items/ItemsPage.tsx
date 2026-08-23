@@ -25,11 +25,11 @@ import {
 	X,
 	XCircle,
 } from "lucide-react";
-import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useCallback, useMemo, useRef, useState } from "react";
 import { Bar, BarChart, Cell, Pie, PieChart, XAxis, YAxis } from "recharts";
 import { toast } from "sonner";
+import { useUnifiedItemForm } from "@/components/dialogs";
 import { Header } from "@/components/layout/App-Header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -420,9 +420,9 @@ function exportCsv(api: GridApi, fileName: string) {
 
 export default function ItemReportPage() {
 	const t = useTranslations();
-	const _router = useRouter();
 	const { format } = useCurrency();
 	const tableTheme = useTableTheme();
+	const { openCreate } = useUnifiedItemForm();
 
 	const { data: rawItems, isLoading } = trpc.items.report.useQuery();
 
@@ -944,6 +944,13 @@ export default function ItemReportPage() {
 			<Header
 				title={t("reports.inventoryReport")}
 				subtitle={`${kpis.total} items`}
+				actions={[
+					{
+						label: t("items.createItem"),
+						onClick: () =>
+							openCreate({ onSuccess: () => utils.items.report.invalidate() }),
+					},
+				]}
 			/>
 
 			<main className="flex-1 overflow-y-auto">
