@@ -12,6 +12,7 @@ import { useParams, useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { alert } from "@/components/Alert-dialog";
+import { DetailPageHeader } from "@/components/detail-page-header";
 import { useCustomerForm } from "@/components/dialogs";
 import { useHardDeleteForm } from "@/components/dialogs/hardDeleteForm";
 import { Badge } from "@/components/ui/badge";
@@ -149,28 +150,22 @@ export default function CustomerDetailPage() {
 
 	return (
 		<div className="flex flex-col h-screen">
-			<header className="flex h-14 items-center gap-2 px-2 border-b bg-background/95 backdrop-blur-md sticky top-0 z-50 shrink-0">
-				<Button
-					variant="ghost"
-					size="icon"
-					onClick={() => router.push("/erp/customers")}
-				>
-					<ArrowLeft className="size-5" />
-				</Button>
-				<span className="text-muted-foreground">|</span>
-				<div className="flex items-center gap-2 flex-1 min-w-0">
-					<Users className="size-5 text-muted-foreground shrink-0" />
-					<h1 className="text-xl font-semibold truncate">{customer.name}</h1>
-					{!customer.isActive && (
+			<DetailPageHeader
+				title={customer.name}
+				icon={Users}
+				onBack={() => router.push("/erp/customers")}
+				backLabel={t("common.back")}
+				badges={
+					!customer.isActive && (
 						<Badge
 							variant="outline"
 							className="bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200"
 						>
 							{t("common.inactive")}
 						</Badge>
-					)}
-				</div>
-				<div className="flex items-center gap-2">
+					)
+				}
+				actions={
 					<DropdownMenu>
 						<DropdownMenuTrigger asChild>
 							<Button variant="ghost" size="icon">
@@ -204,8 +199,8 @@ export default function CustomerDetailPage() {
 							)}
 						</DropdownMenuContent>
 					</DropdownMenu>
-				</div>
-			</header>
+				}
+			/>
 
 			<div className="flex-1 overflow-y-auto p-4 space-y-4">
 				{/* Info cards */}

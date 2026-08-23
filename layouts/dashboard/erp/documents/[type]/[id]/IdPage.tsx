@@ -24,6 +24,7 @@ import { useParams, useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import * as React from "react";
 import { toast } from "sonner";
+import { DetailPageHeader } from "@/components/detail-page-header";
 import { useHardDeleteForm } from "@/components/dialogs/hardDeleteForm";
 import { useInvoiceForm } from "@/components/dialogs/invoiceForm";
 import { usePaymentForm } from "@/components/dialogs/paymentForm";
@@ -72,7 +73,6 @@ import {
 } from "@/components/ui/table";
 import { Textarea } from "@/components/ui/textarea";
 import { useDateFormat } from "@/hooks/use-date-format";
-import { useIsMobile } from "@/hooks/use-mobile";
 import { trpc } from "@/lib/trpc/client";
 
 const STATUS_COLORS: Record<string, string> = {
@@ -147,7 +147,6 @@ export default function DocumentDetailPage() {
 		description: string;
 	}>({ open: false, action: "", title: "", description: "" });
 	const [historyOpen, setHistoryOpen] = React.useState(false);
-	const _isMobile = useIsMobile();
 
 	function invalidate() {
 		utils.invoices.byId.invalidate({ id: params.id });
@@ -644,170 +643,159 @@ export default function DocumentDetailPage() {
 		}
 	};
 
-	const _totalQty = invoice.lines?.reduce(
-		(sum: number, l: any) => sum + Number(l.quantity),
-		0,
-	);
-
 	return (
-		<div className="h-full overflow-y-auto p-6 space-y-6">
-			{/* Header */}
-			<div className="flex items-start justify-between gap-4">
-				<div className="flex items-center gap-4">
-					<div className="size-12 rounded-lg bg-muted flex items-center justify-center">
-						{isInvoice ? (
-							<Receipt className="size-6 text-muted-foreground" />
-						) : (
-							<FileText className="size-6 text-muted-foreground" />
-						)}
-					</div>
-					<div>
-						<div className="flex items-center gap-3">
-							<h1 className="text-2xl font-bold">{invoice.serial}</h1>
+		<div className="h-full overflow-y-auto ">
+			<div className="">
+				<DetailPageHeader
+					title={invoice.serial}
+					icon={isInvoice ? Receipt : FileText}
+					onBack={() => router.push(`/erp/documents/${type}`)}
+					backLabel={t("common.back")}
+					badges={
+						<>
 							<Badge className={STATUS_COLORS[invoice.status] ?? ""}>
 								{invoice.status}
 							</Badge>
 							{invoice.paymentStatus && isInvoice && (
 								<Badge variant="outline">{invoice.paymentStatus}</Badge>
 							)}
-						</div>
-						<p className="text-muted-foreground mt-1">
-							{invoice.customer?.name ?? "—"} ·{" "}
-							{invoice.date ? formatDate(invoice.date) : "—"}
-						</p>
-					</div>
-				</div>
-				<div className="flex items-center gap-2">
-					<Button
-						variant="outline"
-						size="sm"
-						onClick={() => router.push(`/erp/documents/${type}`)}
-					>
-						<ArrowLeft className="size-4 mr-1" /> {t("common.back")}
-					</Button>
-					<Button
-						variant="outline"
-						size="sm"
-						className="md:hidden"
-						onClick={() => setHistoryOpen(true)}
-					>
-						<History className="size-4 mr-1" /> {t("invoices.history")}
-					</Button>
-					{showActions && (
+						</>
+					}
+					actions={
 						<>
 							<Button
-								variant="outline"
-								size="sm"
-								onClick={() =>
-									router.push(`/erp/documents/${type}/${invoice.id}/print`)
-								}
+								variant="ghost"
+								size="icon"
+								aria-label={t("invoices.history")}
+								onClick={() => setHistoryOpen(true)}
 							>
-								<Printer className="size-4 mr-1" /> {t("invoices.printPdf")}
+								<History className="size-4" />
 							</Button>
-							<DropdownMenu>
-								<DropdownMenuTrigger asChild>
-									<Button variant="outline" size="sm">
-										<MoreHorizontal className="size-4" />
+							{showActions && (
+								<>
+									<Button
+										variant="ghost"
+										size="icon"
+										aria-label={t("invoices.printPdf")}
+										onClick={() =>
+											router.push(`/erp/documents/${type}/${invoice.id}/print`)
+										}
+									>
+										<Printer className="size-4" />
 									</Button>
-								</DropdownMenuTrigger>
-								<DropdownMenuContent align="end">
-									{actions.map((a) => (
-										<DropdownMenuItem
-											key={a.key}
-											onClick={() => handleActionClick(a)}
-											disabled={isPending}
-										>
-											<a.icon className="size-4 mr-2" />
-											{a.label}
-										</DropdownMenuItem>
-									))}
-								</DropdownMenuContent>
-							</DropdownMenu>
+									<DropdownMenu>
+										<DropdownMenuTrigger asChild>
+											<Button
+												variant="ghost"
+												size="icon"
+												aria-label={t("common.actions")}
+											>
+												<MoreHorizontal className="size-4" />
+											</Button>
+										</DropdownMenuTrigger>
+										<DropdownMenuContent align="end">
+											{actions.map((a) => (
+												<DropdownMenuItem
+													key={a.key}
+													onClick={() => handleActionClick(a)}
+													disabled={isPending}
+												>
+													<a.icon className="mr-2 size-4" />
+													{a.label}
+												</DropdownMenuItem>
+											))}
+										</DropdownMenuContent>
+									</DropdownMenu>
+								</>
+							)}
 						</>
-					)}
-				</div>
-			</div>
+					}
+				/>
 
-			<Separator />
-
-			{/* Main content + History panel */}
-			<div className="flex gap-6">
-				<div className="flex-1 min-w-0 space-y-6">
-					{/* Info Grid */}
-					<div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-						<div>
-							<p className="text-sm text-muted-foreground">
-								{t("invoices.issueDate")}
-							</p>
-							<p className="font-medium">
-								{invoice.date ? formatDate(invoice.date) : "—"}
-							</p>
-						</div>
-						{invoice.dueDate && (
-							<div>
+				{/* Document details */}
+				<div className="min-w-0 space-y-5 sm:space-y-6 p-6">
+					{/* Details */}
+					<Card>
+						<CardHeader className="border-b py-4">
+							<CardTitle className="text-base">
+								{t("invoices.invoiceDetails")}
+							</CardTitle>
+						</CardHeader>
+						<CardContent className="grid grid-cols-1 gap-3 p-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 sm:p-5">
+							<div className="min-w-0 rounded-md bg-muted/40 p-3">
 								<p className="text-sm text-muted-foreground">
-									{t("invoices.dueDate")}
-								</p>
-								<p className="font-medium">{formatDate(invoice.dueDate)}</p>
-							</div>
-						)}
-						{invoice.customer && (
-							<div>
-								<p className="text-sm text-muted-foreground">
-									{t("invoices.customer")}
-								</p>
-								<p className="font-medium">{invoice.customer.name}</p>
-								<p className="text-xs text-muted-foreground">
-									{(invoice.customer as any).vatNumber ??
-										(invoice.customer as any).taxId ??
-										""}
-								</p>
-							</div>
-						)}
-						{isInvoice && (invoice as any).warehouse && (
-							<div>
-								<p className="text-sm text-muted-foreground">
-									{t("invoices.warehouse")}
+									{t("invoices.issueDate")}
 								</p>
 								<p className="font-medium">
-									{(invoice as any).warehouse?.name}
+									{invoice.date ? formatDate(invoice.date) : "—"}
 								</p>
 							</div>
-						)}
-						{invoice.currency && (
-							<div>
+							{invoice.dueDate && (
+								<div className="min-w-0 rounded-md bg-muted/40 p-3">
+									<p className="text-sm text-muted-foreground">
+										{t("invoices.dueDate")}
+									</p>
+									<p className="font-medium">{formatDate(invoice.dueDate)}</p>
+								</div>
+							)}
+							{invoice.customer && (
+								<div className="min-w-0 rounded-md bg-muted/40 p-3">
+									<p className="text-sm text-muted-foreground">
+										{t("invoices.customer")}
+									</p>
+									<p className="font-medium">{invoice.customer.name}</p>
+									<p className="text-xs text-muted-foreground">
+										{(invoice.customer as any).vatNumber ??
+											(invoice.customer as any).taxId ??
+											""}
+									</p>
+								</div>
+							)}
+							{isInvoice && (invoice as any).warehouse && (
+								<div className="min-w-0 rounded-md bg-muted/40 p-3">
+									<p className="text-sm text-muted-foreground">
+										{t("invoices.warehouse")}
+									</p>
+									<p className="font-medium">
+										{(invoice as any).warehouse?.name}
+									</p>
+								</div>
+							)}
+							{invoice.currency && (
+								<div className="min-w-0 rounded-md bg-muted/40 p-3">
+									<p className="text-sm text-muted-foreground">
+										{t("invoices.currency")}
+									</p>
+									<p className="font-medium">{invoice.currency}</p>
+								</div>
+							)}
+							<div className="min-w-0 rounded-md bg-muted/40 p-3">
 								<p className="text-sm text-muted-foreground">
-									{t("invoices.currency")}
+									{t("common.status")}
 								</p>
-								<p className="font-medium">{invoice.currency}</p>
+								<Badge className={STATUS_COLORS[invoice.status] ?? ""}>
+									{invoice.status}
+								</Badge>
 							</div>
-						)}
-						<div>
-							<p className="text-sm text-muted-foreground">
-								{t("common.status")}
-							</p>
-							<Badge className={STATUS_COLORS[invoice.status] ?? ""}>
-								{invoice.status}
-							</Badge>
-						</div>
-						{(invoice as any).createdBy && (
-							<div>
-								<p className="text-sm text-muted-foreground">
-									{t("common.createdBy")}
-								</p>
-								<p className="font-medium">
-									{(invoice as any).createdBy?.name ?? "—"}
-								</p>
-							</div>
-						)}
-					</div>
+							{(invoice as any).createdBy && (
+								<div className="min-w-0 rounded-md bg-muted/40 p-3">
+									<p className="text-sm text-muted-foreground">
+										{t("common.createdBy")}
+									</p>
+									<p className="font-medium">
+										{(invoice as any).createdBy?.name ?? "—"}
+									</p>
+								</div>
+							)}
+						</CardContent>
+					</Card>
 
 					<Separator />
 
 					{/* Line Items */}
-					<Card>
+					<Card className="overflow-hidden">
 						<CardContent className="px-0">
-							<Table>
+							<Table className="min-w-[760px]">
 								<TableHeader>
 									<TableRow>
 										<TableHead className="pl-6">#</TableHead>
@@ -913,8 +901,8 @@ export default function DocumentDetailPage() {
 
 							<Separator />
 							{/* Totals */}
-							<div className="flex justify-end p-5 pb-0">
-								<div className="w-72 space-y-2">
+							<div className="flex justify-end p-4 pt-5 sm:p-5 sm:pt-5">
+								<div className="w-full max-w-sm space-y-2 sm:w-72">
 									<div className="flex justify-between text-sm">
 										<span className="text-muted-foreground">
 											{t("invoices.subtotal")}
@@ -980,7 +968,7 @@ export default function DocumentDetailPage() {
 								</CardTitle>
 							</CardHeader>
 							<CardContent className="p-0">
-								<Table>
+								<Table className="min-w-[480px]">
 									<TableHeader>
 										<TableRow>
 											<TableHead>{t("invoices.date")}</TableHead>
@@ -1062,42 +1050,27 @@ export default function DocumentDetailPage() {
 						</Card>
 					)}
 				</div>
-				{/* end flex-1 */}
 
-				{/* History side panel — desktop */}
-				<div className="w-80 shrink-0 hidden md:block">
-					<InvoiceHistoryPanel
-						invoice={invoice}
-						formatDate={formatDate}
-						formatDateTime={formatDateTime}
-						onNavigate={(path) => router.push(path)}
-					/>
-				</div>
+				{/* History is intentionally on demand so it never reduces document space. */}
+				<Sheet open={historyOpen} onOpenChange={setHistoryOpen}>
+					<SheetContent side="right" className="w-full p-0 sm:max-w-md">
+						<SheetHeader className="sr-only">
+							<SheetTitle>{t("invoices.history")}</SheetTitle>
+						</SheetHeader>
+						<ScrollArea className="h-dvh px-5 py-5 pr-12">
+							<InvoiceHistoryPanel
+								invoice={invoice}
+								formatDate={formatDate}
+								formatDateTime={formatDateTime}
+								onNavigate={(path) => {
+									setHistoryOpen(false);
+									router.push(path);
+								}}
+							/>
+						</ScrollArea>
+					</SheetContent>
+				</Sheet>
 			</div>
-			{/* end flex */}
-
-			{/* History side panel — mobile */}
-			<Sheet open={historyOpen} onOpenChange={setHistoryOpen}>
-				<SheetContent side="right" className="w-3/4 sm:max-w-sm">
-					<SheetHeader>
-						<SheetTitle className="flex items-center gap-2">
-							<History className="size-4" />
-							{t("invoices.history")}
-						</SheetTitle>
-					</SheetHeader>
-					<ScrollArea className="h-[calc(100dvh-8rem)]">
-						<InvoiceHistoryPanel
-							invoice={invoice}
-							formatDate={formatDate}
-							formatDateTime={formatDateTime}
-							onNavigate={(path) => {
-								setHistoryOpen(false);
-								router.push(path);
-							}}
-						/>
-					</ScrollArea>
-				</SheetContent>
-			</Sheet>
 
 			{/* Send confirmation dialog */}
 			<Dialog
