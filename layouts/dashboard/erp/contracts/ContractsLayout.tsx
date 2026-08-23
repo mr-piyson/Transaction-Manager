@@ -166,8 +166,7 @@ export default function ContractsLayout({
 										data={contracts}
 										isLoading={isPending}
 										className="h-full"
-										useTheme
-										searchFields={["serial", "title"] as any}
+										search={{ fields: ["serial", "title"] }}
 										rowHeight={80}
 										emptyTitle={t("contracts.noContracts")}
 										emptyDescription={t("contracts.createContract")}

@@ -51,10 +51,9 @@ export default function StockPage() {
 						</div>
 					</div>
 				)}
-				searchFields={["id" as any]}
+				search={{ fields: ["id"], placeholder: t("stock.searchStock") }}
 				data={stock}
 				isLoading={isLoading}
-				searchPlaceholder={t("stock.searchStock")}
 				emptyTitle={t("stock.noStock")}
 				emptyDescription={t("stock.adjustStock")}
 			/>

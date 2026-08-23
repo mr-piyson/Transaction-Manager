@@ -119,8 +119,7 @@ export default function WarehousesLayout({
 										data={warehouses}
 										isLoading={isPending}
 										className="h-full"
-										useTheme
-										searchFields={["name", "code"]}
+										search={{ fields: ["name", "code"] }}
 										rowHeight={73}
 										emptyTitle={t("warehouses.noWarehouses")}
 										emptyDescription={t("warehouses.createWarehouse")}

@@ -1,6 +1,7 @@
 "use client";
 
 import {
+	ChevronDown,
 	Edit,
 	Eye,
 	File,
@@ -15,6 +16,7 @@ import { useParams, usePathname, useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { parseAsString, useQueryState } from "nuqs";
 import { useCallback } from "react";
+import { Separator } from "react-resizable-panels";
 import { toast } from "sonner";
 import { alert } from "@/components/Alert-dialog";
 import type { ContextMenuItemSchema } from "@/components/context-menu";
@@ -25,6 +27,14 @@ import { DocumentFilterTrigger } from "@/components/erp/document-filter-bar";
 import { InvoiceListItem } from "@/components/invoices/invoice-list-item";
 import { Header } from "@/components/layout/App-Header";
 import { ListView } from "@/components/list-view";
+import { Button } from "@/components/ui/button";
+import { ButtonGroup } from "@/components/ui/button-group";
+import {
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuItem,
+	DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import {
 	ResizableHandle,
 	ResizablePanel,
@@ -191,6 +201,8 @@ export default function DocumentsLayout({
 	const Icon = config.icon;
 	const headerTitle =
 		type === "invoices" ? t("layout.invoices") : t("layout.quotations");
+	const createDocument = (documentType = config.trpcType) =>
+		openCreate({ defaults: { type: documentType } });
 
 	return (
 		<div
@@ -224,12 +236,25 @@ export default function DocumentsLayout({
 											data={documents}
 											isLoading={isPending}
 											className="h-full"
-											useTheme
-											searchFields={["serial", "customer.name", "status"]}
-											searchFieldLabels={{
-												serial: t("common.serial"),
-												"customer.name": t("common.customer"),
-												status: t("common.status"),
+											search={{
+												collapsible: true,
+												fields: [
+													{
+														key: "serial",
+														label: t("common.serial"),
+														getValue: (item) => item.serial,
+													},
+													{
+														key: "customer",
+														label: t("common.customer"),
+														getValue: (item) => item.customer?.name,
+													},
+													{
+														key: "status",
+														label: t("common.status"),
+														getValue: (item) => item.status,
+													},
+												],
 											}}
 											rowHeight={72}
 											emptyTitle={t("invoices.noInvoices")}
@@ -238,10 +263,38 @@ export default function DocumentsLayout({
 												<File className="size-20 text-muted-foreground" />
 											}
 											cardRenderer={renderCard}
-											searchTrailing={
+											toolbarEnd={
 												<DocumentFilterTrigger
 													type={type as "invoices" | "quotations"}
 												/>
+											}
+											toolbarStart={
+												<ButtonGroup>
+													<Button size="sm" onClick={() => createDocument()}>
+														{t("common.new")}
+													</Button>
+													<DropdownMenu>
+														<DropdownMenuTrigger asChild>
+															<Button size="sm" aria-label={t("common.new")}>
+																<ChevronDown className="size-3.5" />
+															</Button>
+														</DropdownMenuTrigger>
+														<DropdownMenuContent align="start">
+															<DropdownMenuItem
+																onClick={() => createDocument("INVOICE")}
+															>
+																<Receipt />
+																{t("layout.invoices")}
+															</DropdownMenuItem>
+															<DropdownMenuItem
+																onClick={() => createDocument("QUOTE")}
+															>
+																<FileText />
+																{t("layout.quotations")}
+															</DropdownMenuItem>
+														</DropdownMenuContent>
+													</DropdownMenu>
+												</ButtonGroup>
 											}
 										/>
 									</div>

@@ -247,12 +247,24 @@ export default function POLayout({ children }: { children?: React.ReactNode }) {
 											data={orders}
 											isLoading={isPending}
 											className="h-full"
-											useTheme
-											searchFields={["serial", "supplier.name", "status"]}
-											searchFieldLabels={{
-												serial: t("purchaseOrders.poNumber"),
-												"supplier.name": t("purchaseOrders.supplier"),
-												status: t("purchaseOrders.status"),
+											search={{
+												fields: [
+													{
+														key: "serial",
+														label: t("purchaseOrders.poNumber"),
+														getValue: (item) => item.serial,
+													},
+													{
+														key: "supplier",
+														label: t("purchaseOrders.supplier"),
+														getValue: (item) => item.supplier?.name,
+													},
+													{
+														key: "status",
+														label: t("purchaseOrders.status"),
+														getValue: (item) => item.status,
+													},
+												],
 											}}
 											rowHeight={73}
 											emptyTitle={t("purchaseOrders.noPOs")}

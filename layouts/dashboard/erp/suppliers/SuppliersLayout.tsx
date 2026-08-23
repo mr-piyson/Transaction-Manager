@@ -184,8 +184,7 @@ export default function SuppliersLayout({
 										data={suppliers}
 										isLoading={isPending}
 										className="h-full"
-										useTheme
-										searchFields={["name", "email", "phone", "code"]}
+										search={{ fields: ["name", "email", "phone", "code"] }}
 										rowHeight={73}
 										emptyTitle={t("suppliers.noSuppliers")}
 										emptyDescription={t("suppliers.createSupplier")}

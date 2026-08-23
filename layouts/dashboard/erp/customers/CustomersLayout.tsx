@@ -175,8 +175,7 @@ export default function CustomersLayout({
 										data={items}
 										isLoading={isPending}
 										className="h-full"
-										useTheme
-										searchFields={["name", "phone", "email"]}
+										search={{ fields: ["name", "phone", "email"] }}
 										rowHeight={73}
 										emptyTitle={t("customers.noCustomers")}
 										emptyDescription={t("customers.createCustomer")}
