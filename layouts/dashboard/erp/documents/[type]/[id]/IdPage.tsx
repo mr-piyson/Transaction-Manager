@@ -4,6 +4,7 @@ import {
 	ArrowLeft,
 	Banknote,
 	CheckCircle,
+	Copy,
 	Edit,
 	FileText,
 	HandCoins,
@@ -78,6 +79,7 @@ import {
 	TableRow,
 } from "@/components/ui/table";
 import { Textarea } from "@/components/ui/textarea";
+import { useAppAbility } from "@/hooks/use-app-ability";
 import { useDateFormat } from "@/hooks/use-date-format";
 import { trpc } from "@/lib/trpc/client";
 
@@ -115,6 +117,7 @@ export default function DocumentDetailPage({
 	const { formatDate, formatDateTime, formatDateForInput } = useDateFormat();
 	const { data: me } = trpc.auth.me.useQuery();
 	const isSuperAdmin = me?.platformRole === "SUPER_ADMIN";
+	const ability = useAppAbility();
 
 	const {
 		data: invoice,
@@ -297,41 +300,48 @@ export default function DocumentDetailPage({
 		setConfirmDialog({ open: true, action, ...config });
 	};
 
+	const getFormValues = () => ({
+		type: invoice.type as any,
+		date: invoice.date ? formatDateForInput(invoice.date) : undefined,
+		dueDate: invoice.dueDate ? formatDateForInput(invoice.dueDate) : undefined,
+		customerId: invoice.customerId ?? undefined,
+		warehouseId: invoice.warehouseId ?? undefined,
+		departmentId: invoice.departmentId ?? undefined,
+		currency: invoice.currency as any,
+		description: invoice.description ?? undefined,
+		notes: invoice.notes ?? undefined,
+		termsText: invoice.termsText ?? undefined,
+		internalNotes: invoice.internalNotes ?? undefined,
+		isWalkIn: invoice.isWalkIn ?? undefined,
+		parentInvoiceId: invoice.parentInvoiceId ?? undefined,
+		lines: invoice.lines.map((l: any) => ({
+			itemId: l.itemId,
+			description: l.description ?? undefined,
+			quantity: Number(l.quantity),
+			unitPrice: Number(l.unitPrice),
+			discountAmt: Number(l.discountAmt),
+			purchasePrice: Number(l.purchasePrice ?? 0),
+			taxRateId: l.taxRateId ?? undefined,
+			taxRateSnapshot: Number(l.taxRateSnapshot ?? 0),
+			taxRateName: l.taxRateName ?? undefined,
+			sortOrder: l.sortOrder ?? 0,
+			departmentId: l.departmentId ?? undefined,
+		})),
+	});
+
 	const handleEdit = () => {
 		openEdit(
 			{
 				id: invoice.id,
 				version,
-				type: invoice.type as any,
-				date: invoice.date ? formatDateForInput(invoice.date) : undefined,
-				dueDate: invoice.dueDate
-					? formatDateForInput(invoice.dueDate)
-					: undefined,
-				customerId: invoice.customerId ?? undefined,
-				warehouseId: invoice.warehouseId ?? undefined,
-				departmentId: invoice.departmentId ?? undefined,
-				currency: invoice.currency as any,
-				notes: invoice.notes ?? undefined,
-				termsText: invoice.termsText ?? undefined,
-				internalNotes: invoice.internalNotes ?? undefined,
-				isWalkIn: invoice.isWalkIn ?? undefined,
-				parentInvoiceId: invoice.parentInvoiceId ?? undefined,
-				lines: invoice.lines.map((l: any) => ({
-					itemId: l.itemId,
-					description: l.description ?? undefined,
-					quantity: Number(l.quantity),
-					unitPrice: Number(l.unitPrice),
-					discountAmt: Number(l.discountAmt),
-					purchasePrice: Number(l.purchasePrice ?? 0),
-					taxRateId: l.taxRateId ?? undefined,
-					taxRateSnapshot: Number(l.taxRateSnapshot ?? 0),
-					taxRateName: l.taxRateName ?? undefined,
-					sortOrder: l.sortOrder ?? 0,
-					departmentId: l.departmentId ?? undefined,
-				})),
+				...getFormValues(),
 			},
 			{ onSuccess: () => utils.invoices.byId.invalidate({ id: invoice.id }) },
 		);
+	};
+
+	const handleDuplicate = () => {
+		openCreate({ defaults: getFormValues() });
 	};
 
 	const getTypeLabel = (type: string) => {
@@ -360,6 +370,15 @@ export default function DocumentDetailPage({
 	const actions: Action[] = [];
 	const status = invoice.status;
 	const invoiceType = invoice.type;
+
+	if (ability?.can("invoice:create", "Invoice")) {
+		actions.push({
+			label: t("common.duplicate"),
+			key: "duplicate",
+			icon: Copy,
+			variant: "outline",
+		});
+	}
 
 	if (invoiceType === "QUOTE") {
 		if (status === "DRAFT") {
@@ -551,6 +570,9 @@ export default function DocumentDetailPage({
 		switch (action.key) {
 			case "edit":
 				handleEdit();
+				break;
+			case "duplicate":
+				handleDuplicate();
 				break;
 			case "submit":
 			case "approve":
