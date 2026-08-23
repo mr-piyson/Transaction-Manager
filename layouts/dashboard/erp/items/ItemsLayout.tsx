@@ -22,7 +22,7 @@ import {
 	Wrench,
 } from "lucide-react";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
 import type * as React from "react";
 import { useMemo, useRef, useState } from "react";
@@ -30,6 +30,7 @@ import { toast } from "sonner";
 import { alert } from "@/components/Alert-dialog";
 import { useUnifiedItemForm } from "@/components/dialogs";
 import { useHardDeleteForm } from "@/components/dialogs/hardDeleteForm";
+import { ItemDetailsSheet } from "@/components/items/item-details-sheet";
 import { ItemListItem } from "@/components/items/item-list-item";
 import { Header } from "@/components/layout/App-Header";
 import { Badge } from "@/components/ui/badge";
@@ -86,6 +87,7 @@ export default function ItemsLayout({
 
 	const [typeFilter, setTypeFilter] = useState("");
 	const [categoryFilter, setCategoryFilter] = useState<string | null>(null);
+	const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
 
 	const { data: categoryList } = trpc.categories.list.useQuery();
 	const { data, isPending } = trpc.items.list.useQuery({
@@ -93,9 +95,7 @@ export default function ItemsLayout({
 		categoryId: categoryFilter ?? undefined,
 		withStock: true,
 	});
-	const router = useRouter();
 	const pathname = usePathname();
-	const activeItem = pathname.split("/")[3];
 	const isListRoute = pathname === `/erp/${title.toLowerCase()}`;
 
 	const utils = trpc.useUtils();
@@ -103,7 +103,7 @@ export default function ItemsLayout({
 		onSuccess: () => {
 			utils.items.list.invalidate();
 			toast.success(t("common.itemDeleted"));
-			if (activeItem) router.push(`/erp/${title.toLowerCase()}`);
+			setSelectedItemId(null);
 		},
 		onError: (e) => toast.error(e.message),
 	});
@@ -124,29 +124,24 @@ export default function ItemsLayout({
 					return (
 						<ContextMenu>
 							<ContextMenuTrigger asChild>
-								<Link
-									href={`/erp/${title.toLowerCase()}/${item.id}`}
-									scroll={false}
-									draggable={false}
-									className="block w-full h-full"
+								<button
+									type="button"
+									onClick={() => setSelectedItemId(item.id)}
+									className="block h-full w-full text-left"
 								>
 									<ItemListItem
 										data={item}
 										className={cn(
 											"hover:bg-muted/40 border border-transparent rounded-lg",
-											activeItem === item.id
+											selectedItemId === item.id
 												? "border-primary bg-primary/10"
 												: "",
 										)}
 									/>
-								</Link>
+								</button>
 							</ContextMenuTrigger>
 							<ContextMenuContent>
-								<ContextMenuItem
-									onClick={() =>
-										router.push(`/erp/${title.toLowerCase()}/${item.id}`)
-									}
-								>
+								<ContextMenuItem onClick={() => setSelectedItemId(item.id)}>
 									<Eye className="size-4 mr-2" />
 									{t("common.viewDetails")}
 								</ContextMenuItem>
@@ -202,15 +197,7 @@ export default function ItemsLayout({
 				},
 			},
 		],
-		[
-			activeItem,
-			router,
-			t,
-			deleteMutation,
-			title,
-			isSuperAdmin,
-			openHardDelete,
-		],
+		[selectedItemId, t, deleteMutation, title, isSuperAdmin, openHardDelete],
 	);
 
 	const tableColumnDefs = useMemo<ColDef[]>(
@@ -338,19 +325,11 @@ export default function ItemsLayout({
 								</Button>
 							</DropdownMenuTrigger>
 							<DropdownMenuContent align="end">
-								<DropdownMenuItem
-									onClick={() =>
-										router.push(`/erp/${title.toLowerCase()}/${item.id}`)
-									}
-								>
+								<DropdownMenuItem onClick={() => setSelectedItemId(item.id)}>
 									<Eye className="size-4 mr-2" />
 									{t("common.viewDetails")}
 								</DropdownMenuItem>
-								<DropdownMenuItem
-									onClick={() =>
-										router.push(`/erp/${title.toLowerCase()}/${item.id}`)
-									}
-								>
+								<DropdownMenuItem onClick={() => openEdit({ itemId: item.id })}>
 									<Edit className="size-4 mr-2" />
 									{t("common.edit")}
 								</DropdownMenuItem>
@@ -397,8 +376,8 @@ export default function ItemsLayout({
 		],
 		[
 			format,
-			router,
-			activeItem,
+			selectedItemId,
+			openEdit,
 			t,
 			deleteMutation,
 			isSuperAdmin,
@@ -548,6 +527,12 @@ export default function ItemsLayout({
 					<div className="h-full w-full overflow-y-auto">{children}</div>
 				)}
 			</div>
+			<ItemDetailsSheet
+				itemId={selectedItemId}
+				onOpenChange={(open) => {
+					if (!open) setSelectedItemId(null);
+				}}
+			/>
 		</div>
 	);
 }
