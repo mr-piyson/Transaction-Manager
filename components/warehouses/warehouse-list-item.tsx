@@ -16,13 +16,16 @@ export function WarehouseListItem({
 
 	return (
 		<div
-			className={cn("flex h-18 items-center gap-3 p-3", className)}
+			className={cn(
+				"grid grid-cols-[auto_minmax(0,1fr)] items-start gap-3 h-18 p-3",
+				className,
+			)}
 			{...props}
 		>
 			<div className="size-11 rounded-lg bg-muted flex items-center justify-center shrink-0">
 				<Warehouse className="size-5 text-muted-foreground" />
 			</div>
-			<div className="flex-1 min-w-0">
+			<div className="min-w-0">
 				<div className="flex items-center gap-2">
 					<p className="font-semibold truncate">{name}</p>
 					{isDefault && (

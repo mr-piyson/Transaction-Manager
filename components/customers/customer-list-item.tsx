@@ -19,7 +19,10 @@ export function Customer_List_Item({
 
 	return (
 		<div
-			className={cn("flex h-18 items-center gap-3 p-3", className)}
+			className={cn(
+				"grid grid-cols-[auto_minmax(0,1fr)_auto] items-start gap-3 p-3",
+				className,
+			)}
 			{...props}
 		>
 			<Avatar className="size-11 rounded-lg shrink-0 after:border-0">

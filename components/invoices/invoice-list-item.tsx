@@ -27,18 +27,24 @@ export function InvoiceListItem({
 	const { serial, status, customer, date, total, currency } = data || {};
 
 	return (
-		<div className={cn("flex items-center gap-3 p-3", className)} {...props}>
+		<div
+			className={cn(
+				"grid grid-cols-[auto_minmax(0,1fr)_auto] items-start gap-3 p-3",
+				className,
+			)}
+			{...props}
+		>
 			<div className="size-11 rounded-lg bg-muted flex items-center justify-center shrink-0">
 				<Receipt className="size-5 text-muted-foreground" />
 			</div>
-			<div className="flex-1 min-w-0">
+			<div className="min-w-0">
 				<div className="flex items-center gap-2">
 					<p className="font-semibold truncate">{serial}</p>
 					<Badge variant="outline" className={STATUS_COLORS[status] ?? ""}>
 						{status?.replace(/_/g, " ")}
 					</Badge>
 				</div>
-				<p className="text-sm text-muted-foreground truncate">
+				<p className="col-span-3 min-w-0 text-left text-sm text-muted-foreground truncate sm:col-span-1 sm:col-start-2 sm:row-start-2">
 					{customer?.name ?? "—"} · {date ? formatDate(date) : "—"}
 				</p>
 			</div>

@@ -17,7 +17,10 @@ export function SupplierListItem({
 
 	return (
 		<div
-			className={cn("flex h-18 items-center gap-3 p-3", className)}
+			className={cn(
+				"grid grid-cols-[auto_minmax(0,1fr)] items-start gap-3 p-3",
+				className,
+			)}
 			{...props}
 		>
 			<Avatar className="size-11 rounded-lg shrink-0 after:border-0">
@@ -26,7 +29,7 @@ export function SupplierListItem({
 				</AvatarFallback>
 			</Avatar>
 
-			<div className="flex-1 min-w-0">
+			<div className="min-w-0">
 				<div className="flex items-center gap-2">
 					<p className="font-semibold truncate">{name}</p>
 					{!isActive && (

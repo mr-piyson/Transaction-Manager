@@ -30,7 +30,13 @@ export function ItemListItem({ data, className, ...props }: ItemListItemProps) {
 	const Icon = style.icon;
 
 	return (
-		<div className={cn("flex h-18 items-center gap-3 ", className)} {...props}>
+		<div
+			className={cn(
+				"grid grid-cols-[auto_minmax(0,1fr)] items-start gap-3 p-3",
+				className,
+			)}
+			{...props}
+		>
 			<div
 				className={cn(
 					"size-11 rounded-lg flex items-center justify-center shrink-0 overflow-hidden",
@@ -48,7 +54,7 @@ export function ItemListItem({ data, className, ...props }: ItemListItemProps) {
 					<Icon className={cn("size-5", style.fg)} />
 				)}
 			</div>
-			<div className="flex-1 min-w-0">
+			<div className="min-w-0">
 				<div className="flex items-center justify-between gap-2">
 					<p className="font-semibold truncate">{name}</p>
 					<Badge variant="outline" className="text-xs">
