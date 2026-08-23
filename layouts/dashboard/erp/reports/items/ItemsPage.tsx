@@ -1,12 +1,6 @@
 "use client";
 
-import {
-	AllCommunityModule,
-	type ColDef,
-	type GridApi,
-	ModuleRegistry,
-} from "ag-grid-community";
-import { AgGridReact } from "ag-grid-react";
+import { useVirtualizer } from "@tanstack/react-virtual";
 import {
 	Box,
 	Columns3,
@@ -25,6 +19,7 @@ import {
 	X,
 	XCircle,
 } from "lucide-react";
+import Image from "next/image";
 import { useTranslations } from "next-intl";
 import { useCallback, useMemo, useRef, useState } from "react";
 import { Bar, BarChart, Cell, Pie, PieChart, XAxis, YAxis } from "recharts";
@@ -68,11 +63,8 @@ import {
 } from "@/components/ui/sheet";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useCurrency } from "@/hooks/use-currency";
-import { useTableTheme } from "@/hooks/use-table-theme";
 import { trpc } from "@/lib/trpc/client";
 import { cn } from "@/lib/utils";
-
-ModuleRegistry.registerModules([AllCommunityModule]);
 
 type ItemRow = {
 	id: string;
@@ -111,6 +103,22 @@ type ItemRow = {
 	inventoryValue: number;
 	supplierNames: string[];
 	warehouseNames: string[];
+};
+
+type ItemCellParams = { value: any; data: ItemRow };
+type ItemColumn = {
+	headerName?: string;
+	field?: string;
+	width?: number;
+	flex?: number;
+	hide?: boolean;
+	sortable?: boolean;
+	filter?: boolean | string;
+	suppressMenu?: boolean;
+	cellClass?: string;
+	type?: string;
+	valueFormatter?(params: ItemCellParams): unknown;
+	cellRenderer?(params: ItemCellParams): React.ReactNode;
 };
 
 const CHART_COLORS = [
@@ -213,10 +221,12 @@ function ItemDetailSheet({
 					<div className="space-y-4 pr-4">
 						{/* Image */}
 						{item.image ? (
-							<div className="aspect-video rounded-lg overflow-hidden bg-muted">
-								<img
+							<div className="relative aspect-video rounded-lg overflow-hidden bg-muted">
+								<Image
 									src={item.image}
 									alt={item.name}
+									fill
+									sizes="(max-width: 640px) 100vw, 448px"
 									className="w-full h-full object-contain"
 								/>
 							</div>
@@ -411,8 +421,60 @@ function DetailRow({
 
 // ─── Export Utilities ──────────────────────────────────────────────────────────
 
-function exportCsv(api: GridApi, fileName: string) {
-	api.exportDataAsCsv({ fileName });
+function exportCsv(
+	items: ItemRow[],
+	visibleColumns: Record<string, boolean>,
+	fileName: string,
+) {
+	const columns = [
+		["sku", "SKU"],
+		["barcode", "Barcode"],
+		["name", "Name"],
+		["categoryName", "Category"],
+		["type", "Type"],
+		["purchasePrice", "Buy Price"],
+		["salesPrice", "Sell Price"],
+		["averageCost", "Avg Cost"],
+		["totalStock", "Stock"],
+		["minStock", "Min Stock"],
+		["reorderPoint", "Reorder At"],
+		["reorderQty", "Reorder Qty"],
+		["warehouseNames", "Warehouse"],
+		["stockStatus", "Status"],
+		["isActive", "Active"],
+		["isSaleable", "Saleable"],
+		["isPurchasable", "Purchasable"],
+		["weightKg", "Weight"],
+		["inventoryValue", "Inventory Value"],
+		["supplierNames", "Suppliers"],
+		["createdAt", "Created"],
+		["description", "Description"],
+	] as const;
+	const activeColumns = columns.filter(([field]) => visibleColumns[field]);
+	const quoteCsvValue = (value: unknown) =>
+		`"${String(value ?? "").replaceAll('"', '""')}"`;
+	const valueFor = (item: ItemRow, field: (typeof columns)[number][0]) => {
+		const value = item[field];
+		if (Array.isArray(value)) return value.join(", ");
+		if (value instanceof Date) return value.toLocaleDateString();
+		return value;
+	};
+	const csv = [
+		activeColumns.map(([, label]) => quoteCsvValue(label)).join(","),
+		...items.map((item) =>
+			activeColumns
+				.map(([field]) => quoteCsvValue(valueFor(item, field)))
+				.join(","),
+		),
+	].join("\n");
+	const url = URL.createObjectURL(
+		new Blob([csv], { type: "text/csv;charset=utf-8" }),
+	);
+	const link = document.createElement("a");
+	link.href = url;
+	link.download = fileName;
+	link.click();
+	URL.revokeObjectURL(url);
 	toast.success("CSV exported successfully");
 }
 
@@ -421,12 +483,11 @@ function exportCsv(api: GridApi, fileName: string) {
 export default function ItemReportPage() {
 	const t = useTranslations();
 	const { format } = useCurrency();
-	const tableTheme = useTableTheme();
 	const { openCreate } = useUnifiedItemForm();
 
 	const { data: rawItems, isLoading } = trpc.items.report.useQuery();
 
-	const gridApiRef = useRef<GridApi | null>(null);
+	const listRef = useRef<HTMLDivElement>(null);
 	const [searchQuery, setSearchQuery] = useState("");
 	const [quickFilter, setQuickFilter] = useState<QuickFilterKey>("all");
 	const [selectedItem, setSelectedItem] = useState<ItemRow | null>(null);
@@ -576,9 +637,9 @@ export default function ItemReportPage() {
 			.sort((a, b) => b.value - a.value);
 	}, [items]);
 
-	// ── AG-Grid Column Definitions ────────────────────────────────────────
+	// ── Table columns ──────────────────────────────────────────────────────
 
-	const columnDefs = useMemo<ColDef<ItemRow>[]>(
+	const columnDefs = useMemo<ItemColumn[]>(
 		() => [
 			{
 				headerName: "",
@@ -592,10 +653,12 @@ export default function ItemReportPage() {
 					const item = params.data;
 					if (item.image) {
 						return (
-							<div className="size-6 rounded overflow-hidden bg-muted">
-								<img
+							<div className="relative size-6 rounded overflow-hidden bg-muted">
+								<Image
 									src={item.image}
 									alt=""
+									fill
+									sizes="28px"
 									className="w-full h-full object-cover"
 								/>
 							</div>
@@ -916,27 +979,142 @@ export default function ItemReportPage() {
 		[format, visibleColumns],
 	);
 
-	const defaultColDef = useMemo(
-		() => ({
-			sortable: true,
-			filter: true,
-			resizable: true,
-			suppressHeaderMenuButton: false,
-			suppressMovable: true,
-			minWidth: 60,
-		}),
-		[],
+	const visibleColumnDefs = useMemo(
+		() => columnDefs.filter((column) => column.field && !column.hide),
+		[columnDefs],
 	);
+	const virtualizer = useVirtualizer({
+		count: filteredItems.length,
+		getScrollElement: () => listRef.current,
+		estimateSize: () => 56,
+		overscan: 8,
+	});
+	const gridTemplateColumns = visibleColumnDefs
+		.map((column) => `${column.width ?? 120}px`)
+		.join(" ");
+
+	const renderCell = (item: ItemRow, field: string) => {
+		switch (field) {
+			case "image":
+				return item.image ? (
+					<Image
+						src={item.image}
+						alt=""
+						width={28}
+						height={28}
+						className="size-7 rounded object-cover"
+					/>
+				) : (
+					<div className="size-7 rounded bg-muted flex items-center justify-center">
+						<Package className="size-3 text-muted-foreground/50" />
+					</div>
+				);
+			case "categoryName":
+				return item.categoryName ? (
+					<Badge
+						variant="secondary"
+						className="px-1.5 py-0 font-medium truncate max-w-full"
+						style={
+							item.categoryColor
+								? {
+										backgroundColor: `${item.categoryColor}18`,
+										color: item.categoryColor,
+									}
+								: undefined
+						}
+					>
+						{item.categoryName}
+					</Badge>
+				) : (
+					<Badge variant="outline" className="px-1.5 py-0">
+						—
+					</Badge>
+				);
+			case "type":
+				return (
+					<Badge variant="outline" className="px-1.5 py-0 font-medium">
+						{item.type}
+					</Badge>
+				);
+			case "totalStock":
+				return (
+					<Badge
+						variant="outline"
+						className={cn(
+							"px-1.5 py-0 font-semibold tabular-nums",
+							item.stockStatus === "out"
+								? "text-red-700 border-red-200"
+								: item.stockStatus === "low"
+									? "text-yellow-700 border-yellow-200"
+									: "text-green-700 border-green-200",
+						)}
+					>
+						{item.totalStock} {item.unit}
+					</Badge>
+				);
+			case "stockStatus":
+				return (
+					<Badge
+						variant="outline"
+						className={cn(
+							"px-1.5 py-0 font-medium",
+							item.stockStatus === "out"
+								? "text-red-700 border-red-200"
+								: item.stockStatus === "low"
+									? "text-yellow-700 border-yellow-200"
+									: "text-green-700 border-green-200",
+						)}
+					>
+						{item.stockStatus === "out"
+							? "Out"
+							: item.stockStatus === "low"
+								? "Low"
+								: "Active"}
+					</Badge>
+				);
+			case "isActive":
+			case "isSaleable":
+			case "isPurchasable":
+				return (
+					<Badge variant={item[field] ? "default" : "secondary"}>
+						{item[field] ? "Yes" : "No"}
+					</Badge>
+				);
+			case "purchasePrice":
+			case "salesPrice":
+			case "averageCost":
+			case "inventoryValue":
+				return format(item[field]);
+			case "warehouseNames":
+			case "supplierNames":
+				return item[field].join(", ") || "—";
+			case "weightKg":
+				return item.weightKg === null ? "—" : `${item.weightKg} kg`;
+			case "createdAt":
+				return new Date(item.createdAt).toLocaleDateString();
+			case "id":
+				return (
+					<button
+						onClick={() => {
+							setSelectedItem(item);
+							setDrawerOpen(true);
+						}}
+						className="size-7 rounded hover:bg-muted flex items-center justify-center"
+						title="View details"
+					>
+						<Eye className="size-3 text-muted-foreground" />
+					</button>
+				);
+			default:
+				return String(item[field as keyof ItemRow] ?? "—");
+		}
+	};
 
 	// ── Filter Handlers ──────────────────────────────────────────────────
 
 	const _handleClearAll = useCallback(() => {
 		setQuickFilter("all");
 		setSearchQuery("");
-		if (gridApiRef.current) {
-			gridApiRef.current.setFilterModel(null);
-			gridApiRef.current.onFilterChanged();
-		}
 	}, []);
 
 	return (
@@ -1142,7 +1320,7 @@ export default function ItemReportPage() {
 							</div>
 						</div>
 
-						{/* AG-Grid Card */}
+						{/* Virtualized item list */}
 						<Card
 							className={cn(
 								isFullscreen
@@ -1170,10 +1348,9 @@ export default function ItemReportPage() {
 										size="icon"
 										className="size-7"
 										title="Export"
-										onClick={() => {
-											if (gridApiRef.current)
-												exportCsv(gridApiRef.current, "items-report");
-										}}
+										onClick={() =>
+											exportCsv(filteredItems, visibleColumns, "items-report")
+										}
 									>
 										<Download className="size-3.5" />
 									</Button>
@@ -1299,21 +1476,69 @@ export default function ItemReportPage() {
 											<Skeleton className="h-[500px] w-full" />
 										</div>
 									) : (
-										<AgGridReact
-											rowData={filteredItems}
-											columnDefs={columnDefs}
-											defaultColDef={defaultColDef}
-											theme={tableTheme}
-											animateRows
-											onGridReady={(params) => {
-												gridApiRef.current = params.api;
-											}}
-											domLayout="normal"
-											getRowId={(params) => params.data.id}
-											suppressScrollOnNewData
-											enableCellTextSelection
-											ensureDomOrder
-										/>
+										<div
+											ref={listRef}
+											className="h-full overflow-auto"
+											role="table"
+											aria-label="Items"
+										>
+											<div className="min-w-max">
+												<div
+													className="sticky top-0 z-10 grid border-b bg-muted/95 text-xs font-semibold text-muted-foreground"
+													style={{ gridTemplateColumns }}
+													role="row"
+												>
+													{visibleColumnDefs.map((column) => (
+														<div
+															key={column.field}
+															className="px-3 py-2 truncate"
+															role="columnheader"
+														>
+															{column.headerName}
+														</div>
+													))}
+												</div>
+												<div
+													className="relative"
+													style={{ height: virtualizer.getTotalSize() }}
+												>
+													{virtualizer.getVirtualItems().map((virtualRow) => {
+														const item = filteredItems[virtualRow.index];
+														return (
+															<div
+																key={item.id}
+																className={cn(
+																	"absolute left-0 top-0 grid w-full rounded-none border-b text-sm outline-none transition-colors hover:bg-blue-50/70 hover:outline-1 hover:outline-blue-200 dark:hover:bg-blue-950/30 dark:hover:outline-blue-800",
+																	selectedItem?.id === item.id &&
+																		"bg-blue-50/80 outline-1 outline-blue-500 dark:bg-blue-950/40 dark:outline-blue-400",
+																)}
+																style={{
+																	height: virtualRow.size,
+																	transform: `translateY(${virtualRow.start}px)`,
+																	gridTemplateColumns,
+																}}
+																role="row"
+																aria-selected={selectedItem?.id === item.id}
+																onClick={() => setSelectedItem(item)}
+															>
+																{visibleColumnDefs.map((column) => (
+																	<div
+																		key={column.field}
+																		className={cn(
+																			"flex min-w-0 items-center px-3",
+																			column.cellClass,
+																		)}
+																		role="cell"
+																	>
+																		{renderCell(item, column.field ?? "")}
+																	</div>
+																))}
+															</div>
+														);
+													})}
+												</div>
+											</div>
+										</div>
 									)}
 								</div>
 							</CardContent>

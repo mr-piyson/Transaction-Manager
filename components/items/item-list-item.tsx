@@ -63,7 +63,7 @@ export function ItemListItem({ data, className, ...props }: ItemListItemProps) {
 	return (
 		<div
 			className={cn(
-				"grid grid-cols-[auto_minmax(0,1fr)] items-center gap-3 p-1",
+				"grid grid-cols-[auto_minmax(0,1fr)] items-center gap-3 p-3",
 				className,
 			)}
 			{...props}

@@ -1,68 +1,69 @@
 {
-	"$schema": "https://biomejs.dev/schemas/2.5.7/schema.json",
-	"vcs": {
-		"enabled": true,
-		"clientKind": "git",
-		"useIgnoreFile": true
-	},
-	"files": {
-		"ignoreUnknown": false,
-		"includes": ["**", "!**/node_modules", "!**/dist", "!**/build"]
-	},
-	"css": {
-		"parser": {
-			"tailwindDirectives": true
-		}
-	},
-	"formatter": {
-		"enabled": true,
-		"indentStyle": "tab",
-		"includes": ["**", "!**/node_modules/**"]
-	},
-	"linter": {
-		"enabled": true,
-		"rules": {
-			"a11y": {
-				"useButtonType": "off",
-				"useFocusableInteractive": "off",
-				"useSemanticElements": "off",
-				"noRedundantRoles": "off",
-				"noStaticElementInteractions": "off",
-				"useKeyWithClickEvents": "off",
-				"noSvgWithoutTitle": "off"
-			},
-			"preset": "recommended",
-			"correctness": {
-				"useExhaustiveDependencies": "off",
-				"useUniqueElementIds": "off"
-			},
-			"style": {
-				"useNodejsImportProtocol": "off",
-				"noNonNullAssertion": "off"
-			},
-			"suspicious": {
-				"noRedeclare": "off",
-				"noUnknownAtRules": "off",
-				"noImplicitAnyLet": "off",
-				"noExplicitAny": "off",
-				"noArrayIndexKey": "off"
-			},
-			"security": {
-				"noDangerouslySetInnerHtml": "off"
-			}
-		}
-	},
-	"javascript": {
-		"formatter": {
-			"quoteStyle": "double"
-		}
-	},
-	"assist": {
-		"enabled": true,
-		"actions": {
-			"source": {
-				"organizeImports": "on"
-			}
-		}
-	}
+  "$schema": "https://biomejs.dev/schemas/2.5.7/schema.json",
+  "vcs": {
+    "enabled": true,
+    "clientKind": "git",
+    "useIgnoreFile": true
+  },
+  "files": {
+    "ignoreUnknown": false,
+    "includes": ["**", "!**/node_modules", "!**/dist", "!**/build"]
+  },
+  "css": {
+    "parser": {
+      "tailwindDirectives": true
+    }
+  },
+  "formatter": {
+    "enabled": true,
+    "indentStyle": "space",
+    "indentWidth": 2,
+    "includes": ["**", "!**/node_modules/**"]
+  },
+  "linter": {
+    "enabled": true,
+    "rules": {
+      "a11y": {
+        "useButtonType": "off",
+        "useFocusableInteractive": "off",
+        "useSemanticElements": "off",
+        "noRedundantRoles": "off",
+        "noStaticElementInteractions": "off",
+        "useKeyWithClickEvents": "off",
+        "noSvgWithoutTitle": "off"
+      },
+      "preset": "recommended",
+      "correctness": {
+        "useExhaustiveDependencies": "off",
+        "useUniqueElementIds": "off"
+      },
+      "style": {
+        "useNodejsImportProtocol": "off",
+        "noNonNullAssertion": "off"
+      },
+      "suspicious": {
+        "noRedeclare": "off",
+        "noUnknownAtRules": "off",
+        "noImplicitAnyLet": "off",
+        "noExplicitAny": "off",
+        "noArrayIndexKey": "off"
+      },
+      "security": {
+        "noDangerouslySetInnerHtml": "off"
+      }
+    }
+  },
+  "javascript": {
+    "formatter": {
+      "quoteStyle": "double"
+    }
+  },
+  "assist": {
+    "enabled": true,
+    "actions": {
+      "source": {
+        "organizeImports": "on"
+      }
+    }
+  }
 }
