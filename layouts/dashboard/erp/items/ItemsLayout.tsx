@@ -3,29 +3,25 @@
 import {
 	AllCommunityModule,
 	type ColDef,
-	type GridApi,
 	ModuleRegistry,
 } from "ag-grid-community";
 import { AgGridReact } from "ag-grid-react";
 import {
-	Box,
+	BarChart3,
 	Download,
 	Edit,
 	Eye,
 	Filter,
-	List,
 	MoreHorizontal,
 	Package,
 	ShieldAlert,
-	Table2,
 	Trash2,
-	Wrench,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
 import type * as React from "react";
-import { useMemo, useRef, useState } from "react";
+import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { alert } from "@/components/Alert-dialog";
 import { useUnifiedItemForm } from "@/components/dialogs";
@@ -49,13 +45,7 @@ import {
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-	HoverCard,
-	HoverCardContent,
-	HoverCardTrigger,
-} from "@/components/ui/hover-card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useCurrency } from "@/hooks/use-currency";
 import { useTableTheme } from "@/hooks/use-table-theme";
 import { trpc } from "@/lib/trpc/client";
 import { cn } from "@/lib/utils";
@@ -70,14 +60,11 @@ export default function ItemsLayout({
 	children?: React.ReactNode;
 }) {
 	const t = useTranslations();
-	const { format } = useCurrency();
 	const tableTheme = useTableTheme();
 	const { openCreate, openEdit } = useUnifiedItemForm();
 	const { openDialog: openHardDelete } = useHardDeleteForm();
 	const { data: me } = trpc.auth.me.useQuery();
 	const isSuperAdmin = me?.platformRole === "SUPER_ADMIN";
-
-	const [viewMode, setViewMode] = useState<"list" | "table">("list");
 
 	const TYPE_FILTERS = [
 		{ value: "", label: t("common.all") },
@@ -200,206 +187,6 @@ export default function ItemsLayout({
 		[selectedItemId, t, deleteMutation, title, isSuperAdmin, openHardDelete],
 	);
 
-	const tableColumnDefs = useMemo<ColDef[]>(
-		() => [
-			{
-				headerName: "",
-				field: "image",
-				width: 60,
-				sortable: false,
-				filter: false,
-				suppressMenu: true,
-				cellRenderer: (params: { data: any }) => {
-					const item = params.data;
-					return item.image ? (
-						<HoverCard openDelay={200} closeDelay={100}>
-							<HoverCardTrigger asChild>
-								<div className="flex items-center justify-center h-full cursor-pointer">
-									<img
-										src={item.image}
-										alt={item.name}
-										className="size-9 rounded object-cover border"
-									/>
-								</div>
-							</HoverCardTrigger>
-							<HoverCardContent side="right" className="w-auto p-2">
-								<img
-									src={item.image}
-									alt={item.name}
-									className="max-w-56 max-h-56 rounded object-contain"
-								/>
-							</HoverCardContent>
-						</HoverCard>
-					) : (
-						<div className="flex items-center justify-center h-full">
-							<Package className="size-5 text-muted-foreground" />
-						</div>
-					);
-				},
-			},
-			{
-				headerName: "SKU",
-				field: "sku",
-				width: 120,
-				cellClass: "font-mono text-[11px]",
-			},
-			{
-				headerName: "Name",
-				field: "name",
-				flex: 1,
-				filter: "agTextColumnFilter",
-				cellClass: "font-medium text-[12px]",
-			},
-			{
-				headerName: "Type",
-				field: "type",
-				width: 110,
-				filter: "agTextColumnFilter",
-				cellRenderer: (params: { value: string }) => {
-					const TYPE_STYLES: Record<
-						string,
-						{ icon: typeof Package; bg: string; fg: string }
-					> = {
-						PRODUCT: {
-							icon: Box,
-							bg: "bg-sky-100 dark:bg-sky-900/40",
-							fg: "text-sky-700 dark:text-sky-300",
-						},
-						SERVICE: {
-							icon: Wrench,
-							bg: "bg-orange-100 dark:bg-orange-900/40",
-							fg: "text-orange-700 dark:text-orange-300",
-						},
-					};
-					const {
-						bg,
-						fg,
-						icon: Icon,
-					} = TYPE_STYLES[params.value] ?? TYPE_STYLES.PRODUCT;
-
-					return (
-						<Badge variant="outline" className={cn("gap-1 font-medium", fg)}>
-							<Icon className={cn("size-4")} />
-							{params.value}
-						</Badge>
-					);
-				},
-			},
-			{
-				headerName: "Unit",
-				field: "unit",
-				width: 70,
-			},
-			{
-				headerName: "Buy Price",
-				field: "purchasePrice",
-				width: 100,
-				type: "numericColumn",
-				filter: "agNumberColumnFilter",
-				cellClass: "tabular-nums text-[12px]",
-				valueFormatter: (params) => format(params.value),
-			},
-			{
-				headerName: "Sell Price",
-				field: "salesPrice",
-				width: 100,
-				type: "numericColumn",
-				filter: "agNumberColumnFilter",
-				cellClass: "tabular-nums text-[12px] font-medium",
-				valueFormatter: (params) => format(params.value),
-			},
-			{
-				headerName: "",
-				field: "id",
-				width: 50,
-				sortable: false,
-				filter: false,
-				suppressMenu: true,
-				cellRenderer: (params: { data: any }) => {
-					const item = params.data;
-					return (
-						<DropdownMenu>
-							<DropdownMenuTrigger asChild>
-								<Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-									<MoreHorizontal className="size-4" />
-								</Button>
-							</DropdownMenuTrigger>
-							<DropdownMenuContent align="end">
-								<DropdownMenuItem onClick={() => setSelectedItemId(item.id)}>
-									<Eye className="size-4 mr-2" />
-									{t("common.viewDetails")}
-								</DropdownMenuItem>
-								<DropdownMenuItem onClick={() => openEdit({ itemId: item.id })}>
-									<Edit className="size-4 mr-2" />
-									{t("common.edit")}
-								</DropdownMenuItem>
-								<DropdownMenuSeparator />
-								<DropdownMenuItem
-									onClick={() =>
-										alert.delete({
-											title: t("common.confirmDeleteTitle"),
-											description: "This action cannot be undone.",
-											confirmText: t("common.delete"),
-											onConfirm: async () => {
-												await deleteMutation.mutateAsync({ id: item.id });
-											},
-										})
-									}
-								>
-									<Trash2 className="size-4 mr-2 text-destructive" />
-									<span className="text-destructive">{t("common.delete")}</span>
-								</DropdownMenuItem>
-								{isSuperAdmin && (
-									<>
-										<DropdownMenuSeparator />
-										<DropdownMenuItem
-											onClick={() =>
-												openHardDelete({
-													kind: "item",
-													id: item.id,
-													title: item.sku ?? item.name,
-												})
-											}
-										>
-											<ShieldAlert className="size-4 mr-2 text-destructive" />
-											<span className="text-destructive">
-												{t("hardDelete.menu")}
-											</span>
-										</DropdownMenuItem>
-									</>
-								)}
-							</DropdownMenuContent>
-						</DropdownMenu>
-					);
-				},
-			},
-		],
-		[
-			format,
-			selectedItemId,
-			openEdit,
-			t,
-			deleteMutation,
-			isSuperAdmin,
-			openHardDelete,
-		],
-	);
-
-	const defaultColDef = useMemo(
-		() => ({
-			sortable: true,
-			filter: true,
-			resizable: true,
-			minWidth: 60,
-		}),
-		[],
-	);
-
-	const gridApiRef = useRef<GridApi | null>(null);
-	const gridRef = useRef<any>(null);
-
-	const columnDefs = viewMode === "list" ? listColumnDefs : tableColumnDefs;
-
 	return (
 		<div className="flex h-screen flex-col overflow-hidden">
 			<Header
@@ -434,26 +221,14 @@ export default function ItemsLayout({
 							</div>
 							{/* End Actions */}
 							<div className="ml-auto flex shrink-0 items-center gap-2">
-								<div className="flex items-center rounded-lg border p-0.5">
-									<Button
-										variant={viewMode === "list" ? "secondary" : "ghost"}
-										size="sm"
-										className="h-7 px-2"
-										onClick={() => setViewMode("list")}
-										title="List view"
-									>
-										<List className="size-3.5" />
+								<Link href="/erp/reports/items">
+									<Button variant="outline" size="sm">
+										<BarChart3 className="size-3.5" />
+										<span className="hidden md:block">
+											{t("layout.reports")}
+										</span>
 									</Button>
-									<Button
-										variant={viewMode === "table" ? "secondary" : "ghost"}
-										size="sm"
-										className="h-7 px-2"
-										onClick={() => setViewMode("table")}
-										title="Table view"
-									>
-										<Table2 className="size-3.5" />
-									</Button>
-								</div>
+								</Link>
 								<Link href="/erp/items/import">
 									<Button variant="outline" size="sm">
 										<Download className="size-3.5" />
@@ -504,23 +279,17 @@ export default function ItemsLayout({
 							</div>
 						</div>
 						<AgGridReact
-							ref={gridRef}
 							rowData={items}
-							columnDefs={columnDefs}
-							defaultColDef={viewMode === "list" ? undefined : defaultColDef}
-							theme={tableTheme}
+							columnDefs={listColumnDefs}
 							animateRows
-							onGridReady={(params) => {
-								gridApiRef.current = params.api;
-							}}
 							domLayout="normal"
 							getRowId={(params) => params.data.id}
 							suppressScrollOnNewData
 							enableCellTextSelection
 							ensureDomOrder
 							loading={isPending}
-							headerHeight={viewMode === "list" ? 0 : undefined}
-							rowHeight={viewMode === "list" ? 72 : undefined}
+							headerHeight={0}
+							rowHeight={72}
 						/>
 					</div>
 				) : (

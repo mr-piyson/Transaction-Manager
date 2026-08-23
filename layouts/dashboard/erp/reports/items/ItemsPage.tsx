@@ -442,9 +442,21 @@ export default function ItemReportPage() {
 			type: true,
 			purchasePrice: true,
 			salesPrice: true,
+			averageCost: true,
 			totalStock: true,
+			minStock: true,
+			reorderPoint: true,
+			reorderQty: true,
+			weightKg: true,
+			inventoryValue: true,
+			isActive: true,
+			isSaleable: true,
+			isPurchasable: true,
 			warehouseNames: true,
 			stockStatus: true,
+			supplierNames: true,
+			createdAt: true,
+			description: true,
 			id: true,
 		},
 	);
@@ -699,6 +711,15 @@ export default function ItemReportPage() {
 				valueFormatter: (params) => format(params.value),
 			},
 			{
+				headerName: "Avg Cost",
+				field: "averageCost",
+				width: 95,
+				hide: !visibleColumns.averageCost,
+				filter: "agNumberColumnFilter",
+				type: "numericColumn",
+				valueFormatter: (params) => format(params.value),
+			},
+			{
 				headerName: "Stock",
 				field: "totalStock",
 				width: 85,
@@ -725,6 +746,27 @@ export default function ItemReportPage() {
 						</Badge>
 					);
 				},
+			},
+			{
+				headerName: "Min Stock",
+				field: "minStock",
+				width: 90,
+				hide: !visibleColumns.minStock,
+				type: "numericColumn",
+			},
+			{
+				headerName: "Reorder At",
+				field: "reorderPoint",
+				width: 100,
+				hide: !visibleColumns.reorderPoint,
+				type: "numericColumn",
+			},
+			{
+				headerName: "Reorder Qty",
+				field: "reorderQty",
+				width: 100,
+				hide: !visibleColumns.reorderQty,
+				type: "numericColumn",
 			},
 			{
 				headerName: "Warehouse",
@@ -770,6 +812,84 @@ export default function ItemReportPage() {
 						</Badge>
 					);
 				},
+			},
+			{
+				headerName: "Active",
+				field: "isActive",
+				width: 80,
+				hide: !visibleColumns.isActive,
+				cellRenderer: (params: { value: boolean }) => (
+					<Badge variant={params.value ? "default" : "secondary"}>
+						{params.value ? "Yes" : "No"}
+					</Badge>
+				),
+			},
+			{
+				headerName: "Saleable",
+				field: "isSaleable",
+				width: 90,
+				hide: !visibleColumns.isSaleable,
+				cellRenderer: (params: { value: boolean }) => (
+					<Badge variant={params.value ? "default" : "secondary"}>
+						{params.value ? "Yes" : "No"}
+					</Badge>
+				),
+			},
+			{
+				headerName: "Purchasable",
+				field: "isPurchasable",
+				width: 100,
+				hide: !visibleColumns.isPurchasable,
+				cellRenderer: (params: { value: boolean }) => (
+					<Badge variant={params.value ? "default" : "secondary"}>
+						{params.value ? "Yes" : "No"}
+					</Badge>
+				),
+			},
+			{
+				headerName: "Weight",
+				field: "weightKg",
+				width: 85,
+				hide: !visibleColumns.weightKg,
+				valueFormatter: (params) =>
+					params.value === null || params.value === undefined
+						? "—"
+						: `${params.value} kg`,
+			},
+			{
+				headerName: "Inventory Value",
+				field: "inventoryValue",
+				width: 125,
+				hide: !visibleColumns.inventoryValue,
+				filter: "agNumberColumnFilter",
+				type: "numericColumn",
+				valueFormatter: (params) => format(params.value),
+			},
+			{
+				headerName: "Suppliers",
+				field: "supplierNames",
+				width: 150,
+				hide: !visibleColumns.supplierNames,
+				filter: "agTextColumnFilter",
+				valueFormatter: (params: { value: string[] }) =>
+					params.value?.join(", ") ?? "—",
+			},
+			{
+				headerName: "Created",
+				field: "createdAt",
+				width: 110,
+				hide: !visibleColumns.createdAt,
+				filter: "agDateColumnFilter",
+				valueFormatter: (params) =>
+					params.value ? new Date(params.value).toLocaleDateString() : "—",
+			},
+			{
+				headerName: "Description",
+				field: "description",
+				width: 180,
+				hide: !visibleColumns.description,
+				filter: "agTextColumnFilter",
+				valueFormatter: (params) => params.value ?? "—",
 			},
 			{
 				headerName: "",
@@ -1079,9 +1199,21 @@ export default function ItemReportPage() {
 														type: "Type",
 														purchasePrice: "Buy Price",
 														salesPrice: "Sell Price",
+														averageCost: "Avg Cost",
 														totalStock: "Stock",
+														minStock: "Min Stock",
+														reorderPoint: "Reorder At",
+														reorderQty: "Reorder Qty",
+														weightKg: "Weight",
+														inventoryValue: "Inventory Value",
+														isActive: "Active",
+														isSaleable: "Saleable",
+														isPurchasable: "Purchasable",
 														warehouseNames: "Warehouse",
 														stockStatus: "Status",
+														supplierNames: "Suppliers",
+														createdAt: "Created",
+														description: "Description",
 														id: "Actions",
 													};
 													return (
