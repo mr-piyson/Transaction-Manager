@@ -435,9 +435,9 @@ export default function ItemsLayout({
 			<div className="flex-1 min-h-0 w-full">
 				{isListRoute ? (
 					<div className="h-full w-full flex flex-col">
-						<div className="w-full flex flex-row justify-between border-b px-4 py-2 shrink-0">
+						<div className="flex w-full min-w-0 flex-row flex-wrap items-center justify-between gap-2 border-b px-4 py-2 shrink-0">
 							{/* Start Actions */}
-							<div className="flex gap-2 items-center">
+							<div className="flex min-w-0 items-center gap-2 ">
 								<Tabs value={typeFilter} onValueChange={setTypeFilter}>
 									<TabsList className="h-auto  justify-start">
 										{TYPE_FILTERS.map((filter) => (
@@ -453,7 +453,7 @@ export default function ItemsLayout({
 								</Tabs>
 							</div>
 							{/* End Actions */}
-							<div className="flex gap-2 items-center ">
+							<div className="ml-auto flex shrink-0 items-center gap-2">
 								<div className="flex items-center rounded-lg border p-0.5">
 									<Button
 										variant={viewMode === "list" ? "secondary" : "ghost"}
@@ -483,8 +483,8 @@ export default function ItemsLayout({
 							</div>
 						</div>
 						{/* Category filter bar */}
-						<div className="w-full border-b px-4 py-1.5 shrink-0">
-							<div className="flex items-center gap-2 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+						<div className="w-full min-w-0 border-b px-4 py-1.5 shrink-0 overflow-hidden">
+							<div className="flex items-center gap-2 overflow-x-auto w-full pb-1">
 								<Filter className="size-3.5 text-muted-foreground shrink-0" />
 								<button
 									className={cn(
