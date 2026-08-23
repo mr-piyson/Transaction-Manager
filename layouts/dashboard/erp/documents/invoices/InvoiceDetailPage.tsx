@@ -3,5 +3,5 @@
 import DocumentDetailPage from "../[type]/[id]/IdPage";
 
 export default function InvoiceDetailPage() {
-	return <DocumentDetailPage documentType="invoices" />;
+  return <DocumentDetailPage documentType="invoices" />;
 }

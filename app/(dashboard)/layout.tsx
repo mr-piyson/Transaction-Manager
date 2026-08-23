@@ -4,17 +4,17 @@ import DashboardLayoutClient from "@/layouts/dashboard/DashboardLayout";
 import db from "@/lib/db";
 
 export default async function DashboardLayout({
-	children,
+  children,
 }: {
-	children: React.ReactNode;
+  children: React.ReactNode;
 }) {
-	if (!(await db.organization.count())) {
-		redirect("/setup");
-	}
-	const user = await getCurrentUser();
-	if (!user) {
-		redirect("/auth");
-	}
+  if (!(await db.organization.count())) {
+    redirect("/setup");
+  }
+  const user = await getCurrentUser();
+  if (!user) {
+    redirect("/auth");
+  }
 
-	return <DashboardLayoutClient>{children}</DashboardLayoutClient>;
+  return <DashboardLayoutClient>{children}</DashboardLayoutClient>;
 }

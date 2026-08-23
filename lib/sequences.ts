@@ -30,26 +30,26 @@
 import type { Prisma } from "@prisma/client";
 
 export type DocumentPrefix =
-	| "INV"
-	| "QTE"
-	| "CN"
-	| "PFI"
-	| "DN"
-	| "PO"
-	| "JE"
-	| "EXP"
-	| "CTR";
+  | "INV"
+  | "QTE"
+  | "CN"
+  | "PFI"
+  | "DN"
+  | "PO"
+  | "JE"
+  | "EXP"
+  | "CTR";
 
 type TransactionClient = Prisma.TransactionClient;
 
 interface GenerateSerialOptions {
-	db: TransactionClient;
-	organizationId: string;
-	prefix: DocumentPrefix;
-	/** Pad the numeric part to this many digits. Default: 5 */
-	padLength?: number;
-	/** Optional fiscal year for per-year counters (e.g. 2025). */
-	fiscalYear?: number;
+  db: TransactionClient;
+  organizationId: string;
+  prefix: DocumentPrefix;
+  /** Pad the numeric part to this many digits. Default: 5 */
+  padLength?: number;
+  /** Optional fiscal year for per-year counters (e.g. 2025). */
+  fiscalYear?: number;
 }
 
 /**
@@ -67,15 +67,15 @@ interface GenerateSerialOptions {
  *   });
  */
 export async function generateSerial(
-	opts: GenerateSerialOptions,
+  opts: GenerateSerialOptions,
 ): Promise<string> {
-	const { db, organizationId, prefix, padLength = 5, fiscalYear } = opts;
+  const { db, organizationId, prefix, padLength = 5, fiscalYear } = opts;
 
-	const fiscalYearParam: number = fiscalYear ?? 0;
+  const fiscalYearParam: number = fiscalYear ?? 0;
 
-	// Upsert the sequence row so first-time use auto-creates it.
-	// Then lock it for the duration of this transaction.
-	await db.$executeRaw`
+  // Upsert the sequence row so first-time use auto-creates it.
+  // Then lock it for the duration of this transaction.
+  await db.$executeRaw`
     INSERT INTO "DocumentSequence" (id, prefix, "nextVal", "organizationId", "fiscalYear")
     VALUES (
       gen_random_uuid(),
@@ -88,8 +88,8 @@ export async function generateSerial(
     DO NOTHING
   `;
 
-	// Lock the row and atomically increment nextVal
-	const result = await db.$queryRaw<{ nextVal: number }[]>`
+  // Lock the row and atomically increment nextVal
+  const result = await db.$queryRaw<{ nextVal: number }[]>`
     UPDATE "DocumentSequence"
     SET "nextVal" = "nextVal" + 1
     WHERE "organizationId" = ${organizationId}
@@ -98,13 +98,13 @@ export async function generateSerial(
     RETURNING "nextVal"
   `;
 
-	const nextVal = result[0]?.nextVal;
-	if (nextVal === undefined) {
-		throw new Error(`Failed to generate serial for prefix ${prefix}`);
-	}
+  const nextVal = result[0]?.nextVal;
+  if (nextVal === undefined) {
+    throw new Error(`Failed to generate serial for prefix ${prefix}`);
+  }
 
-	const paddedNum = String(nextVal).padStart(padLength, "0");
-	return fiscalYear
-		? `${prefix}-${fiscalYear}-${paddedNum}`
-		: `${prefix}-${paddedNum}`;
+  const paddedNum = String(nextVal).padStart(padLength, "0");
+  return fiscalYear
+    ? `${prefix}-${fiscalYear}-${paddedNum}`
+    : `${prefix}-${paddedNum}`;
 }

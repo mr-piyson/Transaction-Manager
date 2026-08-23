@@ -4,281 +4,281 @@ import { assertCan, orgProcedure, router } from "@/lib/trpc/context";
 import { sortOrderSchema } from "@/lib/validations";
 import { writeAuditLog } from "../shared/audit.service";
 import {
-	getHardDeleteInfo,
-	hardDeleteWarehouseTree,
+  getHardDeleteInfo,
+  hardDeleteWarehouseTree,
 } from "./hard-delete.service";
 
 const warehouseBaseSchema = z.object({
-	name: z.string().min(1).max(255),
-	code: z.string().max(50).optional(),
-	isDefault: z.boolean().default(false),
-	isActive: z.boolean().default(true),
+  name: z.string().min(1).max(255),
+  code: z.string().max(50).optional(),
+  isDefault: z.boolean().default(false),
+  isActive: z.boolean().default(true),
 });
 
 const createWarehouseSchema = warehouseBaseSchema;
 const updateWarehouseSchema = warehouseBaseSchema.partial().extend({
-	id: z.string(),
+  id: z.string(),
 });
 
 const listWarehousesSchema = z.object({
-	search: z.string().optional(),
-	isActive: z.boolean().optional(),
-	sortBy: z.enum(["name", "createdAt", "updatedAt"]).default("name"),
-	sortOrder: sortOrderSchema,
+  search: z.string().optional(),
+  isActive: z.boolean().optional(),
+  sortBy: z.enum(["name", "createdAt", "updatedAt"]).default("name"),
+  sortOrder: sortOrderSchema,
 });
 
 export const warehousesRouter = router({
-	list: orgProcedure
-		.input(listWarehousesSchema)
-		.query(async ({ ctx, input }) => {
-			assertCan(ctx.ability, "stock:read", "all");
+  list: orgProcedure
+    .input(listWarehousesSchema)
+    .query(async ({ ctx, input }) => {
+      assertCan(ctx.ability, "stock:read", "all");
 
-			const { search, isActive, sortBy, sortOrder } = input;
-			const orgId = ctx.user.organizationId;
+      const { search, isActive, sortBy, sortOrder } = input;
+      const orgId = ctx.user.organizationId;
 
-			const where: Record<string, unknown> = {
-				organizationId: orgId,
-				deletedAt: null,
-				...(isActive !== undefined ? { isActive } : {}),
-				...(search
-					? {
-							OR: [
-								{ name: { contains: search, mode: "insensitive" as const } },
-								{ code: { contains: search, mode: "insensitive" as const } },
-							],
-						}
-					: {}),
-			};
+      const where: Record<string, unknown> = {
+        organizationId: orgId,
+        deletedAt: null,
+        ...(isActive !== undefined ? { isActive } : {}),
+        ...(search
+          ? {
+              OR: [
+                { name: { contains: search, mode: "insensitive" as const } },
+                { code: { contains: search, mode: "insensitive" as const } },
+              ],
+            }
+          : {}),
+      };
 
-			const warehouses = await ctx.db.warehouse.findMany({
-				where,
-				orderBy: { [sortBy]: sortOrder },
-				include: { _count: { select: { stock: true } } },
-			});
+      const warehouses = await ctx.db.warehouse.findMany({
+        where,
+        orderBy: { [sortBy]: sortOrder },
+        include: { _count: { select: { stock: true } } },
+      });
 
-			return warehouses;
-		}),
+      return warehouses;
+    }),
 
-	byId: orgProcedure
-		.input(z.object({ id: z.string() }))
-		.query(async ({ ctx, input }) => {
-			assertCan(ctx.ability, "stock:read", "all");
+  byId: orgProcedure
+    .input(z.object({ id: z.string() }))
+    .query(async ({ ctx, input }) => {
+      assertCan(ctx.ability, "stock:read", "all");
 
-			const warehouse = await ctx.db.warehouse.findFirst({
-				where: {
-					id: input.id,
-					organizationId: ctx.user.organizationId,
-					deletedAt: null,
-				},
-			});
+      const warehouse = await ctx.db.warehouse.findFirst({
+        where: {
+          id: input.id,
+          organizationId: ctx.user.organizationId,
+          deletedAt: null,
+        },
+      });
 
-			if (!warehouse) throw new NotFoundError("Warehouse", input.id);
-			return warehouse;
-		}),
+      if (!warehouse) throw new NotFoundError("Warehouse", input.id);
+      return warehouse;
+    }),
 
-	create: orgProcedure
-		.input(createWarehouseSchema)
-		.mutation(async ({ ctx, input }) => {
-			assertCan(ctx.ability, "stock:transfer", "all");
+  create: orgProcedure
+    .input(createWarehouseSchema)
+    .mutation(async ({ ctx, input }) => {
+      assertCan(ctx.ability, "stock:transfer", "all");
 
-			const orgId = ctx.user.organizationId;
+      const orgId = ctx.user.organizationId;
 
-			if (input.code) {
-				const existing = await ctx.db.warehouse.findFirst({
-					where: { code: input.code, organizationId: orgId, deletedAt: null },
-					select: { id: true },
-				});
-				if (existing)
-					throw new ConflictError(
-						`Warehouse code "${input.code}" is already in use.`,
-					);
-			}
+      if (input.code) {
+        const existing = await ctx.db.warehouse.findFirst({
+          where: { code: input.code, organizationId: orgId, deletedAt: null },
+          select: { id: true },
+        });
+        if (existing)
+          throw new ConflictError(
+            `Warehouse code "${input.code}" is already in use.`,
+          );
+      }
 
-			return ctx.db.$transaction(async (tx) => {
-				if (input.isDefault) {
-					await tx.warehouse.updateMany({
-						where: { organizationId: orgId, isDefault: true, deletedAt: null },
-						data: { isDefault: false },
-					});
-				}
+      return ctx.db.$transaction(async (tx) => {
+        if (input.isDefault) {
+          await tx.warehouse.updateMany({
+            where: { organizationId: orgId, isDefault: true, deletedAt: null },
+            data: { isDefault: false },
+          });
+        }
 
-				const created = await tx.warehouse.create({
-					data: { ...input, organizationId: orgId },
-				});
+        const created = await tx.warehouse.create({
+          data: { ...input, organizationId: orgId },
+        });
 
-				await writeAuditLog(
-					{
-						entityType: "Warehouse",
-						entityId: created.id,
-						action: "CREATE",
-						organizationId: orgId,
-						userId: ctx.user.id,
-						ipAddress: ctx.ipAddress,
-					},
-					tx,
-				);
+        await writeAuditLog(
+          {
+            entityType: "Warehouse",
+            entityId: created.id,
+            action: "CREATE",
+            organizationId: orgId,
+            userId: ctx.user.id,
+            ipAddress: ctx.ipAddress,
+          },
+          tx,
+        );
 
-				return created;
-			});
-		}),
+        return created;
+      });
+    }),
 
-	update: orgProcedure
-		.input(updateWarehouseSchema)
-		.mutation(async ({ ctx, input }) => {
-			const { id, ...data } = input;
-			const orgId = ctx.user.organizationId;
+  update: orgProcedure
+    .input(updateWarehouseSchema)
+    .mutation(async ({ ctx, input }) => {
+      const { id, ...data } = input;
+      const orgId = ctx.user.organizationId;
 
-			const existing = await ctx.db.warehouse.findFirst({
-				where: { id, organizationId: orgId, deletedAt: null },
-			});
-			if (!existing) throw new NotFoundError("Warehouse", id);
+      const existing = await ctx.db.warehouse.findFirst({
+        where: { id, organizationId: orgId, deletedAt: null },
+      });
+      if (!existing) throw new NotFoundError("Warehouse", id);
 
-			assertCan(
-				ctx.ability,
-				"stock:transfer",
-				"all",
-				existing as Record<string, unknown>,
-			);
+      assertCan(
+        ctx.ability,
+        "stock:transfer",
+        "all",
+        existing as Record<string, unknown>,
+      );
 
-			return ctx.db.$transaction(async (tx) => {
-				if (data.isDefault) {
-					await tx.warehouse.updateMany({
-						where: {
-							organizationId: orgId,
-							isDefault: true,
-							deletedAt: null,
-							NOT: { id },
-						},
-						data: { isDefault: false },
-					});
-				}
+      return ctx.db.$transaction(async (tx) => {
+        if (data.isDefault) {
+          await tx.warehouse.updateMany({
+            where: {
+              organizationId: orgId,
+              isDefault: true,
+              deletedAt: null,
+              NOT: { id },
+            },
+            data: { isDefault: false },
+          });
+        }
 
-				const updated = await tx.warehouse.update({ where: { id }, data });
+        const updated = await tx.warehouse.update({ where: { id }, data });
 
-				await writeAuditLog(
-					{
-						entityType: "Warehouse",
-						entityId: id,
-						action: "UPDATE",
-						organizationId: orgId,
-						userId: ctx.user.id,
-						ipAddress: ctx.ipAddress,
-					},
-					tx,
-				);
+        await writeAuditLog(
+          {
+            entityType: "Warehouse",
+            entityId: id,
+            action: "UPDATE",
+            organizationId: orgId,
+            userId: ctx.user.id,
+            ipAddress: ctx.ipAddress,
+          },
+          tx,
+        );
 
-				return updated;
-			});
-		}),
+        return updated;
+      });
+    }),
 
-	delete: orgProcedure
-		.input(z.object({ id: z.string() }))
-		.mutation(async ({ ctx, input }) => {
-			const existing = await ctx.db.warehouse.findFirst({
-				where: {
-					id: input.id,
-					organizationId: ctx.user.organizationId,
-					deletedAt: null,
-				},
-				select: {
-					id: true,
-					isDefault: true,
-					_count: { select: { stock: { where: { quantity: { gt: 0 } } } } },
-				},
-			});
-			if (!existing) throw new NotFoundError("Warehouse", input.id);
+  delete: orgProcedure
+    .input(z.object({ id: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      const existing = await ctx.db.warehouse.findFirst({
+        where: {
+          id: input.id,
+          organizationId: ctx.user.organizationId,
+          deletedAt: null,
+        },
+        select: {
+          id: true,
+          isDefault: true,
+          _count: { select: { stock: { where: { quantity: { gt: 0 } } } } },
+        },
+      });
+      if (!existing) throw new NotFoundError("Warehouse", input.id);
 
-			assertCan(
-				ctx.ability,
-				"stock:transfer",
-				"all",
-				existing as Record<string, unknown>,
-			);
+      assertCan(
+        ctx.ability,
+        "stock:transfer",
+        "all",
+        existing as Record<string, unknown>,
+      );
 
-			if (existing.isDefault) {
-				throw new ConflictError(
-					"Cannot delete the default warehouse. Set another as default first.",
-				);
-			}
-			if (existing._count.stock > 0) {
-				throw new ConflictError(
-					"Cannot delete warehouse with stock on hand. Transfer stock first.",
-				);
-			}
+      if (existing.isDefault) {
+        throw new ConflictError(
+          "Cannot delete the default warehouse. Set another as default first.",
+        );
+      }
+      if (existing._count.stock > 0) {
+        throw new ConflictError(
+          "Cannot delete warehouse with stock on hand. Transfer stock first.",
+        );
+      }
 
-			await ctx.db.$transaction(async (tx) => {
-				await tx.warehouse.update({
-					where: { id: input.id },
-					data: { deletedAt: new Date(), isActive: false },
-				});
+      await ctx.db.$transaction(async (tx) => {
+        await tx.warehouse.update({
+          where: { id: input.id },
+          data: { deletedAt: new Date(), isActive: false },
+        });
 
-				await writeAuditLog(
-					{
-						entityType: "Warehouse",
-						entityId: input.id,
-						action: "DELETE",
-						organizationId: ctx.user.organizationId,
-						userId: ctx.user.id,
-						ipAddress: ctx.ipAddress,
-					},
-					tx,
-				);
-			});
+        await writeAuditLog(
+          {
+            entityType: "Warehouse",
+            entityId: input.id,
+            action: "DELETE",
+            organizationId: ctx.user.organizationId,
+            userId: ctx.user.id,
+            ipAddress: ctx.ipAddress,
+          },
+          tx,
+        );
+      });
 
-			return { success: true };
-		}),
+      return { success: true };
+    }),
 
-	// ── HARD DELETE (SUPER_ADMIN only) ────────────────────────────────────────
-	// Permanently removes the warehouse AND all related records (stock levels,
-	// stock movements, invoices and purchase orders). Only users with
-	// platformRole === 'SUPER_ADMIN' may call these procedures.
-	hardDeleteInfo: orgProcedure
-		.input(z.object({ id: z.string() }))
-		.query(async ({ ctx, input }) => {
-			if (ctx.user.platformRole !== "SUPER_ADMIN") {
-				throw new ForbiddenError(
-					"hard delete",
-					"this warehouse. This action is restricted to platform super admins",
-				);
-			}
+  // ── HARD DELETE (SUPER_ADMIN only) ────────────────────────────────────────
+  // Permanently removes the warehouse AND all related records (stock levels,
+  // stock movements, invoices and purchase orders). Only users with
+  // platformRole === 'SUPER_ADMIN' may call these procedures.
+  hardDeleteInfo: orgProcedure
+    .input(z.object({ id: z.string() }))
+    .query(async ({ ctx, input }) => {
+      if (ctx.user.platformRole !== "SUPER_ADMIN") {
+        throw new ForbiddenError(
+          "hard delete",
+          "this warehouse. This action is restricted to platform super admins",
+        );
+      }
 
-			const orgId = ctx.user.organizationId;
-			const exists = await ctx.db.warehouse.findFirst({
-				where: { id: input.id, organizationId: orgId },
-				select: { id: true },
-			});
-			if (!exists) throw new NotFoundError("Warehouse", input.id);
+      const orgId = ctx.user.organizationId;
+      const exists = await ctx.db.warehouse.findFirst({
+        where: { id: input.id, organizationId: orgId },
+        select: { id: true },
+      });
+      if (!exists) throw new NotFoundError("Warehouse", input.id);
 
-			return getHardDeleteInfo(ctx.db, orgId, input.id);
-		}),
+      return getHardDeleteInfo(ctx.db, orgId, input.id);
+    }),
 
-	hardDelete: orgProcedure
-		.input(z.object({ id: z.string() }))
-		.mutation(async ({ ctx, input }) => {
-			if (ctx.user.platformRole !== "SUPER_ADMIN") {
-				throw new ForbiddenError(
-					"hard delete",
-					"this warehouse. This action is restricted to platform super admins",
-				);
-			}
+  hardDelete: orgProcedure
+    .input(z.object({ id: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      if (ctx.user.platformRole !== "SUPER_ADMIN") {
+        throw new ForbiddenError(
+          "hard delete",
+          "this warehouse. This action is restricted to platform super admins",
+        );
+      }
 
-			const orgId = ctx.user.organizationId;
-			const exists = await ctx.db.warehouse.findFirst({
-				where: { id: input.id, organizationId: orgId },
-				select: { id: true },
-			});
-			if (!exists) throw new NotFoundError("Warehouse", input.id);
+      const orgId = ctx.user.organizationId;
+      const exists = await ctx.db.warehouse.findFirst({
+        where: { id: input.id, organizationId: orgId },
+        select: { id: true },
+      });
+      if (!exists) throw new NotFoundError("Warehouse", input.id);
 
-			await ctx.db.$transaction(async (tx) => {
-				await hardDeleteWarehouseTree(
-					tx,
-					orgId,
-					input.id,
-					ctx.user.id,
-					ctx.ipAddress,
-				);
-			});
+      await ctx.db.$transaction(async (tx) => {
+        await hardDeleteWarehouseTree(
+          tx,
+          orgId,
+          input.id,
+          ctx.user.id,
+          ctx.ipAddress,
+        );
+      });
 
-			return { success: true };
-		}),
+      return { success: true };
+    }),
 });

@@ -6,17 +6,17 @@ import { SplashScreen } from "@/components/Splash-Screen";
 import { CurrencyProvider } from "@/hooks/use-currency";
 
 export default function DashboardLayout({
-	children,
+  children,
 }: {
-	children: React.ReactNode;
+  children: React.ReactNode;
 }) {
-	return (
-		<SplashScreen>
-			<AlertProvider>
-				<CurrencyProvider>
-					<DashboardShell>{children}</DashboardShell>
-				</CurrencyProvider>
-			</AlertProvider>
-		</SplashScreen>
-	);
+  return (
+    <SplashScreen>
+      <AlertProvider>
+        <CurrencyProvider>
+          <DashboardShell>{children}</DashboardShell>
+        </CurrencyProvider>
+      </AlertProvider>
+    </SplashScreen>
+  );
 }

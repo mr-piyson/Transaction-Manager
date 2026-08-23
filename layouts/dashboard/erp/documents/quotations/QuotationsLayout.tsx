@@ -3,11 +3,11 @@
 import DocumentsLayout from "../[type]/TypeLayout";
 
 export default function QuotationsLayout({
-	children,
+  children,
 }: {
-	children?: React.ReactNode;
+  children?: React.ReactNode;
 }) {
-	return (
-		<DocumentsLayout documentType="quotations">{children}</DocumentsLayout>
-	);
+  return (
+    <DocumentsLayout documentType="quotations">{children}</DocumentsLayout>
+  );
 }

@@ -9,109 +9,109 @@ import z from "zod";
 import { authClient } from "@/auth/auth-client";
 import { Button } from "@/components/ui/button";
 import {
-	Card,
-	CardContent,
-	CardDescription,
-	CardFooter,
-	CardHeader,
-	CardTitle,
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Spinner } from "@/components/ui/spinner";
 
 export const SignInSchema = z.object({
-	email: z.email("Please enter a valid email address"),
-	password: z.string().min(6, "Password must be at least 6 characters"),
+  email: z.email("Please enter a valid email address"),
+  password: z.string().min(6, "Password must be at least 6 characters"),
 });
 
 export default function SignInTab() {
-	const router = useRouter();
-	const t = useTranslations();
+  const router = useRouter();
+  const t = useTranslations();
 
-	const [isPending, setIsLoading] = useState(false);
+  const [isPending, setIsLoading] = useState(false);
 
-	const login = async (email: string, password: string) => {
-		setIsLoading(true);
-		const { data, error } = await authClient.signIn.email({
-			email,
-			password,
-		});
-		setIsLoading(false);
+  const login = async (email: string, password: string) => {
+    setIsLoading(true);
+    const { data, error } = await authClient.signIn.email({
+      email,
+      password,
+    });
+    setIsLoading(false);
 
-		if (data) {
-			router.push("/erp");
-		}
+    if (data) {
+      router.push("/erp");
+    }
 
-		if (error) toast.error(error.message);
-	};
+    if (error) toast.error(error.message);
+  };
 
-	const {
-		register,
-		handleSubmit,
-		formState: { errors },
-	} = useForm<z.infer<typeof SignInSchema>>({
-		resolver: zodResolver(SignInSchema),
-		defaultValues: {
-			email: "",
-			password: "",
-		},
-	});
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<z.infer<typeof SignInSchema>>({
+    resolver: zodResolver(SignInSchema),
+    defaultValues: {
+      email: "",
+      password: "",
+    },
+  });
 
-	async function onSubmit(data: z.infer<typeof SignInSchema>) {
-		await login(data.email.toLowerCase(), data.password);
-	}
+  async function onSubmit(data: z.infer<typeof SignInSchema>) {
+    await login(data.email.toLowerCase(), data.password);
+  }
 
-	return (
-		<Card>
-			<CardHeader>
-				<CardTitle className="text-2xl font-bold">{t("auth.signIn")}</CardTitle>
-				<CardDescription>{t("auth.signInSubtitle")}</CardDescription>
-			</CardHeader>
-			<form onSubmit={handleSubmit(onSubmit)}>
-				<CardContent className="space-y-2">
-					<div className="space-y-1">
-						<label htmlFor="email" className="text-sm font-medium">
-							{t("auth.email")}
-						</label>
-						<Input
-							id="email"
-							type="email"
-							placeholder={t("auth.emailPlaceholder")}
-							className="border border-muted-foreground/50"
-							{...register("email")}
-						/>
-						{errors.email && (
-							<p className="text-sm text-destructive">{errors.email.message}</p>
-						)}
-					</div>
-					<div className="space-y-1">
-						<label htmlFor="password" className="text-sm font-medium">
-							{t("auth.password")}
-						</label>
-						<Input
-							id="password"
-							type="password"
-							className="border border-muted-foreground/50"
-							{...register("password")}
-						/>
-						{errors.password && (
-							<p className="text-sm text-destructive">
-								{errors.password.message}
-							</p>
-						)}
-					</div>
-				</CardContent>
-				<CardFooter className="mt-5">
-					<Button
-						disabled={isPending}
-						type="submit"
-						className="w-full font-bold"
-					>
-						{isPending && <Spinner />}
-						{!isPending && t("auth.signIn")}
-					</Button>
-				</CardFooter>
-			</form>
-		</Card>
-	);
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="text-2xl font-bold">{t("auth.signIn")}</CardTitle>
+        <CardDescription>{t("auth.signInSubtitle")}</CardDescription>
+      </CardHeader>
+      <form onSubmit={handleSubmit(onSubmit)}>
+        <CardContent className="space-y-2">
+          <div className="space-y-1">
+            <label htmlFor="email" className="text-sm font-medium">
+              {t("auth.email")}
+            </label>
+            <Input
+              id="email"
+              type="email"
+              placeholder={t("auth.emailPlaceholder")}
+              className="border border-muted-foreground/50"
+              {...register("email")}
+            />
+            {errors.email && (
+              <p className="text-sm text-destructive">{errors.email.message}</p>
+            )}
+          </div>
+          <div className="space-y-1">
+            <label htmlFor="password" className="text-sm font-medium">
+              {t("auth.password")}
+            </label>
+            <Input
+              id="password"
+              type="password"
+              className="border border-muted-foreground/50"
+              {...register("password")}
+            />
+            {errors.password && (
+              <p className="text-sm text-destructive">
+                {errors.password.message}
+              </p>
+            )}
+          </div>
+        </CardContent>
+        <CardFooter className="mt-5">
+          <Button
+            disabled={isPending}
+            type="submit"
+            className="w-full font-bold"
+          >
+            {isPending && <Spinner />}
+            {!isPending && t("auth.signIn")}
+          </Button>
+        </CardFooter>
+      </form>
+    </Card>
+  );
 }

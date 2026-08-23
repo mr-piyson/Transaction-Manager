@@ -28,18 +28,18 @@ import { UnprocessableError } from "@/lib/error";
 type TransactionClient = Prisma.TransactionClient;
 
 interface StockLine {
-	itemId: string;
-	itemType: string; // Only PRODUCT lines trigger stock
-	quantity: number; // Positive number (we handle sign)
-	invoiceLineId: string;
+  itemId: string;
+  itemType: string; // Only PRODUCT lines trigger stock
+  quantity: number; // Positive number (we handle sign)
+  invoiceLineId: string;
 }
 
 interface StockMovementOptions {
-	tx: TransactionClient;
-	organizationId: string;
-	warehouseId: string;
-	userId: string;
-	lines: StockLine[];
+  tx: TransactionClient;
+  organizationId: string;
+  warehouseId: string;
+  userId: string;
+  lines: StockLine[];
 }
 
 // ---------------------------------------------------------------------------
@@ -47,83 +47,83 @@ interface StockMovementOptions {
 // ---------------------------------------------------------------------------
 
 export async function deductStockForInvoice(
-	opts: StockMovementOptions,
+  opts: StockMovementOptions,
 ): Promise<void> {
-	const { tx, organizationId, warehouseId, userId, lines } = opts;
+  const { tx, organizationId, warehouseId, userId, lines } = opts;
 
-	// Filter to PRODUCT lines only
-	const productLines = lines.filter((l) => l.itemType === "PRODUCT");
-	if (productLines.length === 0) return;
+  // Filter to PRODUCT lines only
+  const productLines = lines.filter((l) => l.itemType === "PRODUCT");
+  if (productLines.length === 0) return;
 
-	// ── 1. Check sufficient stock ──────────────────────────────────────────
-	const shortfalls: string[] = [];
+  // ── 1. Check sufficient stock ──────────────────────────────────────────
+  const shortfalls: string[] = [];
 
-	for (const line of productLines) {
-		const stock = await tx.stock.findUnique({
-			where: {
-				itemId_warehouseId: {
-					itemId: line.itemId,
-					warehouseId,
-				},
-			},
-			select: { quantity: true, item: { select: { sku: true, name: true } } },
-		});
+  for (const line of productLines) {
+    const stock = await tx.stock.findUnique({
+      where: {
+        itemId_warehouseId: {
+          itemId: line.itemId,
+          warehouseId,
+        },
+      },
+      select: { quantity: true, item: { select: { sku: true, name: true } } },
+    });
 
-		const available = Number(stock?.quantity ?? 0);
-		if (available < line.quantity) {
-			const itemName =
-				stock?.item.name ??
-				(
-					await tx.item.findUnique({
-						where: { id: line.itemId },
-						select: { name: true },
-					})
-				)?.name ??
-				line.itemId;
-			shortfalls.push(
-				`${itemName}: need ${line.quantity}, available ${available}`,
-			);
-		}
-	}
+    const available = Number(stock?.quantity ?? 0);
+    if (available < line.quantity) {
+      const itemName =
+        stock?.item.name ??
+        (
+          await tx.item.findUnique({
+            where: { id: line.itemId },
+            select: { name: true },
+          })
+        )?.name ??
+        line.itemId;
+      shortfalls.push(
+        `${itemName}: need ${line.quantity}, available ${available}`,
+      );
+    }
+  }
 
-	if (shortfalls.length > 0) {
-		throw new UnprocessableError(
-			`Insufficient stock for the following items:\n${shortfalls.join("\n")}`,
-			{ shortfalls },
-		);
-	}
+  if (shortfalls.length > 0) {
+    throw new UnprocessableError(
+      `Insufficient stock for the following items:\n${shortfalls.join("\n")}`,
+      { shortfalls },
+    );
+  }
 
-	// ── 2. Deduct stock + write movements ─────────────────────────────────
-	for (const line of productLines) {
-		// Load current average cost for COGS recording
-		const item = await tx.item.findUnique({
-			where: { id: line.itemId },
-			select: { averageCost: true },
-		});
+  // ── 2. Deduct stock + write movements ─────────────────────────────────
+  for (const line of productLines) {
+    // Load current average cost for COGS recording
+    const item = await tx.item.findUnique({
+      where: { id: line.itemId },
+      select: { averageCost: true },
+    });
 
-		await tx.stockMovement.create({
-			data: {
-				type: "SALE_OUTBOUND",
-				quantity: -Math.abs(line.quantity), // Negative = leaving warehouse
-				unitCost: item?.averageCost ?? 0,
-				invoiceLineId: line.invoiceLineId,
-				itemId: line.itemId,
-				fromWarehouseId: warehouseId,
-				userId,
-				organizationId,
-			},
-		});
+    await tx.stockMovement.create({
+      data: {
+        type: "SALE_OUTBOUND",
+        quantity: -Math.abs(line.quantity), // Negative = leaving warehouse
+        unitCost: item?.averageCost ?? 0,
+        invoiceLineId: line.invoiceLineId,
+        itemId: line.itemId,
+        fromWarehouseId: warehouseId,
+        userId,
+        organizationId,
+      },
+    });
 
-		await tx.stock.update({
-			where: {
-				itemId_warehouseId: { itemId: line.itemId, warehouseId },
-			},
-			data: {
-				quantity: { decrement: line.quantity },
-				version: { increment: 1 },
-			},
-		});
-	}
+    await tx.stock.update({
+      where: {
+        itemId_warehouseId: { itemId: line.itemId, warehouseId },
+      },
+      data: {
+        quantity: { decrement: line.quantity },
+        version: { increment: 1 },
+      },
+    });
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -131,43 +131,43 @@ export async function deductStockForInvoice(
 // ---------------------------------------------------------------------------
 
 export async function returnStockForCancelledInvoice(
-	opts: StockMovementOptions,
+  opts: StockMovementOptions,
 ): Promise<void> {
-	const { tx, organizationId, warehouseId, userId, lines } = opts;
+  const { tx, organizationId, warehouseId, userId, lines } = opts;
 
-	const productLines = lines.filter((l) => l.itemType === "PRODUCT");
-	if (productLines.length === 0) return;
+  const productLines = lines.filter((l) => l.itemType === "PRODUCT");
+  if (productLines.length === 0) return;
 
-	for (const line of productLines) {
-		await tx.stockMovement.create({
-			data: {
-				type: "RETURN_INBOUND",
-				quantity: Math.abs(line.quantity), // Positive = returning to warehouse
-				invoiceLineId: line.invoiceLineId,
-				itemId: line.itemId,
-				toWarehouseId: warehouseId,
-				userId,
-				organizationId,
-				notes: "Stock returned — invoice cancelled",
-			},
-		});
+  for (const line of productLines) {
+    await tx.stockMovement.create({
+      data: {
+        type: "RETURN_INBOUND",
+        quantity: Math.abs(line.quantity), // Positive = returning to warehouse
+        invoiceLineId: line.invoiceLineId,
+        itemId: line.itemId,
+        toWarehouseId: warehouseId,
+        userId,
+        organizationId,
+        notes: "Stock returned — invoice cancelled",
+      },
+    });
 
-		await tx.stock.upsert({
-			where: {
-				itemId_warehouseId: { itemId: line.itemId, warehouseId },
-			},
-			create: {
-				itemId: line.itemId,
-				warehouseId,
-				organizationId,
-				quantity: line.quantity,
-			},
-			update: {
-				quantity: { increment: line.quantity },
-				version: { increment: 1 },
-			},
-		});
-	}
+    await tx.stock.upsert({
+      where: {
+        itemId_warehouseId: { itemId: line.itemId, warehouseId },
+      },
+      create: {
+        itemId: line.itemId,
+        warehouseId,
+        organizationId,
+        quantity: line.quantity,
+      },
+      update: {
+        quantity: { increment: line.quantity },
+        version: { increment: 1 },
+      },
+    });
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -175,41 +175,41 @@ export async function returnStockForCancelledInvoice(
 // ---------------------------------------------------------------------------
 
 export async function returnStockForCreditNote(
-	opts: StockMovementOptions,
+  opts: StockMovementOptions,
 ): Promise<void> {
-	const { tx, organizationId, warehouseId, userId, lines } = opts;
+  const { tx, organizationId, warehouseId, userId, lines } = opts;
 
-	const productLines = lines.filter((l) => l.itemType === "PRODUCT");
-	if (productLines.length === 0) return;
+  const productLines = lines.filter((l) => l.itemType === "PRODUCT");
+  if (productLines.length === 0) return;
 
-	for (const line of productLines) {
-		await tx.stockMovement.create({
-			data: {
-				type: "RETURN_INBOUND",
-				quantity: Math.abs(line.quantity),
-				invoiceLineId: line.invoiceLineId,
-				itemId: line.itemId,
-				toWarehouseId: warehouseId,
-				userId,
-				organizationId,
-				notes: "Stock returned — credit note",
-			},
-		});
+  for (const line of productLines) {
+    await tx.stockMovement.create({
+      data: {
+        type: "RETURN_INBOUND",
+        quantity: Math.abs(line.quantity),
+        invoiceLineId: line.invoiceLineId,
+        itemId: line.itemId,
+        toWarehouseId: warehouseId,
+        userId,
+        organizationId,
+        notes: "Stock returned — credit note",
+      },
+    });
 
-		await tx.stock.upsert({
-			where: {
-				itemId_warehouseId: { itemId: line.itemId, warehouseId },
-			},
-			create: {
-				itemId: line.itemId,
-				warehouseId,
-				organizationId,
-				quantity: line.quantity,
-			},
-			update: {
-				quantity: { increment: line.quantity },
-				version: { increment: 1 },
-			},
-		});
-	}
+    await tx.stock.upsert({
+      where: {
+        itemId_warehouseId: { itemId: line.itemId, warehouseId },
+      },
+      create: {
+        itemId: line.itemId,
+        warehouseId,
+        organizationId,
+        quantity: line.quantity,
+      },
+      update: {
+        quantity: { increment: line.quantity },
+        version: { increment: 1 },
+      },
+    });
+  }
 }

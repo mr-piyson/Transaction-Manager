@@ -17,13 +17,13 @@
 import db from "@/lib/db";
 
 export interface AuditPayload {
-	entityType: string;
-	entityId: string;
-	action: "CREATE" | "UPDATE" | "DELETE" | "STATUS_CHANGE" | "PAYMENT";
-	diff?: Record<string, { before: unknown; after: unknown }>;
-	organizationId: string;
-	userId?: string;
-	ipAddress?: string;
+  entityType: string;
+  entityId: string;
+  action: "CREATE" | "UPDATE" | "DELETE" | "STATUS_CHANGE" | "PAYMENT";
+  diff?: Record<string, { before: unknown; after: unknown }>;
+  organizationId: string;
+  userId?: string;
+  ipAddress?: string;
 }
 
 /**
@@ -31,23 +31,23 @@ export interface AuditPayload {
  * by passing `tx` — ensures the audit write is atomic with the mutation.
  */
 export async function writeAuditLog(
-	payload: AuditPayload,
-	tx?: Parameters<Parameters<typeof db.$transaction>[0]>[0],
+  payload: AuditPayload,
+  tx?: Parameters<Parameters<typeof db.$transaction>[0]>[0],
 ): Promise<void> {
-	const client = tx ?? db;
-	// Using $executeRaw instead of client.auditLog.create to avoid circular
-	// type issues when `tx` is the transaction client type.
-	await (client as typeof db).auditLog.create({
-		data: {
-			entityType: payload.entityType,
-			entityId: payload.entityId,
-			action: payload.action,
-			diff: payload.diff
-				? (payload.diff as unknown as import("@prisma/client").Prisma.JsonObject)
-				: undefined,
-			organizationId: payload.organizationId,
-			userId: payload.userId,
-			ipAddress: payload.ipAddress,
-		},
-	});
+  const client = tx ?? db;
+  // Using $executeRaw instead of client.auditLog.create to avoid circular
+  // type issues when `tx` is the transaction client type.
+  await (client as typeof db).auditLog.create({
+    data: {
+      entityType: payload.entityType,
+      entityId: payload.entityId,
+      action: payload.action,
+      diff: payload.diff
+        ? (payload.diff as unknown as import("@prisma/client").Prisma.JsonObject)
+        : undefined,
+      organizationId: payload.organizationId,
+      userId: payload.userId,
+      ipAddress: payload.ipAddress,
+    },
+  });
 }

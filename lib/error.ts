@@ -22,26 +22,26 @@ import type { TRPC_ERROR_CODE_KEY } from "@trpc/server/rpc";
 // ---------------------------------------------------------------------------
 
 interface ErrorMeta {
-	/** Raw entity identifier that triggered the error. */
-	entityId?: string;
-	/** Entity type e.g. "Invoice", "Customer". */
-	entityType?: string;
-	/** Additional context for debugging. */
-	[key: string]: unknown;
+  /** Raw entity identifier that triggered the error. */
+  entityId?: string;
+  /** Entity type e.g. "Invoice", "Customer". */
+  entityType?: string;
+  /** Additional context for debugging. */
+  [key: string]: unknown;
 }
 
 export class AppError extends TRPCError {
-	public readonly meta: ErrorMeta;
+  public readonly meta: ErrorMeta;
 
-	constructor(
-		code: TRPC_ERROR_CODE_KEY,
-		message: string,
-		meta: ErrorMeta = {},
-	) {
-		super({ code, message });
-		this.meta = meta;
-		this.name = "AppError";
-	}
+  constructor(
+    code: TRPC_ERROR_CODE_KEY,
+    message: string,
+    meta: ErrorMeta = {},
+  ) {
+    super({ code, message });
+    this.meta = meta;
+    this.name = "AppError";
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -49,17 +49,17 @@ export class AppError extends TRPCError {
 // ---------------------------------------------------------------------------
 
 export class NotFoundError extends AppError {
-	constructor(entity: string, id?: string) {
-		super(
-			"NOT_FOUND",
-			id ? `${entity} with id "${id}" not found.` : `${entity} not found.`,
-			{
-				entityType: entity,
-				entityId: id,
-			},
-		);
-		this.name = "NotFoundError";
-	}
+  constructor(entity: string, id?: string) {
+    super(
+      "NOT_FOUND",
+      id ? `${entity} with id "${id}" not found.` : `${entity} not found.`,
+      {
+        entityType: entity,
+        entityId: id,
+      },
+    );
+    this.name = "NotFoundError";
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -67,13 +67,13 @@ export class NotFoundError extends AppError {
 // ---------------------------------------------------------------------------
 
 export class ForbiddenError extends AppError {
-	constructor(action: string, entity: string) {
-		super("FORBIDDEN", `You do not have permission to ${action} ${entity}.`, {
-			action,
-			entityType: entity,
-		});
-		this.name = "ForbiddenError";
-	}
+  constructor(action: string, entity: string) {
+    super("FORBIDDEN", `You do not have permission to ${action} ${entity}.`, {
+      action,
+      entityType: entity,
+    });
+    this.name = "ForbiddenError";
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -81,10 +81,10 @@ export class ForbiddenError extends AppError {
 // ---------------------------------------------------------------------------
 
 export class UnauthorizedError extends AppError {
-	constructor(message = "Authentication required.") {
-		super("UNAUTHORIZED", message);
-		this.name = "UnauthorizedError";
-	}
+  constructor(message = "Authentication required.") {
+    super("UNAUTHORIZED", message);
+    this.name = "UnauthorizedError";
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -92,10 +92,10 @@ export class UnauthorizedError extends AppError {
 // ---------------------------------------------------------------------------
 
 export class ConflictError extends AppError {
-	constructor(message: string, meta: ErrorMeta = {}) {
-		super("CONFLICT", message, meta);
-		this.name = "ConflictError";
-	}
+  constructor(message: string, meta: ErrorMeta = {}) {
+    super("CONFLICT", message, meta);
+    this.name = "ConflictError";
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -103,10 +103,10 @@ export class ConflictError extends AppError {
 // ---------------------------------------------------------------------------
 
 export class UnprocessableError extends AppError {
-	constructor(message: string, meta: ErrorMeta = {}) {
-		super("UNPROCESSABLE_CONTENT", message, meta);
-		this.name = "UnprocessableError";
-	}
+  constructor(message: string, meta: ErrorMeta = {}) {
+    super("UNPROCESSABLE_CONTENT", message, meta);
+    this.name = "UnprocessableError";
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -114,14 +114,14 @@ export class UnprocessableError extends AppError {
 // ---------------------------------------------------------------------------
 
 export class StaleDataError extends AppError {
-	constructor(entity: string) {
-		super(
-			"PRECONDITION_FAILED",
-			`${entity} was modified by another user. Please refresh and try again.`,
-			{ entityType: entity },
-		);
-		this.name = "StaleDataError";
-	}
+  constructor(entity: string) {
+    super(
+      "PRECONDITION_FAILED",
+      `${entity} was modified by another user. Please refresh and try again.`,
+      { entityType: entity },
+    );
+    this.name = "StaleDataError";
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -129,10 +129,10 @@ export class StaleDataError extends AppError {
 // ---------------------------------------------------------------------------
 
 export class InternalError extends AppError {
-	constructor(message = "An unexpected error occurred.", meta: ErrorMeta = {}) {
-		super("INTERNAL_SERVER_ERROR", message, meta);
-		this.name = "InternalError";
-	}
+  constructor(message = "An unexpected error occurred.", meta: ErrorMeta = {}) {
+    super("INTERNAL_SERVER_ERROR", message, meta);
+    this.name = "InternalError";
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -140,8 +140,8 @@ export class InternalError extends AppError {
 // ---------------------------------------------------------------------------
 
 export function toAppError(err: unknown): AppError {
-	if (err instanceof AppError) return err;
-	if (err instanceof Error)
-		return new InternalError(err.message, { originalStack: err.stack });
-	return new InternalError("Unknown error", { raw: String(err) });
+  if (err instanceof AppError) return err;
+  if (err instanceof Error)
+    return new InternalError(err.message, { originalStack: err.stack });
+  return new InternalError("Unknown error", { raw: String(err) });
 }

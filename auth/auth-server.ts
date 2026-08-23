@@ -7,40 +7,40 @@ import db from "@/lib/db";
 import { env } from "@/lib/env";
 
 export const auth = betterAuth({
-	baseURL: env.BETTER_AUTH_URL,
-	trustedProxyHeaders: true,
-	advanced: {
-		disableOriginCheck: true,
-	},
-	database: prismaAdapter(db, {
-		provider: env.DATABASE_PROVIDER,
-	}),
-	emailAndPassword: {
-		enabled: true,
-	},
-	plugins: [
-		jwt(),
-		admin({
-			defaultRole: "admin",
-			adminRoles: ["admin"],
-		}),
-	],
-	user: {
-		additionalFields: {
-			organizationId: {
-				type: "string",
-			},
-			firstName: {
-				type: "string",
-			},
-			lastName: {
-				type: "string",
-			},
-			isActive: {
-				type: "boolean",
-			},
-		},
-	},
+  baseURL: env.BETTER_AUTH_URL,
+  trustedProxyHeaders: true,
+  advanced: {
+    disableOriginCheck: true,
+  },
+  database: prismaAdapter(db, {
+    provider: env.DATABASE_PROVIDER,
+  }),
+  emailAndPassword: {
+    enabled: true,
+  },
+  plugins: [
+    jwt(),
+    admin({
+      defaultRole: "admin",
+      adminRoles: ["admin"],
+    }),
+  ],
+  user: {
+    additionalFields: {
+      organizationId: {
+        type: "string",
+      },
+      firstName: {
+        type: "string",
+      },
+      lastName: {
+        type: "string",
+      },
+      isActive: {
+        type: "boolean",
+      },
+    },
+  },
 });
 
 /**
@@ -49,9 +49,9 @@ export const auth = betterAuth({
  * @returns The session object if authenticated, otherwise null.
  */
 export async function getSession() {
-	return await auth.api.getSession({
-		headers: await headers(),
-	});
+  return await auth.api.getSession({
+    headers: await headers(),
+  });
 }
 
 /**
@@ -60,9 +60,9 @@ export async function getSession() {
  * @returns The user object if authenticated, otherwise null.
  */
 export async function getCurrentUser() {
-	const session = await getSession();
-	if (!session) {
-		return null;
-	}
-	return session.user;
+  const session = await getSession();
+  if (!session) {
+    return null;
+  }
+  return session.user;
 }

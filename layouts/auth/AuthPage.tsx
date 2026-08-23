@@ -9,35 +9,35 @@ import Logo from "@/components/Logo";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export default function Auth() {
-	const router = useRouter();
-	const t = useTranslations();
-	const { data: session } = useSession();
+  const router = useRouter();
+  const t = useTranslations();
+  const { data: session } = useSession();
 
-	useEffect(() => {
-		if (session) {
-			router.push("/erp");
-		}
-	}, [session, router]);
+  useEffect(() => {
+    if (session) {
+      router.push("/erp");
+    }
+  }, [session, router]);
 
-	return (
-		<div className="relative items-center p-4 ">
-			<div className=" relative flex items-center max-sm:justify-center max-[375]:justify-start! text-3xl font-medium gap-2">
-				<Logo className="w-12 h-12" />
-				<span className="max-[375px]:hidden">{t("layout.appName")}</span>
-			</div>
-			<div className="w-full h-full flex flex-col  items-center pt-10 ">
-				<Tabs
-					defaultValue="Sign-In"
-					className="flex flex-col w-90 max-[400px]:w-full "
-				>
-					<TabsList className="flex w-full ">
-						<TabsTrigger value="Sign-In">{t("auth.signIn")}</TabsTrigger>
-					</TabsList>
-					<TabsContent value="Sign-In">
-						<SignInTab />
-					</TabsContent>
-				</Tabs>
-			</div>
-		</div>
-	);
+  return (
+    <div className="relative items-center p-4 ">
+      <div className=" relative flex items-center max-sm:justify-center max-[375]:justify-start! text-3xl font-medium gap-2">
+        <Logo className="w-12 h-12" />
+        <span className="max-[375px]:hidden">{t("layout.appName")}</span>
+      </div>
+      <div className="w-full h-full flex flex-col  items-center pt-10 ">
+        <Tabs
+          defaultValue="Sign-In"
+          className="flex flex-col w-90 max-[400px]:w-full "
+        >
+          <TabsList className="flex w-full ">
+            <TabsTrigger value="Sign-In">{t("auth.signIn")}</TabsTrigger>
+          </TabsList>
+          <TabsContent value="Sign-In">
+            <SignInTab />
+          </TabsContent>
+        </Tabs>
+      </div>
+    </div>
+  );
 }

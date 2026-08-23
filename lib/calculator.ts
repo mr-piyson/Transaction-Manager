@@ -22,33 +22,33 @@
  */
 
 export interface LineInput {
-	quantity: number;
-	unitPrice: number;
-	discountAmt?: number;
-	taxRateSnapshot?: number; // e.g. 10 for 10%
-	purchasePrice?: number;
+  quantity: number;
+  unitPrice: number;
+  discountAmt?: number;
+  taxRateSnapshot?: number; // e.g. 10 for 10%
+  purchasePrice?: number;
 }
 
 export interface LineResult extends LineInput {
-	lineSubtotal: number; // unitPrice × quantity
-	discountAmt: number; // resolved discount
-	taxableAmt: number; // lineSubtotal - discountAmt
-	taxAmt: number; // taxableAmt × (taxRate / 100), rounded to 6dp
-	total: number; // taxableAmt + taxAmt
-	costTotal: number; // purchasePrice × quantity (for GP tracking)
+  lineSubtotal: number; // unitPrice × quantity
+  discountAmt: number; // resolved discount
+  taxableAmt: number; // lineSubtotal - discountAmt
+  taxAmt: number; // taxableAmt × (taxRate / 100), rounded to 6dp
+  total: number; // taxableAmt + taxAmt
+  costTotal: number; // purchasePrice × quantity (for GP tracking)
 }
 
 export interface InvoiceTotals {
-	lines: LineResult[];
-	subtotal: number; // sum of (unitPrice × qty)
-	discountTotal: number; // sum of discountAmt
-	taxTotal: number; // sum of taxAmt
-	total: number; // subtotal - discountTotal + taxTotal
-	costTotal: number; // sum of costTotal (COGS)
+  lines: LineResult[];
+  subtotal: number; // sum of (unitPrice × qty)
+  discountTotal: number; // sum of discountAmt
+  taxTotal: number; // sum of taxAmt
+  total: number; // subtotal - discountTotal + taxTotal
+  costTotal: number; // sum of costTotal (COGS)
 }
 
 const round = (n: number, dp = 6): number =>
-	Math.round(n * 10 ** dp) / 10 ** dp;
+  Math.round(n * 10 ** dp) / 10 ** dp;
 
 /**
  * calculateInvoiceTotals
@@ -57,44 +57,44 @@ const round = (n: number, dp = 6): number =>
  * Store ALL returned values on the Invoice and InvoiceLine rows.
  */
 export function calculateInvoiceTotals(lines: LineInput[]): InvoiceTotals {
-	const computed: LineResult[] = lines.map((line) => {
-		const qty = round(line.quantity);
-		const price = round(line.unitPrice);
-		const discount = round(line.discountAmt ?? 0);
-		const taxRate = line.taxRateSnapshot ?? 0;
-		const purchasePrice = line.purchasePrice ?? 0;
+  const computed: LineResult[] = lines.map((line) => {
+    const qty = round(line.quantity);
+    const price = round(line.unitPrice);
+    const discount = round(line.discountAmt ?? 0);
+    const taxRate = line.taxRateSnapshot ?? 0;
+    const purchasePrice = line.purchasePrice ?? 0;
 
-		const lineSubtotal = round(qty * price);
-		const taxableAmt = round(lineSubtotal - discount);
-		const taxAmt = round(taxableAmt * (taxRate / 100));
-		const total = round(taxableAmt + taxAmt);
-		const costTotal = round(qty * purchasePrice);
+    const lineSubtotal = round(qty * price);
+    const taxableAmt = round(lineSubtotal - discount);
+    const taxAmt = round(taxableAmt * (taxRate / 100));
+    const total = round(taxableAmt + taxAmt);
+    const costTotal = round(qty * purchasePrice);
 
-		return {
-			...line,
-			quantity: qty,
-			unitPrice: price,
-			lineSubtotal,
-			discountAmt: discount,
-			taxableAmt,
-			taxAmt,
-			total,
-			costTotal,
-		};
-	});
+    return {
+      ...line,
+      quantity: qty,
+      unitPrice: price,
+      lineSubtotal,
+      discountAmt: discount,
+      taxableAmt,
+      taxAmt,
+      total,
+      costTotal,
+    };
+  });
 
-	const subtotal = round(computed.reduce((s, l) => s + l.lineSubtotal, 0));
-	const discountTotal = round(computed.reduce((s, l) => s + l.discountAmt, 0));
-	const taxTotal = round(computed.reduce((s, l) => s + l.taxAmt, 0));
-	const total = round(computed.reduce((s, l) => s + l.total, 0));
-	const costTotal = round(computed.reduce((s, l) => s + l.costTotal, 0));
+  const subtotal = round(computed.reduce((s, l) => s + l.lineSubtotal, 0));
+  const discountTotal = round(computed.reduce((s, l) => s + l.discountAmt, 0));
+  const taxTotal = round(computed.reduce((s, l) => s + l.taxAmt, 0));
+  const total = round(computed.reduce((s, l) => s + l.total, 0));
+  const costTotal = round(computed.reduce((s, l) => s + l.costTotal, 0));
 
-	return {
-		lines: computed,
-		subtotal,
-		discountTotal,
-		taxTotal,
-		total,
-		costTotal,
-	};
+  return {
+    lines: computed,
+    subtotal,
+    discountTotal,
+    taxTotal,
+    total,
+    costTotal,
+  };
 }

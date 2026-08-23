@@ -3,5 +3,5 @@
 import DocumentsPage from "../[type]/TypePage";
 
 export default function InvoicesPage() {
-	return <DocumentsPage documentType="invoices" />;
+  return <DocumentsPage documentType="invoices" />;
 }

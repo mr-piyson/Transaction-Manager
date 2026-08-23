@@ -11,25 +11,25 @@ const A4_WIDTH_PX = 793; // 210mm at 96dpi
  * to ensure consistent output regardless of viewport size.
  */
 export async function downloadElementAsPdf(
-	element: HTMLElement,
-	filename: string,
+  element: HTMLElement,
+  filename: string,
 ): Promise<void> {
-	// Save original styles
-	const originalStyles = {
-		width: element.style.width,
-		minWidth: element.style.minWidth,
-		maxWidth: element.style.maxWidth,
-		position: element.style.position,
-		top: element.style.top,
-		left: element.style.left,
-		zIndex: element.style.zIndex,
-		transform: element.style.transform,
-	};
+  // Save original styles
+  const originalStyles = {
+    width: element.style.width,
+    minWidth: element.style.minWidth,
+    maxWidth: element.style.maxWidth,
+    position: element.style.position,
+    top: element.style.top,
+    left: element.style.left,
+    zIndex: element.style.zIndex,
+    transform: element.style.transform,
+  };
 
-	// Add override style to reset text wrapping for capture
-	const styleEl = document.createElement("style");
-	styleEl.setAttribute("data-pdf-capture", "true");
-	styleEl.textContent = `
+  // Add override style to reset text wrapping for capture
+  const styleEl = document.createElement("style");
+  styleEl.setAttribute("data-pdf-capture", "true");
+  styleEl.textContent = `
 		[data-pdf-capture="true"] ~ * [data-pdf-capture-ignore] {
 			white-space: normal !important;
 		}
@@ -61,71 +61,71 @@ export async function downloadElementAsPdf(
 			flex-wrap: nowrap !important;
 		}
 	`;
-	document.head.appendChild(styleEl);
+  document.head.appendChild(styleEl);
 
-	// Force element to A4 width for consistent capture
-	element.style.width = `${A4_WIDTH_PX}px`;
-	element.style.minWidth = `${A4_WIDTH_PX}px`;
-	element.style.maxWidth = `${A4_WIDTH_PX}px`;
-	element.style.position = "fixed";
-	element.style.top = "0";
-	element.style.left = "0";
-	element.style.zIndex = "-1";
-	element.style.transform = "none";
+  // Force element to A4 width for consistent capture
+  element.style.width = `${A4_WIDTH_PX}px`;
+  element.style.minWidth = `${A4_WIDTH_PX}px`;
+  element.style.maxWidth = `${A4_WIDTH_PX}px`;
+  element.style.position = "fixed";
+  element.style.top = "0";
+  element.style.left = "0";
+  element.style.zIndex = "-1";
+  element.style.transform = "none";
 
-	// Add reset class to prevent text wrapping
-	element.classList.add("pdf-capture-reset");
+  // Add reset class to prevent text wrapping
+  element.classList.add("pdf-capture-reset");
 
-	// Wait for layout reflow
-	await new Promise((r) => setTimeout(r, 200));
+  // Wait for layout reflow
+  await new Promise((r) => setTimeout(r, 200));
 
-	let imgData: string;
-	try {
-		imgData = await domtoimage.toPng(element, {
-			quality: 1,
-			pixelRatio: 2,
-			bgcolor: "#ffffff",
-			width: A4_WIDTH_PX,
-			style: {
-				"print-color-adjust": "exact",
-				"-webkit-print-color-adjust": "exact",
-			},
-		});
-	} finally {
-		// Restore original styles
-		Object.assign(element.style, originalStyles);
-		element.classList.remove("pdf-capture-reset");
-		styleEl.remove();
-	}
+  let imgData: string;
+  try {
+    imgData = await domtoimage.toPng(element, {
+      quality: 1,
+      pixelRatio: 2,
+      bgcolor: "#ffffff",
+      width: A4_WIDTH_PX,
+      style: {
+        "print-color-adjust": "exact",
+        "-webkit-print-color-adjust": "exact",
+      },
+    });
+  } finally {
+    // Restore original styles
+    Object.assign(element.style, originalStyles);
+    element.classList.remove("pdf-capture-reset");
+    styleEl.remove();
+  }
 
-	const img = new Image();
-	await new Promise<void>((resolve, reject) => {
-		img.onload = () => resolve();
-		img.onerror = reject;
-		img.src = imgData;
-	});
+  const img = new Image();
+  await new Promise<void>((resolve, reject) => {
+    img.onload = () => resolve();
+    img.onerror = reject;
+    img.src = imgData;
+  });
 
-	const pdf = new jsPDF({
-		orientation: "portrait",
-		unit: "mm",
-		format: "a4",
-	});
+  const pdf = new jsPDF({
+    orientation: "portrait",
+    unit: "mm",
+    format: "a4",
+  });
 
-	const imgWidth = A4_WIDTH_MM;
-	const imgHeight = (img.height * A4_WIDTH_MM) / img.width;
+  const imgWidth = A4_WIDTH_MM;
+  const imgHeight = (img.height * A4_WIDTH_MM) / img.width;
 
-	let heightLeft = imgHeight;
-	let position = 0;
+  let heightLeft = imgHeight;
+  let position = 0;
 
-	pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
-	heightLeft -= A4_HEIGHT_MM;
+  pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
+  heightLeft -= A4_HEIGHT_MM;
 
-	while (heightLeft > 0) {
-		position = heightLeft - imgHeight;
-		pdf.addPage();
-		pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
-		heightLeft -= A4_HEIGHT_MM;
-	}
+  while (heightLeft > 0) {
+    position = heightLeft - imgHeight;
+    pdf.addPage();
+    pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
+    heightLeft -= A4_HEIGHT_MM;
+  }
 
-	pdf.save(filename);
+  pdf.save(filename);
 }

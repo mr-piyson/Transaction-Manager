@@ -3,12 +3,12 @@ import { getSession } from "@/auth/auth-server";
 import AuthLayoutClient from "@/layouts/auth/AuthLayout";
 
 export default async function AuthLayout({
-	children,
+  children,
 }: {
-	children?: React.ReactNode;
+  children?: React.ReactNode;
 }) {
-	const session = await getSession();
-	if (session) redirect("/erp");
+  const session = await getSession();
+  if (session) redirect("/erp");
 
-	return <AuthLayoutClient>{children}</AuthLayoutClient>;
+  return <AuthLayoutClient>{children}</AuthLayoutClient>;
 }

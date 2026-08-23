@@ -6,23 +6,23 @@ import { useEffect } from "react";
 import { useSession } from "@/auth/auth-client";
 
 const LandingClient = dynamic(
-	() => import("@/components/landing/LandingClient"),
-	{ ssr: false },
+  () => import("@/components/landing/LandingClient"),
+  { ssr: false },
 );
 
 export default function RootPage() {
-	const router = useRouter();
-	const { data: session, isPending } = useSession();
+  const router = useRouter();
+  const { data: session, isPending } = useSession();
 
-	useEffect(() => {
-		if (isPending) return;
-		if (session) {
-			router.replace("/erp");
-		}
-	}, [session, isPending, router]);
+  useEffect(() => {
+    if (isPending) return;
+    if (session) {
+      router.replace("/erp");
+    }
+  }, [session, isPending, router]);
 
-	if (isPending) return null;
-	if (session) return null;
+  if (isPending) return null;
+  if (session) return null;
 
-	return <LandingClient />;
+  return <LandingClient />;
 }

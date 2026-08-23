@@ -34,38 +34,38 @@ type TransactionClient = Prisma.TransactionClient;
 // ---------------------------------------------------------------------------
 
 export function resolvePaymentStatus(
-	total: number,
-	amountPaid: number,
-	dueDate: Date | null,
-	creditApplied: number = 0,
+  total: number,
+  amountPaid: number,
+  dueDate: Date | null,
+  creditApplied: number = 0,
 ): "PENDING" | "PARTIAL" | "PAID" | "OVERDUE" {
-	const effectivePaid = amountPaid + creditApplied;
-	if (effectivePaid <= 0) {
-		if (dueDate && dueDate < new Date()) return "OVERDUE";
-		return "PENDING";
-	}
-	if (effectivePaid >= total) return "PAID";
-	if (dueDate && dueDate < new Date()) return "OVERDUE";
-	return "PARTIAL";
+  const effectivePaid = amountPaid + creditApplied;
+  if (effectivePaid <= 0) {
+    if (dueDate && dueDate < new Date()) return "OVERDUE";
+    return "PENDING";
+  }
+  if (effectivePaid >= total) return "PAID";
+  if (dueDate && dueDate < new Date()) return "OVERDUE";
+  return "PARTIAL";
 }
 
 // Also resolves InvoiceStatus from payment state
 export function resolveInvoiceStatus(
-	currentStatus: string,
-	amountPaid: number,
-	total: number,
-	dueDate: Date | null,
-	creditApplied: number = 0,
+  currentStatus: string,
+  amountPaid: number,
+  total: number,
+  dueDate: Date | null,
+  creditApplied: number = 0,
 ): "SENT" | "PARTIAL" | "PAID" | "OVERDUE" {
-	// Terminal statuses — don't change
-	if (["CANCELLED", "DELETED"].includes(currentStatus)) {
-		return currentStatus as "SENT";
-	}
-	const effectivePaid = amountPaid + creditApplied;
-	if (effectivePaid >= total) return "PAID";
-	if (effectivePaid > 0) return "PARTIAL";
-	if (dueDate && dueDate < new Date()) return "OVERDUE";
-	return "SENT";
+  // Terminal statuses — don't change
+  if (["CANCELLED", "DELETED"].includes(currentStatus)) {
+    return currentStatus as "SENT";
+  }
+  const effectivePaid = amountPaid + creditApplied;
+  if (effectivePaid >= total) return "PAID";
+  if (effectivePaid > 0) return "PARTIAL";
+  if (dueDate && dueDate < new Date()) return "OVERDUE";
+  return "SENT";
 }
 
 // ---------------------------------------------------------------------------
@@ -73,80 +73,80 @@ export function resolveInvoiceStatus(
 // ---------------------------------------------------------------------------
 
 export async function syncInvoicePaymentTotals(
-	tx: TransactionClient,
-	invoiceId: string,
-	organizationId: string,
-	userId: string,
-	ipAddress: string,
+  tx: TransactionClient,
+  invoiceId: string,
+  organizationId: string,
+  userId: string,
+  ipAddress: string,
 ): Promise<void> {
-	// Sum all payments for this invoice
-	const aggregate = await tx.payment.aggregate({
-		where: { invoiceId, organizationId },
-		_sum: { amount: true },
-	});
+  // Sum all payments for this invoice
+  const aggregate = await tx.payment.aggregate({
+    where: { invoiceId, organizationId },
+    _sum: { amount: true },
+  });
 
-	const amountPaid = Number(aggregate._sum.amount ?? 0);
+  const amountPaid = Number(aggregate._sum.amount ?? 0);
 
-	// Sum all credit note allocations for this invoice
-	const creditAggregate = await tx.creditNoteAllocation.aggregate({
-		where: { invoiceId, organizationId },
-		_sum: { amount: true },
-	});
+  // Sum all credit note allocations for this invoice
+  const creditAggregate = await tx.creditNoteAllocation.aggregate({
+    where: { invoiceId, organizationId },
+    _sum: { amount: true },
+  });
 
-	const creditApplied = Number(creditAggregate._sum.amount ?? 0);
+  const creditApplied = Number(creditAggregate._sum.amount ?? 0);
 
-	// Load current invoice state
-	const invoice = await tx.invoice.findUnique({
-		where: { id: invoiceId },
-		select: { total: true, dueDate: true, status: true },
-	});
+  // Load current invoice state
+  const invoice = await tx.invoice.findUnique({
+    where: { id: invoiceId },
+    select: { total: true, dueDate: true, status: true },
+  });
 
-	if (!invoice) throw new NotFoundError("Invoice", invoiceId);
+  if (!invoice) throw new NotFoundError("Invoice", invoiceId);
 
-	const total = Number(invoice.total);
-	const amountDue = Math.max(0, total - amountPaid - creditApplied);
+  const total = Number(invoice.total);
+  const amountDue = Math.max(0, total - amountPaid - creditApplied);
 
-	const paymentStatus = resolvePaymentStatus(
-		total,
-		amountPaid,
-		invoice.dueDate,
-		creditApplied,
-	);
-	const invoiceStatus = resolveInvoiceStatus(
-		invoice.status,
-		amountPaid,
-		total,
-		invoice.dueDate,
-		creditApplied,
-	);
+  const paymentStatus = resolvePaymentStatus(
+    total,
+    amountPaid,
+    invoice.dueDate,
+    creditApplied,
+  );
+  const invoiceStatus = resolveInvoiceStatus(
+    invoice.status,
+    amountPaid,
+    total,
+    invoice.dueDate,
+    creditApplied,
+  );
 
-	const oldStatus = invoice.status;
+  const oldStatus = invoice.status;
 
-	await tx.invoice.update({
-		where: { id: invoiceId },
-		data: {
-			amountPaid,
-			amountDue,
-			paymentStatus,
-			status: invoiceStatus,
-			updatedById: userId,
-		},
-	});
+  await tx.invoice.update({
+    where: { id: invoiceId },
+    data: {
+      amountPaid,
+      amountDue,
+      paymentStatus,
+      status: invoiceStatus,
+      updatedById: userId,
+    },
+  });
 
-	if (oldStatus !== invoiceStatus) {
-		await writeAuditLog(
-			{
-				entityType: "Invoice",
-				entityId: invoiceId,
-				action: "STATUS_CHANGE",
-				diff: { status: { before: oldStatus, after: invoiceStatus } },
-				organizationId,
-				userId,
-				ipAddress,
-			},
-			tx,
-		);
-	}
+  if (oldStatus !== invoiceStatus) {
+    await writeAuditLog(
+      {
+        entityType: "Invoice",
+        entityId: invoiceId,
+        action: "STATUS_CHANGE",
+        diff: { status: { before: oldStatus, after: invoiceStatus } },
+        organizationId,
+        userId,
+        ipAddress,
+      },
+      tx,
+    );
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -154,107 +154,107 @@ export async function syncInvoicePaymentTotals(
 // ---------------------------------------------------------------------------
 
 interface AddPaymentOptions {
-	tx: TransactionClient;
-	invoiceId: string;
-	organizationId: string;
-	userId: string;
-	ipAddress: string;
-	amount: number;
-	method: PaymentMethod;
-	date: Date;
-	reference?: string;
-	notes?: string;
-	gatewayTxnId?: string;
+  tx: TransactionClient;
+  invoiceId: string;
+  organizationId: string;
+  userId: string;
+  ipAddress: string;
+  amount: number;
+  method: PaymentMethod;
+  date: Date;
+  reference?: string;
+  notes?: string;
+  gatewayTxnId?: string;
 }
 
 export async function addPayment(opts: AddPaymentOptions) {
-	const { tx, invoiceId, organizationId, userId, ipAddress, ...paymentData } =
-		opts;
+  const { tx, invoiceId, organizationId, userId, ipAddress, ...paymentData } =
+    opts;
 
-	// Guard: cannot overpay beyond the invoice total
-	const invoice = await tx.invoice.findUnique({
-		where: { id: invoiceId },
-		select: { total: true, amountPaid: true, status: true },
-	});
+  // Guard: cannot overpay beyond the invoice total
+  const invoice = await tx.invoice.findUnique({
+    where: { id: invoiceId },
+    select: { total: true, amountPaid: true, status: true },
+  });
 
-	if (!invoice) throw new NotFoundError("Invoice", invoiceId);
+  if (!invoice) throw new NotFoundError("Invoice", invoiceId);
 
-	if (["CANCELLED", "DELETED"].includes(invoice.status)) {
-		throw new UnprocessableError(
-			"Cannot record a payment on a cancelled or deleted invoice.",
-		);
-	}
+  if (["CANCELLED", "DELETED"].includes(invoice.status)) {
+    throw new UnprocessableError(
+      "Cannot record a payment on a cancelled or deleted invoice.",
+    );
+  }
 
-	const currentPaid = Number(invoice.amountPaid);
-	const total = Number(invoice.total);
-	const maxPayable = total - currentPaid;
+  const currentPaid = Number(invoice.amountPaid);
+  const total = Number(invoice.total);
+  const maxPayable = total - currentPaid;
 
-	if (paymentData.amount > maxPayable + 0.000001) {
-		throw new UnprocessableError(
-			`Payment amount (${paymentData.amount}) exceeds outstanding balance (${maxPayable.toFixed(3)}).`,
-		);
-	}
+  if (paymentData.amount > maxPayable + 0.000001) {
+    throw new UnprocessableError(
+      `Payment amount (${paymentData.amount}) exceeds outstanding balance (${maxPayable.toFixed(3)}).`,
+    );
+  }
 
-	const payment = await tx.payment.create({
-		data: {
-			...paymentData,
-			invoiceId,
-			organizationId,
-		},
-	});
+  const payment = await tx.payment.create({
+    data: {
+      ...paymentData,
+      invoiceId,
+      organizationId,
+    },
+  });
 
-	// Double-entry journal: Dr Cash/Bank / Cr Accounts Receivable
-	const invoiceWithSerial = await tx.invoice.findUnique({
-		where: { id: invoiceId },
-		select: { serial: true, currency: true, exchangeRate: true },
-	});
-	const journalEntry = await postPaymentReceived({
-		tx,
-		organizationId,
-		userId,
-		ipAddress,
-		paymentId: payment.id,
-		invoiceId,
-		amount: paymentData.amount,
-		method: paymentData.method,
-		serial: invoiceWithSerial?.serial ?? "",
-		currency: invoiceWithSerial?.currency,
-		exchangeRate: Number(invoiceWithSerial?.exchangeRate ?? 1),
-	});
+  // Double-entry journal: Dr Cash/Bank / Cr Accounts Receivable
+  const invoiceWithSerial = await tx.invoice.findUnique({
+    where: { id: invoiceId },
+    select: { serial: true, currency: true, exchangeRate: true },
+  });
+  const journalEntry = await postPaymentReceived({
+    tx,
+    organizationId,
+    userId,
+    ipAddress,
+    paymentId: payment.id,
+    invoiceId,
+    amount: paymentData.amount,
+    method: paymentData.method,
+    serial: invoiceWithSerial?.serial ?? "",
+    currency: invoiceWithSerial?.currency,
+    exchangeRate: Number(invoiceWithSerial?.exchangeRate ?? 1),
+  });
 
-	// Link journal entry back to payment
-	if (journalEntry) {
-		await tx.payment.update({
-			where: { id: payment.id },
-			data: { journalEntryId: journalEntry.id },
-		});
-	}
+  // Link journal entry back to payment
+  if (journalEntry) {
+    await tx.payment.update({
+      where: { id: payment.id },
+      data: { journalEntryId: journalEntry.id },
+    });
+  }
 
-	await syncInvoicePaymentTotals(
-		tx,
-		invoiceId,
-		organizationId,
-		userId,
-		ipAddress,
-	);
+  await syncInvoicePaymentTotals(
+    tx,
+    invoiceId,
+    organizationId,
+    userId,
+    ipAddress,
+  );
 
-	await writeAuditLog(
-		{
-			entityType: "Payment",
-			entityId: payment.id,
-			action: "PAYMENT",
-			diff: {
-				amount: { before: null, after: paymentData.amount },
-				method: { before: null, after: paymentData.method },
-			},
-			organizationId,
-			userId,
-			ipAddress,
-		},
-		tx,
-	);
+  await writeAuditLog(
+    {
+      entityType: "Payment",
+      entityId: payment.id,
+      action: "PAYMENT",
+      diff: {
+        amount: { before: null, after: paymentData.amount },
+        method: { before: null, after: paymentData.method },
+      },
+      organizationId,
+      userId,
+      ipAddress,
+    },
+    tx,
+  );
 
-	return payment;
+  return payment;
 }
 
 // ---------------------------------------------------------------------------
@@ -262,58 +262,58 @@ export async function addPayment(opts: AddPaymentOptions) {
 // ---------------------------------------------------------------------------
 
 interface DeletePaymentOptions {
-	tx: TransactionClient;
-	paymentId: string;
-	organizationId: string;
-	userId: string;
-	ipAddress: string;
+  tx: TransactionClient;
+  paymentId: string;
+  organizationId: string;
+  userId: string;
+  ipAddress: string;
 }
 
 export async function deletePayment(opts: DeletePaymentOptions): Promise<void> {
-	const { tx, paymentId, organizationId, userId, ipAddress } = opts;
+  const { tx, paymentId, organizationId, userId, ipAddress } = opts;
 
-	const payment = await tx.payment.findFirst({
-		where: { id: paymentId, organizationId },
-		select: { id: true, invoiceId: true, amount: true, method: true },
-	});
+  const payment = await tx.payment.findFirst({
+    where: { id: paymentId, organizationId },
+    select: { id: true, invoiceId: true, amount: true, method: true },
+  });
 
-	if (!payment) throw new NotFoundError("Payment", paymentId);
+  if (!payment) throw new NotFoundError("Payment", paymentId);
 
-	// Verify invoice is still in a mutable state
-	const invoice = await tx.invoice.findUnique({
-		where: { id: payment.invoiceId },
-		select: { status: true },
-	});
+  // Verify invoice is still in a mutable state
+  const invoice = await tx.invoice.findUnique({
+    where: { id: payment.invoiceId },
+    select: { status: true },
+  });
 
-	if (invoice?.status === "CANCELLED" || invoice?.status === "DELETED") {
-		throw new UnprocessableError(
-			"Cannot delete payment on a cancelled or deleted invoice.",
-		);
-	}
+  if (invoice?.status === "CANCELLED" || invoice?.status === "DELETED") {
+    throw new UnprocessableError(
+      "Cannot delete payment on a cancelled or deleted invoice.",
+    );
+  }
 
-	await tx.payment.delete({ where: { id: paymentId } });
+  await tx.payment.delete({ where: { id: paymentId } });
 
-	await syncInvoicePaymentTotals(
-		tx,
-		payment.invoiceId,
-		organizationId,
-		userId,
-		ipAddress,
-	);
+  await syncInvoicePaymentTotals(
+    tx,
+    payment.invoiceId,
+    organizationId,
+    userId,
+    ipAddress,
+  );
 
-	await writeAuditLog(
-		{
-			entityType: "Payment",
-			entityId: paymentId,
-			action: "DELETE",
-			diff: {
-				amount: { before: payment.amount, after: null },
-				method: { before: payment.method, after: null },
-			},
-			organizationId,
-			userId,
-			ipAddress,
-		},
-		tx,
-	);
+  await writeAuditLog(
+    {
+      entityType: "Payment",
+      entityId: paymentId,
+      action: "DELETE",
+      diff: {
+        amount: { before: payment.amount, after: null },
+        method: { before: payment.method, after: null },
+      },
+      organizationId,
+      userId,
+      ipAddress,
+    },
+    tx,
+  );
 }

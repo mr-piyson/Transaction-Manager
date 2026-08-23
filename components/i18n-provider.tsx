@@ -9,16 +9,16 @@ import enMessages from "../messages/en.json";
 const allMessages = { en: enMessages, ar: arMessages } as const;
 
 export function I18nProvider({ children }: { children: ReactNode }) {
-	const [locale] = useState<Locale>(getInitialLocale);
-	const messages = allMessages[locale];
+  const [locale] = useState<Locale>(getInitialLocale);
+  const messages = allMessages[locale];
 
-	return (
-		<NextIntlClientProvider
-			locale={locale}
-			messages={messages}
-			timeZone="Asia/Baghdad"
-		>
-			{children}
-		</NextIntlClientProvider>
-	);
+  return (
+    <NextIntlClientProvider
+      locale={locale}
+      messages={messages}
+      timeZone="Asia/Baghdad"
+    >
+      {children}
+    </NextIntlClientProvider>
+  );
 }

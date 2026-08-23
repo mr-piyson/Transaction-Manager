@@ -11,53 +11,53 @@ import { DateFormatProvider } from "@/hooks/use-date-format";
 import TrpcProvider from "@/lib/trpc/provider";
 
 const geistSans = Geist({
-	variable: "--font-geist-sans",
-	subsets: ["latin"],
+  variable: "--font-geist-sans",
+  subsets: ["latin"],
 });
 
 const geistMono = Geist_Mono({
-	variable: "--font-geist-mono",
-	subsets: ["latin"],
+  variable: "--font-geist-mono",
+  subsets: ["latin"],
 });
 
 export const metadata: Metadata = {
-	title: "Transaction Manager",
-	description: "Best CRM system for your business to manage transactions",
-	icons: {
-		icon: "/favicon.ico",
-		shortcut: "/favicon.ico",
-		apple: "/favicon.ico",
-	},
+  title: "Transaction Manager",
+  description: "Best CRM system for your business to manage transactions",
+  icons: {
+    icon: "/favicon.ico",
+    shortcut: "/favicon.ico",
+    apple: "/favicon.ico",
+  },
 };
 
 export default async function RootLayout(props: any) {
-	const cookieStore = await cookies();
-	const locale = cookieStore.get("NEXT_LOCALE")?.value || "en";
-	const dir = locale === "ar" ? "rtl" : "ltr";
+  const cookieStore = await cookies();
+  const locale = cookieStore.get("NEXT_LOCALE")?.value || "en";
+  const dir = locale === "ar" ? "rtl" : "ltr";
 
-	return (
-		<html lang={locale} dir={dir} suppressHydrationWarning>
-			<body
-				className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-			>
-				<NuqsAdapter>
-					<I18nProvider>
-						<ThemeProvider
-							attribute={"class"}
-							defaultTheme={"system"}
-							enableSystem={true}
-							storageKey={"theme"}
-						>
-							<DirectionProvider direction={dir} dir={dir}>
-								<TrpcProvider>
-									<DateFormatProvider>{props.children}</DateFormatProvider>
-								</TrpcProvider>
-							</DirectionProvider>
-						</ThemeProvider>
-					</I18nProvider>
-					<Toaster position="top-center" />
-				</NuqsAdapter>
-			</body>
-		</html>
-	);
+  return (
+    <html lang={locale} dir={dir} suppressHydrationWarning>
+      <body
+        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+      >
+        <NuqsAdapter>
+          <I18nProvider>
+            <ThemeProvider
+              attribute={"class"}
+              defaultTheme={"system"}
+              enableSystem={true}
+              storageKey={"theme"}
+            >
+              <DirectionProvider direction={dir} dir={dir}>
+                <TrpcProvider>
+                  <DateFormatProvider>{props.children}</DateFormatProvider>
+                </TrpcProvider>
+              </DirectionProvider>
+            </ThemeProvider>
+          </I18nProvider>
+          <Toaster position="top-center" />
+        </NuqsAdapter>
+      </body>
+    </html>
+  );
 }

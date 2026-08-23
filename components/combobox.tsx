@@ -5,190 +5,190 @@ import { Check, ChevronsUpDown } from "lucide-react";
 import * as React from "react";
 import { Button } from "@/components/ui/button";
 import {
-	Command,
-	CommandEmpty,
-	CommandGroup,
-	CommandInput,
-	CommandItem,
-	CommandList,
-	CommandSeparator,
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+  CommandSeparator,
 } from "@/components/ui/command";
 import {
-	Popover,
-	PopoverContent,
-	PopoverTrigger,
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 
 type UniversalComboboxProps<T> = {
-	data?: T[]; // ✅ now optional
-	value?: string;
-	onSelect?: (item: T) => void;
+  data?: T[]; // ✅ now optional
+  value?: string;
+  onSelect?: (item: T) => void;
 
-	getValue: (item: T) => string;
-	getLabel: (item: T) => string;
-	getSubLabel?: (item: T) => string;
+  getValue: (item: T) => string;
+  getLabel: (item: T) => string;
+  getSubLabel?: (item: T) => string;
 
-	groupBy?: (item: T) => string;
-	searchKeys: (keyof T)[];
+  groupBy?: (item: T) => string;
+  searchKeys: (keyof T)[];
 
-	placeholder?: string;
-	emptyText?: string;
-	loading?: boolean;
+  placeholder?: string;
+  emptyText?: string;
+  loading?: boolean;
 
-	renderItem?: (item: T, selected: boolean) => React.ReactNode;
+  renderItem?: (item: T, selected: boolean) => React.ReactNode;
 
-	children?: React.JSX.Element;
+  children?: React.JSX.Element;
 };
 
 export function UniversalCombobox<T>({
-	data,
-	value,
-	onSelect,
-	getValue,
-	getLabel,
-	getSubLabel,
-	groupBy,
-	searchKeys,
-	placeholder = "Select...",
-	emptyText = "No results found.",
-	loading = false,
-	renderItem,
-	children,
+  data,
+  value,
+  onSelect,
+  getValue,
+  getLabel,
+  getSubLabel,
+  groupBy,
+  searchKeys,
+  placeholder = "Select...",
+  emptyText = "No results found.",
+  loading = false,
+  renderItem,
+  children,
 }: UniversalComboboxProps<T>) {
-	const [open, setOpen] = React.useState(false);
-	const [searchQuery, setSearchQuery] = React.useState("");
+  const [open, setOpen] = React.useState(false);
+  const [searchQuery, setSearchQuery] = React.useState("");
 
-	// ✅ safe fallback
-	const safeData = React.useMemo(() => data ?? [], [data]);
+  // ✅ safe fallback
+  const safeData = React.useMemo(() => data ?? [], [data]);
 
-	// ✅ only build fuse when data exists
-	const fuse = React.useMemo(() => {
-		if (!safeData.length) return null;
+  // ✅ only build fuse when data exists
+  const fuse = React.useMemo(() => {
+    if (!safeData.length) return null;
 
-		return new Fuse(safeData, {
-			keys: searchKeys as string[],
-			threshold: 0.3,
-		});
-	}, [safeData, searchKeys]);
+    return new Fuse(safeData, {
+      keys: searchKeys as string[],
+      threshold: 0.3,
+    });
+  }, [safeData, searchKeys]);
 
-	const filtered = React.useMemo(() => {
-		if (!searchQuery) return safeData;
-		if (!fuse) return safeData;
+  const filtered = React.useMemo(() => {
+    if (!searchQuery) return safeData;
+    if (!fuse) return safeData;
 
-		return fuse.search(searchQuery).map((r) => r.item);
-	}, [searchQuery, fuse, safeData]);
+    return fuse.search(searchQuery).map((r) => r.item);
+  }, [searchQuery, fuse, safeData]);
 
-	const grouped = React.useMemo(() => {
-		if (!groupBy) return { All: filtered };
+  const grouped = React.useMemo(() => {
+    if (!groupBy) return { All: filtered };
 
-		return filtered.reduce(
-			(acc, item) => {
-				const key = groupBy(item);
-				if (!acc[key]) acc[key] = [];
-				acc[key].push(item);
-				return acc;
-			},
-			{} as Record<string, T[]>,
-		);
-	}, [filtered, groupBy]);
+    return filtered.reduce(
+      (acc, item) => {
+        const key = groupBy(item);
+        if (!acc[key]) acc[key] = [];
+        acc[key].push(item);
+        return acc;
+      },
+      {} as Record<string, T[]>,
+    );
+  }, [filtered, groupBy]);
 
-	const groups = Object.keys(grouped);
+  const groups = Object.keys(grouped);
 
-	const selectedItem = safeData.find((d) => getValue(d) === value);
+  const selectedItem = safeData.find((d) => getValue(d) === value);
 
-	return (
-		<Popover open={open} onOpenChange={setOpen}>
-			<PopoverTrigger asChild>
-				{children ?? (
-					<Button
-						variant="outline"
-						role="combobox"
-						aria-expanded={open}
-						className="w-full justify-between"
-						disabled={loading}
-					>
-						<span className="truncate">
-							{selectedItem
-								? getLabel(selectedItem)
-								: loading
-									? "Loading..."
-									: placeholder}
-						</span>
-						<ChevronsUpDown className="ml-2 h-4 w-4 opacity-50" />
-					</Button>
-				)}
-			</PopoverTrigger>
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        {children ?? (
+          <Button
+            variant="outline"
+            role="combobox"
+            aria-expanded={open}
+            className="w-full justify-between"
+            disabled={loading}
+          >
+            <span className="truncate">
+              {selectedItem
+                ? getLabel(selectedItem)
+                : loading
+                  ? "Loading..."
+                  : placeholder}
+            </span>
+            <ChevronsUpDown className="ml-2 h-4 w-4 opacity-50" />
+          </Button>
+        )}
+      </PopoverTrigger>
 
-			<PopoverContent className="w-full p-0">
-				<Command shouldFilter={false}>
-					<CommandInput
-						placeholder="Search..."
-						value={searchQuery}
-						onValueChange={setSearchQuery}
-					/>
+      <PopoverContent className="w-full p-0">
+        <Command shouldFilter={false}>
+          <CommandInput
+            placeholder="Search..."
+            value={searchQuery}
+            onValueChange={setSearchQuery}
+          />
 
-					<CommandList>
-						{/* ✅ Loading state */}
-						{loading && (
-							<div className="p-4 text-sm text-muted-foreground">
-								Loading...
-							</div>
-						)}
+          <CommandList>
+            {/* ✅ Loading state */}
+            {loading && (
+              <div className="p-4 text-sm text-muted-foreground">
+                Loading...
+              </div>
+            )}
 
-						{/* ✅ Empty state */}
-						{!loading && filtered.length === 0 && (
-							<CommandEmpty>{emptyText}</CommandEmpty>
-						)}
+            {/* ✅ Empty state */}
+            {!loading && filtered.length === 0 && (
+              <CommandEmpty>{emptyText}</CommandEmpty>
+            )}
 
-						{!loading &&
-							groups.map((group, i) => (
-								<React.Fragment key={group}>
-									<CommandGroup heading={group}>
-										{grouped[group].map((item) => {
-											const itemValue = getValue(item);
-											const selected = itemValue === value;
+            {!loading &&
+              groups.map((group, i) => (
+                <React.Fragment key={group}>
+                  <CommandGroup heading={group}>
+                    {grouped[group].map((item) => {
+                      const itemValue = getValue(item);
+                      const selected = itemValue === value;
 
-											return (
-												<CommandItem
-													key={itemValue}
-													value={itemValue}
-													onSelect={() => {
-														onSelect?.(item);
-														setOpen(false);
-													}}
-												>
-													{renderItem ? (
-														renderItem(item, selected)
-													) : (
-														<>
-															<Check
-																className={cn(
-																	"mr-2 h-4 w-4",
-																	selected ? "opacity-100" : "opacity-0",
-																)}
-															/>
-															<div className="flex flex-col">
-																<span>{getLabel(item)}</span>
-																{getSubLabel && (
-																	<span className="text-xs text-muted-foreground">
-																		{getSubLabel(item)}
-																	</span>
-																)}
-															</div>
-														</>
-													)}
-												</CommandItem>
-											);
-										})}
-									</CommandGroup>
+                      return (
+                        <CommandItem
+                          key={itemValue}
+                          value={itemValue}
+                          onSelect={() => {
+                            onSelect?.(item);
+                            setOpen(false);
+                          }}
+                        >
+                          {renderItem ? (
+                            renderItem(item, selected)
+                          ) : (
+                            <>
+                              <Check
+                                className={cn(
+                                  "mr-2 h-4 w-4",
+                                  selected ? "opacity-100" : "opacity-0",
+                                )}
+                              />
+                              <div className="flex flex-col">
+                                <span>{getLabel(item)}</span>
+                                {getSubLabel && (
+                                  <span className="text-xs text-muted-foreground">
+                                    {getSubLabel(item)}
+                                  </span>
+                                )}
+                              </div>
+                            </>
+                          )}
+                        </CommandItem>
+                      );
+                    })}
+                  </CommandGroup>
 
-									{i < groups.length - 1 && <CommandSeparator />}
-								</React.Fragment>
-							))}
-					</CommandList>
-				</Command>
-			</PopoverContent>
-		</Popover>
-	);
+                  {i < groups.length - 1 && <CommandSeparator />}
+                </React.Fragment>
+              ))}
+          </CommandList>
+        </Command>
+      </PopoverContent>
+    </Popover>
+  );
 }

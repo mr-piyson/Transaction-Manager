@@ -9,15 +9,15 @@ const AbilityContext = createContext<AppAbilityType | null>(null);
 export const useAbility = () => useContext(AbilityContext);
 
 export function AbilityProvider({
-	ability,
-	children,
+  ability,
+  children,
 }: {
-	ability: AppAbilityType;
-	children: React.ReactNode;
+  ability: AppAbilityType;
+  children: React.ReactNode;
 }) {
-	return (
-		<AbilityContext.Provider value={ability}>
-			{children}
-		</AbilityContext.Provider>
-	);
+  return (
+    <AbilityContext.Provider value={ability}>
+      {children}
+    </AbilityContext.Provider>
+  );
 }

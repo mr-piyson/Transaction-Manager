@@ -8,56 +8,56 @@ import { trpc } from "./client";
 import { API_URL_CHANGE_EVENT } from "./use-api"; // Adjust the import path
 
 export default function TrpcProvider({
-	children,
+  children,
 }: {
-	children: React.ReactNode;
+  children: React.ReactNode;
 }) {
-	// Default to the relative path, updating if a custom one exists
-	const [apiUrl, setApiUrl] = useState("/api/trpc");
+  // Default to the relative path, updating if a custom one exists
+  const [apiUrl, setApiUrl] = useState("/api/trpc");
 
-	const [queryClient] = useState(
-		() =>
-			new QueryClient({
-				defaultOptions: {
-					queries: {
-						staleTime: 5 * 1000,
-					},
-				},
-			}),
-	);
+  const [queryClient] = useState(
+    () =>
+      new QueryClient({
+        defaultOptions: {
+          queries: {
+            staleTime: 5 * 1000,
+          },
+        },
+      }),
+  );
 
-	// Sync the API URL with localStorage and listen for dynamic updates
-	useEffect(() => {
-		const syncUrl = () => {
-			const storedUrl = localStorage.getItem("custom_trpc_url");
-			if (storedUrl) setApiUrl(storedUrl);
-		};
+  // Sync the API URL with localStorage and listen for dynamic updates
+  useEffect(() => {
+    const syncUrl = () => {
+      const storedUrl = localStorage.getItem("custom_trpc_url");
+      if (storedUrl) setApiUrl(storedUrl);
+    };
 
-		// Run on initial mount
-		syncUrl();
+    // Run on initial mount
+    syncUrl();
 
-		// Listen for successful validations from the useApiConfig hook
-		window.addEventListener(API_URL_CHANGE_EVENT, syncUrl);
-		return () => window.removeEventListener(API_URL_CHANGE_EVENT, syncUrl);
-	}, []);
+    // Listen for successful validations from the useApiConfig hook
+    window.addEventListener(API_URL_CHANGE_EVENT, syncUrl);
+    return () => window.removeEventListener(API_URL_CHANGE_EVENT, syncUrl);
+  }, []);
 
-	// Re-instantiate the tRPC client dynamically whenever apiUrl changes
-	const trpcClient = useMemo(
-		() =>
-			trpc.createClient({
-				links: [
-					httpBatchLink({
-						url: apiUrl,
-						transformer: superjson,
-					}),
-				],
-			}),
-		[apiUrl],
-	);
+  // Re-instantiate the tRPC client dynamically whenever apiUrl changes
+  const trpcClient = useMemo(
+    () =>
+      trpc.createClient({
+        links: [
+          httpBatchLink({
+            url: apiUrl,
+            transformer: superjson,
+          }),
+        ],
+      }),
+    [apiUrl],
+  );
 
-	return (
-		<trpc.Provider client={trpcClient} queryClient={queryClient}>
-			<QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
-		</trpc.Provider>
-	);
+  return (
+    <trpc.Provider client={trpcClient} queryClient={queryClient}>
+      <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+    </trpc.Provider>
+  );
 }

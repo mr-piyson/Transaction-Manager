@@ -9,23 +9,23 @@ import db from "../db";
 // 1. Standalone Select Block (Best Practice: Prevents Circular Types)
 // ---------------------------------------------------------------------------
 const userSelect = {
-	id: true,
-	name: true,
-	email: true,
-	organizationId: true,
-	platformRole: true,
-	userOrganizationRoles: {
-		where: {
-			isActive: true,
-			deletedAt: null,
-		},
-		select: {
-			role: true,
-			roleId: true,
-			customRole: { select: { systemKey: true } },
-		},
-		take: 1,
-	},
+  id: true,
+  name: true,
+  email: true,
+  organizationId: true,
+  platformRole: true,
+  userOrganizationRoles: {
+    where: {
+      isActive: true,
+      deletedAt: null,
+    },
+    select: {
+      role: true,
+      roleId: true,
+      customRole: { select: { systemKey: true } },
+    },
+    take: 1,
+  },
 } as const;
 
 // ---------------------------------------------------------------------------
@@ -34,130 +34,130 @@ const userSelect = {
 type DbUserPayload = Prisma.UserGetPayload<{ select: typeof userSelect }>;
 
 export type ContextUser = Omit<DbUserPayload, "userOrganizationRoles"> & {
-	orgRole: string | null;
-	permissions: string[];
+  orgRole: string | null;
+  permissions: string[];
 };
 
 // ---------------------------------------------------------------------------
 // 3. Explicit Context Contract (Best Practice: Fast Compilation & Fail-Fast Safety)
 // ---------------------------------------------------------------------------
 export interface Context {
-	db: typeof db;
-	req: NextRequest;
-	ipAddress: string;
-	session: Awaited<ReturnType<typeof auth.api.getSession>> | null;
-	user: ContextUser | null;
-	ability: AppAbilityType;
+  db: typeof db;
+  req: NextRequest;
+  ipAddress: string;
+  session: Awaited<ReturnType<typeof auth.api.getSession>> | null;
+  user: ContextUser | null;
+  ability: AppAbilityType;
 }
 
 // ---------------------------------------------------------------------------
 // 4. Request Context Builder (Best Practice: Decoupled Web/Adapter Layer)
 // ---------------------------------------------------------------------------
 export async function createContext(
-	opts: FetchCreateContextFnOptions,
+  opts: FetchCreateContextFnOptions,
 ): Promise<Context> {
-	// Cast standard Request to NextRequest to preserve custom properties (cookies, nextUrl)
-	const { req } = opts as unknown as { req: NextRequest };
+  // Cast standard Request to NextRequest to preserve custom properties (cookies, nextUrl)
+  const { req } = opts as unknown as { req: NextRequest };
 
-	const ipAddress =
-		req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ??
-		req.headers.get("x-real-ip") ??
-		"unknown";
+  const ipAddress =
+    req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ??
+    req.headers.get("x-real-ip") ??
+    "unknown";
 
-	// Resolve Auth Session
-	let betterSession: Awaited<ReturnType<typeof auth.api.getSession>> | null =
-		null;
-	try {
-		betterSession = await auth.api.getSession({ headers: req.headers });
-	} catch {
-		// Treat invalid tokens as unauthenticated
-	}
+  // Resolve Auth Session
+  let betterSession: Awaited<ReturnType<typeof auth.api.getSession>> | null =
+    null;
+  try {
+    betterSession = await auth.api.getSession({ headers: req.headers });
+  } catch {
+    // Treat invalid tokens as unauthenticated
+  }
 
-	// Early Return: Unauthenticated User Branch
-	if (!betterSession?.user) {
-		return {
-			db,
-			req,
-			ipAddress,
-			session: null,
-			user: null,
-			ability: defineAbilitiesFor({
-				id: "",
-				platformRole: "USER",
-				permissions: [],
-			}),
-		};
-	}
+  // Early Return: Unauthenticated User Branch
+  if (!betterSession?.user) {
+    return {
+      db,
+      req,
+      ipAddress,
+      session: null,
+      user: null,
+      ability: defineAbilitiesFor({
+        id: "",
+        platformRole: "USER",
+        permissions: [],
+      }),
+    };
+  }
 
-	// Fetch Full User Database Record
-	const dbUser = await db.user.findUnique({
-		where: { id: betterSession.user.id, isActive: true, deletedAt: null },
-		select: {
-			...userSelect,
-			userOrganizationRoles: {
-				...userSelect.userOrganizationRoles,
-				where: {
-					...userSelect.userOrganizationRoles.where,
-					organizationId: betterSession.user.organizationId ?? undefined,
-				},
-			},
-		},
-	});
+  // Fetch Full User Database Record
+  const dbUser = await db.user.findUnique({
+    where: { id: betterSession.user.id, isActive: true, deletedAt: null },
+    select: {
+      ...userSelect,
+      userOrganizationRoles: {
+        ...userSelect.userOrganizationRoles,
+        where: {
+          ...userSelect.userOrganizationRoles.where,
+          organizationId: betterSession.user.organizationId ?? undefined,
+        },
+      },
+    },
+  });
 
-	// Early Return: Session Valid but User Row Missing/Deactivated
-	if (!dbUser) {
-		return {
-			db,
-			req,
-			ipAddress,
-			session: betterSession,
-			user: null,
-			ability: defineAbilitiesFor({
-				id: "",
-				platformRole: "USER",
-				permissions: [],
-			}),
-		};
-	}
+  // Early Return: Session Valid but User Row Missing/Deactivated
+  if (!dbUser) {
+    return {
+      db,
+      req,
+      ipAddress,
+      session: betterSession,
+      user: null,
+      ability: defineAbilitiesFor({
+        id: "",
+        platformRole: "USER",
+        permissions: [],
+      }),
+    };
+  }
 
-	const uor = dbUser.userOrganizationRoles[0];
-	const orgRole = uor?.customRole?.systemKey ?? uor?.role ?? null;
-	const roleId = uor?.roleId ?? null;
-	let permissionCodes: string[] = [];
+  const uor = dbUser.userOrganizationRoles[0];
+  const orgRole = uor?.customRole?.systemKey ?? uor?.role ?? null;
+  const roleId = uor?.roleId ?? null;
+  let permissionCodes: string[] = [];
 
-	if (roleId && dbUser.platformRole !== "SUPER_ADMIN") {
-		const rolePerms = await db.rolePermission.findMany({
-			where: { roleId },
-			select: { permission: { select: { code: true } } },
-		});
-		permissionCodes = rolePerms.map((rp) => rp.permission.code);
-	}
+  if (roleId && dbUser.platformRole !== "SUPER_ADMIN") {
+    const rolePerms = await db.rolePermission.findMany({
+      where: { roleId },
+      select: { permission: { select: { code: true } } },
+    });
+    permissionCodes = rolePerms.map((rp) => rp.permission.code);
+  }
 
-	const contextUser: ContextUser = {
-		id: dbUser.id,
-		name: dbUser.name,
-		email: dbUser.email,
-		organizationId: dbUser.organizationId,
-		platformRole: dbUser.platformRole,
-		orgRole,
-		permissions: permissionCodes,
-	};
+  const contextUser: ContextUser = {
+    id: dbUser.id,
+    name: dbUser.name,
+    email: dbUser.email,
+    organizationId: dbUser.organizationId,
+    platformRole: dbUser.platformRole,
+    orgRole,
+    permissions: permissionCodes,
+  };
 
-	// Synchronously compute CASL Ability for direct procedure access
-	const ability = defineAbilitiesFor({
-		id: dbUser.id,
-		platformRole: dbUser.platformRole,
-		orgRole: orgRole ?? undefined,
-		organizationId: dbUser.organizationId ?? undefined,
-		permissions: permissionCodes as import("@/lib/abilities").Action[],
-	});
+  // Synchronously compute CASL Ability for direct procedure access
+  const ability = defineAbilitiesFor({
+    id: dbUser.id,
+    platformRole: dbUser.platformRole,
+    orgRole: orgRole ?? undefined,
+    organizationId: dbUser.organizationId ?? undefined,
+    permissions: permissionCodes as import("@/lib/abilities").Action[],
+  });
 
-	return {
-		db,
-		req,
-		ipAddress,
-		session: betterSession,
-		user: contextUser,
-		ability,
-	};
+  return {
+    db,
+    req,
+    ipAddress,
+    session: betterSession,
+    user: contextUser,
+    ability,
+  };
 }

@@ -4,114 +4,114 @@ import { orgProcedure, router } from "@/lib/trpc/context";
 import { cuidSchema } from "@/lib/validations";
 
 const notificationStatusSchema = z.enum([
-	"UNREAD",
-	"READ",
-	"ARCHIVED",
-	"DISMISSED",
+  "UNREAD",
+  "READ",
+  "ARCHIVED",
+  "DISMISSED",
 ]);
 
 const listSchema = z.object({
-	status: notificationStatusSchema.optional(),
-	search: z.string().optional(),
+  status: notificationStatusSchema.optional(),
+  search: z.string().optional(),
 });
 
 export const notificationsRouter = router({
-	list: orgProcedure.input(listSchema).query(async ({ ctx, input }) => {
-		const { search, status } = input;
+  list: orgProcedure.input(listSchema).query(async ({ ctx, input }) => {
+    const { search, status } = input;
 
-		const where: Record<string, unknown> = {
-			userId: ctx.user.id,
-			organizationId: ctx.user.organizationId,
-		};
-		if (status) where.status = status;
-		if (search)
-			where.OR = [
-				{ title: { contains: search, mode: "insensitive" } },
-				{ body: { contains: search, mode: "insensitive" } },
-			];
+    const where: Record<string, unknown> = {
+      userId: ctx.user.id,
+      organizationId: ctx.user.organizationId,
+    };
+    if (status) where.status = status;
+    if (search)
+      where.OR = [
+        { title: { contains: search, mode: "insensitive" } },
+        { body: { contains: search, mode: "insensitive" } },
+      ];
 
-		const data = await ctx.db.notification.findMany({
-			where: where as any,
-			orderBy: { createdAt: "desc" },
-		});
+    const data = await ctx.db.notification.findMany({
+      where: where as any,
+      orderBy: { createdAt: "desc" },
+    });
 
-		return data;
-	}),
+    return data;
+  }),
 
-	getUnreadCount: orgProcedure.query(async ({ ctx }) => {
-		const count = await ctx.db.notification.count({
-			where: {
-				userId: ctx.user.id,
-				organizationId: ctx.user.organizationId,
-				status: "UNREAD",
-			},
-		});
-		return { count };
-	}),
+  getUnreadCount: orgProcedure.query(async ({ ctx }) => {
+    const count = await ctx.db.notification.count({
+      where: {
+        userId: ctx.user.id,
+        organizationId: ctx.user.organizationId,
+        status: "UNREAD",
+      },
+    });
+    return { count };
+  }),
 
-	markRead: orgProcedure
-		.input(z.object({ id: cuidSchema }))
-		.mutation(async ({ ctx, input }) => {
-			const notification = await ctx.db.notification.findFirst({
-				where: {
-					id: input.id,
-					userId: ctx.user.id,
-					organizationId: ctx.user.organizationId,
-				},
-			});
-			if (!notification) throw new NotFoundError("Notification", input.id);
+  markRead: orgProcedure
+    .input(z.object({ id: cuidSchema }))
+    .mutation(async ({ ctx, input }) => {
+      const notification = await ctx.db.notification.findFirst({
+        where: {
+          id: input.id,
+          userId: ctx.user.id,
+          organizationId: ctx.user.organizationId,
+        },
+      });
+      if (!notification) throw new NotFoundError("Notification", input.id);
 
-			return ctx.db.notification.update({
-				where: { id: input.id },
-				data: { status: "READ", readAt: new Date() },
-			});
-		}),
+      return ctx.db.notification.update({
+        where: { id: input.id },
+        data: { status: "READ", readAt: new Date() },
+      });
+    }),
 
-	markAllRead: orgProcedure.mutation(async ({ ctx }) => {
-		await ctx.db.notification.updateMany({
-			where: {
-				userId: ctx.user.id,
-				organizationId: ctx.user.organizationId,
-				status: "UNREAD",
-			},
-			data: { status: "READ", readAt: new Date() },
-		});
-		return { success: true };
-	}),
+  markAllRead: orgProcedure.mutation(async ({ ctx }) => {
+    await ctx.db.notification.updateMany({
+      where: {
+        userId: ctx.user.id,
+        organizationId: ctx.user.organizationId,
+        status: "UNREAD",
+      },
+      data: { status: "READ", readAt: new Date() },
+    });
+    return { success: true };
+  }),
 
-	archive: orgProcedure
-		.input(z.object({ id: cuidSchema }))
-		.mutation(async ({ ctx, input }) => {
-			const notification = await ctx.db.notification.findFirst({
-				where: {
-					id: input.id,
-					userId: ctx.user.id,
-					organizationId: ctx.user.organizationId,
-				},
-			});
-			if (!notification) throw new NotFoundError("Notification", input.id);
+  archive: orgProcedure
+    .input(z.object({ id: cuidSchema }))
+    .mutation(async ({ ctx, input }) => {
+      const notification = await ctx.db.notification.findFirst({
+        where: {
+          id: input.id,
+          userId: ctx.user.id,
+          organizationId: ctx.user.organizationId,
+        },
+      });
+      if (!notification) throw new NotFoundError("Notification", input.id);
 
-			return ctx.db.notification.update({
-				where: { id: input.id },
-				data: { status: "ARCHIVED" },
-			});
-		}),
+      return ctx.db.notification.update({
+        where: { id: input.id },
+        data: { status: "ARCHIVED" },
+      });
+    }),
 
-	dismiss: orgProcedure
-		.input(z.object({ id: cuidSchema }))
-		.mutation(async ({ ctx, input }) => {
-			const notification = await ctx.db.notification.findFirst({
-				where: {
-					id: input.id,
-					userId: ctx.user.id,
-					organizationId: ctx.user.organizationId,
-				},
-			});
-			if (!notification) throw new NotFoundError("Notification", input.id);
+  dismiss: orgProcedure
+    .input(z.object({ id: cuidSchema }))
+    .mutation(async ({ ctx, input }) => {
+      const notification = await ctx.db.notification.findFirst({
+        where: {
+          id: input.id,
+          userId: ctx.user.id,
+          organizationId: ctx.user.organizationId,
+        },
+      });
+      if (!notification) throw new NotFoundError("Notification", input.id);
 
-			return ctx.db.notification.update({
-				where: { id: input.id },
-				data: { status: "DISMISSED" },
-			});
-		}),
+      return ctx.db.notification.update({
+        where: { id: input.id },
+        data: { status: "DISMISSED" },
+      });
+    }),
 });

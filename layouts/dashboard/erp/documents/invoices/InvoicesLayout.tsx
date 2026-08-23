@@ -3,9 +3,9 @@
 import DocumentsLayout from "../[type]/TypeLayout";
 
 export default function InvoicesLayout({
-	children,
+  children,
 }: {
-	children?: React.ReactNode;
+  children?: React.ReactNode;
 }) {
-	return <DocumentsLayout documentType="invoices">{children}</DocumentsLayout>;
+  return <DocumentsLayout documentType="invoices">{children}</DocumentsLayout>;
 }

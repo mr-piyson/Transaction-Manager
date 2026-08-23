@@ -10,18 +10,18 @@ import Stats from "@/components/landing/stats";
 import WhyUs from "@/components/landing/why-us";
 
 export default function LandingClient() {
-	return (
-		<>
-			<Particles />
-			<Header />
-			<main>
-				<Hero />
-				<Stats />
-				<Features />
-				<WhyUs />
-				<CTA />
-			</main>
-			<Footer />
-		</>
-	);
+  return (
+    <>
+      <Particles />
+      <Header />
+      <main>
+        <Hero />
+        <Stats />
+        <Features />
+        <WhyUs />
+        <CTA />
+      </main>
+      <Footer />
+    </>
+  );
 }
