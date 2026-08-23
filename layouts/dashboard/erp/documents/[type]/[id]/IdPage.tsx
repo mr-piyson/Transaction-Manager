@@ -31,7 +31,13 @@ import { usePaymentForm } from "@/components/dialogs/paymentForm";
 import { InvoiceHistoryPanel } from "@/components/invoices/invoice-history-panel";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+	Card,
+	CardContent,
+	CardDescription,
+	CardHeader,
+	CardTitle,
+} from "@/components/ui/card";
 import {
 	Dialog,
 	DialogContent,
@@ -713,80 +719,92 @@ export default function DocumentDetailPage() {
 				/>
 
 				{/* Document details */}
-				<div className="min-w-0 space-y-5 sm:space-y-6 p-6">
-					{/* Details */}
-					<Card>
-						<CardHeader className="border-b py-4">
-							<CardTitle className="text-base">
+				<div className="min-w-0 space-y-4 sm:space-y-5">
+					<Card className="gap-0 py-0">
+						<CardHeader className="border-b px-4 py-3 sm:px-5">
+							<CardTitle className="text-2xl">
 								{t("invoices.invoiceDetails")}
 							</CardTitle>
+							<CardDescription className="text-xs">
+								{invoice.customer?.name ?? "—"}
+							</CardDescription>
 						</CardHeader>
-						<CardContent className="grid grid-cols-1 gap-3 p-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 sm:p-5">
-							<div className="min-w-0 rounded-md bg-muted/40 p-3">
-								<p className="text-sm text-muted-foreground">
-									{t("invoices.issueDate")}
-								</p>
-								<p className="font-medium">
-									{invoice.date ? formatDate(invoice.date) : "—"}
-								</p>
-							</div>
-							{invoice.dueDate && (
-								<div className="min-w-0 rounded-md bg-muted/40 p-3">
-									<p className="text-sm text-muted-foreground">
-										{t("invoices.dueDate")}
-									</p>
-									<p className="font-medium">{formatDate(invoice.dueDate)}</p>
+						<CardContent className="p-4 sm:p-5">
+							<dl className="grid grid-cols-1 gap-x-6 gap-y-3 text-sm sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+								<div className="min-w-0 space-y-0.5">
+									<dt className="text-xs text-muted-foreground">
+										{t("invoices.issueDate")}
+									</dt>
+									<dd className="truncate font-medium">
+										{invoice.date ? formatDate(invoice.date) : "—"}
+									</dd>
 								</div>
-							)}
-							{invoice.customer && (
-								<div className="min-w-0 rounded-md bg-muted/40 p-3">
-									<p className="text-sm text-muted-foreground">
-										{t("invoices.customer")}
-									</p>
-									<p className="font-medium">{invoice.customer.name}</p>
-									<p className="text-xs text-muted-foreground">
-										{(invoice.customer as any).vatNumber ??
-											(invoice.customer as any).taxId ??
-											""}
-									</p>
+								{invoice.dueDate && (
+									<div className="min-w-0 space-y-0.5">
+										<dt className="text-xs text-muted-foreground">
+											{t("invoices.dueDate")}
+										</dt>
+										<dd className="truncate font-medium">
+											{formatDate(invoice.dueDate)}
+										</dd>
+									</div>
+								)}
+								{invoice.customer && (
+									<div className="min-w-0 space-y-0.5">
+										<dt className="text-xs text-muted-foreground">
+											{t("invoices.customer")}
+										</dt>
+										<dd className="truncate font-medium">
+											{invoice.customer.name}
+										</dd>
+										{((invoice.customer as any).vatNumber ??
+											(invoice.customer as any).taxId) && (
+											<dd className="truncate text-xs text-muted-foreground">
+												{(invoice.customer as any).vatNumber ??
+													(invoice.customer as any).taxId}
+											</dd>
+										)}
+									</div>
+								)}
+								{isInvoice && (invoice as any).warehouse && (
+									<div className="min-w-0 space-y-0.5">
+										<dt className="text-xs text-muted-foreground">
+											{t("invoices.warehouse")}
+										</dt>
+										<dd className="truncate font-medium">
+											{(invoice as any).warehouse.name}
+										</dd>
+									</div>
+								)}
+								{invoice.currency && (
+									<div className="min-w-0 space-y-0.5">
+										<dt className="text-xs text-muted-foreground">
+											{t("invoices.currency")}
+										</dt>
+										<dd className="font-medium">{invoice.currency}</dd>
+									</div>
+								)}
+								<div className="min-w-0 space-y-1">
+									<dt className="text-xs text-muted-foreground">
+										{t("common.status")}
+									</dt>
+									<dd>
+										<Badge className={STATUS_COLORS[invoice.status] ?? ""}>
+											{invoice.status}
+										</Badge>
+									</dd>
 								</div>
-							)}
-							{isInvoice && (invoice as any).warehouse && (
-								<div className="min-w-0 rounded-md bg-muted/40 p-3">
-									<p className="text-sm text-muted-foreground">
-										{t("invoices.warehouse")}
-									</p>
-									<p className="font-medium">
-										{(invoice as any).warehouse?.name}
-									</p>
-								</div>
-							)}
-							{invoice.currency && (
-								<div className="min-w-0 rounded-md bg-muted/40 p-3">
-									<p className="text-sm text-muted-foreground">
-										{t("invoices.currency")}
-									</p>
-									<p className="font-medium">{invoice.currency}</p>
-								</div>
-							)}
-							<div className="min-w-0 rounded-md bg-muted/40 p-3">
-								<p className="text-sm text-muted-foreground">
-									{t("common.status")}
-								</p>
-								<Badge className={STATUS_COLORS[invoice.status] ?? ""}>
-									{invoice.status}
-								</Badge>
-							</div>
-							{(invoice as any).createdBy && (
-								<div className="min-w-0 rounded-md bg-muted/40 p-3">
-									<p className="text-sm text-muted-foreground">
-										{t("common.createdBy")}
-									</p>
-									<p className="font-medium">
-										{(invoice as any).createdBy?.name ?? "—"}
-									</p>
-								</div>
-							)}
+								{(invoice as any).createdBy && (
+									<div className="min-w-0 space-y-0.5">
+										<dt className="text-xs text-muted-foreground">
+											{t("common.createdBy")}
+										</dt>
+										<dd className="truncate font-medium">
+											{(invoice as any).createdBy?.name ?? "—"}
+										</dd>
+									</div>
+								)}
+							</dl>
 						</CardContent>
 					</Card>
 
