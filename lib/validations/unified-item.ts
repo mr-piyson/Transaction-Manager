@@ -26,7 +26,7 @@ export type SupplierItemDraft = z.infer<typeof supplierItemDraftSchema>;
 // ---------------------------------------------------------------------------
 
 export const itemMasterSchema = z.object({
-  type: z.enum(["PRODUCT", "SERVICE"]).default("PRODUCT"),
+  type: z.enum(["PRODUCT", "SERVICE", "BUNDLE"]).default("PRODUCT"),
   sku: z.string().min(1, "Internal SKU is required").max(100),
   name: z.string().min(1, "Item name is required").max(255),
   barcode: z.string().max(100).optional(),
@@ -63,8 +63,28 @@ export type UnifiedItemFormValues = z.infer<typeof unifiedItemSchema>;
 // Defaults
 // ---------------------------------------------------------------------------
 
+/** Prisma Decimal-like value (client-side deserialized). */
+export interface DecimalLike {
+  toNumber(): number;
+}
+
+/** Accepts DB-shaped rows: nullable strings and Decimal numerics. */
+export type ItemMasterDefaultsInput = {
+  [K in keyof ItemMasterValues]?: ItemMasterValues[K] extends number
+    ? number | DecimalLike | null
+    : ItemMasterValues[K] | null;
+};
+
+function toNum(value: unknown): number {
+  if (typeof value === "number") return value;
+  if (value != null && typeof (value as DecimalLike).toNumber === "function") {
+    return (value as DecimalLike).toNumber();
+  }
+  return Number(value) || 0;
+}
+
 export function getItemMasterDefaults(
-  item?: Partial<ItemMasterValues>,
+  item?: ItemMasterDefaultsInput,
 ): ItemMasterValues {
   return {
     type: item?.type ?? "PRODUCT",
@@ -77,13 +97,11 @@ export function getItemMasterDefaults(
     unitId: item?.unitId ?? undefined,
     isSaleable: item?.isSaleable ?? true,
     isPurchasable: item?.isPurchasable ?? true,
-    purchasePrice:
-      typeof item?.purchasePrice === "number" ? item.purchasePrice : 0,
-    salesPrice: typeof item?.salesPrice === "number" ? item.salesPrice : 0,
-    minStock: typeof item?.minStock === "number" ? item.minStock : 0,
-    reorderPoint:
-      typeof item?.reorderPoint === "number" ? item.reorderPoint : 0,
-    reorderQty: typeof item?.reorderQty === "number" ? item.reorderQty : 0,
+    purchasePrice: toNum(item?.purchasePrice),
+    salesPrice: toNum(item?.salesPrice),
+    minStock: Math.trunc(toNum(item?.minStock)),
+    reorderPoint: Math.trunc(toNum(item?.reorderPoint)),
+    reorderQty: Math.trunc(toNum(item?.reorderQty)),
     categoryId: item?.categoryId ?? undefined,
     taxRateId: item?.taxRateId ?? undefined,
     isActive: item?.isActive ?? true,

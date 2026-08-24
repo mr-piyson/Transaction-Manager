@@ -483,9 +483,6 @@ export function AppSidebar({ ...props }: AppSidebarProps) {
               const labelContent = (
                 <>
                   {/* Active indicator: 3px colored bar on left edge */}
-                  {active && (
-                    <div className="absolute inset-s-0 h-6 w-1 rounded-sm bg-primary" />
-                  )}
                   {itemData.icon && (
                     <itemData.icon
                       className={cn(
