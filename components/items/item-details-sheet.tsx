@@ -210,8 +210,8 @@ export function ItemDetailsSheet({
 
             <div className="space-y-4 p-5 sm:p-6">
               <Card className="overflow-hidden">
-                <CardContent className="p-0">
-                  <div className="flex aspect-[4/3] max-h-80 items-center justify-center bg-muted/20 p-4 sm:aspect-[16/10]">
+                <CardContent className="w-full flex justify-center items-center p-0">
+                  <div className="flex w-full max-h-80 items-center justify-center bg-muted/20 p-4 ">
                     {item.image ? (
                       <img
                         src={item.image}
