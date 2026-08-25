@@ -5,6 +5,10 @@ import {
   NOTIFICATION_SETTINGS_KEYS,
   NOTIFICATION_TYPES,
 } from "../notifications/notifications.shared";
+import {
+  resolveRenewalCronExpression,
+  SUBSCRIPTION_SETTING_KEYS,
+} from "../subscriptions/subscriptions.shared";
 import { fullSyncCurrenciesAndRates } from "./frankfurter";
 
 function shouldRun(jobName: string): boolean {
@@ -245,25 +249,41 @@ async function checkUpcomingSubscriptionRenewals() {
       select: { value: true },
     });
 
+    // Orgs can narrow recipients to the subscription creator only.
+    const scopeSetting = await db.organizationSetting.findFirst({
+      where: {
+        organizationId: sub.organizationId,
+        key: SUBSCRIPTION_SETTING_KEYS.NOTIFY_SCOPE,
+      },
+      select: { value: true },
+    });
+    const creatorOnly = scopeSetting?.value === "CREATOR";
+
+    const isOverdue = sub.nextRenewalDate < now;
+    const dueText = isOverdue
+      ? `was due on ${sub.nextRenewalDate.toLocaleDateString()}`
+      : `renews on ${sub.nextRenewalDate.toLocaleDateString()}`;
+
     await db.$transaction(async (tx) => {
-      const orgUsers = await tx.user.findMany({
-        where: { organizationId: sub.organizationId },
-        select: { id: true },
-      });
+      let recipientIds: string[];
+      if (creatorOnly) {
+        recipientIds = [sub.createdById];
+      } else {
+        const orgUsers = await tx.user.findMany({
+          where: { organizationId: sub.organizationId },
+          select: { id: true },
+        });
+        recipientIds = orgUsers.map((u) => u.id);
+      }
 
-      const isOverdue = sub.nextRenewalDate < now;
-      const dueText = isOverdue
-        ? `was due on ${sub.nextRenewalDate.toLocaleDateString()}`
-        : `renews on ${sub.nextRenewalDate.toLocaleDateString()}`;
-
-      for (const user of orgUsers) {
+      for (const userId of recipientIds) {
         await createNotification(tx, setting?.value === "true", {
           title: "Subscription Renewal Due",
           body: `${sub.name} ${dueText} (${sub.currency} ${Number(sub.amount).toFixed(2)}).`,
           type: NOTIFICATION_TYPES.SUBSCRIPTION_RENEWAL_DUE,
           entityType: "Subscription",
           entityId: sub.id,
-          userId: user.id,
+          userId,
           organizationId: sub.organizationId,
         });
       }
@@ -277,6 +297,34 @@ async function checkUpcomingSubscriptionRenewals() {
       `[cron] Checked subscription renewals: ${notified} alerts raised`,
     );
   }
+}
+
+// The scheduler is process-global but settings are per-org — mirror
+// getSyncFrequency() and use the most common value across organizations.
+async function getRenewalCheckFrequency(): Promise<string> {
+  const frequencies = await db.organizationSetting.groupBy({
+    by: ["value"],
+    where: { key: SUBSCRIPTION_SETTING_KEYS.RENEWAL_CHECK_FREQUENCY },
+    _count: true,
+  });
+
+  if (frequencies.length === 0) return "";
+
+  const mostCommon = frequencies.reduce((prev, curr) =>
+    curr._count > prev._count ? curr : prev,
+  );
+  return mostCommon.value;
+}
+
+function scheduleSubscriptionRenewals(frequencySetting: string): void {
+  const expression = resolveRenewalCronExpression(frequencySetting);
+  const task = cron.schedule(expression, () => {
+    checkUpcomingSubscriptionRenewals().catch((err) =>
+      console.error("[cron] subscription renewal check failed:", err),
+    );
+  });
+  activeTasks.set("subscription-renewals", task);
+  console.log(`[cron] Registered subscription renewal check (${expression})`);
 }
 
 // Exchange rate sync job
@@ -391,12 +439,16 @@ export function registerCronJobs() {
   }
 
   if (shouldRun("subscription-renewals")) {
-    cron.schedule("0 8 * * *", () => {
-      checkUpcomingSubscriptionRenewals().catch((err) =>
-        console.error("[cron] subscription renewal check failed:", err),
+    getRenewalCheckFrequency()
+      .then((frequencySetting) => {
+        scheduleSubscriptionRenewals(frequencySetting);
+      })
+      .catch((err) =>
+        console.error(
+          "[cron] failed to read subscription renewal frequency:",
+          err,
+        ),
       );
-    });
-    console.log("[cron] Registered subscription renewal check (daily 08:00)");
   }
 
   if (shouldRun("currency-sync")) {
@@ -410,6 +462,23 @@ export function registerCronJobs() {
       console.log(`[cron] Registered exchange rate sync (${frequency})`);
     });
   }
+}
+
+/**
+ * Restart the subscription renewal check with a new frequency setting.
+ * Called when an admin updates subscription settings.
+ */
+export async function restartSubscriptionRenewals(
+  frequencySetting: string,
+): Promise<void> {
+  // Stop existing task if running
+  const existingTask = activeTasks.get("subscription-renewals");
+  if (existingTask) {
+    existingTask.stop();
+    activeTasks.delete("subscription-renewals");
+  }
+
+  scheduleSubscriptionRenewals(frequencySetting);
 }
 
 /**

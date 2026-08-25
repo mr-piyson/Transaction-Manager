@@ -49,3 +49,48 @@ export const SUBSCRIPTION_BILLING_CYCLES = [
   "ANNUAL",
   "CUSTOM",
 ] as const;
+
+// ---------------------------------------------------------------------------
+// Org-level subscription settings (stored in OrganizationSetting key/value).
+// ---------------------------------------------------------------------------
+
+export const SUBSCRIPTION_SETTING_KEYS = {
+  DEFAULT_ALERT_DAYS_BEFORE: "subscriptions.defaultAlertDaysBefore",
+  NOTIFY_SCOPE: "subscriptions.notifyScope",
+  RENEWAL_CHECK_FREQUENCY: "subscriptions.renewalCheckFrequency",
+} as const;
+
+export const DEFAULT_ALERT_DAYS_BEFORE = 7;
+
+export type SubscriptionNotifyScope = "ALL_USERS" | "CREATOR";
+export type RenewalCheckFrequency = "DAILY_08" | "EVERY_6H" | "HOURLY";
+
+export const RENEWAL_NOTIFY_SCOPES: SubscriptionNotifyScope[] = [
+  "ALL_USERS",
+  "CREATOR",
+];
+
+export const RENEWAL_CHECK_FREQUENCIES: RenewalCheckFrequency[] = [
+  "DAILY_08",
+  "EVERY_6H",
+  "HOURLY",
+];
+
+/** Cron expressions per frequency option. Never accept raw cron strings. */
+export const RENEWAL_CHECK_CRON_EXPRESSIONS: Record<
+  RenewalCheckFrequency,
+  string
+> = {
+  DAILY_08: "0 8 * * *",
+  EVERY_6H: "0 */6 * * *",
+  HOURLY: "0 * * * *",
+};
+
+export function resolveRenewalCronExpression(
+  value: string | null | undefined,
+): string {
+  if (value && value in RENEWAL_CHECK_CRON_EXPRESSIONS) {
+    return RENEWAL_CHECK_CRON_EXPRESSIONS[value as RenewalCheckFrequency];
+  }
+  return RENEWAL_CHECK_CRON_EXPRESSIONS.DAILY_08;
+}

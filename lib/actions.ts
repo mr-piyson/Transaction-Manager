@@ -7,6 +7,7 @@ import {
   Briefcase,
   Building2,
   Calendar,
+  CalendarClock,
   Coins,
   Languages,
   Layers,
@@ -128,6 +129,12 @@ export const NAV_ITEMS = [
     labelKey: "settings.dateTime.title",
     href: "/settings/date-time",
     icon: Calendar,
+  },
+  {
+    id: "subscriptions",
+    labelKey: "settings.subscriptionsNav",
+    href: "/settings/subscriptions",
+    icon: CalendarClock,
   },
   {
     id: "notifications",

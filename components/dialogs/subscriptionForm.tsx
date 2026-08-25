@@ -133,6 +133,7 @@ export function SubscriptionFormDialog({
   const { data: categoriesData } = trpc.expenses.categories.list.useQuery();
   const { data: departmentsData } =
     trpc.subscriptions.departments.list.useQuery();
+  const { data: subDefaults } = trpc.subscriptions.defaults.useQuery();
 
   const {
     register,
@@ -144,12 +145,12 @@ export function SubscriptionFormDialog({
     formState: { errors, isSubmitting },
   } = useForm<SubscriptionFormValues>({
     resolver: zodResolver(schema) as any,
-    defaultValues: defaults(subscription, orgCurrency),
+    defaultValues: defaults(subscription, orgCurrency, subDefaults),
   });
 
   React.useEffect(() => {
-    if (open) reset(defaults(subscription, orgCurrency));
-  }, [open, subscription, orgCurrency, reset]);
+    if (open) reset(defaults(subscription, orgCurrency, subDefaults));
+  }, [open, subscription, orgCurrency, subDefaults, reset]);
 
   const watchBillingCycle = watch("billingCycle");
   const watchAutoRenew = watch("autoRenew");
@@ -549,10 +550,10 @@ export function useSubscriptionForm(): SubscriptionFormContextValue {
     );
   return ctx;
 }
-
 function defaults(
   subscription?: { id: string } & Partial<SubscriptionFormValues>,
   orgCurrency?: string,
+  subDefaults?: { defaultAlertDaysBefore?: number },
 ): SubscriptionFormValues {
   return {
     name: subscription?.name ?? "",
@@ -571,7 +572,7 @@ function defaults(
     alertDaysBefore:
       typeof subscription?.alertDaysBefore === "number"
         ? subscription.alertDaysBefore
-        : 7,
+        : (subDefaults?.defaultAlertDaysBefore ?? 7),
     categoryId: subscription?.categoryId ?? undefined,
     departmentId: subscription?.departmentId ?? undefined,
   };

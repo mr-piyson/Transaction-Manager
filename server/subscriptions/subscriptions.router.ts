@@ -6,9 +6,12 @@ import { cuidSchema, paymentMethodSchema } from "@/lib/validations";
 import { postExpense } from "../journals/journal-posting.service";
 import { NOTIFICATION_TYPES } from "../notifications/notifications.shared";
 import { writeAuditLog } from "../shared/audit.service";
+import { restartSubscriptionRenewals } from "../shared/cron";
 import {
   addBillingCycle,
+  RENEWAL_CHECK_CRON_EXPRESSIONS,
   SUBSCRIPTION_BILLING_CYCLES,
+  SUBSCRIPTION_SETTING_KEYS,
   SUBSCRIPTION_STATUSES,
 } from "./subscriptions.shared";
 
@@ -175,6 +178,101 @@ export const subscriptionsRouter = router({
       });
     }),
   },
+
+  /**
+   * Org-level subscription defaults for UI prefill. Gated by
+   * subscription:read (not org:settings:read) so regular users who can
+   * create subscriptions can still fetch the defaults.
+   */
+  defaults: orgProcedure.query(async ({ ctx }) => {
+    assertCan(ctx.ability, "subscription:read", "Subscription");
+
+    const setting = await ctx.db.organizationSetting.findUnique({
+      where: {
+        organizationId_key: {
+          organizationId: ctx.user.organizationId,
+          key: SUBSCRIPTION_SETTING_KEYS.DEFAULT_ALERT_DAYS_BEFORE,
+        },
+      },
+      select: { value: true },
+    });
+
+    const parsed = Number(setting?.value);
+    const defaultAlertDaysBefore =
+      Number.isInteger(parsed) && parsed >= 0 && parsed <= 365 ? parsed : 7;
+
+    return { defaultAlertDaysBefore };
+  }),
+
+  /**
+   * Org-level subscription settings. Saving a new renewal-check frequency
+   * reschedules the cron task immediately (live), without a server restart.
+   */
+  updateRenewalSettings: orgProcedure
+    .input(
+      z.object({
+        defaultAlertDaysBefore: z.number().int().min(0).max(365).optional(),
+        notifyScope: z.enum(["ALL_USERS", "CREATOR"]).optional(),
+        renewalCheckFrequency: z
+          .enum(["DAILY_08", "EVERY_6H", "HOURLY"])
+          .optional(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      assertCan(ctx.ability, "org:settings:update", "Organization", {
+        organizationId: ctx.user.organizationId,
+      });
+
+      const orgId = ctx.user.organizationId;
+
+      const updates: { key: string; value: string }[] = [];
+      if (input.defaultAlertDaysBefore !== undefined) {
+        updates.push({
+          key: SUBSCRIPTION_SETTING_KEYS.DEFAULT_ALERT_DAYS_BEFORE,
+          value: String(input.defaultAlertDaysBefore),
+        });
+      }
+      if (input.notifyScope !== undefined) {
+        updates.push({
+          key: SUBSCRIPTION_SETTING_KEYS.NOTIFY_SCOPE,
+          value: input.notifyScope,
+        });
+      }
+      if (input.renewalCheckFrequency !== undefined) {
+        updates.push({
+          key: SUBSCRIPTION_SETTING_KEYS.RENEWAL_CHECK_FREQUENCY,
+          value: input.renewalCheckFrequency,
+        });
+      }
+
+      if (updates.length > 0) {
+        await ctx.db.$transaction((tx) =>
+          Promise.all(
+            updates.map((u) =>
+              tx.organizationSetting.upsert({
+                where: {
+                  organizationId_key: {
+                    organizationId: orgId,
+                    key: u.key,
+                  },
+                },
+                create: { ...u, organizationId: orgId },
+                update: { value: u.value },
+              }),
+            ),
+          ),
+        );
+      }
+
+      let appliedCronExpression: string | null = null;
+      if (input.renewalCheckFrequency) {
+        appliedCronExpression =
+          RENEWAL_CHECK_CRON_EXPRESSIONS[input.renewalCheckFrequency];
+        await restartSubscriptionRenewals(input.renewalCheckFrequency);
+      }
+
+      return { success: true, appliedCronExpression };
+    }),
 
   create: orgProcedure.input(createSchema).mutation(async ({ ctx, input }) => {
     assertCan(ctx.ability, "subscription:create", "Subscription");
