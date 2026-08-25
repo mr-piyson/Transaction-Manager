@@ -403,7 +403,7 @@ export default function ErpDashboard() {
       | "layout.items"
       | "layout.customers"
       | "layout.suppliers"
-      | "layout.stockLevels";
+      | "layout.stock";
     href: string;
     icon: typeof Package;
     count: number;
@@ -445,7 +445,7 @@ export default function ErpDashboard() {
       warn: false,
     },
     {
-      labelKey: "layout.stockLevels",
+      labelKey: "layout.stock",
       href: "/erp/stock",
       icon: Boxes,
       count: lowStockCount,

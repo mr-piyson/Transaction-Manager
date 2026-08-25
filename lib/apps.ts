@@ -112,7 +112,7 @@ function getErpRoutes(t: (key: string) => string): RouteConfig[] {
       children: [
         {
           type: "item",
-          label: t("layout.stockLevels"),
+          label: t("layout.stock"),
           href: "/erp/stock",
           icon: Boxes,
         },

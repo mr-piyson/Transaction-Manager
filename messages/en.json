@@ -263,7 +263,7 @@
     "expenses": "Expenses",
     "subscriptions": "Subscriptions",
     "incomes": "Incomes",
-    "stockLevels": "Stock Levels",
+    "stock": "Stock",
     "items": "Items",
     "warehouses": "Warehouses",
     "reports": "Reports",
@@ -1010,7 +1010,7 @@
     "days": "days"
   },
   "stock": {
-    "title": "Stock Levels",
+    "title": "Stock",
     "warehouse": "Warehouse",
     "item": "Item",
     "currentStock": "Current Stock",
