@@ -1,8 +1,15 @@
+import type { StockMovementType } from "@prisma/client";
 import { z } from "zod";
 import { NotFoundError, UnprocessableError } from "@/lib/error";
+import { generateSerial } from "@/lib/sequences";
 import { assertCan, orgProcedure, router } from "@/lib/trpc/context";
 import { sortOrderSchema } from "@/lib/validations";
+import { postAdjustment } from "../journals/journal-posting.service";
 import { writeAuditLog } from "../shared/audit.service";
+import {
+  ensureDefaultAdjustmentReasons,
+  stockReasonsRouter,
+} from "./reasons.router";
 
 const listStockSchema = z.object({
   search: z.string().optional(),
@@ -38,6 +45,30 @@ const listMovementsSchema = z.object({
   dateTo: z.coerce.date().optional(),
   sortBy: z.enum(["createdAt", "type"]).default("createdAt"),
   sortOrder: sortOrderSchema,
+});
+
+const recordAdjustmentSchema = z.object({
+  itemId: z.string(),
+  warehouseId: z.string(),
+  reasonId: z.string(),
+  quantity: z.number().positive("Quantity must be positive"),
+  notes: z.string().max(500).optional(),
+});
+
+const ADJUSTMENT_TYPES: StockMovementType[] = [
+  "ADJUSTMENT_UP",
+  "ADJUSTMENT_DOWN",
+  "DAMAGE",
+];
+
+const listAdjustmentsSchema = z.object({
+  itemId: z.string().optional(),
+  warehouseId: z.string().optional(),
+  reasonId: z.string().optional(),
+  direction: z.enum(["INCREASE", "DECREASE"]).optional(),
+  search: z.string().optional(),
+  dateFrom: z.coerce.date().optional(),
+  dateTo: z.coerce.date().optional(),
 });
 
 export const stockRouter = router({
@@ -166,6 +197,229 @@ export const stockRouter = router({
       });
 
       return movements;
+    }),
+
+  // ── LIST: manual adjustments (ADJUSTMENT_UP / ADJUSTMENT_DOWN / DAMAGE) ────
+  adjustments: orgProcedure
+    .input(listAdjustmentsSchema)
+    .query(async ({ ctx, input }) => {
+      assertCan(ctx.ability, "stock:read", "Stock");
+
+      const {
+        itemId,
+        warehouseId,
+        reasonId,
+        direction,
+        search,
+        dateFrom,
+        dateTo,
+      } = input;
+      const orgId = ctx.user.organizationId;
+
+      const where: Record<string, unknown> = {
+        organizationId: orgId,
+        type: { in: ADJUSTMENT_TYPES },
+        ...(itemId ? { itemId } : {}),
+        ...(reasonId ? { adjustmentReasonId: reasonId } : {}),
+        ...(direction === "DECREASE" ? { quantity: { lt: 0 } } : {}),
+        ...(direction === "INCREASE" ? { quantity: { gt: 0 } } : {}),
+        ...(warehouseId
+          ? {
+              OR: [
+                { fromWarehouseId: warehouseId },
+                { toWarehouseId: warehouseId },
+              ],
+            }
+          : {}),
+        ...(dateFrom || dateTo
+          ? {
+              createdAt: {
+                ...(dateFrom ? { gte: dateFrom } : {}),
+                ...(dateTo ? { lte: dateTo } : {}),
+              },
+            }
+          : {}),
+        ...(search
+          ? {
+              item: {
+                OR: [
+                  { name: { contains: search, mode: "insensitive" as const } },
+                  { sku: { contains: search, mode: "insensitive" as const } },
+                ],
+              },
+            }
+          : {}),
+      };
+
+      const movements = await ctx.db.stockMovement.findMany({
+        where,
+        orderBy: { createdAt: "desc" },
+        include: {
+          item: {
+            select: {
+              id: true,
+              sku: true,
+              name: true,
+              unit: true,
+              image: true,
+            },
+          },
+          fromWarehouse: { select: { id: true, name: true } },
+          toWarehouse: { select: { id: true, name: true } },
+          user: { select: { id: true, name: true } },
+          adjustmentReason: {
+            select: { id: true, name: true, direction: true },
+          },
+        },
+      });
+
+      return movements;
+    }),
+
+  // ── MUTATION: record a loss/damage/correction adjustment ───────────────────
+  recordAdjustment: orgProcedure
+    .input(recordAdjustmentSchema)
+    .mutation(async ({ ctx, input }) => {
+      assertCan(ctx.ability, "stock:adjust", "Stock");
+
+      const orgId = ctx.user.organizationId;
+
+      const item = await ctx.db.item.findFirst({
+        where: { id: input.itemId, organizationId: orgId, deletedAt: null },
+        select: { id: true, name: true, type: true, averageCost: true },
+      });
+      if (!item) throw new NotFoundError("Item", input.itemId);
+      if (item.type === "SERVICE") {
+        throw new UnprocessableError(
+          "Service items do not carry stock and cannot be adjusted.",
+        );
+      }
+
+      const warehouse = await ctx.db.warehouse.findFirst({
+        where: {
+          id: input.warehouseId,
+          organizationId: orgId,
+          deletedAt: null,
+          isActive: true,
+        },
+        select: { id: true },
+      });
+      if (!warehouse) throw new NotFoundError("Warehouse", input.warehouseId);
+
+      const reason = await ctx.db.stockAdjustmentReason.findFirst({
+        where: {
+          id: input.reasonId,
+          organizationId: orgId,
+          deletedAt: null,
+          isActive: true,
+        },
+      });
+      if (!reason)
+        throw new NotFoundError("StockAdjustmentReason", input.reasonId);
+
+      const isDecrease = reason.direction === "DECREASE";
+      const unitCost = Number(item.averageCost);
+
+      const result = await ctx.db.$transaction(async (tx) => {
+        await ensureDefaultAdjustmentReasons(tx, orgId);
+
+        const currentStock = await tx.stock.findUnique({
+          where: {
+            itemId_warehouseId: {
+              itemId: input.itemId,
+              warehouseId: input.warehouseId,
+            },
+          },
+        });
+
+        const currentQty = Number(currentStock?.quantity ?? 0);
+        if (isDecrease && currentQty < input.quantity) {
+          throw new UnprocessableError(
+            `Insufficient stock: have ${currentQty}, cannot write off ${input.quantity}.`,
+          );
+        }
+
+        const serial = await generateSerial({
+          db: tx,
+          organizationId: orgId,
+          prefix: "ADJ",
+        });
+
+        const movement = await tx.stockMovement.create({
+          data: {
+            type: reason.movementType,
+            quantity: isDecrease ? -input.quantity : input.quantity,
+            unitCost,
+            notes: input.notes ?? null,
+            adjustmentReasonId: reason.id,
+            itemId: input.itemId,
+            userId: ctx.user.id,
+            organizationId: orgId,
+            ...(isDecrease
+              ? { fromWarehouseId: input.warehouseId }
+              : { toWarehouseId: input.warehouseId }),
+          },
+        });
+
+        const stock = await tx.stock.upsert({
+          where: {
+            itemId_warehouseId: {
+              itemId: input.itemId,
+              warehouseId: input.warehouseId,
+            },
+          },
+          create: {
+            itemId: input.itemId,
+            warehouseId: input.warehouseId,
+            organizationId: orgId,
+            quantity: isDecrease ? -input.quantity : input.quantity,
+          },
+          update: {
+            quantity: isDecrease
+              ? { decrement: input.quantity }
+              : { increment: input.quantity },
+            version: { increment: 1 },
+          },
+        });
+
+        await postAdjustment({
+          tx,
+          organizationId: orgId,
+          userId: ctx.user.id,
+          ipAddress: ctx.ipAddress,
+          stockMovementId: movement.id,
+          serial,
+          itemName: item.name,
+          reasonName: reason.name,
+          direction: reason.direction,
+          value: input.quantity * unitCost,
+          glAccountCode: reason.glAccountCode,
+        });
+
+        await writeAuditLog(
+          {
+            entityType: "Stock",
+            entityId: `${input.itemId}_${input.warehouseId}`,
+            action: "UPDATE",
+            diff: {
+              serial: { before: null, after: serial },
+              reason: { before: null, after: reason.name },
+              quantity: {
+                before: currentQty,
+                after: Number(stock.quantity),
+              },
+            },
+            organizationId: orgId,
+            userId: ctx.user.id,
+            ipAddress: ctx.ipAddress,
+          },
+          tx,
+        );
+
+        return { movement, stock };
+      });
+
+      return result;
     }),
 
   adjust: orgProcedure
@@ -399,4 +653,6 @@ export const stockRouter = router({
 
       return stocks;
     }),
+
+  reasons: stockReasonsRouter,
 });

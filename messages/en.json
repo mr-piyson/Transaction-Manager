@@ -232,7 +232,9 @@
     "dueDate": "Due Date",
     "supplier": "Supplier",
     "account": "Account",
-    "entryNumber": "Entry #"
+    "entryNumber": "Entry #",
+    "add": "Add",
+    "user": "User"
   },
   "clipboard": {
     "automationFailed": "Automatic copy is not available on this connection.",
@@ -1032,7 +1034,47 @@
     "incoming": "Incoming",
     "outgoing": "Outgoing",
     "transfer": "Transfer",
-    "adjustment": "Adjustment"
+    "adjustment": "Adjustment",
+    "levels": "Stock Levels",
+    "allTypes": "All types",
+    "allReasons": "All reasons",
+    "movementTypes": {
+      "PURCHASE_INBOUND": "Purchase received",
+      "SALE_OUTBOUND": "Sale",
+      "RETURN_INBOUND": "Customer return",
+      "RETURN_OUTBOUND": "Supplier return",
+      "ADJUSTMENT_UP": "Adjustment (up)",
+      "ADJUSTMENT_DOWN": "Write-off",
+      "TRANSFER_OUT": "Transfer out",
+      "TRANSFER_IN": "Transfer in",
+      "OPENING_BALANCE": "Opening balance",
+      "DAMAGE": "Damage",
+      "ASSEMBLY_CONSUME": "Assembly consumed",
+      "ASSEMBLY_PRODUCE": "Assembly produced"
+    },
+    "adjustments": {
+      "tab": "Adjustments",
+      "record": "Record Adjustment",
+      "dialogTitle": "Record Stock Adjustment",
+      "dialogDesc": "Write off lost or damaged stock, or record found stock. A journal entry is posted automatically.",
+      "searchItems": "Search items...",
+      "selectReason": "Select reason",
+      "writeOffs": "Write-offs (loss / damage)",
+      "increases": "Increases (found stock)",
+      "notesPlaceholder": "Optional details about this adjustment",
+      "submit": "Record Adjustment",
+      "recorded": "Stock adjusted successfully",
+      "failed": "Failed to record adjustment",
+      "empty": "No adjustments recorded yet",
+      "detailsTitle": "Adjustment Details",
+      "unitCost": "Unit Cost / Value",
+      "total": "total",
+      "immutableNote": "Movements are an immutable audit trail — corrections require a new adjustment.",
+      "reasonsTitle": "Adjustment Reasons",
+      "reasonsDesc": "Dynamic loss/damage/correction reason codes. Direction and movement type drive the recorded stock movement.",
+      "reasonsNav": "Adjustment Reasons",
+      "system": "System"
+    }
   },
   "warehouses": {
     "title": "Warehouses",

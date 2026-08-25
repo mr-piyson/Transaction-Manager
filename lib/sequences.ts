@@ -38,7 +38,8 @@ export type DocumentPrefix =
   | "PO"
   | "JE"
   | "EXP"
-  | "CTR";
+  | "CTR"
+  | "ADJ";
 
 type TransactionClient = Prisma.TransactionClient;
 

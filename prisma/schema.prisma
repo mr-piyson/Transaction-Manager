@@ -216,6 +216,23 @@ enum StockMovementType {
   @@schema("public")
 }
 
+/// Direction an adjustment reason affects stock.
+enum AdjustmentDirection {
+  INCREASE // Found stock, count surplus
+  DECREASE // Lost, damaged, expired, theft
+
+  @@schema("public")
+}
+
+/// Movement types a manual adjustment reason may write.
+enum AdjustableMovementType {
+  ADJUSTMENT_UP
+  ADJUSTMENT_DOWN
+  DAMAGE
+
+  @@schema("public")
+}
+
 /// Double-entry bookkeeping — normal balance side of an account.
 enum AccountNormalBalance {
   DEBIT
@@ -360,43 +377,44 @@ model Organization {
   updatedAt DateTime @updatedAt
 
   // Relations
-  users                 User[]
-  userOrganizationRoles UserOrganizationRole[]
-  documentSequences     DocumentSequence[]
-  settings              OrganizationSetting[]
-  customers             Customer[]
-  suppliers             Supplier[]
-  items                 Item[]
-  itemCategories        ItemCategory[]
-  taxRates              TaxRate[]
-  warehouses            Warehouse[]
-  stocks                Stock[]
-  stockMovements        StockMovement[]
-  invoices              Invoice[]
-  invoiceLines          InvoiceLine[]
-  payments              Payment[]
-  purchaseOrders        PurchaseOrder[]
-  purchasePayments      PurchasePayment[]
-  contracts             Contract[]
-  supplierItems         SupplierItem[]
-  expenseCategories     ExpenseCategory[]
-  expenses              Expense[]
-  incomes               Income[]
-  chartOfAccounts       LedgerAccount[]
-  journalEntries        JournalEntry[]
-  exchangeRates         ExchangeRate[]
-  approvalWorkflows     ApprovalWorkflow[]
-  approvalRequests      ApprovalRequest[]
-  tags                  Tag[]
-  notifications         Notification[]
-  auditLogs             AuditLog[]
-  bundles               BundleLine[]
-  priceListHeaders      PriceList[]
-  creditNoteAllocations CreditNoteAllocation[]
-  departments           Department[]
-  roles                 Role[]
-  units                 Unit[]
-  subscriptions         Subscription[]
+  users                  User[]
+  userOrganizationRoles  UserOrganizationRole[]
+  documentSequences      DocumentSequence[]
+  settings               OrganizationSetting[]
+  customers              Customer[]
+  suppliers              Supplier[]
+  items                  Item[]
+  itemCategories         ItemCategory[]
+  taxRates               TaxRate[]
+  warehouses             Warehouse[]
+  stocks                 Stock[]
+  stockMovements         StockMovement[]
+  invoices               Invoice[]
+  invoiceLines           InvoiceLine[]
+  payments               Payment[]
+  purchaseOrders         PurchaseOrder[]
+  purchasePayments       PurchasePayment[]
+  contracts              Contract[]
+  supplierItems          SupplierItem[]
+  expenseCategories      ExpenseCategory[]
+  expenses               Expense[]
+  incomes                Income[]
+  chartOfAccounts        LedgerAccount[]
+  journalEntries         JournalEntry[]
+  exchangeRates          ExchangeRate[]
+  approvalWorkflows      ApprovalWorkflow[]
+  approvalRequests       ApprovalRequest[]
+  tags                   Tag[]
+  notifications          Notification[]
+  auditLogs              AuditLog[]
+  bundles                BundleLine[]
+  priceListHeaders       PriceList[]
+  creditNoteAllocations  CreditNoteAllocation[]
+  departments            Department[]
+  roles                  Role[]
+  units                  Unit[]
+  stockAdjustmentReasons StockAdjustmentReason[]
+  subscriptions          Subscription[]
 
   // Kiosk relations
   kiosks Kiosk[]
@@ -867,6 +885,7 @@ model JournalEntry {
   expenseId       String?
   paymentId       String?
   incomeId        String?
+  stockMovementId String?
 
   // Reversal link
   reversedById String?       @unique // JE that reversed this one
@@ -892,6 +911,7 @@ model JournalEntry {
   @@index([purchaseOrderId])
   @@index([expenseId])
   @@index([incomeId])
+  @@index([stockMovementId])
   @@index([status, organizationId])
   @@schema("public")
 }
@@ -1507,6 +1527,41 @@ model BundleLine {
 }
 
 // =============================================================================
+// STOCK ADJUSTMENT REASONS  (dynamic, org-scoped loss/damage/correction reasons)
+// =============================================================================
+
+/// Dynamic reason codes for manual stock adjustments. Each reason drives the
+/// direction, movement type and (optionally) the GL write-off expense account.
+model StockAdjustmentReason {
+  id String @id @default(cuid())
+
+  name         String
+  direction    AdjustmentDirection
+  movementType AdjustableMovementType
+
+  // Optional LedgerAccount.code override for write-off expense posting
+  glAccountCode String?
+
+  isDefault Boolean   @default(false)
+  isSystem  Boolean   @default(false) // Seeded defaults cannot be deleted
+  isActive  Boolean   @default(true)
+  deletedAt DateTime?
+
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+
+  movements StockMovement[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([name, organizationId])
+  @@index([organizationId])
+  @@index([deletedAt])
+  @@schema("public")
+}
+
+// =============================================================================
 // WAREHOUSES
 // =============================================================================
 
@@ -1575,6 +1630,10 @@ model StockMovement {
 
   notes String?
 
+  // Manual adjustment back-reference (ADJUSTMENT_UP/DOWN, DAMAGE)
+  adjustmentReasonId String?
+  adjustmentReason   StockAdjustmentReason? @relation(fields: [adjustmentReasonId], references: [id])
+
   // Source document back-references
   invoiceLineId  String?
   invoiceLine    InvoiceLine?  @relation(fields: [invoiceLineId], references: [id])
@@ -1606,6 +1665,7 @@ model StockMovement {
   @@index([itemId])
   @@index([invoiceLineId])
   @@index([purchaseLineId])
+  @@index([adjustmentReasonId])
   @@index([organizationId, createdAt])
   @@index([organizationId, type])
   @@index([fromWarehouseId])
@@ -2017,7 +2077,7 @@ model ExpenseCategory {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  expenses Expense[]
+  expenses      Expense[]
   subscriptions Subscription[]
 
   @@unique([name, organizationId])
@@ -2160,8 +2220,8 @@ model Subscription {
   updatedBy   User?   @relation("SubscriptionUpdatedBy", fields: [updatedById], references: [id])
 
   deletedAt DateTime?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
 
   // Every recorded renewal is a real Expense (GL-posted via postExpense()).
   renewals Expense[] @relation("SubscriptionRenewals")

@@ -45,6 +45,7 @@ export interface CreateJournalEntryOptions {
   expenseId?: string;
   paymentId?: string;
   incomeId?: string;
+  stockMovementId?: string;
 }
 
 export interface AccountBalance {
@@ -112,6 +113,7 @@ export async function postJournalEntry(opts: CreateJournalEntryOptions) {
     expenseId,
     paymentId,
     incomeId,
+    stockMovementId,
   } = opts;
 
   validateLines(lines);
@@ -136,6 +138,7 @@ export async function postJournalEntry(opts: CreateJournalEntryOptions) {
       expenseId,
       paymentId,
       incomeId,
+      stockMovementId,
       createdById: userId,
       organizationId,
       postedAt: new Date(),
@@ -176,6 +179,7 @@ export async function createDraftJournalEntry(opts: CreateJournalEntryOptions) {
     expenseId,
     paymentId,
     incomeId,
+    stockMovementId,
   } = opts;
 
   validateLines(lines);
@@ -200,6 +204,7 @@ export async function createDraftJournalEntry(opts: CreateJournalEntryOptions) {
       expenseId,
       paymentId,
       incomeId,
+      stockMovementId,
       createdById: userId,
       organizationId,
       lines: {
@@ -332,6 +337,7 @@ export async function reversePostedEntry(
       expenseId: entry.expenseId,
       paymentId: entry.paymentId,
       incomeId: entry.incomeId,
+      stockMovementId: entry.stockMovementId,
       reversalOf: { connect: { id: entry.id } },
       createdById: userId,
       organizationId,

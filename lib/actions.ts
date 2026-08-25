@@ -8,6 +8,7 @@ import {
   Building2,
   Calendar,
   CalendarClock,
+  ClipboardPen,
   Coins,
   Languages,
   Layers,
@@ -93,6 +94,12 @@ export const NAV_ITEMS = [
     labelKey: "settings.units.title",
     href: "/settings/units",
     icon: Ruler,
+  },
+  {
+    id: "adjustment-reasons",
+    labelKey: "stock.adjustments.reasonsNav",
+    href: "/settings/adjustment-reasons",
+    icon: ClipboardPen,
   },
   {
     id: "chart-of-accounts",

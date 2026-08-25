@@ -10,6 +10,9 @@ type Messages = typeof en & {
   warehouses: {
     movementTypes: Record<string, string>;
   };
+  stock: {
+    movementTypes: Record<string, string>;
+  };
 };
 
 declare module "use-intl" {

@@ -339,6 +339,119 @@ export async function postPaymentReceived(opts: PostPaymentOptions) {
 }
 
 // ---------------------------------------------------------------------------
+// Stock adjustment posting (write-off expense / gain + Inventory)
+// ---------------------------------------------------------------------------
+
+interface PostAdjustmentOptions {
+  tx: TransactionClient;
+  organizationId: string;
+  userId: string;
+  ipAddress?: string;
+  stockMovementId: string;
+  serial: string;
+  itemName: string;
+  reasonName?: string;
+  direction: "INCREASE" | "DECREASE";
+  /** Absolute inventory value affected — quantity × averageCost */
+  value: number;
+  /** Reason-level LedgerAccount.code override for the expense side */
+  glAccountCode?: string | null;
+  currency?: string;
+  exchangeRate?: number;
+}
+
+/**
+ * Post the GL entry for a manual stock adjustment.
+ *
+ *   DECREASE (write-off): Dr Write-off Expense / Cr Inventory
+ *   INCREASE  (found):    Dr Inventory          / Cr Expense (contra)
+ *
+ * Falls back to COGS when the reason has no account override.
+ * Returns null when there is nothing to post (value ≤ 0).
+ */
+export async function postAdjustment(opts: PostAdjustmentOptions) {
+  const {
+    tx,
+    organizationId,
+    userId,
+    ipAddress,
+    stockMovementId,
+    serial,
+    itemName,
+    reasonName,
+    direction,
+    value,
+    glAccountCode,
+    currency,
+    exchangeRate,
+  } = opts;
+
+  if (value <= 0) return null;
+
+  const accounts = await resolveAccounts(tx, organizationId);
+
+  // Resolve adjustment account: reason override, else generic COGS
+  let adjustmentAccountId = accounts.get(ACCOUNTS.COGS)!;
+  if (glAccountCode) {
+    try {
+      adjustmentAccountId = await resolveAccountCode(
+        tx,
+        organizationId,
+        glAccountCode,
+      );
+    } catch {
+      // Fall back to default COGS if custom code not found
+      adjustmentAccountId = accounts.get(ACCOUNTS.COGS)!;
+    }
+  }
+
+  const label = reasonName ? `${reasonName} — ${itemName}` : itemName;
+
+  return postJournalEntry({
+    tx,
+    organizationId,
+    userId,
+    ipAddress,
+    date: new Date(),
+    description: `ADJ #${serial} — stock ${direction === "DECREASE" ? "write-off" : "correction"} (${label})`,
+    reference: serial,
+    currency,
+    exchangeRate,
+    stockMovementId,
+    lines:
+      direction === "DECREASE"
+        ? [
+            {
+              accountId: adjustmentAccountId,
+              debit: value,
+              credit: 0,
+              description: `ADJ #${serial} — ${label}`,
+            },
+            {
+              accountId: accounts.get(ACCOUNTS.INVENTORY)!,
+              debit: 0,
+              credit: value,
+              description: `ADJ #${serial} — Inventory`,
+            },
+          ]
+        : [
+            {
+              accountId: accounts.get(ACCOUNTS.INVENTORY)!,
+              debit: value,
+              credit: 0,
+              description: `ADJ #${serial} — Inventory`,
+            },
+            {
+              accountId: adjustmentAccountId,
+              debit: 0,
+              credit: value,
+              description: `ADJ #${serial} — ${label}`,
+            },
+          ],
+  });
+}
+
+// ---------------------------------------------------------------------------
 // PO received posting (inventory + AP)
 // ---------------------------------------------------------------------------
 

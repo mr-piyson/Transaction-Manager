@@ -12,6 +12,7 @@ import { UnifiedItemFormProvider } from "./item-dialog";
 import { PaymentFormProvider } from "./paymentForm";
 import { POFormProvider } from "./poForm";
 import { RenewalFormProvider } from "./renewalForm";
+import { StockAdjustmentFormProvider } from "./stockAdjustmentForm";
 import { SubscriptionFormProvider } from "./subscriptionForm";
 import { SupplierFormProvider } from "./supplierForm";
 import { SupplierItemFormProvider } from "./supplierItemForm";
@@ -82,14 +83,18 @@ export {
   RenewalFormProvider,
   useRenewalForm,
 } from "./renewalForm";
-
+export type { StockAdjustmentFormValues } from "./stockAdjustmentForm";
+export {
+  StockAdjustmentFormDialog,
+  StockAdjustmentFormProvider,
+  useStockAdjustmentForm,
+} from "./stockAdjustmentForm";
 export type { SubscriptionFormValues } from "./subscriptionForm";
 export {
   SubscriptionFormDialog,
   SubscriptionFormProvider,
   useSubscriptionForm,
 } from "./subscriptionForm";
-
 export type { SupplierFormValues } from "./supplierForm";
 export {
   SupplierFormDialog,
@@ -131,9 +136,11 @@ export function DialogsProvider({ children }: { children: ReactNode }) {
                             <IncomeFormProvider>
                               <SubscriptionFormProvider>
                                 <RenewalFormProvider>
-                                  <HardDeleteFormProvider>
-                                    {children}
-                                  </HardDeleteFormProvider>
+                                  <StockAdjustmentFormProvider>
+                                    <HardDeleteFormProvider>
+                                      {children}
+                                    </HardDeleteFormProvider>
+                                  </StockAdjustmentFormProvider>
                                 </RenewalFormProvider>
                               </SubscriptionFormProvider>
                             </IncomeFormProvider>

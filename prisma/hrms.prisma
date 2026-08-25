@@ -185,15 +185,15 @@ model Department {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  employees            Employee[]
-  jobPostings          JobPosting[]
+  employees             Employee[]
+  jobPostings           JobPosting[]
   userOrganizationRoles UserOrganizationRole[]
-  journalLines         JournalLine[]
-  invoices             Invoice[]
-  invoiceLines         InvoiceLine[]
-  purchaseOrders       PurchaseOrder[]
-  expenses             Expense[]
-  subscriptions        Subscription[]
+  journalLines          JournalLine[]
+  invoices              Invoice[]
+  invoiceLines          InvoiceLine[]
+  purchaseOrders        PurchaseOrder[]
+  expenses              Expense[]
+  subscriptions         Subscription[]
 
   @@unique([organizationId, code])
   @@unique([organizationId, name])
@@ -235,7 +235,7 @@ model Employee {
   reportsTo     Employee?  @relation("EmployeeSupervision", fields: [reportsToId], references: [id])
   directReports Employee[] @relation("EmployeeSupervision")
 
-  salaryAmount   Decimal?      @db.Decimal(20, 6)
+  salaryAmount   Decimal? @db.Decimal(20, 6)
   salaryCurrency String?
 
   organizationId String
@@ -692,7 +692,7 @@ model JobPosting {
   employmentType EmploymentType @default(FULL_TIME)
   salaryMin      Decimal?       @db.Decimal(20, 6)
   salaryMax      Decimal?       @db.Decimal(20, 6)
-  currency       String   @default("BHD")
+  currency       String         @default("BHD")
   isActive       Boolean        @default(true)
   closingDate    DateTime?
   publishedAt    DateTime?
@@ -778,14 +778,14 @@ model InterviewRound {
 /// offer terms (salary, start date, expiry) have their own audit trail
 /// independent of the candidate's pipeline status.
 model Offer {
-  id           String       @id @default(cuid())
+  id           String      @id @default(cuid())
   position     String
-  salaryAmount Decimal      @db.Decimal(20, 6)
-  currency     String @default("BHD")
+  salaryAmount Decimal     @db.Decimal(20, 6)
+  currency     String      @default("BHD")
   startDate    DateTime
   expiryDate   DateTime?
-  status       OfferStatus  @default(PENDING)
-  issuedAt     DateTime     @default(now())
+  status       OfferStatus @default(PENDING)
+  issuedAt     DateTime    @default(now())
   respondedAt  DateTime?
   notes        String?
 
@@ -815,7 +815,7 @@ model Training {
   provider      String?
   durationHours Int?
   cost          Decimal?       @db.Decimal(20, 6)
-  currency      String   @default("BHD")
+  currency      String         @default("BHD")
   startDate     DateTime?
   endDate       DateTime?
   isMandatory   Boolean        @default(false)

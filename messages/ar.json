@@ -185,7 +185,9 @@
     "dueDate": "تاريخ الاستحقاق",
     "supplier": "المورد",
     "account": "الحساب",
-    "entryNumber": "رقم القيد"
+    "entryNumber": "رقم القيد",
+    "add": "إضافة",
+    "user": "المستخدم"
   },
   "clipboard": {
     "automationFailed": "النسخ التلقائي غير متاح على هذا الاتصال.",
@@ -896,7 +898,47 @@
     "incoming": "وارد",
     "outgoing": "صادر",
     "transfer": "تحويل",
-    "adjustment": "تسوية"
+    "adjustment": "تسوية",
+    "levels": "مستويات المخزون",
+    "allTypes": "كل الأنواع",
+    "allReasons": "كل الأسباب",
+    "movementTypes": {
+      "PURCHASE_INBOUND": "استلام شراء",
+      "SALE_OUTBOUND": "بيع",
+      "RETURN_INBOUND": "مرتجع عميل",
+      "RETURN_OUTBOUND": "مرتجع مورد",
+      "ADJUSTMENT_UP": "تسوية بالزيادة",
+      "ADJUSTMENT_DOWN": "إعدام مخزون",
+      "TRANSFER_OUT": "تحويل صادر",
+      "TRANSFER_IN": "تحويل وارد",
+      "OPENING_BALANCE": "رصيد افتتاحي",
+      "DAMAGE": "تالف",
+      "ASSEMBLY_CONSUME": "استهلاك تجميع",
+      "ASSEMBLY_PRODUCE": "إنتاج تجميع"
+    },
+    "adjustments": {
+      "tab": "التسويات",
+      "record": "تسجيل تسوية",
+      "dialogTitle": "تسجيل تسوية مخزون",
+      "dialogDesc": "إعدام المخزون المفقود أو التالف، أو تسجيل مخزون موجود. يتم ترحيل قيد محاسبي تلقائياً.",
+      "searchItems": "البحث عن الأصناف...",
+      "selectReason": "اختر السبب",
+      "writeOffs": "إعدام (فقدان / تلف)",
+      "increases": "زيادة (مخزون موجود)",
+      "notesPlaceholder": "تفاصيل إضافية اختيارية عن هذه التسوية",
+      "submit": "تسجيل التسوية",
+      "recorded": "تم تسجيل تسوية المخزون بنجاح",
+      "failed": "فشل تسجيل التسوية",
+      "empty": "لم يتم تسجيل أي تسويات بعد",
+      "detailsTitle": "تفاصيل التسوية",
+      "unitCost": "تكلفة الوحدة / القيمة",
+      "total": "الإجمالي",
+      "immutableNote": "الحركات سجل تدقيق غير قابل للتعديل — تتطلب التصحيحات تسوية جديدة.",
+      "reasonsTitle": "أسباب التسوية",
+      "reasonsDesc": "رموز أسباب ديناميكية للفقدان/التلف/التصحيح. يحدد الاتجاه ونوع الحركة حركة المخزون المسجلة.",
+      "reasonsNav": "أسباب التسوية",
+      "system": "نظام"
+    }
   },
   "warehouses": {
     "title": "المستودعات",
