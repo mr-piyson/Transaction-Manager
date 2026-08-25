@@ -104,7 +104,9 @@ export default function NotificationsPage() {
           ? `/erp/invoices/${notification.entityId}`
           : notification.entityType === "PurchaseOrder"
             ? `/erp/purchase-orders/${notification.entityId}`
-            : null;
+            : notification.entityType === "Subscription"
+              ? `/erp/subscriptions/${notification.entityId}`
+              : null;
       if (path) router.push(path);
     }
   };

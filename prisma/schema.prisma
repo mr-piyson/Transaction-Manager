@@ -162,6 +162,27 @@ enum ContractStatus {
   @@schema("public")
 }
 
+/// How often a subscription bills.
+enum SubscriptionBillingCycle {
+  MONTHLY
+  QUARTERLY
+  SEMI_ANNUAL
+  ANNUAL
+  CUSTOM // Uses Subscription.customCycleDays
+
+  @@schema("public")
+}
+
+/// Lifecycle of a tracked subscription.
+enum SubscriptionStatus {
+  ACTIVE
+  PAUSED // Temporarily not renewing; no alerts fire while paused
+  CANCELLED
+  EXPIRED
+
+  @@schema("public")
+}
+
 /// Purchase order lifecycle.
 enum PurchaseStatus {
   DRAFT
@@ -375,6 +396,7 @@ model Organization {
   departments           Department[]
   roles                 Role[]
   units                 Unit[]
+  subscriptions         Subscription[]
 
   // Kiosk relations
   kiosks Kiosk[]
@@ -521,6 +543,8 @@ model User {
   createdJournalEntries JournalEntry[]     @relation("JournalCreatedBy")
   createdContracts      Contract[]         @relation("ContractCreatedBy")
   updatedContracts      Contract[]         @relation("ContractUpdatedBy")
+  createdSubscriptions  Subscription[]     @relation("SubscriptionCreatedBy")
+  updatedSubscriptions  Subscription[]     @relation("SubscriptionUpdatedBy")
 
   // HRMS
   employee                       Employee?
@@ -1994,6 +2018,7 @@ model ExpenseCategory {
   updatedAt DateTime @updatedAt
 
   expenses Expense[]
+  subscriptions Subscription[]
 
   @@unique([name, organizationId])
   @@index([organizationId])
@@ -2023,6 +2048,10 @@ model Expense {
   purchaseOrderId String?
   purchaseOrder   PurchaseOrder? @relation(fields: [purchaseOrderId], references: [id])
 
+  // Subscription renewal that produced this expense (set by subscriptions.renew)
+  subscriptionId String?
+  subscription   Subscription? @relation("SubscriptionRenewals", fields: [subscriptionId], references: [id])
+
   journalEntryId String?
 
   createdById String
@@ -2044,6 +2073,7 @@ model Expense {
   @@index([departmentId])
   @@index([journalEntryId])
   @@index([purchaseOrderId])
+  @@index([subscriptionId])
   @@schema("public")
 }
 
@@ -2079,6 +2109,71 @@ model Income {
   @@index([organizationId, date])
   @@index([deletedAt])
   @@index([journalEntryId])
+  @@schema("public")
+}
+
+// =============================================================================
+// SUBSCRIPTIONS — recurring commitments (domain renewals, SaaS seats, licences)
+// Renewals are recorded manually via subscriptions.renew, which creates a real
+// Expense row and posts a journal entry through postExpense(). The cron job
+// only raises a Notification; it never mutates nextRenewalDate.
+// =============================================================================
+
+model Subscription {
+  id String @id @default(cuid())
+
+  name        String
+  vendor      String?
+  url         String? // e.g. registrar / billing portal link
+  description String?
+  notes       String?
+
+  billingCycle    SubscriptionBillingCycle @default(ANNUAL)
+  customCycleDays Int? // Only used when billingCycle = CUSTOM
+
+  amount   Decimal       @db.Decimal(20, 6)
+  currency String        @default("BHD")
+  method   PaymentMethod @default(CARD)
+
+  status    SubscriptionStatus @default(ACTIVE)
+  autoRenew Boolean            @default(true) // Informational: vendor auto-charges
+
+  startDate       DateTime
+  nextRenewalDate DateTime
+  lastRenewedAt   DateTime?
+
+  // How many days before nextRenewalDate to raise the reminder notification.
+  alertDaysBefore Int @default(7)
+
+  categoryId String?
+  category   ExpenseCategory? @relation(fields: [categoryId], references: [id])
+
+  departmentId String?
+  department   Department? @relation(fields: [departmentId], references: [id])
+
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+
+  createdById String
+  createdBy   User    @relation("SubscriptionCreatedBy", fields: [createdById], references: [id])
+  updatedById String?
+  updatedBy   User?   @relation("SubscriptionUpdatedBy", fields: [updatedById], references: [id])
+
+  deletedAt DateTime?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Every recorded renewal is a real Expense (GL-posted via postExpense()).
+  renewals Expense[] @relation("SubscriptionRenewals")
+
+  @@index([organizationId])
+  @@index([status])
+  @@index([nextRenewalDate])
+  @@index([organizationId, status])
+  @@index([organizationId, nextRenewalDate])
+  @@index([deletedAt])
+  @@index([departmentId])
+  @@index([categoryId])
   @@schema("public")
 }
 

@@ -172,6 +172,113 @@ async function checkLowStock() {
   console.log(`[cron] Checked low stock: ${lowStockItems.length} items low`);
 }
 
+// Daily at 08:00: alert on subscriptions entering their renewal window.
+// Read-mostly — only creates Notification rows; never mutates
+// Subscription.nextRenewalDate (that only happens in subscriptions.renew).
+async function checkUpcomingSubscriptionRenewals() {
+  const now = new Date();
+
+  // Active subscriptions whose alert window has opened. We can't push the
+  // per-row "now + alertDaysBefore" comparison into SQL directly, so pull a
+  // reasonably-bounded candidate set (renewal within the next year, or
+  // already overdue) and filter precisely in JS.
+  const candidates = await db.subscription.findMany({
+    where: {
+      status: "ACTIVE",
+      deletedAt: null,
+      nextRenewalDate: { lte: new Date(now.getTime() + 365 * 86_400_000) },
+    },
+    select: {
+      id: true,
+      name: true,
+      amount: true,
+      currency: true,
+      nextRenewalDate: true,
+      alertDaysBefore: true,
+      createdById: true,
+      organizationId: true,
+    },
+  });
+
+  const due = candidates.filter((s) => {
+    const windowStart = new Date(
+      s.nextRenewalDate.getTime() - s.alertDaysBefore * 86_400_000,
+    );
+    return now >= windowStart;
+  });
+
+  if (due.length === 0) return;
+
+  // Dedupe: skip subscriptions that already have a live alert raised within
+  // their current cycle's window.
+  const existingNotifications = await db.notification.findMany({
+    where: {
+      type: NOTIFICATION_TYPES.SUBSCRIPTION_RENEWAL_DUE,
+      entityType: "Subscription",
+      entityId: { in: due.map((s) => s.id) },
+      status: { in: ["UNREAD", "READ"] },
+    },
+    select: { entityId: true, createdAt: true },
+  });
+
+  const existingByEntity = new Map<string, Date>();
+  for (const n of existingNotifications) {
+    if (n.entityId) existingByEntity.set(n.entityId, n.createdAt);
+  }
+
+  let notified = 0;
+
+  for (const sub of due) {
+    const windowStart = new Date(
+      sub.nextRenewalDate.getTime() - sub.alertDaysBefore * 86_400_000,
+    );
+    const existingCreatedAt = existingByEntity.get(sub.id);
+    if (existingCreatedAt && existingCreatedAt >= windowStart) continue;
+
+    const setting = await db.organizationSetting.findFirst({
+      where: {
+        organizationId: sub.organizationId,
+        key: NOTIFICATION_SETTINGS_KEYS[
+          NOTIFICATION_TYPES.SUBSCRIPTION_RENEWAL_DUE
+        ],
+      },
+      select: { value: true },
+    });
+
+    await db.$transaction(async (tx) => {
+      const orgUsers = await tx.user.findMany({
+        where: { organizationId: sub.organizationId },
+        select: { id: true },
+      });
+
+      const isOverdue = sub.nextRenewalDate < now;
+      const dueText = isOverdue
+        ? `was due on ${sub.nextRenewalDate.toLocaleDateString()}`
+        : `renews on ${sub.nextRenewalDate.toLocaleDateString()}`;
+
+      for (const user of orgUsers) {
+        await createNotification(tx, setting?.value === "true", {
+          title: "Subscription Renewal Due",
+          body: `${sub.name} ${dueText} (${sub.currency} ${Number(sub.amount).toFixed(2)}).`,
+          type: NOTIFICATION_TYPES.SUBSCRIPTION_RENEWAL_DUE,
+          entityType: "Subscription",
+          entityId: sub.id,
+          userId: user.id,
+          organizationId: sub.organizationId,
+        });
+      }
+    });
+
+    notified++;
+  }
+
+  if (notified > 0) {
+    console.log(
+      `[cron] Checked subscription renewals: ${notified} alerts raised`,
+    );
+  }
+}
+
 // Exchange rate sync job
 async function syncExchangeRates() {
   const orgs = await db.organization.findMany({
@@ -281,6 +388,15 @@ export function registerCronJobs() {
       );
     });
     console.log("[cron] Registered low stock check (every 6 hours)");
+  }
+
+  if (shouldRun("subscription-renewals")) {
+    cron.schedule("0 8 * * *", () => {
+      checkUpcomingSubscriptionRenewals().catch((err) =>
+        console.error("[cron] subscription renewal check failed:", err),
+      );
+    });
+    console.log("[cron] Registered subscription renewal check (daily 08:00)");
   }
 
   if (shouldRun("currency-sync")) {

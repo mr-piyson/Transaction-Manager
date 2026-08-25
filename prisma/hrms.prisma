@@ -193,6 +193,7 @@ model Department {
   invoiceLines         InvoiceLine[]
   purchaseOrders       PurchaseOrder[]
   expenses             Expense[]
+  subscriptions        Subscription[]
 
   @@unique([organizationId, code])
   @@unique([organizationId, name])

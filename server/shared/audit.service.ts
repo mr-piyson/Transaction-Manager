@@ -19,7 +19,13 @@ import db from "@/lib/db";
 export interface AuditPayload {
   entityType: string;
   entityId: string;
-  action: "CREATE" | "UPDATE" | "DELETE" | "STATUS_CHANGE" | "PAYMENT";
+  action:
+    | "CREATE"
+    | "UPDATE"
+    | "DELETE"
+    | "STATUS_CHANGE"
+    | "PAYMENT"
+    | "RENEW";
   diff?: Record<string, { before: unknown; after: unknown }>;
   organizationId: string;
   userId?: string;

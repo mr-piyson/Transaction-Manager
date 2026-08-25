@@ -84,6 +84,11 @@ const NOTIFICATION_KEYS_MAP = [
     labelKey: "settings.notifOverdue",
     descKey: "settings.notifOverdueDesc",
   },
+  {
+    key: "notify_subscription_renewal_due",
+    labelKey: "settings.notifSubscriptionRenewalDue",
+    descKey: "settings.notifSubscriptionRenewalDueDesc",
+  },
 ] as const;
 
 export default function NotificationsPage() {

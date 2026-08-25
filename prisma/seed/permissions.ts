@@ -108,6 +108,33 @@ export const PERMISSIONS: readonly PermissionDefinition[] = [
   { code: "income:update", label: "Edit Incomes", module: "Incomes" },
   { code: "income:delete", label: "Delete Incomes", module: "Incomes" },
 
+  // ── Subscriptions ─────────────────────────────────────────
+  {
+    code: "subscription:read",
+    label: "View Subscriptions",
+    module: "Subscriptions",
+  },
+  {
+    code: "subscription:create",
+    label: "Create Subscriptions",
+    module: "Subscriptions",
+  },
+  {
+    code: "subscription:update",
+    label: "Edit Subscriptions",
+    module: "Subscriptions",
+  },
+  {
+    code: "subscription:delete",
+    label: "Delete Subscriptions",
+    module: "Subscriptions",
+  },
+  {
+    code: "subscription:renew",
+    label: "Record Subscription Renewals",
+    module: "Subscriptions",
+  },
+
   // ── Reports ───────────────────────────────────────────────
   { code: "report:financial", label: "Financial Reports", module: "Reports" },
   { code: "report:inventory", label: "Inventory Reports", module: "Reports" },

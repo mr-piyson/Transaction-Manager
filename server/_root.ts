@@ -18,6 +18,7 @@ import { exchangeRatesRouter } from "./settings/exchange-rates.router";
 import { settingsRouter } from "./settings/settings.router";
 import { setupRouter } from "./setup/setup.router";
 import { stockRouter } from "./stock/stock.router";
+import { subscriptionsRouter } from "./subscriptions/subscriptions.router";
 import { suppliersRouter } from "./suppliers/suppliers.router";
 import { unitsRouter } from "./units/units.router";
 import { usersRouter } from "./users/users.router";
@@ -43,6 +44,7 @@ export const appRouter = t.router({
   settings: settingsRouter,
   setup: setupRouter,
   stock: stockRouter,
+  subscriptions: subscriptionsRouter,
   suppliers: suppliersRouter,
   units: unitsRouter,
   users: usersRouter,

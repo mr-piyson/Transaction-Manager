@@ -11,6 +11,8 @@ import { InvoiceFormProvider } from "./invoiceForm";
 import { UnifiedItemFormProvider } from "./item-dialog";
 import { PaymentFormProvider } from "./paymentForm";
 import { POFormProvider } from "./poForm";
+import { RenewalFormProvider } from "./renewalForm";
+import { SubscriptionFormProvider } from "./subscriptionForm";
 import { SupplierFormProvider } from "./supplierForm";
 import { SupplierItemFormProvider } from "./supplierItemForm";
 import { WarehouseFormProvider } from "./warehouseForm";
@@ -74,6 +76,20 @@ export {
 export type { POFormValues } from "./poForm";
 export { POFormDialog, POFormProvider, usePOForm } from "./poForm";
 
+export type { RenewalFormValues } from "./renewalForm";
+export {
+  RenewalFormDialog,
+  RenewalFormProvider,
+  useRenewalForm,
+} from "./renewalForm";
+
+export type { SubscriptionFormValues } from "./subscriptionForm";
+export {
+  SubscriptionFormDialog,
+  SubscriptionFormProvider,
+  useSubscriptionForm,
+} from "./subscriptionForm";
+
 export type { SupplierFormValues } from "./supplierForm";
 export {
   SupplierFormDialog,
@@ -113,9 +129,13 @@ export function DialogsProvider({ children }: { children: ReactNode }) {
                         <PaymentFormProvider>
                           <ExpenseFormProvider>
                             <IncomeFormProvider>
-                              <HardDeleteFormProvider>
-                                {children}
-                              </HardDeleteFormProvider>
+                              <SubscriptionFormProvider>
+                                <RenewalFormProvider>
+                                  <HardDeleteFormProvider>
+                                    {children}
+                                  </HardDeleteFormProvider>
+                                </RenewalFormProvider>
+                              </SubscriptionFormProvider>
                             </IncomeFormProvider>
                           </ExpenseFormProvider>
                         </PaymentFormProvider>

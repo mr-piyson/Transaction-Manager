@@ -71,7 +71,9 @@ export function NotificationBell() {
         ? `/erp/invoices/${entityId}`
         : entityType === "PurchaseOrder"
           ? `/erp/purchase-orders/${entityId}`
-          : null;
+          : entityType === "Subscription"
+            ? `/erp/subscriptions/${entityId}`
+            : null;
     if (path) {
       setOpen(false);
       router.push(path);

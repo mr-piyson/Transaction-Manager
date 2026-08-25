@@ -16,6 +16,9 @@ export const NOTIFICATION_TYPES = {
   OVERDUE: "overdue",
   INVOICE_CONVERTED: "invoice_converted",
   PAYMENT_DELETED: "payment_deleted",
+  // Fired once per billing cycle when a subscription enters its alert window
+  // (nextRenewalDate - alertDaysBefore).
+  SUBSCRIPTION_RENEWAL_DUE: "subscription_renewal_due",
 } as const;
 
 export const NOTIFICATION_SETTINGS_KEYS = {
@@ -34,6 +37,8 @@ export const NOTIFICATION_SETTINGS_KEYS = {
   [NOTIFICATION_TYPES.OVERDUE]: "notify_overdue",
   [NOTIFICATION_TYPES.INVOICE_CONVERTED]: "notify_invoice_converted",
   [NOTIFICATION_TYPES.PAYMENT_DELETED]: "notify_payment_deleted",
+  [NOTIFICATION_TYPES.SUBSCRIPTION_RENEWAL_DUE]:
+    "notify_subscription_renewal_due",
 } as const;
 
 export function getNotificationEntityPath(
@@ -46,6 +51,8 @@ export function getNotificationEntityPath(
       return `/erp/invoices/${entityId}`;
     case "PurchaseOrder":
       return `/erp/purchase-orders/${entityId}`;
+    case "Subscription":
+      return `/erp/subscriptions/${entityId}`;
     default:
       return null;
   }
