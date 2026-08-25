@@ -1,7 +1,13 @@
 #!/usr/bin/env bash
 #
-# deploy.sh — pull latest code, install dependencies, sync the database
-# schema, build, and restart the transaction-manager systemd service.
+# deploy.sh — pull latest code, verify the database, ensure the systemd
+# unit exists, install dependencies, sync the database schema, build,
+# and restart the transaction-manager systemd service.
+#
+# Ubuntu server provisioning (runs during preflight):
+#   - Verifies PostgreSQL from DATABASE_URL in .env (reachability + auth)
+#   - Creates /etc/systemd/system/<service>.service if missing, using this
+#     repo as WorkingDirectory and the detected bun binary in ExecStart
 #
 # Usage: ./scripts/deploy.sh [options]
 #
@@ -10,7 +16,7 @@
 #   -s, --service <name>    Systemd unit to restart     (default: transaction-manager)
 #   -y, --yes               Non-interactive; discard local changes without asking
 #   -f, --force             Rebuild even if already on latest commit
-#       --skip-db           Skip prisma generate + db push
+#       --skip-db           Skip database checks, prisma generate + db push
 #       --no-restart        Stop before restarting the service
 #       --no-healthcheck    Skip post-deploy health check
 #       --no-rollback       Do not roll back automatically if health check fails
@@ -67,7 +73,7 @@ while [[ $# -gt 0 ]]; do
 		shift
 		;;
 	-h | --help)
-		grep '^#' "$0" | cut -c 3-
+		awk 'NR>1 && !/^#/ && !/^[[:space:]]*$/ {exit} NR>1 {sub(/^# ?/, ""); print}' "$0"
 		exit 0
 		;;
 	*)
@@ -82,6 +88,10 @@ HEALTH_URL="${DEPLOY_HEALTH_URL:-http://127.0.0.1:3000}"
 LOG_DIR="${DEPLOY_LOG_DIR:-$APP_DIR/.deploy-logs}"
 LOG_FILE="$LOG_DIR/deploy-$(date +%Y%m%d-%H%M%S).log"
 LOCK_DIR="/tmp/${SERVICE}.deploy.lock"
+
+# Resolved before any sudo elevation (root's PATH lacks ~/.bun/bin).
+DEPLOY_USER="${SUDO_USER:-$(id -un)}"
+BUN_PATH="$(command -v bun 2>/dev/null || true)"
 
 STEP=""
 PREV_SHA=""
@@ -110,6 +120,116 @@ on_error() {
 }
 trap 'on_error $?' ERR
 
+elevate() {
+	if [ "$(id -u)" -eq 0 ]; then
+		"$@"
+	elif command -v sudo >/dev/null 2>&1; then
+		sudo "$@"
+	else
+		die "Need root or sudo to run: $*"
+	fi
+}
+
+check_database() {
+	local raw host="" port="5432"
+	raw="$(grep -E '^[[:space:]]*(export[[:space:]]+)?DATABASE_URL=' "$APP_DIR/.env" | tail -n 1 || true)"
+	[[ -n "$raw" ]] || die "DATABASE_URL not found in .env — copy .env.example and configure the database first."
+	raw="${raw#*=}"
+	raw="${raw%%[[:space:]]*#*}" # strip trailing comment (whitespace before #)
+	raw="${raw%\"}"
+	raw="${raw#\"}"
+	raw="${raw%\'}"
+	raw="${raw#\'}"
+	[[ "$raw" =~ ^postgres(ql)?://[^[:space:]]+$ ]] ||
+		die "DATABASE_URL in .env is not a valid PostgreSQL URL (expected postgresql://user:pass@host:port/db)."
+	if [[ "$raw" =~ @(\[[^]]+\]|[^:/@]+)(:([0-9]+))?(/|$) ]]; then
+		host="${BASH_REMATCH[1]}"
+		host="${host//[][]/}"
+		port="${BASH_REMATCH[3]:-5432}"
+	fi
+	[[ -n "$host" ]] || die "Could not extract the database host from DATABASE_URL in .env."
+
+	log "Checking database connectivity at ${host}:${port}"
+	if command -v psql >/dev/null 2>&1; then
+		if PGCONNECT_TIMEOUT=5 psql "$raw" -tAc 'SELECT 1;' >/dev/null 2>&1; then
+			ok "Database connection verified (${host}:${port})"
+		else
+			die "Cannot connect to PostgreSQL at ${host}:${port} with credentials from .env. Check DATABASE_URL; is PostgreSQL installed and running? Try: sudo systemctl status postgresql"
+		fi
+	elif command -v pg_isready >/dev/null 2>&1; then
+		if pg_isready -h "$host" -p "$port" -t 5 >/dev/null 2>&1; then
+			warn "PostgreSQL reachable at ${host}:${port} (pg_isready); install postgresql-client to also verify credentials."
+		else
+			die "PostgreSQL is not accepting connections at ${host}:${port}. Start it: sudo systemctl enable --now postgresql"
+		fi
+	elif timeout 5 bash -c "exec 3<>/dev/tcp/${host}/${port}" 2>/dev/null; then
+		warn "Port ${host}:${port} is open but neither psql nor pg_isready found — skipped auth check. Install: sudo apt install postgresql-client"
+	else
+		die "Nothing is listening at ${host}:${port}. Install/start PostgreSQL: sudo apt install postgresql && sudo systemctl enable --now postgresql"
+	fi
+}
+
+ensure_service() {
+	command -v systemctl >/dev/null 2>&1 || {
+		warn "systemctl not available — skipping systemd unit setup."
+		return 0
+	}
+
+	local unit_file="/etc/systemd/system/${SERVICE}.service"
+
+	if systemctl cat "$SERVICE" >/dev/null 2>&1; then
+		local unit wd exec_start
+		unit="$(systemctl cat "$SERVICE")"
+		wd="$(grep -m1 '^WorkingDirectory=' <<<"$unit" | cut -d= -f2- || true)"
+		exec_start="$(grep -m1 '^ExecStart=' <<<"$unit" | cut -d= -f2- || true)"
+		[[ "$wd" == "$APP_DIR" ]] ||
+			warn "Unit '${SERVICE}' has WorkingDirectory='${wd:-unset}' (expected ${APP_DIR}) — leaving it untouched."
+		[[ "$exec_start" == "${BUN_PATH} run start" ]] ||
+			warn "Unit '${SERVICE}' has ExecStart='${exec_start:-unset}' (expected '${BUN_PATH} run start') — leaving it untouched."
+		return 0
+	fi
+
+	log "Creating systemd unit ${unit_file}"
+	local group tmp
+	group="$(id -gn "$DEPLOY_USER" 2>/dev/null || true)"
+	group="${group:-$DEPLOY_USER}"
+	tmp="$(mktemp)"
+	cat >"$tmp" <<EOF
+[Unit]
+Description=Transaction Manager Application Service
+After=network.target
+
+[Service]
+Type=simple
+User=${DEPLOY_USER}
+Group=${group}
+WorkingDirectory=${APP_DIR}
+
+# Environment settings (uncomment/add if needed)
+# Environment=NODE_ENV=production
+# Environment=PORT=3000
+
+# ExecStart points directly to your Bun binary and start command
+ExecStart=${BUN_PATH} run start
+
+# Automatic restart policy
+Restart=always
+RestartSec=5
+
+# Logging handling
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
+EOF
+	elevate install -m 644 "$tmp" "$unit_file"
+	rm -f "$tmp"
+	elevate systemctl daemon-reload
+	elevate systemctl enable "$SERVICE" >/dev/null
+	ok "Created and enabled ${SERVICE}.service (WorkingDirectory=${APP_DIR}, User=${DEPLOY_USER})"
+}
+
 mkdir "$LOCK_DIR" 2>/dev/null || die "Another deploy of '${SERVICE}' appears to be running (${LOCK_DIR})."
 
 cd "$APP_DIR"
@@ -118,13 +238,16 @@ log "Preflight checks"
 [[ -d .git ]] || die "$APP_DIR is not a git repository."
 [[ -f .env ]] || die ".env not found — copy .env.example and configure secrets first."
 command -v git >/dev/null || die "git is not installed."
-command -v bun >/dev/null || die "bun is not installed."
-git fetch origin "$BRANCH" >/dev/null 2>&1 || die "Cannot fetch origin/${BRANCH}. Check network and remotes."
-git rev-parse --verify --quiet "origin/${BRANCH}" >/dev/null || die "Branch origin/${BRANCH} does not exist."
+	command -v bun >/dev/null || die "bun is not installed."
 
-if command -v systemctl >/dev/null && [ "$(id -u)" -ne 0 ]; then
-	systemctl cat "$SERVICE" >/dev/null 2>&1 || warn "Systemd unit '${SERVICE}' not found; restart step will fail."
-fi
+	if [[ "$SKIP_DB" != true ]]; then
+		check_database
+	fi
+
+	git fetch origin "$BRANCH" >/dev/null 2>&1 || die "Cannot fetch origin/${BRANCH}. Check network and remotes."
+	git rev-parse --verify --quiet "origin/${BRANCH}" >/dev/null || die "Branch origin/${BRANCH} does not exist."
+
+	ensure_service
 
 PREV_SHA="$(git rev-parse --short HEAD)"
 TARGET_SHA="$(git rev-parse --short "origin/${BRANCH}")"
@@ -181,13 +304,7 @@ deploy() {
 restart_service() {
 	STEP="restarting ${SERVICE}"
 	log "Restarting ${SERVICE}"
-	if [ "$(id -u)" -eq 0 ]; then
-		systemctl restart "$SERVICE"
-	elif command -v sudo >/dev/null; then
-		sudo systemctl restart "$SERVICE"
-	else
-		die "Need root or sudo to restart ${SERVICE}."
-	fi
+	elevate systemctl restart "$SERVICE"
 	ok "Service restarted"
 }
 
