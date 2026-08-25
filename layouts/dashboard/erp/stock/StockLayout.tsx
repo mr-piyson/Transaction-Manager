@@ -49,17 +49,19 @@ export default function StockLayout({
           }
         }}
       >
-        <TabsList className="bg-background shrink-0 rounded-none border-b w-full">
-          {TABS.map((tab) => (
-            <TabsTrigger
-              className="data-[state=active]:bg-primary/90! data-[state=active]:text-primary-foreground!"
-              key={tab.value}
-              value={tab.value}
-            >
-              {labels[tab.value]}
-            </TabsTrigger>
-          ))}
-        </TabsList>
+        <div className="w-full outline px-1">
+          <TabsList className="bg-background shrink-0 rounded-none max-md:w-full">
+            {TABS.map((tab) => (
+              <TabsTrigger
+                className="data-[state=active]:bg-primary/90! data-[state=active]:text-primary-foreground!"
+                key={tab.value}
+                value={tab.value}
+              >
+                {labels[tab.value]}
+              </TabsTrigger>
+            ))}
+          </TabsList>
+        </div>
       </Tabs>
       <div className="min-h-0 flex-1 w-full overflow-y-auto">{children}</div>
     </div>
