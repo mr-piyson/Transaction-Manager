@@ -49,9 +49,13 @@ export default function StockLayout({
           }
         }}
       >
-        <TabsList className="shrink-0 rounded-none border-b w-full">
+        <TabsList className="bg-background shrink-0 rounded-none border-b w-full">
           {TABS.map((tab) => (
-            <TabsTrigger key={tab.value} value={tab.value}>
+            <TabsTrigger
+              className="data-[state=active]:bg-primary/90! data-[state=active]:text-primary-foreground!"
+              key={tab.value}
+              value={tab.value}
+            >
               {labels[tab.value]}
             </TabsTrigger>
           ))}
