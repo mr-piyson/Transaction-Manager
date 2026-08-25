@@ -1,9 +1,21 @@
 /**
- * Permission definitions — single source of truth.
- * Used by: prisma/seed.ts, setup.router.ts
+ * Permission definitions — SINGLE SOURCE OF TRUTH.
  *
- * IMPORTANT: These codes MUST match the `Action` type in lib/abilities.ts exactly.
- * CASL authorization depends on exact string matching.
+ * This registry drives everything:
+ *   - DB seeding (`prisma db seed` via prisma/seed/index.ts)
+ *   - The CASL `Action` type in lib/abilities.ts (derived from this array,
+ *     so a code present here but missing elsewhere — or vice versa — fails
+ *     to compile instead of silently breaking authorization)
+ *   - Boot-time permission sync (server/shared/permission-sync.ts)
+ *
+ * IMPORTANT: codes MUST match what routers pass to assertCan(), e.g.
+ * "invoice:create" ↔ assertCan(ctx.ability, "invoice:create", "Invoice").
+ *
+ * To add a feature's permissions:
+ *   1. Add entries here (module = display group in Settings → Permissions).
+ *   2. Map the resource prefix in RESOURCE_TO_SUBJECT_MAP (lib/abilities.ts).
+ *   3. Add mutation codes to MUTATION_ACTIONS (lib/abilities.ts).
+ *   4. Deploy — rows and OWNER grants are synced automatically at boot.
  */
 
 export interface PermissionDefinition {
@@ -12,7 +24,7 @@ export interface PermissionDefinition {
   module: string;
 }
 
-export const PERMISSIONS: readonly PermissionDefinition[] = [
+export const PERMISSIONS = [
   // ── Users & Roles ─────────────────────────────────────────
   { code: "user:manage", label: "Manage Users", module: "Users & Roles" },
   { code: "role:manage", label: "Manage Roles", module: "Users & Roles" },
@@ -374,3 +386,21 @@ export const PERMISSIONS: readonly PermissionDefinition[] = [
   // ── HRMS — Reports ────────────────────────────────────────
   { code: "report:hr", label: "HR Reports", module: "HRMS" },
 ] as const;
+
+/** Every valid permission code, as a compile-time union. */
+export type PermissionCode = (typeof PERMISSIONS)[number]["code"];
+
+/** Distinct resource prefixes ("invoice", "po", "expense", ...). */
+export function getResourcePrefixes(): Set<string> {
+  return new Set(PERMISSIONS.map((p) => p.code.split(":")[0]));
+}
+
+/**
+ * Codes that boot sync / org-setup never auto-grant to non-OWNER roles
+ * (platform-level capabilities).
+ */
+const NON_AUTO_GRANT_PREFIXES = ["org:", "user:"];
+
+export function isAutoGrantable(code: string): boolean {
+  return !NON_AUTO_GRANT_PREFIXES.some((prefix) => code.startsWith(prefix));
+}

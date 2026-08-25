@@ -7,14 +7,14 @@
  */
 
 import type { PrismaClient } from "@prisma/client";
+import { PERMISSIONS } from "@/lib/permissions-registry";
 import { CURRENCIES } from "./currencies";
-import { PERMISSIONS } from "./permissions";
 import { SYSTEM_ROLES } from "./roles";
 
+export type { PermissionDefinition } from "@/lib/permissions-registry";
+export { PERMISSIONS } from "@/lib/permissions-registry";
 export type { CurrencyDefinition } from "./currencies";
 export { CURRENCIES } from "./currencies";
-export type { PermissionDefinition } from "./permissions";
-export { PERMISSIONS } from "./permissions";
 export type { SystemRoleDefinition } from "./roles";
 // Re-export data for direct access
 export { SYSTEM_ROLES } from "./roles";

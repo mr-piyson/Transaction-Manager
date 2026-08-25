@@ -15,179 +15,17 @@
 import type { MongoAbility, RawRuleOf } from "@casl/ability";
 import { AbilityBuilder, createMongoAbility } from "@casl/ability";
 import type { PlatformRole } from "@prisma/client";
+import type { PermissionCode } from "@/lib/permissions-registry";
 
 // ---------------------------------------------------------------------------
 // Actions — mirrors the Permission.code column values in the DB.
 // Convention: "resource:action"
 // ---------------------------------------------------------------------------
 
-export type Action =
-  // Invoices
-  | "invoice:create"
-  | "invoice:read"
-  | "invoice:update"
-  | "invoice:delete"
-  | "invoice:send"
-  | "invoice:cancel"
-  | "invoice:approve"
-  | "invoice:payment:create"
-  | "invoice:payment:delete"
-  // Customers
-  | "customer:create"
-  | "customer:read"
-  | "customer:update"
-  | "customer:delete"
-  // Items
-  | "item:create"
-  | "item:read"
-  | "item:update"
-  | "item:delete"
-  // Stock
-  | "stock:read"
-  | "stock:adjust"
-  | "stock:transfer"
-  // Purchase Orders
-  | "po:create"
-  | "po:read"
-  | "po:update"
-  | "po:delete"
-  | "po:approve"
-  | "po:receive"
-  // Expenses
-  | "expense:create"
-  | "expense:read"
-  | "expense:update"
-  | "expense:delete"
-  // Incomes
-  | "income:create"
-  | "income:read"
-  | "income:update"
-  | "income:delete"
-  // Subscriptions
-  | "subscription:create"
-  | "subscription:read"
-  | "subscription:update"
-  | "subscription:delete"
-  | "subscription:renew"
-  // Reports
-  | "report:financial"
-  | "report:inventory"
-  | "report:sales"
-  // Categories
-  | "category:read"
-  | "category:create"
-  | "category:update"
-  | "category:delete"
-  // Units
-  | "unit:read"
-  | "unit:create"
-  | "unit:update"
-  | "unit:delete"
-  // Settings / admin
-  | "org:settings:read"
-  | "org:settings:update"
-  | "user:manage"
-  | "role:manage"
-  // Exchange Rates
-  | "exchange-rate:read"
-  | "exchange-rate:update"
-  | "exchange-rate:sync"
-  // HRMS — Organisational Structure
-  | "department:read"
-  | "department:create"
-  | "department:update"
-  | "department:delete"
-  | "employee:read"
-  | "employee:create"
-  | "employee:update"
-  | "employee:delete"
-  | "employee:status:update"
-  | "employee-type:read"
-  | "employee-type:create"
-  | "employee-type:update"
-  | "employee-type:delete"
-  | "job-position:read"
-  | "job-position:create"
-  | "job-position:update"
-  | "job-position:delete"
-  // HRMS — Leave
-  | "leave-type:read"
-  | "leave-type:create"
-  | "leave-type:update"
-  | "leave-type:delete"
-  | "leave:request:create"
-  | "leave:request:read"
-  | "leave:request:update"
-  | "leave:request:approve"
-  | "leave:balance:read"
-  | "leave:balance:adjust"
-  | "holiday:read"
-  | "holiday:create"
-  | "holiday:update"
-  | "holiday:delete"
-  // HRMS — Attendance
-  | "attendance:read"
-  | "attendance:create"
-  | "attendance:update"
-  | "shift:read"
-  | "shift:create"
-  | "shift:update"
-  | "shift:delete"
-  // HRMS — Payroll
-  | "payroll:read"
-  | "payroll:create"
-  | "payroll:process"
-  | "payroll:complete"
-  | "payroll:cancel"
-  | "salary-component:read"
-  | "salary-component:create"
-  | "salary-component:update"
-  | "salary-component:delete"
-  // HRMS — Performance
-  | "performance:read"
-  | "performance:create"
-  | "performance:update"
-  | "performance:delete"
-  | "performance:submit"
-  | "performance:acknowledge"
-  // HRMS — Recruitment
-  | "job-posting:read"
-  | "job-posting:create"
-  | "job-posting:update"
-  | "job-posting:delete"
-  | "candidate:read"
-  | "candidate:create"
-  | "candidate:update"
-  | "candidate:delete"
-  | "candidate:status:update"
-  | "interview:read"
-  | "interview:create"
-  | "interview:update"
-  | "offer:read"
-  | "offer:create"
-  | "offer:update"
-  | "offer:respond"
-  // HRMS — Training
-  | "training:read"
-  | "training:create"
-  | "training:update"
-  | "training:delete"
-  | "training:enroll"
-  // HRMS — Documents & Relations
-  | "employee-document:read"
-  | "employee-document:create"
-  | "employee-document:delete"
-  | "grievance:read"
-  | "grievance:create"
-  | "grievance:update"
-  | "grievance:resolve"
-  | "disciplinary:read"
-  | "disciplinary:create"
-  | "disciplinary:update"
-  // HRMS — Reports
-  | "report:hr"
-  // Journal / Accounting
-  | "journal:entry";
+// Derived from lib/permissions-registry.ts — the single source of truth.
+// Adding a permission to the registry automatically extends this union;
+// a code used in assertCan() but missing from the registry fails to compile.
+export type Action = PermissionCode;
 
 // ---------------------------------------------------------------------------
 // Subjects — Prisma model names + "all" wildcard for SUPER_ADMIN
@@ -457,7 +295,14 @@ export function defineAbilitiesFor(user: AbilityUser): AppAbilityType {
     if (!resource) continue;
 
     const subject = RESOURCE_TO_SUBJECT_MAP[resource];
-    if (!subject) continue;
+    if (!subject) {
+      if (process.env.NODE_ENV !== "production") {
+        console.warn(
+          `[abilities] No RESOURCE_TO_SUBJECT_MAP entry for resource "${resource}" (permission "${permission}") — rule skipped.`,
+        );
+      }
+      continue;
+    }
 
     can(permission, subject, orgScope);
   }
