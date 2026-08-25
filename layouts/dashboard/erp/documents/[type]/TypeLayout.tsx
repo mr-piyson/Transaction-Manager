@@ -273,27 +273,7 @@ export default function DocumentsLayout({
                           <Button size="sm" onClick={() => createDocument()}>
                             {t("common.new")}
                           </Button>
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button size="sm" aria-label={t("common.new")}>
-                                <ChevronDown className="size-3.5" />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="start">
-                              <DropdownMenuItem
-                                onClick={() => createDocument("INVOICE")}
-                              >
-                                <Receipt />
-                                {t("layout.invoices")}
-                              </DropdownMenuItem>
-                              <DropdownMenuItem
-                                onClick={() => createDocument("QUOTE")}
-                              >
-                                <FileText />
-                                {t("layout.quotations")}
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
+                          
                         </ButtonGroup>
                       }
                     />

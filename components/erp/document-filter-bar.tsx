@@ -7,7 +7,7 @@ import {
   SlidersHorizontal,
   X,
 } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { type Messages, useTranslations } from "next-intl";
 import { parseAsString, useQueryState } from "nuqs";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -24,21 +24,36 @@ import {
 } from "@/components/ui/drawer";
 import { Separator } from "@/components/ui/separator";
 
-const STATUS_FILTERS = [
-  { value: "", labelKey: "common.all" as const },
-  { value: "DRAFT", labelKey: "invoices.draft" as const },
-  { value: "SENT", labelKey: "invoices.sent" as const },
-  { value: "APPROVED", labelKey: "invoices.approved" as const },
-  { value: "INVOICED", labelKey: "invoices.invoiced" as const },
-  { value: "CANCELLED", labelKey: "invoices.cancelled" as const },
+type NamespacedMessageKeys<
+  T extends Record<string, unknown>,
+  Prefix extends string = "",
+> = {
+  [K in Extract<keyof T, string>]: T[K] extends Record<string, unknown>
+    ? `${Prefix}${K}` | NamespacedMessageKeys<T[K], `${Prefix}${K}.`>
+    : `${Prefix}${K}`;
+}[Extract<keyof T, string>];
+
+const STATUS_FILTERS: {
+  value: string;
+  labelKey: NamespacedMessageKeys<Messages>;
+}[] = [
+  { value: "", labelKey: "common.all" },
+  { value: "DRAFT", labelKey: "invoices.draft" },
+  { value: "SENT", labelKey: "invoices.sent" },
+  { value: "APPROVED", labelKey: "invoices.approved" },
+  { value: "INVOICED", labelKey: "invoices.invoiced" },
+  { value: "CANCELLED", labelKey: "invoices.cancelled" },
 ];
 
-const PAYMENT_STATUS_FILTERS = [
-  { value: "all", labelKey: "common.all" as const },
-  { value: "PENDING", labelKey: "common.pending" as const },
-  { value: "PARTIAL", labelKey: "common.partial" as const },
-  { value: "PAID", labelKey: "common.paid" as const },
-  { value: "OVERDUE", labelKey: "common.overdue" as const },
+const PAYMENT_STATUS_FILTERS: {
+  value: string;
+  labelKey: NamespacedMessageKeys<Messages>;
+}[] = [
+  { value: "all", labelKey: "common.all" },
+  { value: "PENDING", labelKey: "common.pending" },
+  { value: "PARTIAL", labelKey: "common.partial" },
+  { value: "PAID", labelKey: "common.paid" },
+  { value: "OVERDUE", labelKey: "common.overdue" },
 ];
 
 function useDocumentFilters(type: "invoices" | "quotations") {
@@ -122,6 +137,9 @@ export function DocumentFilterTrigger({
 
 function ActiveFiltersSummary({ type }: { type: "invoices" | "quotations" }) {
   const t = useTranslations();
+  const translate = t as unknown as (
+    key: NamespacedMessageKeys<Messages>,
+  ) => string;
   const {
     statusFilter,
     setStatusFilter,
@@ -142,7 +160,7 @@ function ActiveFiltersSummary({ type }: { type: "invoices" | "quotations" }) {
     <div className="flex flex-wrap gap-1">
       {statusFilter && statusLabel && (
         <Badge variant="secondary" className="gap-1 pr-1 text-xs h-5">
-          {t(statusLabel.labelKey)}
+          {translate(statusLabel.labelKey)}
           <button
             type="button"
             onClick={() => setStatusFilter(null)}
@@ -154,7 +172,7 @@ function ActiveFiltersSummary({ type }: { type: "invoices" | "quotations" }) {
       )}
       {showPaymentFilter && paymentStatusFilter !== "all" && paymentLabel && (
         <Badge variant="secondary" className="gap-1 pr-1 text-xs h-5">
-          {t(paymentLabel.labelKey)}
+          {translate(paymentLabel.labelKey)}
           <button
             type="button"
             onClick={() => setPaymentStatusFilter(null)}
@@ -195,6 +213,9 @@ function FilterOption({
 
 function DrawerBody({ type }: { type: "invoices" | "quotations" }) {
   const t = useTranslations();
+  const translate = t as unknown as (
+    key: NamespacedMessageKeys<Messages>,
+  ) => string;
   const {
     statusFilter,
     setStatusFilter,
@@ -219,7 +240,7 @@ function DrawerBody({ type }: { type: "invoices" | "quotations" }) {
           {STATUS_FILTERS.map((f) => (
             <FilterOption
               key={f.value}
-              label={t(f.labelKey)}
+              label={translate(f.labelKey)}
               active={statusFilter === f.value}
               onClick={() => setStatusFilter(f.value || null)}
             />
@@ -240,7 +261,7 @@ function DrawerBody({ type }: { type: "invoices" | "quotations" }) {
             {PAYMENT_STATUS_FILTERS.map((f) => (
               <FilterOption
                 key={f.value}
-                label={t(f.labelKey)}
+                label={translate(f.labelKey)}
                 active={
                   f.value === "all"
                     ? paymentStatusFilter === "all"
