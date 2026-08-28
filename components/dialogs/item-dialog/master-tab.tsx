@@ -45,7 +45,17 @@ export function MasterTab({ form, canManageMaster }: MasterTabProps) {
   const generateSku = trpc.categories.generateSku.useMutation();
 
   const categoryList = categories ?? [];
-  const unitList = (units ?? []).filter((u: any) => u.isActive);
+  const activeUnits = (units ?? []).filter((u: any) => u.isActive);
+  // Always include the currently-selected unit so an inactive unit still
+  // renders as selected instead of an empty dropdown.
+  const unitList = React.useMemo(() => {
+    const all = [...activeUnits];
+    const selected = units?.find((u: any) => u.id === master.unitId);
+    if (selected && !all.some((u: any) => u.id === selected.id)) {
+      all.push(selected);
+    }
+    return all;
+  }, [activeUnits, units, master.unitId]);
   const taxRateList = taxRates ?? [];
 
   const handleGenerateSku = React.useCallback(() => {

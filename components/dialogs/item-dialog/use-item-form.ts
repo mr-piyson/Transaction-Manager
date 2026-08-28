@@ -237,6 +237,11 @@ export function useItemForm({
     if (editItemId && editItemData) {
       // Edit mode: pre-fill from fetched item
       const d = editItemData as any;
+      const unitList = units ?? [];
+      const dUnit =
+        d.unitId ??
+        unitList.find((u: any) => u.code === d.unit)?.id ??
+        undefined;
       setMasterState(
         getItemMasterDefaults({
           type: d.type,
@@ -246,7 +251,7 @@ export function useItemForm({
           description: d.description ?? undefined,
           image: d.image ?? undefined,
           unit: d.unit,
-          unitId: d.unitId ?? undefined,
+          unitId: dUnit,
           isSaleable: d.isSaleable,
           isPurchasable: d.isPurchasable,
           purchasePrice: Number(d.purchasePrice),
@@ -565,6 +570,7 @@ export function useItemForm({
           description: master.description,
           image: finalImage !== undefined ? finalImage : (master.image ?? null),
           unit: master.unit,
+          unitId: master.unitId,
           isSaleable: master.isSaleable,
           isPurchasable: master.isPurchasable,
           purchasePrice: String(master.purchasePrice),

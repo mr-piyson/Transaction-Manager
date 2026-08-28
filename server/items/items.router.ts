@@ -42,6 +42,7 @@ const itemBaseSchema = z.object({
   description: z.string().max(5000).optional(),
   image: z.string().max(500).nullable().optional(),
   unit: z.string().max(50).default("pcs"),
+  unitId: z.string().optional(),
   isSaleable: z.boolean().default(true),
   isPurchasable: z.boolean().default(true),
   purchasePrice: decimalSchema.optional(),
