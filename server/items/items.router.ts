@@ -21,6 +21,7 @@ import {
   decimalSchema,
   sortOrderSchema,
 } from "@/lib/validations";
+import { deleteUploadByStoragePath } from "@/server/services/file/upload.service";
 import { writeAuditLog } from "../shared/audit.service";
 import { getHardDeleteInfo, hardDeleteItemTree } from "./hard-delete.service";
 
@@ -39,7 +40,7 @@ const itemBaseSchema = z.object({
   barcode: z.string().max(100).optional(),
   name: z.string().min(1).max(255),
   description: z.string().max(5000).optional(),
-  image: z.string().max(500).optional(),
+  image: z.string().max(500).nullable().optional(),
   unit: z.string().max(50).default("pcs"),
   isSaleable: z.boolean().default(true),
   isPurchasable: z.boolean().default(true),
@@ -485,7 +486,7 @@ export const itemsRouter = router({
 
       const { bundleLines, ...itemData } = data;
 
-      return ctx.db.$transaction(async (tx) => {
+      const updated = await ctx.db.$transaction(async (tx) => {
         const updated = await tx.item.update({
           where: { id },
           data: { ...itemData, updatedById: ctx.user.id },
@@ -522,6 +523,21 @@ export const itemsRouter = router({
 
         return updated;
       });
+
+      // Garbage collect the replaced/removed image file after the DB write
+      // commits successfully. This keeps the filesystem and DB consistent —
+      // if the transaction fails, the old file is left untouched.
+      const oldImage = existing.image;
+      const newImage = updated.image;
+      if (oldImage && oldImage !== newImage) {
+        try {
+          await deleteUploadByStoragePath(oldImage);
+        } catch (err) {
+          console.error("[Items.update] image GC failed", err);
+        }
+      }
+
+      return updated;
     }),
 
   // ── SOFT DELETE ───────────────────────────────────────────────────────────

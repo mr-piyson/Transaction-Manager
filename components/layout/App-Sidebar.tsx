@@ -154,7 +154,7 @@ interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {}
 
 export function AppSidebar({ ...props }: AppSidebarProps) {
   const currentPath = usePathname();
-  const { isMobile, openMobile, setOpen, setOpenMobile } = useSidebar();
+  const { openMobile, setOpen, setOpenMobile } = useSidebar();
   const router = useRouter();
   const [loading, setLoading] = useState("");
   const [searchQuery, setSearchQuery] = useState("");

@@ -125,7 +125,6 @@ export function useItemForm({
   const [pendingImageFile, setPendingImageFileState] =
     React.useState<File | null>(null);
   const [imageRemoved, setImageRemoved] = React.useState(false);
-  const originalImagePathRef = React.useRef<string | null>(null);
   const originalSupplierItemIdsRef = React.useRef<Set<string>>(new Set());
 
   const setPendingImageFile = React.useCallback((file: File | null) => {
@@ -159,23 +158,7 @@ export function useItemForm({
     [],
   );
 
-  // ── Image cleanup helper ────────────────────────────────────────────────
-  const deleteOldImage = React.useCallback(
-    async (storagePath: string | null | undefined) => {
-      if (!storagePath) return;
-      try {
-        await fetch(
-          `/api/uploads?storagePath=${encodeURIComponent(storagePath)}`,
-          { method: "DELETE" },
-        );
-      } catch (err) {
-        console.error("[deleteOldImage]", err);
-      }
-    },
-    [],
-  );
-
-  // Data queries
+  // ── Data queries ────────────────────────────────────────────────────────
   const { data: suppliersData } = trpc.suppliers.list.useQuery(
     {},
     { enabled: open },
@@ -254,7 +237,6 @@ export function useItemForm({
     if (editItemId && editItemData) {
       // Edit mode: pre-fill from fetched item
       const d = editItemData as any;
-      originalImagePathRef.current = d.image ?? null;
       setMasterState(
         getItemMasterDefaults({
           type: d.type,
@@ -305,7 +287,6 @@ export function useItemForm({
         setSupplierDrafts([getSupplierItemDraftDefaults()]);
       }
     } else if (initialItem?.id) {
-      originalImagePathRef.current = initialItem.image ?? null;
       setMasterState(getItemMasterDefaults(initialItem));
       setExistingMaster(initialItem);
       setEditingItem(null);
@@ -317,7 +298,6 @@ export function useItemForm({
         defaults.unitId = defaultUnit.id;
         defaults.unit = defaultUnit.code;
       }
-      originalImagePathRef.current = null;
       originalSupplierItemIdsRef.current = new Set();
       setMasterState(defaults);
       setExistingMaster(null);
@@ -528,23 +508,12 @@ export function useItemForm({
         }
       }
 
-      // Determine final image value and whether old image needs cleanup
-      const originalImage = originalImagePathRef.current;
-      let finalImage: string | undefined;
-      if (imageUrl) {
-        // New image uploaded (replacement) — clean up old
-        finalImage = imageUrl;
-        if (originalImage && originalImage !== imageUrl) {
-          await deleteOldImage(originalImage);
-        }
-      } else if (imageRemoved) {
-        // User explicitly removed the image
-        finalImage = undefined;
-        await deleteOldImage(originalImage);
-      } else {
-        // Image not touched — keep original
-        finalImage = undefined; // let each mode use its own fallback
-      }
+      // Determine final image value. The old file (if any) is garbage
+      // collected server-side in items.update/create after the DB write
+      // succeeds, so we only need to send the correct new value here.
+      const finalImage: string | null | undefined = imageRemoved
+        ? null // clear the image
+        : imageUrl; // new upload (or undefined to keep existing)
 
       if (mode === "existing" && existingMaster) {
         // Only add supplier items to existing item
@@ -558,7 +527,7 @@ export function useItemForm({
             image:
               finalImage !== undefined
                 ? finalImage
-                : (imageUrl ?? existingMaster.image ?? undefined),
+                : (existingMaster.image ?? undefined),
             unit: existingMaster.unit ?? "pcs",
             unitId: existingMaster.unitId ?? undefined,
             isSaleable: existingMaster.isSaleable ?? true,
@@ -587,15 +556,14 @@ export function useItemForm({
         };
         createMutation.mutate(payload);
       } else if (mode === "edit" && editingItem) {
-        const updatedItem = await updateMutation.mutateAsync({
+        await updateMutation.mutateAsync({
           id: editingItem.id,
           type: master.type,
           sku: master.sku,
           name: master.name,
           barcode: master.barcode,
           description: master.description,
-          image:
-            finalImage !== undefined ? finalImage : (imageUrl ?? master.image),
+          image: finalImage !== undefined ? finalImage : (master.image ?? null),
           unit: master.unit,
           isSaleable: master.isSaleable,
           isPurchasable: master.isPurchasable,
@@ -652,9 +620,6 @@ export function useItemForm({
 
         utils.items.list.invalidate();
         utils.items.byId.invalidate({ id: editingItem.id });
-        toast.success("Item updated", { description: updatedItem.name });
-        onSuccess?.(editingItem.id);
-        onOpenChange(false);
       } else if (mode === "create") {
         const payload = {
           item: {
@@ -663,7 +628,7 @@ export function useItemForm({
             name: master.name,
             barcode: master.barcode,
             description: master.description,
-            image: imageUrl ?? master.image,
+            image: finalImage !== undefined ? finalImage : undefined,
             unit: master.unit,
             unitId: master.unitId,
             isSaleable: master.isSaleable,
@@ -704,7 +669,6 @@ export function useItemForm({
       editingItem,
       pendingImageFile,
       uploadImage,
-      deleteOldImage,
       imageRemoved,
       addSupplierItemMutation,
       updateSupplierItemMutation,
