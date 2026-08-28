@@ -154,7 +154,7 @@ interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {}
 
 export function AppSidebar({ ...props }: AppSidebarProps) {
   const currentPath = usePathname();
-  const { isMobile, setOpen, setOpenMobile } = useSidebar();
+  const { isMobile, openMobile, setOpen, setOpenMobile } = useSidebar();
   const router = useRouter();
   const [loading, setLoading] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
@@ -425,6 +425,7 @@ export function AppSidebar({ ...props }: AppSidebarProps) {
           t={t as (key: string) => string}
           onAppSwitch={handleAppSwitch}
           isRtl={isRtl}
+          openMobile={openMobile}
         />
       </SidebarHeader>
 
@@ -555,16 +556,26 @@ function AppSwitcher({
   t,
   onAppSwitch,
   isRtl,
+  openMobile,
 }: {
   currentApp: { slug: string; nameKey: string; icon: LucideIcon };
   t: (key: string) => string;
   onAppSwitch: (slug: string) => void;
   isRtl: boolean;
+  openMobile: boolean;
 }) {
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+
+  useEffect(() => {
+    if (!openMobile) {
+      setDropdownOpen(false);
+    }
+  }, [openMobile]);
+
   return (
     <SidebarMenu>
       <SidebarMenuItem>
-        <DropdownMenu>
+        <DropdownMenu open={dropdownOpen} onOpenChange={setDropdownOpen}>
           <DropdownMenuTrigger asChild>
             <SidebarMenuButton
               size="lg"
