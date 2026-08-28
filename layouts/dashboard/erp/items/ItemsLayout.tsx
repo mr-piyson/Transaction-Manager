@@ -27,6 +27,7 @@ import {
   DEFAULT_ITEM_FILTERS,
   ItemFilterSheet,
   type ItemFilterValues,
+  UNCATEGORIZED_CATEGORY_ID,
 } from "@/components/items/item-filter-sheet";
 import { ItemListItem } from "@/components/items/item-list-item";
 import { Header } from "@/components/layout/App-Header";
@@ -72,7 +73,10 @@ export default function ItemsLayout({
   const { data, isPending } = trpc.items.list.useQuery({
     search: searchQuery.trim() || undefined,
     type: itemFilters.type || undefined,
-    categoryId: itemFilters.categoryId ?? undefined,
+    categoryId:
+      itemFilters.categoryId === UNCATEGORIZED_CATEGORY_ID
+        ? null
+        : (itemFilters.categoryId ?? undefined),
     isActive:
       itemFilters.isActive === "all"
         ? undefined
@@ -194,6 +198,25 @@ export default function ItemsLayout({
                   }
                 >
                   {t("common.all")}
+                </button>
+                <button
+                  className={cn(
+                    "shrink-0 rounded-full px-3 py-1 text-xs font-medium transition-colors",
+                    itemFilters.categoryId === UNCATEGORIZED_CATEGORY_ID
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-muted text-muted-foreground hover:bg-muted/80",
+                  )}
+                  onClick={() =>
+                    setItemFilters((current) => ({
+                      ...current,
+                      categoryId:
+                        current.categoryId === UNCATEGORIZED_CATEGORY_ID
+                          ? null
+                          : UNCATEGORIZED_CATEGORY_ID,
+                    }))
+                  }
+                >
+                  {t("common.other")}
                 </button>
                 {categoryList?.map((cat) => (
                   <button

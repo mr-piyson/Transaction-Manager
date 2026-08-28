@@ -66,7 +66,7 @@ const updateItemSchema = itemBaseSchema.partial().extend({
 const listItemsSchema = z.object({
   search: z.string().optional(),
   type: z.enum(["PRODUCT", "SERVICE", "BUNDLE"]).optional(),
-  categoryId: z.string().optional(),
+  categoryId: z.string().nullable().optional(),
   isActive: z.boolean().optional(),
   supplierId: z.string().optional(),
   isSaleable: z.boolean().optional(),
@@ -105,7 +105,7 @@ export const itemsRouter = router({
       organizationId: orgId,
       deletedAt: null,
       ...(type ? { type } : {}),
-      ...(categoryId ? { categoryId } : {}),
+      ...(categoryId !== undefined ? { categoryId } : {}),
       ...(isActive !== undefined ? { isActive } : {}),
       ...(isSaleable !== undefined ? { isSaleable } : {}),
       ...(supplierId

@@ -3,6 +3,7 @@
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { Check, Package, SearchIcon } from "lucide-react";
 import Image from "next/image";
+import { useTranslations } from "next-intl";
 import * as React from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -33,7 +34,9 @@ export function POItemSelectDialog({
   existingItemIds,
   onSelect,
 }: POItemSelectDialogProps) {
+  const t = useTranslations();
   const [search, setSearch] = React.useState("");
+  const [categoryFilter, setCategoryFilter] = React.useState<string>("all");
   const [selected, setSelected] = React.useState<Set<string>>(new Set());
   const [scrollReady, setScrollReady] = React.useState(false);
   const scrollRef = React.useRef<HTMLDivElement>(null);
@@ -50,16 +53,34 @@ export function POItemSelectDialog({
     [existingItemIds],
   );
 
+  const availableCategories = React.useMemo(() => {
+    const map = new Map<string, any>();
+    for (const item of items as any[]) {
+      if (item.category && !map.has(item.category.id)) {
+        map.set(item.category.id, item.category);
+      }
+    }
+    return [...map.values()].sort((a: any, b: any) =>
+      a.name.localeCompare(b.name),
+    );
+  }, [items]);
+
   const filtered = React.useMemo(() => {
-    if (!search) return items;
+    let list = items;
+    if (categoryFilter === "others") {
+      list = list.filter((item: any) => !item.category);
+    } else if (categoryFilter !== "all") {
+      list = list.filter((item: any) => item.category?.id === categoryFilter);
+    }
+    if (!search) return list;
     const q = search.toLowerCase();
-    return items.filter(
+    return list.filter(
       (item: any) =>
         item.name?.toLowerCase().includes(q) ||
         item.sku?.toLowerCase().includes(q) ||
         item.barcode?.toLowerCase().includes(q),
     );
-  }, [items, search]);
+  }, [items, search, categoryFilter]);
 
   const virtualizer = useVirtualizer({
     count: filtered.length,
@@ -72,6 +93,7 @@ export function POItemSelectDialog({
     if (open) {
       setSelected(new Set());
       setSearch("");
+      setCategoryFilter("all");
       setScrollReady(false);
     }
   }, [open]);
@@ -137,6 +159,59 @@ export function POItemSelectDialog({
               Clear
             </button>
           )}
+        </div>
+
+        {/* Category filter */}
+        <div className="shrink-0 flex items-center gap-2 border-b px-4 pt-2 pb-3 sm:px-6 overflow-x-auto overscroll-x-contain [scrollbar-width:thin] [scrollbar-color:var(--color-border)_transparent] [&::-webkit-scrollbar]:h-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-border [&::-webkit-scrollbar-track]:bg-transparent">
+          <button
+            type="button"
+            className={cn(
+              "shrink-0 rounded-full px-3 py-1 text-xs font-medium transition-colors",
+              categoryFilter === "all"
+                ? "bg-primary text-primary-foreground"
+                : "bg-muted text-muted-foreground hover:bg-muted/80",
+            )}
+            onClick={() => setCategoryFilter("all")}
+          >
+            {t("common.all")}
+          </button>
+          <button
+            type="button"
+            className={cn(
+              "shrink-0 rounded-full px-3 py-1 text-xs font-medium transition-colors",
+              categoryFilter === "others"
+                ? "bg-primary text-primary-foreground"
+                : "bg-muted text-muted-foreground hover:bg-muted/80",
+            )}
+            onClick={() => setCategoryFilter("others")}
+          >
+            {t("common.other")}
+          </button>
+          {availableCategories.map((cat) => (
+            <button
+              key={cat.id}
+              type="button"
+              className={cn(
+                "shrink-0 rounded-full px-3 py-1 text-xs font-medium transition-colors whitespace-nowrap flex items-center gap-1.5",
+                categoryFilter === cat.id
+                  ? "bg-primary text-primary-foreground"
+                  : "bg-muted text-muted-foreground hover:bg-muted/80",
+              )}
+              onClick={() =>
+                setCategoryFilter((current) =>
+                  current === cat.id ? "all" : cat.id,
+                )
+              }
+            >
+              {cat.color && (
+                <span
+                  className="size-2 rounded-full shrink-0"
+                  style={{ backgroundColor: cat.color }}
+                />
+              )}
+              {cat.name}
+            </button>
+          ))}
         </div>
 
         {/* Virtualized list */}

@@ -29,6 +29,8 @@ export type ItemFilterValues = {
   lowStock: boolean;
 };
 
+export const UNCATEGORIZED_CATEGORY_ID = "__uncategorized__";
+
 export const DEFAULT_ITEM_FILTERS: ItemFilterValues = {
   type: "",
   categoryId: null,
@@ -139,6 +141,9 @@ export function ItemFilterSheet({
                     {category.name}
                   </SelectItem>
                 ))}
+                <SelectItem value={UNCATEGORIZED_CATEGORY_ID}>
+                  Others
+                </SelectItem>
               </SelectContent>
             </Select>
           </div>
