@@ -21,7 +21,7 @@ export const categoriesRouter = router({
     assertCan(ctx.ability, "category:read", "ItemCategory");
     return ctx.db.itemCategory.findMany({
       where: { organizationId: ctx.user.organizationId, deletedAt: null },
-      orderBy: { name: "asc" },
+      orderBy: { createdAt: "desc" },
     });
   }),
 

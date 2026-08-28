@@ -71,7 +71,9 @@ const listItemsSchema = z.object({
   supplierId: z.string().optional(),
   isSaleable: z.boolean().optional(),
   lowStock: z.boolean().optional(), // Filter items below reorderPoint
-  sortBy: z.enum(["name", "sku", "salesPrice", "createdAt"]).default("name"),
+  sortBy: z
+    .enum(["name", "sku", "salesPrice", "createdAt"])
+    .default("createdAt"),
   sortOrder: sortOrderSchema,
   withStock: z.boolean().default(false), // Include aggregated stock levels
 });

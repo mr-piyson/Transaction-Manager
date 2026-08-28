@@ -84,6 +84,6 @@ export const listInvoicesSchema = z.object({
   dueDateRange: dateRangeSchema,
   sortBy: z
     .enum(["date", "dueDate", "total", "serial", "createdAt"])
-    .default("date"),
+    .default("createdAt"),
   sortOrder: sortOrderSchema,
 });

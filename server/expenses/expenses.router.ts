@@ -61,7 +61,7 @@ export const expensesRouter = router({
 
       const expenses = await ctx.db.expense.findMany({
         where,
-        orderBy: { date: "desc" },
+        orderBy: { createdAt: "desc" },
         include: {
           category: { select: { id: true, name: true } },
           department: { select: { id: true, name: true } },
@@ -517,7 +517,7 @@ export const expensesRouter = router({
 
       return ctx.db.expenseCategory.findMany({
         where: { organizationId: ctx.user.organizationId, deletedAt: null },
-        orderBy: { name: "asc" },
+        orderBy: { createdAt: "desc" },
         include: {
           account: { select: { id: true, code: true, name: true } },
           _count: { select: { expenses: true } },

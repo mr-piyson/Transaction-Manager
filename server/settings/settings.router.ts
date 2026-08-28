@@ -76,7 +76,7 @@ export const settingsRouter = router({
       });
       return ctx.db.taxRate.findMany({
         where: { organizationId: ctx.user.organizationId },
-        orderBy: { name: "asc" },
+        orderBy: { createdAt: "desc" },
       });
     }),
 
@@ -207,7 +207,7 @@ export const settingsRouter = router({
       });
       return ctx.db.ledgerAccount.findMany({
         where: { organizationId: ctx.user.organizationId },
-        orderBy: { code: "asc" },
+        orderBy: { createdAt: "desc" },
         include: { children: { select: { id: true, code: true, name: true } } },
       });
     }),

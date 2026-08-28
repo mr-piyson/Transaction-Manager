@@ -21,7 +21,7 @@ export const unitsRouter = router({
     assertCan(ctx.ability, "unit:read", "Unit");
     return ctx.db.unit.findMany({
       where: { organizationId: ctx.user.organizationId, deletedAt: null },
-      orderBy: { name: "asc" },
+      orderBy: { createdAt: "desc" },
     });
   }),
 

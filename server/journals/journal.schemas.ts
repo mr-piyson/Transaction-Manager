@@ -39,6 +39,6 @@ export const listJournalEntriesSchema = z.object({
   accountId: z.string().optional(),
   dateFrom: z.coerce.date().optional(),
   dateTo: z.coerce.date().optional(),
-  sortBy: z.enum(["date", "entryNumber", "createdAt"]).default("date"),
+  sortBy: z.enum(["date", "entryNumber", "createdAt"]).default("createdAt"),
   sortOrder: z.enum(["asc", "desc"]).default("desc"),
 });

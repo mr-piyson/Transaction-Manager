@@ -124,7 +124,7 @@ export const stockReasonsRouter = router({
 
     return ctx.db.stockAdjustmentReason.findMany({
       where: { organizationId: orgId, deletedAt: null },
-      orderBy: [{ direction: "asc" }, { name: "asc" }],
+      orderBy: { createdAt: "desc" },
     });
   }),
 

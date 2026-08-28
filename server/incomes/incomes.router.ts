@@ -61,7 +61,7 @@ export const incomesRouter = router({
 
       const incomes = await ctx.db.income.findMany({
         where,
-        orderBy: { date: "desc" },
+        orderBy: { createdAt: "desc" },
         include: {
           customer: { select: { id: true, name: true } },
           invoice: { select: { id: true, serial: true } },

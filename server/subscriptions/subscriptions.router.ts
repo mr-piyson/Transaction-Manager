@@ -126,7 +126,7 @@ export const subscriptionsRouter = router({
 
       return ctx.db.subscription.findMany({
         where,
-        orderBy: { nextRenewalDate: "asc" },
+        orderBy: { createdAt: "desc" },
         include: {
           category: { select: { id: true, name: true } },
           department: { select: { id: true, name: true } },
@@ -178,7 +178,7 @@ export const subscriptionsRouter = router({
           deletedAt: null,
         },
         select: { id: true, name: true },
-        orderBy: { name: "asc" },
+        orderBy: { createdAt: "desc" },
       });
     }),
   },

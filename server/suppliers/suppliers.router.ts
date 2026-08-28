@@ -35,7 +35,7 @@ const listSuppliersSchema = z.object({
   search: z.string().optional(),
   isActive: z.boolean().optional(),
   includeSystem: z.boolean().default(false),
-  sortBy: z.enum(["name", "createdAt", "updatedAt"]).default("name"),
+  sortBy: z.enum(["name", "createdAt", "updatedAt"]).default("createdAt"),
   sortOrder: sortOrderSchema,
 });
 

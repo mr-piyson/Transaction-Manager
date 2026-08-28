@@ -17,8 +17,8 @@ const listStockSchema = z.object({
   categoryId: z.string().optional(),
   lowStock: z.boolean().optional(),
   sortBy: z
-    .enum(["itemName", "warehouseName", "quantity", "updatedAt"])
-    .default("itemName"),
+    .enum(["itemName", "warehouseName", "quantity", "createdAt", "updatedAt"])
+    .default("createdAt"),
   sortOrder: sortOrderSchema,
 });
 

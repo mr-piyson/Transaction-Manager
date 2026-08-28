@@ -58,7 +58,7 @@ const updateCustomerSchema = customerBaseSchema.partial().extend({
 const listCustomersSchema = z.object({
   search: z.string().optional(),
   isActive: z.boolean().optional(),
-  sortBy: z.enum(["name", "createdAt", "updatedAt"]).default("name"),
+  sortBy: z.enum(["name", "createdAt", "updatedAt"]).default("createdAt"),
   sortOrder: sortOrderSchema,
 });
 

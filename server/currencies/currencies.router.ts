@@ -6,13 +6,13 @@ export const currenciesRouter = router({
   list: orgProcedure.query(async () => {
     const currencies = await db.currency.findMany({
       where: { isActive: true },
-      orderBy: { code: "asc" },
+      orderBy: { createdAt: "desc" },
     });
     return currencies;
   }),
 
   listAll: orgProcedure.query(async () => {
-    return db.currency.findMany({ orderBy: { code: "asc" } });
+    return db.currency.findMany({ orderBy: { createdAt: "desc" } });
   }),
 
   get: orgProcedure

@@ -23,7 +23,7 @@ const updateWarehouseSchema = warehouseBaseSchema.partial().extend({
 const listWarehousesSchema = z.object({
   search: z.string().optional(),
   isActive: z.boolean().optional(),
-  sortBy: z.enum(["name", "createdAt", "updatedAt"]).default("name"),
+  sortBy: z.enum(["name", "createdAt", "updatedAt"]).default("createdAt"),
   sortOrder: sortOrderSchema,
 });
 

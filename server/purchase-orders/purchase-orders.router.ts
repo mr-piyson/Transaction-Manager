@@ -76,7 +76,7 @@ const listPurchaseOrdersSchema = z.object({
   supplierId: z.string().optional(),
   sortBy: z
     .enum(["date", "serial", "total", "createdAt", "expectedDate"])
-    .default("date"),
+    .default("createdAt"),
   sortOrder: sortOrderSchema,
 });
 

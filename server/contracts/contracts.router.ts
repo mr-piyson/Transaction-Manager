@@ -35,7 +35,7 @@ const listContractsSchema = z.object({
   expiringSoon: z.boolean().optional(),
   sortBy: z
     .enum(["title", "startDate", "endDate", "contractValue", "createdAt"])
-    .default("endDate"),
+    .default("createdAt"),
   sortOrder: sortOrderSchema,
 });
 
