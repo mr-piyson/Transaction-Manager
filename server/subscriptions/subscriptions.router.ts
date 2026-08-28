@@ -8,6 +8,10 @@ import { NOTIFICATION_TYPES } from "../notifications/notifications.shared";
 import { writeAuditLog } from "../shared/audit.service";
 import { restartSubscriptionRenewals } from "../shared/cron";
 import {
+  getHardDeleteInfo,
+  hardDeleteSubscriptionTree,
+} from "./hard-delete.service";
+import {
   addBillingCycle,
   RENEWAL_CHECK_CRON_EXPRESSIONS,
   SUBSCRIPTION_BILLING_CYCLES,
@@ -446,6 +450,60 @@ export const subscriptionsRouter = router({
             ipAddress: ctx.ipAddress,
           },
           tx,
+        );
+      });
+
+      return { success: true };
+    }),
+
+  // ── HARD DELETE (SUPER_ADMIN only) ────────────────────────────────────────
+  // Permanently removes the subscription AND all related records (renewal
+  // expenses, their GL journal entries, audit logs, tags, notifications,
+  // attachments). Only users with platformRole === 'SUPER_ADMIN' may call.
+  hardDeleteInfo: orgProcedure
+    .input(z.object({ id: z.string() }))
+    .query(async ({ ctx, input }) => {
+      if (ctx.user.platformRole !== "SUPER_ADMIN") {
+        throw new ForbiddenError(
+          "hard delete",
+          "this subscription. This action is restricted to platform super admins",
+        );
+      }
+
+      const orgId = ctx.user.organizationId;
+      const exists = await ctx.db.subscription.findFirst({
+        where: { id: input.id, organizationId: orgId },
+        select: { id: true },
+      });
+      if (!exists) throw new NotFoundError("Subscription", input.id);
+
+      return getHardDeleteInfo(ctx.db, orgId, input.id);
+    }),
+
+  hardDelete: orgProcedure
+    .input(z.object({ id: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      if (ctx.user.platformRole !== "SUPER_ADMIN") {
+        throw new ForbiddenError(
+          "hard delete",
+          "this subscription. This action is restricted to platform super admins",
+        );
+      }
+
+      const orgId = ctx.user.organizationId;
+      const exists = await ctx.db.subscription.findFirst({
+        where: { id: input.id, organizationId: orgId },
+        select: { id: true },
+      });
+      if (!exists) throw new NotFoundError("Subscription", input.id);
+
+      await ctx.db.$transaction(async (tx) => {
+        await hardDeleteSubscriptionTree(
+          tx,
+          orgId,
+          input.id,
+          ctx.user.id,
+          ctx.ipAddress,
         );
       });
 

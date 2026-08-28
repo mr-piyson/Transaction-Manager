@@ -192,7 +192,7 @@ export default function SubscriptionDetailPage() {
   const handleHardDelete = () => {
     openHardDelete(
       {
-        kind: "subscription" as any,
+        kind: "subscription",
         id: subscription.id,
         title: subscription.name,
       },

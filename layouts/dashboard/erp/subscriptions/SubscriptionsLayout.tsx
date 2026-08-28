@@ -88,7 +88,7 @@ export default function SubscriptionsLayout({
                 destructive: true,
                 onClick: () =>
                   openHardDelete({
-                    kind: "subscription" as any,
+                    kind: "subscription",
                     id: item.id,
                     title: item.name,
                   }),

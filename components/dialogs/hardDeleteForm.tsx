@@ -18,6 +18,7 @@ import {
   Package,
   Paperclip,
   Receipt,
+  RefreshCw,
   RotateCcw,
   ShieldAlert,
   ShoppingCart,
@@ -56,7 +57,8 @@ export type HardDeleteKind =
   | "po"
   | "contract"
   | "expense"
-  | "income";
+  | "income"
+  | "subscription";
 
 export interface HardDeleteTarget {
   kind: HardDeleteKind;
@@ -231,6 +233,16 @@ const INCOME_ROWS: RelatedRow[] = [
   ...POLYMORPHIC_ROWS,
 ];
 
+const SUBSCRIPTION_ROWS: RelatedRow[] = [
+  { key: "renewals", icon: RefreshCw, labelKey: "hardDelete.renewals" },
+  {
+    key: "journalEntries",
+    icon: Landmark,
+    labelKey: "hardDelete.journalEntries",
+  },
+  ...POLYMORPHIC_ROWS,
+];
+
 // ---------------------------------------------------------------------------
 // tRPC hook registry (config-driven)
 // ---------------------------------------------------------------------------
@@ -266,7 +278,8 @@ type HardDeleteTitleKey =
   | "hardDelete.titlePo"
   | "hardDelete.titleContract"
   | "hardDelete.titleExpense"
-  | "hardDelete.titleIncome";
+  | "hardDelete.titleIncome"
+  | "hardDelete.titleSubscription";
 
 interface KindConfig {
   rows: RelatedRow[];
@@ -347,6 +360,14 @@ const KIND_CONFIG: Record<HardDeleteKind, KindConfig> = {
       utils.incomes.byId.invalidate({ id });
     },
   },
+  subscription: {
+    rows: SUBSCRIPTION_ROWS,
+    titleKey: "hardDelete.titleSubscription",
+    invalidate: (utils, id) => {
+      utils.subscriptions.list.invalidate();
+      utils.subscriptions.byId.invalidate({ id });
+    },
+  },
 };
 
 const KIND_HOOKS: Record<
@@ -396,6 +417,12 @@ const KIND_HOOKS: Record<
   income: {
     useInfo: trpc.incomes.hardDeleteInfo.useQuery as unknown as InfoHookLike,
     useDelete: trpc.incomes.hardDelete.useMutation as unknown as DeleteHookLike,
+  },
+  subscription: {
+    useInfo: trpc.subscriptions.hardDeleteInfo
+      .useQuery as unknown as InfoHookLike,
+    useDelete: trpc.subscriptions.hardDelete
+      .useMutation as unknown as DeleteHookLike,
   },
 };
 
@@ -554,9 +581,8 @@ export function HardDeleteDialog({
   const t = useTranslations();
   const [isPending, setIsPending] = React.useState(false);
 
-  const titleKey = target
-    ? KIND_CONFIG[target.kind].titleKey
-    : "hardDelete.title";
+  const config = target ? KIND_CONFIG[target.kind] : undefined;
+  const titleKey = config?.titleKey ?? "hardDelete.title";
 
   return (
     <Dialog open={open} onOpenChange={(v) => !isPending && onOpenChange(v)}>
@@ -581,7 +607,7 @@ export function HardDeleteDialog({
 
         <Separator />
 
-        {target && (
+        {target && config && (
           <HardDeleteBody
             target={target}
             onPendingChange={setIsPending}
