@@ -1,10 +1,16 @@
 "use client";
 
 import { Filter, RotateCcw } from "lucide-react";
-import { useEffect, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Drawer,
+  DrawerContent,
+  DrawerDescription,
+  DrawerHeader,
+  DrawerTitle,
+} from "@/components/ui/drawer";
 import {
   Select,
   SelectContent,
@@ -12,14 +18,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetFooter,
-  SheetHeader,
-  SheetTitle,
-} from "@/components/ui/sheet";
 
 export type ItemFilterValues = {
   type: "" | "PRODUCT" | "SERVICE" | "BUNDLE";
@@ -54,39 +52,33 @@ export function ItemFilterSheet({
   onOpenChange,
   onApply,
 }: ItemFilterSheetProps) {
-  const [draft, setDraft] = useState(filters);
-
-  useEffect(() => {
-    if (open) setDraft(filters);
-  }, [open, filters]);
-
-  const activeCount = [
-    draft.type,
-    draft.categoryId,
-    draft.isActive !== "all" ? draft.isActive : null,
-    draft.isSaleable,
-    draft.lowStock,
-  ].filter(Boolean).length;
-
-  const clear = () => setDraft(DEFAULT_ITEM_FILTERS);
-  const apply = () => {
-    onApply(draft);
-    onOpenChange(false);
+  const updateFilters = (patch: Partial<ItemFilterValues>) => {
+    onApply({ ...filters, ...patch });
   };
 
+  const activeCount = [
+    filters.type,
+    filters.categoryId,
+    filters.isActive !== "all" ? filters.isActive : null,
+    filters.isSaleable,
+    filters.lowStock,
+  ].filter(Boolean).length;
+
+  const reset = () => onApply(DEFAULT_ITEM_FILTERS);
+
   return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="right" className="w-full sm:max-w-md">
-        <SheetHeader>
+    <Drawer open={open} onOpenChange={onOpenChange} direction="right">
+      <DrawerContent className="w-[300px] sm:w-[340px]">
+        <DrawerHeader>
           <div className="flex items-center gap-2">
             <Filter className="size-4 text-primary" />
-            <SheetTitle>Advanced filters</SheetTitle>
+            <DrawerTitle>Advanced filters</DrawerTitle>
             {activeCount > 0 && <Badge>{activeCount}</Badge>}
           </div>
-          <SheetDescription>
+          <DrawerDescription>
             Refine the items shown in the list.
-          </SheetDescription>
-        </SheetHeader>
+          </DrawerDescription>
+        </DrawerHeader>
 
         <div className="flex-1 space-y-5 overflow-y-auto px-4">
           <div className="space-y-2">
@@ -94,13 +86,12 @@ export function ItemFilterSheet({
               Item type
             </label>
             <Select
-              value={draft.type || "ALL"}
+              value={filters.type || "ALL"}
               onValueChange={(value) =>
-                setDraft((current) => ({
-                  ...current,
+                updateFilters({
                   type:
                     value === "ALL" ? "" : (value as ItemFilterValues["type"]),
-                }))
+                })
               }
             >
               <SelectTrigger id="item-filter-type" className="w-full">
@@ -123,12 +114,9 @@ export function ItemFilterSheet({
               Category
             </label>
             <Select
-              value={draft.categoryId ?? "ALL"}
+              value={filters.categoryId ?? "ALL"}
               onValueChange={(value) =>
-                setDraft((current) => ({
-                  ...current,
-                  categoryId: value === "ALL" ? null : value,
-                }))
+                updateFilters({ categoryId: value === "ALL" ? null : value })
               }
             >
               <SelectTrigger id="item-filter-category" className="w-full">
@@ -156,12 +144,9 @@ export function ItemFilterSheet({
             >
               <Checkbox
                 id="item-filter-active"
-                checked={draft.isActive === "active"}
+                checked={filters.isActive === "active"}
                 onCheckedChange={(checked) =>
-                  setDraft((current) => ({
-                    ...current,
-                    isActive: checked ? "active" : "all",
-                  }))
+                  updateFilters({ isActive: checked ? "active" : "all" })
                 }
               />
               Active items only
@@ -172,12 +157,9 @@ export function ItemFilterSheet({
             >
               <Checkbox
                 id="item-filter-inactive"
-                checked={draft.isActive === "inactive"}
+                checked={filters.isActive === "inactive"}
                 onCheckedChange={(checked) =>
-                  setDraft((current) => ({
-                    ...current,
-                    isActive: checked ? "inactive" : "all",
-                  }))
+                  updateFilters({ isActive: checked ? "inactive" : "all" })
                 }
               />
               Inactive items only
@@ -188,12 +170,9 @@ export function ItemFilterSheet({
             >
               <Checkbox
                 id="item-filter-saleable"
-                checked={draft.isSaleable}
+                checked={filters.isSaleable}
                 onCheckedChange={(checked) =>
-                  setDraft((current) => ({
-                    ...current,
-                    isSaleable: checked === true,
-                  }))
+                  updateFilters({ isSaleable: checked === true })
                 }
               />
               Saleable items only
@@ -204,12 +183,9 @@ export function ItemFilterSheet({
             >
               <Checkbox
                 id="item-filter-low-stock"
-                checked={draft.lowStock}
+                checked={filters.lowStock}
                 onCheckedChange={(checked) =>
-                  setDraft((current) => ({
-                    ...current,
-                    lowStock: checked === true,
-                  }))
+                  updateFilters({ lowStock: checked === true })
                 }
               />
               Low stock only
@@ -217,18 +193,16 @@ export function ItemFilterSheet({
           </div>
         </div>
 
-        <SheetFooter>
-          <div className="flex gap-2">
-            <Button variant="outline" className="flex-1" onClick={clear}>
-              <RotateCcw className="size-4" />
-              Clear
-            </Button>
-            <Button className="flex-1" onClick={apply}>
-              Apply filters
-            </Button>
-          </div>
-        </SheetFooter>
-      </SheetContent>
-    </Sheet>
+        <Button
+          variant="ghost"
+          className="mx-4 mb-4"
+          onClick={reset}
+          disabled={activeCount === 0}
+        >
+          <RotateCcw className="size-4" />
+          Clear
+        </Button>
+      </DrawerContent>
+    </Drawer>
   );
 }

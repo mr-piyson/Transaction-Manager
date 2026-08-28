@@ -1,6 +1,6 @@
 # TODOs : 
 
-- [ ]  replace  items filter sheet with drawer and add the make the filter applying automiticly
+- [ ]  replace items filter sheet with drawer and make the filter applying automatically no confirm needed keep reset 
 - [ ]  add horizantel scroll bar to the categories list in select items dialog 
 - [ ]  fix line edit form in invoice from where it is overflow of the dialog layout 
 - [ ] in purchase order form the note should be below the summary card
