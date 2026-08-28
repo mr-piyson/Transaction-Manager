@@ -10,6 +10,5 @@
 - [ ]  add horizantel scroll bar to the categories list in select items dialog 
 - [ ]  fix line edit form in invoice from where it is overflow of the dialog layout 
 - [ ] in purchase order form the note should be below the summary card
- 
 
--
+- [ ] fix permission and roles of users not working.

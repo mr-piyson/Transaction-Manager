@@ -625,6 +625,8 @@
     "website": "Website",
     "notes": "Notes",
     "selectDescription": "Select a customer from the list or create a new one.",
+    "firstDescription": "You don't have any customers yet. Create your first one to start tracking sales, payments, and balances.",
+    "firstCustomer": "Create your first customer",
     "noCustomers": "No customers found",
     "customerCreated": "Customer created successfully",
     "customerUpdated": "Customer updated successfully",

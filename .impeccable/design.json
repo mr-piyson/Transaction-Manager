@@ -1,0 +1,322 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-08-28T09:21:00.000Z",
+  "title": "Design System: Transaction Manager",
+  "extensions": {
+    "colorMeta": {
+      "primary": {
+        "role": "primary",
+        "displayName": "Midnight Indigo",
+        "canonical": "#2c2742",
+        "tonalRamp": [
+          "oklch(0.20 0.03 302)",
+          "oklch(0.28 0.05 300)",
+          "oklch(0.37 0.07 298)",
+          "oklch(0.46 0.09 296)",
+          "oklch(0.56 0.10 294)",
+          "oklch(0.66 0.08 292)",
+          "oklch(0.78 0.05 291)",
+          "oklch(0.93 0.02 290)"
+        ]
+      },
+      "info": {
+        "role": "tertiary",
+        "displayName": "Signal Indigo",
+        "canonical": "#6366f1",
+        "tonalRamp": [
+          "oklch(0.20 0.12 288)",
+          "oklch(0.30 0.13 286)",
+          "oklch(0.42 0.14 283)",
+          "oklch(0.53 0.15 281)",
+          "oklch(0.63 0.15 278)",
+          "oklch(0.72 0.10 279)",
+          "oklch(0.82 0.07 280)",
+          "oklch(0.94 0.03 281)"
+        ]
+      },
+      "default": {
+        "role": "neutral",
+        "displayName": "Ice Blue",
+        "canonical": "#c3ebfe",
+        "tonalRamp": [
+          "oklch(0.20 0.06 235)",
+          "oklch(0.30 0.08 230)",
+          "oklch(0.41 0.10 228)",
+          "oklch(0.52 0.10 226)",
+          "oklch(0.63 0.09 225)",
+          "oklch(0.74 0.06 225)",
+          "oklch(0.85 0.04 224)",
+          "oklch(0.95 0.02 222)"
+        ]
+      },
+      "success": {
+        "role": "neutral",
+        "displayName": "Success Green",
+        "canonical": "#1d8645",
+        "tonalRamp": [
+          "oklch(0.20 0.08 155)",
+          "oklch(0.30 0.09 155)",
+          "oklch(0.41 0.10 154)",
+          "oklch(0.52 0.10 153)",
+          "oklch(0.63 0.09 153)",
+          "oklch(0.74 0.06 153)",
+          "oklch(0.85 0.04 152)",
+          "oklch(0.95 0.02 152)"
+        ]
+      },
+      "destructive": {
+        "role": "neutral",
+        "displayName": "Destructive Red",
+        "canonical": "#a82b2b",
+        "tonalRamp": [
+          "oklch(0.20 0.09 25)",
+          "oklch(0.30 0.11 25)",
+          "oklch(0.41 0.13 25)",
+          "oklch(0.52 0.15 25)",
+          "oklch(0.63 0.14 25)",
+          "oklch(0.74 0.10 25)",
+          "oklch(0.85 0.05 25)",
+          "oklch(0.95 0.02 25)"
+        ]
+      },
+      "warning": {
+        "role": "neutral",
+        "displayName": "Warning Amber",
+        "canonical": "#b56927",
+        "tonalRamp": [
+          "oklch(0.20 0.05 65)",
+          "oklch(0.30 0.06 65)",
+          "oklch(0.41 0.08 65)",
+          "oklch(0.52 0.10 65)",
+          "oklch(0.63 0.11 65)",
+          "oklch(0.74 0.09 65)",
+          "oklch(0.85 0.05 65)",
+          "oklch(0.95 0.03 65)"
+        ]
+      },
+      "background": {
+        "role": "neutral",
+        "displayName": "Paper",
+        "canonical": "#ffffff",
+        "tonalRamp": [
+          "oklch(0.24 0.00 0)",
+          "oklch(0.34 0.00 0)",
+          "oklch(0.45 0.00 0)",
+          "oklch(0.56 0.00 0)",
+          "oklch(0.67 0.00 0)",
+          "oklch(0.78 0.00 0)",
+          "oklch(0.89 0.00 0)",
+          "oklch(0.97 0.00 0)"
+        ]
+      },
+      "card": {
+        "role": "neutral",
+        "displayName": "Pale Card",
+        "canonical": "#f5f5f5",
+        "tonalRamp": [
+          "oklch(0.24 0.00 0)",
+          "oklch(0.34 0.00 0)",
+          "oklch(0.45 0.00 0)",
+          "oklch(0.56 0.00 0)",
+          "oklch(0.67 0.00 0)",
+          "oklch(0.78 0.00 0)",
+          "oklch(0.89 0.00 0)",
+          "oklch(0.97 0.00 0)"
+        ]
+      },
+      "sidebar": {
+        "role": "neutral",
+        "displayName": "Sidebar Surface",
+        "canonical": "#f5f5f5",
+        "tonalRamp": [
+          "oklch(0.25 0.01 292)",
+          "oklch(0.35 0.01 292)",
+          "oklch(0.46 0.01 292)",
+          "oklch(0.57 0.01 292)",
+          "oklch(0.68 0.01 292)",
+          "oklch(0.78 0.01 292)",
+          "oklch(0.89 0.01 292)",
+          "oklch(0.97 0.01 292)"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Display",
+        "purpose": "Landing hero headlines only; tightened tracking for authority."
+      },
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "Page and section titles inside the app."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Card titles, entity names, table emphasis."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Default operating text, data, descriptions."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Buttons, badges, form labels, overlines."
+      }
+    },
+    "shadows": [
+      {
+        "name": "input-recess",
+        "value": "0 1px 2px 0 rgba(0,0,0,0.05)",
+        "purpose": "Subtle inset feel on inputs; the recessed field quality."
+      },
+      {
+        "name": "card-lift",
+        "value": "0 1px 3px 0 rgba(0,0,0,0.1), 0 1px 2px -1px rgba(0,0,0,0.1)",
+        "purpose": "Resting cards and floating sidebar panels."
+      },
+      {
+        "name": "floating-panel",
+        "value": "0 1px 3px 0 rgba(0,0,0,0.1) with 1px sidebar-border ring",
+        "purpose": "Drawers, sheets, and dialogs which may add a 1px ring plus a modest shadow."
+      },
+      {
+        "name": "sidebar-active-ring",
+        "value": "0 0 0 1px var(--sidebar-border)",
+        "purpose": "Quiet active-item dock in the sidebar."
+      }
+    ],
+    "motion": [
+      {
+        "name": "ease-standard",
+        "value": "cubic-bezier(0.4, 0, 0.2, 1)",
+        "purpose": "Default easing for state transitions and accordion."
+      },
+      {
+        "name": "duration-fast",
+        "value": "150ms",
+        "purpose": "Hover/focus state transitions on controls."
+      },
+      {
+        "name": "duration-standard",
+        "value": "200ms",
+        "purpose": "Accordion and menu reveal transitions."
+      }
+    ],
+    "breakpoints": [
+      { "name": "sm", "value": "640px" },
+      { "name": "md", "value": "768px" },
+      { "name": "lg", "value": "1024px" },
+      { "name": "xl", "value": "1280px" },
+      { "name": "2xl", "value": "1536px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "The single brand action; Midnight Indigo fill for the primary call to action.",
+      "html": "<button class=\"ds-btn-primary\">Save</button>",
+      "css": ".ds-btn-primary { display: inline-flex; align-items: center; justify-content: center; gap: 8px; height: 36px; padding: 0 16px; background: #2c2742; color: #fbfbfb; font-family: 'Geist', ui-sans-serif, system-ui, sans-serif; font-size: 14px; font-weight: 500; border: none; border-radius: 8px; cursor: pointer; white-space: nowrap; transition: background 150ms cubic-bezier(0.4,0,0.2,1), box-shadow 150ms; } .ds-btn-primary:hover { background: rgba(44,39,66,0.9); } .ds-btn-primary:focus-visible { outline: none; border-color: #aba8c1; box-shadow: 0 0 0 3px rgba(171,168,193,0.5); }"
+    },
+    {
+      "name": "Outline Button",
+      "kind": "button",
+      "refersTo": "button-outline",
+      "description": "Secondary paper action with a hairline border; fills with the accent on hover.",
+      "html": "<button class=\"ds-btn-outline\">Cancel</button>",
+      "css": ".ds-btn-outline { display: inline-flex; align-items: center; justify-content: center; height: 36px; padding: 0 16px; background: #ffffff; color: #17141d; font-family: 'Geist', ui-sans-serif, system-ui, sans-serif; font-size: 14px; font-weight: 500; border: 1px solid #cccccc; border-radius: 8px; cursor: pointer; white-space: nowrap; transition: background 150ms, color 150ms; } .ds-btn-outline:hover { background: #eeeeee; color: #2c2742; } .ds-btn-outline:focus-visible { outline: none; border-color: #aba8c1; box-shadow: 0 0 0 3px rgba(171,168,193,0.5); }"
+    },
+    {
+      "name": "Text Input",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "Recessed field with a hairline border and soft ring halo on focus.",
+      "html": "<label class=\"ds-field\"><span class=\"ds-label\">Customer</span><input class=\"ds-input\" placeholder=\"Enter name\" /></label>",
+      "css": ".ds-field { display: flex; flex-direction: column; gap: 6px; font-family: 'Geist', ui-sans-serif, system-ui, sans-serif; } .ds-label { font-size: 12px; font-weight: 500; color: #606060; } .ds-input { height: 36px; width: 100%; padding: 0 12px; background: #ffffff; color: #17141d; font-size: 14px; border: 1px solid #d5d5d5; border-radius: 8px; outline: none; box-shadow: 0 1px 2px 0 rgba(0,0,0,0.05); transition: border-color 150ms, box-shadow 150ms; } .ds-input::placeholder { color: #606060; } .ds-input:focus-visible { border-color: #aba8c1; box-shadow: 0 0 0 3px rgba(171,168,193,0.5); }"
+    },
+    {
+      "name": "Card",
+      "kind": "card",
+      "refersTo": "card",
+      "description": "The control-deck container: pale surface, hairline border, subtle lift.",
+      "html": "<div class=\"ds-card\"><div class=\"ds-card-title\">Receivables</div><div class=\"ds-card-body\">A calm, elevated panel for figures.</div></div>",
+      "css": ".ds-card { display: flex; flex-direction: column; gap: 16px; padding: 24px; background: #f5f5f5; color: #17141d; font-family: 'Geist', ui-sans-serif, system-ui, sans-serif; border: 1px solid #cccccc; border-radius: 10px; box-shadow: 0 1px 3px 0 rgba(0,0,0,0.1), 0 1px 2px -1px rgba(0,0,0,0.1); } .ds-card-title { font-size: 18px; font-weight: 600; line-height: 1.25; } .ds-card-body { font-size: 14px; color: #606060; line-height: 1.5; }"
+    },
+    {
+      "name": "Badge",
+      "kind": "chip",
+      "refersTo": "badge",
+      "description": "Full-round status pill; Midnight Indigo fill by default, semantic colors for status.",
+      "html": "<span class=\"ds-badge\">Paid</span>",
+      "css": ".ds-badge { display: inline-flex; align-items: center; justify-content: center; gap: 4px; padding: 2px 12px; background: #2c2742; color: #fbfbfb; font-family: 'Geist', ui-sans-serif, system-ui, sans-serif; font-size: 12px; font-weight: 500; border: 1px solid transparent; border-radius: 9999px; white-space: nowrap; }"
+    },
+    {
+      "name": "Sidebar Item",
+      "kind": "nav",
+      "refersTo": "sidebar-item",
+      "description": "Active navigation item: paper dock with a quiet 1px ring, not a filled slab.",
+      "html": "<nav class=\"ds-nav\"><a class=\"ds-nav-item ds-active\" href=\"#\"><svg width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><rect x=\"3\" y=\"3\" width=\"18\" height=\"18\" rx=\"2\"/><path d=\"M3 9h18\"/></svg><span>Dashboard</span></a><a class=\"ds-nav-item\" href=\"#\"><svg width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"M4 19V5a2 2 0 0 1 2-2h9l5 5v11\"/></svg><span>Invoices</span></a></nav>",
+      "css": ".ds-nav { display: flex; flex-direction: column; gap: 2px; padding: 8px; background: #f5f5f5; font-family: 'Geist', ui-sans-serif, system-ui, sans-serif; } .ds-nav-item { display: flex; align-items: center; gap: 10px; height: 32px; padding: 0 12px; color: #17141d; font-size: 14px; font-weight: 500; text-decoration: none; border-radius: 8px; transition: background 150ms; } .ds-nav-item:hover { background: #eeeeee; } .ds-nav-item.ds-active { background: #ffffff; color: #2c2742; box-shadow: 0 0 0 1px #e9e8f0; } .ds-nav-item:focus-visible { outline: none; box-shadow: 0 0 0 3px rgba(171,168,193,0.5); }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Composed Control Deck",
+    "overview": "Transaction Manager is built to feel like the instrument panel a small-business owner trusts at the end of the day: calm, orderly, and quietly authoritative. Every surface is a dense but legible control deck — ruled tables, balanced columns, precise figures — where money and stock are brought under control without drama. The personality is competent rather than flashy: a bookkeeper's exactness crossed with a modern operations console. The system commits to a calm, confident, high-density workspace. Restraint is the default: neutral ground, hairline borders, and color used surgically. The brand anchor is the Midnight Indigo accent, which deepens from violet-indigo in light mode to a deep ink blue in dark mode; it appears on primary actions and active states, and nowhere casually. Companions — Signal Indigo (info), Ice Blue (the default highlight family), green/amber/red for financial health — carry meaning without shouting.",
+    "keyCharacteristics": [
+      "Dense but never cramped — high information per screen, generous row rhythm.",
+      "Neutral, hairline-bordered surfaces; vertical depth reads through structure, not lift.",
+      "One brand accent (Midnight Indigo) used for actions and active states only.",
+      "Refined, quiet controls — soft radii, subtle borders, gentle hovers.",
+      "Full LTR/RTL fidelity as a first-class requirement.",
+      "Semantic status colors (success/warning/destructive/info) for financial and operational health."
+    ],
+    "rules": [
+      {
+        "name": "The Single Anchor Rule",
+        "body": "Midnight Indigo is reserved for primary actions and active states. It appears on any given screen only where the user must act or currently is. Neutral surfaces carry the rest; over-applying the anchor dilutes the deck's calm authority.",
+        "section": "colors"
+      },
+      {
+        "name": "The Calm Ground Rule",
+        "body": "Page backgrounds stay near-neutral white or charcoal. Colored panes, gradients, and glows are reserved for the landing surface and thin radial accents — never for the operating canvas.",
+        "section": "colors"
+      },
+      {
+        "name": "The Mono Figure Rule",
+        "body": "Codes, document references, SKUs, and numeric identifiers render in Geist Mono with tabular figures so columns align and IDs scan fast. Numbers in the ledger read as machine-clear.",
+        "section": "typography"
+      },
+      {
+        "name": "The Weight-Not-Size Rule",
+        "body": "Hierarchy is communicated primarily by weight (600/700 for emphasis) and only secondarily by size. The deck stays dense by resisting creeping font sizes.",
+        "section": "typography"
+      },
+      {
+        "name": "The Quiet-Lift Rule",
+        "body": "Shadows are never ambient at rest beyond shadow-sm. Deeper elevation is reserved for floating/overlay planes (drawers, sheets, dialogs), which may add a 1px ring plus a modest shadow. Surfaces at rest stay flat; hover does not inflate shadows.",
+        "section": "elevation"
+      },
+      {
+        "name": "The Soft-Corner Control Rule",
+        "body": "Interactive controls are rounded but never pill-shaped (except badges/chips). Radius gestures at friendliness while the rectangular echo keeps the deck feeling operational.",
+        "section": "shapes"
+      }
+    ],
+    "dos": [
+      "Do apply Midnight Indigo only to primary actions and active states; let neutral surfaces dominate (The Single Anchor Rule).",
+      "Do keep controls at the 8px radius and cards at 10px; consistency of the corner language is the deck's composure.",
+      "Do render codes, SKUs, and numeric identifiers in Geist Mono so columns align and scan fast.",
+      "Do support RTL/LTR symmetry on every surface — mirrored margins, text alignment, and icon rotation are correctness, not decoration.",
+      "Do use hover:bg-muted/50 and hairline row separators in tables to keep density readable.",
+      "Do respect the 3px ring/50 focus halo — the calm, visible focus state is an accessibility commitment."
+    ],
+    "donts": [
+      "Don't flood a screen with the primary accent; it is the anchor, not wallpaper (The Single Anchor Rule).",
+      "Don't introduce cut-corner, squircle, or heavily asymmetric radii — stick to the measured sm/md/lg/xl + pill scale.",
+      "Don't use ambient shadows beyond shadow-sm at rest; elevate only floating/overlay planes (The Quiet-Lift Rule).",
+      "Don't rely on size to communicate hierarchy; use weight first and keep the density high (The Weight-Not-Size Rule).",
+      "Don't break LTR/RTL symmetry — an element pinned for one direction without its mirror is a bug.",
+      "Don't invent new status colors; financial health always reads through the committed success/warning/destructive/info set."
+    ]
+  }
+}
