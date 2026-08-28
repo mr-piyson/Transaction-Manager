@@ -46,12 +46,3 @@ Contributions are welcome! If you have any ideas, suggestions, or bug reports, p
 
 This project is licensed under the [MIT License](LICENSE).
 
-## AI Agent Instructions
-
-This project has a knowledge graph at `graphify-out/` with god nodes, community structure, and cross-file relationships.
-
-When the user types `/graphify`, use the installed graphify skill or instructions before doing anything else.
-
-Rules:
-- For codebase questions, first run `graphify query "<question>"` when `graphify-out/graph.json` exists. Use `graphify path "<A>" "<B>"` for relationships and `graphify explain "<concept>"` for focused concepts.
-- After modifying code, run `graphify update .` to keep the graph current (AST-only, no API cost).
