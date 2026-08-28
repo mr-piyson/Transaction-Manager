@@ -81,7 +81,10 @@ export function SupplierSelectDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-lg gap-0 p-0 h-[100dvh] sm:h-auto sm:max-h-[85vh] max-w-full sm:rounded-lg flex flex-col">
+      <DialogContent
+        data-picker-dialog
+        className="sm:max-w-lg gap-0 p-0 h-[100dvh] sm:h-auto sm:max-h-[85vh] max-w-full sm:rounded-lg flex flex-col"
+      >
         <DialogHeader className="shrink-0 px-4 pt-4 pb-3 sm:px-6 sm:pt-6 sm:pb-4">
           <DialogTitle>Select Supplier</DialogTitle>
           <DialogDescription>

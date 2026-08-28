@@ -243,7 +243,18 @@ export function POFormDialog({
   return (
     <>
       <Dialog open={open} onOpenChange={(v) => !isPending && onOpenChange(v)}>
-        <DialogContent className="sm:max-w-180 gap-0 p-0 h-[100dvh] sm:h-auto sm:max-h-[85vh] max-w-full sm:rounded-lg flex flex-col">
+        <DialogContent
+          className="sm:max-w-180 gap-0 p-0 h-[100dvh] sm:h-auto sm:max-h-[85vh] max-w-full sm:rounded-lg flex flex-col"
+          onInteractOutside={(event) => {
+            const target = (event as any).detail?.originalEvent?.target;
+            if (
+              target instanceof Element &&
+              target.closest("[data-picker-dialog]")
+            ) {
+              event.preventDefault();
+            }
+          }}
+        >
           <DialogHeader className="shrink-0 px-4 pt-4 pb-3 sm:px-6 sm:pt-6 sm:pb-4">
             <DialogTitle>
               {isEdit ? "Edit purchase order" : "New purchase order"}
