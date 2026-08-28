@@ -57,7 +57,7 @@ export function SuppliersTab({
             (supplierIdCounts.get(draft.supplierId) ?? 0) > 1
           }
           disabled={!canManageSupplierItems}
-          supplierRequired={mode !== "create"}
+          supplierRequired={false}
           canRemove={mode === "edit" || supplierDrafts.length > 1}
           onUpdate={updateSupplierDraft}
           onRemove={removeSupplierDraft}

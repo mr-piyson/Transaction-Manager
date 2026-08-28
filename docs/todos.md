@@ -1,7 +1,5 @@
 # TODOs : 
 
-- [ ] item image will not be removed from file when updating the item from 
-
 - [ ] this bug in mobile only . in purchase order when I open a select supplier and I select one the PO from will close
 - [ ]  add other categoriy to list all items that does not have catergrization to the filter bar 
 - [ ]  replace  items filter sheet with drawer and add the make the filter applying automiticly

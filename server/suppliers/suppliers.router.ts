@@ -382,12 +382,46 @@ export const suppliersRouter = router({
         where: {
           supplierId: input.supplierId,
           itemId: input.itemId,
-          deletedAt: null,
         },
-        select: { id: true },
+        select: { id: true, deletedAt: true },
       });
-      if (existing)
-        throw new ConflictError("This item is already linked to the supplier.");
+
+      // If a link already exists (even soft-deleted), reactivate / update it
+      // instead of creating a duplicate. The DB enforces a unique constraint
+      // on (supplierId, itemId), so "add" for an existing link must resolve to
+      // an edit/re-activation rather than a fresh create.
+      if (existing) {
+        return ctx.db.$transaction(async (tx) => {
+          const updated = await tx.supplierItem.update({
+            where: { id: existing.id },
+            data: {
+              supplierSku: input.supplierSku,
+              supplierName: input.supplierName,
+              basePrice: input.basePrice,
+              currency: input.currency,
+              leadTimeDays: input.leadTimeDays,
+              minOrderQty: input.minOrderQty ?? 1,
+              notes: input.notes,
+              isActive: true,
+              deletedAt: null,
+            },
+          });
+
+          await writeAuditLog(
+            {
+              entityType: "SupplierItem",
+              entityId: updated.id,
+              action: existing.deletedAt ? "CREATE" : "UPDATE",
+              organizationId: ctx.user.organizationId,
+              userId: ctx.user.id,
+              ipAddress: ctx.ipAddress,
+            },
+            tx,
+          );
+
+          return updated;
+        });
+      }
 
       return ctx.db.$transaction(async (tx) => {
         const created = await tx.supplierItem.create({

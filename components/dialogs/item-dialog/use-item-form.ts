@@ -468,7 +468,7 @@ export function useItemForm({
         draft.basePrice !== 0 ||
         draft.leadTimeDays !== undefined ||
         !!draft.notes;
-      if (mode === "create" && !hasSupplierData) continue;
+      if (!hasSupplierData) continue;
 
       const draftErrors: Partial<Record<keyof SupplierItemDraft, string>> = {};
       if (!draft.supplierId) draftErrors.supplierId = "Select a supplier";
@@ -594,8 +594,9 @@ export function useItemForm({
           }
         }
 
-        // Add or update supplier items
+        // Add or update supplier items (skip empty/unassigned drafts)
         for (const draft of supplierDrafts) {
+          if (!draft.supplierId) continue;
           if (draft.id) {
             // Existing — update
             await updateSupplierItemMutation.mutateAsync({
