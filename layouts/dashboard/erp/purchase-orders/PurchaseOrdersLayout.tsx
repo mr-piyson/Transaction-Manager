@@ -218,12 +218,6 @@ export default function POLayout({ children }: { children?: React.ReactNode }) {
         <Header
           title={t("layout.purchaseOrders")}
           icon={<ShoppingCart className="size-5" />}
-          actions={[
-            {
-              label: t("purchaseOrders.createPO"),
-              onClick: () => openCreate(),
-            },
-          ]}
         />
       )}
       <div

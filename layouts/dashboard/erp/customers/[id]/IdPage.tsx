@@ -165,41 +165,6 @@ export default function CustomerDetailPage() {
             </Badge>
           )
         }
-        actions={
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon">
-                <MoreHorizontal className="size-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={handleEdit}>
-                <Edit className="size-4" />
-                {t("common.edit")}
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={handleDelete}
-                disabled={isPending}
-                variant="destructive"
-              >
-                <Trash className="size-4" />
-                {t("common.delete")}
-              </DropdownMenuItem>
-              {isSuperAdmin && (
-                <>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem
-                    onClick={handleHardDelete}
-                    variant="destructive"
-                  >
-                    <ShieldAlert className="size-4" />
-                    {t("hardDelete.menu")}
-                  </DropdownMenuItem>
-                </>
-              )}
-            </DropdownMenuContent>
-          </DropdownMenu>
-        }
       />
 
       <div className="flex-1 overflow-y-auto p-4 space-y-4">

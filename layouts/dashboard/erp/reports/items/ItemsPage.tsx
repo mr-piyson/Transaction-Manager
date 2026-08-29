@@ -1122,13 +1122,6 @@ export default function ItemReportPage() {
       <Header
         title={t("reports.inventoryReport")}
         subtitle={`${kpis.total} items`}
-        actions={[
-          {
-            label: t("items.createItem"),
-            onClick: () =>
-              openCreate({ onSuccess: () => utils.items.report.invalidate() }),
-          },
-        ]}
       />
 
       <main className="flex-1 overflow-y-auto">

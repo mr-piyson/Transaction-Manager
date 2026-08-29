@@ -152,14 +152,6 @@ export default function GeneralLedgerPage() {
     <ReportLayout
       title={t("reports.generalLedger")}
       icon={<BookOpen className="size-5" />}
-      actions={[
-        {
-          label: t("common.back"),
-          icon: ChevronLeft,
-          variant: "ghost",
-          onClick: () => router.push("/erp/reports"),
-        },
-      ]}
     >
       <Card className="print:shadow-none">
         <CardContent className="p-4">

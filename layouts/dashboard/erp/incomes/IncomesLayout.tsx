@@ -379,12 +379,6 @@ export default function IncomesLayout({
       <Header
         title={t("layout.incomes")}
         icon={<Banknote className="size-5" />}
-        actions={[
-          {
-            label: t("incomes.newIncome"),
-            onClick: () => openCreate(),
-          },
-        ]}
       />
       <div className="flex-1 min-h-0 w-full">
         {isListRoute ? (

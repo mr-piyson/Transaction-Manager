@@ -672,55 +672,7 @@ export default function DocumentDetailPage({
               )}
             </>
           }
-          actions={
-            <>
-              <Button
-                variant="ghost"
-                size="icon"
-                aria-label={t("invoices.history")}
-                onClick={() => setHistoryOpen(true)}
-              >
-                <History className="size-4" />
-              </Button>
-              {showActions && (
-                <>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    aria-label={t("invoices.printPdf")}
-                    onClick={() =>
-                      router.push(`/erp/documents/${type}/${invoice.id}/print`)
-                    }
-                  >
-                    <Printer className="size-4" />
-                  </Button>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        aria-label={t("common.actions")}
-                      >
-                        <MoreHorizontal className="size-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      {actions.map((a) => (
-                        <DropdownMenuItem
-                          key={a.key}
-                          onClick={() => handleActionClick(a)}
-                          disabled={isPending}
-                        >
-                          <a.icon className="mr-2 size-4" />
-                          {a.label}
-                        </DropdownMenuItem>
-                      ))}
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </>
-              )}
-            </>
-          }
+          
         />
 
         {/* Document details */}

@@ -8,7 +8,6 @@ interface ReportLayoutProps {
   title: string;
   icon: ReactNode;
   children: ReactNode;
-  actions?: PageAction[];
   rightContent?: ReactNode;
 }
 
@@ -16,7 +15,6 @@ export function ReportLayout({
   title,
   icon,
   children,
-  actions,
   rightContent,
 }: ReportLayoutProps) {
   return (
@@ -24,7 +22,6 @@ export function ReportLayout({
       <Header
         title={title}
         icon={icon}
-        actions={actions}
         rightContent={rightContent}
         className="print:hidden"
       />
