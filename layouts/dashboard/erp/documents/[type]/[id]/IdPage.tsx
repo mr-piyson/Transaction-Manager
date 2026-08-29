@@ -702,7 +702,7 @@ export default function DocumentDetailPage({
 
         {/* Document details */}
         <div className="min-w-0 space-y-4 sm:space-y-5">
-          <Card className="gap-0 py-0">
+          <Card className="gap-0 py-0 rounded-t-none">
             <CardHeader className="border-b px-4 py-3 sm:px-5">
               <CardTitle className="text-2xl">
                 {t("invoices.invoiceDetails")}

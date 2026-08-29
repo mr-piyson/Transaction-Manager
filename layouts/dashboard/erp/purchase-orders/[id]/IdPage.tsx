@@ -324,9 +324,14 @@ export default function PurchaseOrderDetailPage() {
         )}
       </header>
 
-      <div className="flex-1 overflow-y-auto p-3 sm:p-4 space-y-3 sm:space-y-4">
+      <div className="flex-1 overflow-y-auto space-y-3 sm:space-y-4">
         {/* Single info card */}
-        <Card>
+        <Card className="gap-0 py-0 rounded-t-none">
+          <CardHeader className="border-b px-4 py-3 sm:px-5">
+            <CardTitle className="text-2xl ">
+              {t("layout.purchaseOrderDetails")}
+            </CardTitle>
+          </CardHeader>
           <CardContent className="p-4">
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
               <div>

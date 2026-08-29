@@ -264,6 +264,8 @@
     "customers": "Customers",
     "contracts": "Contracts",
     "purchaseOrders": "Purchase Orders",
+    "purchaseOrder": "Purchase Order",
+    "purchaseOrderDetails": "Purchase Order Details",
     "suppliers": "Suppliers",
     "expenses": "Expenses",
     "subscriptions": "Subscriptions",
