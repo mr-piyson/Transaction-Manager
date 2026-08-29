@@ -30,9 +30,9 @@ import type { Action, AppAbilityType } from "@/lib/abilities";
  *   - the record state (`po.status`)
  *   - the current user's CASL ability (`ability`)
  *   - role flags (`isSuperAdmin`)
- *   - the surface (`scope`): "list" keeps past behavior (actions shown with
- *     disabled states where the status makes them inapplicable); "detail"
- *     shows only the actions valid for the current status.
+ *   - the surface (`scope`): both surfaces now use the same status-driven
+ *     action cluster; list-level extras such as hard-delete and expense
+ *     recording are appended only when valid for that record.
  */
 
 export type POActionKey =
@@ -49,8 +49,6 @@ export type POActionKey =
   | "recordExpense"
   | "print";
 
-export type POActionScope = "list" | "detail";
-
 export interface POActionRecord {
   id: string;
   serial: string;
@@ -64,17 +62,9 @@ export interface POActionsContext {
   t: (key: any) => string;
   ability: AppAbilityType | null;
   isSuperAdmin: boolean;
-  scope: POActionScope;
   handlers: POActionHandlers;
 }
 
-const EDITABLE_STATUSES = ["DRAFT", "PENDING_APPROVAL"];
-const NON_CANCELLABLE_STATUSES = [
-  "CANCELLED",
-  "CLOSED",
-  "RECEIVED",
-  "INVOICED",
-];
 const RECORD_EXPENSE_STATUSES = [
   "APPROVED",
   "ORDERED",
@@ -191,7 +181,7 @@ function actionItem(
 }
 
 export function buildPOActions(ctx: POActionsContext): ContextMenuItemSchema[] {
-  const { po, ability, isSuperAdmin, scope, handlers } = ctx;
+  const { po, ability, isSuperAdmin, handlers } = ctx;
 
   const has = (permission?: Action) => {
     if (!permission) return true;
@@ -210,42 +200,14 @@ export function buildPOActions(ctx: POActionsContext): ContextMenuItemSchema[] {
     return out;
   };
 
-  if (scope === "list") {
-    const isEditable = EDITABLE_STATUSES.includes(po.status);
-    const isDeletable = po.status === "DRAFT";
-    const isCancellable = !NON_CANCELLABLE_STATUSES.includes(po.status);
-
-    const items: ContextMenuItemSchema[] = [...pick("view")];
-
-    if (has(ACTION_DEFS.edit.permission) && handlers.edit) {
-      items.push(...actionItem("edit", ctx, { disabled: !isEditable }));
-    }
-
-    if (isCancellable && handlers.cancel) {
-      items.push(...pick("cancel"));
-    }
-
-    if (has(ACTION_DEFS.delete.permission) && handlers.delete) {
-      items.push(separator("sep1"));
-      items.push(...actionItem("delete", ctx, { disabled: !isDeletable }));
-    }
-
-    if (isSuperAdmin && handlers.hardDelete) {
-      items.push(...actionItem("hardDelete", ctx, { separatorBefore: true }));
-    }
-
-    return items;
-  }
-
-  // scope === "detail"
-  const cluster = pick(...(STATUS_ACTIONS[po.status] ?? []));
+  const items = pick(...(STATUS_ACTIONS[po.status] ?? []));
 
   if (handlers.print) {
-    cluster.push(...actionItem("print", ctx, { separatorBefore: true }));
+    items.push(...actionItem("print", ctx, { separatorBefore: true }));
   }
 
   if (isSuperAdmin && handlers.hardDelete) {
-    cluster.push(...actionItem("hardDelete", ctx, { separatorBefore: true }));
+    items.push(...actionItem("hardDelete", ctx, { separatorBefore: true }));
   }
 
   if (
@@ -253,10 +215,8 @@ export function buildPOActions(ctx: POActionsContext): ContextMenuItemSchema[] {
     handlers.recordExpense &&
     RECORD_EXPENSE_STATUSES.includes(po.status)
   ) {
-    cluster.push(
-      ...actionItem("recordExpense", ctx, { separatorBefore: true }),
-    );
+    items.push(...actionItem("recordExpense", ctx, { separatorBefore: true }));
   }
 
-  return cluster;
+  return items;
 }

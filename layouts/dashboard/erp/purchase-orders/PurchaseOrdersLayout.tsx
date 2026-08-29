@@ -21,6 +21,7 @@ import {
   ResizablePanelGroup,
 } from "@/components/ui/resizable";
 import { useAppAbility } from "@/hooks/use-app-ability";
+import { useDateFormat } from "@/hooks/use-date-format";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { trpc } from "@/lib/trpc/client";
 import { cn } from "@/lib/utils";
@@ -61,6 +62,44 @@ export default function POLayout({ children }: { children?: React.ReactNode }) {
     onError: (e) => toast.error(e.message),
   });
 
+  const { formatDateForInput } = useDateFormat();
+
+  // The list query omits the editable fields (lines, notes, ids), so edit
+  // needs the full record before the dialog can be pre-filled.
+  const handleEdit = useCallback(
+    async (item: any) => {
+      const po = await utils.purchaseOrders.byId.fetch({ id: item.id });
+      openEdit(
+        {
+          id: po.id,
+          version: po.version ?? 0,
+          supplierId: po.supplierId,
+          warehouseId: po.warehouseId,
+          date: po.date ? formatDateForInput(po.date) : undefined,
+          currency: po.currency as any,
+          notes: po.notes ?? undefined,
+          internalNotes: po.internalNotes ?? undefined,
+          lines: po.lines.map((l: any) => ({
+            mode: l.itemId ? "item" : "manual",
+            itemId: l.itemId ?? undefined,
+            description: l.description ?? undefined,
+            quantity: Number(l.quantity),
+            unitCost: Number(l.unitCost),
+            taxRateId: l.taxRateId ?? undefined,
+            taxRateSnapshot:
+              l.taxRateSnapshot != null ? Number(l.taxRateSnapshot) : undefined,
+            taxRateName: l.taxRateName ?? undefined,
+          })),
+        },
+        {
+          onSuccess: () =>
+            utils.purchaseOrders.byId.invalidate({ id: item.id }),
+        },
+      );
+    },
+    [openEdit, utils, formatDateForInput],
+  );
+
   const renderCard = useCallback(
     (item: any) => {
       const menuItems = buildPOActions({
@@ -68,17 +107,13 @@ export default function POLayout({ children }: { children?: React.ReactNode }) {
         t,
         ability,
         isSuperAdmin,
-        scope: "list",
         handlers: {
-          view: () => router.push(`/erp/${route}/${item.id}`),
-          edit: () =>
-            openEdit(
-              { id: item.id, version: item.version },
-              {
-                onSuccess: () =>
-                  utils.purchaseOrders.byId.invalidate({ id: item.id }),
-              },
-            ),
+          edit: () => handleEdit(item),
+          submit: () => router.push(`/erp/${route}/${item.id}`),
+          approve: () => router.push(`/erp/${route}/${item.id}`),
+          reject: () => router.push(`/erp/${route}/${item.id}`),
+          order: () => router.push(`/erp/${route}/${item.id}`),
+          receive: () => router.push(`/erp/${route}/${item.id}`),
           cancel: () =>
             alert.delete({
               title: t("common.cancel"),
@@ -100,6 +135,8 @@ export default function POLayout({ children }: { children?: React.ReactNode }) {
                 await deleteMutation.mutateAsync({ id: item.id });
               },
             }),
+          print: () => router.push(`/erp/${route}/${item.id}/print`),
+          recordExpense: () => router.push(`/erp/${route}/${item.id}`),
           hardDelete: () =>
             openHardDelete({
               kind: "po",
@@ -135,6 +172,7 @@ export default function POLayout({ children }: { children?: React.ReactNode }) {
       ability,
       cancelMutation,
       deleteMutation,
+      handleEdit,
       openEdit,
       router,
       utils,

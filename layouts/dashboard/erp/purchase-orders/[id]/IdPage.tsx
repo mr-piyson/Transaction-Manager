@@ -256,7 +256,6 @@ export default function PurchaseOrderDetailPage() {
     t,
     ability,
     isSuperAdmin,
-    scope: "detail",
     handlers: {
       print: () => router.push(`/erp/purchase-orders/${po.id}/print`),
       edit: handleEdit,
