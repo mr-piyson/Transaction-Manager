@@ -46,13 +46,13 @@ import { SupplierSelectDialog } from "./supplierSelectDialog";
 
 const lineSchema = z.object({
   mode: z.enum(["item", "manual"]).optional(),
-  itemId: z.string().optional(),
-  description: z.string().optional(),
+  itemId: z.string().nullable().optional(),
+  description: z.string().nullable().optional(),
   quantity: z.coerce.number().positive("Qty must be > 0"),
   unitCost: z.coerce.number().min(0, "Unit cost must be >= 0"),
-  taxRateId: z.string().optional(),
-  taxRateSnapshot: z.coerce.number().optional(),
-  taxRateName: z.string().optional(),
+  taxRateId: z.string().nullable().optional(),
+  taxRateSnapshot: z.coerce.number().nullable().optional(),
+  taxRateName: z.string().nullable().optional(),
 });
 
 const schema = z.object({
@@ -227,7 +227,7 @@ export function POFormDialog({
       date: new Date(values.date),
       lines: values.lines.map((l) => ({
         mode: l.mode,
-        itemId: l.itemId,
+        itemId: l.itemId ?? undefined,
         description: l.description || undefined,
         quantity: Number(l.quantity),
         unitCost: Number(l.unitCost),
@@ -454,14 +454,6 @@ export function POFormDialog({
                       variant="outline"
                       size="sm"
                       onClick={handleAddManualLine}
-                    >
-                      <Plus className="h-4 w-4 mr-1" /> Manual entry
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setItemPickerOpen(true)}
                       disabled={!selectedSupplierId}
                       title={
                         !selectedSupplierId
@@ -469,7 +461,7 @@ export function POFormDialog({
                           : undefined
                       }
                     >
-                      <Package className="h-4 w-4 mr-1" /> Select items
+                      <Plus className="h-4 w-4 mr-1" /> Add line
                     </Button>
                   </div>
                 </div>
@@ -560,31 +552,20 @@ export function POFormDialog({
                   <div className="text-sm text-muted-foreground text-center py-8 space-y-2">
                     <Package className="h-8 w-8 mx-auto opacity-30" />
                     <p>No lines yet.</p>
-                    <div className="flex items-center justify-center gap-2">
-                      <Button
-                        type="button"
-                        variant="secondary"
-                        size="sm"
-                        onClick={handleAddManualLine}
-                      >
-                        Add manual entry
-                      </Button>
-                      {selectedSupplierId && (
-                        <Button
-                          type="button"
-                          variant="secondary"
-                          size="sm"
-                          onClick={() => setItemPickerOpen(true)}
-                        >
-                          Browse product catalogue
-                        </Button>
-                      )}
-                    </div>
-                    {!selectedSupplierId && (
-                      <p className="text-xs text-muted-foreground/60">
-                        Select a supplier first to browse available items.
-                      </p>
-                    )}
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      size="sm"
+                      onClick={handleAddManualLine}
+                      disabled={!selectedSupplierId}
+                      title={
+                        !selectedSupplierId
+                          ? "Select a supplier first"
+                          : undefined
+                      }
+                    >
+                      Add line
+                    </Button>
                   </div>
                 )}
               </div>
