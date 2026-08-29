@@ -20,8 +20,18 @@ import {
   DrawerDescription,
   DrawerTitle,
 } from "@/components/ui/drawer";
+import {
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuShortcut,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Switch } from "@/components/ui/switch";
 import { useIsMobile } from "@/hooks/use-mobile";
+import type { Action } from "@/lib/abilities";
 import { cn } from "@/lib/utils";
 
 // ─── Discriminated Union Schema Types ────────────────────────────────────────
@@ -35,6 +45,10 @@ interface BaseMenuItem {
 
 export interface ContextMenuActionItem extends BaseMenuItem {
   type?: "item";
+  /** Stable machine key for programmatic handling (e.g. dropdown action dispatch) */
+  key?: string;
+  /** CASL permission code checked before the action is shown */
+  permission?: Action;
   label: string;
   icon?: LucideIcon;
   onClick?: (data: any) => void;
@@ -102,7 +116,7 @@ function MenuIcon({
 
 // ─── Desktop: Recursive Context Menu (memoized) ─────────────────────────────
 
-const DesktopMenuItems = React.memo(function DesktopMenuItems({
+export const DesktopMenuItems = React.memo(function DesktopMenuItems({
   items,
 }: {
   items: ContextMenuItemSchema[];
@@ -214,6 +228,126 @@ const DesktopMenuItems = React.memo(function DesktopMenuItems({
               <ContextMenuShortcut>{actionItem.shortcut}</ContextMenuShortcut>
             )}
           </ContextMenuItem>
+        );
+      })}
+    </>
+  );
+});
+
+// ─── Desktop: Dropdown (three-dot) Items (memoized) ────────────────────────
+// Same schema as the context menu — rendered with DropdownMenu primitives.
+// Radix context-menu and dropdown-menu items live in separate React contexts,
+// so the shared schema needs one renderer per primitive.
+
+export const DropdownMenuItems = React.memo(function DropdownMenuItems({
+  items,
+}: {
+  items: ContextMenuItemSchema[];
+}) {
+  return (
+    <>
+      {items.map((item) => {
+        if (item.type === "separator") {
+          return <DropdownMenuSeparator key={item.id} />;
+        }
+
+        if (item.type === "label") {
+          return (
+            <DropdownMenuLabel key={item.id}>
+              <span className="flex items-center gap-2">
+                {item.icon && (
+                  <MenuIcon
+                    icon={item.icon}
+                    size={14}
+                    className="text-muted-foreground"
+                  />
+                )}
+                {item.label}
+              </span>
+            </DropdownMenuLabel>
+          );
+        }
+
+        if (item.type === "switch") {
+          return (
+            <DropdownMenuItem
+              key={item.id}
+              disabled={item.disabled}
+              onSelect={(e) => {
+                e.preventDefault();
+                item.onCheckedChange?.(!item.checked);
+              }}
+              className="flex items-center justify-between gap-4"
+            >
+              <span className="flex items-center gap-2">
+                {item.icon && (
+                  <MenuIcon
+                    icon={item.icon}
+                    size={16}
+                    className="text-muted-foreground"
+                  />
+                )}
+                {item.label}
+              </span>
+              <Switch
+                checked={item.checked}
+                tabIndex={-1}
+                className="pointer-events-none scale-75"
+              />
+            </DropdownMenuItem>
+          );
+        }
+
+        // type === "item" or undefined (default action item)
+        const actionItem = item as ContextMenuActionItem;
+
+        if (actionItem.children && actionItem.children.length > 0) {
+          return (
+            <DropdownMenuSub key={item.id}>
+              <DropdownMenuSubTrigger disabled={item.disabled}>
+                <span className="flex items-center gap-2">
+                  {actionItem.icon && (
+                    <MenuIcon
+                      icon={actionItem.icon}
+                      size={16}
+                      className="text-muted-foreground"
+                    />
+                  )}
+                  {actionItem.label}
+                </span>
+              </DropdownMenuSubTrigger>
+              <DropdownMenuSubContent className="min-w-48">
+                <DropdownMenuItems items={actionItem.children} />
+              </DropdownMenuSubContent>
+            </DropdownMenuSub>
+          );
+        }
+
+        return (
+          <DropdownMenuItem
+            key={item.id}
+            disabled={item.disabled}
+            onSelect={() => actionItem.onClick?.(item)}
+            variant={actionItem.destructive ? "destructive" : "default"}
+          >
+            <span className="flex items-center gap-2">
+              {actionItem.icon && (
+                <MenuIcon
+                  icon={actionItem.icon}
+                  size={16}
+                  className={
+                    actionItem.destructive
+                      ? "text-destructive"
+                      : "text-muted-foreground"
+                  }
+                />
+              )}
+              {actionItem.label}
+            </span>
+            {actionItem.shortcut && (
+              <DropdownMenuShortcut>{actionItem.shortcut}</DropdownMenuShortcut>
+            )}
+          </DropdownMenuItem>
         );
       })}
     </>
@@ -376,7 +510,7 @@ interface DrawerLevel {
   items: ContextMenuItemSchema[];
 }
 
-function MobileDrawerMenu({
+export function MobileDrawerMenu({
   items,
   open,
   onOpenChange,

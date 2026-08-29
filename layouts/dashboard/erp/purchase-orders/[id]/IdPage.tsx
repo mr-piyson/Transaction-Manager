@@ -2,30 +2,21 @@
 
 import {
   ArrowLeft,
-  CheckCircle,
-  Edit,
-  FileDown,
   History,
   Loader2,
-  type LucideIcon,
-  MoreHorizontal,
   Package,
   Printer,
-  Send,
-  ShieldAlert,
   ShoppingCart,
-  ThumbsDown,
-  Trash,
-  Wallet,
-  XCircle,
 } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import * as React from "react";
 import { toast } from "sonner";
+import { ActionsDropdown } from "@/components/actions-menu";
 import { useExpenseForm } from "@/components/dialogs/expenseForm";
 import { useHardDeleteForm } from "@/components/dialogs/hardDeleteForm";
 import { usePOForm } from "@/components/dialogs/poForm";
+import { buildPOActions } from "@/components/purchase-orders/po-actions";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -37,12 +28,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import {
   Empty,
   EmptyDescription,
@@ -64,7 +49,6 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { useAppAbility } from "@/hooks/use-app-ability";
 import { useDateFormat } from "@/hooks/use-date-format";
-import type { Action as PermissionAction } from "@/lib/abilities";
 import { trpc } from "@/lib/trpc/client";
 import { cn } from "@/lib/utils";
 
@@ -267,150 +251,32 @@ export default function PurchaseOrderDetailPage() {
     );
   };
 
-  const handleActionClick = (action: Action) => {
-    switch (action.key) {
-      case "edit":
-        handleEdit();
-        break;
-      case "submit":
-        submitMutation.mutate({ id: po.id, version });
-        break;
-      case "approve":
-        approveMutation.mutate({ id: po.id, version });
-        break;
-      case "order":
-        orderMutation.mutate({ id: po.id, version });
-        break;
-      case "cancel":
-        cancelMutation.mutate({ id: po.id, version });
-        break;
-      case "delete":
-        deleteMutation.mutate({ id: po.id });
-        break;
-      case "hardDelete":
-        handleHardDelete();
-        break;
-      default:
-        switch (action.dialog) {
-          case "receive":
-            setReceiveOpen(true);
-            break;
-          case "reject":
-            setRejectOpen(true);
-            break;
-        }
-    }
-  };
+  const menuItems = buildPOActions({
+    po: { id: po.id, serial: po.serial, status: po.status },
+    t,
+    ability,
+    isSuperAdmin,
+    scope: "detail",
+    handlers: {
+      print: () => router.push(`/erp/purchase-orders/${po.id}/print`),
+      edit: handleEdit,
+      submit: () => submitMutation.mutate({ id: po.id, version }),
+      approve: () => approveMutation.mutate({ id: po.id, version }),
+      reject: () => setRejectOpen(true),
+      order: () => orderMutation.mutate({ id: po.id, version }),
+      receive: () => setReceiveOpen(true),
+      cancel: () => cancelMutation.mutate({ id: po.id, version }),
+      delete: () => deleteMutation.mutate({ id: po.id }),
+      hardDelete: handleHardDelete,
+      recordExpense: () =>
+        openCreateExpense({
+          defaults: { purchaseOrderId: po.id },
+          onSuccess: () => invalidate(),
+        }),
+    },
+  });
 
-  type Action = {
-    label: string;
-    key: string;
-    icon: LucideIcon;
-    variant?: "default" | "destructive" | "outline";
-    dialog?: "receive" | "reject";
-    permission?: PermissionAction;
-  };
-
-  const can = (action?: PermissionAction) =>
-    !action || ability?.can(action, "PurchaseOrder");
-
-  const actions: Action[] = [];
-  if (po.status === "DRAFT") {
-    actions.push({
-      label: t("purchaseOrders.submitForApproval"),
-      key: "submit",
-      icon: Send,
-      permission: "po:update",
-    });
-    actions.push({
-      label: t("common.edit"),
-      key: "edit",
-      icon: Edit,
-      variant: "outline",
-      permission: "po:update",
-    });
-    actions.push({
-      label: t("common.delete"),
-      key: "delete",
-      icon: Trash,
-      variant: "destructive",
-      permission: "po:delete",
-    });
-  } else if (po.status === "PENDING_APPROVAL") {
-    actions.push({
-      label: t("common.approve"),
-      key: "approve",
-      icon: CheckCircle,
-      permission: "po:approve",
-    });
-    actions.push({
-      label: t("common.reject"),
-      key: "reject",
-      icon: ThumbsDown,
-      variant: "destructive",
-      dialog: "reject",
-      permission: "po:approve",
-    });
-    actions.push({
-      label: t("common.cancel"),
-      key: "cancel",
-      icon: XCircle,
-      variant: "destructive",
-      permission: "po:delete",
-    });
-  } else if (po.status === "APPROVED") {
-    actions.push({
-      label: t("purchaseOrders.placeOrder"),
-      key: "order",
-      icon: FileDown,
-      permission: "po:approve",
-    });
-    actions.push({
-      label: t("common.cancel"),
-      key: "cancel",
-      icon: XCircle,
-      variant: "destructive",
-      permission: "po:delete",
-    });
-  } else if (po.status === "ORDERED" || po.status === "PARTIAL_RECEIVED") {
-    actions.push({
-      label: t("purchaseOrders.receiveStock"),
-      key: "receive",
-      icon: Package,
-      dialog: "receive",
-      permission: "po:receive",
-    });
-    actions.push({
-      label: t("common.cancel"),
-      key: "cancel",
-      icon: XCircle,
-      variant: "destructive",
-      permission: "po:delete",
-    });
-  }
-
-  if (isSuperAdmin) {
-    actions.push({
-      label: t("hardDelete.menu"),
-      key: "hardDelete",
-      icon: ShieldAlert,
-      variant: "destructive",
-    });
-  }
-
-  const visibleActions =
-    ability !== null ? actions.filter((a) => can(a.permission)) : [];
-  const showActions = visibleActions.length > 0;
-
-  const canCreateExpense =
-    ability?.can("expense:create", "Expense") &&
-    [
-      "APPROVED",
-      "ORDERED",
-      "PARTIAL_RECEIVED",
-      "RECEIVED",
-      "INVOICED",
-    ].includes(po.status);
+  const showActions = menuItems.length > 0;
 
   const remainingLines = po.lines.filter(
     (l: any) => Number(l.quantity) > Number(l.receivedQty),
@@ -450,48 +316,11 @@ export default function PurchaseOrderDetailPage() {
         </div>
         {showActions && (
           <div className="flex items-center gap-1 sm:gap-2 shrink-0">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => router.push(`/erp/purchase-orders/${po.id}/print`)}
-            >
-              <Printer className="size-4 mr-1" /> {t("common.print")}
-            </Button>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon">
-                  <MoreHorizontal className="size-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                {visibleActions.map((a) => (
-                  <DropdownMenuItem
-                    key={a.key}
-                    onClick={() => handleActionClick(a)}
-                    disabled={isPending}
-                    variant={
-                      a.variant === "destructive" ? "destructive" : "default"
-                    }
-                  >
-                    <a.icon className="size-4" />
-                    {a.label}
-                  </DropdownMenuItem>
-                ))}
-                {canCreateExpense && (
-                  <DropdownMenuItem
-                    onClick={() =>
-                      openCreateExpense({
-                        defaults: { purchaseOrderId: po.id },
-                        onSuccess: () => invalidate(),
-                      })
-                    }
-                  >
-                    <Wallet className="size-4" />
-                    {t("purchaseOrders.recordExpense")}
-                  </DropdownMenuItem>
-                )}
-              </DropdownMenuContent>
-            </DropdownMenu>
+            <ActionsDropdown
+              items={menuItems}
+              itemDisabled={isPending}
+              hideWhenEmpty
+            />
           </div>
         )}
       </header>
