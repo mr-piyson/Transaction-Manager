@@ -93,6 +93,16 @@ LOCK_DIR="/tmp/${SERVICE}.deploy.lock"
 DEPLOY_USER="${SUDO_USER:-$(id -un)}"
 BUN_PATH="$(command -v bun 2>/dev/null || true)"
 
+# Re-run the whole script under sudo if we need root but don't have it.
+# This makes the user type the sudo password exactly once, at the start,
+# instead of being prompted again after the long build/prisma steps.
+if [[ "$(id -u)" -ne 0 ]]; then
+	if command -v sudo >/dev/null 2>&1 && ! sudo -n true 2>/dev/null; then
+		echo "Need sudo to deploy — entering password now..."
+		exec sudo -H "$0" "$@"
+	fi
+fi
+
 STEP=""
 PREV_SHA=""
 DEPLOYED=false
@@ -124,6 +134,7 @@ elevate() {
 	if [ "$(id -u)" -eq 0 ]; then
 		"$@"
 	elif command -v sudo >/dev/null 2>&1; then
+		sudo -v # refresh the sudo timestamp window so long steps don't re-prompt
 		sudo "$@"
 	else
 		die "Need root or sudo to run: $*"
