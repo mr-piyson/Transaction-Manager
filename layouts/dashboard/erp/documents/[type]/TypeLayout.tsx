@@ -40,6 +40,7 @@ import {
   ResizablePanelGroup,
 } from "@/components/ui/resizable";
 import { useAppAbility } from "@/hooks/use-app-ability";
+import { useDateFormat } from "@/hooks/use-date-format";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { trpc } from "@/lib/trpc/client";
 import { cn } from "@/lib/utils";
@@ -62,8 +63,9 @@ export default function DocumentsLayout({
   const t = useTranslations();
   const type = documentType;
   const config = DOCUMENT_CONFIG[type];
-  const { openCreate } = useInvoiceForm();
+  const { openCreate, openEdit } = useInvoiceForm();
   const { openDialog: openHardDelete } = useHardDeleteForm();
+  const { formatDateForInput } = useDateFormat();
   const { data: me } = trpc.auth.me.useQuery();
   const isSuperAdmin = me?.platformRole === "SUPER_ADMIN";
   const ability = useAppAbility();
@@ -102,6 +104,48 @@ export default function DocumentsLayout({
     (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
   );
 
+  const handleEditItem = async (item: any) => {
+    try {
+      const full = await utils.invoices.byId.fetch({ id: item.id });
+      openEdit(
+        {
+          id: full.id,
+          version: full.version ?? 0,
+          type: full.type as any,
+          date: full.date ? formatDateForInput(full.date) : undefined,
+          dueDate: full.dueDate ? formatDateForInput(full.dueDate) : undefined,
+          customerId: full.customerId ?? undefined,
+          warehouseId: full.warehouseId ?? undefined,
+          departmentId: full.departmentId ?? undefined,
+          currency: full.currency as any,
+          exchangeRate: Number(full.exchangeRate) || 1,
+          description: full.description ?? undefined,
+          notes: full.notes ?? undefined,
+          termsText: full.termsText ?? undefined,
+          internalNotes: full.internalNotes ?? undefined,
+          isWalkIn: full.isWalkIn ?? false,
+          parentInvoiceId: full.parentInvoiceId ?? undefined,
+          lines: full.lines.map((l: any) => ({
+            itemId: l.itemId ?? undefined,
+            description: l.description ?? undefined,
+            quantity: Number(l.quantity),
+            unitPrice: Number(l.unitPrice),
+            discountAmt: Number(l.discountAmt),
+            purchasePrice: Number(l.purchasePrice ?? 0),
+            taxRateId: l.taxRateId ?? undefined,
+            taxRateSnapshot: Number(l.taxRateSnapshot ?? 0),
+            taxRateName: l.taxRateName ?? undefined,
+            sortOrder: l.sortOrder ?? 0,
+            departmentId: l.departmentId ?? undefined,
+          })),
+        },
+        { onSuccess: () => utils.invoices.list.invalidate() },
+      );
+    } catch (error: any) {
+      toast.error(error.message);
+    }
+  };
+
   const renderCard = useCallback(
     (item: any) => {
       const isDeletable = ["DRAFT", "CANCELLED", "DELETED"].includes(
@@ -124,7 +168,8 @@ export default function DocumentsLayout({
                 id: "edit",
                 label: t("common.edit"),
                 icon: Edit,
-                onClick: () => router.push(`/erp/documents/${type}/${item.id}`),
+                onClick: () => handleEditItem(item),
+                disabled: item.status !== "DRAFT",
               },
             ]
           : []),
@@ -194,6 +239,7 @@ export default function DocumentsLayout({
       router,
       isSuperAdmin,
       openHardDelete,
+      handleEditItem,
       t,
     ],
   );

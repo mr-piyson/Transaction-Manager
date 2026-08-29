@@ -566,6 +566,28 @@ export default function DocumentDetailPage({
 
   const showActions = actions.length > 0;
 
+  const headerActions = showActions ? (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="outline" size="icon" aria-label={t("common.more")}>
+          <MoreHorizontal className="size-4" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end">
+        {actions.map((action) => (
+          <DropdownMenuItem
+            key={action.key}
+            variant={action.variant === "destructive" ? "destructive" : "default"}
+            onClick={() => handleActionClick(action)}
+          >
+            <action.icon className="size-4" />
+            {action.label}
+          </DropdownMenuItem>
+        ))}
+      </DropdownMenuContent>
+    </DropdownMenu>
+  ) : undefined;
+
   const handleActionClick = (action: Action) => {
     switch (action.key) {
       case "edit":
@@ -672,7 +694,7 @@ export default function DocumentDetailPage({
               )}
             </>
           }
-          
+          actions={headerActions}
         />
 
         {/* Document details */}
