@@ -123,6 +123,72 @@ export interface InvoiceFormDialogProps {
   onSuccess?: (invoiceId: string) => void;
 }
 
+function Thumb({
+  item,
+  isManual,
+  className,
+}: {
+  item: any;
+  isManual: boolean;
+  className?: string;
+}) {
+  return (
+    <div
+      className={`${className ?? ""} overflow-hidden rounded-md border bg-muted`}
+    >
+      {!isManual && item?.image ? (
+        // biome-ignore lint/performance/noImgElement: item images can be SVG/data URIs/external hosts that next/image cannot optimize
+        <img
+          src={item.image}
+          alt={item.name}
+          className="size-full object-cover"
+        />
+      ) : (
+        <div className="flex size-full items-center justify-center">
+          {isManual ? (
+            <Wrench className="size-4 text-muted-foreground/60" />
+          ) : (
+            <Package className="size-4 text-muted-foreground/60" />
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function ProfitRow({
+  lineTotal,
+  lineCogs,
+  grossProfit,
+  margin,
+}: {
+  lineTotal: number;
+  lineCogs: number;
+  grossProfit: number;
+  margin: number;
+}) {
+  const t = useTranslations();
+  return (
+    <div className="flex flex-wrap items-center gap-x-3 gap-y-1 border-t pt-2 text-xs text-muted-foreground">
+      <span className="shrink-0">
+        {t("invoices.revenue")}:{" "}
+        <span className="font-medium text-foreground">
+          {lineTotal.toFixed(3)}
+        </span>
+      </span>
+      <span className="shrink-0">
+        {t("invoices.cogs")}:{" "}
+        <span className="font-medium text-foreground">
+          {lineCogs.toFixed(3)}
+        </span>
+      </span>
+      <span className={grossProfit >= 0 ? "text-green-600" : "text-red-600"}>
+        {t("invoices.gp")}: {grossProfit.toFixed(3)} ({margin.toFixed(1)}%)
+      </span>
+    </div>
+  );
+}
+
 export function InvoiceFormDialog({
   open,
   onOpenChange,
@@ -381,12 +447,12 @@ export function InvoiceFormDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit(onSubmit)} noValidate>
+        <form onSubmit={handleSubmit(onSubmit)} noValidate className="min-w-0">
           <ValidationAlert errors={errors as any} />
 
-          <div className="space-y-4 max-h-110 sm:max-h-110 max-sm:max-h-[calc(100dvh-14rem)] overflow-y-auto pr-2">
+          <div className="min-w-0 space-y-4 max-h-110 sm:max-h-110 max-sm:max-h-[calc(100dvh-14rem)] overflow-y-auto pr-2">
             {/* Type + Currency */}
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 gap-3 max-sm:grid-cols-1">
               <Field>
                 <Label htmlFor="type">{t("invoices.type")} *</Label>
                 <Select
@@ -459,15 +525,21 @@ export function InvoiceFormDialog({
                           value={watch("customerId") || ""}
                           onValueChange={(v) => setValue("customerId", v)}
                         >
-                          <SelectTrigger>
+                          <SelectTrigger className="w-full min-w-0">
                             <SelectValue
                               placeholder={t("invoices.selectCustomer")}
                             />
                           </SelectTrigger>
-                          <SelectContent>
+                          <SelectContent className="max-w-[75vw]">
                             {customers.map((c: any) => (
-                              <SelectItem key={c.id} value={c.id}>
-                                {c.name}
+                              <SelectItem
+                                key={c.id}
+                                value={c.id}
+                                className="min-w-0"
+                              >
+                                <span className="flex min-w-0 items-center gap-1.5">
+                                  <span className="truncate">{c.name}</span>
+                                </span>
                               </SelectItem>
                             ))}
                           </SelectContent>
@@ -503,13 +575,15 @@ export function InvoiceFormDialog({
                   value={watch("warehouseId") || ""}
                   onValueChange={(v) => setValue("warehouseId", v)}
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className="w-full min-w-0">
                     <SelectValue placeholder={t("invoices.selectWarehouse")} />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="max-w-[75vw]">
                     {warehouses.map((w: any) => (
-                      <SelectItem key={w.id} value={w.id}>
-                        {w.name}
+                      <SelectItem key={w.id} value={w.id} className="min-w-0">
+                        <span className="flex min-w-0 items-center gap-1.5">
+                          <span className="truncate">{w.name}</span>
+                        </span>
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -518,7 +592,7 @@ export function InvoiceFormDialog({
             )}
 
             {/* Line Items */}
-            <div className="space-y-3">
+            <div className="min-w-0 space-y-3">
               <div className="flex items-center justify-between">
                 <Label className="text-base font-semibold">
                   {t("invoices.lineItems")} *
@@ -570,85 +644,151 @@ export function InvoiceFormDialog({
                 return (
                   <div
                     key={field.id}
-                    className="border rounded-lg p-3 bg-muted/20 space-y-2"
+                    className="min-w-0 border rounded-lg p-3 sm:p-3.5 bg-muted/20 space-y-2"
                   >
-                    {/* Compact card header */}
-                    <div className="flex items-center justify-between gap-2">
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2">
-                          {isManual ? (
-                            <Wrench className="h-4 w-4 text-muted-foreground shrink-0" />
-                          ) : (
-                            <Package className="h-4 w-4 text-muted-foreground shrink-0" />
-                          )}
-                          <p className="text-sm font-medium truncate">
+                    {/* ===== MOBILE (stacked) ===== */}
+                    <div className="flex flex-col gap-2 sm:hidden">
+                      <div className="flex items-center gap-2.5">
+                        <Thumb
+                          item={item}
+                          isManual={isManual}
+                          className="size-9 shrink-0"
+                        />
+                        <div className="min-w-0 flex-1">
+                          <p
+                            className="min-w-0 truncate font-medium text-sm leading-snug"
+                            title={
+                              isManual
+                                ? lineWatch?.description ||
+                                  t("invoices.manualEntry")
+                                : item?.name || field.itemId
+                            }
+                          >
                             {isManual
                               ? lineWatch?.description ||
                                 t("invoices.manualEntry")
                               : item?.name || field.itemId}
                           </p>
+                          <p className="mt-0.5 truncate text-xs text-muted-foreground">
+                            {qty} × {price.toFixed(3)}
+                            {discount > 0 && (
+                              <span className="text-destructive ml-1">
+                                (-{discount.toFixed(3)})
+                              </span>
+                            )}
+                          </p>
                         </div>
-                        <p className="text-xs text-muted-foreground">
-                          {qty} × {price.toFixed(3)}
-                          {discount > 0 && (
-                            <span className="text-destructive ml-1">
-                              (-{discount.toFixed(3)})
-                            </span>
-                          )}
-                        </p>
+                        <div className="flex shrink-0 items-center gap-0.5">
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            className="size-8"
+                            onClick={() => setEditingLineIndex(index)}
+                          >
+                            <Pencil className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            className="size-8"
+                            onClick={() => remove(index)}
+                          >
+                            <Trash2 className="h-4 w-4 text-destructive" />
+                          </Button>
+                        </div>
                       </div>
-                      <div className="text-right shrink-0">
-                        <p className="text-sm font-semibold">
+
+                      <div className="flex items-center justify-between border-t pt-2 text-sm">
+                        <span className="text-muted-foreground">
+                          {t("common.total")}
+                        </span>
+                        <span className="font-semibold">
                           {(lineTotal + lineTax).toFixed(3)}
-                        </p>
+                        </span>
                       </div>
-                      <div className="flex items-center gap-0.5 shrink-0">
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="icon"
-                          className="size-7"
-                          onClick={() => setEditingLineIndex(index)}
-                        >
-                          <Pencil className="h-3.5 w-3.5" />
-                        </Button>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="icon"
-                          className="size-7"
-                          onClick={() => remove(index)}
-                        >
-                          <Trash2 className="h-3.5 w-3.5 text-destructive" />
-                        </Button>
-                      </div>
+
+                      {lineTotal > 0 && (
+                        <ProfitRow
+                          lineTotal={lineTotal}
+                          lineCogs={lineCogs}
+                          grossProfit={grossProfit}
+                          margin={margin}
+                        />
+                      )}
                     </div>
 
-                    {/* Profit info */}
-                    {lineTotal > 0 && (
-                      <div className="flex items-center gap-3 text-xs text-muted-foreground border-t pt-1.5">
-                        <span>
-                          {t("invoices.revenue")}:{" "}
-                          <span className="font-medium text-foreground">
-                            {lineTotal.toFixed(3)}
-                          </span>
-                        </span>
-                        <span>
-                          {t("invoices.cogs")}:{" "}
-                          <span className="font-medium text-foreground">
-                            {lineCogs.toFixed(3)}
-                          </span>
-                        </span>
-                        <span
-                          className={
-                            grossProfit >= 0 ? "text-green-600" : "text-red-600"
-                          }
-                        >
-                          {t("invoices.gp")}: {grossProfit.toFixed(3)} (
-                          {margin.toFixed(1)}%)
-                        </span>
+                    {/* ===== DESKTOP (inline) ===== */}
+                    <div className="hidden sm:flex flex-col gap-2">
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="flex min-w-0 items-center gap-2">
+                          <Thumb
+                            item={item}
+                            isManual={isManual}
+                            className="size-8 shrink-0"
+                          />
+                          <div className="min-w-0 flex-1">
+                            <p
+                              className="min-w-0 truncate text-sm font-medium"
+                              title={
+                                isManual
+                                  ? lineWatch?.description ||
+                                    t("invoices.manualEntry")
+                                  : item?.name || field.itemId
+                              }
+                            >
+                              {isManual
+                                ? lineWatch?.description ||
+                                  t("invoices.manualEntry")
+                                : item?.name || field.itemId}
+                            </p>
+                            <p className="truncate text-xs text-muted-foreground">
+                              {qty} × {price.toFixed(3)}
+                              {discount > 0 && (
+                                <span className="text-destructive ml-1">
+                                  (-{discount.toFixed(3)})
+                                </span>
+                              )}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex shrink-0 items-center gap-2">
+                          <p className="text-right text-sm font-semibold">
+                            {(lineTotal + lineTax).toFixed(3)}
+                          </p>
+                          <div className="flex items-center gap-0.5">
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon"
+                              className="size-8"
+                              onClick={() => setEditingLineIndex(index)}
+                            >
+                              <Pencil className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon"
+                              className="size-8"
+                              onClick={() => remove(index)}
+                            >
+                              <Trash2 className="h-4 w-4 text-destructive" />
+                            </Button>
+                          </div>
+                        </div>
                       </div>
-                    )}
+
+                      {lineTotal > 0 && (
+                        <ProfitRow
+                          lineTotal={lineTotal}
+                          lineCogs={lineCogs}
+                          grossProfit={grossProfit}
+                          margin={margin}
+                        />
+                      )}
+                    </div>
                   </div>
                 );
               })}

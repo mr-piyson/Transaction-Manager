@@ -153,8 +153,8 @@ export function InvoiceLineDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
+      <DialogContent className="flex max-h-[min(92dvh,100vh)] flex-col gap-4 overflow-hidden p-4 sm:max-w-md sm:p-6">
+        <DialogHeader className="shrink-0">
           <DialogTitle>
             {t("invoices.lineItemTitle", { number: index + 1 })}
           </DialogTitle>
@@ -163,185 +163,194 @@ export function InvoiceLineDialog({
         <form
           onSubmit={handleSubmit(onSubmit)}
           noValidate
-          className="space-y-4"
+          className="flex min-h-0 flex-1 flex-col gap-4"
         >
-          {/* Profit preview */}
-          <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground bg-muted/30 rounded-lg p-3">
-            <span>
-              {t("invoices.subtotal")}:{" "}
-              <span className="font-medium text-foreground">
-                {lineSubtotal.toFixed(3)}
+          <div className="min-h-0 flex-1 space-y-4 overflow-y-auto pr-1">
+            {/* Profit preview */}
+            <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground bg-muted/30 rounded-lg p-3">
+              <span>
+                {t("invoices.subtotal")}:{" "}
+                <span className="font-medium text-foreground">
+                  {lineSubtotal.toFixed(3)}
+                </span>
               </span>
-            </span>
-            <span>
-              {t("invoices.discount")}:{" "}
-              <span className="font-medium text-destructive">
-                -{discount.toFixed(3)}
+              <span>
+                {t("invoices.discount")}:{" "}
+                <span className="font-medium text-destructive">
+                  -{discount.toFixed(3)}
+                </span>
               </span>
-            </span>
-            <span>
-              {t("invoices.tax")}:{" "}
-              <span className="font-medium text-foreground">
-                +{lineTax.toFixed(3)}
+              <span>
+                {t("invoices.tax")}:{" "}
+                <span className="font-medium text-foreground">
+                  +{lineTax.toFixed(3)}
+                </span>
               </span>
-            </span>
-            <span>
-              {t("invoices.cogs")}:{" "}
-              <span className="font-medium text-foreground">
-                {lineCogs.toFixed(3)}
+              <span>
+                {t("invoices.cogs")}:{" "}
+                <span className="font-medium text-foreground">
+                  {lineCogs.toFixed(3)}
+                </span>
               </span>
-            </span>
-            <span
-              className={grossProfit >= 0 ? "text-green-600" : "text-red-600"}
-            >
-              {t("invoices.gp")}: {grossProfit.toFixed(3)} ({margin.toFixed(1)}
-              %)
-            </span>
-            <span className="text-sm font-bold text-foreground border-t pt-0.5 w-full">
-              {t("common.total")}: {(lineTotal + lineTax).toFixed(3)}
-            </span>
-          </div>
-
-          {/* Item selector / Description */}
-          {isManual ? (
-            <div className="space-y-1.5">
-              <Label className="text-xs">{t("common.description")}</Label>
-              <Input
-                placeholder={t("invoices.describeLineItem")}
-                {...register("description")}
-              />
+              <span
+                className={grossProfit >= 0 ? "text-green-600" : "text-red-600"}
+              >
+                {t("invoices.gp")}: {grossProfit.toFixed(3)} (
+                {margin.toFixed(1)}
+                %)
+              </span>
+              <span className="text-sm font-bold text-foreground border-t pt-0.5 w-full">
+                {t("common.total")}: {(lineTotal + lineTax).toFixed(3)}
+              </span>
             </div>
-          ) : (
+
+            {/* Item selector / Description */}
+            {isManual ? (
+              <div className="space-y-1.5">
+                <Label className="text-xs">{t("common.description")}</Label>
+                <Input
+                  placeholder={t("invoices.describeLineItem")}
+                  {...register("description")}
+                />
+              </div>
+            ) : (
+              <div className="space-y-1.5">
+                <Label className="text-xs">{t("invoices.item")}</Label>
+                <Select
+                  value={itemId || "__manual__"}
+                  onValueChange={(v) => {
+                    if (v === "__manual__") {
+                      setValue("itemId", undefined as any);
+                      setValue("unitPrice", 0);
+                      setValue("purchasePrice", 0);
+                      setValue("taxRateId", undefined);
+                      setValue("taxRateSnapshot", undefined);
+                      setValue("taxRateName", undefined);
+                      return;
+                    }
+                    const selected = itemsMap[v] as any;
+                    const tr = taxRatesMap[selected?.taxRate?.id] as any;
+                    setValue("itemId", v);
+                    if (selected) {
+                      setValue("unitPrice", Number(selected.salesPrice) || 0);
+                      setValue(
+                        "purchasePrice",
+                        Number(selected.purchasePrice) || 0,
+                      );
+                      setValue("taxRateId", selected.taxRate?.id);
+                      setValue(
+                        "taxRateSnapshot",
+                        tr ? Number(tr.rate) : undefined,
+                      );
+                      setValue("taxRateName", tr?.name || undefined);
+                    }
+                  }}
+                >
+                  <SelectTrigger className="w-full min-w-0">
+                    <SelectValue placeholder={t("invoices.selectItem")} />
+                  </SelectTrigger>
+                  <SelectContent className="w-80 max-w-[75vw]">
+                    <SelectItem value="__manual__">
+                      {t("invoices.manualEntry")}
+                    </SelectItem>
+                    <div className="border-t my-1" />
+                    {items.map((i: any) => (
+                      <SelectItem key={i.id} value={i.id} className="min-w-0">
+                        <span className="flex min-w-0 items-center gap-1.5">
+                          <span className="shrink-0 font-mono text-xs text-muted-foreground">
+                            {i.sku}
+                          </span>
+                          <span className="truncate">{i.name}</span>
+                        </span>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+
+            {/* Numeric fields: Qty, Unit price, Discount, Unit cost */}
+            <div className="grid grid-cols-2 gap-3 max-sm:grid-cols-1">
+              <div className="space-y-1.5">
+                <Label className="text-xs">{t("invoices.qty")}</Label>
+                <Input
+                  type="number"
+                  min={0.001}
+                  step="any"
+                  {...register("quantity")}
+                />
+                {errors.quantity && (
+                  <p className="text-xs text-destructive">
+                    {errors.quantity.message}
+                  </p>
+                )}
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-xs">{t("invoices.unitPrice")}</Label>
+                <Input
+                  type="number"
+                  min={0}
+                  step="0.001"
+                  {...register("unitPrice")}
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-xs">{t("invoices.discount")}</Label>
+                <Input
+                  type="number"
+                  min={0}
+                  step="0.001"
+                  {...register("discountAmt")}
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-xs">{t("invoices.cost")}</Label>
+                <Input
+                  type="number"
+                  min={0}
+                  step="0.001"
+                  {...register("purchasePrice")}
+                />
+              </div>
+            </div>
+
+            {/* Tax rate */}
             <div className="space-y-1.5">
-              <Label className="text-xs">{t("invoices.item")}</Label>
+              <Label className="text-xs">{t("invoices.taxRate")}</Label>
               <Select
-                value={itemId || "__manual__"}
+                value={taxRateId || "none"}
                 onValueChange={(v) => {
-                  if (v === "__manual__") {
-                    setValue("itemId", undefined as any);
-                    setValue("unitPrice", 0);
-                    setValue("purchasePrice", 0);
-                    setValue("taxRateId", undefined);
-                    setValue("taxRateSnapshot", undefined);
-                    setValue("taxRateName", undefined);
-                    return;
-                  }
-                  const selected = itemsMap[v] as any;
-                  const tr = taxRatesMap[selected?.taxRate?.id] as any;
-                  setValue("itemId", v);
-                  if (selected) {
-                    setValue("unitPrice", Number(selected.salesPrice) || 0);
-                    setValue(
-                      "purchasePrice",
-                      Number(selected.purchasePrice) || 0,
-                    );
-                    setValue("taxRateId", selected.taxRate?.id);
-                    setValue(
-                      "taxRateSnapshot",
-                      tr ? Number(tr.rate) : undefined,
-                    );
-                    setValue("taxRateName", tr?.name || undefined);
-                  }
+                  const tr = v === "none" ? undefined : (taxRatesMap[v] as any);
+                  setValue("taxRateId", v === "none" ? undefined : v);
+                  setValue("taxRateSnapshot", tr ? Number(tr.rate) : undefined);
+                  setValue("taxRateName", tr?.name || undefined);
                 }}
               >
-                <SelectTrigger>
-                  <SelectValue placeholder={t("invoices.selectItem")} />
+                <SelectTrigger className="w-full min-w-0">
+                  <SelectValue placeholder={t("invoices.taxRate")} />
                 </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="__manual__">
-                    {t("invoices.manualEntry")}
-                  </SelectItem>
-                  <div className="border-t my-1" />
-                  {items.map((i: any) => (
-                    <SelectItem key={i.id} value={i.id}>
-                      {i.sku} — {i.name}
+                <SelectContent className="max-w-[75vw]">
+                  <SelectItem value="none">{t("invoices.noTax")}</SelectItem>
+                  {taxRates.map((tr: any) => (
+                    <SelectItem key={tr.id} value={tr.id}>
+                      {tr.name} ({Number(tr.rate)}%)
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
-          )}
-
-          {/* Numeric fields: Qty, Unit price, Discount, Unit cost */}
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-1.5">
-              <Label className="text-xs">{t("invoices.qty")}</Label>
-              <Input
-                type="number"
-                min={0.001}
-                step="any"
-                {...register("quantity")}
-              />
-              {errors.quantity && (
-                <p className="text-xs text-destructive">
-                  {errors.quantity.message}
-                </p>
-              )}
-            </div>
-            <div className="space-y-1.5">
-              <Label className="text-xs">{t("invoices.unitPrice")}</Label>
-              <Input
-                type="number"
-                min={0}
-                step="0.001"
-                {...register("unitPrice")}
-              />
-            </div>
-            <div className="space-y-1.5">
-              <Label className="text-xs">{t("invoices.discount")}</Label>
-              <Input
-                type="number"
-                min={0}
-                step="0.001"
-                {...register("discountAmt")}
-              />
-            </div>
-            <div className="space-y-1.5">
-              <Label className="text-xs">{t("invoices.cost")}</Label>
-              <Input
-                type="number"
-                min={0}
-                step="0.001"
-                {...register("purchasePrice")}
-              />
-            </div>
           </div>
 
-          {/* Tax rate */}
-          <div className="space-y-1.5">
-            <Label className="text-xs">{t("invoices.taxRate")}</Label>
-            <Select
-              value={taxRateId || "none"}
-              onValueChange={(v) => {
-                const tr = v === "none" ? undefined : (taxRatesMap[v] as any);
-                setValue("taxRateId", v === "none" ? undefined : v);
-                setValue("taxRateSnapshot", tr ? Number(tr.rate) : undefined);
-                setValue("taxRateName", tr?.name || undefined);
-              }}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder={t("invoices.taxRate")} />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="none">{t("invoices.noTax")}</SelectItem>
-                {taxRates.map((tr: any) => (
-                  <SelectItem key={tr.id} value={tr.id}>
-                    {tr.name} ({Number(tr.rate)}%)
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <DialogFooter>
+          <DialogFooter className="shrink-0 border-t pt-3 max-sm:flex-row">
             <Button
               type="button"
               variant="outline"
+              className="flex-1 max-sm:flex-1"
               onClick={() => onOpenChange(false)}
             >
               {t("common.cancel")}
             </Button>
-            <Button type="submit">
+            <Button type="submit" className="flex-1 max-sm:flex-1">
               <Calculator className="h-4 w-4 mr-1.5" /> {t("invoices.saveLine")}
             </Button>
           </DialogFooter>
