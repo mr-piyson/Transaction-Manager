@@ -20,7 +20,6 @@ import {
 } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
-import { InvoiceItemSelectDialog } from "@/components/dialogs/invoiceItemSelectDialog";
 import {
   type InvoiceLineData,
   InvoiceLineDialog,
@@ -198,18 +197,13 @@ export function InvoiceFormDialog({
   const t = useTranslations();
   const isEdit = Boolean(invoice?.id);
   const utils = trpc.useUtils();
-  const [itemPickerOpen, setItemPickerOpen] = React.useState(false);
   const [editingLineIndex, setEditingLineIndex] = React.useState<number | null>(
     null,
   );
 
   const { data: customersData } = trpc.customers.list.useQuery({});
   const { data: warehousesData } = trpc.warehouses.list.useQuery({});
-  const { data: itemsData, isLoading: itemsLoading } = trpc.items.list.useQuery(
-    { isSaleable: true },
-  );
-  const { data: categoriesData } = trpc.categories.list.useQuery();
-  const { data: taxRatesData } = trpc.settings.taxRates.list.useQuery();
+  const { data: itemsData } = trpc.items.list.useQuery({ isSaleable: true });
   const { data: orgData } = trpc.settings.getOrg.useQuery();
 
   const {
@@ -358,16 +352,10 @@ export function InvoiceFormDialog({
   const customers = customersData ?? [];
   const warehouses = warehousesData ?? [];
   const items = itemsData ?? [];
-  const taxRates = taxRatesData ?? [];
 
   const itemsMap = React.useMemo(
     () => Object.fromEntries(items.map((i: any) => [i.id, i])),
     [items],
-  );
-
-  const taxRatesMap = React.useMemo(
-    () => Object.fromEntries(taxRates.map((tr: any) => [tr.id, tr])),
-    [taxRates],
   );
 
   const handleLineSave = (index: number, data: InvoiceLineData) => {
@@ -398,26 +386,6 @@ export function InvoiceFormDialog({
       );
       setValue(`lines.${index}.taxRateName`, data.taxRateName || undefined);
     }
-  };
-
-  const handleItemsSelected = (selected: any[]) => {
-    for (const item of selected) {
-      const taxRateId = item.taxRate?.id;
-      const taxRate = taxRatesMap[taxRateId];
-      append({
-        itemId: item.id,
-        description: item.description || undefined,
-        quantity: 1,
-        unitPrice: Number(item.salesPrice) || 0,
-        discountAmt: 0,
-        purchasePrice: Number(item.purchasePrice) || 0,
-        taxRateId: taxRateId,
-        taxRateSnapshot: taxRate ? Number(taxRate.rate) : undefined,
-        taxRateName: taxRate?.name || undefined,
-        sortOrder: 0,
-      });
-    }
-    setItemPickerOpen(false);
   };
 
   const invoiceTypeOptions = [
@@ -597,30 +565,17 @@ export function InvoiceFormDialog({
                 <Label className="text-base font-semibold">
                   {t("invoices.lineItems")} *
                 </Label>
-                <div className="flex gap-2">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setEditingLineIndex(fields.length)}
-                  >
-                    <Plus className="h-4 w-4 sm:mr-1" />
-                    <span className="hidden sm:inline">
-                      {t("invoices.addLine")}
-                    </span>
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setItemPickerOpen(true)}
-                  >
-                    <Package className="h-4 w-4 sm:mr-1" />
-                    <span className="hidden sm:inline">
-                      {t("invoices.browse")}
-                    </span>
-                  </Button>
-                </div>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setEditingLineIndex(fields.length)}
+                >
+                  <Plus className="h-4 w-4 sm:mr-1" />
+                  <span className="hidden sm:inline">
+                    {t("invoices.addLine")}
+                  </span>
+                </Button>
               </div>
 
               {fields.map((field, index) => {
@@ -809,17 +764,6 @@ export function InvoiceFormDialog({
                         {t("invoices.addLine")}
                       </span>
                     </Button>
-                    <Button
-                      type="button"
-                      variant="secondary"
-                      size="sm"
-                      onClick={() => setItemPickerOpen(true)}
-                    >
-                      <Package className="h-4 w-4 sm:mr-1" />
-                      <span className="hidden sm:inline">
-                        {t("invoices.browseCatalogue")}
-                      </span>
-                    </Button>
                   </div>
                 </div>
               )}
@@ -963,17 +907,6 @@ export function InvoiceFormDialog({
             onSave={handleLineSave}
           />
         )}
-
-        {/* Item selection dialog (nested inside invoice DialogContent so Radix layers properly) */}
-        <InvoiceItemSelectDialog
-          open={itemPickerOpen}
-          onOpenChange={setItemPickerOpen}
-          items={items}
-          categories={categoriesData}
-          isLoading={itemsLoading}
-          existingItemIds={fields.map((f) => f.itemId || "")}
-          onSelect={handleItemsSelected}
-        />
       </DialogContent>
     </Dialog>
   );
