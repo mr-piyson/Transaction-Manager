@@ -12,6 +12,7 @@ import {
   Loader2,
   type LucideIcon,
   MoreHorizontal,
+  Package,
   Printer,
   Receipt,
   RotateCcw,
@@ -577,7 +578,9 @@ export default function DocumentDetailPage({
         {actions.map((action) => (
           <DropdownMenuItem
             key={action.key}
-            variant={action.variant === "destructive" ? "destructive" : "default"}
+            variant={
+              action.variant === "destructive" ? "destructive" : "default"
+            }
             onClick={() => handleActionClick(action)}
           >
             <action.icon className="size-4" />
@@ -821,19 +824,40 @@ export default function DocumentDetailPage({
                         {i + 1}
                       </TableCell>
                       <TableCell>
-                        <p className="font-medium">
-                          {line.item?.name ?? line.description ?? "—"}
-                        </p>
-                        {line.item?.sku && (
-                          <p className="text-xs text-muted-foreground">
-                            {line.item.sku}
-                          </p>
-                        )}
-                        {line.description && (
-                          <p className="text-xs text-muted-foreground italic">
-                            {line.description}
-                          </p>
-                        )}
+                        <div className="flex items-center gap-3">
+                          <div className="size-10 shrink-0 overflow-hidden rounded border bg-muted/50">
+                            {line.item?.image ? (
+                              <img
+                                src={line.item.image}
+                                alt={
+                                  line.item.name ??
+                                  line.description ??
+                                  "Item image"
+                                }
+                                className="size-full object-cover"
+                              />
+                            ) : (
+                              <div className="flex size-full items-center justify-center">
+                                <Package className="size-4 text-muted-foreground/50" />
+                              </div>
+                            )}
+                          </div>
+                          <div className="min-w-0">
+                            <p className="font-medium truncate">
+                              {line.item?.name ?? line.description ?? "—"}
+                            </p>
+                            {line.item?.sku && (
+                              <p className="text-xs text-muted-foreground">
+                                {line.item.sku}
+                              </p>
+                            )}
+                            {line.description && (
+                              <p className="text-xs text-muted-foreground italic">
+                                {line.description}
+                              </p>
+                            )}
+                          </div>
+                        </div>
                       </TableCell>
                       <TableCell className="text-right tabular-nums">
                         {Number(line.quantity).toFixed(3)}

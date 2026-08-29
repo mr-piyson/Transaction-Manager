@@ -319,7 +319,6 @@ export default function DocumentsLayout({
                           <Button size="sm" onClick={() => createDocument()}>
                             {t("common.new")}
                           </Button>
-                          
                         </ButtonGroup>
                       }
                     />

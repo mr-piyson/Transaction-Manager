@@ -421,7 +421,11 @@ export default function PurchaseOrderDetailPage() {
                               {line.item?.image ? (
                                 <img
                                   src={line.item.image}
-                                  alt={line.item.name}
+                                  alt={
+                                    line.item.name ??
+                                    line.description ??
+                                    "Item image"
+                                  }
                                   className="size-full object-cover"
                                 />
                               ) : (
@@ -494,7 +498,9 @@ export default function PurchaseOrderDetailPage() {
                         {line.item?.image ? (
                           <img
                             src={line.item.image}
-                            alt={line.item.name}
+                            alt={
+                              line.item.name ?? line.description ?? "Item image"
+                            }
                             className="size-full object-cover"
                           />
                         ) : (

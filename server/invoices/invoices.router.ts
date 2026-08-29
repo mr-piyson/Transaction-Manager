@@ -173,7 +173,15 @@ export const invoicesRouter = router({
           lines: {
             orderBy: { sortOrder: "asc" },
             include: {
-              item: { select: { id: true, sku: true, name: true, unit: true } },
+              item: {
+                select: {
+                  id: true,
+                  sku: true,
+                  name: true,
+                  unit: true,
+                  image: true,
+                },
+              },
               taxRate: { select: { id: true, name: true, rate: true } },
               department: { select: { id: true, name: true } },
             },

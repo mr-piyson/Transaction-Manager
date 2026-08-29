@@ -158,7 +158,15 @@ export const purchaseOrdersRouter = router({
           lines: {
             orderBy: { id: "asc" },
             include: {
-              item: { select: { id: true, sku: true, name: true, unit: true } },
+              item: {
+                select: {
+                  id: true,
+                  sku: true,
+                  name: true,
+                  unit: true,
+                  image: true,
+                },
+              },
               taxRate: { select: { id: true, name: true, rate: true } },
             },
           },
