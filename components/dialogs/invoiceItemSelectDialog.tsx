@@ -77,7 +77,10 @@ export function InvoiceItemSelectDialog({
           item.barcode?.toLowerCase().includes(q),
       );
     }
-    return result;
+    return [...result].sort(
+      (a: any, b: any) =>
+        (Number(b.totalStock) || 0) - (Number(a.totalStock) || 0),
+    );
   }, [items, search, categoryFilter]);
 
   const virtualizer = useVirtualizer({

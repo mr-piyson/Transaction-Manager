@@ -7,6 +7,15 @@ import * as React from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { z } from "zod";
 import { InvoiceItemSelectDialog } from "@/components/dialogs/invoiceItemSelectDialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -71,8 +80,11 @@ export function InvoiceLineDialog({
 }: InvoiceLineDialogProps) {
   const t = useTranslations();
   const [itemPickerOpen, setItemPickerOpen] = React.useState(false);
+  const [adminAlertOpen, setAdminAlertOpen] = React.useState(false);
+  const { data: me } = trpc.auth.me.useQuery();
+  const isAdmin = me?.platformRole === "SUPER_ADMIN" || me?.orgRole === "OWNER";
   const { data: itemsData, isLoading: itemsLoading } = trpc.items.list.useQuery(
-    { isSaleable: true },
+    { isSaleable: true, withStock: true },
   );
   const { data: categoriesData } = trpc.categories.list.useQuery();
   const { data: taxRatesData } = trpc.settings.taxRates.list.useQuery();
@@ -132,7 +144,6 @@ export function InvoiceLineDialog({
   const isManual = mode === "manual";
   const qty = Number(watched?.quantity) || 0;
   const price = Number(watched?.unitPrice) || 0;
-  const costBasis = Number(watched?.purchasePrice) || 0;
   const discount = Number(watched?.discountAmt) || 0;
   const lineSubtotal = qty * price;
   const lineTotal = lineSubtotal - discount;
@@ -143,11 +154,21 @@ export function InvoiceLineDialog({
   );
   const taxRate = taxRatesMap[taxRateId || ""] as any;
   const lineTax = taxRate ? lineTotal * (Number(taxRate.rate) / 100) : 0;
-  const lineCogs = qty * costBasis;
+  const selectedItem = itemId ? (itemsMap[itemId] as any) : undefined;
+  const averageCost = !isManual ? Number(selectedItem?.averageCost) || 0 : 0;
+  const lineCogs = isManual ? 0 : qty * averageCost;
   const grossProfit = lineTotal - lineCogs;
   const margin = lineTotal > 0 ? (grossProfit / lineTotal) * 100 : 0;
+  const belowAverageCost =
+    !isManual && price > 0 && Boolean(selectedItem) && price < averageCost;
 
   const onSubmit = (values: LineEditValues) => {
+    const isBelow =
+      !isManual && values.unitPrice > 0 && values.unitPrice < averageCost;
+    if (isBelow && !isAdmin) {
+      setAdminAlertOpen(true);
+      return;
+    }
     onSave(index, {
       itemId: values.itemId || null,
       description: values.description || null,
@@ -194,8 +215,6 @@ export function InvoiceLineDialog({
     }
   };
 
-  const selectedItem = itemId ? (itemsMap[itemId] as any) : undefined;
-
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="flex max-h-[min(92dvh,100vh)] flex-col gap-4 overflow-hidden p-4 sm:max-w-md sm:p-6">
@@ -231,19 +250,38 @@ export function InvoiceLineDialog({
                   +{lineTax.toFixed(3)}
                 </span>
               </span>
-              <span>
-                {t("invoices.cogs")}:{" "}
-                <span className="font-medium text-foreground">
-                  {lineCogs.toFixed(3)}
+              {!isManual && (
+                <>
+                  {averageCost > 0 && (
+                    <span>
+                      {t("invoices.avgCost")}:{" "}
+                      <span className="font-medium text-foreground">
+                        {averageCost.toFixed(3)}
+                      </span>
+                    </span>
+                  )}
+                  <span>
+                    {t("invoices.cogs")}:{" "}
+                    <span className="font-medium text-foreground">
+                      {lineCogs.toFixed(3)}
+                    </span>
+                  </span>
+                  <span
+                    className={
+                      grossProfit >= 0 ? "text-green-600" : "text-red-600"
+                    }
+                  >
+                    {t("invoices.gp")}: {grossProfit.toFixed(3)} (
+                    {margin.toFixed(1)}
+                    %)
+                  </span>
+                </>
+              )}
+              {belowAverageCost && (
+                <span className="w-full font-medium text-amber-600">
+                  {t("invoices.belowAvgCostWarning")}
                 </span>
-              </span>
-              <span
-                className={grossProfit >= 0 ? "text-green-600" : "text-red-600"}
-              >
-                {t("invoices.gp")}: {grossProfit.toFixed(3)} (
-                {margin.toFixed(1)}
-                %)
-              </span>
+              )}
               <span className="text-sm font-bold text-foreground border-t pt-0.5 w-full">
                 {t("common.total")}: {(lineTotal + lineTax).toFixed(3)}
               </span>
@@ -310,7 +348,7 @@ export function InvoiceLineDialog({
               </div>
             )}
 
-            {/* Numeric fields: Qty, Unit price, Discount, Unit cost */}
+            {/* Numeric fields: Qty, Unit price, Discount */}
             <div className="grid grid-cols-2 gap-3 max-sm:grid-cols-1">
               <div className="space-y-1.5">
                 <Label className="text-xs">{t("invoices.qty")}</Label>
@@ -345,40 +383,33 @@ export function InvoiceLineDialog({
                 />
               </div>
               <div className="space-y-1.5">
-                <Label className="text-xs">{t("invoices.cost")}</Label>
-                <Input
-                  type="number"
-                  min={0}
-                  step="0.001"
-                  {...register("purchasePrice")}
-                />
+                <Label className="text-xs">{t("invoices.taxRate")}</Label>
+                <Select
+                  value={taxRateId || "none"}
+                  onValueChange={(v) => {
+                    const tr =
+                      v === "none" ? undefined : (taxRatesMap[v] as any);
+                    setValue("taxRateId", v === "none" ? undefined : v);
+                    setValue(
+                      "taxRateSnapshot",
+                      tr ? Number(tr.rate) : undefined,
+                    );
+                    setValue("taxRateName", tr?.name || undefined);
+                  }}
+                >
+                  <SelectTrigger className="w-full min-w-0">
+                    <SelectValue placeholder={t("invoices.taxRate")} />
+                  </SelectTrigger>
+                  <SelectContent className="max-w-[75vw]">
+                    <SelectItem value="none">{t("invoices.noTax")}</SelectItem>
+                    {taxRates.map((tr: any) => (
+                      <SelectItem key={tr.id} value={tr.id}>
+                        {tr.name} ({Number(tr.rate)}%)
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
-            </div>
-
-            {/* Tax rate */}
-            <div className="space-y-1.5">
-              <Label className="text-xs">{t("invoices.taxRate")}</Label>
-              <Select
-                value={taxRateId || "none"}
-                onValueChange={(v) => {
-                  const tr = v === "none" ? undefined : (taxRatesMap[v] as any);
-                  setValue("taxRateId", v === "none" ? undefined : v);
-                  setValue("taxRateSnapshot", tr ? Number(tr.rate) : undefined);
-                  setValue("taxRateName", tr?.name || undefined);
-                }}
-              >
-                <SelectTrigger className="w-full min-w-0">
-                  <SelectValue placeholder={t("invoices.taxRate")} />
-                </SelectTrigger>
-                <SelectContent className="max-w-[75vw]">
-                  <SelectItem value="none">{t("invoices.noTax")}</SelectItem>
-                  {taxRates.map((tr: any) => (
-                    <SelectItem key={tr.id} value={tr.id}>
-                      {tr.name} ({Number(tr.rate)}%)
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
             </div>
           </div>
 
@@ -408,6 +439,26 @@ export function InvoiceLineDialog({
           singleSelect
           onSelect={handleItemPicked}
         />
+
+        {/* Admin approval required: line price below item average cost */}
+        <AlertDialog open={adminAlertOpen} onOpenChange={setAdminAlertOpen}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>
+                {t("invoices.adminApprovalRequiredTitle")}
+              </AlertDialogTitle>
+              <AlertDialogDescription>
+                {t("invoices.adminApprovalRequiredDesc", {
+                  price: price.toFixed(3),
+                  averageCost: averageCost.toFixed(3),
+                })}
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogAction>{t("common.ok")}</AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </DialogContent>
     </Dialog>
   );
