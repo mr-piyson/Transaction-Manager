@@ -1965,8 +1965,10 @@ model PurchaseLine {
 
   description String? // Supplier-side description if different from item name
 
-  itemId String
-  item   Item   @relation(fields: [itemId], references: [id])
+  // Nullable for manual (non-inventory) purchase entries. Manual lines never
+  // touch stock, inventory movements, or item average cost.
+  itemId String?
+  item   Item?  @relation(fields: [itemId], references: [id])
 
   purchaseOrderId String
   purchaseOrder   PurchaseOrder @relation(fields: [purchaseOrderId], references: [id], onDelete: Cascade)

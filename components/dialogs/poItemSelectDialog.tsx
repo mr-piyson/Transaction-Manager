@@ -23,6 +23,7 @@ export interface POItemSelectDialogProps {
   items: any[];
   isLoading: boolean;
   existingItemIds: string[];
+  singleSelect?: boolean;
   onSelect: (items: any[]) => void;
 }
 
@@ -32,6 +33,7 @@ export function POItemSelectDialog({
   items,
   isLoading,
   existingItemIds,
+  singleSelect = false,
   onSelect,
 }: POItemSelectDialogProps) {
   const t = useTranslations();
@@ -121,6 +123,16 @@ export function POItemSelectDialog({
       (item: any) => selected.has(item.id) && !existingSet.has(item.id),
     );
     onSelect(selectedItems);
+  };
+
+  const handleRowClick = (item: any, isExisting: boolean) => {
+    if (singleSelect) {
+      if (isExisting) return;
+      onSelect([item]);
+      onOpenChange(false);
+      return;
+    }
+    if (!isExisting) toggleItem(item.id);
   };
 
   const availableCount = [...selected].filter(
@@ -256,9 +268,7 @@ export function POItemSelectDialog({
                       width: "100%",
                       transform: `translateY(${virtualRow.start}px)`,
                     }}
-                    onClick={() => {
-                      if (!isExisting) toggleItem(item.id);
-                    }}
+                    onClick={() => handleRowClick(item, isExisting)}
                     className={cn(
                       "flex items-center gap-2.5 px-4 py-2.5 sm:gap-3 sm:px-6 sm:py-3 cursor-pointer border-b border-border/50 transition-colors",
                       isExisting
@@ -269,20 +279,22 @@ export function POItemSelectDialog({
                     )}
                   >
                     {/* Checkbox */}
-                    <div
-                      className={cn(
-                        "flex size-5 shrink-0 items-center justify-center rounded border transition-colors",
-                        isExisting
-                          ? "border-muted-foreground/30 bg-muted"
-                          : isSelected
-                            ? "border-primary bg-primary text-primary-foreground"
-                            : "border-border",
-                      )}
-                    >
-                      {(isSelected || isExisting) && (
-                        <Check className="size-3" />
-                      )}
-                    </div>
+                    {!singleSelect && (
+                      <div
+                        className={cn(
+                          "flex size-5 shrink-0 items-center justify-center rounded border transition-colors",
+                          isExisting
+                            ? "border-muted-foreground/30 bg-muted"
+                            : isSelected
+                              ? "border-primary bg-primary text-primary-foreground"
+                              : "border-border",
+                        )}
+                      >
+                        {(isSelected || isExisting) && (
+                          <Check className="size-3" />
+                        )}
+                      </div>
+                    )}
 
                     {/* Image preview */}
                     <div className="size-8 shrink-0 overflow-hidden rounded-md border bg-muted sm:size-10">
@@ -354,36 +366,53 @@ export function POItemSelectDialog({
 
         {/* Footer */}
         <DialogFooter className="shrink-0 px-4 py-3 border-t sm:px-6 sm:py-4 flex-col sm:flex-row gap-2 sm:gap-0">
-          <span className="text-sm text-muted-foreground shrink-0">
-            {selected.size > 0 ? (
-              <>
-                {availableCount} item{availableCount !== 1 ? "s" : ""} selected
-              </>
-            ) : (
-              "Tap items to select"
-            )}
-          </span>
-          <div className="flex gap-2 sm:ml-auto">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => onOpenChange(false)}
-              size="sm"
-              className="flex-1 sm:flex-none"
-            >
-              Cancel
-            </Button>
-            <Button
-              type="button"
-              onClick={handleAdd}
-              disabled={availableCount === 0}
-              size="sm"
-              className="flex-1 sm:flex-none"
-            >
-              Add {availableCount > 0 ? `${availableCount} ` : ""}item
-              {availableCount !== 1 ? "s" : ""}
-            </Button>
-          </div>
+          {singleSelect ? (
+            <div className="flex gap-2 sm:ml-auto">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => onOpenChange(false)}
+                size="sm"
+                className="flex-1 sm:flex-none"
+              >
+                Cancel
+              </Button>
+            </div>
+          ) : (
+            <>
+              <span className="text-sm text-muted-foreground shrink-0">
+                {selected.size > 0 ? (
+                  <>
+                    {availableCount} item{availableCount !== 1 ? "s" : ""}{" "}
+                    selected
+                  </>
+                ) : (
+                  "Tap items to select"
+                )}
+              </span>
+              <div className="flex gap-2 sm:ml-auto">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => onOpenChange(false)}
+                  size="sm"
+                  className="flex-1 sm:flex-none"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="button"
+                  onClick={handleAdd}
+                  disabled={availableCount === 0}
+                  size="sm"
+                  className="flex-1 sm:flex-none"
+                >
+                  Add {availableCount > 0 ? `${availableCount} ` : ""}item
+                  {availableCount !== 1 ? "s" : ""}
+                </Button>
+              </div>
+            </>
+          )}
         </DialogFooter>
       </DialogContent>
     </Dialog>

@@ -513,6 +513,71 @@ export async function postPOReceived(opts: PostPOReceivedOptions) {
 }
 
 // ---------------------------------------------------------------------------
+// PO expense received posting (non-inventory / manual lines + AP)
+// Manual purchase entries have no linked item, so they cannot be posted to the
+// Inventory account. Instead they debit a generic expense (COGS) account.
+// ---------------------------------------------------------------------------
+
+interface PostPOExpenseReceivedOptions {
+  tx: TransactionClient;
+  organizationId: string;
+  userId: string;
+  ipAddress?: string;
+  purchaseOrderId: string;
+  serial: string;
+  expenseCost: number;
+  currency?: string;
+  exchangeRate?: number;
+}
+
+export async function postPOExpenseReceived(
+  opts: PostPOExpenseReceivedOptions,
+) {
+  const {
+    tx,
+    organizationId,
+    userId,
+    ipAddress,
+    purchaseOrderId,
+    serial,
+    expenseCost,
+    currency,
+    exchangeRate,
+  } = opts;
+
+  if (expenseCost <= 0) return null;
+
+  const accounts = await resolveAccounts(tx, organizationId);
+
+  return postJournalEntry({
+    tx,
+    organizationId,
+    userId,
+    ipAddress,
+    date: new Date(),
+    description: `PO #${serial} — non-inventory received`,
+    reference: serial,
+    currency,
+    exchangeRate,
+    purchaseOrderId,
+    lines: [
+      {
+        accountId: accounts.get(ACCOUNTS.COGS)!,
+        debit: expenseCost,
+        credit: 0,
+        description: `PO #${serial} — Purchases/Expense`,
+      },
+      {
+        accountId: accounts.get(ACCOUNTS.ACCOUNTS_PAYABLE)!,
+        debit: 0,
+        credit: expenseCost,
+        description: `PO #${serial} — Accounts Payable`,
+      },
+    ],
+  });
+}
+
+// ---------------------------------------------------------------------------
 // PO payment posting (AP + Cash/Bank)
 // ---------------------------------------------------------------------------
 

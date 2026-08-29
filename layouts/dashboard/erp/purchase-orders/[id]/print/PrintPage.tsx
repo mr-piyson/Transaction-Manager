@@ -276,14 +276,16 @@ export default function PurchaseOrderPrintPage() {
                   </td>
                   <td className="py-2 pr-2 align-top">
                     <span className="font-medium">
-                      {line.item?.name ?? "—"}
+                      {line.item
+                        ? line.item.name
+                        : line.description || "Manual entry"}
                     </span>
                     {line.item?.sku && (
                       <p className="text-xs text-muted-foreground">
                         SKU: {line.item.sku}
                       </p>
                     )}
-                    {line.description && (
+                    {line.item && line.description && (
                       <p className="text-xs text-muted-foreground">
                         {line.description}
                       </p>

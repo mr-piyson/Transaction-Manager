@@ -1,7 +1,14 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Loader2, Package, Trash2, TriangleAlert } from "lucide-react";
+import {
+  Loader2,
+  Package,
+  Pencil,
+  Plus,
+  Trash2,
+  TriangleAlert,
+} from "lucide-react";
 import { useRouter } from "next/navigation";
 import * as React from "react";
 import { type SubmitHandler, useFieldArray, useForm } from "react-hook-form";
@@ -19,7 +26,6 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Field } from "@/components/ui/field";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -35,13 +41,18 @@ import { trpc } from "@/lib/trpc/client";
 import { CURRENCIES } from "@/lib/utils";
 import { currencyCodeSchema } from "@/lib/validations";
 import { POItemSelectDialog } from "./poItemSelectDialog";
+import { type POLineData, POLineDialog } from "./poLineDialog";
 import { SupplierSelectDialog } from "./supplierSelectDialog";
 
 const lineSchema = z.object({
-  itemId: z.string().min(1, "Item is required"),
+  mode: z.enum(["item", "manual"]).optional(),
+  itemId: z.string().optional(),
   description: z.string().optional(),
   quantity: z.coerce.number().positive("Qty must be > 0"),
   unitCost: z.coerce.number().min(0, "Unit cost must be >= 0"),
+  taxRateId: z.string().optional(),
+  taxRateSnapshot: z.coerce.number().optional(),
+  taxRateName: z.string().optional(),
 });
 
 const schema = z.object({
@@ -99,6 +110,11 @@ export function POFormDialog({
   const { currency: orgCurrency } = useCurrency();
   const [itemPickerOpen, setItemPickerOpen] = React.useState(false);
   const [supplierPickerOpen, setSupplierPickerOpen] = React.useState(false);
+  const [editingLine, setEditingLine] = React.useState<{
+    index: number;
+    isNew?: boolean;
+    data: POLineData;
+  } | null>(null);
 
   const { data: suppliersData } = trpc.suppliers.list.useQuery({});
   const { data: warehousesData } = trpc.warehouses.list.useQuery({});
@@ -137,6 +153,17 @@ export function POFormDialog({
         (s, l) => s + (Number(l.quantity) || 0) * (Number(l.unitCost) || 0),
         0,
       ),
+    [lines],
+  );
+
+  const vatTotal = React.useMemo(
+    () =>
+      (lines ?? []).reduce((s, l) => {
+        const lineSubtotal =
+          (Number(l.quantity) || 0) * (Number(l.unitCost) || 0);
+        const rate = Number(l.taxRateSnapshot) || 0;
+        return s + lineSubtotal * (rate / 100);
+      }, 0),
     [lines],
   );
 
@@ -198,14 +225,16 @@ export function POFormDialog({
       notes: values.notes || undefined,
       internalNotes: values.internalNotes || undefined,
       date: new Date(values.date),
-      lines: values.lines
-        .filter((l) => l.itemId)
-        .map((l) => ({
-          itemId: l.itemId,
-          description: l.description || undefined,
-          quantity: Number(l.quantity),
-          unitCost: Number(l.unitCost),
-        })),
+      lines: values.lines.map((l) => ({
+        mode: l.mode,
+        itemId: l.itemId,
+        description: l.description || undefined,
+        quantity: Number(l.quantity),
+        unitCost: Number(l.unitCost),
+        taxRateId: l.taxRateId || undefined,
+        taxRateSnapshot: l.taxRateSnapshot ?? undefined,
+        taxRateName: l.taxRateName || undefined,
+      })),
     };
 
     if (isEdit && po?.id) {
@@ -231,13 +260,76 @@ export function POFormDialog({
   const handleItemsSelected = (selected: any[]) => {
     for (const item of selected) {
       const supplierItem = item.supplierItems?.[0];
+      const tr = item.taxRate as any;
       append({
+        mode: "item",
         itemId: item.id,
         quantity: Number(supplierItem?.minOrderQty) || 1,
         unitCost: Number(supplierItem?.basePrice ?? item.purchasePrice) || 0,
+        taxRateId: item.taxRate?.id,
+        taxRateSnapshot: tr ? Number(tr.rate) : undefined,
+        taxRateName: tr?.name || undefined,
       });
     }
     setItemPickerOpen(false);
+    if (selected.length === 1) {
+      const item = selected[0];
+      const tr = item.taxRate as any;
+      const supplierItem = item.supplierItems?.[0];
+      setEditingLine({
+        index: fields.length,
+        data: {
+          mode: "item",
+          itemId: item.id,
+          description: null,
+          quantity: Number(supplierItem?.minOrderQty) || 1,
+          unitCost: Number(supplierItem?.basePrice ?? item.purchasePrice) || 0,
+          taxRateId: item.taxRate?.id,
+          taxRateSnapshot: tr ? Number(tr.rate) : undefined,
+          taxRateName: tr?.name || undefined,
+        },
+      });
+    }
+  };
+
+  const handleAddManualLine = () => {
+    setEditingLine({
+      index: fields.length,
+      isNew: true,
+      data: {
+        mode: "manual",
+        itemId: null,
+        description: "",
+        quantity: 1,
+        unitCost: 0,
+      },
+    });
+  };
+
+  const openLineEditor = (index: number) => {
+    const line = (lines ?? [])[index] as any;
+    setEditingLine({
+      index,
+      data: {
+        mode: line?.mode ?? (line?.itemId ? "item" : "manual"),
+        itemId: line?.itemId || null,
+        description: line?.description || null,
+        quantity: Number(line?.quantity) || 0,
+        unitCost: Number(line?.unitCost) || 0,
+        taxRateId: line?.taxRateId || null,
+        taxRateSnapshot: line?.taxRateSnapshot ?? null,
+        taxRateName: line?.taxRateName || null,
+      },
+    });
+  };
+
+  const handleLineSave = (index: number, data: POLineData) => {
+    if (editingLine?.isNew) {
+      append(data as any);
+    } else {
+      setValue(`lines.${index}` as const, data as any);
+    }
+    setEditingLine(null);
   };
 
   return (
@@ -352,175 +444,114 @@ export function POFormDialog({
 
               {/* Lines */}
               <div className="space-y-3">
-                <div className="flex items-center justify-between">
+                <div className="flex flex-wrap items-center justify-between gap-2">
                   <Label className="text-base font-semibold">
                     Line Items *
                   </Label>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setItemPickerOpen(true)}
-                    disabled={!selectedSupplierId}
-                    title={
-                      !selectedSupplierId
-                        ? "Select a supplier first"
-                        : undefined
-                    }
-                  >
-                    <Package className="h-4 w-4 mr-1" /> Select items
-                  </Button>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={handleAddManualLine}
+                    >
+                      <Plus className="h-4 w-4 mr-1" /> Manual entry
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setItemPickerOpen(true)}
+                      disabled={!selectedSupplierId}
+                      title={
+                        !selectedSupplierId
+                          ? "Select a supplier first"
+                          : undefined
+                      }
+                    >
+                      <Package className="h-4 w-4 mr-1" /> Select items
+                    </Button>
+                  </div>
                 </div>
 
                 {fields.map((field, index) => {
-                  const item = itemsMap[field.itemId] as any;
+                  const line = (lines ?? [])[index] as any;
+                  const item = line?.itemId ? itemsMap[line.itemId] : undefined;
+                  const isManual = !line?.itemId;
+                  const qty = Number(line?.quantity) || 0;
+                  const cost = Number(line?.unitCost) || 0;
+                  const lineSubtotal = qty * cost;
+                  const lineVat =
+                    lineSubtotal * ((Number(line?.taxRateSnapshot) || 0) / 100);
                   return (
                     <div
                       key={field.id}
-                      className="border rounded-lg p-2.5 sm:p-3 bg-muted/20"
+                      className="border rounded-lg p-2.5 sm:p-3 bg-muted/20 flex items-center gap-3"
                     >
-                      {/* Mobile: stacked layout */}
-                      <div className="flex flex-col gap-2 sm:hidden">
-                        <div className="flex items-center justify-between gap-2">
-                          <div className="size-8 shrink-0 overflow-hidden rounded-md border bg-muted">
-                            {item?.image ? (
-                              <img
-                                src={item.image}
-                                alt={item.name}
-                                className="size-full object-cover"
-                              />
-                            ) : (
-                              <div className="flex size-full items-center justify-center">
-                                <Package className="size-3.5 text-muted-foreground/40" />
-                              </div>
-                            )}
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <Label className="text-xs">Item</Label>
-                            <div className="text-sm truncate">
-                              {item ? (
-                                <span className="font-medium">
-                                  {item.sku} — {item.name}
-                                </span>
-                              ) : (
-                                <span className="text-muted-foreground italic">
-                                  Select item
-                                </span>
-                              )}
-                            </div>
-                          </div>
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="icon"
-                            className="size-8 shrink-0"
-                            onClick={() => remove(index)}
-                          >
-                            <Trash2 className="h-4 w-4 text-destructive" />
-                          </Button>
+                      {item?.image ? (
+                        <div className="size-9 sm:size-10 shrink-0 overflow-hidden rounded-md border bg-muted">
+                          <img
+                            src={item.image}
+                            alt={item.name}
+                            className="size-full object-cover"
+                          />
                         </div>
-                        <div className="grid grid-cols-3 gap-2">
-                          <div>
-                            <Label className="text-xs">Qty</Label>
-                            <Input
-                              type="number"
-                              min={0.001}
-                              step="any"
-                              {...register(`lines.${index}.quantity` as const)}
-                            />
-                          </div>
-                          <div>
-                            <Label className="text-xs">Unit cost</Label>
-                            <Input
-                              type="number"
-                              min={0}
-                              step="0.001"
-                              {...register(`lines.${index}.unitCost` as const)}
-                            />
-                          </div>
-                          <div>
-                            <Label className="text-xs">Total</Label>
-                            <div className="h-9 flex items-center text-sm font-medium text-muted-foreground">
-                              {(
-                                (Number(watch(`lines.${index}.quantity`)) ||
-                                  0) *
-                                (Number(watch(`lines.${index}.unitCost`)) || 0)
-                              ).toFixed(3)}
-                            </div>
-                          </div>
+                      ) : (
+                        <div className="size-9 sm:size-10 shrink-0 overflow-hidden rounded-md border bg-muted flex items-center justify-center">
+                          <Package className="size-4 text-muted-foreground/40" />
+                        </div>
+                      )}
+
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-1.5">
+                          {item ? (
+                            <span className="font-medium text-sm truncate">
+                              {item.sku} — {item.name}
+                            </span>
+                          ) : (
+                            <span className="font-medium text-sm truncate">
+                              {line?.description || "Manual entry"}
+                            </span>
+                          )}
+                          {isManual && (
+                            <span className="shrink-0 rounded bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground uppercase">
+                              Manual
+                            </span>
+                          )}
+                        </div>
+                        <div className="mt-0.5 text-xs text-muted-foreground">
+                          {qty} × {cost.toFixed(3)}
+                          {Number(line?.taxRateSnapshot) > 0 && (
+                            <span className="ml-1">
+                              · VAT {Number(line?.taxRateSnapshot)}%
+                            </span>
+                          )}{" "}
+                          ={" "}
+                          <span className="font-medium text-foreground tabular-nums">
+                            {(lineSubtotal + lineVat).toFixed(3)}
+                          </span>{" "}
+                          {watch("currency")}
                         </div>
                       </div>
 
-                      {/* Desktop: inline layout */}
-                      <div className="hidden sm:flex items-start gap-2">
-                        <div className="size-10 shrink-0 overflow-hidden rounded-md border bg-muted">
-                          {item?.image ? (
-                            <img
-                              src={item.image}
-                              alt={item.name}
-                              className="size-full object-cover"
-                            />
-                          ) : (
-                            <div className="flex size-full items-center justify-center">
-                              <Package className="size-4 text-muted-foreground/40" />
-                            </div>
-                          )}
-                        </div>
-                        <div className="flex-1 grid grid-cols-12 gap-2">
-                          <div className="col-span-5">
-                            <Label className="text-xs">Item</Label>
-                            <div className="h-9 flex items-center text-sm truncate">
-                              {item ? (
-                                <span className="font-medium">
-                                  {item.sku} — {item.name}
-                                </span>
-                              ) : (
-                                <span className="text-muted-foreground italic">
-                                  Select item
-                                </span>
-                              )}
-                            </div>
-                          </div>
-                          <div className="col-span-2">
-                            <Label className="text-xs">Qty</Label>
-                            <Input
-                              type="number"
-                              min={0.001}
-                              step="any"
-                              {...register(`lines.${index}.quantity` as const)}
-                            />
-                          </div>
-                          <div className="col-span-2">
-                            <Label className="text-xs">Unit cost</Label>
-                            <Input
-                              type="number"
-                              min={0}
-                              step="0.001"
-                              {...register(`lines.${index}.unitCost` as const)}
-                            />
-                          </div>
-                          <div className="col-span-2">
-                            <Label className="text-xs">Total</Label>
-                            <div className="h-9 flex items-center text-sm font-medium text-muted-foreground">
-                              {(
-                                (Number(watch(`lines.${index}.quantity`)) ||
-                                  0) *
-                                (Number(watch(`lines.${index}.unitCost`)) || 0)
-                              ).toFixed(3)}
-                            </div>
-                          </div>
-                          <div className="col-span-1 flex items-end pb-1">
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => remove(index)}
-                            >
-                              <Trash2 className="h-4 w-4 text-destructive" />
-                            </Button>
-                          </div>
-                        </div>
-                      </div>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        className="shrink-0"
+                        onClick={() => openLineEditor(index)}
+                      >
+                        <Pencil className="h-3.5 w-3.5 mr-1" /> Edit
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="size-8 shrink-0"
+                        onClick={() => remove(index)}
+                      >
+                        <Trash2 className="h-4 w-4 text-destructive" />
+                      </Button>
                     </div>
                   );
                 })}
@@ -528,35 +559,35 @@ export function POFormDialog({
                 {fields.length === 0 && (
                   <div className="text-sm text-muted-foreground text-center py-8 space-y-2">
                     <Package className="h-8 w-8 mx-auto opacity-30" />
-                    <p>No items yet.</p>
-                    {!selectedSupplierId ? (
-                      <p className="text-xs text-muted-foreground/60">
-                        Select a supplier first to browse available items.
-                      </p>
-                    ) : (
+                    <p>No lines yet.</p>
+                    <div className="flex items-center justify-center gap-2">
                       <Button
                         type="button"
                         variant="secondary"
                         size="sm"
-                        onClick={() => setItemPickerOpen(true)}
+                        onClick={handleAddManualLine}
                       >
-                        Browse product catalogue
+                        Add manual entry
                       </Button>
+                      {selectedSupplierId && (
+                        <Button
+                          type="button"
+                          variant="secondary"
+                          size="sm"
+                          onClick={() => setItemPickerOpen(true)}
+                        >
+                          Browse product catalogue
+                        </Button>
+                      )}
+                    </div>
+                    {!selectedSupplierId && (
+                      <p className="text-xs text-muted-foreground/60">
+                        Select a supplier first to browse available items.
+                      </p>
                     )}
                   </div>
                 )}
               </div>
-
-              {/* Notes */}
-              <Field>
-                <Label htmlFor="notes">Notes</Label>
-                <Textarea
-                  id="notes"
-                  className="resize-none"
-                  rows={2}
-                  {...register("notes")}
-                />
-              </Field>
 
               {/* Totals */}
               {fields.length > 0 && (
@@ -569,16 +600,33 @@ export function POFormDialog({
                           {subtotal.toFixed(3)} {watch("currency")}
                         </span>
                       </div>
+                      <div className="flex justify-between text-sm">
+                        <span className="text-muted-foreground">VAT</span>
+                        <span className="font-medium tabular-nums">
+                          {vatTotal.toFixed(3)} {watch("currency")}
+                        </span>
+                      </div>
                       <div className="flex justify-between text-base font-bold border-t pt-1">
                         <span>Total</span>
                         <span className="tabular-nums">
-                          {subtotal.toFixed(3)} {watch("currency")}
+                          {(subtotal + vatTotal).toFixed(3)} {watch("currency")}
                         </span>
                       </div>
                     </div>
                   </div>
                 </div>
               )}
+
+              {/* Notes */}
+              <Field>
+                <Label htmlFor="notes">Notes</Label>
+                <Textarea
+                  id="notes"
+                  className="resize-none"
+                  rows={2}
+                  {...register("notes")}
+                />
+              </Field>
             </div>
 
             <DialogFooter className="shrink-0 px-4 py-3 border-t sm:px-6 sm:py-4 flex-col sm:flex-row gap-2 sm:gap-0 sm:mt-6">
@@ -618,8 +666,32 @@ export function POFormDialog({
         onOpenChange={setItemPickerOpen}
         items={items}
         isLoading={itemsLoading}
-        existingItemIds={fields.map((f) => f.itemId)}
+        existingItemIds={fields
+          .map((f) => f.itemId)
+          .filter((id): id is string => !!id)}
         onSelect={handleItemsSelected}
+      />
+
+      <POLineDialog
+        open={!!editingLine}
+        onOpenChange={(v) => !v && setEditingLine(null)}
+        index={editingLine?.index ?? 0}
+        initial={
+          editingLine?.data ?? {
+            mode: "manual",
+            quantity: 1,
+            unitCost: 0,
+          }
+        }
+        items={items}
+        itemsLoading={itemsLoading}
+        existingItemIds={(lines ?? [])
+          .map((l: any) => l.itemId)
+          .filter(
+            (id: any, i: number) =>
+              id && (editingLine === null || i !== editingLine.index),
+          )}
+        onSave={handleLineSave}
       />
 
       <SupplierSelectDialog

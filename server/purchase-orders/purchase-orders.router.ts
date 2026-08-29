@@ -10,6 +10,7 @@ import { generateSerial } from "@/lib/sequences";
 import { assertCan, orgProcedure, router } from "@/lib/trpc/context";
 import { currencyCodeSchema, sortOrderSchema } from "@/lib/validations";
 import {
+  postPOExpenseReceived,
   postPOPayment,
   postPOReceived,
 } from "../journals/journal-posting.service";
@@ -24,16 +25,22 @@ import {
   hardDeletePurchaseOrderTree,
 } from "./hard-delete.service";
 
-const purchaseLineInputSchema = z.object({
-  itemId: z.string(),
-  description: z.string().max(1000).optional(),
-  quantity: z.number().positive(),
-  unitCost: z.number().min(0),
-  taxAmt: z.number().min(0).default(0),
-  taxRateId: z.string().optional(),
-  taxRateSnapshot: z.number().min(0).optional(),
-  taxRateName: z.string().optional(),
-});
+const purchaseLineInputSchema = z
+  .object({
+    mode: z.enum(["item", "manual"]).optional(),
+    itemId: z.string().optional(),
+    description: z.string().max(1000).optional(),
+    quantity: z.number().positive(),
+    unitCost: z.number().min(0),
+    taxAmt: z.number().min(0).default(0),
+    taxRateId: z.string().optional(),
+    taxRateSnapshot: z.number().min(0).optional(),
+    taxRateName: z.string().optional(),
+  })
+  .refine((l) => !l.itemId || l.itemId.length > 0, {
+    message: "itemId must be empty or a valid id",
+    path: ["itemId"],
+  });
 
 const purchaseOrderBaseSchema = z.object({
   date: z.coerce.date().default(() => new Date()),
@@ -216,6 +223,14 @@ export const purchaseOrdersRouter = router({
 
       const enrichedLines = await Promise.all(
         lineInputs.map(async (line) => {
+          if (!line.itemId) {
+            return {
+              ...line,
+              taxRateId: line.taxRateId,
+              taxRateSnapshot: line.taxRateSnapshot ?? 0,
+              taxRateName: line.taxRateName,
+            };
+          }
           const item = await ctx.db.item.findFirst({
             where: { id: line.itemId, organizationId: orgId, deletedAt: null },
             select: {
@@ -325,6 +340,14 @@ export const purchaseOrdersRouter = router({
         if (lineInputs && lineInputs.length > 0) {
           const enrichedLines = await Promise.all(
             lineInputs.map(async (line) => {
+              if (!line.itemId) {
+                return {
+                  ...line,
+                  taxRateId: line.taxRateId,
+                  taxRateSnapshot: line.taxRateSnapshot ?? 0,
+                  taxRateName: line.taxRateName,
+                };
+              }
               const item = await tx.item.findFirst({
                 where: { id: line.itemId, organizationId: orgId },
                 select: {
@@ -738,6 +761,13 @@ export const purchaseOrdersRouter = router({
             data: { receivedQty: orderedQty },
           });
 
+          if (alreadyReceived + toReceive < orderedQty)
+            allFullyReceived = false;
+
+          // Manual lines have no linked item — they never touch inventory,
+          // stock movements, or item average cost.
+          if (!line.itemId) continue;
+
           await tx.stockMovement.create({
             data: {
               type: "PURCHASE_INBOUND",
@@ -768,9 +798,6 @@ export const purchaseOrdersRouter = router({
               version: { increment: 1 },
             },
           });
-
-          if (alreadyReceived + toReceive < orderedQty)
-            allFullyReceived = false;
         }
 
         const newStatus = allFullyReceived ? "RECEIVED" : "PARTIAL_RECEIVED";
@@ -785,20 +812,31 @@ export const purchaseOrdersRouter = router({
           },
         });
 
-        // Create expense record for the cost of received items
-        const receivedCost = po.lines.reduce((sum, line) => {
+        // Split received costs: item lines post to Inventory, manual lines
+        // (no item) post to an expense account. The AP credit is identical.
+        const itemReceivedCost = po.lines.reduce((sum, line) => {
           const orderedQty = Number(line.quantity);
           const alreadyReceived = Number(line.receivedQty);
           const toReceive = orderedQty - alreadyReceived;
-          if (toReceive <= 0) return sum;
+          if (toReceive <= 0 || !line.itemId) return sum;
           return sum + Number(line.unitCost) * toReceive;
         }, 0);
 
-        if (receivedCost > 0) {
+        const manualReceivedCost = po.lines.reduce((sum, line) => {
+          const orderedQty = Number(line.quantity);
+          const alreadyReceived = Number(line.receivedQty);
+          const toReceive = orderedQty - alreadyReceived;
+          if (toReceive <= 0 || line.itemId) return sum;
+          return sum + Number(line.unitCost) * toReceive;
+        }, 0);
+
+        const totalReceivedCost = itemReceivedCost + manualReceivedCost;
+
+        if (totalReceivedCost > 0) {
           const expense = await tx.expense.create({
             data: {
-              description: `PO #${po.serial} — Inventory received`,
-              amount: receivedCost,
+              description: `PO #${po.serial} — Items received`,
+              amount: totalReceivedCost,
               date: new Date(),
               reference: po.serial,
               organizationId: orgId,
@@ -806,23 +844,40 @@ export const purchaseOrdersRouter = router({
             },
           });
 
-          // Double-entry journal: Dr Inventory / Cr Accounts Payable
-          const journalEntry = await postPOReceived({
-            tx,
-            organizationId: orgId,
-            userId: ctx.user.id,
-            ipAddress: ctx.ipAddress,
-            purchaseOrderId: po.id,
-            serial: po.serial,
-            receivedCost,
-            currency: po.currency,
-            exchangeRate: Number(po.exchangeRate),
-          });
+          // Double-entry journal: Dr Inventory / Cr Accounts Payable (item lines)
+          const itemJournal = itemReceivedCost
+            ? await postPOReceived({
+                tx,
+                organizationId: orgId,
+                userId: ctx.user.id,
+                ipAddress: ctx.ipAddress,
+                purchaseOrderId: po.id,
+                serial: po.serial,
+                receivedCost: itemReceivedCost,
+                currency: po.currency,
+                exchangeRate: Number(po.exchangeRate),
+              })
+            : null;
 
-          if (journalEntry) {
+          // And Dr Expense / Cr Accounts Payable (manual lines)
+          const manualJournal = manualReceivedCost
+            ? await postPOExpenseReceived({
+                tx,
+                organizationId: orgId,
+                userId: ctx.user.id,
+                ipAddress: ctx.ipAddress,
+                purchaseOrderId: po.id,
+                serial: po.serial,
+                expenseCost: manualReceivedCost,
+                currency: po.currency,
+                exchangeRate: Number(po.exchangeRate),
+              })
+            : null;
+
+          if (itemJournal || manualJournal) {
             await tx.expense.update({
               where: { id: expense.id },
-              data: { journalEntryId: journalEntry.id },
+              data: { journalEntryId: itemJournal?.id ?? manualJournal?.id },
             });
           }
         }

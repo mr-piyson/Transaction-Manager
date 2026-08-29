@@ -245,10 +245,15 @@ export default function PurchaseOrderDetailPage() {
         notes: po.notes ?? undefined,
         internalNotes: po.internalNotes ?? undefined,
         lines: po.lines.map((l: any) => ({
-          itemId: l.itemId,
+          mode: l.itemId ? "item" : "manual",
+          itemId: l.itemId ?? undefined,
           description: l.description ?? undefined,
           quantity: Number(l.quantity),
           unitCost: Number(l.unitCost),
+          taxRateId: l.taxRateId ?? undefined,
+          taxRateSnapshot:
+            l.taxRateSnapshot != null ? Number(l.taxRateSnapshot) : undefined,
+          taxRateName: l.taxRateName ?? undefined,
         })),
       },
       { onSuccess: () => utils.purchaseOrders.byId.invalidate({ id: po.id }) },
@@ -599,11 +604,18 @@ export default function PurchaseOrderDetailPage() {
                             </div>
                             <div>
                               <div className="font-medium">
-                                {line.item?.name ?? "—"}
+                                {line.item
+                                  ? line.item.name
+                                  : line.description || "Manual entry"}
                               </div>
                               {line.item?.sku && (
                                 <div className="text-xs text-muted-foreground">
                                   {line.item.sku}
+                                </div>
+                              )}
+                              {!line.item && (
+                                <div className="text-xs text-muted-foreground">
+                                  Manual (no stock)
                                 </div>
                               )}
                             </div>
@@ -665,11 +677,18 @@ export default function PurchaseOrderDetailPage() {
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="font-medium text-sm truncate">
-                          {line.item?.name ?? "—"}
+                          {line.item
+                            ? line.item.name
+                            : line.description || "Manual entry"}
                         </div>
                         {line.item?.sku && (
                           <div className="text-xs text-muted-foreground font-mono">
                             {line.item.sku}
+                          </div>
+                        )}
+                        {!line.item && (
+                          <div className="text-xs text-muted-foreground">
+                            Manual (no stock)
                           </div>
                         )}
                       </div>
@@ -1005,7 +1024,11 @@ function ReceiveDialog({
                   return (
                     <TableRow key={line.id}>
                       <TableCell>
-                        <span className="font-medium">{line.item?.name}</span>
+                        <span className="font-medium">
+                          {line.item
+                            ? line.item.name
+                            : line.description || "Manual entry"}
+                        </span>
                         {line.item?.sku && (
                           <span className="text-xs text-muted-foreground ml-1">
                             ({line.item.sku})
