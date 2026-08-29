@@ -23,6 +23,7 @@ export interface InvoiceItemSelectDialogProps {
   categories?: any[];
   isLoading: boolean;
   existingItemIds: string[];
+  singleSelect?: boolean;
   onSelect: (items: any[]) => void;
 }
 
@@ -33,6 +34,7 @@ export function InvoiceItemSelectDialog({
   categories = [],
   isLoading,
   existingItemIds,
+  singleSelect = false,
   onSelect,
 }: InvoiceItemSelectDialogProps) {
   const t = useTranslations();
@@ -236,6 +238,11 @@ export function InvoiceItemSelectDialog({
                       transform: `translateY(${virtualRow.start}px)`,
                     }}
                     onClick={() => {
+                      if (singleSelect) {
+                        onSelect([item]);
+                        onOpenChange(false);
+                        return;
+                      }
                       if (!isExisting) toggleItem(item.id);
                     }}
                     className={cn(
@@ -248,20 +255,22 @@ export function InvoiceItemSelectDialog({
                     )}
                   >
                     {/* Checkbox */}
-                    <div
-                      className={cn(
-                        "flex size-5 shrink-0 items-center justify-center rounded border transition-colors",
-                        isExisting
-                          ? "border-muted-foreground/30 bg-muted"
-                          : isSelected
-                            ? "border-primary bg-primary text-primary-foreground"
-                            : "border-border",
-                      )}
-                    >
-                      {(isSelected || isExisting) && (
-                        <Check className="size-3" />
-                      )}
-                    </div>
+                    {!singleSelect && (
+                      <div
+                        className={cn(
+                          "flex size-5 shrink-0 items-center justify-center rounded border transition-colors",
+                          isExisting
+                            ? "border-muted-foreground/30 bg-muted"
+                            : isSelected
+                              ? "border-primary bg-primary text-primary-foreground"
+                              : "border-border",
+                        )}
+                      >
+                        {(isSelected || isExisting) && (
+                          <Check className="size-3" />
+                        )}
+                      </div>
+                    )}
 
                     {/* Image preview */}
                     <div className="size-8 shrink-0 overflow-hidden rounded-md border bg-muted sm:size-10">
@@ -340,36 +349,52 @@ export function InvoiceItemSelectDialog({
 
         {/* Footer */}
         <DialogFooter className="shrink-0 px-4 py-3 border-t sm:px-6 sm:py-4 flex-col sm:flex-row gap-2 sm:gap-0">
-          <span className="text-sm text-muted-foreground shrink-0">
-            {selected.size > 0 ? (
-              <>
-                {availableCount} {t("invoices.selected")}
-                {availableCount !== 1 ? ` ${t("invoices.itemsLower")}` : ""}
-              </>
-            ) : (
-              t("invoices.tapToSelect")
-            )}
-          </span>
-          <div className="flex gap-2 sm:ml-auto">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => onOpenChange(false)}
-              size="sm"
-              className="flex-1 sm:flex-none"
-            >
-              {t("common.cancel")}
-            </Button>
-            <Button
-              type="button"
-              onClick={handleAdd}
-              disabled={availableCount === 0}
-              size="sm"
-              className="flex-1 sm:flex-none"
-            >
-              {t("invoices.addToInvoice")}
-            </Button>
-          </div>
+          {singleSelect ? (
+            <div className="flex gap-2 sm:ml-auto">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => onOpenChange(false)}
+                size="sm"
+                className="flex-1 sm:flex-none"
+              >
+                {t("common.cancel")}
+              </Button>
+            </div>
+          ) : (
+            <>
+              <span className="text-sm text-muted-foreground shrink-0">
+                {selected.size > 0 ? (
+                  <>
+                    {availableCount} {t("invoices.selected")}
+                    {availableCount !== 1 ? ` ${t("invoices.itemsLower")}` : ""}
+                  </>
+                ) : (
+                  t("invoices.tapToSelect")
+                )}
+              </span>
+              <div className="flex gap-2 sm:ml-auto">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => onOpenChange(false)}
+                  size="sm"
+                  className="flex-1 sm:flex-none"
+                >
+                  {t("common.cancel")}
+                </Button>
+                <Button
+                  type="button"
+                  onClick={handleAdd}
+                  disabled={availableCount === 0}
+                  size="sm"
+                  className="flex-1 sm:flex-none"
+                >
+                  {t("invoices.addToInvoice")}
+                </Button>
+              </div>
+            </>
+          )}
         </DialogFooter>
       </DialogContent>
     </Dialog>

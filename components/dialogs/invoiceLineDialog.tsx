@@ -1,11 +1,12 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Calculator } from "lucide-react";
+import { Calculator, Package } from "lucide-react";
 import { useTranslations } from "next-intl";
 import * as React from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { z } from "zod";
+import { InvoiceItemSelectDialog } from "@/components/dialogs/invoiceItemSelectDialog";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -16,6 +17,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import {
   Select,
   SelectContent,
@@ -26,6 +28,7 @@ import {
 import { trpc } from "@/lib/trpc/client";
 
 const lineEditSchema = z.object({
+  mode: z.enum(["item", "manual"]).default("item"),
   itemId: z.string().optional(),
   description: z.string().optional(),
   quantity: z.coerce.number().positive("Qty must be > 0"),
@@ -67,10 +70,15 @@ export function InvoiceLineDialog({
   onSave,
 }: InvoiceLineDialogProps) {
   const t = useTranslations();
-  const { data: itemsData } = trpc.items.list.useQuery({ isSaleable: true });
+  const [itemPickerOpen, setItemPickerOpen] = React.useState(false);
+  const { data: itemsData, isLoading: itemsLoading } = trpc.items.list.useQuery(
+    { isSaleable: true },
+  );
+  const { data: categoriesData } = trpc.categories.list.useQuery();
   const { data: taxRatesData } = trpc.settings.taxRates.list.useQuery();
 
   const items: any[] = itemsData ?? [];
+  const categories: any[] = categoriesData ?? [];
   const taxRates: any[] = taxRatesData ?? [];
 
   const itemsMap = React.useMemo(
@@ -88,6 +96,7 @@ export function InvoiceLineDialog({
   } = useForm<LineEditValues>({
     resolver: zodResolver(lineEditSchema) as any,
     defaultValues: {
+      mode: initial.itemId ? "item" : "manual",
       itemId: initial.itemId || undefined,
       description: initial.description || undefined,
       quantity: initial.quantity,
@@ -103,6 +112,7 @@ export function InvoiceLineDialog({
   React.useEffect(() => {
     if (open) {
       reset({
+        mode: initial.itemId ? "item" : "manual",
         itemId: initial.itemId || undefined,
         description: initial.description || undefined,
         quantity: initial.quantity,
@@ -118,7 +128,8 @@ export function InvoiceLineDialog({
 
   const watched = useWatch({ control });
   const itemId = watched?.itemId;
-  const isManual = !itemId;
+  const mode = watched?.mode ?? "item";
+  const isManual = mode === "manual";
   const qty = Number(watched?.quantity) || 0;
   const price = Number(watched?.unitPrice) || 0;
   const costBasis = Number(watched?.purchasePrice) || 0;
@@ -150,6 +161,40 @@ export function InvoiceLineDialog({
     });
     onOpenChange(false);
   };
+
+  const handleItemPicked = (picked: any[]) => {
+    const selected = picked[0] as any;
+    if (!selected) {
+      setItemPickerOpen(false);
+      return;
+    }
+    const tr = taxRatesMap[selected?.taxRate?.id] as any;
+    setValue("mode", "item");
+    setValue("itemId", selected.id);
+    setValue("description", selected.description || undefined);
+    setValue("unitPrice", Number(selected.salesPrice) || 0);
+    setValue("purchasePrice", Number(selected.purchasePrice) || 0);
+    setValue("taxRateId", selected.taxRate?.id);
+    setValue("taxRateSnapshot", tr ? Number(tr.rate) : undefined);
+    setValue("taxRateName", tr?.name || undefined);
+    setItemPickerOpen(false);
+  };
+
+  const handleModeChange = (value: string) => {
+    if (value === "manual") {
+      setValue("mode", "manual");
+      setValue("itemId", undefined as any);
+      setValue("unitPrice", 0);
+      setValue("purchasePrice", 0);
+      setValue("taxRateId", undefined);
+      setValue("taxRateSnapshot", undefined);
+      setValue("taxRateName", undefined);
+    } else {
+      setValue("mode", "item");
+    }
+  };
+
+  const selectedItem = itemId ? (itemsMap[itemId] as any) : undefined;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -204,6 +249,35 @@ export function InvoiceLineDialog({
               </span>
             </div>
 
+            {/* Line mode: Item (stock) vs Manual (service) */}
+            <div className="space-y-1.5">
+              <Label className="text-xs">{t("invoices.lineType")}</Label>
+              <RadioGroup
+                value={mode}
+                onValueChange={handleModeChange}
+                className="grid grid-cols-2 gap-2"
+              >
+                <Label
+                  htmlFor={`line-mode-item-${index}`}
+                  className="flex cursor-pointer items-center gap-2 rounded-md border px-3 py-2 text-sm has-data-[state=checked]:border-primary has-data-[state=checked]:bg-primary/5"
+                >
+                  <RadioGroupItem value="item" id={`line-mode-item-${index}`} />
+                  <Package className="h-4 w-4 shrink-0 text-muted-foreground" />
+                  {t("invoices.itemMode")}
+                </Label>
+                <Label
+                  htmlFor={`line-mode-manual-${index}`}
+                  className="flex cursor-pointer items-center gap-2 rounded-md border px-3 py-2 text-sm has-data-[state=checked]:border-primary has-data-[state=checked]:bg-primary/5"
+                >
+                  <RadioGroupItem
+                    value="manual"
+                    id={`line-mode-manual-${index}`}
+                  />
+                  {t("invoices.manualMode")}
+                </Label>
+              </RadioGroup>
+            </div>
+
             {/* Item selector / Description */}
             {isManual ? (
               <div className="space-y-1.5">
@@ -216,56 +290,23 @@ export function InvoiceLineDialog({
             ) : (
               <div className="space-y-1.5">
                 <Label className="text-xs">{t("invoices.item")}</Label>
-                <Select
-                  value={itemId || "__manual__"}
-                  onValueChange={(v) => {
-                    if (v === "__manual__") {
-                      setValue("itemId", undefined as any);
-                      setValue("unitPrice", 0);
-                      setValue("purchasePrice", 0);
-                      setValue("taxRateId", undefined);
-                      setValue("taxRateSnapshot", undefined);
-                      setValue("taxRateName", undefined);
-                      return;
-                    }
-                    const selected = itemsMap[v] as any;
-                    const tr = taxRatesMap[selected?.taxRate?.id] as any;
-                    setValue("itemId", v);
-                    if (selected) {
-                      setValue("unitPrice", Number(selected.salesPrice) || 0);
-                      setValue(
-                        "purchasePrice",
-                        Number(selected.purchasePrice) || 0,
-                      );
-                      setValue("taxRateId", selected.taxRate?.id);
-                      setValue(
-                        "taxRateSnapshot",
-                        tr ? Number(tr.rate) : undefined,
-                      );
-                      setValue("taxRateName", tr?.name || undefined);
-                    }
-                  }}
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full justify-start gap-2"
+                  onClick={() => setItemPickerOpen(true)}
                 >
-                  <SelectTrigger className="w-full min-w-0">
-                    <SelectValue placeholder={t("invoices.selectItem")} />
-                  </SelectTrigger>
-                  <SelectContent className="w-80 max-w-[75vw]">
-                    <SelectItem value="__manual__">
-                      {t("invoices.manualEntry")}
-                    </SelectItem>
-                    <div className="border-t my-1" />
-                    {items.map((i: any) => (
-                      <SelectItem key={i.id} value={i.id} className="min-w-0">
-                        <span className="flex min-w-0 items-center gap-1.5">
-                          <span className="shrink-0 font-mono text-xs text-muted-foreground">
-                            {i.sku}
-                          </span>
-                          <span className="truncate">{i.name}</span>
-                        </span>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                  <Package className="h-4 w-4 shrink-0 text-muted-foreground" />
+                  {selectedItem ? (
+                    <span className="min-w-0 flex-1 truncate text-left">
+                      {selectedItem.sku} — {selectedItem.name}
+                    </span>
+                  ) : (
+                    <span className="text-muted-foreground">
+                      {t("invoices.selectItem")}
+                    </span>
+                  )}
+                </Button>
               </div>
             )}
 
@@ -355,6 +396,18 @@ export function InvoiceLineDialog({
             </Button>
           </DialogFooter>
         </form>
+
+        {/* Item picker (nested inside DialogContent so Radix layers properly) */}
+        <InvoiceItemSelectDialog
+          open={itemPickerOpen}
+          onOpenChange={setItemPickerOpen}
+          items={items}
+          categories={categories}
+          isLoading={itemsLoading}
+          existingItemIds={itemId ? [itemId] : []}
+          singleSelect
+          onSelect={handleItemPicked}
+        />
       </DialogContent>
     </Dialog>
   );
