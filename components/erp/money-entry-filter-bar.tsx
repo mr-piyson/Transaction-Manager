@@ -3,6 +3,7 @@
 import { List, Search, SlidersHorizontal, Table2, X } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { parseAsString, useQueryState } from "nuqs";
+import { useExpenseForm, useIncomeForm } from "@/components/dialogs";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -16,6 +17,7 @@ import {
   DrawerTrigger,
 } from "@/components/ui/drawer";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -39,6 +41,8 @@ interface MoneyEntryFilterBarProps {
 export function MoneyEntryFilterBar({ kind }: MoneyEntryFilterBarProps) {
   const t = useTranslations();
   const isExpense = kind === "expense";
+  const { openCreate: openExpenseCreate } = useExpenseForm();
+  const { openCreate: openIncomeCreate } = useIncomeForm();
 
   const [searchQuery, setSearchQuery] = useQueryState(
     "q",
@@ -93,8 +97,15 @@ export function MoneyEntryFilterBar({ kind }: MoneyEntryFilterBarProps) {
     <div className="w-full flex items-center justify-between gap-2 border-b px-4 py-2 shrink-0">
       {/* Left: Filter Drawer */}
       <div className="flex items-center gap-2">
+        <Button
+          variant="default"
+          size="sm"
+          className="gap-1.5"
+          onClick={() => (isExpense ? openExpenseCreate() : openIncomeCreate())}
+        >
+          {t("common.new")}
+        </Button>
         <Separator orientation="vertical" className="h-5" />
-
         <Drawer direction="right">
           <DrawerTrigger asChild>
             <Button variant="outline" size="sm" className="relative gap-1.5">
@@ -124,9 +135,9 @@ export function MoneyEntryFilterBar({ kind }: MoneyEntryFilterBarProps) {
             <div className="px-4 space-y-5 overflow-y-auto flex-1">
               {/* Search */}
               <div className="space-y-2">
-                <label className="text-sm font-medium text-muted-foreground">
+                <Label className="text-sm font-medium text-muted-foreground">
                   {t("common.search")}
-                </label>
+                </Label>
                 <div className="relative">
                   <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground" />
                   <Input
@@ -140,9 +151,9 @@ export function MoneyEntryFilterBar({ kind }: MoneyEntryFilterBarProps) {
 
               {/* Entity filter (category for expenses, customer for incomes) */}
               <div className="space-y-2">
-                <label className="text-sm font-medium text-muted-foreground">
+                <Label className="text-sm font-medium text-muted-foreground">
                   {isExpense ? t("expenses.category") : t("incomes.customer")}
-                </label>
+                </Label>
                 <Select
                   value={entityFilter || "all"}
                   onValueChange={(v) => setEntityFilter(v === "all" ? null : v)}
@@ -169,14 +180,14 @@ export function MoneyEntryFilterBar({ kind }: MoneyEntryFilterBarProps) {
 
               {/* Date range */}
               <div className="space-y-2">
-                <label className="text-sm font-medium text-muted-foreground">
+                <Label className="text-sm font-medium text-muted-foreground">
                   {t("common.date")}
-                </label>
+                </Label>
                 <div className="grid grid-cols-2 gap-2">
                   <div className="space-y-1">
-                    <label className="text-xs text-muted-foreground">
+                    <Label className="text-xs text-muted-foreground">
                       {t("common.from")}
-                    </label>
+                    </Label>
                     <Input
                       type="date"
                       value={dateFrom}
@@ -185,9 +196,9 @@ export function MoneyEntryFilterBar({ kind }: MoneyEntryFilterBarProps) {
                     />
                   </div>
                   <div className="space-y-1">
-                    <label className="text-xs text-muted-foreground">
+                    <Label className="text-xs text-muted-foreground">
                       {t("common.to")}
-                    </label>
+                    </Label>
                     <Input
                       type="date"
                       value={dateTo}
