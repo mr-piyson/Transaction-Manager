@@ -803,7 +803,6 @@ export const itemsRouter = router({
     )
     .mutation(async ({ ctx, input }) => {
       assertCan(ctx.ability, "item:create", "Item");
-      assertCan(ctx.ability, "po:update", "all");
 
       const orgId = ctx.user.organizationId;
       const { item: itemInput, supplierItems: supplierItemInputs } = input;

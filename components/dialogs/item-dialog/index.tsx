@@ -158,7 +158,7 @@ export function UnifiedItemDialog({
     ? ability.can("item:create", "Item") || ability.can("item:update", "Item")
     : true;
   const canManageSupplierItems = ability
-    ? ability.can("po:update", "all")
+    ? ability.can("item:create", "Item") || ability.can("item:update", "Item")
     : true;
 
   const form = useItemForm({
