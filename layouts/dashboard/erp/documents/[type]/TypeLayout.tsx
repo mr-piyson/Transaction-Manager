@@ -22,6 +22,7 @@ import type { ContextMenuItemSchema } from "@/components/context-menu";
 import { UniversalContextMenu } from "@/components/context-menu";
 import { useInvoiceForm } from "@/components/dialogs";
 import { useHardDeleteForm } from "@/components/dialogs/hardDeleteForm";
+import { AuthGuard } from "@/components/auth-guard";
 import { DocumentFilterTrigger } from "@/components/erp/document-filter-bar";
 import { InvoiceListItem } from "@/components/invoices/invoice-list-item";
 import { Header } from "@/components/layout/App-Header";
@@ -251,100 +252,102 @@ export default function DocumentsLayout({
     openCreate({ defaults: { type: documentType } });
 
   return (
-    <div
-      className={cn(
-        "flex h-screen flex-col overflow-hidden",
-        isPrintRoute && "print-layout",
-      )}
-    >
-      {!isPrintRoute && (
-        <Header title={headerTitle} icon={<Icon className="size-5" />} />
-      )}
+    <AuthGuard permission="invoice:read" subject="Invoice">
       <div
-        className={cn("flex-1 min-h-0 w-full", isPrintRoute && "overflow-auto")}
-      >
-        {isPrintRoute ? (
-          children
-        ) : (
-          <ResizablePanelGroup className="h-full">
-            {(isListRoute || !isMobile) && (
-              <ResizablePanel
-                minSize={20}
-                defaultSize={30}
-                className={cn(
-                  "h-full",
-                  !isListRoute ? "hidden md:block" : "block",
-                )}
-              >
-                <aside className="flex h-full flex-col overflow-hidden border-r">
-                  <div className="flex-1 overflow-y-auto">
-                    <ListView
-                      data={documents}
-                      isLoading={isPending}
-                      className="h-full"
-                      search={{
-                        collapsible: true,
-                        fields: [
-                          {
-                            key: "serial",
-                            label: t("common.serial"),
-                            getValue: (item) => item.serial,
-                          },
-                          {
-                            key: "customer",
-                            label: t("common.customer"),
-                            getValue: (item) => item.customer?.name,
-                          },
-                          {
-                            key: "status",
-                            label: t("common.status"),
-                            getValue: (item) => item.status,
-                          },
-                        ],
-                      }}
-                      rowHeight={72}
-                      emptyTitle={t("invoices.noInvoices")}
-                      emptyDescription={t("invoices.selectDescription")}
-                      emptyIcon={
-                        <File className="size-20 text-muted-foreground" />
-                      }
-                      cardRenderer={renderCard}
-                      toolbarEnd={
-                        <DocumentFilterTrigger
-                          type={type as "invoices" | "quotations"}
-                        />
-                      }
-                      toolbarStart={
-                        <ButtonGroup>
-                          <Button size="sm" onClick={() => createDocument()}>
-                            {t("common.new")}
-                          </Button>
-                        </ButtonGroup>
-                      }
-                    />
-                  </div>
-                </aside>
-              </ResizablePanel>
-            )}
-
-            <ResizableHandle
-              className={cn("hidden md:flex", !isListRoute && "hidden md:flex")}
-            />
-
-            {(!isListRoute || !isMobile) && (
-              <ResizablePanel
-                defaultSize={70}
-                className={cn(
-                  "h-full w-full",
-                  isListRoute ? "hidden md:block" : "flex flex-col",
-                )}
-              >
-                {children}
-              </ResizablePanel>
-            )}
-          </ResizablePanelGroup>
+        className={cn(
+          "flex h-screen flex-col overflow-hidden",
+          isPrintRoute && "print-layout",
         )}
+      >
+        {!isPrintRoute && (
+          <Header title={headerTitle} icon={<Icon className="size-5" />} />
+        )}
+        <div
+          className={cn("flex-1 min-h-0 w-full", isPrintRoute && "overflow-auto")}
+        >
+          {isPrintRoute ? (
+            children
+          ) : (
+            <ResizablePanelGroup className="h-full">
+              {(isListRoute || !isMobile) && (
+                <ResizablePanel
+                  minSize={20}
+                  defaultSize={30}
+                  className={cn(
+                    "h-full",
+                    !isListRoute ? "hidden md:block" : "block",
+                  )}
+                >
+                  <aside className="flex h-full flex-col overflow-hidden border-r">
+                    <div className="flex-1 overflow-y-auto">
+                      <ListView
+                        data={documents}
+                        isLoading={isPending}
+                        className="h-full"
+                        search={{
+                          collapsible: true,
+                          fields: [
+                            {
+                              key: "serial",
+                              label: t("common.serial"),
+                              getValue: (item) => item.serial,
+                            },
+                            {
+                              key: "customer",
+                              label: t("common.customer"),
+                              getValue: (item) => item.customer?.name,
+                            },
+                            {
+                              key: "status",
+                              label: t("common.status"),
+                              getValue: (item) => item.status,
+                            },
+                          ],
+                        }}
+                        rowHeight={72}
+                        emptyTitle={t("invoices.noInvoices")}
+                        emptyDescription={t("invoices.selectDescription")}
+                        emptyIcon={
+                          <File className="size-20 text-muted-foreground" />
+                        }
+                        cardRenderer={renderCard}
+                        toolbarEnd={
+                          <DocumentFilterTrigger
+                            type={type as "invoices" | "quotations"}
+                          />
+                        }
+                        toolbarStart={
+                          <ButtonGroup>
+                            <Button size="sm" onClick={() => createDocument()}>
+                              {t("common.new")}
+                            </Button>
+                          </ButtonGroup>
+                        }
+                      />
+                    </div>
+                  </aside>
+                </ResizablePanel>
+              )}
+
+              <ResizableHandle
+                className={cn("hidden md:flex", !isListRoute && "hidden md:flex")}
+              />
+
+              {(!isListRoute || !isMobile) && (
+                <ResizablePanel
+                  defaultSize={70}
+                  className={cn(
+                    "h-full w-full",
+                    isListRoute ? "hidden md:block" : "flex flex-col",
+                  )}
+                >
+                  {children}
+                </ResizablePanel>
+              )}
+            </ResizablePanelGroup>
+          )}
+        </div>
       </div>
-    </div>
+    </AuthGuard>
   );
 }

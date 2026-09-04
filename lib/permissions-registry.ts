@@ -108,6 +108,18 @@ export const PERMISSIONS = [
   { code: "customer:update", label: "Edit Customers", module: "Customers" },
   { code: "customer:delete", label: "Delete Customers", module: "Customers" },
 
+  // ── Suppliers ─────────────────────────────────────────────
+  { code: "supplier:read", label: "View Suppliers", module: "Purchasing" },
+  { code: "supplier:create", label: "Create Suppliers", module: "Purchasing" },
+  { code: "supplier:update", label: "Edit Suppliers", module: "Purchasing" },
+  { code: "supplier:delete", label: "Delete Suppliers", module: "Purchasing" },
+
+  // ── Warehouses ────────────────────────────────────────────
+  { code: "warehouse:read", label: "View Warehouses", module: "Inventory" },
+  { code: "warehouse:create", label: "Create Warehouses", module: "Inventory" },
+  { code: "warehouse:update", label: "Edit Warehouses", module: "Inventory" },
+  { code: "warehouse:delete", label: "Delete Warehouses", module: "Inventory" },
+
   // ── Expenses ──────────────────────────────────────────────
   { code: "expense:create", label: "Create Expenses", module: "Expenses" },
   { code: "expense:read", label: "View Expenses", module: "Expenses" },

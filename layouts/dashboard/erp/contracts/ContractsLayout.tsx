@@ -10,6 +10,7 @@ import { UniversalContextMenu } from "@/components/context-menu";
 import { ContractListItem } from "@/components/contracts/contract-list-item";
 import { useContractForm } from "@/components/dialogs";
 import { useHardDeleteForm } from "@/components/dialogs/hardDeleteForm";
+import { AuthGuard } from "@/components/auth-guard";
 import { Header } from "@/components/layout/App-Header";
 import { NotificationBell } from "@/components/layout/NotificationBell";
 import { ListView } from "@/components/list-view";
@@ -127,79 +128,81 @@ export default function ContractsLayout({
   const contracts = data ?? [];
 
   return (
-    <div className="flex h-screen flex-col overflow-hidden">
-      <Header
-        title={t("contracts.title")}
-        rightContent={<NotificationBell />}
-        icon={<Handshake className="size-5" />}
-      />
-      <div className="flex-1 min-h-0 w-full">
-        <ResizablePanelGroup className="h-full">
-          {(isListView || !isMobile) && (
-            <ResizablePanel
-              minSize={20}
-              defaultSize={30}
-              className={cn(
-                "h-full",
-                !isListView ? "hidden md:block" : "block",
-              )}
-            >
-              <aside className="flex h-full flex-col overflow-hidden border-r">
-                {/* Status filter chips */}
-                <div className="flex gap-1.5 px-3 py-2 border-b overflow-x-auto shrink-0">
-                  {statusFilters.map((f) => (
-                    <Button
-                      key={f.value}
-                      variant={activeStatus === f.value ? "default" : "outline"}
-                      size="sm"
-                      className="h-7 text-xs px-2.5 whitespace-nowrap"
-                      onClick={() => setStatusFilter(f.value)}
-                    >
-                      {f.label}
-                    </Button>
-                  ))}
-                </div>
-                <div className="flex-1 overflow-y-auto">
-                  <ListView
-                    data={contracts}
-                    isLoading={isPending}
-                    className="h-full"
-                    search={{ fields: ["serial", "title"] }}
-                    toolbarStart={
-                      <Button size="sm" onClick={() => openCreate()}>
-                        {t("common.new")}
+    <AuthGuard permission="invoice:read" subject="Invoice">
+      <div className="flex h-screen flex-col overflow-hidden">
+        <Header
+          title={t("contracts.title")}
+          rightContent={<NotificationBell />}
+          icon={<Handshake className="size-5" />}
+        />
+        <div className="flex-1 min-h-0 w-full">
+          <ResizablePanelGroup className="h-full">
+            {(isListView || !isMobile) && (
+              <ResizablePanel
+                minSize={20}
+                defaultSize={30}
+                className={cn(
+                  "h-full",
+                  !isListView ? "hidden md:block" : "block",
+                )}
+              >
+                <aside className="flex h-full flex-col overflow-hidden border-r">
+                  {/* Status filter chips */}
+                  <div className="flex gap-1.5 px-3 py-2 border-b overflow-x-auto shrink-0">
+                    {statusFilters.map((f) => (
+                      <Button
+                        key={f.value}
+                        variant={activeStatus === f.value ? "default" : "outline"}
+                        size="sm"
+                        className="h-7 text-xs px-2.5 whitespace-nowrap"
+                        onClick={() => setStatusFilter(f.value)}
+                      >
+                        {f.label}
                       </Button>
-                    }
-                    rowHeight={80}
-                    emptyTitle={t("contracts.noContracts")}
-                    emptyDescription={t("contracts.createContract")}
-                    emptyIcon={
-                      <User2 className="size-20 text-muted-foreground" />
-                    }
-                    cardRenderer={renderCard}
-                  />
-                </div>
-              </aside>
-            </ResizablePanel>
-          )}
+                    ))}
+                  </div>
+                  <div className="flex-1 overflow-y-auto">
+                    <ListView
+                      data={contracts}
+                      isLoading={isPending}
+                      className="h-full"
+                      search={{ fields: ["serial", "title"] }}
+                      toolbarStart={
+                        <Button size="sm" onClick={() => openCreate()}>
+                          {t("common.new")}
+                        </Button>
+                      }
+                      rowHeight={80}
+                      emptyTitle={t("contracts.noContracts")}
+                      emptyDescription={t("contracts.createContract")}
+                      emptyIcon={
+                        <User2 className="size-20 text-muted-foreground" />
+                      }
+                      cardRenderer={renderCard}
+                    />
+                  </div>
+                </aside>
+              </ResizablePanel>
+            )}
 
-          <ResizableHandle
-            className={cn("hidden md:flex", !isListView && "hidden md:flex")}
-          />
+            <ResizableHandle
+              className={cn("hidden md:flex", !isListView && "hidden md:flex")}
+            />
 
-          {(!isListView || !isMobile) && (
-            <ResizablePanel
-              defaultSize={70}
-              className={cn(
-                "h-full w-full",
-                isListView ? "hidden md:block" : "flex flex-col",
-              )}
-            >
-              {children}
-            </ResizablePanel>
-          )}
-        </ResizablePanelGroup>
+            {(!isListView || !isMobile) && (
+              <ResizablePanel
+                defaultSize={70}
+                className={cn(
+                  "h-full w-full",
+                  isListView ? "hidden md:block" : "flex flex-col",
+                )}
+              >
+                {children}
+              </ResizablePanel>
+            )}
+          </ResizablePanelGroup>
+        </div>
       </div>
-    </div>
+    </AuthGuard>
   );
 }

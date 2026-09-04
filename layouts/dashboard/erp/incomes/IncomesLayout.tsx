@@ -26,6 +26,7 @@ import { alert } from "@/components/Alert-dialog";
 import { useIncomeForm } from "@/components/dialogs";
 import { useHardDeleteForm } from "@/components/dialogs/hardDeleteForm";
 import { MoneyEntryFilterBar } from "@/components/erp/money-entry-filter-bar";
+import { AuthGuard } from "@/components/auth-guard";
 import { Header } from "@/components/layout/App-Header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -375,39 +376,41 @@ export default function IncomesLayout({
   const columnDefs = viewMode === "list" ? listColumnDefs : tableColumnDefs;
 
   return (
-    <div className="flex h-screen flex-col overflow-hidden">
-      <Header
-        title={t("layout.incomes")}
-        icon={<Banknote className="size-5" />}
-      />
-      <div className="flex-1 min-h-0 w-full">
-        {isListRoute ? (
-          <div className="h-full w-full flex flex-col">
-            <MoneyEntryFilterBar kind="income" />
-            <AgGridReact
-              ref={gridRef}
-              rowData={incomes}
-              columnDefs={columnDefs}
-              defaultColDef={viewMode === "list" ? undefined : defaultColDef}
-              theme={tableTheme}
-              animateRows
-              onGridReady={(params) => {
-                gridApiRef.current = params.api;
-              }}
-              domLayout="normal"
-              getRowId={(params) => params.data.id}
-              suppressScrollOnNewData
-              enableCellTextSelection
-              ensureDomOrder
-              loading={isPending}
-              headerHeight={viewMode === "list" ? 0 : undefined}
-              rowHeight={viewMode === "list" ? 72 : undefined}
-            />
-          </div>
-        ) : (
-          <div className="h-full w-full overflow-y-auto">{children}</div>
-        )}
+    <AuthGuard permission="income:read" subject="Income">
+      <div className="flex h-screen flex-col overflow-hidden">
+        <Header
+          title={t("layout.incomes")}
+          icon={<Banknote className="size-5" />}
+        />
+        <div className="flex-1 min-h-0 w-full">
+          {isListRoute ? (
+            <div className="h-full w-full flex flex-col">
+              <MoneyEntryFilterBar kind="income" />
+              <AgGridReact
+                ref={gridRef}
+                rowData={incomes}
+                columnDefs={columnDefs}
+                defaultColDef={viewMode === "list" ? undefined : defaultColDef}
+                theme={tableTheme}
+                animateRows
+                onGridReady={(params) => {
+                  gridApiRef.current = params.api;
+                }}
+                domLayout="normal"
+                getRowId={(params) => params.data.id}
+                suppressScrollOnNewData
+                enableCellTextSelection
+                ensureDomOrder
+                loading={isPending}
+                headerHeight={viewMode === "list" ? 0 : undefined}
+                rowHeight={viewMode === "list" ? 72 : undefined}
+              />
+            </div>
+          ) : (
+            <div className="h-full w-full overflow-y-auto">{children}</div>
+          )}
+        </div>
       </div>
-    </div>
+    </AuthGuard>
   );
 }

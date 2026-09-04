@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useCallback, useMemo, useState } from "react";
 import { DialogsProvider } from "@/components/dialogs";
+import { AuthGuard } from "@/components/auth-guard";
 import { Header } from "@/components/layout/App-Header";
 import {
   SidebarGroup,
@@ -74,37 +75,39 @@ export default function SettingsLayout({
   );
 
   return (
-    <DialogsProvider>
-      <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
-        <Header
-          title={t("settings.title")}
-          icon={<Settings className="size-5" />}
-        >
-          <SheetTrigger asChild>
-            <Button variant="outline" size="sm" className="md:hidden gap-2">
-              <Menu className="size-4" />
-              {t(
-                NAV_ITEMS.find((i) => i.id === activeSection)?.labelKey ??
-                  "settings.title",
-              )}
-            </Button>
-          </SheetTrigger>
-        </Header>
-        <SheetContent side="left" className="w-64 p-4">
-          <SheetHeader>
-            <SheetTitle className="text-lg">{t("settings.title")}</SheetTitle>
-          </SheetHeader>
-          <nav className="mt-4">{nav}</nav>
-        </SheetContent>
-      </Sheet>
+    <AuthGuard permission="org:settings:read" subject="Organization">
+      <DialogsProvider>
+        <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
+          <Header
+            title={t("settings.title")}
+            icon={<Settings className="size-5" />}
+          >
+            <SheetTrigger asChild>
+              <Button variant="outline" size="sm" className="md:hidden gap-2">
+                <Menu className="size-4" />
+                {t(
+                  NAV_ITEMS.find((i) => i.id === activeSection)?.labelKey ??
+                    "settings.title",
+                )}
+              </Button>
+            </SheetTrigger>
+          </Header>
+          <SheetContent side="left" className="w-64 p-4">
+            <SheetHeader>
+              <SheetTitle className="text-lg">{t("settings.title")}</SheetTitle>
+            </SheetHeader>
+            <nav className="mt-4">{nav}</nav>
+          </SheetContent>
+        </Sheet>
 
-      <div className="flex flex-1 overflow-hidden">
-        <aside className="w-56 shrink-0 border-r border-sidebar-border bg-sidebar hidden md:flex flex-col overflow-y-auto py-4">
-          {nav}
-        </aside>
+        <div className="flex flex-1 overflow-hidden">
+          <aside className="w-56 shrink-0 border-r border-sidebar-border bg-sidebar hidden md:flex flex-col overflow-y-auto py-4">
+            {nav}
+          </aside>
 
-        <div className="flex-1 overflow-y-auto p-6">{children}</div>
-      </div>
-    </DialogsProvider>
+          <div className="flex-1 overflow-y-auto p-6">{children}</div>
+        </div>
+      </DialogsProvider>
+    </AuthGuard>
   );
 }

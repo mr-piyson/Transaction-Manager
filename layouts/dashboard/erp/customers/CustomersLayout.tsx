@@ -12,6 +12,7 @@ import { UniversalContextMenu } from "@/components/context-menu";
 import { Customer_List_Item } from "@/components/customers/customer-list-item";
 import { useCustomerForm } from "@/components/dialogs";
 import { useHardDeleteForm } from "@/components/dialogs/hardDeleteForm";
+import { AuthGuard } from "@/components/auth-guard";
 import { Header } from "@/components/layout/App-Header";
 import { ListView } from "@/components/list-view";
 import { Button } from "@/components/ui/button";
@@ -152,64 +153,66 @@ export default function CustomersLayout({
   const items = data ?? [];
 
   return (
-    <div className="flex h-screen flex-col overflow-hidden">
-      <Header
-        title={t("layout.customers")}
-        icon={<Users className="size-5" />}
-      />
-      <div className="flex-1 min-h-0 w-full">
-        <ResizablePanelGroup className="h-full">
-          {(isListView || !isMobile) && (
-            <ResizablePanel
-              minSize={20}
-              defaultSize={30}
-              className={cn(
-                "h-full",
-                !isListView ? "hidden md:block" : "block",
-              )}
-            >
-              <aside className="flex h-full flex-col overflow-hidden border-r">
-                <div className="flex-1 overflow-y-auto">
-                  <ListView
-                    data={items}
-                    isLoading={isPending}
-                    className="h-full"
-                    search={{ fields: ["name", "phone", "email"] }}
-                    toolbarStart={
-                      <Button size="sm" onClick={() => openCreate()}>
-                        {t("common.new")}
-                      </Button>
-                    }
-                    rowHeight={73}
-                    emptyTitle={t("customers.noCustomers")}
-                    emptyDescription={t("customers.createCustomer")}
-                    emptyIcon={
-                      <User2 className="size-20 text-muted-foreground" />
-                    }
-                    cardRenderer={renderCard}
-                  />
-                </div>
-              </aside>
-            </ResizablePanel>
-          )}
+    <AuthGuard permission="customer:read" subject="Customer">
+      <div className="flex h-screen flex-col overflow-hidden">
+        <Header
+          title={t("layout.customers")}
+          icon={<Users className="size-5" />}
+        />
+        <div className="flex-1 min-h-0 w-full">
+          <ResizablePanelGroup className="h-full">
+            {(isListView || !isMobile) && (
+              <ResizablePanel
+                minSize={20}
+                defaultSize={30}
+                className={cn(
+                  "h-full",
+                  !isListView ? "hidden md:block" : "block",
+                )}
+              >
+                <aside className="flex h-full flex-col overflow-hidden border-r">
+                  <div className="flex-1 overflow-y-auto">
+                    <ListView
+                      data={items}
+                      isLoading={isPending}
+                      className="h-full"
+                      search={{ fields: ["name", "phone", "email"] }}
+                      toolbarStart={
+                        <Button size="sm" onClick={() => openCreate()}>
+                          {t("common.new")}
+                        </Button>
+                      }
+                      rowHeight={73}
+                      emptyTitle={t("customers.noCustomers")}
+                      emptyDescription={t("customers.createCustomer")}
+                      emptyIcon={
+                        <User2 className="size-20 text-muted-foreground" />
+                      }
+                      cardRenderer={renderCard}
+                    />
+                  </div>
+                </aside>
+              </ResizablePanel>
+            )}
 
-          <ResizableHandle
-            className={cn("hidden md:flex", !isListView && "hidden md:flex")}
-          />
+            <ResizableHandle
+              className={cn("hidden md:flex", !isListView && "hidden md:flex")}
+            />
 
-          {(!isListView || !isMobile) && (
-            <ResizablePanel
-              defaultSize={70}
-              className={cn(
-                "h-full w-full",
-                isListView ? "hidden md:block" : "flex flex-col",
-              )}
-            >
-              {children}
-            </ResizablePanel>
-          )}
-        </ResizablePanelGroup>
+            {(!isListView || !isMobile) && (
+              <ResizablePanel
+                defaultSize={70}
+                className={cn(
+                  "h-full w-full",
+                  isListView ? "hidden md:block" : "flex flex-col",
+                )}
+              >
+                {children}
+              </ResizablePanel>
+            )}
+          </ResizablePanelGroup>
+        </div>
       </div>
-    </div>
+    </AuthGuard>
   );
 }

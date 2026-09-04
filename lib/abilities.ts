@@ -42,6 +42,8 @@ export type SubjectName =
   | "StockMovement"
   | "PurchaseOrder"
   | "PurchaseLine"
+  | "Supplier"
+  | "Warehouse"
   | "Expense"
   | "Income"
   | "Subscription"
@@ -123,6 +125,12 @@ const MUTATION_ACTIONS: Action[] = [
   "item:delete",
   "stock:adjust",
   "stock:transfer",
+  "supplier:create",
+  "supplier:update",
+  "supplier:delete",
+  "warehouse:create",
+  "warehouse:update",
+  "warehouse:delete",
   "po:create",
   "po:update",
   "po:delete",
@@ -222,6 +230,8 @@ const RESOURCE_TO_SUBJECT_MAP: Record<string, SubjectName> = {
   unit: "Unit",
   stock: "Stock",
   po: "PurchaseOrder",
+  supplier: "Supplier",
+  warehouse: "Warehouse",
   expense: "Expense",
   income: "Income",
   subscription: "Subscription",
