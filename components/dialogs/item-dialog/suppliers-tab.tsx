@@ -72,7 +72,7 @@ export function SuppliersTab({
     <div className="space-y-1.5">
       {/* Desktop table header */}
       {supplierDrafts.length > 0 && (
-        <div className="hidden sm:grid grid-cols-[1fr_100px_70px_auto] gap-2 px-2 py-1 text-[11px] font-medium text-muted-foreground uppercase tracking-wider">
+        <div className="hidden sm:grid grid-cols-[1fr_70px_100px_auto] gap-2 px-2 py-1 text-[11px] font-medium text-muted-foreground uppercase tracking-wider">
           <span>Supplier</span>
           <span>Price</span>
           <span>Currency</span>

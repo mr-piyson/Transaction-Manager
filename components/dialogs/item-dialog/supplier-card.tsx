@@ -19,6 +19,7 @@ import {
   CommandList,
 } from "@/components/ui/command";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Popover,
   PopoverContent,
@@ -98,15 +99,16 @@ export function SupplierCard({
       )}
     >
       {/* Main row */}
-      <div className="grid grid-cols-1 sm:grid-cols-[1fr_100px_70px_auto] gap-2 items-center p-2 sm:p-1.5">
+      <div className="grid grid-cols-1 sm:grid-cols-[1fr_70px_100px_auto] gap-2 items-center p-2 sm:p-1.5">
         {/* Supplier name / selector */}
         <Popover
           open={supplierPopoverOpen}
           onOpenChange={setSupplierPopoverOpen}
         >
           <PopoverTrigger asChild>
-            <button
+            <Button
               type="button"
+              variant={"outline"}
               disabled={disabled}
               className={cn(
                 "flex items-center gap-1.5 min-w-0 h-8 px-2 rounded-md text-sm text-left transition-colors",
@@ -137,7 +139,7 @@ export function SupplierCard({
                 </Badge>
               )}
               <ChevronsUpDown className="ml-auto size-3.5 shrink-0 opacity-50" />
-            </button>
+            </Button>
           </PopoverTrigger>
           <PopoverContent
             className="w-[var(--radix-popover-trigger-width)] p-0"
@@ -264,9 +266,9 @@ export function SupplierCard({
         <div className="px-2 pb-2 sm:px-2 sm:pb-1.5 border-t">
           <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto] gap-2 pt-2 sm:pt-1.5 items-end">
             <div className="space-y-1">
-              <label className="text-[11px] font-medium text-muted-foreground">
+              <Label className="text-[11px] font-medium text-muted-foreground">
                 Supplier SKU
-              </label>
+              </Label>
               <Input
                 placeholder="Vendor's SKU"
                 value={draft.supplierSku ?? ""}
