@@ -1,5 +1,6 @@
 import { Box, type Package, Wrench } from "lucide-react";
 import { type HTMLAttributes, useState } from "react";
+import { useCurrency } from "@/hooks/use-currency";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
@@ -27,21 +28,19 @@ const TYPE_STYLES: Record<
 const STOCK_STYLES = {
   OUT_OF_STOCK: {
     label: "Out of stock",
-    className: "bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-200",
+    textColor: "text-destructive",
   },
   BELOW_MINIMUM: {
     label: "Below minimum",
-    className: "bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-200",
+    textColor: "text-destructive",
   },
   REORDER_SOON: {
     label: "Reorder soon",
-    className:
-      "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-200",
+    textColor: "text-amber-600 dark:text-amber-400",
   },
   IN_STOCK: {
     label: "In stock",
-    className:
-      "bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-200",
+    textColor: "text-emerald-600 dark:text-emerald-400",
   },
 } as const;
 
@@ -60,6 +59,7 @@ export function ItemListItem({ data, className, ...props }: ItemListItemProps) {
   const [imgError, setImgError] = useState(false);
   const style = TYPE_STYLES[type as string] ?? TYPE_STYLES.PRODUCT;
   const Icon = style.icon;
+  const { format: formatCurrency } = useCurrency();
   const stock = Number(totalStock ?? 0);
   const stockStatus =
     stock <= 0
@@ -70,17 +70,20 @@ export function ItemListItem({ data, className, ...props }: ItemListItemProps) {
           ? STOCK_STYLES.REORDER_SOON
           : STOCK_STYLES.IN_STOCK;
 
+  const showPrice = salesPrice != null && Number(salesPrice) > 0;
+
   return (
     <div
       className={cn(
-        "grid grid-cols-[auto_minmax(0,1fr)] items-center gap-3 p-3",
+        "relative grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 p-3",
         className,
       )}
       {...props}
     >
+      {/* Icon / image */}
       <div
         className={cn(
-          "size-11 rounded-lg flex items-center justify-center shrink-0 overflow-hidden",
+          "size-11 rounded-lg flex items-center justify-center shrink-0 overflow-hidden ring-1 ring-inset ring-foreground/5",
           style.bg,
         )}
       >
@@ -95,32 +98,44 @@ export function ItemListItem({ data, className, ...props }: ItemListItemProps) {
           <Icon className={cn("size-5", style.fg)} />
         )}
       </div>
-      <div className="min-w-0">
-        <div className="flex min-w-0 items-center gap-2">
-          <p className="min-w-0 flex-1 truncate font-semibold">{name}</p>
-          <Badge variant="outline" className={cn("text-xs", style.fg)}>
-            <Icon className={cn("size-5", style.fg)} />
-            {type}
-          </Badge>
-        </div>
-        <div className="flex min-w-0 items-center gap-2">
-          <p className="min-w-0 flex-1 truncate text-sm text-muted-foreground">
-            {sku ?? "—"}
-          </p>
-          {salesPrice != null && Number(salesPrice) > 0 && (
-            <span className="shrink-0 text-xs font-medium text-muted-foreground">
-              {Number(salesPrice).toFixed(3)}
-            </span>
-          )}
-          <Badge
-            variant="outline"
-            className={cn("text-xs", stockStatus.className)}
-          >
-            {stockStatus.label}: {stock} {unit ?? ""}
-          </Badge>
-        </div>
+
+      {/* Name + SKU */}
+      <div className="min-w-0 space-y-1">
+        <p className="min-w-0 truncate text-[15px] font-semibold leading-5">
+          {name}
+        </p>
+        <p className="min-w-0 truncate text-xs text-muted-foreground">
+          {sku ?? "—"}
+        </p>
       </div>
-      <Separator className="bottom-0 absolute col-span-full bg-border/50" />
+
+      {/* Price + status badge */}
+      <div className="shrink-0 flex flex-col items-end gap-1">
+        {showPrice && (
+          <p className="text-sm font-semibold tabular-nums">
+            {formatCurrency(salesPrice)}
+          </p>
+        )}
+        <Badge
+          variant="outline"
+          className="gap-1.5 text-[11px] bg-muted/50 whitespace-nowrap"
+        >
+          <Icon className={cn("size-3", style.fg)} />
+          {type !== "SERVICE" && (
+            <>
+              <Separator
+                orientation="vertical"
+                className="mx-0.5 min-h-3.5 self-center"
+              />
+              <span className={cn("font-medium", stockStatus.textColor)}>
+                {stock} {unit ?? ""}
+              </span>
+            </>
+          )}
+        </Badge>
+      </div>
+
+      <Separator className="absolute inset-x-0 bottom-0 bg-border/50" />
     </div>
   );
 }
