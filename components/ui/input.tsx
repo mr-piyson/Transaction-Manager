@@ -1,8 +1,17 @@
-import type * as React from "react";
+import * as React from "react";
 
 import { cn } from "@/lib/utils";
 
 function Input({ className, type, ...props }: React.ComponentProps<"input">) {
+  const handleWheel = React.useCallback(
+    (e: React.WheelEvent<HTMLInputElement>) => {
+      if (type === "number") {
+        e.currentTarget.blur();
+      }
+    },
+    [type],
+  );
+
   return (
     <input
       type={type}
@@ -13,6 +22,7 @@ function Input({ className, type, ...props }: React.ComponentProps<"input">) {
         "aria-invalid:border-destructive aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40",
         className,
       )}
+      onWheel={type === "number" ? handleWheel : undefined}
       {...props}
     />
   );

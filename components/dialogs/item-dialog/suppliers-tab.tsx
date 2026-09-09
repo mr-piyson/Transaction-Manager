@@ -1,9 +1,6 @@
 "use client";
 
-import { Plus, UserPlus } from "lucide-react";
 import * as React from "react";
-import { useSupplierForm } from "@/components/dialogs";
-import { Button } from "@/components/ui/button";
 import { SupplierCard } from "./supplier-card";
 import type { UseItemFormReturn } from "./use-item-form";
 
@@ -26,7 +23,40 @@ export function SuppliersTab({
     removeSupplierDraft,
     updateSupplierDraft,
   } = form;
-  const { openCreate } = useSupplierForm();
+
+  const [expandedDrafts, setExpandedDrafts] = React.useState<Set<string>>(
+    new Set(),
+  );
+
+  const toggleExpand = React.useCallback((tempId: string) => {
+    setExpandedDrafts((prev) => {
+      const next = new Set(prev);
+      if (next.has(tempId)) {
+        next.delete(tempId);
+      } else {
+        next.add(tempId);
+      }
+      return next;
+    });
+  }, []);
+
+  // Auto-expand drafts with errors
+  React.useEffect(() => {
+    setExpandedDrafts((prev) => {
+      const next = new Set(prev);
+      let changed = false;
+      for (const draft of supplierDrafts) {
+        const draftErrors = errors.suppliers[draft.tempId];
+        if (draftErrors && Object.keys(draftErrors).length > 0) {
+          if (!next.has(draft.tempId)) {
+            next.add(draft.tempId);
+            changed = true;
+          }
+        }
+      }
+      return changed ? next : prev;
+    });
+  }, [errors, supplierDrafts]);
 
   const supplierIdCounts = React.useMemo(() => {
     const counts = new Map<string, number>();
@@ -39,7 +69,17 @@ export function SuppliersTab({
   }, [supplierDrafts]);
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-1.5">
+      {/* Desktop table header */}
+      {supplierDrafts.length > 0 && (
+        <div className="hidden sm:grid grid-cols-[1fr_100px_70px_auto] gap-2 px-2 py-1 text-[11px] font-medium text-muted-foreground uppercase tracking-wider">
+          <span>Supplier</span>
+          <span>Price</span>
+          <span>Currency</span>
+          <span className="w-16" />
+        </div>
+      )}
+
       {supplierDrafts.length === 0 && (
         <p className="text-sm text-muted-foreground text-center py-4">
           No supplier prices added yet. Click &quot;Add supplier&quot; to begin.
@@ -59,35 +99,14 @@ export function SuppliersTab({
           disabled={!canManageSupplierItems}
           supplierRequired={false}
           canRemove={mode === "edit" || supplierDrafts.length > 1}
+          expanded={expandedDrafts.has(draft.tempId)}
+          onToggleExpand={() => toggleExpand(draft.tempId)}
           onUpdate={updateSupplierDraft}
           onRemove={removeSupplierDraft}
         />
       ))}
 
-      {canManageSupplierItems && (
-        <div className="flex gap-2">
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            className="flex-1"
-            onClick={addSupplierDraft}
-          >
-            <Plus className="size-4 mr-1" />
-            Add supplier
-          </Button>
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            className="flex-1"
-            onClick={() => openCreate()}
-          >
-            <UserPlus className="size-4 mr-1" />
-            Create supplier
-          </Button>
-        </div>
-      )}
+
     </div>
   );
 }

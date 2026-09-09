@@ -14,7 +14,9 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 
+import { Plus, UserPlus } from "lucide-react";
 import { useAppAbility } from "@/hooks/use-app-ability";
+import { useSupplierForm } from "@/components/dialogs";
 import { MasterTab } from "./master-tab";
 import { SuppliersTab } from "./suppliers-tab";
 import type { Mode } from "./use-item-form";
@@ -170,6 +172,8 @@ export function UnifiedItemDialog({
     onSuccess,
   });
 
+  const { openCreate: openCreateSupplier } = useSupplierForm();
+
   const { mode, errors, isSubmitting, submit } = form;
 
   // Override mode if initialMode is provided
@@ -239,7 +243,33 @@ export function UnifiedItemDialog({
           </div>
 
           <div>
-            <h3 className="text-sm font-medium mb-3">Supplier Prices</h3>
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-sm font-medium">Supplier Prices</h3>
+              {canManageSupplierItems && (
+                <div className="flex gap-1.5">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="h-7 text-xs"
+                    onClick={() => form.addSupplierDraft()}
+                  >
+                    <Plus className="size-3 mr-1" />
+                    Add
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="h-7 text-xs"
+                    onClick={() => openCreateSupplier()}
+                  >
+                    <UserPlus className="size-3 mr-1" />
+                    New
+                  </Button>
+                </div>
+              )}
+            </div>
             <SuppliersTab
               form={form}
               suppliers={form.suppliers}

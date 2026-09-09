@@ -1,6 +1,12 @@
 "use client";
 
-import { AlertTriangle, Check, ChevronsUpDown, Trash2 } from "lucide-react";
+import {
+  AlertTriangle,
+  Check,
+  ChevronDown,
+  ChevronsUpDown,
+  Trash2,
+} from "lucide-react";
 import * as React from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -12,9 +18,7 @@ import {
   CommandItem,
   CommandList,
 } from "@/components/ui/command";
-import { Field } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
   Popover,
   PopoverContent,
@@ -51,6 +55,8 @@ interface SupplierCardProps {
   disabled: boolean;
   supplierRequired: boolean;
   canRemove: boolean;
+  expanded: boolean;
+  onToggleExpand: () => void;
   onUpdate: (tempId: string, patch: Partial<SupplierItemDraft>) => void;
   onRemove: (tempId: string) => void;
 }
@@ -63,6 +69,8 @@ export function SupplierCard({
   disabled,
   supplierRequired,
   canRemove,
+  expanded,
+  onToggleExpand,
   onUpdate,
   onRemove,
 }: SupplierCardProps) {
@@ -70,6 +78,7 @@ export function SupplierCard({
   const [supplierSearch, setSupplierSearch] = React.useState("");
 
   const selectedSupplier = suppliers.find((s) => s.id === draft.supplierId);
+  const hasErrors = errors && Object.keys(errors).length > 0;
 
   const filteredSuppliers = React.useMemo(() => {
     if (!supplierSearch) return suppliers;
@@ -83,69 +92,52 @@ export function SupplierCard({
   return (
     <div
       className={cn(
-        "rounded-lg border p-4 space-y-3 transition-colors",
+        "rounded-md border transition-colors",
         isDuplicate && "border-destructive bg-destructive/5",
-        errors && Object.keys(errors).length > 0 && "border-destructive",
+        hasErrors && !isDuplicate && "border-destructive",
       )}
     >
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <span className="text-sm font-medium">
-            {selectedSupplier ? selectedSupplier.name : "New Supplier Price"}
-          </span>
-          {isDuplicate && (
-            <Badge variant="destructive" className="text-xs">
-              <AlertTriangle className="size-3 mr-0.5" />
-              Duplicate supplier
-            </Badge>
-          )}
-        </div>
-        {canRemove && (
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon"
-            className="size-7 text-muted-foreground hover:text-destructive"
-            onClick={() => onRemove(draft.tempId)}
-            disabled={disabled}
-          >
-            <Trash2 className="size-4" />
-          </Button>
-        )}
-      </div>
-
-      {/* Supplier Select */}
-      <Field>
-        <Label>Supplier{supplierRequired ? " *" : ""}</Label>
+      {/* Main row */}
+      <div className="grid grid-cols-1 sm:grid-cols-[1fr_100px_70px_auto] gap-2 items-center p-2 sm:p-1.5">
+        {/* Supplier name / selector */}
         <Popover
           open={supplierPopoverOpen}
           onOpenChange={setSupplierPopoverOpen}
         >
           <PopoverTrigger asChild>
-            <Button
-              variant="outline"
-              role="combobox"
-              aria-expanded={supplierPopoverOpen}
-              className="w-full justify-between font-normal"
+            <button
+              type="button"
               disabled={disabled}
+              className={cn(
+                "flex items-center gap-1.5 min-w-0 h-8 px-2 rounded-md text-sm text-left transition-colors",
+                "hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                disabled && "opacity-50 cursor-not-allowed",
+                !selectedSupplier && "text-muted-foreground",
+              )}
             >
               {selectedSupplier ? (
-                <span className="flex items-center gap-2">
-                  <span className="font-medium">{selectedSupplier.name}</span>
-                  {selectedSupplier.code && (
-                    <span className="text-xs text-muted-foreground">
-                      ({selectedSupplier.code})
-                    </span>
-                  )}
+                <span className="truncate font-medium">
+                  {selectedSupplier.name}
                 </span>
               ) : (
-                <span className="text-muted-foreground">
-                  Select supplier...
+                <span className="truncate">Select supplier...</span>
+              )}
+              {selectedSupplier?.code && (
+                <span className="hidden sm:inline text-xs text-muted-foreground truncate">
+                  ({selectedSupplier.code})
                 </span>
               )}
-              <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-            </Button>
+              {isDuplicate && (
+                <Badge
+                  variant="destructive"
+                  className="ml-1 text-[10px] px-1 py-0 h-4 shrink-0"
+                >
+                  <AlertTriangle className="size-2.5 mr-0.5" />
+                  Dup
+                </Badge>
+              )}
+              <ChevronsUpDown className="ml-auto size-3.5 shrink-0 opacity-50" />
+            </button>
           </PopoverTrigger>
           <PopoverContent
             className="w-[var(--radix-popover-trigger-width)] p-0"
@@ -191,66 +183,111 @@ export function SupplierCard({
             </Command>
           </PopoverContent>
         </Popover>
-        {errors?.supplierId && (
-          <p className="text-sm text-destructive mt-1">{errors.supplierId}</p>
-        )}
-      </Field>
 
-      {/* Supplier SKU */}
-      <Field>
-        <Label>Supplier SKU</Label>
+        {/* Price */}
         <Input
-          placeholder="Vendor's SKU"
-          value={draft.supplierSku ?? ""}
+          type="number"
+          min={0}
+          step="0.001"
+          placeholder="0.000"
+          value={draft.basePrice || ""}
           onChange={(e) =>
-            onUpdate(draft.tempId, { supplierSku: e.target.value || undefined })
+            onUpdate(draft.tempId, { basePrice: Number(e.target.value) })
           }
           disabled={disabled}
-        />
-      </Field>
-
-      {/* Price + Currency */}
-      <div className="grid grid-cols-2 gap-3">
-        <Field>
-          <Label>Price *</Label>
-          <Input
-            type="number"
-            min={0}
-            step="0.001"
-            value={draft.basePrice}
-            onChange={(e) =>
-              onUpdate(draft.tempId, { basePrice: Number(e.target.value) })
-            }
-            disabled={disabled}
-            aria-invalid={!!errors?.basePrice}
-            className={cn(errors?.basePrice && "border-destructive")}
-          />
-          {errors?.basePrice && (
-            <p className="text-sm text-destructive mt-1">{errors.basePrice}</p>
+          aria-invalid={!!errors?.basePrice}
+          className={cn(
+            "h-8 text-xs",
+            errors?.basePrice && "border-destructive",
           )}
-        </Field>
-        <Field>
-          <Label>Currency</Label>
-          <Select
-            value={draft.currency}
-            onValueChange={(v) =>
-              onUpdate(draft.tempId, { currency: v as any })
-            }
+        />
+
+        {/* Currency */}
+        <Select
+          value={draft.currency}
+          onValueChange={(v) => onUpdate(draft.tempId, { currency: v as any })}
+          disabled={disabled}
+        >
+          <SelectTrigger className="h-8 text-xs w-full">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {CURRENCIES.map((c) => (
+              <SelectItem key={c} value={c}>
+                {c}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        {/* Actions */}
+        <div className="flex items-center gap-0.5 sm:w-16 justify-end">
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            className={cn(
+              "size-7 shrink-0",
+              expanded || hasErrors
+                ? "text-foreground"
+                : "text-muted-foreground",
+            )}
+            onClick={onToggleExpand}
             disabled={disabled}
+            title={expanded ? "Collapse" : "Expand details"}
           >
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {CURRENCIES.map((c) => (
-                <SelectItem key={c} value={c}>
-                  {c}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </Field>
+            <ChevronDown
+              className={cn(
+                "size-3.5 transition-transform",
+                expanded && "rotate-180",
+              )}
+            />
+          </Button>
+          {canRemove && (
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              className="size-7 shrink-0 text-muted-foreground hover:text-destructive"
+              onClick={() => onRemove(draft.tempId)}
+              disabled={disabled}
+              title="Remove supplier"
+            >
+              <Trash2 className="size-3.5" />
+            </Button>
+          )}
+        </div>
       </div>
+
+      {/* Expanded details (SKU + errors) */}
+      {expanded && (
+        <div className="px-2 pb-2 sm:px-2 sm:pb-1.5 border-t">
+          <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto] gap-2 pt-2 sm:pt-1.5 items-end">
+            <div className="space-y-1">
+              <label className="text-[11px] font-medium text-muted-foreground">
+                Supplier SKU
+              </label>
+              <Input
+                placeholder="Vendor's SKU"
+                value={draft.supplierSku ?? ""}
+                onChange={(e) =>
+                  onUpdate(draft.tempId, {
+                    supplierSku: e.target.value || undefined,
+                  })
+                }
+                disabled={disabled}
+                className="h-8 text-xs"
+              />
+            </div>
+            {(errors?.supplierId || errors?.basePrice) && (
+              <div className="text-xs text-destructive space-y-0.5">
+                {errors?.supplierId && <p>{errors.supplierId}</p>}
+                {errors?.basePrice && <p>{errors.basePrice}</p>}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
