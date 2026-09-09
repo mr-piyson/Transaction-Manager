@@ -190,11 +190,12 @@ export function InvoiceLineDialog({
       return;
     }
     const tr = taxRatesMap[selected?.taxRate?.id] as any;
+    const supplierBasePrice = selected.supplierItems?.[0]?.basePrice ?? 0;
     setValue("mode", "item");
     setValue("itemId", selected.id);
     setValue("description", selected.description || undefined);
     setValue("unitPrice", Number(selected.salesPrice) || 0);
-    setValue("purchasePrice", Number(selected.purchasePrice) || 0);
+    setValue("purchasePrice", Number(supplierBasePrice) || 0);
     setValue("taxRateId", selected.taxRate?.id);
     setValue("taxRateSnapshot", tr ? Number(tr.rate) : undefined);
     setValue("taxRateName", tr?.name || undefined);

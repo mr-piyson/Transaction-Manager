@@ -11,7 +11,6 @@ export const itemFormSchema = z.object({
   unitId: z.string().optional(),
   isSaleable: z.boolean(),
   isPurchasable: z.boolean(),
-  purchasePrice: z.coerce.number().min(0).default(0),
   salesPrice: z.coerce.number().min(0).default(0),
   minStock: z.coerce.number().int().min(0).default(0),
   reorderPoint: z.coerce.number().int().min(0).default(0),
@@ -36,8 +35,6 @@ export function getItemFormDefaults(
     unitId: item?.unitId ?? undefined,
     isSaleable: item?.isSaleable ?? true,
     isPurchasable: item?.isPurchasable ?? true,
-    purchasePrice:
-      typeof item?.purchasePrice === "number" ? item.purchasePrice : 0,
     salesPrice: typeof item?.salesPrice === "number" ? item.salesPrice : 0,
     minStock: typeof item?.minStock === "number" ? item.minStock : 0,
     reorderPoint:

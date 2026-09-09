@@ -161,7 +161,7 @@ export function FileUploadStep({
             const raw = String(row[header] || "").trim();
             if (!raw) continue;
 
-            if (field === "salesPrice" || field === "purchasePrice") {
+            if (field === "salesPrice") {
               (item as any)[field] = parseFloat(raw) || 0;
             } else if (
               field === "minStock" ||

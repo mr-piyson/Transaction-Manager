@@ -1384,8 +1384,7 @@ model Item {
   deletedAt     DateTime?
 
   // Pricing
-  purchasePrice Decimal @default(0) @db.Decimal(20, 6)
-  salesPrice    Decimal @default(0) @db.Decimal(20, 6)
+  salesPrice Decimal @default(0) @db.Decimal(20, 6)
 
   // Landed cost / average cost for COGS calculation
   averageCost Decimal @default(0) @db.Decimal(20, 6)

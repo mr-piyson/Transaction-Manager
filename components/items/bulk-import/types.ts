@@ -3,7 +3,6 @@ export interface ParsedItem {
   name: string;
   description?: string;
   salesPrice?: number;
-  purchasePrice?: number;
   unit?: string;
   minStock?: number;
   reorderPoint?: number;
@@ -47,9 +46,6 @@ export const COLUMN_ALIASES: Record<string, keyof ParsedItem> = {
   "sales price": "salesPrice",
   "selling price": "salesPrice",
   price: "salesPrice",
-  "purchase price": "purchasePrice",
-  "cost price": "purchasePrice",
-  cost: "purchasePrice",
   unit: "unit",
   uom: "unit",
   "measurement unit": "unit",

@@ -6,7 +6,6 @@ export interface BulkItemInput {
   name: string;
   description?: string;
   salesPrice?: number;
-  purchasePrice?: number;
   unit?: string;
   minStock?: number;
   reorderPoint?: number;
@@ -106,7 +105,6 @@ export async function bulkImportItems(
         name: item.name.trim(),
         description: item.description?.trim() || undefined,
         salesPrice: item.salesPrice ?? 0,
-        purchasePrice: item.purchasePrice ?? 0,
         unit: item.unit?.trim() || "pcs",
         minStock: item.minStock ?? 0,
         reorderPoint: item.reorderPoint ?? 0,
@@ -186,7 +184,7 @@ export async function bulkImportItems(
             data: {
               supplierId: supplier.id,
               itemId,
-              basePrice: data.purchasePrice ?? 0,
+              basePrice: 0,
               currency: supplier.currencyCode || "BHD",
               minOrderQty: 1,
               organizationId,

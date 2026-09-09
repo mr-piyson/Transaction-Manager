@@ -45,7 +45,6 @@ const itemBaseSchema = z.object({
   unitId: z.string().optional(),
   isSaleable: z.boolean().default(true),
   isPurchasable: z.boolean().default(true),
-  purchasePrice: decimalSchema.optional(),
   salesPrice: decimalSchema.optional(),
   minStock: z.number().int().min(0).default(0),
   reorderPoint: z.number().int().min(0).default(0),
@@ -145,7 +144,6 @@ export const itemsRouter = router({
           type: true,
           unit: true,
           salesPrice: true,
-          purchasePrice: true,
           averageCost: true,
           minStock: true,
           reorderPoint: true,
@@ -291,7 +289,6 @@ export const itemsRouter = router({
             name: z.string().min(1),
             description: z.string().max(5000).optional(),
             salesPrice: z.coerce.number().min(0).optional(),
-            purchasePrice: z.coerce.number().min(0).optional(),
             unit: z.string().max(50).default("pcs"),
             minStock: z.coerce.number().int().min(0).default(0),
             reorderPoint: z.coerce.number().int().min(0).default(0),
@@ -341,7 +338,6 @@ export const itemsRouter = router({
         select: {
           id: true,
           salesPrice: true,
-          purchasePrice: true,
           taxRateId: true,
           taxRate: { select: { rate: true, name: true } },
         },
@@ -390,7 +386,6 @@ export const itemsRouter = router({
         priceSource,
         taxRateId: item.taxRateId,
         taxRate: item.taxRate,
-        purchasePrice: item.purchasePrice,
       };
     }),
 
@@ -699,7 +694,6 @@ export const itemsRouter = router({
         isActive: true,
         isSaleable: true,
         isPurchasable: true,
-        purchasePrice: true,
         salesPrice: true,
         averageCost: true,
         minStock: true,
@@ -746,7 +740,7 @@ export const itemsRouter = router({
             ? "low"
             : "in_stock";
 
-      const inventoryValue = totalStock * Number(item.purchasePrice);
+      const inventoryValue = totalStock * Number(item.averageCost);
 
       return {
         id: item.id,
@@ -759,7 +753,6 @@ export const itemsRouter = router({
         isActive: item.isActive,
         isSaleable: item.isSaleable,
         isPurchasable: item.isPurchasable,
-        purchasePrice: Number(item.purchasePrice),
         salesPrice: Number(item.salesPrice),
         averageCost: Number(item.averageCost),
         minStock: item.minStock,

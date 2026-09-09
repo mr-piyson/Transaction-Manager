@@ -185,7 +185,6 @@ export function ItemPageContent({ item, defaultMode }: ItemPageContentProps) {
             unit: item.unit,
             isSaleable: item.isSaleable,
             isPurchasable: item.isPurchasable,
-            purchasePrice: Number(item.purchasePrice),
             salesPrice: Number(item.salesPrice),
             minStock: item.minStock,
             reorderPoint: item.reorderPoint,
@@ -252,7 +251,6 @@ export function ItemPageContent({ item, defaultMode }: ItemPageContentProps) {
   const handleTypeChange = (type: string) => {
     setValue("type", type as "PRODUCT" | "SERVICE");
     if (type === "SERVICE") {
-      setValue("purchasePrice", 0);
       setValue("minStock", 0);
       setValue("reorderPoint", 0);
       setValue("reorderQty", 0);
@@ -323,7 +321,6 @@ export function ItemPageContent({ item, defaultMode }: ItemPageContentProps) {
           unit: item.unit,
           isSaleable: item.isSaleable,
           isPurchasable: item.isPurchasable,
-          purchasePrice: Number(item.purchasePrice),
           salesPrice: Number(item.salesPrice),
           minStock: item.minStock,
           reorderPoint: item.reorderPoint,
@@ -352,7 +349,6 @@ export function ItemPageContent({ item, defaultMode }: ItemPageContentProps) {
         unit: item!.unit,
         isSaleable: item!.isSaleable,
         isPurchasable: item!.isPurchasable,
-        purchasePrice: Number(item!.purchasePrice),
         salesPrice: Number(item!.salesPrice),
         minStock: item!.minStock,
         reorderPoint: item!.reorderPoint,
@@ -366,7 +362,6 @@ export function ItemPageContent({ item, defaultMode }: ItemPageContentProps) {
 
   const onSubmit: SubmitHandler<ItemFormValues> = (values) => {
     if (isService) {
-      values.purchasePrice = 0;
       values.minStock = 0;
       values.reorderPoint = 0;
       values.reorderQty = 0;
@@ -683,26 +678,6 @@ export function ItemPageContent({ item, defaultMode }: ItemPageContentProps) {
                       />
                     </CardContent>
                   </Card>
-                  {isProduct && (
-                    <Card>
-                      <CardContent className="p-4">
-                        <Label
-                          htmlFor="purchasePrice"
-                          className="text-xs font-medium text-muted-foreground"
-                        >
-                          {t("items.purchasePrice")}
-                        </Label>
-                        <Input
-                          id="purchasePrice"
-                          type="number"
-                          min={0}
-                          step="0.001"
-                          {...register("purchasePrice")}
-                          className="mt-1 text-2xl font-bold h-10"
-                        />
-                      </CardContent>
-                    </Card>
-                  )}
                 </div>
 
                 {/* Image & Barcode */}
@@ -930,24 +905,6 @@ export function ItemPageContent({ item, defaultMode }: ItemPageContentProps) {
                     </p>
                   </CardContent>
                 </Card>
-
-                {!isService && (
-                  <Card className="bg-linear-to-br from-blue-50 to-blue-100/50 dark:from-blue-950/50 dark:to-blue-900/30 border-blue-200/50 dark:border-blue-800/50">
-                    <CardContent className="p-4">
-                      <div className="flex items-center gap-2 mb-2">
-                        <div className="size-8 rounded-lg bg-blue-100 dark:bg-blue-900/50 flex items-center justify-center">
-                          <Tag className="size-4 text-blue-600 dark:text-blue-400" />
-                        </div>
-                        <span className="text-xs font-medium text-blue-700 dark:text-blue-300">
-                          {t("items.purchasePrice")}
-                        </span>
-                      </div>
-                      <p className="text-2xl sm:text-3xl font-bold text-blue-900 dark:text-blue-100">
-                        {Number(item.purchasePrice).toFixed(3)}
-                      </p>
-                    </CardContent>
-                  </Card>
-                )}
 
                 {!isService && (
                   <Card>

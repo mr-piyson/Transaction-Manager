@@ -318,13 +318,6 @@ export function ItemDetailsSheet({
                     label={t("items.salesPrice")}
                     value={Number(item.salesPrice).toFixed(3)}
                   />
-                  {!isService && (
-                    <DetailRow
-                      icon={ShoppingCart}
-                      label={t("items.purchasePrice")}
-                      value={Number(item.purchasePrice).toFixed(3)}
-                    />
-                  )}
                   <DetailRow
                     icon={Warehouse}
                     label={t("common.tax")}

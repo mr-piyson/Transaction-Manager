@@ -338,14 +338,19 @@ export const invoicesRouter = router({
               isSaleable: true,
             },
             select: {
-              purchasePrice: true,
               taxRate: { select: { rate: true, name: true, id: true } },
+              supplierItems: {
+                where: { isActive: true, deletedAt: null },
+                select: { basePrice: true },
+                take: 1,
+              },
             },
           });
           if (!item) throw new NotFoundError("Item", line.itemId);
+          const supplierBasePrice = item.supplierItems[0]?.basePrice ?? 0;
           return {
             ...line,
-            purchasePrice: line.purchasePrice ?? Number(item.purchasePrice),
+            purchasePrice: line.purchasePrice ?? Number(supplierBasePrice),
             taxRateId: line.taxRateId ?? item.taxRate?.id,
             taxRateSnapshot:
               line.taxRateSnapshot ?? Number(item.taxRate?.rate ?? 0),
@@ -515,14 +520,19 @@ export const invoicesRouter = router({
             const item = await tx.item.findFirst({
               where: { id: line.itemId, organizationId: orgId },
               select: {
-                purchasePrice: true,
                 taxRate: { select: { rate: true, name: true, id: true } },
+                supplierItems: {
+                  where: { isActive: true, deletedAt: null },
+                  select: { basePrice: true },
+                  take: 1,
+                },
               },
             });
+            const supplierBasePrice = item?.supplierItems[0]?.basePrice ?? 0;
             enrichedLines.push({
               ...line,
               purchasePrice:
-                line.purchasePrice ?? Number(item?.purchasePrice ?? 0),
+                line.purchasePrice ?? Number(supplierBasePrice),
               taxRateId: line.taxRateId ?? item?.taxRate?.id,
               taxRateSnapshot:
                 line.taxRateSnapshot ?? Number(item?.taxRate?.rate ?? 0),

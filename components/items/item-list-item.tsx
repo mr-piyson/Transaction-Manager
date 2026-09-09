@@ -46,8 +46,17 @@ const STOCK_STYLES = {
 } as const;
 
 export function ItemListItem({ data, className, ...props }: ItemListItemProps) {
-  const { name, sku, type, image, totalStock, minStock, reorderPoint, unit } =
-    data || {};
+  const {
+    name,
+    sku,
+    type,
+    image,
+    totalStock,
+    minStock,
+    reorderPoint,
+    unit,
+    salesPrice,
+  } = data || {};
   const [imgError, setImgError] = useState(false);
   const style = TYPE_STYLES[type as string] ?? TYPE_STYLES.PRODUCT;
   const Icon = style.icon;
@@ -98,6 +107,11 @@ export function ItemListItem({ data, className, ...props }: ItemListItemProps) {
           <p className="min-w-0 flex-1 truncate text-sm text-muted-foreground">
             {sku ?? "—"}
           </p>
+          {salesPrice != null && Number(salesPrice) > 0 && (
+            <span className="shrink-0 text-xs font-medium text-muted-foreground">
+              {Number(salesPrice).toFixed(3)}
+            </span>
+          )}
           <Badge
             variant="outline"
             className={cn("text-xs", stockStatus.className)}

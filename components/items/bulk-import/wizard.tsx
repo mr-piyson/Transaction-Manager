@@ -217,7 +217,6 @@ export function ItemImportWizard() {
       name: item.name,
       description: item.description,
       salesPrice: item.salesPrice,
-      purchasePrice: item.purchasePrice,
       unit: item.unit || "pcs",
       minStock: item.minStock ?? 0,
       reorderPoint: item.reorderPoint ?? 0,

@@ -254,6 +254,23 @@ export function MasterTab({ form, canManageMaster }: MasterTabProps) {
         </Select>
       </Field>
 
+      {/* Prices */}
+      <Field>
+        <Label htmlFor="master-sales-price">Sale Price</Label>
+        <Input
+          id="master-sales-price"
+          type="number"
+          min={0}
+          step="0.001"
+          placeholder="0.000"
+          value={master.salesPrice || ""}
+          onChange={(e) =>
+            setMasterField("salesPrice", Number(e.target.value) || 0)
+          }
+          disabled={isLocked}
+        />
+      </Field>
+
       {/* Flags */}
       <div className="grid grid-cols-2 gap-3">
         <div className="flex items-center justify-between rounded-lg border p-3">

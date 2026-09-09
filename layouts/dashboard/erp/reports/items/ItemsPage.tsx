@@ -77,7 +77,6 @@ type ItemRow = {
   isActive: boolean;
   isSaleable: boolean;
   isPurchasable: boolean;
-  purchasePrice: number;
   salesPrice: number;
   averageCost: number;
   minStock: number;
@@ -261,10 +260,6 @@ function ItemDetailSheet({
               </p>
               <div className="space-y-2">
                 <DetailRow
-                  label={t("items.purchasePrice")}
-                  value={format(item.purchasePrice)}
-                />
-                <DetailRow
                   label={t("items.salesPrice")}
                   value={format(item.salesPrice)}
                 />
@@ -432,7 +427,6 @@ function exportCsv(
     ["name", "Name"],
     ["categoryName", "Category"],
     ["type", "Type"],
-    ["purchasePrice", "Buy Price"],
     ["salesPrice", "Sell Price"],
     ["averageCost", "Avg Cost"],
     ["totalStock", "Stock"],
@@ -501,7 +495,6 @@ export default function ItemReportPage() {
       name: true,
       categoryName: true,
       type: true,
-      purchasePrice: true,
       salesPrice: true,
       averageCost: true,
       totalStock: true,
@@ -752,16 +745,6 @@ export default function ItemReportPage() {
             </Badge>
           );
         },
-      },
-      {
-        headerName: "Buy Price",
-        field: "purchasePrice",
-        width: 95,
-        hide: !visibleColumns.purchasePrice,
-        filter: "agNumberColumnFilter",
-        type: "numericColumn",
-        cellClass: "text-[12px] tabular-nums",
-        valueFormatter: (params) => format(params.value),
       },
       {
         headerName: "Sell Price",
@@ -1080,7 +1063,6 @@ export default function ItemReportPage() {
             {item[field] ? "Yes" : "No"}
           </Badge>
         );
-      case "purchasePrice":
       case "salesPrice":
       case "averageCost":
       case "inventoryValue":
@@ -1374,7 +1356,6 @@ export default function ItemReportPage() {
                             name: "Name",
                             categoryName: "Category",
                             type: "Type",
-                            purchasePrice: "Buy Price",
                             salesPrice: "Sell Price",
                             averageCost: "Avg Cost",
                             totalStock: "Stock",

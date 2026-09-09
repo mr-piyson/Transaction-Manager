@@ -130,12 +130,6 @@ export function PreviewStep({
         cellRenderer: PriceCellRenderer,
       },
       {
-        headerName: "Purchase Price",
-        field: "purchasePrice",
-        width: 120,
-        cellRenderer: PriceCellRenderer,
-      },
-      {
         headerName: "Unit",
         field: "unit",
         width: 80,
