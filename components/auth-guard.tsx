@@ -3,8 +3,6 @@
 import { ShieldAlert } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import type { Action, SubjectName } from "@/lib/abilities";
-import { useAppAbility } from "@/hooks/use-app-ability";
 import { Button } from "@/components/ui/button";
 import {
   Empty,
@@ -13,6 +11,8 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from "@/components/ui/empty";
+import { useAppAbility } from "@/hooks/use-app-ability";
+import type { Action, SubjectName } from "@/lib/abilities";
 
 interface AuthGuardProps {
   permission: Action;
@@ -37,9 +37,7 @@ export function AuthGuard({ permission, subject, children }: AuthGuardProps) {
                 <ShieldAlert className="size-6" />
               </EmptyMedia>
               <EmptyTitle>{t("common.accessDenied")}</EmptyTitle>
-              <EmptyDescription>
-                {t("common.unauthorized")}
-              </EmptyDescription>
+              <EmptyDescription>{t("common.unauthorized")}</EmptyDescription>
             </EmptyHeader>
             <Button variant="outline" onClick={() => router.back()}>
               {t("common.goBack")}

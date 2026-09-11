@@ -252,8 +252,7 @@ export function POItemSelectDialog({
                 const isExisting = existingSet.has(item.id);
                 const isSelected = selected.has(item.id);
                 const supplierItem = item.supplierItems?.[0];
-                const price =
-                  Number(supplierItem?.basePrice ?? 0) || 0;
+                const price = Number(supplierItem?.basePrice ?? 0) || 0;
                 const stock = Number(item.totalStock) ?? 0;
 
                 return (

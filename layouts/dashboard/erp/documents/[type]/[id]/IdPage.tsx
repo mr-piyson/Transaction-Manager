@@ -316,7 +316,7 @@ export default function DocumentDetailPage({
     isWalkIn: invoice.isWalkIn ?? undefined,
     parentInvoiceId: invoice.parentInvoiceId ?? undefined,
     lines: invoice.lines.map((l: any) => ({
-      itemId: l.itemId,
+      itemId: l.itemId ?? undefined,
       description: l.description ?? undefined,
       quantity: Number(l.quantity),
       unitPrice: Number(l.unitPrice),
@@ -622,7 +622,7 @@ export default function DocumentDetailPage({
             currency: invoice.currency as any,
             exchangeRate: Number(invoice.exchangeRate),
             lines: invoice.lines.map((l: any) => ({
-              itemId: l.itemId,
+              itemId: l.itemId ?? undefined,
               description: l.description ?? undefined,
               quantity: Number(l.quantity),
               unitPrice: Number(l.unitPrice),

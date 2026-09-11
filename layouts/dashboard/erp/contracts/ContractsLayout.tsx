@@ -5,12 +5,12 @@ import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useCallback } from "react";
+import { AuthGuard } from "@/components/auth-guard";
 import type { ContextMenuItemSchema } from "@/components/context-menu";
 import { UniversalContextMenu } from "@/components/context-menu";
 import { ContractListItem } from "@/components/contracts/contract-list-item";
 import { useContractForm } from "@/components/dialogs";
 import { useHardDeleteForm } from "@/components/dialogs/hardDeleteForm";
-import { AuthGuard } from "@/components/auth-guard";
 import { Header } from "@/components/layout/App-Header";
 import { NotificationBell } from "@/components/layout/NotificationBell";
 import { ListView } from "@/components/list-view";
@@ -152,7 +152,9 @@ export default function ContractsLayout({
                     {statusFilters.map((f) => (
                       <Button
                         key={f.value}
-                        variant={activeStatus === f.value ? "default" : "outline"}
+                        variant={
+                          activeStatus === f.value ? "default" : "outline"
+                        }
                         size="sm"
                         className="h-7 text-xs px-2.5 whitespace-nowrap"
                         onClick={() => setStatusFilter(f.value)}

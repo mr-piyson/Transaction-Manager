@@ -161,10 +161,7 @@ export function POLineDialog({
     setValue("mode", "item");
     setValue("itemId", selected.id);
     setValue("description", selected.description || undefined);
-    setValue(
-      "unitCost",
-      Number(supplierItem?.basePrice ?? 0) || 0,
-    );
+    setValue("unitCost", Number(supplierItem?.basePrice ?? 0) || 0);
     setValue("taxRateId", selected.taxRate?.id);
     setValue("taxRateSnapshot", tr ? Number(tr.rate) : undefined);
     setValue("taxRateName", tr?.name || undefined);

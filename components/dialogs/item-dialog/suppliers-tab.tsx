@@ -105,8 +105,6 @@ export function SuppliersTab({
           onRemove={removeSupplierDraft}
         />
       ))}
-
-
     </div>
   );
 }

@@ -531,8 +531,7 @@ export const invoicesRouter = router({
             const supplierBasePrice = item?.supplierItems[0]?.basePrice ?? 0;
             enrichedLines.push({
               ...line,
-              purchasePrice:
-                line.purchasePrice ?? Number(supplierBasePrice),
+              purchasePrice: line.purchasePrice ?? Number(supplierBasePrice),
               taxRateId: line.taxRateId ?? item?.taxRate?.id,
               taxRateSnapshot:
                 line.taxRateSnapshot ?? Number(item?.taxRate?.rate ?? 0),

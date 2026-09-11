@@ -20,6 +20,7 @@ import type * as React from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { alert } from "@/components/Alert-dialog";
+import { AuthGuard } from "@/components/auth-guard";
 import { useUnifiedItemForm } from "@/components/dialogs";
 import { useHardDeleteForm } from "@/components/dialogs/hardDeleteForm";
 import { ItemDetailsSheet } from "@/components/items/item-details-sheet";
@@ -30,7 +31,6 @@ import {
   UNCATEGORIZED_CATEGORY_ID,
 } from "@/components/items/item-filter-sheet";
 import { ItemListItem } from "@/components/items/item-list-item";
-import { AuthGuard } from "@/components/auth-guard";
 import { Header } from "@/components/layout/App-Header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -128,7 +128,10 @@ export default function ItemsLayout({
   return (
     <AuthGuard permission="item:read" subject="Item">
       <div className="flex h-screen flex-col overflow-hidden">
-        <Header title={t("layout.items")} icon={<Package className="size-5" />} />
+        <Header
+          title={t("layout.items")}
+          icon={<Package className="size-5" />}
+        />
         <div className="flex-1 min-h-0 w-full">
           {isListRoute ? (
             <div className="h-full w-full flex flex-col">
@@ -169,7 +172,9 @@ export default function ItemsLayout({
                   >
                     <Filter className="size-3.5" />
                     <span className="hidden sm:inline">Filters</span>
-                    {activeFilterCount > 0 && <Badge>{activeFilterCount}</Badge>}
+                    {activeFilterCount > 0 && (
+                      <Badge>{activeFilterCount}</Badge>
+                    )}
                   </Button>
                 </div>
                 <div className="ml-auto flex shrink-0 items-center gap-2">
@@ -248,7 +253,10 @@ export default function ItemsLayout({
                   ))}
                 </div>
               </div>
-              <div ref={setScrollRef} className="min-h-0 flex-1 overflow-y-auto">
+              <div
+                ref={setScrollRef}
+                className="min-h-0 flex-1 overflow-y-auto"
+              >
                 <div
                   className="relative w-full"
                   style={{ height: `${virtualizer.getTotalSize()}px` }}
@@ -294,7 +302,8 @@ export default function ItemsLayout({
                               onClick={() =>
                                 openEdit({
                                   itemId: item.id,
-                                  onSuccess: () => utils.items.list.invalidate(),
+                                  onSuccess: () =>
+                                    utils.items.list.invalidate(),
                                 })
                               }
                             >

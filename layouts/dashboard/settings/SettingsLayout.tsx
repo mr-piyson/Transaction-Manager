@@ -5,8 +5,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useCallback, useMemo, useState } from "react";
-import { DialogsProvider } from "@/components/dialogs";
 import { AuthGuard } from "@/components/auth-guard";
+import { DialogsProvider } from "@/components/dialogs";
 import { Header } from "@/components/layout/App-Header";
 import {
   SidebarGroup,

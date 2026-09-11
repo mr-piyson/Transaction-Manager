@@ -178,8 +178,6 @@ export const PERMISSIONS = [
 
   // ── Accounting ────────────────────────────────────────────
   { code: "journal:entry", label: "Journal Entries", module: "Accounting" },
-
- 
 ] as const;
 
 /** Every valid permission code, as a compile-time union. */

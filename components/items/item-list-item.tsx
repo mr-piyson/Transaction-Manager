@@ -1,8 +1,8 @@
 import { Box, type Package, Wrench } from "lucide-react";
 import { type HTMLAttributes, useState } from "react";
-import { useCurrency } from "@/hooks/use-currency";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { useCurrency } from "@/hooks/use-currency";
 import { cn } from "@/lib/utils";
 
 interface ItemListItemProps extends HTMLAttributes<HTMLDivElement> {

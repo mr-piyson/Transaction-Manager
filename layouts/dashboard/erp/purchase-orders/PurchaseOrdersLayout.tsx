@@ -202,7 +202,10 @@ export default function POLayout({ children }: { children?: React.ReactNode }) {
           />
         )}
         <div
-          className={cn("flex-1 min-h-0 w-full", isPrintPage && "overflow-auto")}
+          className={cn(
+            "flex-1 min-h-0 w-full",
+            isPrintPage && "overflow-auto",
+          )}
         >
           {isPrintPage ? (
             children
@@ -261,7 +264,10 @@ export default function POLayout({ children }: { children?: React.ReactNode }) {
               )}
 
               <ResizableHandle
-                className={cn("hidden md:flex", !isListView && "hidden md:flex")}
+                className={cn(
+                  "hidden md:flex",
+                  !isListView && "hidden md:flex",
+                )}
               />
 
               {(!isListView || !isMobile) && (

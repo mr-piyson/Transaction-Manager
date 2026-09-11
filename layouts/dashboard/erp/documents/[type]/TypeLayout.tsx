@@ -18,11 +18,11 @@ import { parseAsString, useQueryState } from "nuqs";
 import { useCallback } from "react";
 import { toast } from "sonner";
 import { alert } from "@/components/Alert-dialog";
+import { AuthGuard } from "@/components/auth-guard";
 import type { ContextMenuItemSchema } from "@/components/context-menu";
 import { UniversalContextMenu } from "@/components/context-menu";
 import { useInvoiceForm } from "@/components/dialogs";
 import { useHardDeleteForm } from "@/components/dialogs/hardDeleteForm";
-import { AuthGuard } from "@/components/auth-guard";
 import { DocumentFilterTrigger } from "@/components/erp/document-filter-bar";
 import { InvoiceListItem } from "@/components/invoices/invoice-list-item";
 import { Header } from "@/components/layout/App-Header";
@@ -263,7 +263,10 @@ export default function DocumentsLayout({
           <Header title={headerTitle} icon={<Icon className="size-5" />} />
         )}
         <div
-          className={cn("flex-1 min-h-0 w-full", isPrintRoute && "overflow-auto")}
+          className={cn(
+            "flex-1 min-h-0 w-full",
+            isPrintRoute && "overflow-auto",
+          )}
         >
           {isPrintRoute ? (
             children
@@ -330,7 +333,10 @@ export default function DocumentsLayout({
               )}
 
               <ResizableHandle
-                className={cn("hidden md:flex", !isListRoute && "hidden md:flex")}
+                className={cn(
+                  "hidden md:flex",
+                  !isListRoute && "hidden md:flex",
+                )}
               />
 
               {(!isListRoute || !isMobile) && (

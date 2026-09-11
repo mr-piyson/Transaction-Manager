@@ -10,18 +10,18 @@ import {
 // ---------------------------------------------------------------------------
 
 const invoiceLineInputSchema = z.object({
-  id: z.string().optional(),
-  itemId: z.string().optional(),
-  description: z.string().max(1000).optional(),
+  id: z.string().nullish(),
+  itemId: z.string().nullish(),
+  description: z.string().max(1000).nullish(),
   quantity: z.number().positive(),
   unitPrice: z.number().min(0),
   discountAmt: z.number().min(0).default(0),
-  purchasePrice: z.number().min(0).optional(),
-  taxRateId: z.string().optional(),
-  taxRateSnapshot: z.number().min(0).optional(),
-  taxRateName: z.string().optional(),
+  purchasePrice: z.number().min(0).nullish(),
+  taxRateId: z.string().nullish(),
+  taxRateSnapshot: z.number().min(0).nullish(),
+  taxRateName: z.string().nullish(),
   sortOrder: z.number().int().default(0),
-  departmentId: z.string().optional(),
+  departmentId: z.string().nullish(),
 });
 
 // ---------------------------------------------------------------------------

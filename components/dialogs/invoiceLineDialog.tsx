@@ -38,15 +38,15 @@ import { trpc } from "@/lib/trpc/client";
 
 const lineEditSchema = z.object({
   mode: z.enum(["item", "manual"]).default("item"),
-  itemId: z.string().optional(),
-  description: z.string().optional(),
+  itemId: z.string().nullish(),
+  description: z.string().nullish(),
   quantity: z.coerce.number().positive("Qty must be > 0"),
   unitPrice: z.coerce.number().min(0, "Price must be >= 0"),
   discountAmt: z.coerce.number().min(0).default(0),
-  purchasePrice: z.coerce.number().min(0).optional(),
-  taxRateId: z.string().optional(),
-  taxRateSnapshot: z.coerce.number().optional(),
-  taxRateName: z.string().optional(),
+  purchasePrice: z.coerce.number().min(0).nullish(),
+  taxRateId: z.string().nullish(),
+  taxRateSnapshot: z.coerce.number().nullish(),
+  taxRateName: z.string().nullish(),
 });
 
 type LineEditValues = z.infer<typeof lineEditSchema>;

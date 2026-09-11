@@ -3,10 +3,10 @@
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useEffect } from "react";
-import SignInTab from "@/layouts/auth/SignIn";
 import { useSession } from "@/auth/auth-client";
 import Logo from "@/components/Logo";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import SignInTab from "@/layouts/auth/SignIn";
 
 export default function Auth() {
   const router = useRouter();
