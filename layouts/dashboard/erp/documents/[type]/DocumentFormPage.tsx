@@ -1,6 +1,6 @@
 "use client";
 
-import { Loader2 } from "lucide-react";
+import { FileText, Loader2, Receipt } from "lucide-react";
 import Link from "next/link";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
@@ -196,6 +196,8 @@ function DocumentFormCore({
     invoiceTypeOptions.find((o) => o.value === invoiceType)?.label ??
     t("invoices.invoice");
 
+  const documentIcon = documentType === "invoices" ? Receipt : FileText;
+
   return (
     <FormPageScaffold
       context={`invoice-form-${mode}`}
@@ -213,6 +215,7 @@ function DocumentFormCore({
       submitError={submitError}
       contentClassName="max-w-5xl"
       pageClassName="bg-muted/30"
+      icon={documentIcon}
     >
       <InvoiceFormBody
         controller={controller}

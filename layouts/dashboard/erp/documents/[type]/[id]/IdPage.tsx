@@ -24,6 +24,7 @@ import { useTranslations } from "next-intl";
 import * as React from "react";
 import { toast } from "sonner";
 import { InvoiceFormBody } from "@/components/invoice/invoiceFormBody";
+import { DetailPageHeader } from "@/components/detail-page-header";
 import { useHardDeleteForm } from "@/components/dialogs/hardDeleteForm";
 import { usePaymentForm } from "@/components/dialogs/paymentForm";
 import { InvoiceHistoryPanel } from "@/components/invoices/invoice-history-panel";
@@ -610,6 +611,14 @@ export default function DocumentDetailPage({
 
   return (
     <div className="h-full overflow-y-auto bg-muted/30">
+      <DetailPageHeader
+        title={invoice.serial}
+        icon={isInvoice ? Receipt : FileText}
+        onBack={() => router.push(`/erp/documents/${type}`)}
+        backLabel={t("common.back")}
+        badges={badges}
+        actions={headerActions}
+      />
       <div className="mx-auto max-w-5xl py-6 px-4 sm:px-6">
         {/* Paper layout */}
         <InvoiceFormBody
@@ -668,10 +677,6 @@ export default function DocumentDetailPage({
                 : null,
             })),
           }}
-          badges={badges}
-          actions={headerActions}
-          onBack={() => router.push(`/erp/documents/${type}`)}
-          backHref={`/erp/documents/${type}`}
         />
 
         {/* History sheet */}
