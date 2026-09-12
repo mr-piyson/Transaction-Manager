@@ -29,6 +29,8 @@ interface FormPageScaffoldProps {
   badges?: React.ReactNode;
   /** Action buttons (dropdown menu) to show in the header */
   actions?: React.ReactNode;
+  /** Whether the form has unsaved changes (warns on back navigation) */
+  isDirty?: boolean;
 }
 
 /**
@@ -51,9 +53,17 @@ export function FormPageScaffold({
   icon,
   badges,
   actions,
+  isDirty = false,
 }: FormPageScaffoldProps) {
   const t = useTranslations();
   const router = useRouter();
+
+  const handleBack = () => {
+    if (isDirty && !window.confirm(t("invoices.unsavedChangesWarning" as any))) {
+      return;
+    }
+    router.push(backHref);
+  };
 
   return (
     <FormErrorBoundary context={context}>
@@ -66,7 +76,7 @@ export function FormPageScaffold({
           <DetailPageHeader
             title={title}
             icon={icon}
-            onBack={() => router.push(backHref)}
+            onBack={handleBack}
             backLabel={t("common.back")}
             badges={badges}
             actions={

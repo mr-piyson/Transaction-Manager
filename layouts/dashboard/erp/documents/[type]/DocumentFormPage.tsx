@@ -216,6 +216,7 @@ function DocumentFormCore({
       contentClassName="max-w-5xl"
       pageClassName="bg-muted/30"
       icon={documentIcon}
+      isDirty={form.formState.isDirty}
     >
       <InvoiceFormBody
         controller={controller}

@@ -30,6 +30,7 @@ export function DetailPageHeader({
   return (
     <header className="sticky top-0 z-50 flex h-14 shrink-0 items-center gap-2 border-b bg-background/95 px-2 backdrop-blur-md">
       <Button
+        type="button"
         variant="ghost"
         size="icon"
         aria-label={backLabel}
