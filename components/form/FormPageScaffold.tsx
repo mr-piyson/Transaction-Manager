@@ -2,6 +2,7 @@
 
 import { ArrowLeft, Loader2, type LucideIcon } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import type * as React from "react";
 import { DetailPageHeader } from "@/components/detail-page-header";
@@ -52,6 +53,7 @@ export function FormPageScaffold({
   actions,
 }: FormPageScaffoldProps) {
   const t = useTranslations();
+  const router = useRouter();
 
   return (
     <FormErrorBoundary context={context}>
@@ -64,9 +66,7 @@ export function FormPageScaffold({
           <DetailPageHeader
             title={title}
             icon={icon}
-            onBack={() => {
-              window.location.href = backHref;
-            }}
+            onBack={() => router.push(backHref)}
             backLabel={t("common.back")}
             badges={badges}
             actions={
