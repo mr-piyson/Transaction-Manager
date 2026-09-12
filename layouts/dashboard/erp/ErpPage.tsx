@@ -15,6 +15,7 @@ import {
   UserPlus,
 } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { useTheme } from "next-themes";
 import { type ReactNode, useMemo } from "react";
@@ -31,11 +32,7 @@ import {
   Tooltip,
   XAxis,
 } from "recharts";
-import {
-  useCustomerForm,
-  useInvoiceForm,
-  usePOForm,
-} from "@/components/dialogs";
+import { useCustomerForm, usePOForm } from "@/components/dialogs";
 import { Header } from "@/components/layout/App-Header";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -225,7 +222,6 @@ export default function ErpDashboard() {
   const p = useChartPalette();
 
   const { data: sessionData } = trpc.auth.session.useQuery();
-  const { data: org } = trpc.organizations.get.useQuery();
   const { data: summary } = trpc.reports.summary.useQuery();
   const { data: statusDist } =
     trpc.reports.invoiceStatusDistribution.useQuery();
@@ -239,7 +235,7 @@ export default function ErpDashboard() {
     sortOrder: "desc",
   });
 
-  const { openCreate: openInvoiceCreate } = useInvoiceForm();
+  const router = useRouter();
   const { openCreate: openPOCreate } = usePOForm();
   const { openCreate: openCustomerCreate } = useCustomerForm();
 
@@ -262,16 +258,6 @@ export default function ErpDashboard() {
       }),
     [locale],
   );
-
-  const seal = useMemo(() => {
-    if (!org?.name) return "TM";
-    return org.name
-      .split(" ")
-      .filter(Boolean)
-      .slice(0, 3)
-      .map((w) => w.charAt(0).toUpperCase())
-      .join("");
-  }, [org?.name]);
 
   const firstName = sessionData?.user?.name?.split(" ")[0] ?? "";
 
@@ -699,9 +685,7 @@ export default function ErpDashboard() {
             <CardContent className="grid grid-cols-2 gap-1.5 px-3 sm:grid-cols-4">
               <button
                 type="button"
-                onClick={() =>
-                  openInvoiceCreate({ defaults: { type: "INVOICE" } })
-                }
+                onClick={() => router.push("/erp/documents/invoices/new")}
                 className={tileClass}
               >
                 <IconChip>

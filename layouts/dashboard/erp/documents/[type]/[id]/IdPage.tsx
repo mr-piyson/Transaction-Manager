@@ -8,12 +8,10 @@ import {
   Edit,
   FileText,
   HandCoins,
-  History,
   Loader2,
   type LucideIcon,
   MoreHorizontal,
   Package,
-  Printer,
   Receipt,
   RotateCcw,
   Send,
@@ -28,7 +26,6 @@ import * as React from "react";
 import { toast } from "sonner";
 import { DetailPageHeader } from "@/components/detail-page-header";
 import { useHardDeleteForm } from "@/components/dialogs/hardDeleteForm";
-import { useInvoiceForm } from "@/components/dialogs/invoiceForm";
 import { usePaymentForm } from "@/components/dialogs/paymentForm";
 import { InvoiceHistoryPanel } from "@/components/invoices/invoice-history-panel";
 import { Badge } from "@/components/ui/badge";
@@ -111,11 +108,10 @@ export default function DocumentDetailPage({
   const params = useParams<{ id: string }>();
   const type = documentType;
   const isInvoice = type === "invoices";
-  const { openEdit, openCreate } = useInvoiceForm();
   const { openCreate: openPayment } = usePaymentForm();
   const { openDialog: openHardDelete } = useHardDeleteForm();
   const utils = trpc.useUtils();
-  const { formatDate, formatDateTime, formatDateForInput } = useDateFormat();
+  const { formatDate, formatDateTime } = useDateFormat();
   const { data: me } = trpc.auth.me.useQuery();
   const isSuperAdmin = me?.platformRole === "SUPER_ADMIN";
   const ability = useAppAbility();
@@ -301,48 +297,14 @@ export default function DocumentDetailPage({
     setConfirmDialog({ open: true, action, ...config });
   };
 
-  const getFormValues = () => ({
-    type: invoice.type as any,
-    date: invoice.date ? formatDateForInput(invoice.date) : undefined,
-    dueDate: invoice.dueDate ? formatDateForInput(invoice.dueDate) : undefined,
-    customerId: invoice.customerId ?? undefined,
-    warehouseId: invoice.warehouseId ?? undefined,
-    departmentId: invoice.departmentId ?? undefined,
-    currency: invoice.currency as any,
-    description: invoice.description ?? undefined,
-    notes: invoice.notes ?? undefined,
-    termsText: invoice.termsText ?? undefined,
-    internalNotes: invoice.internalNotes ?? undefined,
-    isWalkIn: invoice.isWalkIn ?? undefined,
-    parentInvoiceId: invoice.parentInvoiceId ?? undefined,
-    lines: invoice.lines.map((l: any) => ({
-      itemId: l.itemId ?? undefined,
-      description: l.description ?? undefined,
-      quantity: Number(l.quantity),
-      unitPrice: Number(l.unitPrice),
-      discountAmt: Number(l.discountAmt),
-      purchasePrice: Number(l.purchasePrice ?? 0),
-      taxRateId: l.taxRateId ?? undefined,
-      taxRateSnapshot: Number(l.taxRateSnapshot ?? 0),
-      taxRateName: l.taxRateName ?? undefined,
-      sortOrder: l.sortOrder ?? 0,
-      departmentId: l.departmentId ?? undefined,
-    })),
-  });
-
   const handleEdit = () => {
-    openEdit(
-      {
-        id: invoice.id,
-        version,
-        ...getFormValues(),
-      },
-      { onSuccess: () => utils.invoices.byId.invalidate({ id: invoice.id }) },
-    );
+    router.push(`/erp/documents/${documentType}/${invoice.id}/edit`);
   };
 
   const handleDuplicate = () => {
-    openCreate({ defaults: getFormValues() });
+    router.push(
+      `/erp/documents/${documentType}/new?source=${invoice.id}&sourceType=duplicate`,
+    );
   };
 
   const getTypeLabel = (type: string) => {
@@ -613,33 +575,9 @@ export default function DocumentDetailPage({
         }
         break;
       case "createCreditNote":
-        openCreate({
-          defaults: {
-            type: "CREDIT_NOTE",
-            parentInvoiceId: invoice.id,
-            customerId: invoice.customerId ?? undefined,
-            warehouseId: invoice.warehouseId ?? undefined,
-            currency: invoice.currency as any,
-            exchangeRate: Number(invoice.exchangeRate),
-            lines: invoice.lines.map((l: any) => ({
-              itemId: l.itemId ?? undefined,
-              description: l.description ?? undefined,
-              quantity: Number(l.quantity),
-              unitPrice: Number(l.unitPrice),
-              discountAmt: Number(l.discountAmt),
-              purchasePrice: Number(l.purchasePrice ?? 0),
-              taxRateId: l.taxRateId ?? undefined,
-              taxRateSnapshot: Number(l.taxRateSnapshot ?? 0),
-              taxRateName: l.taxRateName ?? undefined,
-              sortOrder: l.sortOrder ?? 0,
-              departmentId: l.departmentId ?? undefined,
-            })),
-          },
-          onSuccess: () => {
-            utils.invoices.byId.invalidate({ id: invoice.id });
-            utils.invoices.list.invalidate();
-          },
-        });
+        router.push(
+          `/erp/documents/${documentType}/new?source=${invoice.id}&sourceType=creditNote`,
+        );
         break;
       case "delete":
         if (

@@ -1,14 +1,9 @@
 "use client";
 
 import { FileText, Receipt } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { useInvoiceForm } from "@/components/dialogs";
 import { Button } from "@/components/ui/button";
-
-const TRPC_TYPE: Record<string, "INVOICE" | "QUOTE"> = {
-  invoices: "INVOICE",
-  quotations: "QUOTE",
-};
 
 export default function DocumentsPage({
   documentType,
@@ -16,8 +11,8 @@ export default function DocumentsPage({
   documentType: "invoices" | "quotations";
 }) {
   const t = useTranslations();
+  const router = useRouter();
   const type = documentType;
-  const { openCreate } = useInvoiceForm();
 
   const Icon = type === "invoices" ? Receipt : FileText;
 
@@ -35,11 +30,7 @@ export default function DocumentsPage({
           {t("invoices.selectDescription")}
         </p>
       </div>
-      <Button
-        onClick={() =>
-          openCreate({ defaults: { type: TRPC_TYPE[type] ?? "INVOICE" } })
-        }
-      >
+      <Button onClick={() => router.push(`/erp/documents/${type}/new`)}>
         {t("invoices.newInvoice")}
       </Button>
     </div>

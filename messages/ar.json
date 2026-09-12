@@ -502,7 +502,8 @@
     "amountDue": "المبلغ المستحق",
     "cancelDialogTitle": "إلغاء الفاتورة",
     "cancelDialogDesc": "هل أنت متأكد من إلغاء هذه الفاتورة؟",
-    "cancelReasonPlaceholder": "أسباب الإلغاء"
+    "cancelReasonPlaceholder": "أسباب الإلغاء",
+    "unsavedChangesWarning": "لديك تغييرات غير محفوظة. هل أنت متأكد أنك تريد المغادرة؟"
   },
   "hardDelete": {
     "menu": "حذف نهائي",

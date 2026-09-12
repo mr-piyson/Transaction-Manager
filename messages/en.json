@@ -572,7 +572,8 @@
     "department": "Department",
     "stock": "Stock",
     "amount": "Amount",
-    "paymentReceived": "Payment received"
+    "paymentReceived": "Payment received",
+    "unsavedChangesWarning": "You have unsaved changes. Are you sure you want to leave?"
   },
   "hardDelete": {
     "menu": "Hard delete",
