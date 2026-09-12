@@ -2,6 +2,7 @@
 
 import { useTranslations } from "next-intl";
 import * as React from "react";
+import { alert } from "@/components/Alert-dialog";
 
 /**
  * Warns users before they lose unsaved form data:
@@ -27,14 +28,24 @@ export function useUnsavedChangesGuard(
 
   React.useEffect(() => {
     if (!isDirty || isPending) return;
-    const onClick = (e: MouseEvent) => {
+    const onClick = async (e: MouseEvent) => {
       const link = (e.target as Element | null)?.closest(
         "a",
       ) as HTMLAnchorElement | null;
       if (!link) return;
       const href = link.getAttribute("href");
       if (!href || href.startsWith("#") || href.startsWith("mailto:")) return;
-      if (!window.confirm(t(warningKey as Parameters<typeof t>[0]))) {
+
+      const confirmed = await alert.confirm({
+        title: t("common.unsavedChangesTitle" as any),
+        description: t(warningKey as Parameters<typeof t>[0]),
+        confirmText: t("common.leave" as any),
+        cancelText: t("common.stay" as any),
+        variant: "warning",
+        destructive: true,
+      });
+
+      if (!confirmed) {
         e.preventDefault();
         e.stopPropagation();
       }
