@@ -11,6 +11,7 @@ import {
   Loader2,
   type LucideIcon,
   MoreHorizontal,
+  Printer,
   Receipt,
   RotateCcw,
   Send,
@@ -322,6 +323,12 @@ export default function DocumentDetailPage({
     });
   }
 
+  actions.push({
+    label: t("common.print"),
+    key: "print",
+    icon: Printer,
+  });
+
   if (invoiceType === "QUOTE") {
     if (status === "DRAFT") {
       actions.push({
@@ -515,6 +522,9 @@ export default function DocumentDetailPage({
         break;
       case "duplicate":
         handleDuplicate();
+        break;
+      case "print":
+        router.push(`/erp/documents/${documentType}/${invoice.id}/print`);
         break;
       case "submit":
       case "approve":
