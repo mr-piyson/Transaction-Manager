@@ -32,7 +32,7 @@ import {
   Tooltip,
   XAxis,
 } from "recharts";
-import { useCustomerForm, usePOForm } from "@/components/dialogs";
+import { useCustomerForm } from "@/components/dialogs";
 import { Header } from "@/components/layout/App-Header";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -236,7 +236,6 @@ export default function ErpDashboard() {
   });
 
   const router = useRouter();
-  const { openCreate: openPOCreate } = usePOForm();
   const { openCreate: openCustomerCreate } = useCustomerForm();
 
   const poList = recentPOs ?? [];
@@ -697,7 +696,7 @@ export default function ErpDashboard() {
               </button>
               <button
                 type="button"
-                onClick={() => openPOCreate()}
+                onClick={() => router.push("/erp/purchase-orders/new")}
                 className={tileClass}
               >
                 <IconChip>

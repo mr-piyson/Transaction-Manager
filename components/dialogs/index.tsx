@@ -9,7 +9,6 @@ import { HardDeleteFormProvider } from "./hardDeleteForm";
 import { IncomeFormProvider } from "./incomeForm";
 import { UnifiedItemFormProvider } from "./item-dialog";
 import { PaymentFormProvider } from "./paymentForm";
-import { POFormProvider } from "./poForm";
 import { RenewalFormProvider } from "./renewalForm";
 import { StockAdjustmentFormProvider } from "./stockAdjustmentForm";
 import { SubscriptionFormProvider } from "./subscriptionForm";
@@ -66,9 +65,6 @@ export {
   usePaymentForm,
 } from "./paymentForm";
 
-export type { POFormValues } from "./poForm";
-export { POFormDialog, POFormProvider, usePOForm } from "./poForm";
-
 export type { RenewalFormValues } from "./renewalForm";
 export {
   RenewalFormDialog,
@@ -120,25 +116,23 @@ export function DialogsProvider({ children }: { children: ReactNode }) {
             <UnifiedItemFormProvider>
               <UnifiedItemFormProvider>
                 <ContractFormProvider>
-                  <POFormProvider>
-                    <ExchangeRateFormProvider>
-                      <PaymentFormProvider>
-                        <ExpenseFormProvider>
-                          <IncomeFormProvider>
-                            <SubscriptionFormProvider>
-                              <RenewalFormProvider>
-                                <StockAdjustmentFormProvider>
-                                  <HardDeleteFormProvider>
-                                    {children}
-                                  </HardDeleteFormProvider>
-                                </StockAdjustmentFormProvider>
-                              </RenewalFormProvider>
-                            </SubscriptionFormProvider>
-                          </IncomeFormProvider>
-                        </ExpenseFormProvider>
-                      </PaymentFormProvider>
-                    </ExchangeRateFormProvider>
-                  </POFormProvider>
+                  <ExchangeRateFormProvider>
+                    <PaymentFormProvider>
+                      <ExpenseFormProvider>
+                        <IncomeFormProvider>
+                          <SubscriptionFormProvider>
+                            <RenewalFormProvider>
+                              <StockAdjustmentFormProvider>
+                                <HardDeleteFormProvider>
+                                  {children}
+                                </HardDeleteFormProvider>
+                              </StockAdjustmentFormProvider>
+                            </RenewalFormProvider>
+                          </SubscriptionFormProvider>
+                        </IncomeFormProvider>
+                      </ExpenseFormProvider>
+                    </PaymentFormProvider>
+                  </ExchangeRateFormProvider>
                 </ContractFormProvider>
               </UnifiedItemFormProvider>
             </UnifiedItemFormProvider>

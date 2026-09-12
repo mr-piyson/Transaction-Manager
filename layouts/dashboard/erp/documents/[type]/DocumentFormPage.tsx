@@ -1,15 +1,14 @@
 "use client";
 
-import { ArrowLeft, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
-import * as React from "react";
-import { FormErrorBoundary } from "@/components/form/FormErrorBoundary";
-import { FormErrorSummary } from "@/components/form/FormErrorSummary";
+import { FormPageScaffold } from "@/components/form/FormPageScaffold";
 import { InvoiceFormBody } from "@/components/invoice/invoiceFormBody";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { useUnsavedChangesGuard } from "@/hooks/use-unsaved-changes-guard";
 import type { InvoiceFormValues } from "@/lib/form/invoice/invoiceFormSchema";
 import {
   buildCreateDefaults,
@@ -192,97 +191,24 @@ function DocumentFormCore({
     t("invoices.invoice");
 
   return (
-    <FormErrorBoundary context={`invoice-form-${mode}`}>
-      <form
-        onSubmit={form.handleSubmit(controller.onSubmit)}
-        noValidate
-        className="flex h-full min-w-0 flex-col"
-      >
-        <header className="flex flex-wrap items-center gap-2 border-b bg-background px-4 py-3 sm:px-6">
-          <Button asChild variant="ghost" size="icon" className="-ms-1">
-            <Link href={backHref}>
-              <ArrowLeft className="h-4 w-4" />
-            </Link>
-          </Button>
-          <div className="min-w-0 flex-1">
-            <h1 className="truncate text-lg font-semibold leading-tight">
-              {title}
-            </h1>
-            <p className="hidden truncate text-xs text-muted-foreground sm:block">
-              {subtitle}
-            </p>
-          </div>
-          <div className="hidden items-center gap-2 sm:flex">
-            <Button
-              type="button"
-              variant="outline"
-              disabled={isPending}
-              onClick={() => router.push(backHref)}
-            >
-              {t("common.cancel")}
-            </Button>
-            <Button type="submit" disabled={isPending}>
-              {isPending && <Loader2 className="me-2 h-4 w-4 animate-spin" />}
-              {isEdit
-                ? t("invoices.saveChanges")
-                : t("common.create", { type: typeLabel })}
-            </Button>
-          </div>
-        </header>
-
-        <div className="min-h-0 flex-1 overflow-y-auto">
-          <div className="mx-auto w-full max-w-4xl space-y-4 px-4 py-6 sm:px-6">
-            <FormErrorSummary
-              errors={form.formState.errors as Record<string, any>}
-              submitError={submitError}
-            />
-            <InvoiceFormBody controller={controller} />
-          </div>
-        </div>
-
-        <footer className="sticky bottom-0 border-t bg-background p-3 sm:hidden">
-          <Button type="submit" disabled={isPending} className="w-full">
-            {isPending && <Loader2 className="me-2 h-4 w-4 animate-spin" />}
-            {isEdit
-              ? t("invoices.saveChanges")
-              : t("common.create", { type: typeLabel })}
-          </Button>
-        </footer>
-      </form>
-    </FormErrorBoundary>
-  );
-}
-
-function useUnsavedChangesGuard(isDirty: boolean, isPending: boolean) {
-  const t = useTranslations();
-
-  React.useEffect(() => {
-    if (!isDirty || isPending) return;
-    const handler = (e: BeforeUnloadEvent) => {
-      e.preventDefault();
-      e.returnValue = "";
-    };
-    window.addEventListener("beforeunload", handler);
-    return () => window.removeEventListener("beforeunload", handler);
-  }, [isDirty, isPending]);
-
-  React.useEffect(() => {
-    if (!isDirty || isPending) return;
-    const onClick = (e: MouseEvent) => {
-      const link = (e.target as Element | null)?.closest(
-        "a",
-      ) as HTMLAnchorElement | null;
-      if (!link) return;
-      const href = link.getAttribute("href");
-      if (!href || href.startsWith("#") || href.startsWith("mailto:")) return;
-      if (!window.confirm(t("invoices.unsavedChangesWarning"))) {
-        e.preventDefault();
-        e.stopPropagation();
+    <FormPageScaffold
+      context={`invoice-form-${mode}`}
+      title={title}
+      subtitle={subtitle}
+      backHref={backHref}
+      onSubmit={form.handleSubmit(controller.onSubmit)}
+      isPending={isPending}
+      submitLabel={
+        isEdit
+          ? t("invoices.saveChanges")
+          : t("common.create", { type: typeLabel })
       }
-    };
-    document.addEventListener("click", onClick, true);
-    return () => document.removeEventListener("click", onClick, true);
-  }, [isDirty, isPending, t]);
+      errors={form.formState.errors as Record<string, any>}
+      submitError={submitError}
+    >
+      <InvoiceFormBody controller={controller} />
+    </FormPageScaffold>
+  );
 }
 
 function NotFoundState({ documentType }: { documentType: DocumentKind }) {

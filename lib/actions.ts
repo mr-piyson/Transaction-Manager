@@ -29,7 +29,6 @@ import { useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
 import { useCallback } from "react";
 import { signOut } from "@/auth/auth-client";
-import { usePOForm } from "@/components/dialogs";
 import { useLocaleSwitcher } from "@/hooks/use-locale";
 
 // --- Types ---
@@ -194,7 +193,7 @@ export function useActionHandlers() {
 export function usePaletteActions(t: (key: string) => string): PaletteGroup[] {
   const { handleSignOut, handleToggleTheme, handleSwitchLocale, theme } =
     useActionHandlers();
-  const { openCreate } = usePOForm();
+  const router = useRouter();
 
   return [
     {
@@ -206,7 +205,7 @@ export function usePaletteActions(t: (key: string) => string): PaletteGroup[] {
           label: t("purchaseOrders.createPO") || "Create Purchase Order",
           icon: ShoppingCart,
           keywords: ["purchase", "order", "po", "create", "new"],
-          onSelect: openCreate,
+          onSelect: () => router.push("/erp/purchase-orders/new"),
         },
       ],
     },

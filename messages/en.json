@@ -889,7 +889,15 @@
     "rejectPlaceholder": "Why is this being rejected?",
     "rejectPO": "Reject PO",
     "pendingReceipt": "{count, plural, one {# line item pending receipt} other {# line items pending receipt}}",
-    "warehouse": "Warehouse"
+    "warehouse": "Warehouse",
+    "notes": "Notes",
+    "selectSupplierFirst": "Select a supplier first",
+    "createPODesc": "Fill in the details to create a new purchase order.",
+    "editPODesc": "Update the details below and save.",
+    "saveChanges": "Save changes",
+    "unsavedChangesWarning": "You have unsaved changes. Are you sure you want to leave?",
+    "failedToCreate": "Failed to create purchase order",
+    "failedToUpdate": "Failed to update purchase order"
   },
   "expenses": {
     "title": "Expenses",

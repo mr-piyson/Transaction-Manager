@@ -15,7 +15,6 @@ import { toast } from "sonner";
 import { ActionsDropdown } from "@/components/actions-menu";
 import { useExpenseForm } from "@/components/dialogs/expenseForm";
 import { useHardDeleteForm } from "@/components/dialogs/hardDeleteForm";
-import { usePOForm } from "@/components/dialogs/poForm";
 import { buildPOActions } from "@/components/purchase-orders/po-actions";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -71,14 +70,12 @@ export default function PurchaseOrderDetailPage() {
   const params = useParams<{ id: string }>();
   const router = useRouter();
   const utils = trpc.useUtils();
-  const { openEdit } = usePOForm();
   const { openCreate: openCreateExpense } = useExpenseForm();
   const { openDialog: openHardDelete } = useHardDeleteForm();
   const { data: me } = trpc.auth.me.useQuery();
   const isSuperAdmin = me?.platformRole === "SUPER_ADMIN";
   const t = useTranslations();
-  const { formatDate, formatDateTime, formatDateForInput, formatShortDate } =
-    useDateFormat();
+  const { formatDate, formatDateTime, formatShortDate } = useDateFormat();
 
   const {
     data: po,
@@ -218,30 +215,7 @@ export default function PurchaseOrderDetailPage() {
   const version = po.version ?? 0;
 
   const handleEdit = () => {
-    openEdit(
-      {
-        id: po.id,
-        version,
-        supplierId: po.supplierId,
-        warehouseId: po.warehouseId,
-        date: po.date ? formatDateForInput(po.date) : undefined,
-        currency: po.currency as any,
-        notes: po.notes ?? undefined,
-        internalNotes: po.internalNotes ?? undefined,
-        lines: po.lines.map((l: any) => ({
-          mode: l.itemId ? "item" : "manual",
-          itemId: l.itemId ?? undefined,
-          description: l.description ?? undefined,
-          quantity: Number(l.quantity),
-          unitCost: Number(l.unitCost),
-          taxRateId: l.taxRateId ?? undefined,
-          taxRateSnapshot:
-            l.taxRateSnapshot != null ? Number(l.taxRateSnapshot) : undefined,
-          taxRateName: l.taxRateName ?? undefined,
-        })),
-      },
-      { onSuccess: () => utils.purchaseOrders.byId.invalidate({ id: po.id }) },
-    );
+    router.push(`/erp/purchase-orders/${po.id}/edit`);
   };
 
   const handleHardDelete = () => {

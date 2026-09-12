@@ -752,7 +752,15 @@
     "rejectPlaceholder": "لماذا يتم رفض هذا الأمر؟",
     "rejectPO": "رفض أمر الشراء",
     "pendingReceipt": "{count, plural, one {# بند قيد الاستلام} other {# بنود قيد الاستلام}}",
-    "warehouse": "المستودع"
+    "warehouse": "المستودع",
+    "notes": "ملاحظات",
+    "selectSupplierFirst": "اختر المورد أولاً",
+    "createPODesc": "املأ التفاصيل لإنشاء أمر شراء جديد.",
+    "editPODesc": "حدّث التفاصيل أدناه ثم احفظ.",
+    "saveChanges": "حفظ التغييرات",
+    "unsavedChangesWarning": "لديك تغييرات غير محفوظة. هل أنت متأكد أنك تريد المغادرة؟",
+    "failedToCreate": "فشل إنشاء أمر الشراء",
+    "failedToUpdate": "فشل تحديث أمر الشراء"
   },
   "expenses": {
     "title": "المصروفات",
