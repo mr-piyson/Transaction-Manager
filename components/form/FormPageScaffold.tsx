@@ -2,7 +2,6 @@
 
 import { ArrowLeft, Loader2 } from "lucide-react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import type * as React from "react";
 import { FormErrorBoundary } from "@/components/form/FormErrorBoundary";
@@ -43,7 +42,6 @@ export function FormPageScaffold({
   pageClassName = "",
 }: FormPageScaffoldProps) {
   const t = useTranslations();
-  const router = useRouter();
 
   return (
     <FormErrorBoundary context={context}>
@@ -68,15 +66,7 @@ export function FormPageScaffold({
               </p>
             )}
           </div>
-          <div className="hidden items-center gap-2 sm:flex">
-            <Button
-              type="button"
-              variant="outline"
-              disabled={isPending}
-              onClick={() => router.push(backHref)}
-            >
-              {t("common.cancel")}
-            </Button>
+          <div className="flex items-center gap-2">
             <Button type="submit" disabled={isPending}>
               {isPending && <Loader2 className="me-2 h-4 w-4 animate-spin" />}
               {submitLabel}
@@ -93,12 +83,6 @@ export function FormPageScaffold({
           </div>
         </div>
 
-        <footer className="sticky bottom-0 border-t bg-background p-3 sm:hidden">
-          <Button type="submit" disabled={isPending} className="w-full">
-            {isPending && <Loader2 className="me-2 h-4 w-4 animate-spin" />}
-            {submitLabel}
-          </Button>
-        </footer>
       </form>
     </FormErrorBoundary>
   );
