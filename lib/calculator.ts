@@ -83,11 +83,12 @@ export function calculateInvoiceTotals(lines: LineInput[]): InvoiceTotals {
     };
   });
 
-  const subtotal = round(computed.reduce((s, l) => s + l.lineSubtotal, 0));
   const discountTotal = round(computed.reduce((s, l) => s + l.discountAmt, 0));
   const taxTotal = round(computed.reduce((s, l) => s + l.taxAmt, 0));
   const total = round(computed.reduce((s, l) => s + l.total, 0));
   const costTotal = round(computed.reduce((s, l) => s + l.costTotal, 0));
+  // subtotal = total - taxTotal (revenue after discount, before tax)
+  const subtotal = round(total - taxTotal);
 
   return {
     lines: computed,

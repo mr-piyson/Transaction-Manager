@@ -328,7 +328,7 @@ export function InvoiceFormBody({
             <Button
               type="button"
               variant="outline"
-              className="flex w-full items-center justify-center gap-1.5 border-dashed py-2 text-sm font-medium"
+              className="inline-flex items-center justify-center gap-1.5 border-dashed py-2 text-sm font-medium"
               onClick={() => setEditingLineIndex(fields.length)}
             >
               <Plus className="h-4 w-4" />
@@ -415,11 +415,11 @@ export function InvoiceFormBody({
                         {discount > 0 ? `-${discount.toFixed(3)}` : "—"}
                       </td>
                       <td className="px-2 text-right align-top tabular-nums">
-                        {lineWatch?.taxRateName ? (
+                        {lineWatch?.taxRateSnapshot ? (
                           <span>
                             {lineTax.toFixed(3)}
                             <span className="ml-1 text-xs text-muted-foreground">
-                              ({lineWatch.taxRateName})
+                              ({Number(lineWatch.taxRateSnapshot)}%)
                             </span>
                           </span>
                         ) : (
