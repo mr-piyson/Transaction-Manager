@@ -11,7 +11,6 @@ import {
   Loader2,
   type LucideIcon,
   MoreHorizontal,
-  Package,
   Receipt,
   RotateCcw,
   Send,
@@ -24,19 +23,12 @@ import { useParams, useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import * as React from "react";
 import { toast } from "sonner";
-import { DetailPageHeader } from "@/components/detail-page-header";
+import { InvoiceFormBody } from "@/components/invoice/invoiceFormBody";
 import { useHardDeleteForm } from "@/components/dialogs/hardDeleteForm";
 import { usePaymentForm } from "@/components/dialogs/paymentForm";
 import { InvoiceHistoryPanel } from "@/components/invoices/invoice-history-panel";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -60,22 +52,8 @@ import {
 } from "@/components/ui/empty";
 import { Label } from "@/components/ui/label";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Separator } from "@/components/ui/separator";
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-} from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Spinner } from "@/components/ui/spinner";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { Textarea } from "@/components/ui/textarea";
 import { useAppAbility } from "@/hooks/use-app-ability";
 import { useDateFormat } from "@/hooks/use-date-format";
@@ -124,6 +102,8 @@ export default function DocumentDetailPage({
     refetch,
   } = trpc.invoices.byId.useQuery({ id: params.id }, { enabled: !!params.id });
 
+  const { data: orgData } = trpc.organizations.get.useQuery();
+
   const [sendOpen, setSendOpen] = React.useState(false);
   const [cancelOpen, setCancelOpen] = React.useState(false);
   const [cancelReason, setCancelReason] = React.useState("");
@@ -142,15 +122,13 @@ export default function DocumentDetailPage({
     utils.invoices.list.invalidate();
   }
 
-  const submitForApprovalMutation = trpc.invoices.submitForApproval.useMutation(
-    {
-      onSuccess: () => {
-        invalidate();
-        toast.success(t("invoices.submittedForApproval"));
-      },
-      onError: (e) => toast.error(e.message),
+  const submitForApprovalMutation = trpc.invoices.submitForApproval.useMutation({
+    onSuccess: () => {
+      invalidate();
+      toast.success(t("invoices.submittedForApproval"));
     },
-  );
+    onError: (e) => toast.error(e.message),
+  });
 
   const approveMutation = trpc.invoices.approve.useMutation({
     onSuccess: () => {
@@ -333,9 +311,6 @@ export default function DocumentDetailPage({
   const actions: Action[] = [];
   const status = invoice.status;
   const invoiceType = invoice.type;
-  const hasAnyDiscount = invoice.lines?.some(
-    (l: any) => Number(l.discountAmt) > 0,
-  );
 
   if (ability?.can("invoice:create", "Invoice")) {
     actions.push({
@@ -532,30 +507,6 @@ export default function DocumentDetailPage({
 
   const showActions = actions.length > 0;
 
-  const headerActions = showActions ? (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button variant="outline" size="icon" aria-label={t("common.more")}>
-          <MoreHorizontal className="size-4" />
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
-        {actions.map((action) => (
-          <DropdownMenuItem
-            key={action.key}
-            variant={
-              action.variant === "destructive" ? "destructive" : "default"
-            }
-            onClick={() => handleActionClick(action)}
-          >
-            <action.icon className="size-4" />
-            {action.label}
-          </DropdownMenuItem>
-        ))}
-      </DropdownMenuContent>
-    </DropdownMenu>
-  ) : undefined;
-
   const handleActionClick = (action: Action) => {
     switch (action.key) {
       case "edit":
@@ -620,382 +571,110 @@ export default function DocumentDetailPage({
     }
   };
 
+  // ── Build badges for letterhead ──────────────────────────────────────────
+  const badges = (
+    <>
+      <Badge className={STATUS_COLORS[invoice.status] ?? ""}>
+        {invoice.status}
+      </Badge>
+      {invoice.paymentStatus && isInvoice && (
+        <Badge variant="outline">{invoice.paymentStatus}</Badge>
+      )}
+    </>
+  );
+
+  // ── Build header actions dropdown ────────────────────────────────────────
+  const headerActions = showActions ? (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="ghost" size="icon" aria-label={t("common.more")}>
+          <MoreHorizontal className="size-4" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end">
+        {actions.map((action) => (
+          <DropdownMenuItem
+            key={action.key}
+            variant={
+              action.variant === "destructive" ? "destructive" : "default"
+            }
+            onClick={() => handleActionClick(action)}
+          >
+            <action.icon className="size-4" />
+            {action.label}
+          </DropdownMenuItem>
+        ))}
+      </DropdownMenuContent>
+    </DropdownMenu>
+  ) : undefined;
+
   return (
-    <div className="h-full overflow-y-auto ">
-      <div className="">
-        <DetailPageHeader
-          title={invoice.serial}
-          icon={isInvoice ? Receipt : FileText}
-          onBack={() => router.push(`/erp/documents/${type}`)}
-          backLabel={t("common.back")}
-          badges={
-            <>
-              <Badge className={STATUS_COLORS[invoice.status] ?? ""}>
-                {invoice.status}
-              </Badge>
-              {invoice.paymentStatus && isInvoice && (
-                <Badge variant="outline">{invoice.paymentStatus}</Badge>
-              )}
-            </>
+    <div className="h-full overflow-y-auto bg-muted/30">
+      <div className="mx-auto max-w-5xl py-6 px-4 sm:px-6">
+        {/* Paper layout */}
+        <InvoiceFormBody
+          readonly
+          serial={invoice.serial}
+          org={
+            orgData
+              ? {
+                  name: (orgData as any).name,
+                  logo: (orgData as any).logo,
+                  crNumber: (orgData as any).crNumber,
+                  taxId: (orgData as any).taxId,
+                  vatRegistered: (orgData as any).vatRegistered,
+                  phone: (orgData as any).phone,
+                  email: (orgData as any).email,
+                  website: (orgData as any).website,
+                }
+              : undefined
           }
+          invoice={{
+            type: invoice.type,
+            serial: invoice.serial,
+            date: invoice.date,
+            dueDate: invoice.dueDate,
+            currency: invoice.currency,
+            isWalkIn: invoice.isWalkIn,
+            subtotal: Number(invoice.subtotal),
+            discountTotal: Number(invoice.discountTotal),
+            taxTotal: Number(invoice.taxTotal),
+            total: Number(invoice.total),
+            costTotal: Number(invoice.costTotal),
+            termsText: (invoice as any).termsText,
+            customer: invoice.customer
+              ? {
+                  name: invoice.customer.name,
+                  vatNumber: (invoice.customer as any).vatNumber,
+                  taxId: (invoice.customer as any).taxId,
+                }
+              : null,
+            warehouse: (invoice as any).warehouse
+              ? { name: (invoice as any).warehouse.name }
+              : null,
+            lines: invoice.lines?.map((l: any) => ({
+              id: l.id,
+              itemId: l.itemId,
+              description: l.description,
+              quantity: Number(l.quantity),
+              unitPrice: Number(l.unitPrice),
+              discountAmt: Number(l.discountAmt),
+              taxAmt: Number(l.taxAmt),
+              taxRateName: l.taxRateName,
+              taxRateSnapshot: l.taxRateSnapshot ? Number(l.taxRateSnapshot) : null,
+              total: Number(l.total),
+              item: l.item
+                ? { name: l.item.name, sku: l.item.sku, image: l.item.image }
+                : null,
+            })),
+          }}
+          badges={badges}
           actions={headerActions}
+          onBack={() => router.push(`/erp/documents/${type}`)}
+          backHref={`/erp/documents/${type}`}
         />
 
-        {/* Document details */}
-        <div className="min-w-0 space-y-4 sm:space-y-5">
-          <Card className="gap-0 py-0 rounded-t-none">
-            <CardHeader className="border-b px-4 py-3 sm:px-5">
-              <CardTitle className="text-2xl">
-                {t("invoices.invoiceDetails")}
-              </CardTitle>
-              <CardDescription className="text-xs">
-                {invoice.customer?.name ?? "—"}
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="p-4 sm:p-5">
-              <dl className="grid grid-cols-1 gap-x-6 gap-y-3 text-sm sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                <div className="min-w-0 space-y-0.5">
-                  <dt className="text-xs text-muted-foreground">
-                    {t("invoices.issueDate")}
-                  </dt>
-                  <dd className="truncate font-medium">
-                    {invoice.date ? formatDate(invoice.date) : "—"}
-                  </dd>
-                </div>
-                {invoice.dueDate && (
-                  <div className="min-w-0 space-y-0.5">
-                    <dt className="text-xs text-muted-foreground">
-                      {t("invoices.dueDate")}
-                    </dt>
-                    <dd className="truncate font-medium">
-                      {formatDate(invoice.dueDate)}
-                    </dd>
-                  </div>
-                )}
-                {invoice.customer && (
-                  <div className="min-w-0 space-y-0.5">
-                    <dt className="text-xs text-muted-foreground">
-                      {t("invoices.customer")}
-                    </dt>
-                    <dd className="truncate font-medium">
-                      {invoice.customer.name}
-                    </dd>
-                    {((invoice.customer as any).vatNumber ??
-                      (invoice.customer as any).taxId) && (
-                      <dd className="truncate text-xs text-muted-foreground">
-                        {(invoice.customer as any).vatNumber ??
-                          (invoice.customer as any).taxId}
-                      </dd>
-                    )}
-                  </div>
-                )}
-                {isInvoice && (invoice as any).warehouse && (
-                  <div className="min-w-0 space-y-0.5">
-                    <dt className="text-xs text-muted-foreground">
-                      {t("invoices.warehouse")}
-                    </dt>
-                    <dd className="truncate font-medium">
-                      {(invoice as any).warehouse.name}
-                    </dd>
-                  </div>
-                )}
-                {invoice.currency && (
-                  <div className="min-w-0 space-y-0.5">
-                    <dt className="text-xs text-muted-foreground">
-                      {t("invoices.currency")}
-                    </dt>
-                    <dd className="font-medium">{invoice.currency}</dd>
-                  </div>
-                )}
-                <div className="min-w-0 space-y-1">
-                  <dt className="text-xs text-muted-foreground">
-                    {t("common.status")}
-                  </dt>
-                  <dd>
-                    <Badge className={STATUS_COLORS[invoice.status] ?? ""}>
-                      {invoice.status}
-                    </Badge>
-                  </dd>
-                </div>
-                {(invoice as any).createdBy && (
-                  <div className="min-w-0 space-y-0.5">
-                    <dt className="text-xs text-muted-foreground">
-                      {t("common.createdBy")}
-                    </dt>
-                    <dd className="truncate font-medium">
-                      {(invoice as any).createdBy?.name ?? "—"}
-                    </dd>
-                  </div>
-                )}
-              </dl>
-            </CardContent>
-          </Card>
-
-          <Separator />
-
-          {/* Line Items */}
-          <Card className="overflow-hidden">
-            <CardContent className="px-0">
-              <Table className="min-w-[760px]">
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="pl-6">#</TableHead>
-                    <TableHead>{t("invoices.item")}</TableHead>
-                    <TableHead className="text-right">
-                      {t("invoices.qty")}
-                    </TableHead>
-                    <TableHead className="text-right">
-                      {t("invoices.unitPrice")}
-                    </TableHead>
-                    {hasAnyDiscount && (
-                      <TableHead className="text-right">
-                        {t("invoices.discount")}
-                      </TableHead>
-                    )}
-                    <TableHead className="text-right">
-                      {t("invoices.tax")}
-                    </TableHead>
-                    <TableHead className="text-right pr-6">
-                      {t("invoices.total")}
-                    </TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {invoice.lines?.map((line: any, i: number) => (
-                    <TableRow key={line.id ?? i}>
-                      <TableCell className="pl-6 text-muted-foreground">
-                        {i + 1}
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-3">
-                          <div className="size-10 shrink-0 overflow-hidden rounded border bg-muted/50">
-                            {line.item?.image ? (
-                              <img
-                                src={line.item.image}
-                                alt={
-                                  line.item.name ??
-                                  line.description ??
-                                  "Item image"
-                                }
-                                className="size-full object-cover"
-                              />
-                            ) : (
-                              <div className="flex size-full items-center justify-center">
-                                <Package className="size-4 text-muted-foreground/50" />
-                              </div>
-                            )}
-                          </div>
-                          <div className="min-w-0">
-                            <p className="font-medium truncate">
-                              {line.item?.name ?? line.description ?? "—"}
-                            </p>
-                            {line.item?.sku && (
-                              <p className="text-xs text-muted-foreground">
-                                {line.item.sku}
-                              </p>
-                            )}
-                            {line.description && (
-                              <p className="text-xs text-muted-foreground italic">
-                                {line.description}
-                              </p>
-                            )}
-                          </div>
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-right tabular-nums">
-                        {Number(line.quantity).toFixed(3)}
-                      </TableCell>
-                      <TableCell className="text-right tabular-nums">
-                        {Number(line.unitPrice).toFixed(3)}
-                      </TableCell>
-                      {hasAnyDiscount && (
-                        <TableCell className="text-right tabular-nums">
-                          {Number(line.discountAmt).toFixed(3)}
-                        </TableCell>
-                      )}
-                      <TableCell className="text-right tabular-nums">
-                        {line.taxRateName ? (
-                          <span>
-                            {Number(line.taxAmt).toFixed(3)}
-                            <span className="text-xs text-muted-foreground ml-1">
-                              ({line.taxRateName})
-                            </span>
-                          </span>
-                        ) : (
-                          "—"
-                        )}
-                      </TableCell>
-                      <TableCell className="text-right pr-6 tabular-nums font-medium">
-                        {Number(line.total).toFixed(3)}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                  {invoice.lines?.length === 0 && (
-                    <TableRow>
-                      <TableCell
-                        colSpan={hasAnyDiscount ? 8 : 7}
-                        className="text-center text-muted-foreground py-6"
-                      >
-                        {t("invoices.noLineItems")}
-                      </TableCell>
-                    </TableRow>
-                  )}
-                </TableBody>
-              </Table>
-
-              <Separator />
-              {/* Totals */}
-              <div className="flex justify-end p-4 pt-5 sm:p-5 sm:pt-5">
-                <div className="w-full max-w-sm space-y-2 sm:w-72">
-                  <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">
-                      {t("invoices.subtotal")}
-                    </span>
-                    <span className="tabular-nums">
-                      {Number(invoice.subtotal).toFixed(3)}
-                    </span>
-                  </div>
-                  {Number(invoice.discountTotal) > 0 && (
-                    <div className="flex justify-between text-sm">
-                      <span className="text-muted-foreground">
-                        {t("invoices.discount")}
-                      </span>
-                      <span className="tabular-nums text-destructive">
-                        -{Number(invoice.discountTotal).toFixed(3)}
-                      </span>
-                    </div>
-                  )}
-                  <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">
-                      {t("invoices.tax")}
-                    </span>
-                    <span className="tabular-nums">
-                      {Number(invoice.taxTotal).toFixed(3)}
-                    </span>
-                  </div>
-                  <Separator />
-                  <div className="flex justify-between font-bold text-lg">
-                    <span>{t("invoices.total")}</span>
-                    <span className="tabular-nums">
-                      {Number(invoice.total).toFixed(3)} {invoice.currency}
-                    </span>
-                  </div>
-                  {isInvoice && Number((invoice as any).amountPaid) > 0 && (
-                    <>
-                      <div className="flex justify-between text-sm text-green-600">
-                        <span>{t("invoices.amountPaid")}</span>
-                        <span className="tabular-nums">
-                          {Number((invoice as any).amountPaid).toFixed(3)}{" "}
-                          {invoice.currency}
-                        </span>
-                      </div>
-                      <div className="flex justify-between text-sm text-red-600">
-                        <span>{t("invoices.balanceDue")}</span>
-                        <span className="tabular-nums">
-                          {Number((invoice as any).amountDue).toFixed(3)}{" "}
-                          {invoice.currency}
-                        </span>
-                      </div>
-                    </>
-                  )}
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Payments table */}
-          {invoice.payments && invoice.payments.length > 0 && (
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-semibold flex items-center gap-2">
-                  <HandCoins className="size-4" /> {t("invoices.payments")}
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="p-0">
-                <Table className="min-w-[480px]">
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>{t("invoices.date")}</TableHead>
-                      <TableHead>{t("invoices.paymentMethod")}</TableHead>
-                      <TableHead className="text-right">
-                        {t("invoices.amount")}
-                      </TableHead>
-                      <TableHead className="w-16"></TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {invoice.payments.map((payment: any) => (
-                      <TableRow key={payment.id}>
-                        <TableCell className="text-sm">
-                          {formatDate(payment.date)}
-                        </TableCell>
-                        <TableCell>{payment.method}</TableCell>
-                        <TableCell className="text-right font-medium">
-                          {Number(payment.amount).toFixed(3)}
-                        </TableCell>
-                        <TableCell>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="size-7 text-muted-foreground hover:text-destructive"
-                            disabled={isPending}
-                            onClick={() => {
-                              if (
-                                window.confirm(
-                                  t("invoices.deletePaymentConfirm"),
-                                )
-                              ) {
-                                deletePaymentMutation.mutate({
-                                  paymentId: payment.id,
-                                });
-                              }
-                            }}
-                          >
-                            <Trash className="size-3.5" />
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Notes */}
-          {invoice.notes && (
-            <>
-              <Separator />
-              <div>
-                <p className="text-sm text-muted-foreground mb-1">
-                  {t("invoices.notes")}
-                </p>
-                <p className="whitespace-pre-wrap">{invoice.notes}</p>
-              </div>
-            </>
-          )}
-
-          {/* Terms */}
-          {(invoice as any).termsText && (
-            <Card>
-              <CardHeader className="pb-1.5">
-                <CardTitle className="text-xs text-muted-foreground font-medium">
-                  {t("invoices.termsAndConditions")}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div
-                  className="prose prose-sm max-w-none dark:prose-invert text-foreground [&_ol]:list-decimal [&_ul]:list-disc"
-                  dangerouslySetInnerHTML={{
-                    __html: (invoice as any).termsText,
-                  }}
-                />
-              </CardContent>
-            </Card>
-          )}
-        </div>
-
-        {/* History is intentionally on demand so it never reduces document space. */}
+        {/* History sheet */}
         <Sheet open={historyOpen} onOpenChange={setHistoryOpen}>
           <SheetContent side="right" className="w-full p-0 sm:max-w-md">
             <SheetHeader className="sr-only">

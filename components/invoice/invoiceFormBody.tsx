@@ -1,6 +1,7 @@
 "use client";
 
-import { Package, Pencil, Plus, Trash2, Wrench } from "lucide-react";
+import { ArrowLeft, Package, Pencil, Plus, Trash2, Wrench } from "lucide-react";
+import Link from "next/link";
 import { useTranslations } from "next-intl";
 import type * as React from "react";
 import { InvoiceLineDialog } from "@/components/dialogs/invoiceLineDialog";
@@ -32,10 +33,54 @@ export interface PaperOrgMeta {
   defaultTermsText?: string | null;
 }
 
+/** Readonly invoice data for preview mode */
+export interface InvoiceReadonlyData {
+  type?: string;
+  serial?: string;
+  date?: string | Date | null;
+  dueDate?: string | Date | null;
+  currency?: string;
+  customer?: { name?: string | null; vatNumber?: string | null; taxId?: string | null } | null;
+  warehouse?: { name?: string | null } | null;
+  isWalkIn?: boolean;
+  subtotal?: number;
+  discountTotal?: number;
+  taxTotal?: number;
+  total?: number;
+  costTotal?: number;
+  termsText?: string | null;
+  lines?: Array<{
+    id?: string;
+    itemId?: string | null;
+    description?: string | null;
+    quantity?: number;
+    unitPrice?: number;
+    discountAmt?: number;
+    taxAmt?: number;
+    taxRateName?: string | null;
+    taxRateSnapshot?: number | null;
+    total?: number;
+    item?: { name?: string | null; sku?: string | null; image?: string | null } | null;
+  }>;
+}
+
 interface InvoiceFormBodyProps {
-  controller: InvoiceFormController;
+  /** Required in edit mode, optional in readonly mode */
+  controller?: InvoiceFormController;
   serial?: string | null;
   org?: PaperOrgMeta | null;
+  /** When true, renders all fields as readonly text */
+  readonly?: boolean;
+  /** Readonly invoice data (required when readonly=true) */
+  invoice?: InvoiceReadonlyData;
+  /** Status badges rendered in the letterhead */
+  badges?: React.ReactNode;
+  /** Action buttons (dropdown menu) rendered in the letterhead */
+  actions?: React.ReactNode;
+  /** Back navigation handler (used in readonly mode) */
+  onBack?: () => void;
+  /** Back href for readonly mode link */
+  backHref?: string;
 }
 
 // Keeps the "paper" light across light AND dark app themes (same trick as the
@@ -116,37 +161,59 @@ function TotalsRow({
   );
 }
 
+function formatDateShort(date: string | Date | null | undefined): string {
+  if (!date) return "—";
+  const d = typeof date === "string" ? new Date(date) : date;
+  if (isNaN(d.getTime())) return "—";
+  return d.toLocaleDateString("en-GB", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
+}
+
 export function InvoiceFormBody({
   controller,
   serial,
   org,
+  readonly = false,
+  invoice,
+  badges,
+  actions,
+  onBack,
+  backHref,
 }: InvoiceFormBodyProps) {
   const t = useTranslations();
-  const {
-    form,
-    fields,
-    totals,
-    editingLineIndex,
-    setEditingLineIndex,
-    customers,
-    warehouses,
-    itemsMap,
-    onLineSave,
-    remove,
-  } = controller;
-  const { register, setValue, watch, control } = form;
 
-  const invoiceType = watch("type");
-  const isWalkIn = watch("isWalkIn");
+  // ── Edit mode state ──────────────────────────────────────────────────────
+  const formCtrl = controller;
+  const form = formCtrl?.form;
+  const fields = formCtrl?.fields ?? [];
+  const totals = formCtrl?.totals;
+  const editingLineIndex = formCtrl?.editingLineIndex ?? null;
+  const setEditingLineIndex = formCtrl?.setEditingLineIndex ?? (() => {});
+  const customers = formCtrl?.customers ?? [];
+  const warehouses = formCtrl?.warehouses ?? [];
+  const itemsMap = formCtrl?.itemsMap ?? {};
+  const onLineSave = formCtrl?.onLineSave ?? (() => {});
+  const remove = formCtrl?.remove ?? (() => {});
+
+  const watch = form?.watch;
+  const setValue = form?.setValue;
+  const control = form?.control;
+  const register = form?.register;
+
+  const invoiceType = watch?.("type") ?? invoice?.type ?? "INVOICE";
+  const isWalkIn = watch?.("isWalkIn") ?? invoice?.isWalkIn ?? false;
 
   const isInvoiceType = invoiceType === "INVOICE";
   const needsCustomer = !["DELIVERY_NOTE"].includes(invoiceType);
   const needsWarehouse = isInvoiceType;
 
-  const linesWatch = watch("lines");
-  const hasAnyDiscount = linesWatch?.some(
-    (l) => Number(l?.discountAmt) > 0,
-  );
+  const linesWatch = watch?.("lines");
+  const hasAnyDiscount = readonly
+    ? invoice?.lines?.some((l) => Number(l.discountAmt) > 0)
+    : linesWatch?.some((l) => Number(l?.discountAmt) > 0);
 
   const invoiceTypeOptions = [
     { value: "INVOICE", label: t("invoices.invoice") },
@@ -154,6 +221,26 @@ export function InvoiceFormBody({
     { value: "CREDIT_NOTE", label: t("invoices.creditNote") },
     { value: "DELIVERY_NOTE", label: t("invoices.deliveryNote") },
   ];
+
+  const typeLabel =
+    invoiceTypeOptions.find((o) => o.value === invoiceType)?.label ??
+    invoiceType;
+
+  // ── Readonly line items ──────────────────────────────────────────────────
+  const readonlyLines = invoice?.lines ?? [];
+
+  // ── Readonly totals ──────────────────────────────────────────────────────
+  const readonlyTotals = readonly
+    ? {
+        subtotal: invoice?.subtotal ?? 0,
+        discountTotal: invoice?.discountTotal ?? 0,
+        taxTotal: invoice?.taxTotal ?? 0,
+        total: invoice?.total ?? 0,
+        costTotal: invoice?.costTotal ?? 0,
+      }
+    : null;
+
+  const displayTotals = readonly ? readonlyTotals : totals;
 
   return (
     <div className="min-w-0">
@@ -197,24 +284,36 @@ export function InvoiceFormBody({
 
           {/* Document block */}
           <div className="flex min-w-0 flex-col items-start sm:items-end">
-            <Select
-              value={watch("type")}
-              onValueChange={(v) => setValue("type", v as any)}
-            >
-              <SelectTrigger
-                aria-label={t("invoices.type")}
-                className="h-auto w-fit border-0 bg-transparent px-1 py-0 text-2xl font-bold uppercase tracking-wide shadow-none hover:bg-muted/40 focus-visible:ring-0 sm:text-3xl [&_svg:not([class*='text-'])]:text-muted-foreground"
+            {readonly ? (
+              <>
+                <div className="flex items-center gap-2">
+                  <span className="text-2xl font-bold uppercase tracking-wide sm:text-3xl">
+                    {typeLabel}
+                  </span>
+                  {badges}
+                  {actions}
+                </div>
+              </>
+            ) : (
+              <Select
+                value={watch?.("type")}
+                onValueChange={(v) => setValue?.("type", v as any)}
               >
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {invoiceTypeOptions.map((opt) => (
-                  <SelectItem key={opt.value} value={opt.value}>
-                    {opt.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+                <SelectTrigger
+                  aria-label={t("invoices.type")}
+                  className="h-auto w-fit border-0 bg-transparent px-1 py-0 text-2xl font-bold uppercase tracking-wide shadow-none hover:bg-muted/40 focus-visible:ring-0 sm:text-3xl [&_svg:not([class*='text-'])]:text-muted-foreground"
+                >
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {invoiceTypeOptions.map((opt) => (
+                    <SelectItem key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
 
             {serial && (
               <span className="mt-0.5 text-sm font-semibold text-muted-foreground">
@@ -225,21 +324,33 @@ export function InvoiceFormBody({
             <div className="mt-3 flex flex-wrap items-end gap-x-6 gap-y-3">
               <div className="w-40">
                 <PaperLabel>{t("invoices.issueDate")} *</PaperLabel>
-                <DateInputField
-                  control={control}
-                  name="date"
-                  rules={{ required: "Date is required" }}
-                  required
-                  showTodayButton
-                />
+                {readonly ? (
+                  <p className="text-sm font-medium">
+                    {formatDateShort(invoice?.date)}
+                  </p>
+                ) : (
+                  <DateInputField
+                    control={control!}
+                    name="date"
+                    rules={{ required: "Date is required" }}
+                    required
+                    showTodayButton
+                  />
+                )}
               </div>
               <div className="w-40">
                 <PaperLabel>{t("invoices.dueDate")}</PaperLabel>
-                <DateInputField
-                  control={control}
-                  name="dueDate"
-                  showTodayButton
-                />
+                {readonly ? (
+                  <p className="text-sm font-medium">
+                    {formatDateShort(invoice?.dueDate)}
+                  </p>
+                ) : (
+                  <DateInputField
+                    control={control!}
+                    name="dueDate"
+                    showTodayButton
+                  />
+                )}
               </div>
             </div>
           </div>
@@ -254,15 +365,29 @@ export function InvoiceFormBody({
                   ? t("invoices.walkInCustomerName")
                   : t("invoices.billTo")}
               </PaperLabel>
-              {isWalkIn ? (
+              {readonly ? (
+                <p className="text-sm font-medium">
+                  {invoice?.customer?.name ?? "—"}
+                  {invoice?.customer?.vatNumber && (
+                    <span className="ml-2 text-xs text-muted-foreground">
+                      (VAT: {invoice.customer.vatNumber})
+                    </span>
+                  )}
+                  {invoice?.customer?.taxId && !invoice?.customer?.vatNumber && (
+                    <span className="ml-2 text-xs text-muted-foreground">
+                      (Tax: {invoice.customer.taxId})
+                    </span>
+                  )}
+                </p>
+              ) : isWalkIn ? (
                 <Input
                   placeholder={t("invoices.walkInCustomerPlaceholder")}
-                  {...register("customerId")}
+                  {...register?.("customerId")}
                 />
               ) : (
                 <Select
-                  value={watch("customerId") || ""}
-                  onValueChange={(v) => setValue("customerId", v)}
+                  value={watch?.("customerId") || ""}
+                  onValueChange={(v) => setValue?.("customerId", v)}
                 >
                   <SelectTrigger
                     className="w-full min-w-0"
@@ -281,65 +406,75 @@ export function InvoiceFormBody({
                   </SelectContent>
                 </Select>
               )}
-              <div className="mt-2 flex items-center gap-2">
-                <Checkbox
-                  id="isWalkIn"
-                  checked={isWalkIn}
-                  onCheckedChange={(checked) => {
-                    setValue("isWalkIn", checked === true);
-                    if (checked) setValue("customerId", "");
-                  }}
-                />
-                <Label
-                  htmlFor="isWalkIn"
-                  className="cursor-pointer font-normal text-muted-foreground"
-                >
-                  {t("invoices.walkInCustomer")}
-                </Label>
-              </div>
+              {!readonly && (
+                <div className="mt-2 flex items-center gap-2">
+                  <Checkbox
+                    id="isWalkIn"
+                    checked={isWalkIn}
+                    onCheckedChange={(checked) => {
+                      setValue?.("isWalkIn", checked === true);
+                      if (checked) setValue?.("customerId", "");
+                    }}
+                  />
+                  <Label
+                    htmlFor="isWalkIn"
+                    className="cursor-pointer font-normal text-muted-foreground"
+                  >
+                    {t("invoices.walkInCustomer")}
+                  </Label>
+                </div>
+              )}
             </div>
           )}
 
           {needsWarehouse && (
             <div className="min-w-0">
               <PaperLabel>{t("invoices.warehouse")}</PaperLabel>
-              <Select
-                value={watch("warehouseId") || ""}
-                onValueChange={(v) => setValue("warehouseId", v)}
-              >
-                <SelectTrigger
-                  className="w-full min-w-0"
-                  aria-label={t("invoices.warehouse")}
+              {readonly ? (
+                <p className="text-sm font-medium">
+                  {invoice?.warehouse?.name ?? "—"}
+                </p>
+              ) : (
+                <Select
+                  value={watch?.("warehouseId") || ""}
+                  onValueChange={(v) => setValue?.("warehouseId", v)}
                 >
-                  <SelectValue placeholder={t("invoices.selectWarehouse")} />
-                </SelectTrigger>
-                <SelectContent className="max-w-[75vw]">
-                  {warehouses.map((w: any) => (
-                    <SelectItem key={w.id} value={w.id} className="min-w-0">
-                      <span className="flex min-w-0 items-center gap-1.5">
-                        <span className="truncate">{w.name}</span>
-                      </span>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                  <SelectTrigger
+                    className="w-full min-w-0"
+                    aria-label={t("invoices.warehouse")}
+                  >
+                    <SelectValue placeholder={t("invoices.selectWarehouse")} />
+                  </SelectTrigger>
+                  <SelectContent className="max-w-[75vw]">
+                    {warehouses.map((w: any) => (
+                      <SelectItem key={w.id} value={w.id} className="min-w-0">
+                        <span className="flex min-w-0 items-center gap-1.5">
+                          <span className="truncate">{w.name}</span>
+                        </span>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
             </div>
           )}
         </section>
 
         {/* ================= Line items ================= */}
         <section className="px-6 py-4 sm:px-8">
-          <div className="mb-3">
-            <Button
-              type="button"
-              variant="outline"
-              className="inline-flex items-center justify-center gap-1.5 border-dashed py-2 text-sm font-medium"
-              onClick={() => setEditingLineIndex(fields.length)}
-            >
-              <Plus className="h-4 w-4" />
-              {t("invoices.addLine")}
-            </Button>
-          </div>
+          {!readonly && (
+            <div className="mb-3">
+              <Button
+                type="button"
+                variant="outline"
+                className="inline-flex items-center justify-center gap-1.5 border-dashed py-2 text-sm font-medium"
+                onClick={() => setEditingLineIndex(fields.length)}
+              >
+                <Plus className="h-4 w-4" />
+                {t("invoices.addLine")}
+              </Button>
+            </div>
+          )}
           <div className="overflow-x-auto">
             <table className="w-full min-w-[720px] border-collapse text-sm">
               <thead>
@@ -365,111 +500,179 @@ export function InvoiceFormBody({
                   <th className="w-32 px-2 text-right font-semibold">
                     {t("common.total")}
                   </th>
-                  <th className="w-16 pl-2" />
+                  {!readonly && <th className="w-16 pl-2" />}
                 </tr>
               </thead>
               <tbody>
-                {fields.map((field, index) => {
-                  const isManual = !field.itemId;
-                  const item = itemsMap[field.itemId || ""] as any;
-                  const lineWatch = watch(`lines.${index}`);
-                  const qty = Number(lineWatch?.quantity) || 0;
-                  const price = Number(lineWatch?.unitPrice) || 0;
-                  const discount = Number(lineWatch?.discountAmt) || 0;
-                  const lineSubtotal = qty * price;
-                  const taxRate = Number(lineWatch?.taxRateSnapshot) || 0;
-                  const lineTax =
-                    lineSubtotal - discount > 0
-                      ? (lineSubtotal - discount) * (taxRate / 100)
-                      : 0;
-                  const isManualLabel =
-                    lineWatch?.description || t("invoices.manualEntry");
+                {readonly
+                  ? readonlyLines.map((line, index) => {
+                      const isManual = !line.itemId;
+                      const item = line.item;
+                      const qty = Number(line.quantity) || 0;
+                      const price = Number(line.unitPrice) || 0;
+                      const discount = Number(line.discountAmt) || 0;
+                      const lineSubtotal = qty * price;
+                      const lineTax = Number(line.taxAmt) || 0;
+                      const hasDiscount = discount > 0;
 
-                  return (
-                    <tr key={field.id} className="border-b last:border-0">
-                      <td className="py-2.5 pr-2 align-top text-xs text-muted-foreground">
-                        {index + 1}
-                      </td>
-                      <td className="py-2.5 pr-2 align-top">
-                        <div className="flex items-center gap-2.5">
-                          <Thumb item={item} isManual={isManual} />
-                          <div className="min-w-0">
-                            <p className="truncate text-sm font-medium">
-                              {isManual
-                                ? isManualLabel
-                                : item?.name || field.itemId}
-                            </p>
-                            {item?.sku && (
-                              <p className="text-xs text-muted-foreground">
-                                SKU: {item.sku}
-                              </p>
+                      return (
+                        <tr key={line.id ?? index} className="border-b last:border-0">
+                          <td className="py-2.5 pr-2 align-top text-xs text-muted-foreground">
+                            {index + 1}
+                          </td>
+                          <td className="py-2.5 pr-2 align-top">
+                            <div className="flex items-center gap-2.5">
+                              <Thumb item={item} isManual={isManual} />
+                              <div className="min-w-0">
+                                <p className="truncate text-sm font-medium">
+                                  {isManual
+                                    ? line.description || t("invoices.manualEntry")
+                                    : item?.name || "—"}
+                                </p>
+                                {item?.sku && (
+                                  <p className="text-xs text-muted-foreground">
+                                    SKU: {item.sku}
+                                  </p>
+                                )}
+                                {!isManual && line.description && (
+                                  <p className="truncate text-xs text-muted-foreground italic">
+                                    {line.description}
+                                  </p>
+                                )}
+                              </div>
+                            </div>
+                          </td>
+                          <td className="px-2 text-right align-top tabular-nums">
+                            {qty.toFixed(3)}
+                          </td>
+                          <td className="px-2 text-right align-top tabular-nums">
+                            {price.toFixed(3)}
+                          </td>
+                          {hasAnyDiscount && (
+                            <td className="px-2 text-right align-top tabular-nums">
+                              {hasDiscount ? `-${discount.toFixed(3)}` : "—"}
+                            </td>
+                          )}
+                          <td className="px-2 text-right align-top tabular-nums">
+                            {line.taxRateName ? (
+                              <span>
+                                {lineTax.toFixed(3)}
+                                <span className="ml-1 text-xs text-muted-foreground">
+                                  ({line.taxRateName})
+                                </span>
+                              </span>
+                            ) : (
+                              "—"
                             )}
-                            {!isManual && lineWatch?.description && (
-                              <p className="truncate text-xs text-muted-foreground italic">
-                                {lineWatch.description}
-                              </p>
-                            )}
-                          </div>
-                        </div>
-                      </td>
-                      <td className="px-2 text-right align-top tabular-nums">
-                        {qty.toFixed(3)}
-                      </td>
-                      <td className="px-2 text-right align-top tabular-nums">
-                        {price.toFixed(3)}
-                      </td>
-                      {hasAnyDiscount && (
-                        <td className="px-2 text-right align-top tabular-nums">
-                          {discount > 0 ? `-${discount.toFixed(3)}` : "—"}
-                        </td>
-                      )}
-                      <td className="px-2 text-right align-top tabular-nums">
-                        {lineWatch?.taxRateSnapshot ? (
-                          <span>
-                            {lineTax.toFixed(3)}
-                            <span className="ml-1 text-xs text-muted-foreground">
-                              ({Number(lineWatch.taxRateSnapshot)}%)
-                            </span>
-                          </span>
-                        ) : (
-                          "—"
-                        )}
-                      </td>
-                      <td className="px-2 text-right align-top tabular-nums font-medium">
-                        {(lineSubtotal - discount + lineTax).toFixed(3)}
-                      </td>
-                      <td className="py-2.5 pl-2 align-top">
-                        <div className="flex items-center justify-end gap-0.5">
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="icon"
-                            className="size-7 text-muted-foreground hover:text-foreground"
-                            aria-label={t("common.edit")}
-                            onClick={() => setEditingLineIndex(index)}
-                          >
-                            <Pencil className="h-3.5 w-3.5" />
-                          </Button>
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="icon"
-                            className="size-7 text-muted-foreground hover:text-destructive"
-                            aria-label={t("common.delete")}
-                            onClick={() => remove(index)}
-                          >
-                            <Trash2 className="h-3.5 w-3.5" />
-                          </Button>
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })}
+                          </td>
+                          <td className="px-2 text-right align-top tabular-nums font-medium">
+                            {Number(line.total).toFixed(3)}
+                          </td>
+                        </tr>
+                      );
+                    })
+                  : fields.map((field, index) => {
+                      const isManual = !field.itemId;
+                      const item = itemsMap[field.itemId || ""] as any;
+                      const lineWatch = watch?.(`lines.${index}`);
+                      const qty = Number(lineWatch?.quantity) || 0;
+                      const price = Number(lineWatch?.unitPrice) || 0;
+                      const discount = Number(lineWatch?.discountAmt) || 0;
+                      const lineSubtotal = qty * price;
+                      const taxRate = Number(lineWatch?.taxRateSnapshot) || 0;
+                      const lineTax =
+                        lineSubtotal - discount > 0
+                          ? (lineSubtotal - discount) * (taxRate / 100)
+                          : 0;
+                      const isManualLabel =
+                        lineWatch?.description || t("invoices.manualEntry");
 
-                {fields.length === 0 && (
+                      return (
+                        <tr key={field.id} className="border-b last:border-0">
+                          <td className="py-2.5 pr-2 align-top text-xs text-muted-foreground">
+                            {index + 1}
+                          </td>
+                          <td className="py-2.5 pr-2 align-top">
+                            <div className="flex items-center gap-2.5">
+                              <Thumb item={item} isManual={isManual} />
+                              <div className="min-w-0">
+                                <p className="truncate text-sm font-medium">
+                                  {isManual
+                                    ? isManualLabel
+                                    : item?.name || field.itemId}
+                                </p>
+                                {item?.sku && (
+                                  <p className="text-xs text-muted-foreground">
+                                    SKU: {item.sku}
+                                  </p>
+                                )}
+                                {!isManual && lineWatch?.description && (
+                                  <p className="truncate text-xs text-muted-foreground italic">
+                                    {lineWatch.description}
+                                  </p>
+                                )}
+                              </div>
+                            </div>
+                          </td>
+                          <td className="px-2 text-right align-top tabular-nums">
+                            {qty.toFixed(3)}
+                          </td>
+                          <td className="px-2 text-right align-top tabular-nums">
+                            {price.toFixed(3)}
+                          </td>
+                          {hasAnyDiscount && (
+                            <td className="px-2 text-right align-top tabular-nums">
+                              {discount > 0 ? `-${discount.toFixed(3)}` : "—"}
+                            </td>
+                          )}
+                          <td className="px-2 text-right align-top tabular-nums">
+                            {lineWatch?.taxRateSnapshot ? (
+                              <span>
+                                {lineTax.toFixed(3)}
+                                <span className="ml-1 text-xs text-muted-foreground">
+                                  ({Number(lineWatch.taxRateSnapshot)}%)
+                                </span>
+                              </span>
+                            ) : (
+                              "—"
+                            )}
+                          </td>
+                          <td className="px-2 text-right align-top tabular-nums font-medium">
+                            {(lineSubtotal - discount + lineTax).toFixed(3)}
+                          </td>
+                          <td className="py-2.5 pl-2 align-top">
+                            <div className="flex items-center justify-end gap-0.5">
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="icon"
+                                className="size-7 text-muted-foreground hover:text-foreground"
+                                aria-label={t("common.edit")}
+                                onClick={() => setEditingLineIndex(index)}
+                              >
+                                <Pencil className="h-3.5 w-3.5" />
+                              </Button>
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="icon"
+                                className="size-7 text-muted-foreground hover:text-destructive"
+                                aria-label={t("common.delete")}
+                                onClick={() => remove(index)}
+                              >
+                                <Trash2 className="h-3.5 w-3.5" />
+                              </Button>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
+
+                {((readonly && readonlyLines.length === 0) ||
+                  (!readonly && fields.length === 0)) && (
                   <tr>
                     <td
-                      colSpan={hasAnyDiscount ? 8 : 7}
+                      colSpan={hasAnyDiscount ? (readonly ? 7 : 8) : (readonly ? 6 : 7)}
                       className="py-10 text-center text-sm text-muted-foreground"
                     >
                       <Package className="mx-auto mb-2 h-8 w-8 opacity-30" />
@@ -483,70 +686,82 @@ export function InvoiceFormBody({
         </section>
 
         {/* ================= Totals ================= */}
-        {fields.length > 0 && (
+        {((readonly && readonlyLines.length > 0) ||
+          (!readonly && fields.length > 0)) && (
           <section className="flex justify-end px-6 pb-6 sm:px-8">
             <div className="w-full max-w-xs space-y-1.5 border-t pt-2 text-sm sm:w-72">
               <TotalsRow label={t("invoices.subtotal")}>
-                {totals.subtotal.toFixed(3)}
+                {displayTotals?.subtotal.toFixed(3)}
               </TotalsRow>
-              {totals.discountTotal > 0 && (
+              {(displayTotals?.discountTotal ?? 0) > 0 && (
                 <TotalsRow
                   label={t("invoices.discount")}
                   className="text-destructive"
                 >
-                  -{totals.discountTotal.toFixed(3)}
+                  -{displayTotals?.discountTotal.toFixed(3)}
                 </TotalsRow>
               )}
               <TotalsRow label={t("invoices.tax")}>
-                +{totals.taxTotal.toFixed(3)}
+                +{displayTotals?.taxTotal.toFixed(3)}
               </TotalsRow>
-              <TotalsRow label={t("invoices.cogs")}>
-                {totals.costTotal.toFixed(3)}
-              </TotalsRow>
-              <TotalsRow
-                label={t("invoices.grossProfit")}
-                className={
-                  totals.total - totals.costTotal >= 0
-                    ? "text-green-600"
-                    : "text-red-600"
-                }
-              >
-                {(totals.total - totals.costTotal).toFixed(3)}
-                {totals.total > 0 && (
-                  <span className="ml-1 text-xs">
-                    (
-                    {(
-                      ((totals.total - totals.costTotal) / totals.total) *
-                      100
-                    ).toFixed(1)}
-                    %)
-                  </span>
-                )}
-              </TotalsRow>
+              {!readonly && (
+                <>
+                  <TotalsRow label={t("invoices.cogs")}>
+                    {totals?.costTotal.toFixed(3)}
+                  </TotalsRow>
+                  <TotalsRow
+                    label={t("invoices.grossProfit")}
+                    className={
+                      (totals?.total ?? 0) - (totals?.costTotal ?? 0) >= 0
+                        ? "text-green-600"
+                        : "text-red-600"
+                    }
+                  >
+                    {((totals?.total ?? 0) - (totals?.costTotal ?? 0)).toFixed(3)}
+                    {(totals?.total ?? 0) > 0 && (
+                      <span className="ml-1 text-xs">
+                        (
+                        {(
+                          (((totals?.total ?? 0) - (totals?.costTotal ?? 0)) /
+                            (totals?.total ?? 1)) *
+                          100
+                        ).toFixed(1)}
+                        %)
+                      </span>
+                    )}
+                  </TotalsRow>
+                </>
+              )}
               <div className="flex items-center justify-between gap-4 border-t pt-1.5 text-base font-bold">
                 <span>{t("invoices.total")}</span>
                 <div className="flex items-center gap-1.5">
-                  <Select
-                    value={watch("currency")}
-                    onValueChange={(v) => setValue("currency", v as any)}
-                  >
-                    <SelectTrigger
-                      size="sm"
-                      aria-label={t("invoices.currency")}
-                      className="h-6 gap-1 border-0 bg-transparent px-1 text-xs font-semibold shadow-none hover:bg-muted/40 focus-visible:ring-0"
+                  {readonly ? (
+                    <span className="text-xs font-semibold">
+                      {invoice?.currency ?? "BHD"}
+                    </span>
+                  ) : (
+                    <Select
+                      value={watch?.("currency")}
+                      onValueChange={(v) => setValue?.("currency", v as any)}
                     >
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {Object.keys(CURRENCIES).map((c) => (
-                        <SelectItem key={c} value={c}>
-                          {c}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                      <SelectTrigger
+                        size="sm"
+                        aria-label={t("invoices.currency")}
+                        className="h-6 gap-1 border-0 bg-transparent px-1 text-xs font-semibold shadow-none hover:bg-muted/40 focus-visible:ring-0"
+                      >
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {Object.keys(CURRENCIES).map((c) => (
+                          <SelectItem key={c} value={c}>
+                            {c}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
                   <span className="tabular-nums">
-                    {totals.total.toFixed(3)}
+                    {displayTotals?.total.toFixed(3)}
                   </span>
                 </div>
               </div>
@@ -558,18 +773,29 @@ export function InvoiceFormBody({
         <section className="border-t px-6 py-5 sm:px-8">
           <PaperLabel>{t("invoices.termsAndConditions")}</PaperLabel>
           <div className="mt-2">
-            <RichtextEditor
-              value={watch("termsText")}
-              onChange={(html) => setValue("termsText", html)}
-              placeholder={t("invoices.termsPlaceholder")}
-              minHeight="90px"
-            />
+            {readonly ? (
+              invoice?.termsText ? (
+                <div
+                  className="prose prose-sm max-w-none text-sm"
+                  dangerouslySetInnerHTML={{ __html: invoice.termsText }}
+                />
+              ) : (
+                <p className="text-sm text-muted-foreground">—</p>
+              )
+            ) : (
+              <RichtextEditor
+                value={watch?.("termsText")}
+                onChange={(html) => setValue?.("termsText", html)}
+                placeholder={t("invoices.termsPlaceholder")}
+                minHeight="90px"
+              />
+            )}
           </div>
         </section>
       </div>
 
-      {/* Line edit / create dialog */}
-      {editingLineIndex !== null && (
+      {/* Line edit / create dialog (edit mode only) */}
+      {!readonly && editingLineIndex !== null && (
         <InvoiceLineDialog
           open={editingLineIndex !== null}
           onOpenChange={(v) => {
