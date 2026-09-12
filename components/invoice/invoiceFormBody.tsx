@@ -249,7 +249,7 @@ export function InvoiceFormBody({
         style={PAPER_THEME}
       >
         {/* ================= Letterhead ================= */}
-        <header className="flex flex-wrap items-start justify-between gap-x-8 gap-y-5 border-b px-6 py-6 sm:px-8">
+        <header className="flex flex-wrap flex-row-reverse items-start justify-between gap-x-8 gap-y-5 border-b px-6 py-6 sm:px-8">
           {/* Company block */}
           <div className="flex min-w-0 items-start gap-3.5">
             {org?.logo && (
@@ -283,7 +283,7 @@ export function InvoiceFormBody({
           </div>
 
           {/* Document block */}
-          <div className="flex min-w-0 flex-col items-start sm:items-end">
+          <div className="flex min-w-0 flex-col items-start sm:items-start">
             {readonly ? (
               <>
                 <div className="flex items-center gap-2">
