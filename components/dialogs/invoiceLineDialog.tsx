@@ -226,7 +226,10 @@ export function InvoiceLineDialog({
         </DialogHeader>
 
         <form
-          onSubmit={handleSubmit(onSubmit)}
+          onSubmit={(e) => {
+            e.stopPropagation();
+            handleSubmit(onSubmit)(e);
+          }}
           noValidate
           className="flex min-h-0 flex-1 flex-col gap-4"
         >

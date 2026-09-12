@@ -5,7 +5,10 @@ import Link from "next/link";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { FormPageScaffold } from "@/components/form/FormPageScaffold";
-import { InvoiceFormBody } from "@/components/invoice/invoiceFormBody";
+import {
+  InvoiceFormBody,
+  type PaperOrgMeta,
+} from "@/components/invoice/invoiceFormBody";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useUnsavedChangesGuard } from "@/hooks/use-unsaved-changes-guard";
@@ -70,6 +73,7 @@ export function DocumentFormPage({
         documentType={documentType}
         initialValues={invoiceToFormValues(detail.data)}
         document={{ id: detail.data.id, version: detail.data.version ?? 0 }}
+        serial={detail.data.serial}
         customersData={customersData}
         warehousesData={warehousesData}
         itemsData={itemsData}
@@ -128,6 +132,7 @@ function DocumentFormCore({
   documentType,
   initialValues,
   document,
+  serial,
   customersData,
   warehousesData,
   itemsData,
@@ -137,6 +142,7 @@ function DocumentFormCore({
   documentType: DocumentKind;
   initialValues: InvoiceFormValues;
   document: { id: string; version?: number } | null;
+  serial?: string | null;
   customersData?: any[];
   warehousesData?: any[];
   itemsData?: any[];
@@ -205,8 +211,14 @@ function DocumentFormCore({
       }
       errors={form.formState.errors as Record<string, any>}
       submitError={submitError}
+      contentClassName="max-w-5xl"
+      pageClassName="bg-muted/30"
     >
-      <InvoiceFormBody controller={controller} />
+      <InvoiceFormBody
+        controller={controller}
+        serial={serial}
+        org={orgData as PaperOrgMeta | null}
+      />
     </FormPageScaffold>
   );
 }

@@ -20,6 +20,8 @@ interface FormPageScaffoldProps {
   errors?: Record<string, any>;
   submitError?: string | null;
   children: React.ReactNode;
+  contentClassName?: string;
+  pageClassName?: string;
 }
 
 /**
@@ -37,6 +39,8 @@ export function FormPageScaffold({
   errors,
   submitError,
   children,
+  contentClassName = "max-w-4xl",
+  pageClassName = "",
 }: FormPageScaffoldProps) {
   const t = useTranslations();
   const router = useRouter();
@@ -80,8 +84,10 @@ export function FormPageScaffold({
           </div>
         </header>
 
-        <div className="min-h-0 flex-1 overflow-y-auto">
-          <div className="mx-auto w-full max-w-4xl space-y-4 px-4 py-6 sm:px-6">
+        <div className={`min-h-0 flex-1 overflow-y-auto ${pageClassName}`}>
+          <div
+            className={`mx-auto w-full space-y-4 px-4 py-6 sm:px-6 ${contentClassName}`}
+          >
             <FormErrorSummary errors={errors} submitError={submitError} />
             {children}
           </div>
