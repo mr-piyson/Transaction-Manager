@@ -141,6 +141,7 @@ function LineItemsTable({
   lines: any[];
   t: ReturnType<typeof useTranslations>;
 }) {
+  const hasAnyDiscount = lines.some((l) => Number(l.discountAmt) > 0);
   return (
     <table className="w-full text-sm">
       <thead>
@@ -149,7 +150,9 @@ function LineItemsTable({
           <th className="text-left py-2 pr-2">{t("invoices.item")}</th>
           <th className="text-right py-2 px-2">{t("invoices.qty")}</th>
           <th className="text-right py-2 px-2">{t("invoices.unitPrice")}</th>
-          <th className="text-right py-2 px-2">{t("common.discount")}</th>
+          {hasAnyDiscount && (
+            <th className="text-right py-2 px-2">{t("common.discount")}</th>
+          )}
           <th className="text-right py-2 px-2">{t("common.tax")} %</th>
           <th className="text-right py-2 px-2">{t("common.tax")}</th>
           <th className="text-right py-2 pl-2">{t("common.total")}</th>
@@ -180,11 +183,13 @@ function LineItemsTable({
             <td className="py-2 px-2 text-right align-top whitespace-nowrap">
               {Number(line.unitPrice).toFixed(3)}
             </td>
-            <td className="py-2 px-2 text-right align-top whitespace-nowrap">
-              {Number(line.discountAmt) > 0
-                ? Number(line.discountAmt).toFixed(3)
-                : "—"}
-            </td>
+            {hasAnyDiscount && (
+              <td className="py-2 px-2 text-right align-top whitespace-nowrap">
+                {Number(line.discountAmt) > 0
+                  ? Number(line.discountAmt).toFixed(3)
+                  : "—"}
+              </td>
+            )}
             <td className="py-2 px-2 text-right align-top whitespace-nowrap">
               {line.taxRateSnapshot ? (
                 <span>{Number(line.taxRateSnapshot)}%</span>
@@ -202,7 +207,7 @@ function LineItemsTable({
         ))}
         {lines.length === 0 && (
           <tr>
-            <td colSpan={8} className="py-6 text-center text-muted-foreground">
+            <td colSpan={hasAnyDiscount ? 8 : 7} className="py-6 text-center text-muted-foreground">
               {t("invoices.noLineItems")}
             </td>
           </tr>

@@ -143,6 +143,11 @@ export function InvoiceFormBody({
   const needsCustomer = !["DELIVERY_NOTE"].includes(invoiceType);
   const needsWarehouse = isInvoiceType;
 
+  const linesWatch = watch("lines");
+  const hasAnyDiscount = linesWatch?.some(
+    (l) => Number(l?.discountAmt) > 0,
+  );
+
   const invoiceTypeOptions = [
     { value: "INVOICE", label: t("invoices.invoice") },
     { value: "QUOTE", label: t("invoices.quote") },
@@ -349,9 +354,11 @@ export function InvoiceFormBody({
                   <th className="w-28 px-2 text-right font-semibold">
                     {t("invoices.unitPrice")}
                   </th>
-                  <th className="w-24 px-2 text-right font-semibold">
-                    {t("invoices.discount")}
-                  </th>
+                  {hasAnyDiscount && (
+                    <th className="w-24 px-2 text-right font-semibold">
+                      {t("invoices.discount")}
+                    </th>
+                  )}
                   <th className="w-28 px-2 text-right font-semibold">
                     {t("invoices.tax")}
                   </th>
@@ -411,9 +418,11 @@ export function InvoiceFormBody({
                       <td className="px-2 text-right align-top tabular-nums">
                         {price.toFixed(3)}
                       </td>
-                      <td className="px-2 text-right align-top tabular-nums">
-                        {discount > 0 ? `-${discount.toFixed(3)}` : "—"}
-                      </td>
+                      {hasAnyDiscount && (
+                        <td className="px-2 text-right align-top tabular-nums">
+                          {discount > 0 ? `-${discount.toFixed(3)}` : "—"}
+                        </td>
+                      )}
                       <td className="px-2 text-right align-top tabular-nums">
                         {lineWatch?.taxRateSnapshot ? (
                           <span>
@@ -460,7 +469,7 @@ export function InvoiceFormBody({
                 {fields.length === 0 && (
                   <tr>
                     <td
-                      colSpan={8}
+                      colSpan={hasAnyDiscount ? 8 : 7}
                       className="py-10 text-center text-sm text-muted-foreground"
                     >
                       <Package className="mx-auto mb-2 h-8 w-8 opacity-30" />

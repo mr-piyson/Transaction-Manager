@@ -333,6 +333,9 @@ export default function DocumentDetailPage({
   const actions: Action[] = [];
   const status = invoice.status;
   const invoiceType = invoice.type;
+  const hasAnyDiscount = invoice.lines?.some(
+    (l: any) => Number(l.discountAmt) > 0,
+  );
 
   if (ability?.can("invoice:create", "Invoice")) {
     actions.push({
@@ -744,9 +747,11 @@ export default function DocumentDetailPage({
                     <TableHead className="text-right">
                       {t("invoices.unitPrice")}
                     </TableHead>
-                    <TableHead className="text-right">
-                      {t("invoices.discount")}
-                    </TableHead>
+                    {hasAnyDiscount && (
+                      <TableHead className="text-right">
+                        {t("invoices.discount")}
+                      </TableHead>
+                    )}
                     <TableHead className="text-right">
                       {t("invoices.tax")}
                     </TableHead>
@@ -803,9 +808,11 @@ export default function DocumentDetailPage({
                       <TableCell className="text-right tabular-nums">
                         {Number(line.unitPrice).toFixed(3)}
                       </TableCell>
-                      <TableCell className="text-right tabular-nums">
-                        {Number(line.discountAmt).toFixed(3)}
-                      </TableCell>
+                      {hasAnyDiscount && (
+                        <TableCell className="text-right tabular-nums">
+                          {Number(line.discountAmt).toFixed(3)}
+                        </TableCell>
+                      )}
                       <TableCell className="text-right tabular-nums">
                         {line.taxRateName ? (
                           <span>
@@ -826,7 +833,7 @@ export default function DocumentDetailPage({
                   {invoice.lines?.length === 0 && (
                     <TableRow>
                       <TableCell
-                        colSpan={8}
+                        colSpan={hasAnyDiscount ? 8 : 7}
                         className="text-center text-muted-foreground py-6"
                       >
                         {t("invoices.noLineItems")}
