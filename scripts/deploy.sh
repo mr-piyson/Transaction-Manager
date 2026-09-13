@@ -91,7 +91,7 @@ LOCK_DIR="/tmp/${SERVICE}.deploy.lock"
 
 # Resolved before any sudo elevation (root's PATH lacks ~/.bun/bin).
 DEPLOY_USER="${SUDO_USER:-$(id -un)}"
-BUN_PATH="$(command -v bun 2>/dev/null || true)"
+BUN_PATH="${DEPLOY_BUN_PATH:-$(command -v bun 2>/dev/null || true)}"
 
 # Re-run the whole script under sudo if we need root but don't have it.
 # This makes the user type the sudo password exactly once, at the start,
@@ -99,7 +99,7 @@ BUN_PATH="$(command -v bun 2>/dev/null || true)"
 if [[ "$(id -u)" -ne 0 ]]; then
 	if command -v sudo >/dev/null 2>&1 && ! sudo -n true 2>/dev/null; then
 		echo "Need sudo to deploy — entering password now..."
-		exec sudo -H "$0" "$@"
+		exec sudo -H env "DEPLOY_BUN_PATH=${BUN_PATH}" "$0" "$@"
 	fi
 fi
 
@@ -249,7 +249,7 @@ log "Preflight checks"
 [[ -d .git ]] || die "$APP_DIR is not a git repository."
 [[ -f .env ]] || die ".env not found — copy .env.example and configure secrets first."
 command -v git >/dev/null || die "git is not installed."
-	command -v bun >/dev/null || die "bun is not installed."
+[[ -x "$BUN_PATH" ]] || die "bun is not installed or not executable at '${BUN_PATH:-unknown}'."
 
 	if [[ "$SKIP_DB" != true ]]; then
 		check_database
