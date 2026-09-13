@@ -1,6 +1,6 @@
 "use client";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
@@ -24,9 +24,19 @@ export const SignInSchema = z.object({
   password: z.string().min(6, "Password must be at least 6 characters"),
 });
 
+function sanitizeCallbackUrl(url: string | null): string {
+  if (!url || !url.startsWith("/") || url.startsWith("//")) {
+    return "/erp";
+  }
+  return url;
+}
+
 export default function SignInTab() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const t = useTranslations();
+
+  const callbackUrl = sanitizeCallbackUrl(searchParams.get("callbackUrl"));
 
   const [isPending, setIsLoading] = useState(false);
 
@@ -39,7 +49,7 @@ export default function SignInTab() {
     setIsLoading(false);
 
     if (data) {
-      router.push("/erp");
+      router.push(callbackUrl);
     }
 
     if (error) toast.error(error.message);

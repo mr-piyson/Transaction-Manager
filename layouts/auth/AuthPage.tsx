@@ -1,6 +1,6 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useEffect } from "react";
 import { useSession } from "@/auth/auth-client";
@@ -8,16 +8,28 @@ import Logo from "@/components/Logo";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import SignInTab from "@/layouts/auth/SignIn";
 
+function sanitizeCallbackUrl(url: string | null): string {
+  if (!url || !url.startsWith("/") || url.startsWith("//")) {
+    return "/erp";
+  }
+  return url;
+}
+
 export default function Auth() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const t = useTranslations();
   const { data: session } = useSession();
 
+  const callbackUrl = sanitizeCallbackUrl(
+    searchParams.get("callbackUrl"),
+  );
+
   useEffect(() => {
     if (session) {
-      router.push("/erp");
+      router.push(callbackUrl);
     }
-  }, [session, router]);
+  }, [session, router, callbackUrl]);
 
   return (
     <div className="relative items-center p-4 ">
