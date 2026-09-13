@@ -91,7 +91,15 @@ LOCK_DIR="/tmp/${SERVICE}.deploy.lock"
 
 # Resolved before any sudo elevation (root's PATH lacks ~/.bun/bin).
 DEPLOY_USER="${SUDO_USER:-$(id -un)}"
-BUN_PATH="${DEPLOY_BUN_PATH:-$(command -v bun 2>/dev/null || true)}"
+DEPLOY_HOME="$(getent passwd "$DEPLOY_USER" 2>/dev/null | cut -d: -f6 || true)"
+DEPLOY_HOME="${DEPLOY_HOME:-${HOME:-}}"
+if [[ -n "${DEPLOY_BUN_PATH:-}" ]]; then
+	BUN_PATH="$DEPLOY_BUN_PATH"
+elif [[ -x "${DEPLOY_HOME}/.bun/bin/bun" ]]; then
+	BUN_PATH="${DEPLOY_HOME}/.bun/bin/bun"
+else
+	BUN_PATH="$(command -v bun 2>/dev/null || true)"
+fi
 
 # Re-run the whole script under sudo if we need root but don't have it.
 # This makes the user type the sudo password exactly once, at the start,
@@ -293,21 +301,21 @@ deploy() {
 
 	STEP="installing dependencies"
 	log "Installing dependencies (bun)"
-	NODE_ENV=production bun install --frozen-lockfile >/dev/null
+	NODE_ENV=production "$BUN_PATH" install --frozen-lockfile >/dev/null
 	ok "Dependencies installed"
 
 	if [[ "$SKIP_DB" != true ]]; then
 		STEP="syncing database schema"
 		log "Generating Prisma client"
-		bunx prisma generate >/dev/null
+		"$BUN_PATH" x prisma generate >/dev/null
 		log "Pushing schema to database (prompts on destructive changes)"
-		bunx prisma db push
+		"$BUN_PATH" x prisma db push
 		ok "Database schema in sync"
 	fi
 
 	STEP="building"
 	log "Building application"
-	NEXT_TELEMETRY_DISABLED=1 NODE_ENV=production bun run build >"$LOG_DIR/build-$(date +%Y%m%d-%H%M%S).log" 2>&1 ||
+	NEXT_TELEMETRY_DISABLED=1 NODE_ENV=production "$BUN_PATH" run build >"$LOG_DIR/build-$(date +%Y%m%d-%H%M%S).log" 2>&1 ||
 		die "Build failed — see $LOG_DIR. Old process is still running."
 	ok "Build succeeded"
 }
@@ -338,9 +346,9 @@ health_check() {
 rollback() {
 	warn "Rolling back to previous commit ${PREV_SHA}"
 	git reset --hard "$PREV_SHA" >/dev/null || die "Cannot reset to ${PREV_SHA}."
-	NODE_ENV=production bun install --frozen-lockfile >/dev/null 2>&1 || true
-	bunx prisma generate >/dev/null 2>&1 || true
-	NEXT_TELEMETRY_DISABLED=1 NODE_ENV=production bun run build >"$LOG_DIR/rollback-build.log" 2>&1 ||
+	NODE_ENV=production "$BUN_PATH" install --frozen-lockfile >/dev/null 2>&1 || true
+	"$BUN_PATH" x prisma generate >/dev/null 2>&1 || true
+	NEXT_TELEMETRY_DISABLED=1 NODE_ENV=production "$BUN_PATH" run build >"$LOG_DIR/rollback-build.log" 2>&1 ||
 		die "Rollback build failed — manual intervention required. See $LOG_DIR/rollback-build.log"
 	restart_service
 	if health_check; then
