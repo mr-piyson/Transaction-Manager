@@ -22,6 +22,7 @@ import {
   Unlink,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
+import * as React from "react";
 import { useCallback, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import {
@@ -101,8 +102,7 @@ function isImageByExt(path: string): boolean {
 }
 
 function fileUrl(storagePath: string): string {
-  const clean = storagePath.replace(/^\/+/, "");
-  return `/api/files/${clean}`;
+  return storagePath;
 }
 
 // Unified item type for the table
@@ -210,19 +210,51 @@ function ImageGridCard({
   isPending: boolean;
 }) {
   const imgUrl = issue.isImage ? fileUrl(issue.path) : null;
+  const [imgError, setImgError] = React.useState(false);
+  const showImage = imgUrl && !imgError;
+
+  const overlayLabel =
+    issue.category === "orphaned-db"
+      ? "Missing File"
+      : issue.category === "orphaned-disk"
+        ? "No DB Record"
+        : issue.category === "unused"
+          ? "Unused"
+          : "Broken Ref";
+
+  const overlayIcon =
+    issue.category === "dangling-ref" ? (
+      <Unlink className="size-8 text-white/80" />
+    ) : (
+      <FileIcon className="size-8 text-white/80" />
+    );
+
   return (
     <div className="group relative overflow-hidden rounded-lg border bg-card transition-shadow hover:shadow-md">
       <div className="aspect-square w-full overflow-hidden bg-muted">
-        {imgUrl ? (
-          <img
-            src={imgUrl}
-            alt={issue.name}
-            className="size-full object-cover transition-transform group-hover:scale-105"
-            loading="lazy"
-          />
+        {showImage ? (
+          <>
+            <img
+              src={imgUrl}
+              alt={issue.name}
+              className="size-full object-cover transition-transform group-hover:scale-105"
+              loading="lazy"
+              onError={() => setImgError(true)}
+            />
+            {/* Transparent overlay with icon + label */}
+            <div className="absolute inset-0 flex flex-col items-center justify-center gap-1 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity">
+              {overlayIcon}
+              <span className="text-[11px] font-medium text-white/90 drop-shadow">
+                {overlayLabel}
+              </span>
+            </div>
+          </>
         ) : (
-          <div className="flex size-full items-center justify-center">
-            <FileIcon className="size-10 text-muted-foreground/40" />
+          <div className="flex size-full flex-col items-center justify-center gap-1.5">
+            {overlayIcon}
+            <span className="text-[10px] text-muted-foreground/60 font-medium">
+              {overlayLabel}
+            </span>
           </div>
         )}
       </div>
