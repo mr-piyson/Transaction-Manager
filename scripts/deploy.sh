@@ -307,9 +307,9 @@ deploy() {
 	if [[ "$SKIP_DB" != true ]]; then
 		STEP="syncing database schema"
 		log "Generating Prisma client"
-		"$BUN_PATH" x prisma generate >/dev/null
+		"$BUN_PATH" x --bun prisma generate >/dev/null
 		log "Pushing schema to database (prompts on destructive changes)"
-		"$BUN_PATH" x prisma db push
+		"$BUN_PATH" x --bun prisma db push
 		ok "Database schema in sync"
 	fi
 
@@ -347,7 +347,7 @@ rollback() {
 	warn "Rolling back to previous commit ${PREV_SHA}"
 	git reset --hard "$PREV_SHA" >/dev/null || die "Cannot reset to ${PREV_SHA}."
 	NODE_ENV=production "$BUN_PATH" install --frozen-lockfile >/dev/null 2>&1 || true
-	"$BUN_PATH" x prisma generate >/dev/null 2>&1 || true
+	"$BUN_PATH" x --bun prisma generate >/dev/null 2>&1 || true
 	NEXT_TELEMETRY_DISABLED=1 NODE_ENV=production "$BUN_PATH" run build >"$LOG_DIR/rollback-build.log" 2>&1 ||
 		die "Rollback build failed — manual intervention required. See $LOG_DIR/rollback-build.log"
 	restart_service
