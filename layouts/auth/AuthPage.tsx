@@ -21,9 +21,7 @@ export default function Auth() {
   const t = useTranslations();
   const { data: session } = useSession();
 
-  const callbackUrl = sanitizeCallbackUrl(
-    searchParams.get("callbackUrl"),
-  );
+  const callbackUrl = sanitizeCallbackUrl(searchParams.get("callbackUrl"));
 
   useEffect(() => {
     if (session) {

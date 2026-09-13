@@ -176,14 +176,31 @@ function toIssueItems(scan: {
 // Tab config
 // ---------------------------------------------------------------------------
 
-type TabKey = "all" | "orphaned-db" | "orphaned-disk" | "unused" | "dangling-ref";
+type TabKey =
+  | "all"
+  | "orphaned-db"
+  | "orphaned-disk"
+  | "unused"
+  | "dangling-ref";
 
 const TABS: { key: TabKey; labelKey: string; icon: React.ElementType }[] = [
   { key: "all", labelKey: "common.all", icon: HardDrive },
-  { key: "orphaned-db", labelKey: "settings.storage.orphanedDbRecords", icon: Database },
-  { key: "orphaned-disk", labelKey: "settings.storage.orphanedDiskFiles", icon: FileIcon },
+  {
+    key: "orphaned-db",
+    labelKey: "settings.storage.orphanedDbRecords",
+    icon: Database,
+  },
+  {
+    key: "orphaned-disk",
+    labelKey: "settings.storage.orphanedDiskFiles",
+    icon: FileIcon,
+  },
   { key: "unused", labelKey: "settings.storage.unusedFiles", icon: FileIcon },
-  { key: "dangling-ref", labelKey: "settings.storage.danglingImageRefs", icon: Image },
+  {
+    key: "dangling-ref",
+    labelKey: "settings.storage.danglingImageRefs",
+    icon: Image,
+  },
 ];
 
 // ---------------------------------------------------------------------------
@@ -251,7 +268,10 @@ function GridCard({
         <p className="truncate text-xs font-medium" title={issue.name}>
           {issue.name}
         </p>
-        <p className="truncate text-[10px] text-muted-foreground" title={issue.path}>
+        <p
+          className="truncate text-[10px] text-muted-foreground"
+          title={issue.path}
+        >
           {issue.path}
         </p>
         <div className="mt-1 flex items-center justify-between">
@@ -328,9 +348,7 @@ export default function StoragePage() {
 
   const cleanAll = trpc.settings.storage.cleanAll.useMutation({
     onSuccess: (data) => {
-      toast.success(
-        t("settings.storage.removedCount", { count: data.total }),
-      );
+      toast.success(t("settings.storage.removedCount", { count: data.total }));
       utils.settings.storage.scan.invalidate();
     },
     onError: (e) => toast.error(e.message),
@@ -342,10 +360,7 @@ export default function StoragePage() {
     issue: StorageIssue;
   } | null>(null);
 
-  const allIssues = useMemo(
-    () => (scan ? toIssueItems(scan) : []),
-    [scan],
-  );
+  const allIssues = useMemo(() => (scan ? toIssueItems(scan) : []), [scan]);
 
   const filteredIssues = useMemo(() => {
     if (activeTab === "all") return allIssues;
@@ -360,12 +375,9 @@ export default function StoragePage() {
     removeImageRef.isPending ||
     removeOrphanedRecords.isPending;
 
-  const handleRemove = useCallback(
-    (issue: StorageIssue) => {
-      setConfirmAction({ issue });
-    },
-    [],
-  );
+  const handleRemove = useCallback((issue: StorageIssue) => {
+    setConfirmAction({ issue });
+  }, []);
 
   const handleConfirmAction = useCallback(() => {
     if (!confirmAction) return;
@@ -504,7 +516,10 @@ export default function StoragePage() {
                     <Icon className="size-3.5" />
                     {t(tab.labelKey as any)}
                     {count > 0 && (
-                      <Badge variant="secondary" className="ml-1 text-[10px] px-1 py-0">
+                      <Badge
+                        variant="secondary"
+                        className="ml-1 text-[10px] px-1 py-0"
+                      >
                         {count}
                       </Badge>
                     )}

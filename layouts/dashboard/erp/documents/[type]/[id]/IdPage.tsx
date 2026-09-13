@@ -54,7 +54,12 @@ import {
 } from "@/components/ui/empty";
 import { Label } from "@/components/ui/label";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
 import { Spinner } from "@/components/ui/spinner";
 import { Textarea } from "@/components/ui/textarea";
 import { useAppAbility } from "@/hooks/use-app-ability";
@@ -124,13 +129,15 @@ export default function DocumentDetailPage({
     utils.invoices.list.invalidate();
   }
 
-  const submitForApprovalMutation = trpc.invoices.submitForApproval.useMutation({
-    onSuccess: () => {
-      invalidate();
-      toast.success(t("invoices.submittedForApproval"));
+  const submitForApprovalMutation = trpc.invoices.submitForApproval.useMutation(
+    {
+      onSuccess: () => {
+        invalidate();
+        toast.success(t("invoices.submittedForApproval"));
+      },
+      onError: (e) => toast.error(e.message),
     },
-    onError: (e) => toast.error(e.message),
-  });
+  );
 
   const approveMutation = trpc.invoices.approve.useMutation({
     onSuccess: () => {
@@ -680,7 +687,9 @@ export default function DocumentDetailPage({
               discountAmt: Number(l.discountAmt),
               taxAmt: Number(l.taxAmt),
               taxRateName: l.taxRateName,
-              taxRateSnapshot: l.taxRateSnapshot ? Number(l.taxRateSnapshot) : null,
+              taxRateSnapshot: l.taxRateSnapshot
+                ? Number(l.taxRateSnapshot)
+                : null,
               total: Number(l.total),
               item: l.item
                 ? { name: l.item.name, sku: l.item.sku, image: l.item.image }

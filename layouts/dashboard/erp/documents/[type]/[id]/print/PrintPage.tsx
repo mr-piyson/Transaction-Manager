@@ -207,7 +207,10 @@ function LineItemsTable({
         ))}
         {lines.length === 0 && (
           <tr>
-            <td colSpan={hasAnyDiscount ? 8 : 7} className="py-6 text-center text-muted-foreground">
+            <td
+              colSpan={hasAnyDiscount ? 8 : 7}
+              className="py-6 text-center text-muted-foreground"
+            >
               {t("invoices.noLineItems")}
             </td>
           </tr>
@@ -472,8 +475,6 @@ export default function DocumentPrintPage({
                 </span>
               </div>
             </div>
-
-
           </div>
         </div>
 

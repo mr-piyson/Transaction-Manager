@@ -1,11 +1,6 @@
 "use client";
 
-import {
-  ArrowLeft,
-  Edit,
-  MoreHorizontal,
-  Users,
-} from "lucide-react";
+import { ArrowLeft, Edit, MoreHorizontal, Users } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
