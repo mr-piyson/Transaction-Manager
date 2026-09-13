@@ -59,7 +59,7 @@ export type InvoiceSubmitPayload = {
   type: InvoiceFormValues["type"];
   date: Date;
   dueDate?: Date;
-  customerId?: string;
+  customerId?: string | null;
   warehouseId?: string;
   departmentId?: string;
   currency: InvoiceFormValues["currency"];
@@ -93,7 +93,7 @@ export function buildSubmitPayload(
     type: values.type,
     date: new Date(values.date),
     dueDate: values.dueDate ? new Date(values.dueDate) : undefined,
-    customerId: values.isWalkIn ? undefined : values.customerId || undefined,
+    customerId: values.isWalkIn ? null : values.customerId || undefined,
     warehouseId: values.warehouseId || undefined,
     departmentId: values.departmentId || undefined,
     currency: values.currency,

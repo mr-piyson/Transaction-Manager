@@ -34,7 +34,7 @@ const invoiceBaseSchema = z.object({
     .default("INVOICE"),
   date: z.coerce.date().default(() => new Date()),
   dueDate: z.coerce.date().optional(),
-  customerId: z.string().optional(),
+  customerId: z.string().nullish(),
   warehouseId: z.string().optional(),
   departmentId: z.string().optional(),
   currency: currencyCodeSchema.default("BHD"),
