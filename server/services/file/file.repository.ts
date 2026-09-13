@@ -56,8 +56,52 @@ export async function countAttachmentsForFile(fileId: string): Promise<number> {
   return db.attachment.count({ where: { fileId } });
 }
 
-export async function deleteFileIfOrphaned(fileId: string): Promise<boolean> {
-  const count = await countAttachmentsForFile(fileId);
+/**
+ * Count ALL references to a storagePath across the entire schema:
+ *   - Attachment records (via File → storagePath)
+ *   - Item.image string fields
+ *   - Organization.logo / Organization.stampImage string fields
+ *   - User.image string fields
+ *
+ * Returns 0 only when nothing in the system still points to this file.
+ */
+export async function countStoragePathReferences(
+  storagePath: string,
+): Promise<number> {
+  const [attachmentCount, itemCount, orgCount, userCount] = await Promise.all([
+    db.attachment.count({
+      where: { file: { storagePath } },
+    }),
+    db.item.count({
+      where: { image: storagePath },
+    }),
+    db.organization.count({
+      where: {
+        OR: [{ logo: storagePath }, { stampImage: storagePath }],
+      },
+    }),
+    db.user.count({
+      where: { image: storagePath },
+    }),
+  ]);
+
+  return attachmentCount + itemCount + orgCount + userCount;
+}
+
+/**
+ * Delete a File record only if nothing references it.
+ * When `storagePath` is provided, checks ALL reference sources (attachments,
+ * Item.image, Organization.logo/stampImage, User.image).  Falls back to
+ * attachment-only check when storagePath is omitted (backwards-compatible).
+ */
+export async function deleteFileIfOrphaned(
+  fileId: string,
+  storagePath?: string,
+): Promise<boolean> {
+  const count = storagePath
+    ? await countStoragePathReferences(storagePath)
+    : await countAttachmentsForFile(fileId);
+
   if (count === 0) {
     await db.file.delete({ where: { id: fileId } });
     return true;

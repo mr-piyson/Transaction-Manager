@@ -102,3 +102,55 @@ export async function exists(storagePath: string): Promise<boolean> {
   }
   return false;
 }
+
+export interface DiskFileInfo {
+  storagePath: string;
+  absolutePath: string;
+  size: number;
+}
+
+/** Recursively list all files under uploads/ in both DATA_ROOT and LEGACY_ROOT. */
+export async function listAllFiles(): Promise<DiskFileInfo[]> {
+  const results: DiskFileInfo[] = [];
+  const seen = new Set<string>();
+
+  async function walk(dir: string, root: string) {
+    let entries;
+    try {
+      entries = await fs.readdir(dir, { withFileTypes: true });
+    } catch {
+      return;
+    }
+    for (const entry of entries) {
+      const abs = path.join(dir, entry.name);
+      if (entry.isDirectory()) {
+        await walk(abs, root);
+      } else {
+        const rel = path.relative(root, abs);
+        const storagePath = `/${rel.replace(/\\/g, "/")}`;
+        if (!seen.has(storagePath)) {
+          seen.add(storagePath);
+          const stat = await fs.stat(abs);
+          results.push({ storagePath, absolutePath: abs, size: stat.size });
+        }
+      }
+    }
+  }
+
+  await walk(UPLOAD_ROOT, DATA_ROOT);
+  await walk(path.join(LEGACY_ROOT, "uploads"), LEGACY_ROOT);
+
+  return results;
+}
+
+/** Get the absolute path for a storage path, checking both roots. */
+export function resolveAbsolute(storagePath: string): string | null {
+  for (const root of [DATA_ROOT, LEGACY_ROOT]) {
+    try {
+      return toAbsolute(root, storagePath);
+    } catch {
+      // try next
+    }
+  }
+  return null;
+}

@@ -108,8 +108,12 @@ export async function deleteUpload(fileId: string): Promise<void> {
   const record = await fileRepo.findById(fileId);
   if (!record) throw new NotFoundError("File", fileId);
 
-  // Only delete if no other attachments reference this file
-  const wasDeleted = await fileRepo.deleteFileIfOrphaned(fileId);
+  // Only delete if nothing references this file (attachments, Item.image,
+  // Organization.logo/stampImage, User.image)
+  const wasDeleted = await fileRepo.deleteFileIfOrphaned(
+    fileId,
+    record.storagePath,
+  );
   if (wasDeleted) {
     await storage.remove(record.storagePath);
   }
@@ -121,7 +125,12 @@ export async function deleteUploadByStoragePath(
   const record = await fileRepo.findByStoragePath(storagePath);
   if (!record) return; // already gone or never existed
 
-  const wasDeleted = await fileRepo.deleteFileIfOrphaned(record.id);
+  // Only delete if nothing references this file (attachments, Item.image,
+  // Organization.logo/stampImage, User.image)
+  const wasDeleted = await fileRepo.deleteFileIfOrphaned(
+    record.id,
+    storagePath,
+  );
   if (wasDeleted) {
     await storage.remove(record.storagePath);
   }

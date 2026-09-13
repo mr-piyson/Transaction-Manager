@@ -10,6 +10,7 @@ import {
   CalendarClock,
   ClipboardPen,
   Coins,
+  HardDrive,
   Languages,
   Layers,
   LogOut,
@@ -160,6 +161,12 @@ export const NAV_ITEMS = [
     labelKey: "users.permissionsPageTitle",
     href: "/settings/permissions",
     icon: Shield,
+  },
+  {
+    id: "storage",
+    labelKey: "settings.storage.title",
+    href: "/settings/storage",
+    icon: HardDrive,
   },
 ] as const satisfies NavItem[];
 

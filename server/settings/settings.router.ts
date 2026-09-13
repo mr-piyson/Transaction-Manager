@@ -3,6 +3,7 @@ import { ConflictError, NotFoundError } from "@/lib/error";
 import { assertCan, orgProcedure, router } from "@/lib/trpc/context";
 import { currencyCodeSchema } from "@/lib/validations";
 import { writeAuditLog } from "../shared/audit.service";
+import { storageRouter } from "./storage.router";
 
 const taxRateBaseSchema = z.object({
   name: z.string().min(1).max(100),
@@ -374,4 +375,6 @@ export const settingsRouter = router({
       {},
     );
   }),
+
+  storage: storageRouter,
 });
