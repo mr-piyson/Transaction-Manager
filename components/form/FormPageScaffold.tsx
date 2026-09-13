@@ -59,7 +59,10 @@ export function FormPageScaffold({
   const router = useRouter();
 
   const handleBack = () => {
-    if (isDirty && !window.confirm(t("invoices.unsavedChangesWarning" as any))) {
+    if (
+      isDirty &&
+      !window.confirm(t("invoices.unsavedChangesWarning" as any))
+    ) {
       return;
     }
     router.push(backHref);
@@ -110,9 +113,7 @@ export function FormPageScaffold({
             </div>
             <div className="flex items-center gap-2">
               <Button type="submit" disabled={isPending}>
-                {isPending && (
-                  <Loader2 className="me-2 h-4 w-4 animate-spin" />
-                )}
+                {isPending && <Loader2 className="me-2 h-4 w-4 animate-spin" />}
                 {submitLabel}
               </Button>
             </div>

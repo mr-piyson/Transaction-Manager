@@ -4,9 +4,9 @@ import { Loader2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useCallback, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
+import { ImageUpload } from "@/components/dialogs/item-dialog/image-upload";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ImageUpload } from "@/components/dialogs/item-dialog/image-upload";
 import { trpc } from "@/lib/trpc/client";
 import { Field, type OrgData, SectionCard } from "../_shared";
 
@@ -89,9 +89,12 @@ function GeneralForm({
 
   const deleteFile = async (storagePath: string) => {
     try {
-      await fetch(`/api/uploads?storagePath=${encodeURIComponent(storagePath)}`, {
-        method: "DELETE",
-      });
+      await fetch(
+        `/api/uploads?storagePath=${encodeURIComponent(storagePath)}`,
+        {
+          method: "DELETE",
+        },
+      );
     } catch {
       // best effort cleanup
     }
@@ -130,7 +133,14 @@ function GeneralForm({
     } catch {
       toast.error("Failed to upload image");
     }
-  }, [form, pendingLogoFile, pendingStampFile, logoRemoved, stampRemoved, updateOrg]);
+  }, [
+    form,
+    pendingLogoFile,
+    pendingStampFile,
+    logoRemoved,
+    stampRemoved,
+    updateOrg,
+  ]);
 
   const handleLogoUrlDrop = (storagePath: string) => {
     setForm((prev) => ({ ...prev, logo: storagePath }));
@@ -204,7 +214,10 @@ function GeneralForm({
         </Field>
       </SectionCard>
 
-      <SectionCard title={t("settings.logo")} description={t("settings.logoDescription")}>
+      <SectionCard
+        title={t("settings.logo")}
+        description={t("settings.logoDescription")}
+      >
         <Field label={t("settings.logo")}>
           <ImageUpload
             value={logoRemoved ? null : form.logo}
