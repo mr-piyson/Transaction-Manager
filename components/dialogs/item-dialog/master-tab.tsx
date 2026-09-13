@@ -88,6 +88,10 @@ export function MasterTab({ form, canManageMaster }: MasterTabProps) {
           onRemove={() => setImageRemoved(true)}
           disabled={isLocked}
           imageRemoved={imageRemoved}
+          onUrlDrop={(storagePath) => {
+            setMasterField("image", storagePath);
+            setImageRemoved(false);
+          }}
         />
       )}
 
