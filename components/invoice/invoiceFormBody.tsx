@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowLeft, Package, Pencil, Plus, Trash2, Wrench } from "lucide-react";
+import { Package, Pencil, Plus, Trash2, Wrench } from "lucide-react";
 import { useTranslations } from "next-intl";
 import type * as React from "react";
 import { InvoiceLineDialog } from "@/components/dialogs/invoiceLineDialog";
