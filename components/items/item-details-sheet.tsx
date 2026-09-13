@@ -14,7 +14,7 @@ import {
   XCircle,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
-import type { ReactNode } from "react";
+import { type ReactNode, useState } from "react";
 import Barcode from "react-barcode";
 import { useUnifiedItemForm } from "@/components/dialogs";
 import { Badge } from "@/components/ui/badge";
@@ -121,6 +121,14 @@ export function ItemDetailsSheet({
     isError,
   } = trpc.items.byId.useQuery({ id: itemId ?? "" }, { enabled: !!itemId });
 
+  const [imgError, setImgError] = useState(false);
+  const [prevImage, setPrevImage] = useState(item?.image);
+
+  if (item?.image !== prevImage) {
+    setPrevImage(item?.image);
+    setImgError(false);
+  }
+
   const close = () => onOpenChange(false);
   const isService = item?.type === "SERVICE";
   const totalStock =
@@ -212,11 +220,13 @@ export function ItemDetailsSheet({
               <Card className="overflow-hidden">
                 <CardContent className="w-full flex justify-center items-center p-0">
                   <div className="flex w-full max-h-80 items-center justify-center bg-muted/20 p-4 ">
-                    {item.image ? (
+                    {item.image && !imgError ? (
                       <img
+                        key={item.image}
                         src={item.image}
                         alt={item.name}
                         className="size-full object-contain object-center"
+                        onError={() => setImgError(true)}
                       />
                     ) : (
                       <TypeIcon className="size-16 text-muted-foreground/40" />

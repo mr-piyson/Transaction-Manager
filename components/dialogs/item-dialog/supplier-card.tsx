@@ -68,7 +68,7 @@ export function SupplierCard({
   errors,
   isDuplicate,
   disabled,
-  supplierRequired,
+  supplierRequired: _supplierRequired,
   canRemove,
   expanded,
   onToggleExpand,

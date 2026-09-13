@@ -622,8 +622,10 @@ export function useItemForm({
           }
         }
 
-        utils.items.list.invalidate();
-        utils.items.byId.invalidate({ id: editingItem.id });
+        await Promise.all([
+          utils.items.list.invalidate(),
+          utils.items.byId.invalidate({ id: editingItem.id }),
+        ]);
       } else if (mode === "create") {
         const payload = {
           item: {

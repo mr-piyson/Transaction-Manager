@@ -19,7 +19,6 @@ export function SuppliersTab({
     mode,
     supplierDrafts,
     errors,
-    addSupplierDraft,
     removeSupplierDraft,
     updateSupplierDraft,
   } = form;

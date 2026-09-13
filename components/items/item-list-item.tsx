@@ -56,7 +56,14 @@ export function ItemListItem({ data, className, ...props }: ItemListItemProps) {
     unit,
     salesPrice,
   } = data || {};
+  const [prevImage, setPrevImage] = useState(image);
   const [imgError, setImgError] = useState(false);
+
+  if (image !== prevImage) {
+    setPrevImage(image);
+    setImgError(false);
+  }
+
   const style = TYPE_STYLES[type as string] ?? TYPE_STYLES.PRODUCT;
   const Icon = style.icon;
   const { format: formatCurrency } = useCurrency();
@@ -89,6 +96,7 @@ export function ItemListItem({ data, className, ...props }: ItemListItemProps) {
       >
         {image && !imgError ? (
           <img
+            key={image}
             src={image}
             alt={name}
             className="size-full object-cover"

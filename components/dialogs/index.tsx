@@ -114,27 +114,25 @@ export function DialogsProvider({ children }: { children: ReactNode }) {
         <SupplierItemFormProvider>
           <WarehouseFormProvider>
             <UnifiedItemFormProvider>
-              <UnifiedItemFormProvider>
-                <ContractFormProvider>
-                  <ExchangeRateFormProvider>
-                    <PaymentFormProvider>
-                      <ExpenseFormProvider>
-                        <IncomeFormProvider>
-                          <SubscriptionFormProvider>
-                            <RenewalFormProvider>
-                              <StockAdjustmentFormProvider>
-                                <HardDeleteFormProvider>
-                                  {children}
-                                </HardDeleteFormProvider>
-                              </StockAdjustmentFormProvider>
-                            </RenewalFormProvider>
-                          </SubscriptionFormProvider>
-                        </IncomeFormProvider>
-                      </ExpenseFormProvider>
-                    </PaymentFormProvider>
-                  </ExchangeRateFormProvider>
-                </ContractFormProvider>
-              </UnifiedItemFormProvider>
+              <ContractFormProvider>
+                <ExchangeRateFormProvider>
+                  <PaymentFormProvider>
+                    <ExpenseFormProvider>
+                      <IncomeFormProvider>
+                        <SubscriptionFormProvider>
+                          <RenewalFormProvider>
+                            <StockAdjustmentFormProvider>
+                              <HardDeleteFormProvider>
+                                {children}
+                              </HardDeleteFormProvider>
+                            </StockAdjustmentFormProvider>
+                          </RenewalFormProvider>
+                        </SubscriptionFormProvider>
+                      </IncomeFormProvider>
+                    </ExpenseFormProvider>
+                  </PaymentFormProvider>
+                </ExchangeRateFormProvider>
+              </ContractFormProvider>
             </UnifiedItemFormProvider>
           </WarehouseFormProvider>
         </SupplierItemFormProvider>

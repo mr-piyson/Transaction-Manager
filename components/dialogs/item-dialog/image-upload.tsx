@@ -189,7 +189,7 @@ export function ImageUpload({
           <>
             <img
               src={displayUrl}
-              alt="Item image"
+              alt="Item preview"
               className="h-full w-full object-contain"
             />
             {!disabled && (

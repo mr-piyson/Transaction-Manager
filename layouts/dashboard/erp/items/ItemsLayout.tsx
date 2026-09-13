@@ -137,7 +137,14 @@ export default function ItemsLayout({
             <div className="h-full w-full flex flex-col">
               <div className="flex w-full min-w-0 flex-nowrap items-center gap-2 overflow-x-auto border-b px-4 py-2 shrink-0">
                 <div className="flex min-w-max flex-1 flex-nowrap items-center gap-2">
-                  <Button size="sm" onClick={() => openCreate()}>
+                  <Button
+                    size="sm"
+                    onClick={() =>
+                      openCreate({
+                        onSuccess: () => utils.items.list.invalidate(),
+                      })
+                    }
+                  >
                     <Plus className="size-3.5" />
                     <span className="hidden sm:inline">
                       {t("items.createItem")}
@@ -281,6 +288,7 @@ export default function ItemsLayout({
                               className="block h-full w-full text-left"
                             >
                               <ItemListItem
+                                key={`${item.id}-${item.image ?? "no-img"}`}
                                 data={item}
                                 className={cn(
                                   "hover:bg-muted/40 border border-transparent",
@@ -302,8 +310,12 @@ export default function ItemsLayout({
                               onClick={() =>
                                 openEdit({
                                   itemId: item.id,
-                                  onSuccess: () =>
-                                    utils.items.list.invalidate(),
+                                  onSuccess: () => {
+                                    utils.items.list.invalidate();
+                                    utils.items.byId.invalidate({
+                                      id: item.id,
+                                    });
+                                  },
                                 })
                               }
                             >
