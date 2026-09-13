@@ -257,21 +257,23 @@ export function InvoiceFormBody({
         style={PAPER_THEME}
       >
         {/* ================= Letterhead ================= */}
-        <header className="flex flex-wrap flex-row-reverse items-start justify-between gap-x-8 gap-y-5 border-b px-6 py-6 sm:px-8">
-          {/* Company block */}
-          <div className="flex min-w-0 items-start gap-3.5">
+        <header className="flex flex-col gap-2 items-start border-b px-6 py-6 sm:px-8">
+          <div>
             {org?.logo && (
               <img
                 src={org.logo}
                 alt={org.name ?? ""}
-                className="size-14 shrink-0 rounded-md border object-contain"
+                className="h-12 w-auto shrink-0 rounded-md border object-contain"
               />
             )}
-            <div className="min-w-0">
+          </div>
+          <div className="flex w-full items-center justify-between gap-4">
+            {/* Company block */}
+            <div className="space-y-0.5">
               <h1 className="text-xl font-bold leading-tight">
                 {org?.name ?? ""}
               </h1>
-              <div className="mt-1 space-y-0.5 text-xs text-muted-foreground">
+              <div className="space-y-0.5 text-xs text-muted-foreground">
                 {org?.crNumber && (
                   <p>
                     {t("customers.crNumber")}: {org.crNumber}
@@ -288,75 +290,75 @@ export function InvoiceFormBody({
                 {org?.website && <p>{org.website}</p>}
               </div>
             </div>
-          </div>
 
-          {/* Document block */}
-          <div className="flex min-w-0 flex-col items-start sm:items-start">
-            {readonly ? (
-              <div className="flex items-center gap-2">
-                <span className="text-2xl font-bold uppercase tracking-wide sm:text-3xl">
-                  {typeLabel}
-                </span>
-                {badges}
-                {actions}
-              </div>
-            ) : (
-              <Select
-                value={watch?.("type")}
-                onValueChange={(v) => setValue?.("type", v as any)}
-              >
-                <SelectTrigger
-                  aria-label={t("invoices.type")}
-                  className="h-auto w-fit border-0 bg-transparent px-1 py-0 text-2xl font-bold uppercase tracking-wide shadow-none hover:bg-muted/40 focus-visible:ring-0 sm:text-3xl [&_svg:not([class*='text-'])]:text-muted-foreground"
+            {/* Document block */}
+            <div className="ml-auto flex min-w-0 flex-col items-end text-right sm:items-end">
+              {readonly ? (
+                <div className="flex items-center gap-2">
+                  <span className="text-2xl font-bold uppercase tracking-wide sm:text-3xl">
+                    {typeLabel}
+                  </span>
+                  {badges}
+                  {actions}
+                </div>
+              ) : (
+                <Select
+                  value={watch?.("type")}
+                  onValueChange={(v) => setValue?.("type", v as any)}
                 >
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {invoiceTypeOptions.map((opt) => (
-                    <SelectItem key={opt.value} value={opt.value}>
-                      {opt.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            )}
+                  <SelectTrigger
+                    aria-label={t("invoices.type")}
+                    className="h-auto w-fit border-0 bg-transparent px-1 py-0 text-2xl font-bold uppercase tracking-wide shadow-none hover:bg-muted/40 focus-visible:ring-0 sm:text-3xl [&_svg:not([class*='text-'])]:text-muted-foreground"
+                  >
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {invoiceTypeOptions.map((opt) => (
+                      <SelectItem key={opt.value} value={opt.value}>
+                        {opt.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
 
-            {serial && (
-              <span className="mt-0.5 text-sm font-semibold text-muted-foreground">
-                {serial}
-              </span>
-            )}
+              {serial && (
+                <span className="mt-0.5 text-sm font-semibold text-muted-foreground">
+                  {serial}
+                </span>
+              )}
 
-            <div className="mt-3 flex flex-wrap items-end gap-x-6 gap-y-3">
-              <div className="w-40">
-                <PaperLabel>{t("invoices.issueDate")} *</PaperLabel>
-                {readonly ? (
-                  <p className="text-sm font-medium">
-                    {formatDateShort(invoice?.date)}
-                  </p>
-                ) : (
-                  <DateInputField
-                    control={control!}
-                    name="date"
-                    rules={{ required: "Date is required" }}
-                    required
-                    showTodayButton
-                  />
-                )}
-              </div>
-              <div className="w-40">
-                <PaperLabel>{t("invoices.dueDate")}</PaperLabel>
-                {readonly ? (
-                  <p className="text-sm font-medium">
-                    {formatDateShort(invoice?.dueDate)}
-                  </p>
-                ) : (
-                  <DateInputField
-                    control={control!}
-                    name="dueDate"
-                    showTodayButton
-                  />
-                )}
+              <div className="mt-3 flex flex-wrap items-end gap-x-6 gap-y-3">
+                <div className="w-40">
+                  <PaperLabel>{t("invoices.issueDate")} *</PaperLabel>
+                  {readonly ? (
+                    <p className="text-sm font-medium">
+                      {formatDateShort(invoice?.date)}
+                    </p>
+                  ) : (
+                    <DateInputField
+                      control={control!}
+                      name="date"
+                      rules={{ required: "Date is required" }}
+                      required
+                      showTodayButton
+                    />
+                  )}
+                </div>
+                <div className="w-40">
+                  <PaperLabel>{t("invoices.dueDate")}</PaperLabel>
+                  {readonly ? (
+                    <p className="text-sm font-medium">
+                      {formatDateShort(invoice?.dueDate)}
+                    </p>
+                  ) : (
+                    <DateInputField
+                      control={control!}
+                      name="dueDate"
+                      showTodayButton
+                    />
+                  )}
+                </div>
               </div>
             </div>
           </div>

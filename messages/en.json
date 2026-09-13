@@ -1296,6 +1296,9 @@
     "system": "System",
     "saved": "Settings saved successfully",
     "saveSettings": "Save Settings",
+    "logo": "Logo",
+    "logoDescription": "Upload your organization logo and stamp image to appear on printed documents",
+    "stampImage": "Stamp Image",
     "chartOfAccounts": "Chart of Accounts",
     "sessions": "Sessions",
     "hrms": {

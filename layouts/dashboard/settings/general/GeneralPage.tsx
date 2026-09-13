@@ -2,10 +2,11 @@
 
 import { Loader2 } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { ImageUpload } from "@/components/dialogs/item-dialog/image-upload";
 import { trpc } from "@/lib/trpc/client";
 import { Field, type OrgData, SectionCard } from "../_shared";
 
@@ -52,7 +53,17 @@ function GeneralForm({
     website: org.website ?? "",
     taxId: org.taxId ?? "",
     crNumber: org.crNumber ?? "",
+    logo: org.logo,
+    stampImage: org.stampImage,
   }));
+
+  const [pendingLogoFile, setPendingLogoFile] = useState<File | null>(null);
+  const [pendingStampFile, setPendingStampFile] = useState<File | null>(null);
+  const [logoRemoved, setLogoRemoved] = useState(false);
+  const [stampRemoved, setStampRemoved] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const oldLogoRef = useRef(org.logo);
+  const oldStampRef = useRef(org.stampImage);
 
   const hasChanges = useMemo(
     () =>
@@ -61,13 +72,77 @@ function GeneralForm({
       form.email !== (org.email ?? "") ||
       form.website !== (org.website ?? "") ||
       form.taxId !== (org.taxId ?? "") ||
-      form.crNumber !== (org.crNumber ?? ""),
+      form.crNumber !== (org.crNumber ?? "") ||
+      form.logo !== org.logo ||
+      form.stampImage !== org.stampImage,
     [form, org],
   );
 
-  const handleSave = useCallback(() => {
-    updateOrg.mutate(form as Parameters<typeof updateOrg.mutate>[0]);
-  }, [form, updateOrg]);
+  const uploadFile = async (file: File): Promise<string | null> => {
+    const formData = new FormData();
+    formData.append("file", file);
+    const res = await fetch("/api/uploads", { method: "POST", body: formData });
+    if (!res.ok) throw new Error("Upload failed");
+    const data = await res.json();
+    return data.storagePath as string;
+  };
+
+  const deleteFile = async (storagePath: string) => {
+    try {
+      await fetch(`/api/uploads?storagePath=${encodeURIComponent(storagePath)}`, {
+        method: "DELETE",
+      });
+    } catch {
+      // best effort cleanup
+    }
+  };
+
+  const handleSave = useCallback(async () => {
+    try {
+      let logoPath = form.logo;
+      let stampPath = form.stampImage;
+
+      if (logoRemoved) {
+        logoPath = null;
+        if (oldLogoRef.current) await deleteFile(oldLogoRef.current);
+      } else if (pendingLogoFile) {
+        logoPath = await uploadFile(pendingLogoFile);
+        if (oldLogoRef.current && oldLogoRef.current !== logoPath) {
+          await deleteFile(oldLogoRef.current);
+        }
+      }
+
+      if (stampRemoved) {
+        stampPath = null;
+        if (oldStampRef.current) await deleteFile(oldStampRef.current);
+      } else if (pendingStampFile) {
+        stampPath = await uploadFile(pendingStampFile);
+        if (oldStampRef.current && oldStampRef.current !== stampPath) {
+          await deleteFile(oldStampRef.current);
+        }
+      }
+
+      updateOrg.mutate({
+        ...form,
+        logo: logoPath,
+        stampImage: stampPath,
+      } as Parameters<typeof updateOrg.mutate>[0]);
+    } catch {
+      toast.error("Failed to upload image");
+    }
+  }, [form, pendingLogoFile, pendingStampFile, logoRemoved, stampRemoved, updateOrg]);
+
+  const handleLogoUrlDrop = (storagePath: string) => {
+    setForm((prev) => ({ ...prev, logo: storagePath }));
+    setPendingLogoFile(null);
+    setLogoRemoved(false);
+  };
+
+  const handleStampUrlDrop = (storagePath: string) => {
+    setForm((prev) => ({ ...prev, stampImage: storagePath }));
+    setPendingStampFile(null);
+    setStampRemoved(false);
+  };
 
   return (
     <div className="h-full space-y-6">
@@ -129,12 +204,41 @@ function GeneralForm({
         </Field>
       </SectionCard>
 
+      <SectionCard title={t("settings.logo")} description={t("settings.logoDescription")}>
+        <Field label={t("settings.logo")}>
+          <ImageUpload
+            value={logoRemoved ? null : form.logo}
+            file={pendingLogoFile}
+            onFileChange={(f) => {
+              setPendingLogoFile(f);
+              if (f) setLogoRemoved(false);
+            }}
+            onRemove={() => setLogoRemoved(true)}
+            imageRemoved={logoRemoved}
+            onUrlDrop={handleLogoUrlDrop}
+          />
+        </Field>
+        <Field label={t("settings.stampImage")}>
+          <ImageUpload
+            value={stampRemoved ? null : form.stampImage}
+            file={pendingStampFile}
+            onFileChange={(f) => {
+              setPendingStampFile(f);
+              if (f) setStampRemoved(false);
+            }}
+            onRemove={() => setStampRemoved(true)}
+            imageRemoved={stampRemoved}
+            onUrlDrop={handleStampUrlDrop}
+          />
+        </Field>
+      </SectionCard>
+
       <div className="flex justify-end">
         <Button
           onClick={handleSave}
-          disabled={!hasChanges || updateOrg.isPending}
+          disabled={!hasChanges || updateOrg.isPending || uploading}
         >
-          {updateOrg.isPending && (
+          {(updateOrg.isPending || uploading) && (
             <Loader2 className="size-4 mr-2 animate-spin" />
           )}
           {t("settings.saveSettings")}

@@ -21,6 +21,8 @@ export interface OrgData {
   vatRegistered: boolean | null;
   paymentTermsDays: number | null;
   defaultTermsText: string | null;
+  logo: string | null;
+  stampImage: string | null;
   invoiceFooter: string | null;
   fiscalYearStartMonth: number | null;
 }

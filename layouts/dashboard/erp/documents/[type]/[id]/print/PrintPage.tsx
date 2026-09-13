@@ -409,16 +409,19 @@ export default function DocumentPrintPage({
         }
       >
         {/* Header */}
-        <div className="flex items-start justify-between px-8 pt-8 pb-4 border-b print:px-6 print:pt-6">
-          <div className="flex items-start gap-4">
+        <div className="flex flex-col gap-2 border-b px-8 pt-8 pb-4 print:px-6 print:pt-6">
+          <div>
             {org?.logo && (
               <img
                 src={org.logo}
                 alt={org.name}
-                className="size-16 object-contain rounded"
+                className="h-12 w-auto object-contain rounded"
               />
             )}
-            <div>
+          </div>
+          <div className="flex items-center justify-between">
+            {/* Company block */}
+            <div className="space-y-0.5">
               <h1 className="text-2xl font-bold">{org?.name ?? ""}</h1>
               {org?.crNumber && (
                 <p className="text-xs text-muted-foreground">
@@ -445,28 +448,32 @@ export default function DocumentPrintPage({
                 <p className="text-xs text-muted-foreground">{org.website}</p>
               )}
             </div>
-          </div>
-          <div className="text-right">
-            <h2 className="text-xl font-bold uppercase tracking-wide">
-              {getTypeLabel(invoice.type)}
-            </h2>
-            <p className="text-sm font-semibold mt-1">{invoice.serial}</p>
-            <div className="mt-2 text-xs text-muted-foreground space-y-0.5">
-              <p>
-                {t("common.date")}:{" "}
-                {invoice.date ? formatDate(invoice.date) : "—"}
-              </p>
-              {invoice.dueDate && (
+
+            {/* Document block */}
+            <div className="text-right">
+              <h2 className="text-xl font-bold uppercase tracking-wide">
+                {getTypeLabel(invoice.type)}
+              </h2>
+              <p className="text-sm font-semibold mt-1">{invoice.serial}</p>
+              <div className="mt-2 text-xs text-muted-foreground space-y-0.5">
                 <p>
-                  {t("invoices.dueDate")}: {formatDate(invoice.dueDate)}
+                  {t("common.date")}:{" "}
+                  {invoice.date ? formatDate(invoice.date) : "—"}
                 </p>
-              )}
+                {invoice.dueDate && (
+                  <p>
+                    {t("invoices.dueDate")}: {formatDate(invoice.dueDate)}
+                  </p>
+                )}
+              </div>
+              <div className="mt-2">
+                <span className="inline-block text-xs font-semibold px-2 py-0.5 rounded border border-current">
+                  {paymentStatusLabel}
+                </span>
+              </div>
             </div>
-            <div className="mt-2">
-              <span className="inline-block text-xs font-semibold px-2 py-0.5 rounded border border-current">
-                {paymentStatusLabel}
-              </span>
-            </div>
+
+
           </div>
         </div>
 

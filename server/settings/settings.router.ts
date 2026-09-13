@@ -55,6 +55,8 @@ export const settingsRouter = router({
         paymentTermsDays: z.number().int().optional(),
         defaultTermsText: z.string().optional(),
         vatRegistered: z.boolean().optional(),
+        logo: z.string().nullable().optional(),
+        stampImage: z.string().nullable().optional(),
         invoiceFooter: z.string().optional(),
         fiscalYearStartMonth: z.number().int().min(1).max(12).optional(),
       }),

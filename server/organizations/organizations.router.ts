@@ -30,6 +30,8 @@ export const organizationsRouter = router({
         defaultTermsText: z.string().optional(),
         vatRegistered: z.boolean().optional(),
         fiscalYearStartMonth: z.number().int().min(1).max(12).optional(),
+        logo: z.string().nullable().optional(),
+        stampImage: z.string().nullable().optional(),
       }),
     )
     .mutation(async ({ ctx, input }) => {

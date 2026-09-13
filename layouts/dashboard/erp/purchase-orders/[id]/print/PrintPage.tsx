@@ -145,16 +145,19 @@ export default function PurchaseOrderPrintPage() {
         }
       >
         {/* Header */}
-        <div className="flex items-start justify-between px-8 pt-8 pb-4 border-b print:px-6 print:pt-6">
-          <div className="flex items-start gap-4">
+        <div className="flex flex-col gap-2 border-b px-8 pt-8 pb-4 print:px-6 print:pt-6">
+          <div>
             {org?.logo && (
               <img
                 src={org.logo}
                 alt={org.name}
-                className="size-16 object-contain rounded"
+                className="h-12 w-auto object-contain rounded"
               />
             )}
-            <div>
+          </div>
+          <div className="flex items-center justify-between">
+            {/* Company block */}
+            <div className="space-y-0.5">
               <h1 className="text-2xl font-bold">{org?.name ?? ""}</h1>
               {org?.crNumber && (
                 <p className="text-xs text-muted-foreground">
@@ -181,29 +184,60 @@ export default function PurchaseOrderPrintPage() {
                 <p className="text-xs text-muted-foreground">{org.website}</p>
               )}
             </div>
-          </div>
-          <div className="text-right">
-            <h2 className="text-xl font-bold uppercase tracking-wide">
-              {t("purchaseOrders.title")}
-            </h2>
-            <p className="text-sm font-semibold mt-1">{po.serial}</p>
-            <div className="mt-2 text-xs text-muted-foreground">
-              <p>
-                {t("common.date")}: {po.date ? formatDate(po.date) : "—"}
-              </p>
-              {po.expectedDate && (
+
+            {/* Document block */}
+            <div className="text-right">
+              <h2 className="text-xl font-bold uppercase tracking-wide">
+                {t("purchaseOrders.title")}
+              </h2>
+              <p className="text-sm font-semibold mt-1">{po.serial}</p>
+              <div className="mt-2 text-xs text-muted-foreground">
                 <p>
-                  {t("purchaseOrders.expectedDate")}:{" "}
-                  {formatDate(po.expectedDate)}
+                  {t("common.date")}: {po.date ? formatDate(po.date) : "—"}
+                </p>
+                {po.expectedDate && (
+                  <p>
+                    {t("purchaseOrders.expectedDate")}:{" "}
+                    {formatDate(po.expectedDate)}
+                  </p>
+                )}
+              </div>
+              <div className="mt-2">
+                <span
+                  className={`inline-block text-xs font-semibold px-2 py-0.5 rounded border ${STATUS_STYLES[po.status] ?? "bg-gray-100 text-gray-800 border-gray-300"}`}
+                >
+                  {t(`purchaseOrders.statuses.${po.status}`)}
+                </span>
+              </div>
+            </div>
+
+            {/* Company block */}
+            <div className="space-y-0.5">
+              <h1 className="text-2xl font-bold">{org?.name ?? ""}</h1>
+              {org?.crNumber && (
+                <p className="text-xs text-muted-foreground">
+                  {t("customers.crNumber")}: {org.crNumber}
                 </p>
               )}
-            </div>
-            <div className="mt-2">
-              <span
-                className={`inline-block text-xs font-semibold px-2 py-0.5 rounded border ${STATUS_STYLES[po.status] ?? "bg-gray-100 text-gray-800 border-gray-300"}`}
-              >
-                {t(`purchaseOrders.statuses.${po.status}`)}
-              </span>
+              {org?.taxId && (
+                <p className="text-xs text-muted-foreground">
+                  {t("customers.taxId")}: {org.taxId}
+                </p>
+              )}
+              {org?.vatRegistered && (
+                <p className="text-xs text-muted-foreground">
+                  {t("common.vatRegistered")}
+                </p>
+              )}
+              {org?.phone && (
+                <p className="text-xs text-muted-foreground">{org.phone}</p>
+              )}
+              {org?.email && (
+                <p className="text-xs text-muted-foreground">{org.email}</p>
+              )}
+              {org?.website && (
+                <p className="text-xs text-muted-foreground">{org.website}</p>
+              )}
             </div>
           </div>
         </div>
