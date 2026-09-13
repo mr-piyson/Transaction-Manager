@@ -40,7 +40,11 @@ export interface InvoiceReadonlyData {
   date?: string | Date | null;
   dueDate?: string | Date | null;
   currency?: string;
-  customer?: { name?: string | null; vatNumber?: string | null; taxId?: string | null } | null;
+  customer?: {
+    name?: string | null;
+    vatNumber?: string | null;
+    taxId?: string | null;
+  } | null;
   warehouse?: { name?: string | null } | null;
   isWalkIn?: boolean;
   subtotal?: number;
@@ -60,7 +64,11 @@ export interface InvoiceReadonlyData {
     taxRateName?: string | null;
     taxRateSnapshot?: number | null;
     total?: number;
-    item?: { name?: string | null; sku?: string | null; image?: string | null } | null;
+    item?: {
+      name?: string | null;
+      sku?: string | null;
+      image?: string | null;
+    } | null;
   }>;
 }
 
@@ -285,15 +293,13 @@ export function InvoiceFormBody({
           {/* Document block */}
           <div className="flex min-w-0 flex-col items-start sm:items-start">
             {readonly ? (
-              <>
-                <div className="flex items-center gap-2">
-                  <span className="text-2xl font-bold uppercase tracking-wide sm:text-3xl">
-                    {typeLabel}
-                  </span>
-                  {badges}
-                  {actions}
-                </div>
-              </>
+              <div className="flex items-center gap-2">
+                <span className="text-2xl font-bold uppercase tracking-wide sm:text-3xl">
+                  {typeLabel}
+                </span>
+                {badges}
+                {actions}
+              </div>
             ) : (
               <Select
                 value={watch?.("type")}
@@ -373,11 +379,12 @@ export function InvoiceFormBody({
                       (VAT: {invoice.customer.vatNumber})
                     </span>
                   )}
-                  {invoice?.customer?.taxId && !invoice?.customer?.vatNumber && (
-                    <span className="ml-2 text-xs text-muted-foreground">
-                      (Tax: {invoice.customer.taxId})
-                    </span>
-                  )}
+                  {invoice?.customer?.taxId &&
+                    !invoice?.customer?.vatNumber && (
+                      <span className="ml-2 text-xs text-muted-foreground">
+                        (Tax: {invoice.customer.taxId})
+                      </span>
+                    )}
                 </p>
               ) : isWalkIn ? (
                 <Input
@@ -516,7 +523,10 @@ export function InvoiceFormBody({
                       const hasDiscount = discount > 0;
 
                       return (
-                        <tr key={line.id ?? index} className="border-b last:border-0">
+                        <tr
+                          key={line.id ?? index}
+                          className="border-b last:border-0"
+                        >
                           <td className="py-2.5 pr-2 align-top text-xs text-muted-foreground">
                             {index + 1}
                           </td>
@@ -526,7 +536,8 @@ export function InvoiceFormBody({
                               <div className="min-w-0">
                                 <p className="truncate text-sm font-medium">
                                   {isManual
-                                    ? line.description || t("invoices.manualEntry")
+                                    ? line.description ||
+                                      t("invoices.manualEntry")
                                     : item?.name || "—"}
                                 </p>
                                 {item?.sku && (
@@ -672,7 +683,9 @@ export function InvoiceFormBody({
                   (!readonly && fields.length === 0)) && (
                   <tr>
                     <td
-                      colSpan={hasAnyDiscount ? (readonly ? 7 : 8) : (readonly ? 6 : 7)}
+                      colSpan={
+                        hasAnyDiscount ? (readonly ? 7 : 8) : readonly ? 6 : 7
+                      }
                       className="py-10 text-center text-sm text-muted-foreground"
                     >
                       <Package className="mx-auto mb-2 h-8 w-8 opacity-30" />
@@ -717,7 +730,9 @@ export function InvoiceFormBody({
                         : "text-red-600"
                     }
                   >
-                    {((totals?.total ?? 0) - (totals?.costTotal ?? 0)).toFixed(3)}
+                    {((totals?.total ?? 0) - (totals?.costTotal ?? 0)).toFixed(
+                      3,
+                    )}
                     {(totals?.total ?? 0) > 0 && (
                       <span className="ml-1 text-xs">
                         (
