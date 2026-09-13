@@ -101,13 +101,19 @@ else
 	BUN_PATH="$(command -v bun 2>/dev/null || true)"
 fi
 
-# Re-run the whole script under sudo if we need root but don't have it.
-# This makes the user type the sudo password exactly once, at the start,
-# instead of being prompted again after the long build/prisma steps.
+# Cache sudo credentials without changing the user running the deployment.
+# The elevate helper adds sudo only to commands that actually need root.
 if [[ "$(id -u)" -ne 0 ]]; then
-	if command -v sudo >/dev/null 2>&1 && ! sudo -n true 2>/dev/null; then
+	command -v sudo >/dev/null 2>&1 || {
+		echo "Need sudo to deploy, but sudo is not installed." >&2
+		exit 1
+	}
+	if ! sudo -n true 2>/dev/null; then
 		echo "Need sudo to deploy — entering password now..."
-		exec sudo -H env "DEPLOY_BUN_PATH=${BUN_PATH}" "$0" "$@"
+		sudo -v || {
+			echo "Unable to authenticate with sudo." >&2
+			exit 1
+		}
 	fi
 fi
 

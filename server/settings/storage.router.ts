@@ -1,5 +1,5 @@
-import { z } from "zod";
 import { promises as fs } from "fs";
+import { z } from "zod";
 import { assertCan, orgProcedure, router } from "@/lib/trpc/context";
 import * as storage from "../services/file/storage.service";
 
@@ -9,7 +9,12 @@ import * as storage from "../services/file/storage.service";
 
 /** Collect all image/storagePath string fields across entities. */
 async function collectImageRefs(db: any, orgId: string) {
-  const refs: { entityType: string; entityId: string; field: string; imagePath: string }[] = [];
+  const refs: {
+    entityType: string;
+    entityId: string;
+    field: string;
+    imagePath: string;
+  }[] = [];
 
   const items = await db.item.findMany({
     where: { organizationId: orgId, image: { not: null } },
@@ -17,7 +22,12 @@ async function collectImageRefs(db: any, orgId: string) {
   });
   for (const item of items) {
     if (item.image) {
-      refs.push({ entityType: "Item", entityId: item.id, field: "image", imagePath: item.image });
+      refs.push({
+        entityType: "Item",
+        entityId: item.id,
+        field: "image",
+        imagePath: item.image,
+      });
     }
   }
 
@@ -26,10 +36,20 @@ async function collectImageRefs(db: any, orgId: string) {
     select: { logo: true, stampImage: true },
   });
   if (org?.logo) {
-    refs.push({ entityType: "Organization", entityId: orgId, field: "logo", imagePath: org.logo });
+    refs.push({
+      entityType: "Organization",
+      entityId: orgId,
+      field: "logo",
+      imagePath: org.logo,
+    });
   }
   if (org?.stampImage) {
-    refs.push({ entityType: "Organization", entityId: orgId, field: "stampImage", imagePath: org.stampImage });
+    refs.push({
+      entityType: "Organization",
+      entityId: orgId,
+      field: "stampImage",
+      imagePath: org.stampImage,
+    });
   }
 
   const users = await db.user.findMany({
@@ -38,7 +58,12 @@ async function collectImageRefs(db: any, orgId: string) {
   });
   for (const user of users) {
     if (user.image) {
-      refs.push({ entityType: "User", entityId: user.id, field: "image", imagePath: user.image });
+      refs.push({
+        entityType: "User",
+        entityId: user.id,
+        field: "image",
+        imagePath: user.image,
+      });
     }
   }
 
@@ -68,7 +93,14 @@ export const storageRouter = router({
 
     // 1. Get all File records from DB
     const dbFiles = await ctx.db.file.findMany({
-      select: { id: true, filename: true, storagePath: true, size: true, originalName: true, mime: true },
+      select: {
+        id: true,
+        filename: true,
+        storagePath: true,
+        size: true,
+        originalName: true,
+        mime: true,
+      },
     });
 
     // 2. Get all disk files
@@ -200,7 +232,9 @@ export const storageRouter = router({
       });
 
       const orgId = ctx.user.organizationId;
-      const file = await ctx.db.file.findUnique({ where: { id: input.fileId } });
+      const file = await ctx.db.file.findUnique({
+        where: { id: input.fileId },
+      });
       if (!file) return { removed: false };
 
       // Remove all attachments for this file
@@ -212,7 +246,10 @@ export const storageRouter = router({
         data: { image: null },
       });
       await ctx.db.organization.updateMany({
-        where: { id: orgId, OR: [{ logo: file.storagePath }, { stampImage: file.storagePath }] },
+        where: {
+          id: orgId,
+          OR: [{ logo: file.storagePath }, { stampImage: file.storagePath }],
+        },
         data: { logo: null, stampImage: null },
       });
       await ctx.db.user.updateMany({
@@ -266,7 +303,10 @@ export const storageRouter = router({
           await ctx.db.item.update({ where: { id: input.entityId }, data });
           break;
         case "Organization":
-          await ctx.db.organization.update({ where: { id: input.entityId }, data });
+          await ctx.db.organization.update({
+            where: { id: input.entityId },
+            data,
+          });
           break;
         case "User":
           await ctx.db.user.update({ where: { id: input.entityId }, data });
@@ -399,7 +439,10 @@ export const storageRouter = router({
             await ctx.db.item.update({ where: { id: ref.entityId }, data });
             break;
           case "Organization":
-            await ctx.db.organization.update({ where: { id: ref.entityId }, data });
+            await ctx.db.organization.update({
+              where: { id: ref.entityId },
+              data,
+            });
             break;
           case "User":
             await ctx.db.user.update({ where: { id: ref.entityId }, data });
@@ -441,7 +484,9 @@ export const storageRouter = router({
     }
 
     if (unusedIds.length > 0) {
-      await ctx.db.attachment.deleteMany({ where: { fileId: { in: unusedIds } } });
+      await ctx.db.attachment.deleteMany({
+        where: { fileId: { in: unusedIds } },
+      });
       for (const p of unusedPaths) {
         await storage.remove(p);
       }
