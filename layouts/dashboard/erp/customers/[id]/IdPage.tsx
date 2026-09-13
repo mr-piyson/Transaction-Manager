@@ -4,7 +4,6 @@ import {
   ArrowLeft,
   Edit,
   MoreHorizontal,
-  ShieldAlert,
   Users,
 } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
