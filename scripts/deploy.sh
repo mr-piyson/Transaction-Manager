@@ -374,4 +374,12 @@ NEW_SHA="$(git rev-parse --short HEAD)"
 	echo "$(date '+%F %T') branch=${BRANCH} ${PREV_SHA} -> ${NEW_SHA} by=${USER:-unknown} host=$(hostname)"
 } >>"$APP_DIR/.deploy-history.log"
 
-log "Deploy complete: ${PREV_SHA} → ${NEW_SHA} (origin/${BRANCH})"
+echo ""
+log "========================================="
+log "  Deployment Complete!"
+log "========================================="
+log ""
+log "Service status:"
+elevate systemctl status "$SERVICE" --no-pager || true
+log ""
+log "Logs: journalctl -u ${SERVICE} -f"
