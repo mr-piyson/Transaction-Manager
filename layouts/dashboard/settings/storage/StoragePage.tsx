@@ -1,21 +1,12 @@
 "use client";
 
 import {
-  createColumnHelper,
-  flexRender,
-  getCoreRowModel,
-  useReactTable,
-} from "@tanstack/react-table";
-import { useVirtualizer } from "@tanstack/react-virtual";
-import {
   AlertTriangle,
   CheckCircle2,
   Database,
   FileIcon,
-  Grid3X3,
   HardDrive,
   Image,
-  List,
   Loader2,
   RefreshCcw,
   Trash2,
@@ -23,7 +14,7 @@ import {
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import * as React from "react";
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { toast } from "sonner";
 import {
   AlertDialog,
@@ -37,7 +28,6 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { trpc } from "@/lib/trpc/client";
 import { SectionCard } from "../_shared";
@@ -200,7 +190,7 @@ const TABS: { key: TabKey; labelKey: string; icon: React.ElementType }[] = [
 // Grid Card
 // ---------------------------------------------------------------------------
 
-function ImageGridCard({
+function GridCard({
   issue,
   onRemove,
   isPending,
@@ -210,7 +200,7 @@ function ImageGridCard({
   isPending: boolean;
 }) {
   const imgUrl = issue.isImage ? fileUrl(issue.path) : null;
-  const [imgError, setImgError] = React.useState(false);
+  const [imgError, setImgError] = useState(false);
   const showImage = imgUrl && !imgError;
 
   const overlayLabel =
@@ -241,7 +231,6 @@ function ImageGridCard({
               loading="lazy"
               onError={() => setImgError(true)}
             />
-            {/* Transparent overlay with icon + label */}
             <div className="absolute inset-0 flex flex-col items-center justify-center gap-1 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity">
               {overlayIcon}
               <span className="text-[11px] font-medium text-white/90 drop-shadow">
@@ -288,291 +277,6 @@ function ImageGridCard({
       >
         <Trash2 className="size-3" />
       </Button>
-    </div>
-  );
-}
-
-// ---------------------------------------------------------------------------
-// Table columns
-// ---------------------------------------------------------------------------
-
-const columnHelper = createColumnHelper<StorageIssue>();
-
-function useTableColumns(onRemove: (issue: StorageIssue) => void, isPending: boolean) {
-  return useMemo(
-    () => [
-      columnHelper.accessor("isImage", {
-        header: "",
-        size: 40,
-        cell: (info) => {
-          const issue = info.row.original;
-          if (!issue.isImage) return <FileIcon className="size-4 text-muted-foreground" />;
-          return (
-            <div className="size-8 overflow-hidden rounded border bg-muted">
-              <img
-                src={fileUrl(issue.path)}
-                alt=""
-                className="size-full object-cover"
-                loading="lazy"
-              />
-            </div>
-          );
-        },
-      }),
-      columnHelper.accessor("category", {
-        header: "Type",
-        size: 90,
-        cell: (info) => {
-          const v = info.getValue();
-          const map: Record<string, string> = {
-            "orphaned-db": "DB Record",
-            "orphaned-disk": "Disk File",
-            unused: "Unused",
-            "dangling-ref": "Dangling Ref",
-          };
-          return (
-            <Badge variant="outline" className="text-xs">
-              {map[v] ?? v}
-            </Badge>
-          );
-        },
-      }),
-      columnHelper.accessor("name", {
-        header: "Name",
-        cell: (info) => (
-          <span className="truncate text-sm font-medium" title={info.getValue()}>
-            {info.getValue()}
-          </span>
-        ),
-      }),
-      columnHelper.accessor("path", {
-        header: "Path",
-        cell: (info) => (
-          <span className="truncate text-xs text-muted-foreground" title={info.getValue()}>
-            {info.getValue()}
-          </span>
-        ),
-      }),
-      columnHelper.accessor("size", {
-        header: "Size",
-        size: 80,
-        cell: (info) => {
-          const v = info.getValue();
-          return v > 0 ? (
-            <span className="text-xs text-muted-foreground">{formatBytes(v)}</span>
-          ) : (
-            <span className="text-xs text-muted-foreground">—</span>
-          );
-        },
-      }),
-      columnHelper.display({
-        id: "actions",
-        size: 48,
-        cell: (info) => (
-          <Button
-            variant="ghost"
-            size="icon"
-            className="size-7 text-destructive"
-            onClick={() => onRemove(info.row.original)}
-            disabled={isPending}
-          >
-            <Trash2 className="size-3.5" />
-          </Button>
-        ),
-      }),
-    ],
-    [onRemove, isPending],
-  );
-}
-
-// ---------------------------------------------------------------------------
-// Virtualized Table
-// ---------------------------------------------------------------------------
-
-function VirtualizedTable({
-  issues,
-  onRemove,
-  isPending,
-}: {
-  issues: StorageIssue[];
-  onRemove: (issue: StorageIssue) => void;
-  isPending: boolean;
-}) {
-  const columns = useTableColumns(onRemove, isPending);
-  const scrollRef = useRef<HTMLDivElement>(null);
-  const [scrollReady, setScrollReady] = useState(false);
-
-  const setScrollRef = useCallback((node: HTMLDivElement | null) => {
-    scrollRef.current = node;
-    setScrollReady(Boolean(node));
-  }, []);
-
-  const table = useReactTable({
-    data: issues,
-    columns,
-    getCoreRowModel: getCoreRowModel(),
-  });
-
-  const { rows } = table.getRowModel();
-
-  const virtualizer = useVirtualizer({
-    count: rows.length,
-    getScrollElement: () => scrollRef.current,
-    estimateSize: () => 52,
-    overscan: 10,
-  });
-
-  useMemo(() => {
-    if (scrollReady && rows.length > 0) {
-      virtualizer.scrollToIndex(0);
-    }
-  }, [scrollReady, rows.length, virtualizer]);
-
-  return (
-    <div
-      ref={setScrollRef}
-      className="h-[500px] overflow-auto rounded-lg border"
-    >
-      {/* Table header */}
-      <div className="sticky top-0 z-10 flex border-b bg-muted/50 text-xs font-medium text-muted-foreground">
-        {table.getHeaderGroups()[0].headers.map((header) => (
-          <div
-            key={header.id}
-            className="flex items-center px-3 py-2"
-            style={{ width: header.getSize() }}
-          >
-            {header.isPlaceholder
-              ? null
-              : flexRender(header.column.columnDef.header, header.getContext())}
-          </div>
-        ))}
-      </div>
-
-      {/* Virtual rows */}
-      <div
-        style={{
-          height: `${virtualizer.getTotalSize()}px`,
-          position: "relative",
-          width: "100%",
-        }}
-      >
-        {virtualizer.getVirtualItems().map((virtualRow) => {
-          const row = rows[virtualRow.index];
-          return (
-            <div
-              key={row.id}
-              data-index={virtualRow.index}
-              ref={virtualizer.measureElement}
-              className="absolute left-0 top-0 flex w-full border-b border-border/50 hover:bg-muted/30"
-              style={{
-                transform: `translateY(${virtualRow.start}px)`,
-              }}
-            >
-              {row.getVisibleCells().map((cell) => (
-                <div
-                  key={cell.id}
-                  className="flex items-center px-3 py-2 truncate"
-                  style={{ width: cell.column.getSize() }}
-                >
-                  {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                </div>
-              ))}
-            </div>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
-
-// ---------------------------------------------------------------------------
-// Virtualized Grid
-// ---------------------------------------------------------------------------
-
-function VirtualizedGrid({
-  issues,
-  onRemove,
-  isPending,
-}: {
-  issues: StorageIssue[];
-  onRemove: (issue: StorageIssue) => void;
-  isPending: boolean;
-}) {
-  const scrollRef = useRef<HTMLDivElement>(null);
-  const [scrollReady, setScrollReady] = useState(false);
-
-  const setScrollRef = useCallback((node: HTMLDivElement | null) => {
-    scrollRef.current = node;
-    setScrollReady(Boolean(node));
-  }, []);
-
-  const COLS = 4;
-  const GAP = 12;
-  const CARD_HEIGHT = 220;
-
-  const rows = useMemo(() => {
-    const result: StorageIssue[][] = [];
-    for (let i = 0; i < issues.length; i += COLS) {
-      result.push(issues.slice(i, i + COLS));
-    }
-    return result;
-  }, [issues]);
-
-  const virtualizer = useVirtualizer({
-    count: rows.length,
-    getScrollElement: () => scrollRef.current,
-    estimateSize: () => CARD_HEIGHT + GAP,
-    overscan: 5,
-  });
-
-  useMemo(() => {
-    if (scrollReady && rows.length > 0) {
-      virtualizer.scrollToIndex(0);
-    }
-  }, [scrollReady, rows.length, virtualizer]);
-
-  return (
-    <div
-      ref={setScrollRef}
-      className="h-[600px] overflow-auto rounded-lg border p-3"
-    >
-      <div
-        style={{
-          height: `${virtualizer.getTotalSize()}px`,
-          position: "relative",
-          width: "100%",
-        }}
-      >
-        {virtualizer.getVirtualItems().map((virtualRow) => {
-          const rowItems = rows[virtualRow.index];
-          return (
-            <div
-              key={virtualRow.index}
-              data-index={virtualRow.index}
-              ref={virtualizer.measureElement}
-              className="absolute left-0 top-0 grid w-full gap-3"
-              style={{
-                gridTemplateColumns: `repeat(${COLS}, 1fr)`,
-                transform: `translateY(${virtualRow.start}px)`,
-              }}
-            >
-              {rowItems.map((issue) => (
-                <ImageGridCard
-                  key={issue.key}
-                  issue={issue}
-                  onRemove={() => onRemove(issue)}
-                  isPending={isPending}
-                />
-              ))}
-              {/* Fill empty cells in last row */}
-              {rowItems.length < COLS &&
-                Array.from({ length: COLS - rowItems.length }).map((_, i) => (
-                  <div key={`empty-${i}`} />
-                ))}
-            </div>
-          );
-        })}
-      </div>
     </div>
   );
 }
@@ -633,7 +337,6 @@ export default function StoragePage() {
   });
 
   const [activeTab, setActiveTab] = useState<TabKey>("all");
-  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [confirmCleanAll, setConfirmCleanAll] = useState(false);
   const [confirmAction, setConfirmAction] = useState<{
     issue: StorageIssue;
@@ -648,16 +351,6 @@ export default function StoragePage() {
     if (activeTab === "all") return allIssues;
     return allIssues.filter((i) => i.category === activeTab);
   }, [allIssues, activeTab]);
-
-  // Separate for grid: images go to grid, non-images go to list
-  const imageIssues = useMemo(
-    () => filteredIssues.filter((i) => i.isImage),
-    [filteredIssues],
-  );
-  const nonImageIssues = useMemo(
-    () => filteredIssues.filter((i) => !i.isImage),
-    [filteredIssues],
-  );
 
   const totalIssues = allIssues.length;
 
@@ -818,26 +511,6 @@ export default function StoragePage() {
                   </button>
                 );
               })}
-
-              {/* View toggle */}
-              <div className="ml-auto flex items-center gap-1 rounded-md border p-0.5">
-                <Button
-                  variant={viewMode === "grid" ? "secondary" : "ghost"}
-                  size="icon"
-                  className="size-7"
-                  onClick={() => setViewMode("grid")}
-                >
-                  <Grid3X3 className="size-3.5" />
-                </Button>
-                <Button
-                  variant={viewMode === "list" ? "secondary" : "ghost"}
-                  size="icon"
-                  className="size-7"
-                  onClick={() => setViewMode("list")}
-                >
-                  <List className="size-3.5" />
-                </Button>
-              </div>
             </div>
 
             {/* Content */}
@@ -848,29 +521,17 @@ export default function StoragePage() {
                   {t("settings.storage.noIssues")}
                 </p>
               </div>
-            ) : viewMode === "grid" ? (
-              <div className="space-y-4">
-                {imageIssues.length > 0 && (
-                  <VirtualizedGrid
-                    issues={imageIssues}
-                    onRemove={handleRemove}
-                    isPending={isAnyPending}
-                  />
-                )}
-                {nonImageIssues.length > 0 && (
-                  <VirtualizedTable
-                    issues={nonImageIssues}
-                    onRemove={handleRemove}
-                    isPending={isAnyPending}
-                  />
-                )}
-              </div>
             ) : (
-              <VirtualizedTable
-                issues={filteredIssues}
-                onRemove={handleRemove}
-                isPending={isAnyPending}
-              />
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                {filteredIssues.map((issue) => (
+                  <GridCard
+                    key={issue.key}
+                    issue={issue}
+                    onRemove={() => handleRemove(issue)}
+                    isPending={isAnyPending}
+                  />
+                ))}
+              </div>
             )}
           </>
         )}
