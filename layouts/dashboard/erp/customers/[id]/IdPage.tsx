@@ -5,7 +5,6 @@ import {
   Edit,
   MoreHorizontal,
   ShieldAlert,
-  Trash,
   Users,
 } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
