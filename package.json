@@ -11,7 +11,8 @@
     "update": "bun run deploy:yes",
     "lint": "biome check .",
     "format": "biome format --write .",
-    "sync": "bunx prisma generate && bunx prisma db push "
+    "sync": "bunx prisma generate && bunx prisma db push ",
+    "backup": "bash ./scripts/backup.sh"
   },
   "dependencies": {
     "@base-ui/react": "^1.5.0",
