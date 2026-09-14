@@ -719,34 +719,9 @@ export function InvoiceFormBody({
                 +{displayTotals?.taxTotal.toFixed(3)}
               </TotalsRow>
               {!readonly && (
-                <>
-                  <TotalsRow label={t("invoices.cogs")}>
-                    {totals?.costTotal.toFixed(3)}
-                  </TotalsRow>
-                  <TotalsRow
-                    label={t("invoices.grossProfit")}
-                    className={
-                      (totals?.total ?? 0) - (totals?.costTotal ?? 0) >= 0
-                        ? "text-green-600"
-                        : "text-red-600"
-                    }
-                  >
-                    {((totals?.total ?? 0) - (totals?.costTotal ?? 0)).toFixed(
-                      3,
-                    )}
-                    {(totals?.total ?? 0) > 0 && (
-                      <span className="ml-1 text-xs">
-                        (
-                        {(
-                          (((totals?.total ?? 0) - (totals?.costTotal ?? 0)) /
-                            (totals?.total ?? 1)) *
-                          100
-                        ).toFixed(1)}
-                        %)
-                      </span>
-                    )}
-                  </TotalsRow>
-                </>
+                <TotalsRow label={t("invoices.cogs")}>
+                  {totals?.costTotal.toFixed(3)}
+                </TotalsRow>
               )}
               <div className="flex items-center justify-between gap-4 border-t pt-1.5 text-base font-bold">
                 <span>{t("invoices.total")}</span>
