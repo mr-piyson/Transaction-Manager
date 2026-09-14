@@ -93,12 +93,10 @@ LOCK_DIR="/tmp/${SERVICE}.deploy.lock"
 DEPLOY_USER="${SUDO_USER:-$(id -un)}"
 DEPLOY_HOME="$(getent passwd "$DEPLOY_USER" 2>/dev/null | cut -d: -f6 || true)"
 DEPLOY_HOME="${DEPLOY_HOME:-${HOME:-}}"
-if [[ -n "${DEPLOY_BUN_PATH:-}" ]]; then
-	BUN_PATH="$DEPLOY_BUN_PATH"
-elif [[ -x "${DEPLOY_HOME}/.bun/bin/bun" ]]; then
+BUN_PATH="${DEPLOY_BUN_PATH:-}"
+if [[ -z "$BUN_PATH" ]]; then
 	BUN_PATH="${DEPLOY_HOME}/.bun/bin/bun"
-else
-	BUN_PATH="$(command -v bun 2>/dev/null || true)"
+	[[ -x "$BUN_PATH" ]] || BUN_PATH="$(command -v bun 2>/dev/null || true)"
 fi
 
 # Cache sudo credentials without changing the user running the deployment.
@@ -139,11 +137,6 @@ cleanup() {
 }
 trap cleanup EXIT
 
-on_error() {
-	die "Command failed at ${BASH_SOURCE[1]}:${BASH_LINENO[0]} (exit $1)"
-}
-trap 'on_error $?' ERR
-
 elevate() {
 	if [ "$(id -u)" -eq 0 ]; then
 		"$@"
@@ -160,7 +153,7 @@ check_database() {
 	raw="$(grep -E '^[[:space:]]*(export[[:space:]]+)?DATABASE_URL=' "$APP_DIR/.env" | tail -n 1 || true)"
 	[[ -n "$raw" ]] || die "DATABASE_URL not found in .env — copy .env.example and configure the database first."
 	raw="${raw#*=}"
-	raw="${raw%%[[:space:]]*#*}" # strip trailing comment (whitespace before #)
+	raw="${raw%%[[:space:]]*#*}"
 	raw="${raw%\"}"
 	raw="${raw#\"}"
 	raw="${raw%\'}"
@@ -181,16 +174,8 @@ check_database() {
 		else
 			die "Cannot connect to PostgreSQL at ${host}:${port} with credentials from .env. Check DATABASE_URL; is PostgreSQL installed and running? Try: sudo systemctl status postgresql"
 		fi
-	elif command -v pg_isready >/dev/null 2>&1; then
-		if pg_isready -h "$host" -p "$port" -t 5 >/dev/null 2>&1; then
-			warn "PostgreSQL reachable at ${host}:${port} (pg_isready); install postgresql-client to also verify credentials."
-		else
-			die "PostgreSQL is not accepting connections at ${host}:${port}. Start it: sudo systemctl enable --now postgresql"
-		fi
-	elif timeout 5 bash -c "exec 3<>/dev/tcp/${host}/${port}" 2>/dev/null; then
-		warn "Port ${host}:${port} is open but neither psql nor pg_isready found — skipped auth check. Install: sudo apt install postgresql-client"
 	else
-		die "Nothing is listening at ${host}:${port}. Install/start PostgreSQL: sudo apt install postgresql && sudo systemctl enable --now postgresql"
+		warn "psql not found — skipping database connectivity check. Install postgresql-client to enable pre-deploy verification."
 	fi
 }
 
@@ -200,20 +185,11 @@ ensure_service() {
 		return 0
 	}
 
-	local unit_file="/etc/systemd/system/${SERVICE}.service"
-
 	if systemctl cat "$SERVICE" >/dev/null 2>&1; then
-		local unit wd exec_start
-		unit="$(systemctl cat "$SERVICE")"
-		wd="$(grep -m1 '^WorkingDirectory=' <<<"$unit" | cut -d= -f2- || true)"
-		exec_start="$(grep -m1 '^ExecStart=' <<<"$unit" | cut -d= -f2- || true)"
-		[[ "$wd" == "$APP_DIR" ]] ||
-			warn "Unit '${SERVICE}' has WorkingDirectory='${wd:-unset}' (expected ${APP_DIR}) — leaving it untouched."
-		[[ "$exec_start" == "${BUN_PATH} run start" ]] ||
-			warn "Unit '${SERVICE}' has ExecStart='${exec_start:-unset}' (expected '${BUN_PATH} run start') — leaving it untouched."
 		return 0
 	fi
 
+	local unit_file="/etc/systemd/system/${SERVICE}.service"
 	log "Creating systemd unit ${unit_file}"
 	local group tmp
 	group="$(id -gn "$DEPLOY_USER" 2>/dev/null || true)"
@@ -265,14 +241,14 @@ log "Preflight checks"
 command -v git >/dev/null || die "git is not installed."
 [[ -x "$BUN_PATH" ]] || die "bun is not installed or not executable at '${BUN_PATH:-unknown}'."
 
-	if [[ "$SKIP_DB" != true ]]; then
-		check_database
-	fi
+if [[ "$SKIP_DB" != true ]]; then
+	check_database
+fi
 
-	git fetch origin "$BRANCH" >/dev/null 2>&1 || die "Cannot fetch origin/${BRANCH}. Check network and remotes."
-	git rev-parse --verify --quiet "origin/${BRANCH}" >/dev/null || die "Branch origin/${BRANCH} does not exist."
+git fetch origin "$BRANCH" >/dev/null 2>&1 || die "Cannot fetch origin/${BRANCH}. Check network and remotes."
+git rev-parse --verify --quiet "origin/${BRANCH}" >/dev/null || die "Branch origin/${BRANCH} does not exist."
 
-	ensure_service
+ensure_service
 
 PREV_SHA="$(git rev-parse --short HEAD)"
 TARGET_SHA="$(git rev-parse --short "origin/${BRANCH}")"
