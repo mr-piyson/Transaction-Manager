@@ -694,11 +694,12 @@ model RolePermission {
 // =============================================================================
 
 model Session {
-  id        String   @id @default(cuid())
-  expiresAt DateTime
-  token     String   @unique
-  ipAddress String?
-  userAgent String?
+  id             String   @id @default(cuid())
+  expiresAt      DateTime
+  token          String   @unique
+  ipAddress      String?
+  userAgent      String?
+  impersonatedBy String?
 
   userId String
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -754,6 +755,8 @@ model Jwks {
   privateKey String
   createdAt  DateTime
   expiresAt  DateTime?
+  alg        String?
+  crv        String?
 
   @@map("jwks")
   @@schema("public")
@@ -1967,7 +1970,7 @@ model PurchaseLine {
   // Nullable for manual (non-inventory) purchase entries. Manual lines never
   // touch stock, inventory movements, or item average cost.
   itemId String?
-  item   Item?  @relation(fields: [itemId], references: [id])
+  item   Item?   @relation(fields: [itemId], references: [id])
 
   purchaseOrderId String
   purchaseOrder   PurchaseOrder @relation(fields: [purchaseOrderId], references: [id], onDelete: Cascade)
