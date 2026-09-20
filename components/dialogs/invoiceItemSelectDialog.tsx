@@ -161,7 +161,7 @@ export function InvoiceItemSelectDialog({
         {/* Category filter bar */}
         {categories.length > 0 && (
           <div className="shrink-0 border-b px-4 py-1.5 sm:px-6">
-            <div className="flex items-center gap-2 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            <div className="flex items-center gap-2 pb-1 overflow-x-auto">
               <Filter className="size-3.5 text-muted-foreground shrink-0" />
               <button
                 className={cn(
