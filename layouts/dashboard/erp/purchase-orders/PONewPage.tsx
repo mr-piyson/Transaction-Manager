@@ -1,7 +1,7 @@
 "use client";
 
-import { POFormPage } from "./POFormPage";
+import { DocumentFormPage } from "../documents/po/DocumentFormPage";
 
 export default function PONewPage() {
-  return <POFormPage mode="create" />;
+  return <DocumentFormPage mode="create" />;
 }

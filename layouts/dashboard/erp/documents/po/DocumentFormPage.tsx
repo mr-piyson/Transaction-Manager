@@ -1,6 +1,6 @@
 "use client";
 
-import { Loader2 } from "lucide-react";
+import { Loader2, ShoppingCart } from "lucide-react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
@@ -15,7 +15,7 @@ import { buildPOCreateDefaults, poToFormValues } from "@/lib/form/po/poMapper";
 import { usePOFormController } from "@/lib/form/po/usePOFormController";
 import { trpc } from "@/lib/trpc/client";
 
-export function POFormPage({ mode }: { mode: "create" | "edit" }) {
+export function DocumentFormPage({ mode }: { mode: "create" | "edit" }) {
   const params = useParams<{ id?: string }>();
   const isEdit = mode === "edit";
   const id = params.id;
@@ -120,6 +120,10 @@ function POFormCore({
       }
       errors={form.formState.errors as Record<string, any>}
       submitError={submitError}
+      contentClassName="max-w-5xl"
+      pageClassName="bg-muted/30"
+      icon={ShoppingCart}
+      isDirty={form.formState.isDirty}
     >
       <POFormBody controller={controller} />
     </FormPageScaffold>

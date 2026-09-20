@@ -1,7 +1,7 @@
 "use client";
 
-import { POFormPage } from "./POFormPage";
+import { DocumentFormPage } from "../documents/po/DocumentFormPage";
 
 export default function POEditPage() {
-  return <POFormPage mode="edit" />;
+  return <DocumentFormPage mode="edit" />;
 }
