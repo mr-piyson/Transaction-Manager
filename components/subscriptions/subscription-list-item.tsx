@@ -3,6 +3,7 @@ import { CalendarClock } from "lucide-react";
 import type { HTMLAttributes } from "react";
 import { useDateFormat } from "@/hooks/use-date-format";
 import { cn, formatAmount } from "@/lib/utils";
+import { Progress } from "@/components/ui/progress";
 import { SubscriptionStatusBadge } from "./subscription-status-badge";
 
 const cycleLabels: Record<string, string> = {
@@ -44,6 +45,21 @@ export function SubscriptionListItem({
   const showRenewalWarning =
     daysUntilRenewal !== null && daysUntilRenewal <= (alertDaysBefore ?? 7);
 
+  const cycleStart = data?.lastRenewedAt ?? data?.startDate;
+  const cycleProgress =
+    cycleStart && nextRenewalDate && isActive
+      ? Math.min(
+          100,
+          Math.max(
+            0,
+            ((Date.now() - new Date(cycleStart).getTime()) /
+              (new Date(nextRenewalDate).getTime() -
+                new Date(cycleStart).getTime())) *
+              100,
+          ),
+        )
+      : null;
+
   const cycleLabel =
     billingCycle === "CUSTOM" && customCycleDays
       ? `Every ${customCycleDays} days`
@@ -82,6 +98,9 @@ export function SubscriptionListItem({
           {cycleLabel} · renews{" "}
           {nextRenewalDate ? formatDate(nextRenewalDate) : "—"}
         </p>
+        {cycleProgress !== null && (
+          <Progress value={cycleProgress} className="mt-1.5 h-1" />
+        )}
       </div>
       <div className="text-right shrink-0">
         <p className="font-semibold">

@@ -1,7 +1,5 @@
 # TODOs : 
 
-- [ ] in purchase order form the note should be below the summary card
-
 - [ ] fix permission and roles of users not working.
 
 - [ ] add progress bar under subscription item list 
