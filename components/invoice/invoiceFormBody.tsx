@@ -344,20 +344,22 @@ export function InvoiceFormBody({
                     />
                   )}
                 </div>
-                <div className="w-40">
-                  <PaperLabel>{t("invoices.dueDate")}</PaperLabel>
-                  {readonly ? (
-                    <p className="text-sm font-medium">
-                      {formatDateShort(invoice?.dueDate)}
-                    </p>
-                  ) : (
-                    <DateInputField
-                      control={control!}
-                      name="dueDate"
-                      showTodayButton
-                    />
-                  )}
-                </div>
+                {!isInvoiceType && (
+                  <div className="w-40">
+                    <PaperLabel>{t("invoices.dueDate")}</PaperLabel>
+                    {readonly ? (
+                      <p className="text-sm font-medium">
+                        {formatDateShort(invoice?.dueDate)}
+                      </p>
+                    ) : (
+                      <DateInputField
+                        control={control!}
+                        name="dueDate"
+                        showTodayButton
+                      />
+                    )}
+                  </div>
+                )}
               </div>
             </div>
           </div>
