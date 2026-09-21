@@ -6,7 +6,7 @@ import {
   ArrowUpRight,
   Loader2,
   Package,
-  Search,
+  Pencil,
   TriangleAlert,
   X,
 } from "lucide-react";
@@ -15,8 +15,8 @@ import * as React from "react";
 import { type SubmitHandler, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
+import { StockAdjustmentItemSelectDialog } from "@/components/dialogs/stockAdjustmentItemSelectDialog";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -109,7 +109,7 @@ export function StockAdjustmentFormDialog({
   const t = useTranslations();
   const utils = trpc.useUtils();
 
-  const [itemSearch, setItemSearch] = React.useState("");
+  const [itemPickerOpen, setItemPickerOpen] = React.useState(false);
 
   const {
     register,
@@ -143,7 +143,7 @@ export function StockAdjustmentFormDialog({
         quantity: "",
         notes: undefined,
       });
-      setItemSearch("");
+      setItemPickerOpen(false);
     }
   }, [open, presetItemId, presetWarehouseId, reset]);
 
@@ -157,7 +157,7 @@ export function StockAdjustmentFormDialog({
   );
   const { data: itemResults = [], isPending: itemsLoading } =
     trpc.items.list.useQuery(
-      { search: itemSearch.trim() || undefined, withStock: true },
+      { withStock: true },
       { enabled: open && !presetItemId },
     );
   const { data: presetItem } = trpc.items.byId.useQuery(
@@ -256,48 +256,17 @@ export function StockAdjustmentFormDialog({
                   </button>
                 </div>
               ) : (
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2 rounded-md border px-3 py-2">
-                    <Search className="size-4 shrink-0 text-muted-foreground" />
-                    <input
-                      value={itemSearch}
-                      onChange={(e) => setItemSearch(e.target.value)}
-                      placeholder={t("stock.adjustments.searchItems")}
-                      className="w-full bg-transparent text-sm outline-hidden placeholder:text-muted-foreground"
-                    />
-                  </div>
-                  <div className="max-h-44 overflow-y-auto rounded-md border">
-                    {itemsLoading ? (
-                      <div className="px-3 py-6 text-center text-sm text-muted-foreground">
-                        {t("common.loading")}
-                      </div>
-                    ) : itemResults.length === 0 ? (
-                      <div className="flex flex-col items-center gap-1 px-3 py-6 text-sm text-muted-foreground">
-                        <Package className="size-5 opacity-40" />
-                        {t("items.noItems")}
-                      </div>
-                    ) : (
-                      itemResults.map((item) => (
-                        <button
-                          key={item.id}
-                          type="button"
-                          onClick={() => setValue("itemId", item.id)}
-                          className="flex w-full items-center justify-between gap-2 border-b px-3 py-2 text-left text-sm last:border-b-0 hover:bg-accent/40"
-                        >
-                          <span className="min-w-0 truncate">
-                            {item.name}
-                            <span className="ml-2 font-mono text-xs text-muted-foreground">
-                              {item.sku}
-                            </span>
-                          </span>
-                          <Badge variant="outline" className="shrink-0 text-xs">
-                            {Number(item.totalStock ?? 0)} {item.unit ?? ""}
-                          </Badge>
-                        </button>
-                      ))
-                    )}
-                  </div>
-                </div>
+                <button
+                  type="button"
+                  onClick={() => setItemPickerOpen(true)}
+                  className="flex w-full items-center gap-2 rounded-md border px-3 py-2 text-left text-sm text-muted-foreground hover:bg-accent/40 transition-colors"
+                >
+                  <Package className="size-4 shrink-0" />
+                  <span className="flex-1 truncate">
+                    {t("stock.adjustments.selectItemPlaceholder")}
+                  </span>
+                  <Pencil className="size-3.5 shrink-0" />
+                </button>
               )}
               {errors.itemId && (
                 <p className="text-destructive text-xs">
@@ -448,6 +417,17 @@ export function StockAdjustmentFormDialog({
             </Button>
           </DialogFooter>
         </form>
+
+        {/* Item picker dialog */}
+        {!presetItemId && (
+          <StockAdjustmentItemSelectDialog
+            open={itemPickerOpen}
+            onOpenChange={setItemPickerOpen}
+            items={itemResults}
+            isLoading={itemsLoading}
+            onSelect={(item) => setValue("itemId", item.id)}
+          />
+        )}
       </DialogContent>
     </Dialog>
   );
