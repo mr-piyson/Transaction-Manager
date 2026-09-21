@@ -57,6 +57,8 @@ export interface DateInputProps
   minDate?: string | Date;
   maxDate?: string | Date;
   disabledDates?: Date[];
+  startMonth?: Date;
+  endMonth?: Date;
 
   error?: string;
   required?: boolean;
@@ -78,6 +80,8 @@ export const DateInput = React.forwardRef<HTMLInputElement, DateInputProps>(
       minDate,
       maxDate,
       disabledDates,
+      startMonth,
+      endMonth,
       error,
       required: showRequired,
       showTodayButton = false,
@@ -415,6 +419,8 @@ export const DateInput = React.forwardRef<HTMLInputElement, DateInputProps>(
                 onSelect={handleSelect}
                 disabled={isDisabled}
                 autoFocus
+                startMonth={startMonth}
+                endMonth={endMonth}
               />
               {mode === "datetime" && (
                 <div className="flex items-center gap-2 border-t px-4 py-3">

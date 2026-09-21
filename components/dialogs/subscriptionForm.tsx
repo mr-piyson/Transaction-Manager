@@ -363,6 +363,7 @@ export function SubscriptionFormDialog({
                   name="nextRenewalDate"
                   rules={{ required: "Next renewal date is required" }}
                   required
+                  endMonth={new Date(2035, 11)}
                 />
               </Field>
             </div>
