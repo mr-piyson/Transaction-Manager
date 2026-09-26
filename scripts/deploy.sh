@@ -15,6 +15,7 @@
 #   -b, --branch <name>     Branch to deploy            (default: main)
 #   -s, --service <name>    Systemd unit to restart     (default: transaction-manager)
 #   -y, --yes               Non-interactive; discard local changes without asking
+#                          (implied automatically when stdin is not a TTY)
 #   -f, --force             Rebuild even if already on latest commit
 #       --skip-db           Skip database checks, prisma generate + db push
 #       --no-restart        Stop before restarting the service
@@ -23,7 +24,8 @@
 #   -h, --help              Show this help
 #
 # Environment overrides:
-#   DEPLOY_HEALTH_URL       URL to poll after restart (default: http://127.0.0.1:3000)
+#   DEPLOY_HEALTH_URL       Comma-separated URL(s) to poll after restart
+#                           (default: http://127.0.0.1:3005,http://127.0.0.1:3000)
 #   DEPLOY_LOG_DIR          Where deploy logs are written (default: .deploy-logs)
 
 set -Eeuo pipefail
@@ -83,11 +85,17 @@ while [[ $# -gt 0 ]]; do
 	esac
 done
 
+# Detached remote runs (nohup, stdin from /dev/null) have no way to answer prompts.
+if [[ ! -t 0 ]]; then
+	ASSUME_YES=true
+fi
+
 APP_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-HEALTH_URL="${DEPLOY_HEALTH_URL:-http://127.0.0.1:3000}"
+HEALTH_URLS="${DEPLOY_HEALTH_URL:-http://127.0.0.1:3005,http://127.0.0.1:3000}"
 LOG_DIR="${DEPLOY_LOG_DIR:-$APP_DIR/.deploy-logs}"
 LOG_FILE="$LOG_DIR/deploy-$(date +%Y%m%d-%H%M%S).log"
 LOCK_DIR="/tmp/${SERVICE}.deploy.lock"
+PID_FILE="$APP_DIR/deploy.pid"
 
 # Resolved before any sudo elevation (root's PATH lacks ~/.bun/bin).
 DEPLOY_USER="${SUDO_USER:-$(id -un)}"
@@ -101,23 +109,34 @@ fi
 
 # Cache sudo credentials without changing the user running the deployment.
 # The elevate helper adds sudo only to commands that actually need root.
-if [[ "$(id -u)" -ne 0 ]]; then
+check_sudo() {
+	if [[ "$(id -u)" -eq 0 ]]; then
+		return 0
+	fi
 	command -v sudo >/dev/null 2>&1 || {
 		echo "Need sudo to deploy, but sudo is not installed." >&2
 		exit 1
 	}
-	if ! sudo -n true 2>/dev/null; then
+	if sudo -n true 2>/dev/null; then
+		return 0
+	fi
+	if [[ -t 0 ]]; then
 		echo "Need sudo to deploy — entering password now..."
 		sudo -v || {
 			echo "Unable to authenticate with sudo." >&2
 			exit 1
 		}
+		return 0
 	fi
-fi
+	echo "Detached deploy needs passwordless sudo. Grant it with:" >&2
+	echo "  echo '$(id -un) ALL=(ALL) NOPASSWD:ALL' | sudo tee /etc/sudoers.d/$(id -un)" >&2
+	exit 1
+}
 
 STEP=""
 PREV_SHA=""
 DEPLOYED=false
+PID_WRITTEN=false
 
 log() { printf '\033[1;34m==>\033[0m %s\n' "$*"; }
 ok() { printf '\033[1;32m ✓ \033[0m%s\n' "$*"; }
@@ -128,11 +147,21 @@ die() {
 	exit 1
 }
 
+# Always emits a machine-readable DEPLOY_SUCCESS/DEPLOY_FAILED marker as the last
+# line of output so scripts/deploy-remote.sh can detect the outcome.
 cleanup() {
 	local code=$?
+	if [[ "$PID_WRITTEN" == true ]]; then
+		rm -f "$PID_FILE" 2>/dev/null || true
+	fi
 	rmdir "$LOCK_DIR" 2>/dev/null || true
 	if [[ $code -ne 0 && "$DEPLOYED" == true ]]; then
 		warn "Deploy finished with errors — service state may be inconsistent."
+	fi
+	if [[ $code -eq 0 ]]; then
+		echo "DEPLOY_SUCCESS"
+	else
+		echo "DEPLOY_FAILED"
 	fi
 }
 trap cleanup EXIT
@@ -141,7 +170,9 @@ elevate() {
 	if [ "$(id -u)" -eq 0 ]; then
 		"$@"
 	elif command -v sudo >/dev/null 2>&1; then
-		sudo -v # refresh the sudo timestamp window so long steps don't re-prompt
+		if [[ -t 0 ]]; then
+			sudo -v # refresh the sudo timestamp window so long steps don't re-prompt
+		fi
 		sudo "$@"
 	else
 		die "Need root or sudo to run: $*"
@@ -231,7 +262,13 @@ EOF
 	ok "Created and enabled ${SERVICE}.service (WorkingDirectory=${APP_DIR}, User=${DEPLOY_USER})"
 }
 
+check_sudo
+
 mkdir "$LOCK_DIR" 2>/dev/null || die "Another deploy of '${SERVICE}' appears to be running (${LOCK_DIR})."
+
+# Advertise the running deploy so scripts/deploy-remote.sh can attach its log tail.
+echo $$ >"$PID_FILE"
+PID_WRITTEN=true
 
 cd "$APP_DIR"
 
@@ -311,14 +348,18 @@ restart_service() {
 
 health_check() {
 	STEP="health check"
-	log "Waiting for ${HEALTH_URL} to become healthy"
-	local attempts=30
+	local -a urls
+	IFS=',' read -r -a urls <<<"$HEALTH_URLS"
+	log "Waiting for ${urls[*]} to become healthy"
+	local attempts=30 status="" url
 	for ((i = 1; i <= attempts; i++)); do
-		status=$(curl -s -o /dev/null -w '%{http_code}' --max-time 5 "$HEALTH_URL" || true)
-		if [[ "$status" =~ ^[23] ]] || [[ "$status" == "401" ]] || [[ "$status" == "404" ]]; then
-			ok "Healthy (HTTP ${status}) after attempt ${i}/${attempts}"
-			return 0
-		fi
+		for url in "${urls[@]}"; do
+			status=$(curl -s -o /dev/null -w '%{http_code}' --max-time 5 "$url" || true)
+			if [[ "$status" =~ ^[23] ]] || [[ "$status" == "401" ]] || [[ "$status" == "404" ]]; then
+				ok "Healthy (${url} HTTP ${status}) after attempt ${i}/${attempts}"
+				return 0
+			fi
+		done
 		sleep 2
 	done
 	warn "Health check failed after ${attempts} attempts (last status: ${status:-none})"

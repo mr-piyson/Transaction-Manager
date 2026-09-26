@@ -52,6 +52,8 @@ next-env.d.ts
 # deploy artifacts
 .deploy-logs
 .deploy-history.log
+/deploy.log
+/deploy.pid
 
 # skills output
 graphify-out
