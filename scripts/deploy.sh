@@ -21,12 +21,17 @@
 #       --no-restart        Stop before restarting the service
 #       --no-healthcheck    Skip post-deploy health check
 #       --no-rollback       Do not roll back automatically if health check fails
+#       --no-maintenance    Never show the maintenance page during the deploy
+#       --clear-maintenance Take the site out of maintenance mode and exit
 #   -h, --help              Show this help
 #
 # Environment overrides:
 #   DEPLOY_HEALTH_URL       Comma-separated URL(s) to poll after restart
 #                           (default: http://127.0.0.1:3005,http://127.0.0.1:3000)
 #   DEPLOY_LOG_DIR          Where deploy logs are written (default: .deploy-logs)
+#   MAINTENANCE_FLAG        Flag file nginx watches to serve public/maintenance.html
+#                           (default: <repo>/.maintenance)
+#   MAINTENANCE_HTML        Maintenance page served by nginx (default: <repo>/public/maintenance.html)
 
 set -Eeuo pipefail
 
@@ -38,6 +43,8 @@ SKIP_DB=false
 DO_RESTART=true
 DO_HEALTHCHECK=true
 AUTO_ROLLBACK=true
+DO_MAINTENANCE=true
+CLEAR_MAINTENANCE=false
 
 while [[ $# -gt 0 ]]; do
 	case "$1" in
@@ -74,6 +81,14 @@ while [[ $# -gt 0 ]]; do
 		AUTO_ROLLBACK=false
 		shift
 		;;
+	--no-maintenance)
+		DO_MAINTENANCE=false
+		shift
+		;;
+	--clear-maintenance)
+		CLEAR_MAINTENANCE=true
+		shift
+		;;
 	-h | --help)
 		awk 'NR>1 && !/^#/ && !/^[[:space:]]*$/ {exit} NR>1 {sub(/^# ?/, ""); print}' "$0"
 		exit 0
@@ -96,6 +111,10 @@ LOG_DIR="${DEPLOY_LOG_DIR:-$APP_DIR/.deploy-logs}"
 LOG_FILE="$LOG_DIR/deploy-$(date +%Y%m%d-%H%M%S).log"
 LOCK_DIR="/tmp/${SERVICE}.deploy.lock"
 PID_FILE="$APP_DIR/deploy.pid"
+MAINTENANCE_FLAG="${MAINTENANCE_FLAG:-$APP_DIR/.maintenance}"
+MAINTENANCE_HTML="${MAINTENANCE_HTML:-$APP_DIR/public/maintenance.html}"
+NGINX_CONF_DIRS="/etc/nginx/sites-enabled /etc/nginx/conf.d"
+APP_PROBE_URL="${APP_PROBE_URL:-http://127.0.0.1:3000}"
 
 # Resolved before any sudo elevation (root's PATH lacks ~/.bun/bin).
 DEPLOY_USER="${SUDO_USER:-$(id -un)}"
@@ -137,6 +156,7 @@ STEP=""
 PREV_SHA=""
 DEPLOYED=false
 PID_WRITTEN=false
+MAINTENANCE_TOUCHED=false
 
 log() { printf '\033[1;34m==>\033[0m %s\n' "$*"; }
 ok() { printf '\033[1;32m ✓ \033[0m%s\n' "$*"; }
@@ -145,6 +165,56 @@ die() {
 	printf '\033[1;31m ✗ \033[0m%s\n' "$*" >&2
 	[[ -n "${STEP}" ]] && echo "Failed during step: ${STEP}" >&2
 	exit 1
+}
+
+# --- Maintenance mode -------------------------------------------------------
+# nginx watches $MAINTENANCE_FLAG: while it exists every proxied route returns
+# 503 and nginx serves $MAINTENANCE_HTML instead. The flag is plain state, so
+# toggling never needs an nginx reload.
+
+# True when some nginx site config references the flag file, i.e. maintenance
+# mode is actually wired up on this host.
+nginx_serves_maintenance() {
+	grep -rlsF "$MAINTENANCE_FLAG" $NGINX_CONF_DIRS 2>/dev/null | grep -q .
+}
+
+# Cheap liveness probe used when a deploy fails: is anything serving yet?
+app_responds() {
+	local code
+	code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 3 "$APP_PROBE_URL" 2>/dev/null || true)
+	[[ -n "$code" && "$code" != "000" ]]
+}
+
+maintenance_enable() {
+	if [[ "$DO_MAINTENANCE" != true ]]; then
+		return 0
+	fi
+	if [[ -e "$MAINTENANCE_FLAG" ]]; then
+		warn "Maintenance flag already present (${MAINTENANCE_FLAG}) — leaving it in place."
+		return 0
+	fi
+	if ! nginx_serves_maintenance; then
+		warn "nginx is not configured to serve ${MAINTENANCE_HTML} — skipping maintenance mode."
+		return 0
+	fi
+	if [[ ! -f "$MAINTENANCE_HTML" ]]; then
+		warn "Maintenance page missing (${MAINTENANCE_HTML}) — skipping maintenance mode."
+		return 0
+	fi
+	: >"$MAINTENANCE_FLAG" 2>/dev/null || {
+		warn "Cannot write ${MAINTENANCE_FLAG} — skipping maintenance mode."
+		return 0
+	}
+	MAINTENANCE_TOUCHED=true
+	ok "Maintenance page is live (${MAINTENANCE_HTML})"
+}
+
+maintenance_disable() {
+	[[ "$MAINTENANCE_TOUCHED" == true ]] || return 0
+	if rm -f "$MAINTENANCE_FLAG" 2>/dev/null; then
+		MAINTENANCE_TOUCHED=false
+		ok "Maintenance page removed — the app is back"
+	fi
 }
 
 # Always emits a machine-readable DEPLOY_SUCCESS/DEPLOY_FAILED marker as the last
@@ -157,6 +227,15 @@ cleanup() {
 	rmdir "$LOCK_DIR" 2>/dev/null || true
 	if [[ $code -ne 0 && "$DEPLOYED" == true ]]; then
 		warn "Deploy finished with errors — service state may be inconsistent."
+	fi
+	if [[ $code -ne 0 && "$MAINTENANCE_TOUCHED" == true ]]; then
+		if app_responds; then
+			maintenance_disable
+			warn "Deploy failed, but the app still answers on ${APP_PROBE_URL} — taking the site out of maintenance mode."
+		else
+			echo "The site is still in maintenance mode because nothing is serving on ${APP_PROBE_URL}." >&2
+			echo "Bring the app back manually with:  rm -f ${MAINTENANCE_FLAG}" >&2
+		fi
 	fi
 	if [[ $code -eq 0 ]]; then
 		echo "DEPLOY_SUCCESS"
@@ -262,6 +341,19 @@ EOF
 	ok "Created and enabled ${SERVICE}.service (WorkingDirectory=${APP_DIR}, User=${DEPLOY_USER})"
 }
 
+# --clear-maintenance is a standalone recovery action: no sudo, no lock, so it
+# always works even when a deploy is stuck.
+if [[ "$CLEAR_MAINTENANCE" == true ]]; then
+	log "Clearing maintenance mode"
+	if [[ -e "$MAINTENANCE_FLAG" ]]; then
+		rm -f "$MAINTENANCE_FLAG"
+		ok "Removed ${MAINTENANCE_FLAG} — the app is reachable again"
+	else
+		ok "No maintenance flag present (${MAINTENANCE_FLAG}) — nothing to do"
+	fi
+	exit 0
+fi
+
 check_sudo
 
 mkdir "$LOCK_DIR" 2>/dev/null || die "Another deploy of '${SERVICE}' appears to be running (${LOCK_DIR})."
@@ -317,6 +409,11 @@ deploy() {
 	if [[ "$(git rev-parse --short HEAD)" != "$sha" ]]; then
 		die "Post-reset commit mismatch: expected ${sha}, got $(git rev-parse --short HEAD)"
 	fi
+
+	# Everything below (install, prisma, build) rewrites node_modules/.next
+	# underneath the running server, so take the site down first.
+	STEP="enabling maintenance mode"
+	maintenance_enable
 
 	STEP="installing dependencies"
 	log "Installing dependencies (bun)"
@@ -395,6 +492,8 @@ if [[ "$DO_RESTART" == true ]]; then
 			fi
 		fi
 	fi
+	# Only bring the app back once it actually answers again.
+	maintenance_disable
 else
 	log "Skipping restart (--no-restart). Run manually:"
 	echo "  sudo systemctl restart ${SERVICE}"

@@ -54,6 +54,7 @@ next-env.d.ts
 .deploy-history.log
 /deploy.log
 /deploy.pid
+/.maintenance
 
 # skills output
 graphify-out
