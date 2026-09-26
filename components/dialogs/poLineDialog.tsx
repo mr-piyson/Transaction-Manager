@@ -212,7 +212,13 @@ export function POLineDialog({
         </DialogHeader>
 
         <form
-          onSubmit={handleSubmit(onSubmit)}
+          onSubmit={(e) => {
+            // The dialog is portaled, but React still bubbles synthetic events
+            // up the React tree — without this the page-level PO form would
+            // also submit (saving the whole PO instead of just this line).
+            e.stopPropagation();
+            handleSubmit(onSubmit)(e);
+          }}
           noValidate
           className="flex min-h-0 flex-1 flex-col gap-4"
         >
