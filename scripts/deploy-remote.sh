@@ -79,12 +79,14 @@ else
 	if [ -n "${DEPLOY_HEALTH_URL}" ]; then
 		ENV_OVERRIDES="DEPLOY_HEALTH_URL=${DEPLOY_HEALTH_URL}"
 	fi
-	ssh "${SSH_OPTIONS[@]}" "${DEPLOY_HOST}" "export PATH=\"\$HOME/.bun/bin:\$PATH\"; cd \"${DEPLOY_PATH}\" && setsid nohup env ${ENV_OVERRIDES} ./scripts/deploy.sh -b \"${DEPLOY_BRANCH}\" -y${EXTRA_ARGS} > \"${DEPLOY_LOG}\" 2>&1 < /dev/null & echo launched pid \$!" || error "Could not launch the remote deploy on ${DEPLOY_HOST}"
+	# The launch also waits server-side for deploy.pid: a fully cached deploy can
+	# finish in about a second, which is far too short for client-side polling.
+	ssh "${SSH_OPTIONS[@]}" "${DEPLOY_HOST}" "export PATH=\"\$HOME/.bun/bin:\$PATH\"; cd \"${DEPLOY_PATH}\" && setsid nohup env ${ENV_OVERRIDES} ./scripts/deploy.sh -b \"${DEPLOY_BRANCH}\" -y${EXTRA_ARGS} > \"${DEPLOY_LOG}\" 2>&1 < /dev/null & for _ in \$(seq 1 100); do if [ -s \"${DEPLOY_PID}\" ]; then cat \"${DEPLOY_PID}\"; break; fi; sleep 0.1; done" || error "Could not launch the remote deploy on ${DEPLOY_HOST}"
 fi
 
-# --- Wait for the remote deploy pid (written by deploy.sh on startup) ---
+# --- Pick up the remote deploy pid (written by deploy.sh on startup) ---
 REMOTE_PID=""
-for _ in $(seq 1 30); do
+for _ in $(seq 1 10); do
 	REMOTE_PID="$(ssh "${SSH_OPTIONS[@]}" "${DEPLOY_HOST}" "cat \"${DEPLOY_PID}\" 2>/dev/null" 2>/dev/null || true)"
 	if [ -n "${REMOTE_PID}" ]; then break; fi
 	sleep 1
@@ -108,9 +110,11 @@ log "Streaming deployment output (Ctrl-C detaches; the deploy continues on the s
 echo ""
 
 set +e
-timeout 1800 ssh "${SSH_OPTIONS[@]}" "${DEPLOY_HOST}" "${TAIL_CMD}" 2>/dev/null |
+# No local `timeout` wrapper: macOS has no coreutils timeout, and the remote
+# command already bounds itself (tail --pid, or `timeout` on the server).
+ssh "${SSH_OPTIONS[@]}" "${DEPLOY_HOST}" "${TAIL_CMD}" 2>/dev/null |
 	awk '/DEPLOY_(SUCCESS|FAILED)/{exit} {print; fflush()}'
-STREAM_STATUS=$?
+STREAM_STATUS=${PIPESTATUS[0]}
 set -e
 
 echo ""

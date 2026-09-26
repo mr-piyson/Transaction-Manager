@@ -411,9 +411,13 @@ deploy() {
 	fi
 
 	# Everything below (install, prisma, build) rewrites node_modules/.next
-	# underneath the running server, so take the site down first.
+	# underneath the running server, so take the site down first. With
+	# --no-restart nothing is ever restarted, so leaving the site down would
+	# strand it in maintenance — skip it in that case.
 	STEP="enabling maintenance mode"
-	maintenance_enable
+	if [[ "$DO_RESTART" == true ]]; then
+		maintenance_enable
+	fi
 
 	STEP="installing dependencies"
 	log "Installing dependencies (bun)"
@@ -492,8 +496,15 @@ if [[ "$DO_RESTART" == true ]]; then
 			fi
 		fi
 	fi
-	# Only bring the app back once it actually answers again.
-	maintenance_disable
+	# Only bring the app back once it actually answers again. With
+	# --no-healthcheck we still probe once, so a service that failed to start
+	# cannot silently drop the site out of maintenance mode.
+	if [[ "$DO_HEALTHCHECK" == true ]] || app_responds; then
+		maintenance_disable
+	else
+		warn "Nothing is answering on ${APP_PROBE_URL} — the site stays in maintenance mode."
+		echo "Bring the app back manually with:  rm -f ${MAINTENANCE_FLAG}" >&2
+	fi
 else
 	log "Skipping restart (--no-restart). Run manually:"
 	echo "  sudo systemctl restart ${SERVICE}"
