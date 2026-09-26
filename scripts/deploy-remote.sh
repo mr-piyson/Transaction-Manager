@@ -8,8 +8,10 @@
 # via ${DEPLOY_PATH}/deploy.pid and re-attaches to its log.
 #
 # Reads DEPLOY_HOST and DEPLOY_PATH (plus optional DEPLOY_HEALTH_URL) from .env.
+# Any extra arguments are forwarded to scripts/deploy.sh on the server
+# (e.g. --force, --no-maintenance, --skip-db).
 #
-# Usage: bun deploy:remote   |   bash ./scripts/deploy-remote.sh
+# Usage: bun deploy:remote   |   bash ./scripts/deploy-remote.sh [deploy.sh options]
 #
 # To deploy a specific branch:  DEPLOY_BRANCH=feature bash ./scripts/deploy-remote.sh
 
@@ -55,6 +57,12 @@ DEPLOY_BRANCH="${DEPLOY_BRANCH:-main}"
 DEPLOY_LOG="${DEPLOY_PATH}/deploy.log"
 DEPLOY_PID="${DEPLOY_PATH}/deploy.pid"
 
+# Extra arguments are shell-quoted so they survive the trip through ssh.
+EXTRA_ARGS=""
+if [ "$#" -gt 0 ]; then
+	EXTRA_ARGS="$(printf ' %q' "$@")"
+fi
+
 SSH_OPTIONS=(-o ConnectTimeout=10 -o ServerAliveInterval=30 -o ServerAliveCountMax=6)
 
 log "Target: ${DEPLOY_HOST}:${DEPLOY_PATH} (branch ${DEPLOY_BRANCH})"
@@ -71,7 +79,7 @@ else
 	if [ -n "${DEPLOY_HEALTH_URL}" ]; then
 		ENV_OVERRIDES="DEPLOY_HEALTH_URL=${DEPLOY_HEALTH_URL}"
 	fi
-	ssh "${SSH_OPTIONS[@]}" "${DEPLOY_HOST}" "export PATH=\"\$HOME/.bun/bin:\$PATH\"; cd \"${DEPLOY_PATH}\" && setsid nohup env ${ENV_OVERRIDES} ./scripts/deploy.sh -b \"${DEPLOY_BRANCH}\" -y > \"${DEPLOY_LOG}\" 2>&1 < /dev/null & echo launched pid \$!" || error "Could not launch the remote deploy on ${DEPLOY_HOST}"
+	ssh "${SSH_OPTIONS[@]}" "${DEPLOY_HOST}" "export PATH=\"\$HOME/.bun/bin:\$PATH\"; cd \"${DEPLOY_PATH}\" && setsid nohup env ${ENV_OVERRIDES} ./scripts/deploy.sh -b \"${DEPLOY_BRANCH}\" -y${EXTRA_ARGS} > \"${DEPLOY_LOG}\" 2>&1 < /dev/null & echo launched pid \$!" || error "Could not launch the remote deploy on ${DEPLOY_HOST}"
 fi
 
 # --- Wait for the remote deploy pid (written by deploy.sh on startup) ---
