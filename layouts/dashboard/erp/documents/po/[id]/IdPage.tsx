@@ -15,6 +15,7 @@ import { ActionsDropdown } from "@/components/actions-menu";
 import { DetailPageHeader } from "@/components/detail-page-header";
 import { useExpenseForm } from "@/components/dialogs/expenseForm";
 import { useHardDeleteForm } from "@/components/dialogs/hardDeleteForm";
+import { PAPER_THEME, paperSheetClass } from "@/components/form/paper";
 import { buildPOActions } from "@/components/purchase-orders/po-actions";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -64,25 +65,6 @@ const STATUS_COLORS: Record<string, string> = {
   CANCELLED: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200",
   CLOSED: "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200",
 };
-
-const PAPER_THEME = {
-  colorScheme: "light",
-  color: "#17141d",
-  "--background": "#ffffff",
-  "--foreground": "#17141d",
-  "--muted": "#f3f3f5",
-  "--muted-foreground": "#606067",
-  "--border": "#e2e2e7",
-  "--input": "#d9d9de",
-  "--ring": "#2c2742",
-  "--accent": "#e9e9ee",
-  "--accent-foreground": "#17141d",
-  "--popover": "#ffffff",
-  "--popover-foreground": "#17141d",
-  "--primary": "#2c2742",
-  "--primary-foreground": "#fbfbfb",
-  "--destructive": "#a82b2b",
-} as React.CSSProperties;
 
 export default function PurchaseOrderDetailPage() {
   const params = useParams<{ id: string }>();
@@ -290,7 +272,7 @@ export default function PurchaseOrderDetailPage() {
       />
       <div className="mx-auto max-w-5xl py-6 px-4 sm:px-6 space-y-3 sm:space-y-4">
         {/* Paper document */}
-        <div className="w-full min-w-0 overflow-hidden rounded-lg bg-white shadow-sm ring-1 ring-border" style={PAPER_THEME}>
+        <div className={paperSheetClass} style={PAPER_THEME}>
           {/* Letterhead */}
           <header className="flex flex-col gap-2 items-start border-b px-6 py-6 sm:px-8">
             <div>

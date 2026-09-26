@@ -902,7 +902,17 @@
     "changeSupplierConfirm": "Change and clear lines",
     "changeSupplierCancel": "Keep current supplier",
     "failedToCreate": "Failed to create purchase order",
-    "failedToUpdate": "Failed to update purchase order"
+    "failedToUpdate": "Failed to update purchase order",
+    "item": "Item",
+    "qty": "Qty",
+    "tax": "Tax",
+    "subtotal": "Subtotal",
+    "vat": "VAT",
+    "currency": "Currency",
+    "selectWarehouse": "Select warehouse",
+    "manual": "Manual",
+    "manualEntry": "Manual entry",
+    "lineItemTitle": "Line {number}"
   },
   "expenses": {
     "title": "Expenses",

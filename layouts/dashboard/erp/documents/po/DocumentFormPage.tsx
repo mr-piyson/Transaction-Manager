@@ -42,6 +42,7 @@ export function DocumentFormPage({ mode }: { mode: "create" | "edit" }) {
         mode="edit"
         initialValues={poToFormValues(detail.data as any)}
         document={{ id: detail.data.id, version: detail.data.version ?? 0 }}
+        serial={detail.data.serial}
         suppliersData={suppliersData}
         warehousesData={warehousesData}
       />
@@ -66,12 +67,14 @@ function POFormCore({
   mode,
   initialValues,
   document,
+  serial,
   suppliersData,
   warehousesData,
 }: {
   mode: "create" | "edit";
   initialValues: POFormValues;
   document: { id: string; version?: number } | null;
+  serial?: string | null;
   suppliersData?: any[];
   warehousesData?: any[];
 }) {
@@ -125,7 +128,7 @@ function POFormCore({
       icon={ShoppingCart}
       isDirty={form.formState.isDirty}
     >
-      <POFormBody controller={controller} />
+      <POFormBody controller={controller} serial={serial} />
     </FormPageScaffold>
   );
 }

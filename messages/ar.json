@@ -765,7 +765,17 @@
     "changeSupplierConfirm": "تغيير وإزالة البنود",
     "changeSupplierCancel": "الإبقاء على المورد الحالي",
     "failedToCreate": "فشل إنشاء أمر الشراء",
-    "failedToUpdate": "فشل تحديث أمر الشراء"
+    "failedToUpdate": "فشل تحديث أمر الشراء",
+    "item": "المنتج",
+    "qty": "الكمية",
+    "tax": "الضريبة",
+    "subtotal": "المجموع الفرعي",
+    "vat": "ضريبة القيمة المضافة",
+    "currency": "العملة",
+    "selectWarehouse": "اختيار المستودع",
+    "manual": "يدوي",
+    "manualEntry": "إدخال يدوي",
+    "lineItemTitle": "سطر {number}"
   },
   "expenses": {
     "title": "المصروفات",
