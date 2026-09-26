@@ -3,6 +3,7 @@
 import { Package, Pencil, Plus, Trash2, Wrench } from "lucide-react";
 import { useTranslations } from "next-intl";
 import type * as React from "react";
+import { useState } from "react";
 import { InvoiceLineDialog } from "@/components/dialogs/invoiceLineDialog";
 import { RichtextEditor } from "@/components/richtext-editor";
 import { Button } from "@/components/ui/button";
@@ -205,6 +206,25 @@ export function InvoiceFormBody({
   const onLineSave = formCtrl?.onLineSave ?? (() => {});
   const remove = formCtrl?.remove ?? (() => {});
 
+  // Row selection drives the action bar above the table. Single-select.
+  const [selectedLineIndex, setSelectedLineIndex] = useState<number | null>(
+    null,
+  );
+
+  // Clamped against the live field list: removing a row shifts every index
+  // after it, so a raw index could otherwise point at the wrong line.
+  const activeSelection =
+    selectedLineIndex !== null && selectedLineIndex < fields.length
+      ? selectedLineIndex
+      : null;
+
+  const removeLine = (index: number) => {
+    remove(index);
+    setSelectedLineIndex((cur) =>
+      cur === null ? null : cur === index ? null : cur > index ? cur - 1 : cur,
+    );
+  };
+
   const watch = form?.watch;
   const setValue = form?.setValue;
   const control = form?.control;
@@ -221,6 +241,12 @@ export function InvoiceFormBody({
   const hasAnyDiscount = readonly
     ? invoice?.lines?.some((l) => Number(l.discountAmt) > 0)
     : linesWatch?.some((l) => Number(l?.discountAmt) > 0);
+
+  // Item ids used by every line except the one being edited, so the picker can
+  // exclude duplicates. Derived from the live value, not the `fields` snapshot.
+  const otherLineItemIds = (linesWatch ?? [])
+    .map((l) => l?.itemId)
+    .filter((id, i): id is string => !!id && i !== editingLineIndex);
 
   const invoiceTypeOptions = [
     { value: "INVOICE", label: t("invoices.invoice") },
@@ -303,7 +329,9 @@ export function InvoiceFormBody({
               ) : (
                 <Select
                   value={watch?.("type")}
-                  onValueChange={(v) => setValue?.("type", v as any)}
+                  onValueChange={(v) =>
+                    setValue?.("type", v as any, { shouldDirty: true })
+                  }
                 >
                   <SelectTrigger
                     aria-label={t("invoices.type")}
@@ -397,7 +425,9 @@ export function InvoiceFormBody({
               ) : (
                 <Select
                   value={watch?.("customerId") || ""}
-                  onValueChange={(v) => setValue?.("customerId", v)}
+                  onValueChange={(v) =>
+                    setValue?.("customerId", v, { shouldDirty: true })
+                  }
                 >
                   <SelectTrigger
                     className="w-full min-w-0"
@@ -422,8 +452,11 @@ export function InvoiceFormBody({
                     id="isWalkIn"
                     checked={isWalkIn}
                     onCheckedChange={(checked) => {
-                      setValue?.("isWalkIn", checked === true);
-                      if (checked) setValue?.("customerId", "");
+                      setValue?.("isWalkIn", checked === true, {
+                        shouldDirty: true,
+                      });
+                      if (checked)
+                        setValue?.("customerId", "", { shouldDirty: true });
                     }}
                   />
                   <Label
@@ -447,7 +480,9 @@ export function InvoiceFormBody({
               ) : (
                 <Select
                   value={watch?.("warehouseId") || ""}
-                  onValueChange={(v) => setValue?.("warehouseId", v)}
+                  onValueChange={(v) =>
+                    setValue?.("warehouseId", v, { shouldDirty: true })
+                  }
                 >
                   <SelectTrigger
                     className="w-full min-w-0"
@@ -473,7 +508,7 @@ export function InvoiceFormBody({
         {/* ================= Line items ================= */}
         <section className="px-6 py-4 sm:px-8">
           {!readonly && (
-            <div className="mb-3">
+            <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
               <Button
                 type="button"
                 variant="outline"
@@ -483,12 +518,53 @@ export function InvoiceFormBody({
                 <Plus className="h-4 w-4" />
                 {t("invoices.addLine")}
               </Button>
+
+              {activeSelection !== null && (
+                <div className="flex items-center gap-2 animate-in fade-in-0 zoom-in-95 duration-150">
+                  <span className="text-sm font-medium text-muted-foreground">
+                    {t("invoices.lineItemTitle", {
+                      number: activeSelection + 1,
+                    })}
+                  </span>
+                  <Button
+                    type="button"
+                    size="sm"
+                    onClick={() => setEditingLineIndex(activeSelection)}
+                  >
+                    <Pencil className="h-3.5 w-3.5" />
+                    {t("common.edit")}
+                  </Button>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    className="text-destructive hover:border-destructive/40 hover:text-destructive"
+                    onClick={() => removeLine(activeSelection)}
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                    {t("common.delete")}
+                  </Button>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => setSelectedLineIndex(null)}
+                  >
+                    {t("common.clear")}
+                  </Button>
+                </div>
+              )}
             </div>
           )}
           <div className="overflow-x-auto">
             <table className="w-full min-w-[720px] border-collapse text-sm">
               <thead>
                 <tr className="border-b text-[11px] uppercase tracking-wide text-muted-foreground">
+                  {!readonly && (
+                    <th className="w-10 py-2 pr-2 text-left font-semibold">
+                      <span className="sr-only">{t("common.selectRow")}</span>
+                    </th>
+                  )}
                   <th className="w-10 py-2 pr-2 text-left font-semibold">#</th>
                   <th className="py-2 pr-2 text-left font-semibold">
                     {t("invoices.item")}
@@ -510,7 +586,6 @@ export function InvoiceFormBody({
                   <th className="w-32 px-2 text-right font-semibold">
                     {t("common.total")}
                   </th>
-                  {!readonly && <th className="w-16 pl-2" />}
                 </tr>
               </thead>
               <tbody>
@@ -586,9 +661,20 @@ export function InvoiceFormBody({
                       );
                     })
                   : fields.map((field, index) => {
-                      const isManual = !field.itemId;
-                      const item = itemsMap[field.itemId || ""] as any;
                       const lineWatch = watch?.(`lines.${index}`);
+                      const itemId = lineWatch?.itemId ?? field.itemId;
+                      const isManual = !itemId;
+                      // Prefer the live catalogue entry; fall back to the
+                      // name/sku snapshot carried on the line so items missing
+                      // from the catalogue query don't render as a raw id.
+                      const item = itemId
+                        ? ((itemsMap[itemId] as any) ?? {
+                            id: itemId,
+                            name: lineWatch?.itemName ?? field.itemName,
+                            sku: lineWatch?.itemSku ?? field.itemSku,
+                            image: lineWatch?.itemImage ?? field.itemImage,
+                          })
+                        : undefined;
                       const qty = Number(lineWatch?.quantity) || 0;
                       const price = Number(lineWatch?.unitPrice) || 0;
                       const discount = Number(lineWatch?.discountAmt) || 0;
@@ -601,8 +687,33 @@ export function InvoiceFormBody({
                       const isManualLabel =
                         lineWatch?.description || t("invoices.manualEntry");
 
+                      const isSelected = activeSelection === index;
+
                       return (
-                        <tr key={field.id} className="border-b last:border-0">
+                        <tr
+                          key={field.id}
+                          className={cn(
+                            "cursor-pointer border-b transition-colors last:border-0",
+                            isSelected ? "bg-zinc-100/70" : "hover:bg-zinc-50",
+                          )}
+                          onClick={() => setSelectedLineIndex(index)}
+                        >
+                          <td
+                            className="py-2.5 pr-2 align-top"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <Checkbox
+                              checked={isSelected}
+                              onCheckedChange={(checked) =>
+                                setSelectedLineIndex(
+                                  checked === true ? index : null,
+                                )
+                              }
+                              aria-label={t("invoices.lineItemTitle", {
+                                number: index + 1,
+                              })}
+                            />
+                          </td>
                           <td className="py-2.5 pr-2 align-top text-xs text-muted-foreground">
                             {index + 1}
                           </td>
@@ -611,9 +722,7 @@ export function InvoiceFormBody({
                               <Thumb item={item} isManual={isManual} />
                               <div className="min-w-0">
                                 <p className="truncate text-sm font-medium">
-                                  {isManual
-                                    ? isManualLabel
-                                    : item?.name || field.itemId}
+                                  {isManual ? isManualLabel : item?.name || "—"}
                                 </p>
                                 {item?.sku && (
                                   <p className="text-xs text-muted-foreground">
@@ -653,30 +762,6 @@ export function InvoiceFormBody({
                           </td>
                           <td className="px-2 text-right align-top tabular-nums font-medium">
                             {(lineSubtotal - discount + lineTax).toFixed(3)}
-                          </td>
-                          <td className="py-2.5 pl-2 align-top">
-                            <div className="flex items-center justify-end gap-0.5">
-                              <Button
-                                type="button"
-                                variant="ghost"
-                                size="icon"
-                                className="size-7 text-muted-foreground hover:text-foreground"
-                                aria-label={t("common.edit")}
-                                onClick={() => setEditingLineIndex(index)}
-                              >
-                                <Pencil className="h-3.5 w-3.5" />
-                              </Button>
-                              <Button
-                                type="button"
-                                variant="ghost"
-                                size="icon"
-                                className="size-7 text-muted-foreground hover:text-destructive"
-                                aria-label={t("common.delete")}
-                                onClick={() => remove(index)}
-                              >
-                                <Trash2 className="h-3.5 w-3.5" />
-                              </Button>
-                            </div>
                           </td>
                         </tr>
                       );
@@ -735,7 +820,9 @@ export function InvoiceFormBody({
                   ) : (
                     <Select
                       value={watch?.("currency")}
-                      onValueChange={(v) => setValue?.("currency", v as any)}
+                      onValueChange={(v) =>
+                        setValue?.("currency", v as any, { shouldDirty: true })
+                      }
                     >
                       <SelectTrigger
                         size="sm"
@@ -778,7 +865,9 @@ export function InvoiceFormBody({
             ) : (
               <RichtextEditor
                 value={watch?.("termsText")}
-                onChange={(html) => setValue?.("termsText", html)}
+                onChange={(html) =>
+                  setValue?.("termsText", html, { shouldDirty: true })
+                }
                 placeholder={t("invoices.termsPlaceholder")}
                 minHeight="90px"
               />
@@ -788,39 +877,50 @@ export function InvoiceFormBody({
       </div>
 
       {/* Line edit / create dialog (edit mode only) */}
-      {!readonly && editingLineIndex !== null && (
-        <InvoiceLineDialog
-          open={editingLineIndex !== null}
-          onOpenChange={(v) => {
-            if (!v) setEditingLineIndex(null);
-          }}
-          index={editingLineIndex}
-          initial={
-            editingLineIndex < fields.length
-              ? {
-                  itemId: fields[editingLineIndex]?.itemId ?? null,
-                  description: fields[editingLineIndex]?.description ?? null,
-                  quantity: Number(fields[editingLineIndex]?.quantity) || 1,
-                  unitPrice: Number(fields[editingLineIndex]?.unitPrice) || 0,
-                  discountAmt:
-                    Number(fields[editingLineIndex]?.discountAmt) || 0,
-                  purchasePrice:
-                    Number(fields[editingLineIndex]?.purchasePrice) || null,
-                  taxRateId: fields[editingLineIndex]?.taxRateId ?? null,
-                  taxRateSnapshot:
-                    Number(fields[editingLineIndex]?.taxRateSnapshot) || null,
-                  taxRateName: fields[editingLineIndex]?.taxRateName ?? null,
-                }
-              : {
-                  quantity: 1,
-                  unitPrice: 0,
-                  discountAmt: 0,
-                  purchasePrice: 0,
-                }
-          }
-          onSave={onLineSave}
-        />
-      )}
+      {!readonly &&
+        editingLineIndex !== null &&
+        (() => {
+          // Seed the dialog from the live watched line, not from `fields`.
+          // `fields` is a mount-time snapshot that path-based `setValue` never
+          // refreshes, so reusing it would reopen the dialog with pre-edit values.
+          const existing = watch?.(`lines.${editingLineIndex}`) as
+            | InvoiceFormController["lines"][number]
+            | undefined;
+          return (
+            <InvoiceLineDialog
+              open
+              onOpenChange={(v) => {
+                if (!v) setEditingLineIndex(null);
+              }}
+              index={editingLineIndex}
+              otherExistingItemIds={otherLineItemIds}
+              initial={
+                existing
+                  ? {
+                      itemId: existing.itemId ?? null,
+                      itemName: existing.itemName ?? null,
+                      itemSku: existing.itemSku ?? null,
+                      itemImage: existing.itemImage ?? null,
+                      description: existing.description ?? null,
+                      quantity: Number(existing.quantity) || 1,
+                      unitPrice: Number(existing.unitPrice) || 0,
+                      discountAmt: Number(existing.discountAmt) || 0,
+                      purchasePrice: Number(existing.purchasePrice) || null,
+                      taxRateId: existing.taxRateId ?? null,
+                      taxRateSnapshot: Number(existing.taxRateSnapshot) || null,
+                      taxRateName: existing.taxRateName ?? null,
+                    }
+                  : {
+                      quantity: 1,
+                      unitPrice: 0,
+                      discountAmt: 0,
+                      purchasePrice: 0,
+                    }
+              }
+              onSave={onLineSave}
+            />
+          );
+        })()}
     </div>
   );
 }

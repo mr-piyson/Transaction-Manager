@@ -34,6 +34,7 @@
     "search": "Search",
     "filter": "Filter",
     "clear": "Clear",
+    "selectRow": "Select row",
     "apply": "Apply",
     "close": "Close",
     "back": "Back",
@@ -896,6 +897,10 @@
     "editPODesc": "Update the details below and save.",
     "saveChanges": "Save changes",
     "unsavedChangesWarning": "You have unsaved changes. Are you sure you want to leave?",
+    "changeSupplier": "Change supplier",
+    "changeSupplierDesc": "Changing the supplier will remove all {count} line item(s) from this order. Continue?",
+    "changeSupplierConfirm": "Change and clear lines",
+    "changeSupplierCancel": "Keep current supplier",
     "failedToCreate": "Failed to create purchase order",
     "failedToUpdate": "Failed to update purchase order"
   },

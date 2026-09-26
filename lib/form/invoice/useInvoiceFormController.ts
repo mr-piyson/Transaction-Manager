@@ -81,7 +81,10 @@ export function useInvoiceFormController({
     defaultValues: initialValues,
   });
   const { setValue, watch, control } = form;
-  const { fields, append, remove } = useFieldArray({ control, name: "lines" });
+  const { fields, append, remove, update } = useFieldArray({
+    control,
+    name: "lines",
+  });
 
   const lines = useWatch({ control, name: "lines" }) ?? [];
   const currency = watch("currency");
@@ -122,12 +125,13 @@ export function useInvoiceFormController({
     const defaultWarehouse = (warehousesData ?? []).find(
       (w: any) => w.isDefault,
     );
-    if (defaultWarehouse) setValue("warehouseId", defaultWarehouse.id);
+    if (defaultWarehouse)
+      setValue("warehouseId", defaultWarehouse.id, { shouldDirty: true });
   }, [mode, warehousesData, watch, setValue]);
 
   React.useEffect(() => {
     if (exchangeRateData) {
-      setValue("exchangeRate", exchangeRateData.rate);
+      setValue("exchangeRate", exchangeRateData.rate, { shouldDirty: true });
     }
   }, [exchangeRateData, setValue]);
 
@@ -187,32 +191,40 @@ export function useInvoiceFormController({
   );
 
   const onLineSave = (index: number, data: InvoiceLineData) => {
+    const current = (lines ?? [])[index] as
+      | InvoiceFormValues["lines"][number]
+      | undefined;
+
+    const patch = {
+      itemId: data.itemId || undefined,
+      itemName: data.itemName || undefined,
+      itemSku: data.itemSku || undefined,
+      itemImage: data.itemImage || undefined,
+      description: data.description || undefined,
+      quantity: data.quantity,
+      unitPrice: data.unitPrice,
+      discountAmt: data.discountAmt,
+      purchasePrice: data.purchasePrice ?? undefined,
+      taxRateId: data.taxRateId || undefined,
+      taxRateSnapshot: data.taxRateSnapshot ?? undefined,
+      taxRateName: data.taxRateName || undefined,
+    };
+
     if (index >= fields.length) {
       append({
-        itemId: data.itemId || "",
-        description: data.description || "",
-        quantity: data.quantity,
-        unitPrice: data.unitPrice,
-        discountAmt: data.discountAmt,
-        purchasePrice: data.purchasePrice ?? 0,
-        taxRateId: data.taxRateId || "",
-        taxRateSnapshot: data.taxRateSnapshot ?? undefined,
-        taxRateName: data.taxRateName || "",
-        sortOrder: 0,
-      });
+        ...patch,
+        sortOrder: index,
+      } as InvoiceFormValues["lines"][number]);
     } else {
-      setValue(`lines.${index}.itemId`, data.itemId || undefined);
-      setValue(`lines.${index}.description`, data.description || undefined);
-      setValue(`lines.${index}.quantity`, data.quantity);
-      setValue(`lines.${index}.unitPrice`, data.unitPrice);
-      setValue(`lines.${index}.discountAmt`, data.discountAmt);
-      setValue(`lines.${index}.purchasePrice`, data.purchasePrice ?? undefined);
-      setValue(`lines.${index}.taxRateId`, data.taxRateId || undefined);
-      setValue(
-        `lines.${index}.taxRateSnapshot`,
-        data.taxRateSnapshot ?? undefined,
-      );
-      setValue(`lines.${index}.taxRateName`, data.taxRateName || undefined);
+      // `update` replaces the element through useFieldArray, which also refreshes
+      // the `fields` snapshot. Path-based `setValue("lines.N.x", ...)` only writes
+      // to _formValues, so `fields` stays stale and the dialog would reopen with
+      // the pre-edit values on the next edit.
+      update(index, {
+        ...(current as InvoiceFormValues["lines"][number]),
+        ...patch,
+        sortOrder: current?.sortOrder ?? index,
+      } as InvoiceFormValues["lines"][number]);
     }
   };
 

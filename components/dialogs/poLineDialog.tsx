@@ -44,9 +44,25 @@ const lineEditSchema = z
 
 type LineEditValues = z.infer<typeof lineEditSchema>;
 
+function initialToDefaults(initial: POLineData): LineEditValues {
+  return {
+    mode: initial.itemId ? "item" : "manual",
+    itemId: initial.itemId || undefined,
+    description: initial.description || undefined,
+    quantity: initial.quantity,
+    unitCost: initial.unitCost,
+    taxRateId: initial.taxRateId || undefined,
+    taxRateSnapshot: initial.taxRateSnapshot ?? undefined,
+    taxRateName: initial.taxRateName || undefined,
+  };
+}
+
 export interface POLineData {
   mode?: "item" | "manual";
   itemId?: string | null;
+  itemName?: string | null;
+  itemSku?: string | null;
+  itemImage?: string | null;
   description?: string | null;
   quantity: number;
   unitCost: number;
@@ -94,31 +110,19 @@ export function POLineDialog({
     formState: { errors },
   } = useForm<LineEditValues>({
     resolver: zodResolver(lineEditSchema) as any,
-    defaultValues: {
-      mode: initial.itemId ? "item" : "manual",
-      itemId: initial.itemId || undefined,
-      description: initial.description || undefined,
-      quantity: initial.quantity,
-      unitCost: initial.unitCost,
-      taxRateId: initial.taxRateId || undefined,
-      taxRateSnapshot: initial.taxRateSnapshot ?? undefined,
-      taxRateName: initial.taxRateName || undefined,
-    },
+    defaultValues: initialToDefaults(initial),
   });
 
+  // `initial` is rebuilt as a fresh object literal on every parent render, so
+  // keying this effect on it would re-seed the form (wiping in-progress input)
+  // whenever the parent re-renders while the dialog is open. Only seed on the
+  // closed -> open transition.
+  const wasOpenRef = React.useRef(false);
   React.useEffect(() => {
-    if (open) {
-      reset({
-        mode: initial.itemId ? "item" : "manual",
-        itemId: initial.itemId || undefined,
-        description: initial.description || undefined,
-        quantity: initial.quantity,
-        unitCost: initial.unitCost,
-        taxRateId: initial.taxRateId || undefined,
-        taxRateSnapshot: initial.taxRateSnapshot ?? undefined,
-        taxRateName: initial.taxRateName || undefined,
-      });
+    if (open && !wasOpenRef.current) {
+      reset(initialToDefaults(initial));
     }
+    wasOpenRef.current = open;
   }, [open, initial, reset]);
 
   const watched = useWatch({ control });
@@ -137,9 +141,17 @@ export function POLineDialog({
   const lineTax = taxRate ? lineSubtotal * (Number(taxRate.rate) / 100) : 0;
 
   const onSubmit = (values: LineEditValues) => {
+    // Re-derive the display snapshot from the picked item, falling back to the
+    // one the line arrived with when the item is not in the catalogue query.
+    const sameItem = Boolean(values.itemId) && values.itemId === initial.itemId;
+    const picked = values.itemId ? (itemsMap[values.itemId] as any) : undefined;
     onSave(index, {
       mode: values.mode,
       itemId: values.itemId || null,
+      itemName: picked?.name ?? (sameItem ? (initial.itemName ?? null) : null),
+      itemSku: picked?.sku ?? (sameItem ? (initial.itemSku ?? null) : null),
+      itemImage:
+        picked?.image ?? (sameItem ? (initial.itemImage ?? null) : null),
       description: values.description || null,
       quantity: values.quantity,
       unitCost: values.unitCost,
@@ -180,7 +192,14 @@ export function POLineDialog({
     }
   };
 
-  const selectedItem = itemId ? (itemsMap[itemId] as any) : undefined;
+  const catalogueItem = itemId ? (itemsMap[itemId] as any) : undefined;
+  // Fall back to the name/sku snapshot carried on the line so a line whose item
+  // is excluded from the supplier-filtered catalogue still shows what it refers to.
+  const selectedItem = catalogueItem
+    ? catalogueItem
+    : itemId
+      ? { id: itemId, name: initial.itemName, sku: initial.itemSku }
+      : undefined;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

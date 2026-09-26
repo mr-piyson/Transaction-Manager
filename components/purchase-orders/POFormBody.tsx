@@ -5,6 +5,16 @@ import { useTranslations } from "next-intl";
 import { POItemSelectDialog } from "@/components/dialogs/poItemSelectDialog";
 import { POLineDialog } from "@/components/dialogs/poLineDialog";
 import { SupplierSelectDialog } from "@/components/dialogs/supplierSelectDialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { DateInputField } from "@/components/ui/date-picker";
 import { Field } from "@/components/ui/field";
@@ -27,9 +37,11 @@ export function POFormBody({ controller }: { controller: POFormController }) {
 
   const currency = watch("currency");
 
-  const existingItemIds = fields
-    .map((f) => f.itemId)
-    .filter((id): id is string => !!id);
+  // Derived from the live value, not the `fields` snapshot, so a line swapped
+  // to a different item is excluded correctly.
+  const existingItemIds = (lines ?? [])
+    .map((l: any) => l?.itemId)
+    .filter((id: any): id is string => !!id);
 
   const lineEditorExistingItemIds = (lines ?? [])
     .map((l: any) => l.itemId)
@@ -63,7 +75,9 @@ export function POFormBody({ controller }: { controller: POFormController }) {
             <Label htmlFor="currency">Currency</Label>
             <Select
               value={watch("currency")}
-              onValueChange={(v) => setValue("currency", v as any)}
+              onValueChange={(v) =>
+                setValue("currency", v as any, { shouldDirty: true })
+              }
             >
               <SelectTrigger>
                 <SelectValue />
@@ -106,7 +120,9 @@ export function POFormBody({ controller }: { controller: POFormController }) {
             </Label>
             <Select
               value={watch("warehouseId")}
-              onValueChange={(v) => setValue("warehouseId", v)}
+              onValueChange={(v) =>
+                setValue("warehouseId", v, { shouldDirty: true })
+              }
             >
               <SelectTrigger>
                 <SelectValue placeholder="Select warehouse" />
@@ -149,10 +165,24 @@ export function POFormBody({ controller }: { controller: POFormController }) {
 
         {fields.map((field, index) => {
           const line = (lines ?? [])[index] as any;
-          const item = line?.itemId
-            ? controller.itemsMap[line.itemId]
+          const itemId = line?.itemId;
+          // Prefer the live catalogue entry; fall back to the name/sku/image
+          // snapshot carried on the line, so items excluded from the
+          // supplier-filtered query don't render as "Manual entry".
+          const item = itemId
+            ? ((controller.itemsMap[itemId] as any) ?? {
+                id: itemId,
+                name: line?.itemName,
+                sku: line?.itemSku,
+                image: line?.itemImage,
+              })
             : undefined;
-          const isManual = !line?.itemId;
+          const isManual = !itemId;
+          const itemLabel = item?.name
+            ? item.sku
+              ? `${item.sku} — ${item.name}`
+              : item.name
+            : line?.description || "Manual entry";
           const qty = Number(line?.quantity) || 0;
           const cost = Number(line?.unitCost) || 0;
           const lineSubtotal = qty * cost;
@@ -179,15 +209,9 @@ export function POFormBody({ controller }: { controller: POFormController }) {
 
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-1.5">
-                  {item ? (
-                    <span className="font-medium text-sm truncate">
-                      {item.sku} — {item.name}
-                    </span>
-                  ) : (
-                    <span className="font-medium text-sm truncate">
-                      {line?.description || "Manual entry"}
-                    </span>
-                  )}
+                  <span className="font-medium text-sm truncate">
+                    {itemLabel}
+                  </span>
                   {isManual && (
                     <span className="shrink-0 rounded bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground uppercase">
                       Manual
@@ -326,6 +350,32 @@ export function POFormBody({ controller }: { controller: POFormController }) {
         isLoading={false}
         onSelect={controller.onSupplierSelected}
       />
+
+      <AlertDialog
+        open={!!controller.pendingSupplierId}
+        onOpenChange={(v) => !v && controller.cancelSupplierChange()}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {t("purchaseOrders.changeSupplier")}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {t("purchaseOrders.changeSupplierDesc", {
+                count: fields.length,
+              })}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={controller.cancelSupplierChange}>
+              {t("purchaseOrders.changeSupplierCancel")}
+            </AlertDialogCancel>
+            <AlertDialogAction onClick={controller.confirmSupplierChange}>
+              {t("purchaseOrders.changeSupplierConfirm")}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 }

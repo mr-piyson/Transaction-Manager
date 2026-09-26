@@ -8,6 +8,9 @@ export function lineToFormValues(line: any): InvoiceLineFormValues {
   return {
     id: line.id ?? undefined,
     itemId: line.itemId ?? undefined,
+    itemName: line.item?.name ?? undefined,
+    itemSku: line.item?.sku ?? undefined,
+    itemImage: line.item?.image ?? undefined,
     description: line.description ?? undefined,
     quantity: Number(line.quantity) || 0,
     unitPrice: Number(line.unitPrice) || 0,

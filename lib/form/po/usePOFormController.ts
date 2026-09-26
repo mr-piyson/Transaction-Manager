@@ -48,6 +48,9 @@ export interface POFormController {
   handleLineSave: (index: number, data: POLineData) => void;
   handleItemsSelected: (selected: any[]) => void;
   onSupplierSelected: (supplier: any) => void;
+  pendingSupplierId: string | null;
+  confirmSupplierChange: () => void;
+  cancelSupplierChange: () => void;
   isPending: boolean;
   submitError: string | null;
   clearSubmitError: () => void;
@@ -83,6 +86,9 @@ export function usePOFormController({
     isNew?: boolean;
     data: POLineData;
   } | null>(null);
+  const [pendingSupplierId, setPendingSupplierId] = React.useState<
+    string | null
+  >(null);
 
   const form = useForm<POFormValues>({
     resolver: zodResolver(poFormSchema) as any,
@@ -129,20 +135,13 @@ export function usePOFormController({
     const defaultWarehouse = (warehousesData ?? []).find(
       (w: any) => w.isDefault,
     );
-    if (defaultWarehouse) setValue("warehouseId", defaultWarehouse.id);
+    if (defaultWarehouse)
+      setValue("warehouseId", defaultWarehouse.id, { shouldDirty: true });
   }, [mode, warehousesData, watch, setValue]);
 
-  // Clear line items when supplier changes
-  const prevSupplierRef = React.useRef(selectedSupplierId);
-  React.useEffect(() => {
-    if (
-      prevSupplierRef.current &&
-      selectedSupplierId !== prevSupplierRef.current
-    ) {
-      setValue("lines", []);
-    }
-    prevSupplierRef.current = selectedSupplierId;
-  }, [selectedSupplierId, setValue]);
+  // Changing supplier invalidates supplier-specific pricing, so the lines are
+  // cleared — but only after the user confirms, because clearing is destructive
+  // and unrecoverable in edit mode. See onSupplierSelected below.
 
   const createMutation = trpc.purchaseOrders.create.useMutation({
     onSuccess(data) {
@@ -214,6 +213,9 @@ export function usePOFormController({
       append({
         mode: "item",
         itemId: item.id,
+        itemName: item.name ?? null,
+        itemSku: item.sku ?? null,
+        itemImage: item.image ?? null,
         quantity: Number(supplierItem?.minOrderQty) || 1,
         unitCost: Number(supplierItem?.basePrice ?? 0) || 0,
         taxRateId: item.taxRate?.id,
@@ -231,6 +233,9 @@ export function usePOFormController({
         data: {
           mode: "item",
           itemId: item.id,
+          itemName: item.name ?? null,
+          itemSku: item.sku ?? null,
+          itemImage: item.image ?? null,
           description: null,
           quantity: Number(supplierItem?.minOrderQty) || 1,
           unitCost: Number(supplierItem?.basePrice ?? 0) || 0,
@@ -263,6 +268,9 @@ export function usePOFormController({
       data: {
         mode: line?.mode ?? (line?.itemId ? "item" : "manual"),
         itemId: line?.itemId || null,
+        itemName: line?.itemName || null,
+        itemSku: line?.itemSku || null,
+        itemImage: line?.itemImage || null,
         description: line?.description || null,
         quantity: Number(line?.quantity) || 0,
         unitCost: Number(line?.unitCost) || 0,
@@ -277,14 +285,29 @@ export function usePOFormController({
     if (editingLine?.isNew) {
       append(data as any);
     } else {
-      setValue(`lines.${index}` as const, data as any);
+      setValue(`lines.${index}` as const, data as any, { shouldDirty: true });
     }
     setEditingLine(null);
   };
 
   const onSupplierSelected = (supplier: any) => {
-    setValue("supplierId", supplier.id);
+    if (supplier.id === watch("supplierId")) return;
+    if ((lines ?? []).length > 0) {
+      setPendingSupplierId(supplier.id);
+      return;
+    }
+    setValue("supplierId", supplier.id, { shouldDirty: true });
   };
+
+  const confirmSupplierChange = () => {
+    if (pendingSupplierId) {
+      setValue("supplierId", pendingSupplierId, { shouldDirty: true });
+      setValue("lines", [], { shouldDirty: true });
+    }
+    setPendingSupplierId(null);
+  };
+
+  const cancelSupplierChange = () => setPendingSupplierId(null);
 
   return {
     mode,
@@ -311,6 +334,9 @@ export function usePOFormController({
     handleLineSave,
     handleItemsSelected,
     onSupplierSelected,
+    pendingSupplierId,
+    confirmSupplierChange,
+    cancelSupplierChange,
     isPending,
     submitError,
     clearSubmitError: () => setSubmitError(null),

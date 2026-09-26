@@ -10,6 +10,13 @@ export interface POPoInput {
   internalNotes?: string | null;
   lines?: Array<{
     itemId?: string | null;
+    item?: {
+      id?: string;
+      sku?: string | null;
+      name?: string | null;
+      unit?: string | null;
+      image?: string | null;
+    } | null;
     description?: string | null;
     quantity?: number | string | null;
     unitCost?: number | string | null;
@@ -47,6 +54,9 @@ export function poToFormValues(po: POPoInput): POFormValues {
     lines: (po.lines ?? []).map((l) => ({
       mode: l.itemId ? "item" : "manual",
       itemId: l.itemId ?? undefined,
+      itemName: (l as any).item?.name ?? undefined,
+      itemSku: (l as any).item?.sku ?? undefined,
+      itemImage: (l as any).item?.image ?? undefined,
       description: l.description ?? undefined,
       quantity: Number(l.quantity) || 0,
       unitCost: Number(l.unitCost) || 0,

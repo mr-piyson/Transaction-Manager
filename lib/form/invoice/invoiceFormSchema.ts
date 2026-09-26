@@ -4,6 +4,11 @@ import { currencyCodeSchema } from "@/lib/validations";
 export const invoiceLineSchema = z.object({
   id: z.string().nullish(),
   itemId: z.string().nullish(),
+  // Display-only snapshot of the referenced item, so a line still renders with
+  // its real name/sku even when the item is excluded from the catalogue query.
+  itemName: z.string().nullish(),
+  itemSku: z.string().nullish(),
+  itemImage: z.string().nullish(),
   description: z.string().nullish(),
   quantity: z.coerce.number().positive("Qty must be > 0"),
   unitPrice: z.coerce.number().min(0, "Price must be >= 0"),

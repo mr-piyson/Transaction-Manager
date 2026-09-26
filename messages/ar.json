@@ -67,6 +67,7 @@
     "search": "بحث",
     "filter": "تصفية",
     "clear": "مسح",
+    "selectRow": "تحديد الصف",
     "apply": "تطبيق",
     "close": "إغلاق",
     "back": "رجوع",
@@ -759,6 +760,10 @@
     "editPODesc": "حدّث التفاصيل أدناه ثم احفظ.",
     "saveChanges": "حفظ التغييرات",
     "unsavedChangesWarning": "لديك تغييرات غير محفوظة. هل أنت متأكد أنك تريد المغادرة؟",
+    "changeSupplier": "تغيير المورد",
+    "changeSupplierDesc": "سيؤدي تغيير المورد إلى حذف جميع بنود الطلب ({count}). هل تريد المتابعة؟",
+    "changeSupplierConfirm": "تغيير وإزالة البنود",
+    "changeSupplierCancel": "الإبقاء على المورد الحالي",
     "failedToCreate": "فشل إنشاء أمر الشراء",
     "failedToUpdate": "فشل تحديث أمر الشراء"
   },
