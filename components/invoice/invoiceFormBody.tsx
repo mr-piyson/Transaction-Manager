@@ -521,11 +521,6 @@ export function InvoiceFormBody({
 
               {activeSelection !== null && (
                 <div className="flex items-center gap-2 animate-in fade-in-0 zoom-in-95 duration-150">
-                  <span className="text-sm font-medium text-muted-foreground">
-                    {t("invoices.lineItemTitle", {
-                      number: activeSelection + 1,
-                    })}
-                  </span>
                   <Button
                     type="button"
                     size="sm"
@@ -544,14 +539,6 @@ export function InvoiceFormBody({
                     <Trash2 className="h-3.5 w-3.5" />
                     {t("common.delete")}
                   </Button>
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="ghost"
-                    onClick={() => setSelectedLineIndex(null)}
-                  >
-                    {t("common.clear")}
-                  </Button>
                 </div>
               )}
             </div>
@@ -561,29 +548,31 @@ export function InvoiceFormBody({
               <thead>
                 <tr className="border-b text-[11px] uppercase tracking-wide text-muted-foreground">
                   {!readonly && (
-                    <th className="w-10 py-2 pr-2 text-left font-semibold">
+                    <th className="w-10 py-2 pr-2 text-center font-semibold">
                       <span className="sr-only">{t("common.selectRow")}</span>
                     </th>
                   )}
-                  <th className="w-10 py-2 pr-2 text-left font-semibold">#</th>
+                  <th className="w-10 py-2 pr-2 text-center font-semibold">
+                    #
+                  </th>
                   <th className="py-2 pr-2 text-left font-semibold">
                     {t("invoices.item")}
                   </th>
-                  <th className="w-24 px-2 text-right font-semibold">
+                  <th className="w-24 px-2 text-center font-semibold">
                     {t("invoices.qty")}
                   </th>
-                  <th className="w-28 px-2 text-right font-semibold">
+                  <th className="w-28 px-2 text-center font-semibold">
                     {t("invoices.unitPrice")}
                   </th>
                   {hasAnyDiscount && (
-                    <th className="w-24 px-2 text-right font-semibold">
+                    <th className="w-24 px-2 text-center font-semibold">
                       {t("invoices.discount")}
                     </th>
                   )}
-                  <th className="w-28 px-2 text-right font-semibold">
+                  <th className="w-28 px-2 text-center font-semibold">
                     {t("invoices.tax")}
                   </th>
-                  <th className="w-32 px-2 text-right font-semibold">
+                  <th className="w-32 px-2 text-center font-semibold">
                     {t("common.total")}
                   </th>
                 </tr>
@@ -605,10 +594,10 @@ export function InvoiceFormBody({
                           key={line.id ?? index}
                           className="border-b last:border-0"
                         >
-                          <td className="py-2.5 pr-2 align-top text-xs text-muted-foreground">
+                          <td className="py-2.5 pr-2 align-middle text-center text-xs text-muted-foreground">
                             {index + 1}
                           </td>
-                          <td className="py-2.5 pr-2 align-top">
+                          <td className="py-2.5 pr-2 align-middle text-left">
                             <div className="flex items-center gap-2.5">
                               <Thumb item={item} isManual={isManual} />
                               <div className="min-w-0">
@@ -631,18 +620,18 @@ export function InvoiceFormBody({
                               </div>
                             </div>
                           </td>
-                          <td className="px-2 text-right align-top tabular-nums">
+                          <td className="px-2 text-center align-middle tabular-nums">
                             {qty.toFixed(3)}
                           </td>
-                          <td className="px-2 text-right align-top tabular-nums">
+                          <td className="px-2 text-center align-middle tabular-nums">
                             {price.toFixed(3)}
                           </td>
                           {hasAnyDiscount && (
-                            <td className="px-2 text-right align-top tabular-nums">
+                            <td className="px-2 text-center align-middle tabular-nums">
                               {hasDiscount ? `-${discount.toFixed(3)}` : "—"}
                             </td>
                           )}
-                          <td className="px-2 text-right align-top tabular-nums">
+                          <td className="px-2 text-center align-middle tabular-nums">
                             {line.taxRateName ? (
                               <span>
                                 {lineTax.toFixed(3)}
@@ -654,7 +643,7 @@ export function InvoiceFormBody({
                               "—"
                             )}
                           </td>
-                          <td className="px-2 text-right align-top tabular-nums font-medium">
+                          <td className="px-2 text-center align-middle tabular-nums font-medium">
                             {Number(line.total).toFixed(3)}
                           </td>
                         </tr>
@@ -699,7 +688,7 @@ export function InvoiceFormBody({
                           onClick={() => setSelectedLineIndex(index)}
                         >
                           <td
-                            className="py-2.5 pr-2 align-top"
+                            className="py-2.5 pr-2 align-middle text-center"
                             onClick={(e) => e.stopPropagation()}
                           >
                             <Checkbox
@@ -714,10 +703,10 @@ export function InvoiceFormBody({
                               })}
                             />
                           </td>
-                          <td className="py-2.5 pr-2 align-top text-xs text-muted-foreground">
+                          <td className="py-2.5 pr-2 align-middle text-center text-xs text-muted-foreground">
                             {index + 1}
                           </td>
-                          <td className="py-2.5 pr-2 align-top">
+                          <td className="py-2.5 pr-2 align-middle text-left">
                             <div className="flex items-center gap-2.5">
                               <Thumb item={item} isManual={isManual} />
                               <div className="min-w-0">
@@ -737,18 +726,18 @@ export function InvoiceFormBody({
                               </div>
                             </div>
                           </td>
-                          <td className="px-2 text-right align-top tabular-nums">
+                          <td className="px-2 text-center align-middle tabular-nums">
                             {qty.toFixed(3)}
                           </td>
-                          <td className="px-2 text-right align-top tabular-nums">
+                          <td className="px-2 text-center align-middle tabular-nums">
                             {price.toFixed(3)}
                           </td>
                           {hasAnyDiscount && (
-                            <td className="px-2 text-right align-top tabular-nums">
+                            <td className="px-2 text-center align-middle tabular-nums">
                               {discount > 0 ? `-${discount.toFixed(3)}` : "—"}
                             </td>
                           )}
-                          <td className="px-2 text-right align-top tabular-nums">
+                          <td className="px-2 text-center align-middle tabular-nums">
                             {lineWatch?.taxRateSnapshot ? (
                               <span>
                                 {lineTax.toFixed(3)}
@@ -760,7 +749,7 @@ export function InvoiceFormBody({
                               "—"
                             )}
                           </td>
-                          <td className="px-2 text-right align-top tabular-nums font-medium">
+                          <td className="px-2 text-center align-middle tabular-nums font-medium">
                             {(lineSubtotal - discount + lineTax).toFixed(3)}
                           </td>
                         </tr>
