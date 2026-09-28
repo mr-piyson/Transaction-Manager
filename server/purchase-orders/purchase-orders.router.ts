@@ -8,6 +8,11 @@ import {
 } from "@/lib/error";
 import { generateSerial } from "@/lib/sequences";
 import { assertCan, orgProcedure, router } from "@/lib/trpc/context";
+import {
+  baseUnitAmount,
+  convertToBase,
+  resolveUomFactor,
+} from "@/lib/uom-converter";
 import { currencyCodeSchema, sortOrderSchema } from "@/lib/validations";
 import {
   postPOExpenseReceived,
@@ -20,6 +25,7 @@ import {
   NOTIFICATION_TYPES,
 } from "../notifications/notifications.shared";
 import { writeAuditLog } from "../shared/audit.service";
+import { computeWeightedAverage } from "./average-cost.service";
 import {
   getHardDeleteInfo,
   hardDeletePurchaseOrderTree,
@@ -32,6 +38,7 @@ const purchaseLineInputSchema = z
     description: z.string().max(1000).optional(),
     quantity: z.number().positive(),
     unitCost: z.number().min(0),
+    unitId: z.string().optional(),
     taxAmt: z.number().min(0).default(0),
     taxRateId: z.string().optional(),
     taxRateSnapshot: z.number().min(0).optional(),
@@ -167,6 +174,7 @@ export const purchaseOrdersRouter = router({
                   image: true,
                 },
               },
+              unit: { select: { id: true, code: true, name: true } },
               taxRate: { select: { id: true, name: true, rate: true } },
             },
           },
@@ -232,8 +240,13 @@ export const purchaseOrdersRouter = router({
       const enrichedLines = await Promise.all(
         lineInputs.map(async (line) => {
           if (!line.itemId) {
+            // Manual line: never touches stock — factor 1 snapshots only.
             return {
               ...line,
+              unitId: null,
+              uomFactor: 1,
+              baseQuantity: line.quantity,
+              baseUnitCost: line.unitCost,
               taxRateId: line.taxRateId,
               taxRateSnapshot: line.taxRateSnapshot ?? 0,
               taxRateName: line.taxRateName,
@@ -242,12 +255,31 @@ export const purchaseOrdersRouter = router({
           const item = await ctx.db.item.findFirst({
             where: { id: line.itemId, organizationId: orgId, deletedAt: null },
             select: {
+              unitId: true,
+              itemUoms: {
+                where: { deletedAt: null, isActive: true },
+                select: {
+                  unitId: true,
+                  factor: true,
+                  isActive: true,
+                  deletedAt: true,
+                },
+              },
               taxRate: { select: { rate: true, name: true, id: true } },
             },
           });
           if (!item) throw new NotFoundError("Item", line.itemId);
+          // Server-side conversion — the client never sends uomFactor.
+          const factor = resolveUomFactor(
+            { unitId: item.unitId, uoms: item.itemUoms },
+            line.unitId ?? item.unitId,
+          );
           return {
             ...line,
+            unitId: line.unitId ?? item.unitId ?? null,
+            uomFactor: factor,
+            baseQuantity: convertToBase(line.quantity, factor),
+            baseUnitCost: baseUnitAmount(line.unitCost, factor),
             taxRateId: line.taxRateId ?? item.taxRate?.id,
             taxRateSnapshot:
               line.taxRateSnapshot ?? Number(item.taxRate?.rate ?? 0),
@@ -287,6 +319,10 @@ export const purchaseOrdersRouter = router({
                 description: line.description,
                 quantity: totals.lines[idx]?.quantity ?? line.quantity,
                 unitCost: line.unitCost,
+                unitId: line.unitId,
+                uomFactor: line.uomFactor,
+                baseQuantity: line.baseQuantity,
+                baseUnitCost: line.baseUnitCost,
                 taxAmt: totals.lines[idx]?.taxAmt ?? 0,
                 total: totals.lines[idx]?.total ?? 0,
                 taxRateId: line.taxRateId,
@@ -351,6 +387,10 @@ export const purchaseOrdersRouter = router({
               if (!line.itemId) {
                 return {
                   ...line,
+                  unitId: null,
+                  uomFactor: 1,
+                  baseQuantity: line.quantity,
+                  baseUnitCost: line.unitCost,
                   taxRateId: line.taxRateId,
                   taxRateSnapshot: line.taxRateSnapshot ?? 0,
                   taxRateName: line.taxRateName,
@@ -359,15 +399,34 @@ export const purchaseOrdersRouter = router({
               const item = await tx.item.findFirst({
                 where: { id: line.itemId, organizationId: orgId },
                 select: {
+                  unitId: true,
+                  itemUoms: {
+                    where: { deletedAt: null, isActive: true },
+                    select: {
+                      unitId: true,
+                      factor: true,
+                      isActive: true,
+                      deletedAt: true,
+                    },
+                  },
                   taxRate: { select: { rate: true, name: true, id: true } },
                 },
               });
+              if (!item) throw new NotFoundError("Item", line.itemId);
+              const factor = resolveUomFactor(
+                { unitId: item.unitId, uoms: item.itemUoms },
+                line.unitId ?? item.unitId,
+              );
               return {
                 ...line,
-                taxRateId: line.taxRateId ?? item?.taxRate?.id,
+                unitId: line.unitId ?? item.unitId ?? null,
+                uomFactor: factor,
+                baseQuantity: convertToBase(line.quantity, factor),
+                baseUnitCost: baseUnitAmount(line.unitCost, factor),
+                taxRateId: line.taxRateId ?? item.taxRate?.id,
                 taxRateSnapshot:
-                  line.taxRateSnapshot ?? Number(item?.taxRate?.rate ?? 0),
-                taxRateName: line.taxRateName ?? item?.taxRate?.name,
+                  line.taxRateSnapshot ?? Number(item.taxRate?.rate ?? 0),
+                taxRateName: line.taxRateName ?? item.taxRate?.name,
               };
             }),
           );
@@ -388,6 +447,10 @@ export const purchaseOrdersRouter = router({
               description: line.description,
               quantity: totals.lines[idx]?.quantity ?? line.quantity,
               unitCost: line.unitCost,
+              unitId: line.unitId,
+              uomFactor: line.uomFactor,
+              baseQuantity: line.baseQuantity,
+              baseUnitCost: line.baseUnitCost,
               taxAmt: totals.lines[idx]?.taxAmt ?? 0,
               total: totals.lines[idx]?.total ?? 0,
               taxRateId: line.taxRateId,
@@ -726,7 +789,22 @@ export const purchaseOrdersRouter = router({
     }),
 
   receive: orgProcedure
-    .input(z.object({ id: z.string(), version: z.number().int() }))
+    .input(
+      z.object({
+        id: z.string(),
+        version: z.number().int(),
+        // Per-line quantities in each line's SELECTED unit. Omit to receive
+        // everything still outstanding (legacy "receive all" behaviour).
+        lines: z
+          .array(
+            z.object({
+              purchaseLineId: z.string(),
+              quantity: z.number().positive(),
+            }),
+          )
+          .optional(),
+      }),
+    )
     .mutation(async ({ ctx, input }) => {
       const orgId = ctx.user.organizationId;
 
@@ -746,6 +824,17 @@ export const purchaseOrdersRouter = router({
       if (po.version !== input.version)
         throw new StaleDataError("PurchaseOrder");
 
+      const requested = new Map<string, number>();
+      if (input.lines) {
+        const validIds = new Set(po.lines.map((l) => l.id));
+        for (const entry of input.lines) {
+          if (!validIds.has(entry.purchaseLineId)) {
+            throw new NotFoundError("PurchaseLine", entry.purchaseLineId);
+          }
+          requested.set(entry.purchaseLineId, entry.quantity);
+        }
+      }
+
       const notifReceived = await ctx.db.organizationSetting.findFirst({
         where: {
           organizationId: orgId,
@@ -756,30 +845,77 @@ export const purchaseOrdersRouter = router({
 
       return ctx.db.$transaction(async (tx) => {
         let allFullyReceived = true;
+        let receivedAnything = false;
+        let itemReceivedCost = 0;
+        let manualReceivedCost = 0;
 
         for (const line of po.lines) {
           const orderedQty = Number(line.quantity);
           const alreadyReceived = Number(line.receivedQty);
-          const toReceive = orderedQty - alreadyReceived;
+          const remaining = orderedQty - alreadyReceived;
 
-          if (toReceive <= 0) continue;
+          const toReceive = input.lines
+            ? (requested.get(line.id) ?? 0)
+            : Math.max(remaining, 0);
+
+          if (toReceive <= 0) {
+            if (remaining > 1e-6) allFullyReceived = false;
+            continue;
+          }
+          if (toReceive - remaining > 1e-6) {
+            throw new UnprocessableError(
+              `Cannot receive ${toReceive} — only ${remaining} remaining on this line.`,
+            );
+          }
+
+          receivedAnything = true;
+          const newReceived = Math.min(alreadyReceived + toReceive, orderedQty);
+          if (newReceived < orderedQty - 1e-6) allFullyReceived = false;
 
           await tx.purchaseLine.update({
             where: { id: line.id },
-            data: { receivedQty: orderedQty },
+            data: { receivedQty: newReceived },
           });
 
-          if (alreadyReceived + toReceive < orderedQty)
-            allFullyReceived = false;
+          const receivedValue = Number(line.unitCost) * toReceive;
 
           // Manual lines have no linked item — they never touch inventory,
           // stock movements, or item average cost.
-          if (!line.itemId) continue;
+          if (!line.itemId) {
+            manualReceivedCost += receivedValue;
+            continue;
+          }
+          itemReceivedCost += receivedValue;
+
+          // Line snapshots convert the SELECTED-unit amount to BASE units —
+          // this is the only conversion on this path.
+          const baseDelta = convertToBase(toReceive, line.uomFactor);
+          const baseUnitCost =
+            line.baseUnitCost ?? baseUnitAmount(line.unitCost, line.uomFactor);
+
+          // Weighted average must see stock BEFORE this increment.
+          const [itemRow, stockAgg] = await Promise.all([
+            tx.item.findUnique({
+              where: { id: line.itemId },
+              select: { averageCost: true },
+            }),
+            tx.stock.aggregate({
+              where: { itemId: line.itemId },
+              _sum: { quantity: true },
+            }),
+          ]);
+          const newAvg = computeWeightedAverage(
+            Number(stockAgg._sum.quantity ?? 0),
+            itemRow?.averageCost ?? 0,
+            baseDelta,
+            receivedValue,
+          );
 
           await tx.stockMovement.create({
             data: {
               type: "PURCHASE_INBOUND",
-              quantity: toReceive,
+              quantity: baseDelta,
+              unitCost: baseUnitCost,
               itemId: line.itemId,
               purchaseLineId: line.id,
               toWarehouseId: po.warehouseId,
@@ -799,13 +935,22 @@ export const purchaseOrdersRouter = router({
               itemId: line.itemId,
               warehouseId: po.warehouseId,
               organizationId: orgId,
-              quantity: toReceive,
+              quantity: baseDelta,
             },
             update: {
-              quantity: { increment: toReceive },
+              quantity: { increment: baseDelta },
               version: { increment: 1 },
             },
           });
+
+          await tx.item.update({
+            where: { id: line.itemId },
+            data: { averageCost: newAvg },
+          });
+        }
+
+        if (input.lines && !receivedAnything) {
+          throw new UnprocessableError("Nothing to receive.");
         }
 
         const newStatus = allFullyReceived ? "RECEIVED" : "PARTIAL_RECEIVED";
@@ -819,24 +964,6 @@ export const purchaseOrdersRouter = router({
             updatedById: ctx.user.id,
           },
         });
-
-        // Split received costs: item lines post to Inventory, manual lines
-        // (no item) post to an expense account. The AP credit is identical.
-        const itemReceivedCost = po.lines.reduce((sum, line) => {
-          const orderedQty = Number(line.quantity);
-          const alreadyReceived = Number(line.receivedQty);
-          const toReceive = orderedQty - alreadyReceived;
-          if (toReceive <= 0 || !line.itemId) return sum;
-          return sum + Number(line.unitCost) * toReceive;
-        }, 0);
-
-        const manualReceivedCost = po.lines.reduce((sum, line) => {
-          const orderedQty = Number(line.quantity);
-          const alreadyReceived = Number(line.receivedQty);
-          const toReceive = orderedQty - alreadyReceived;
-          if (toReceive <= 0 || line.itemId) return sum;
-          return sum + Number(line.unitCost) * toReceive;
-        }, 0);
 
         const totalReceivedCost = itemReceivedCost + manualReceivedCost;
 
@@ -1073,6 +1200,16 @@ export const purchaseOrdersRouter = router({
       }
       if (po.version !== input.version)
         throw new StaleDataError("PurchaseOrder");
+
+      // Received stock already entered the ledger — cancelling would strand it.
+      const receivedLineCount = await ctx.db.purchaseLine.count({
+        where: { purchaseOrderId: input.id, receivedQty: { gt: 0 } },
+      });
+      if (receivedLineCount > 0) {
+        throw new UnprocessableError(
+          "Cannot cancel a purchase order with received quantities. Record a return or stock adjustment instead.",
+        );
+      }
 
       const notifCancelled = await ctx.db.organizationSetting.findFirst({
         where: {

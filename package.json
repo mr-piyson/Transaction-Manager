@@ -87,6 +87,7 @@
     "@biomejs/biome": "^2.5.13",
     "@tailwindcss/postcss": "^4.3.3",
     "@types/bcryptjs": "^2.4.6",
+    "@types/bun": "^1.4.2",
     "@types/node": "^20.19.43",
     "@types/node-cron": "^3.0.11",
     "@types/react": "^19.3.0",

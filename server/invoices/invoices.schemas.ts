@@ -15,6 +15,8 @@ const invoiceLineInputSchema = z.object({
   description: z.string().max(1000).nullish(),
   quantity: z.number().positive(),
   unitPrice: z.number().min(0),
+  // Selected unit only — uomFactor/baseQuantity are recomputed server-side.
+  unitId: z.string().nullish(),
   discountAmt: z.number().min(0).default(0),
   purchasePrice: z.number().min(0).nullish(),
   taxRateId: z.string().nullish(),

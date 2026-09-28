@@ -2,6 +2,11 @@
  *
  * Handles stock movements triggered by invoice status transitions.
  *
+ * UNITS OF MEASURE:
+ * Stock.quantity is always in the item's BASE UNIT. Callers must pass
+ * `InvoiceLine.baseQuantity` (never the selected-unit `quantity`) as
+ * `StockLine.quantity` — see docs/UOM-plan.md.
+ *
  * CRITICAL RULE:
  * Stock quantity MUST only change through a StockMovement row + a Stock update
  * inside the same $transaction. Never update Stock.quantity directly.
@@ -10,6 +15,7 @@
  * DRAFT → SENT     → SALE_OUTBOUND movements for each PRODUCT line
  * SENT  → CANCELLED → Reverse (RETURN_INBOUND) movements
  * Any CREDIT_NOTE creation linked to an INVOICE → RETURN_INBOUND movements
+ * SENT CREDIT_NOTE → CANCELLED → RETURN_OUTBOUND (re-deduct) movements
  *
  * NEGATIVE STOCK GUARD:
  * Before deducting, we verify sufficient stock exists in the target warehouse.
@@ -20,6 +26,7 @@
  * AVERAGE COST UPDATE:
  * On SALE_OUTBOUND we record unitCost = item.averageCost at movement time.
  * This enables COGS reporting without recalculating historical averages.
+ * averageCost itself is maintained on purchase receipts (base units).
  */
 
 import type { Prisma } from "@prisma/client";
@@ -30,7 +37,7 @@ type TransactionClient = Prisma.TransactionClient;
 interface StockLine {
   itemId: string;
   itemType: string; // Only PRODUCT lines trigger stock
-  quantity: number; // Positive number (we handle sign)
+  quantity: number; // Base-unit quantity, positive (we handle sign)
   invoiceLineId: string;
 }
 
@@ -208,6 +215,67 @@ export async function returnStockForCreditNote(
       },
       update: {
         quantity: { increment: line.quantity },
+        version: { increment: 1 },
+      },
+    });
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Re-deduct stock when a SENT credit note is cancelled (undo the RETURN_INBOUND)
+// ---------------------------------------------------------------------------
+
+export async function reDeductStockForCancelledCreditNote(
+  opts: StockMovementOptions,
+): Promise<void> {
+  const { tx, organizationId, warehouseId, userId, lines } = opts;
+
+  const productLines = lines.filter((l) => l.itemType === "PRODUCT");
+  if (productLines.length === 0) return;
+
+  // Same hard block as deductStockForInvoice — never drive stock negative.
+  const shortfalls: string[] = [];
+  for (const line of productLines) {
+    const stock = await tx.stock.findUnique({
+      where: {
+        itemId_warehouseId: { itemId: line.itemId, warehouseId },
+      },
+      select: { quantity: true, item: { select: { name: true } } },
+    });
+    const available = Number(stock?.quantity ?? 0);
+    if (available < line.quantity) {
+      shortfalls.push(
+        `${stock?.item.name ?? line.itemId}: need ${line.quantity}, available ${available}`,
+      );
+    }
+  }
+  if (shortfalls.length > 0) {
+    throw new UnprocessableError(
+      `Cannot cancel this credit note — insufficient stock to take back:\n${shortfalls.join("\n")}`,
+      { shortfalls },
+    );
+  }
+
+  for (const line of productLines) {
+    await tx.stockMovement.create({
+      data: {
+        type: "RETURN_OUTBOUND",
+        quantity: -Math.abs(line.quantity),
+        invoiceLineId: line.invoiceLineId,
+        itemId: line.itemId,
+        fromWarehouseId: warehouseId,
+        userId,
+        organizationId,
+        notes: "Stock re-deducted — credit note cancelled",
+      },
+    });
+
+    await tx.stock.update({
+      where: {
+        itemId_warehouseId: { itemId: line.itemId, warehouseId },
+      },
+      data: {
+        quantity: { decrement: line.quantity },
         version: { increment: 1 },
       },
     });

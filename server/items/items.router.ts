@@ -13,9 +13,16 @@
  * The items router exposes `resolvePrice` for the invoice router to call.
  */
 
+import type { Prisma } from "@prisma/client";
 import { z } from "zod";
-import { ConflictError, ForbiddenError, NotFoundError } from "@/lib/error";
+import {
+  ConflictError,
+  ForbiddenError,
+  NotFoundError,
+  UnprocessableError,
+} from "@/lib/error";
 import { assertCan, orgProcedure, router } from "@/lib/trpc/context";
+import { assertFactor } from "@/lib/uom-converter";
 import {
   currencyCodeSchema,
   decimalSchema,
@@ -62,6 +69,24 @@ const updateItemSchema = itemBaseSchema.partial().extend({
   id: z.string(),
 });
 
+const addItemUomSchema = z.object({
+  itemId: z.string(),
+  unitId: z.string(),
+  factor: decimalSchema,
+  isPurchaseDefault: z.boolean().default(false),
+  isSalesDefault: z.boolean().default(false),
+  barcode: z.string().max(100).optional(),
+});
+
+const updateItemUomSchema = z.object({
+  id: z.string(),
+  factor: decimalSchema.optional(),
+  isPurchaseDefault: z.boolean().optional(),
+  isSalesDefault: z.boolean().optional(),
+  barcode: z.string().max(100).nullish(),
+  isActive: z.boolean().optional(),
+});
+
 const listItemsSchema = z.object({
   search: z.string().optional(),
   type: z.enum(["PRODUCT", "SERVICE", "BUNDLE"]).optional(),
@@ -80,6 +105,23 @@ const listItemsSchema = z.object({
 // ---------------------------------------------------------------------------
 // Router
 // ---------------------------------------------------------------------------
+
+/**
+ * Usage counter for the UoM locking rule: once an item has any stock movement
+ * or document line, its Base Unit and every ItemUom.factor are immutable
+ * (only deactivation + replacement is allowed).
+ */
+async function countItemUsage(
+  db: Prisma.TransactionClient,
+  itemId: string,
+): Promise<number> {
+  const [movements, invoiceLines, purchaseLines] = await Promise.all([
+    db.stockMovement.count({ where: { itemId } }),
+    db.invoiceLine.count({ where: { itemId } }),
+    db.purchaseLine.count({ where: { itemId } }),
+  ]);
+  return movements + invoiceLines + purchaseLines;
+}
 
 export const itemsRouter = router({
   // ── LIST ──────────────────────────────────────────────────────────────────
@@ -143,6 +185,7 @@ export const itemsRouter = router({
           image: true,
           type: true,
           unit: true,
+          unitId: true,
           salesPrice: true,
           averageCost: true,
           minStock: true,
@@ -150,6 +193,18 @@ export const itemsRouter = router({
           isSaleable: true,
           isPurchasable: true,
           isActive: true,
+          itemUoms: {
+            where: { deletedAt: null, isActive: true },
+            select: {
+              unitId: true,
+              factor: true,
+              isPurchaseDefault: true,
+              isSalesDefault: true,
+              barcode: true,
+              unit: { select: { id: true, code: true, name: true } },
+            },
+            orderBy: { createdAt: "asc" as const },
+          },
           category: { select: { id: true, name: true, color: true } },
           taxRate: { select: { id: true, name: true, rate: true } },
           // Aggregate stock across all warehouses if requested
@@ -218,6 +273,12 @@ export const itemsRouter = router({
         include: {
           category: true,
           taxRate: true,
+          unitRef: { select: { id: true, code: true, name: true } },
+          itemUoms: {
+            where: { deletedAt: null },
+            include: { unit: { select: { id: true, code: true, name: true } } },
+            orderBy: { createdAt: "asc" },
+          },
           revenueAccount: { select: { id: true, code: true, name: true } },
           cogsAccount: { select: { id: true, code: true, name: true } },
           inventoryAccount: { select: { id: true, code: true, name: true } },
@@ -484,6 +545,20 @@ export const itemsRouter = router({
 
       const { bundleLines, ...itemData } = data;
 
+      // Locking rule: the Base Unit is immutable once the item has been used
+      // (any stock movement or document line references it).
+      if (
+        itemData.unitId !== undefined &&
+        itemData.unitId !== existing.unitId
+      ) {
+        const usage = await countItemUsage(ctx.db, id);
+        if (usage > 0) {
+          throw new UnprocessableError(
+            "This item's base unit can no longer be changed because it has stock movements or document lines.",
+          );
+        }
+      }
+
       const updated = await ctx.db.$transaction(async (tx) => {
         const updated = await tx.item.update({
           where: { id },
@@ -536,6 +611,247 @@ export const itemsRouter = router({
       }
 
       return updated;
+    }),
+
+  // ── UNITS OF MEASURE (per-item conversions) ──────────────────────────────
+  addUom: orgProcedure
+    .input(addItemUomSchema)
+    .mutation(async ({ ctx, input }) => {
+      assertCan(ctx.ability, "item:update", "Item");
+      const orgId = ctx.user.organizationId;
+
+      const item = await ctx.db.item.findFirst({
+        where: { id: input.itemId, organizationId: orgId, deletedAt: null },
+        select: { id: true, unitId: true },
+      });
+      if (!item) throw new NotFoundError("Item", input.itemId);
+
+      if (item.unitId && input.unitId === item.unitId) {
+        throw new UnprocessableError(
+          "The base unit is already active with an implicit factor of 1 — it cannot be added as an alternative unit.",
+        );
+      }
+
+      const unit = await ctx.db.unit.findFirst({
+        where: { id: input.unitId, organizationId: orgId, deletedAt: null },
+        select: { id: true },
+      });
+      if (!unit) throw new NotFoundError("Unit", input.unitId);
+
+      const factor = assertFactor(input.factor);
+
+      return ctx.db.$transaction(async (tx) => {
+        const existing = await tx.itemUom.findUnique({
+          where: {
+            itemId_unitId: {
+              itemId: input.itemId,
+              unitId: input.unitId,
+            },
+          },
+        });
+        if (existing && !existing.deletedAt) {
+          throw new ConflictError(
+            "This unit is already configured for the item.",
+          );
+        }
+
+        const data = {
+          factor: factor.toString(),
+          isPurchaseDefault: input.isPurchaseDefault,
+          isSalesDefault: input.isSalesDefault,
+          barcode: input.barcode ?? null,
+          isActive: true,
+          deletedAt: null,
+        };
+
+        const row = existing
+          ? await tx.itemUom.update({ where: { id: existing.id }, data })
+          : await tx.itemUom.create({
+              data: {
+                ...data,
+                itemId: input.itemId,
+                unitId: input.unitId,
+                organizationId: orgId,
+              },
+            });
+
+        // At most one purchase default / one sales default per item.
+        if (input.isPurchaseDefault) {
+          await tx.itemUom.updateMany({
+            where: {
+              itemId: input.itemId,
+              id: { not: row.id },
+              deletedAt: null,
+            },
+            data: { isPurchaseDefault: false },
+          });
+        }
+        if (input.isSalesDefault) {
+          await tx.itemUom.updateMany({
+            where: {
+              itemId: input.itemId,
+              id: { not: row.id },
+              deletedAt: null,
+            },
+            data: { isSalesDefault: false },
+          });
+        }
+
+        await writeAuditLog(
+          {
+            entityType: "ItemUom",
+            entityId: row.id,
+            action: existing ? "UPDATE" : "CREATE",
+            diff: {
+              itemId: { before: null, after: input.itemId },
+              unitId: { before: null, after: input.unitId },
+              factor: { before: null, after: factor.toString() },
+            },
+            organizationId: orgId,
+            userId: ctx.user.id,
+            ipAddress: ctx.ipAddress,
+          },
+          tx,
+        );
+
+        return row;
+      });
+    }),
+
+  updateUom: orgProcedure
+    .input(updateItemUomSchema)
+    .mutation(async ({ ctx, input }) => {
+      assertCan(ctx.ability, "item:update", "Item");
+      const orgId = ctx.user.organizationId;
+
+      const row = await ctx.db.itemUom.findFirst({
+        where: { id: input.id, organizationId: orgId, deletedAt: null },
+        select: {
+          id: true,
+          itemId: true,
+          unitId: true,
+          factor: true,
+          isPurchaseDefault: true,
+          isSalesDefault: true,
+        },
+      });
+      if (!row) throw new NotFoundError("ItemUom", input.id);
+
+      let factor: ReturnType<typeof assertFactor> | undefined;
+      let factorBefore: string | null = null;
+      if (input.factor !== undefined) {
+        factor = assertFactor(input.factor);
+        if (!factor.equals(row.factor)) {
+          const usage = await countItemUsage(ctx.db, row.itemId);
+          if (usage > 0) {
+            throw new UnprocessableError(
+              "This conversion factor can no longer be changed because the item has stock movements or document lines. Deactivate this unit and add a replacement instead.",
+            );
+          }
+          factorBefore = row.factor.toString();
+        } else {
+          factor = undefined;
+        }
+      }
+
+      return ctx.db.$transaction(async (tx) => {
+        const updated = await tx.itemUom.update({
+          where: { id: row.id },
+          data: {
+            ...(factor ? { factor: factor.toString() } : {}),
+            ...(input.isPurchaseDefault !== undefined
+              ? { isPurchaseDefault: input.isPurchaseDefault }
+              : {}),
+            ...(input.isSalesDefault !== undefined
+              ? { isSalesDefault: input.isSalesDefault }
+              : {}),
+            ...(input.barcode !== undefined ? { barcode: input.barcode } : {}),
+            ...(input.isActive !== undefined
+              ? { isActive: input.isActive }
+              : {}),
+          },
+        });
+
+        if (input.isPurchaseDefault === true) {
+          await tx.itemUom.updateMany({
+            where: {
+              itemId: row.itemId,
+              id: { not: row.id },
+              deletedAt: null,
+            },
+            data: { isPurchaseDefault: false },
+          });
+        }
+        if (input.isSalesDefault === true) {
+          await tx.itemUom.updateMany({
+            where: {
+              itemId: row.itemId,
+              id: { not: row.id },
+              deletedAt: null,
+            },
+            data: { isSalesDefault: false },
+          });
+        }
+
+        await writeAuditLog(
+          {
+            entityType: "ItemUom",
+            entityId: row.id,
+            action: "UPDATE",
+            diff: {
+              factor: {
+                before: factorBefore,
+                after: factor ? factor.toString() : null,
+              },
+            },
+            organizationId: orgId,
+            userId: ctx.user.id,
+            ipAddress: ctx.ipAddress,
+          },
+          tx,
+        );
+
+        return updated;
+      });
+    }),
+
+  removeUom: orgProcedure
+    .input(z.object({ id: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      assertCan(ctx.ability, "item:update", "Item");
+      const orgId = ctx.user.organizationId;
+
+      const row = await ctx.db.itemUom.findFirst({
+        where: { id: input.id, organizationId: orgId, deletedAt: null },
+        select: { id: true },
+      });
+      if (!row) throw new NotFoundError("ItemUom", input.id);
+
+      return ctx.db.$transaction(async (tx) => {
+        const deleted = await tx.itemUom.update({
+          where: { id: row.id },
+          data: {
+            deletedAt: new Date(),
+            isActive: false,
+            isPurchaseDefault: false,
+            isSalesDefault: false,
+          },
+        });
+
+        await writeAuditLog(
+          {
+            entityType: "ItemUom",
+            entityId: row.id,
+            action: "DELETE",
+            organizationId: orgId,
+            userId: ctx.user.id,
+            ipAddress: ctx.ipAddress,
+          },
+          tx,
+        );
+
+        return deleted;
+      });
     }),
 
   // ── SOFT DELETE ───────────────────────────────────────────────────────────

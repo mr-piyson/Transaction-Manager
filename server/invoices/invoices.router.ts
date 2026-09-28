@@ -40,6 +40,12 @@ import {
 } from "@/lib/error";
 import { type DocumentPrefix, generateSerial } from "@/lib/sequences";
 import { assertCan, orgProcedure, router } from "@/lib/trpc/context";
+import {
+  baseUnitAmount,
+  convertToBase,
+  convertUnitPrice,
+  resolveUomFactor,
+} from "@/lib/uom-converter";
 import { paymentMethodSchema, toDateRangeFilter } from "@/lib/validations";
 import {
   postCreditNoteSent,
@@ -62,6 +68,7 @@ import {
 } from "./invoices.schemas";
 import {
   deductStockForInvoice,
+  reDeductStockForCancelledCreditNote,
   returnStockForCancelledInvoice,
   returnStockForCreditNote,
 } from "./invoices.service";
@@ -182,6 +189,7 @@ export const invoicesRouter = router({
                   image: true,
                 },
               },
+              unit: { select: { id: true, code: true, name: true } },
               taxRate: { select: { id: true, name: true, rate: true } },
               department: { select: { id: true, name: true } },
             },
@@ -281,7 +289,7 @@ export const invoicesRouter = router({
             unitPrice: l.unitPrice,
             discountAmt: l.discountAmt,
             taxRateSnapshot: l.taxRateSnapshot ?? 0,
-            purchasePrice: l.purchasePrice,
+            purchasePrice: l.purchasePrice ?? 0,
           })),
         );
 
@@ -326,10 +334,21 @@ export const invoicesRouter = router({
         if (!wh) throw new NotFoundError("Warehouse", invoiceData.warehouseId);
       }
 
-      // Resolve item details for each line (tax rate, purchase price)
+      // Resolve item details for each line (tax rate, UoM factor, cost snapshot)
       const enrichedLines = await Promise.all(
         lineInputs.map(async (line) => {
-          if (!line.itemId) return line;
+          if (!line.itemId) {
+            // Manual/service line: factor 1 snapshots only, no conversion.
+            return {
+              ...line,
+              purchasePrice: line.purchasePrice ?? 0,
+              taxRateSnapshot: line.taxRateSnapshot ?? 0,
+              unitId: null,
+              uomFactor: 1,
+              baseQuantity: line.quantity,
+              baseUnitPrice: line.unitPrice,
+            };
+          }
           const item = await ctx.db.item.findFirst({
             where: {
               id: line.itemId,
@@ -338,6 +357,18 @@ export const invoicesRouter = router({
               isSaleable: true,
             },
             select: {
+              unitId: true,
+              averageCost: true,
+              itemUoms: {
+                where: { deletedAt: null, isActive: true },
+                select: {
+                  unitId: true,
+                  factor: true,
+                  isPurchaseDefault: true,
+                  isActive: true,
+                  deletedAt: true,
+                },
+              },
               taxRate: { select: { rate: true, name: true, id: true } },
               supplierItems: {
                 where: { isActive: true, deletedAt: null },
@@ -347,10 +378,38 @@ export const invoicesRouter = router({
             },
           });
           if (!item) throw new NotFoundError("Item", line.itemId);
-          const supplierBasePrice = item.supplierItems[0]?.basePrice ?? 0;
+
+          // Server-side conversion — the client never sends uomFactor.
+          const factor = resolveUomFactor(
+            { unitId: item.unitId, uoms: item.itemUoms },
+            line.unitId ?? item.unitId,
+          );
+
+          // Cost snapshot per SELECTED unit (D2): averageCost × factor,
+          // falling back to SupplierItem.basePrice expressed in this unit.
+          const purchaseDefaultFactor =
+            item.itemUoms.find((u) => u.isPurchaseDefault)?.factor ?? 1;
+          const supplierBasePrice = item.supplierItems[0]?.basePrice ?? null;
+          const purchasePrice =
+            Number(item.averageCost) > 0
+              ? Number(convertUnitPrice(item.averageCost, 1, factor))
+              : supplierBasePrice !== null
+                ? Number(
+                    convertUnitPrice(
+                      supplierBasePrice,
+                      purchaseDefaultFactor,
+                      factor,
+                    ),
+                  )
+                : 0;
+
           return {
             ...line,
-            purchasePrice: line.purchasePrice ?? Number(supplierBasePrice),
+            purchasePrice,
+            unitId: line.unitId ?? item.unitId ?? null,
+            uomFactor: factor,
+            baseQuantity: convertToBase(line.quantity, factor),
+            baseUnitPrice: baseUnitAmount(line.unitPrice, factor),
             taxRateId: line.taxRateId ?? item.taxRate?.id,
             taxRateSnapshot:
               line.taxRateSnapshot ?? Number(item.taxRate?.rate ?? 0),
@@ -424,6 +483,10 @@ export const invoicesRouter = router({
                     description: line.description,
                     quantity: totals.lines[idx]?.quantity,
                     unitPrice: totals.lines[idx]?.unitPrice,
+                    unitId: line.unitId,
+                    uomFactor: line.uomFactor,
+                    baseQuantity: line.baseQuantity,
+                    baseUnitPrice: line.baseUnitPrice,
                     discountAmt: totals.lines[idx]?.discountAmt,
                     purchasePrice: totals.lines[idx]?.purchasePrice ?? 0,
                     taxAmt: totals.lines[idx]?.taxAmt,
@@ -514,12 +577,32 @@ export const invoicesRouter = router({
           const enrichedLines: Array<Record<string, any>> = [];
           for (const line of lineInputs) {
             if (!line.itemId) {
-              enrichedLines.push(line);
+              enrichedLines.push({
+                ...line,
+                purchasePrice: line.purchasePrice ?? 0,
+                taxRateSnapshot: line.taxRateSnapshot ?? 0,
+                unitId: null,
+                uomFactor: 1,
+                baseQuantity: line.quantity,
+                baseUnitPrice: line.unitPrice,
+              });
               continue;
             }
             const item = await tx.item.findFirst({
               where: { id: line.itemId, organizationId: orgId },
               select: {
+                unitId: true,
+                averageCost: true,
+                itemUoms: {
+                  where: { deletedAt: null, isActive: true },
+                  select: {
+                    unitId: true,
+                    factor: true,
+                    isPurchaseDefault: true,
+                    isActive: true,
+                    deletedAt: true,
+                  },
+                },
                 taxRate: { select: { rate: true, name: true, id: true } },
                 supplierItems: {
                   where: { isActive: true, deletedAt: null },
@@ -528,14 +611,40 @@ export const invoicesRouter = router({
                 },
               },
             });
-            const supplierBasePrice = item?.supplierItems[0]?.basePrice ?? 0;
+            if (!item) throw new NotFoundError("Item", line.itemId);
+
+            const factor = resolveUomFactor(
+              { unitId: item.unitId, uoms: item.itemUoms },
+              line.unitId ?? item.unitId,
+            );
+
+            const purchaseDefaultFactor =
+              item.itemUoms.find((u) => u.isPurchaseDefault)?.factor ?? 1;
+            const supplierBasePrice = item.supplierItems[0]?.basePrice ?? null;
+            const purchasePrice =
+              Number(item.averageCost) > 0
+                ? Number(convertUnitPrice(item.averageCost, 1, factor))
+                : supplierBasePrice !== null
+                  ? Number(
+                      convertUnitPrice(
+                        supplierBasePrice,
+                        purchaseDefaultFactor,
+                        factor,
+                      ),
+                    )
+                  : 0;
+
             enrichedLines.push({
               ...line,
-              purchasePrice: line.purchasePrice ?? Number(supplierBasePrice),
-              taxRateId: line.taxRateId ?? item?.taxRate?.id,
+              purchasePrice,
+              unitId: line.unitId ?? item.unitId ?? null,
+              uomFactor: factor,
+              baseQuantity: convertToBase(line.quantity, factor),
+              baseUnitPrice: baseUnitAmount(line.unitPrice, factor),
+              taxRateId: line.taxRateId ?? item.taxRate?.id,
               taxRateSnapshot:
-                line.taxRateSnapshot ?? Number(item?.taxRate?.rate ?? 0),
-              taxRateName: line.taxRateName ?? item?.taxRate?.name,
+                line.taxRateSnapshot ?? Number(item.taxRate?.rate ?? 0),
+              taxRateName: line.taxRateName ?? item.taxRate?.name,
             });
           }
 
@@ -558,6 +667,10 @@ export const invoicesRouter = router({
               description: line.description,
               quantity: totals.lines[idx]?.quantity,
               unitPrice: totals.lines[idx]?.unitPrice,
+              unitId: line.unitId,
+              uomFactor: line.uomFactor,
+              baseQuantity: line.baseQuantity,
+              baseUnitPrice: line.baseUnitPrice,
               discountAmt: totals.lines[idx]?.discountAmt,
               purchasePrice: totals.lines[idx]?.purchasePrice ?? 0,
               taxAmt: totals.lines[idx]?.taxAmt,
@@ -681,7 +794,8 @@ export const invoicesRouter = router({
               .map((l) => ({
                 itemId: l.itemId!,
                 itemType: l.item?.type ?? "SERVICE",
-                quantity: Number(l.quantity),
+                // Stock is always in the item's Base Unit.
+                quantity: Number(l.baseQuantity),
                 invoiceLineId: l.id,
               }))
               .filter((l) => l.itemId),
@@ -703,7 +817,7 @@ export const invoicesRouter = router({
               .map((l) => ({
                 itemId: l.itemId!,
                 itemType: l.item?.type ?? "SERVICE",
-                quantity: Number(l.quantity),
+                quantity: Number(l.baseQuantity),
                 invoiceLineId: l.id,
               }))
               .filter((l) => l.itemId),
@@ -1286,7 +1400,31 @@ export const invoicesRouter = router({
               .map((l) => ({
                 itemId: l.itemId!,
                 itemType: l.item?.type ?? "SERVICE",
-                quantity: Number(l.quantity),
+                quantity: Number(l.baseQuantity),
+                invoiceLineId: l.id,
+              }))
+              .filter((l) => l.itemId),
+          });
+        }
+
+        // Undo the stock return of a SENT credit note (it returned stock on
+        // send — cancelling must push it back out or the ledger diverges).
+        if (
+          ["SENT", "PARTIAL", "OVERDUE"].includes(invoice.status) &&
+          invoice.type === "CREDIT_NOTE" &&
+          invoice.parentInvoiceId &&
+          invoice.warehouseId
+        ) {
+          await reDeductStockForCancelledCreditNote({
+            tx,
+            organizationId: orgId,
+            warehouseId: invoice.warehouseId,
+            userId: ctx.user.id,
+            lines: invoice.lines
+              .map((l) => ({
+                itemId: l.itemId!,
+                itemType: l.item?.type ?? "SERVICE",
+                quantity: Number(l.baseQuantity),
                 invoiceLineId: l.id,
               }))
               .filter((l) => l.itemId),
@@ -1436,6 +1574,10 @@ export const invoicesRouter = router({
                 description: l.description,
                 quantity: l.quantity,
                 unitPrice: l.unitPrice,
+                unitId: l.unitId,
+                uomFactor: l.uomFactor,
+                baseQuantity: l.baseQuantity,
+                baseUnitPrice: l.baseUnitPrice,
                 purchasePrice: l.purchasePrice,
                 discountAmt: l.discountAmt,
                 taxAmt: l.taxAmt,
