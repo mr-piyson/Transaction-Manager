@@ -35,6 +35,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { trpc } from "@/lib/trpc/client";
+import {
+  convertAmount,
+  defaultUnitIdFor,
+  factorForUnit,
+  itemUnitOptions,
+} from "@/lib/uom-client";
 
 const lineEditSchema = z.object({
   mode: z.enum(["item", "manual"]).default("item"),
@@ -42,6 +48,7 @@ const lineEditSchema = z.object({
   description: z.string().nullish(),
   quantity: z.coerce.number().positive("Qty must be > 0"),
   unitPrice: z.coerce.number().min(0, "Price must be >= 0"),
+  unitId: z.string().nullish(),
   discountAmt: z.coerce.number().min(0).default(0),
   purchasePrice: z.coerce.number().min(0).nullish(),
   taxRateId: z.string().nullish(),
@@ -58,6 +65,7 @@ function initialToDefaults(initial: InvoiceLineData): LineEditValues {
     description: initial.description || undefined,
     quantity: initial.quantity,
     unitPrice: initial.unitPrice,
+    unitId: initial.unitId || undefined,
     discountAmt: initial.discountAmt,
     purchasePrice: initial.purchasePrice ?? undefined,
     taxRateId: initial.taxRateId || undefined,
@@ -74,6 +82,8 @@ export interface InvoiceLineData {
   description?: string | null;
   quantity: number;
   unitPrice: number;
+  /** Selected unit; null = item Base Unit. */
+  unitId?: string | null;
   discountAmt: number;
   purchasePrice?: number | null;
   taxRateId?: string | null;
@@ -150,6 +160,7 @@ export function InvoiceLineDialog({
   const qty = Number(watched?.quantity) || 0;
   const price = Number(watched?.unitPrice) || 0;
   const discount = Number(watched?.discountAmt) || 0;
+  const unitId = watched?.unitId ?? undefined;
   const lineSubtotal = qty * price;
   const lineTotal = lineSubtotal - discount;
   const taxRateId = watched?.taxRateId;
@@ -160,6 +171,13 @@ export function InvoiceLineDialog({
   const taxRate = taxRatesMap[taxRateId || ""] as any;
   const lineTax = taxRate ? lineTotal * (Number(taxRate.rate) / 100) : 0;
   const catalogueItem = itemId ? (itemsMap[itemId] as any) : undefined;
+  const unitOptions = React.useMemo(
+    () => (isManual ? [] : itemUnitOptions(catalogueItem)),
+    [isManual, catalogueItem],
+  );
+  const selectedOption = unitOptions.find((u) => u.unitId === unitId);
+  const lineFactor = factorForUnit(catalogueItem, unitId);
+  const baseCode = catalogueItem?.unit ?? "";
   // Fall back to the name/sku snapshot carried on the line so a line whose item
   // is excluded from the catalogue query still shows what it refers to.
   const selectedItem = catalogueItem
@@ -168,15 +186,30 @@ export function InvoiceLineDialog({
       ? { id: itemId, name: initial.itemName, sku: initial.itemSku }
       : undefined;
   const averageCost = !isManual ? Number(catalogueItem?.averageCost) || 0 : 0;
-  const lineCogs = isManual ? 0 : qty * averageCost;
+  // Average cost is stored per Base Unit — scale it to the selected unit.
+  const unitAvgCost = averageCost * lineFactor;
+  const lineCogs = isManual ? 0 : qty * unitAvgCost;
   const grossProfit = lineTotal - lineCogs;
   const margin = lineTotal > 0 ? (grossProfit / lineTotal) * 100 : 0;
   const belowAverageCost =
-    !isManual && price > 0 && Boolean(selectedItem) && price < averageCost;
+    !isManual && price > 0 && Boolean(selectedItem) && price < unitAvgCost;
+  // Stock availability (base units) with an equivalent in the selected unit.
+  const availableBase =
+    !isManual && catalogueItem?.totalStock !== undefined
+      ? Number(catalogueItem.totalStock) || 0
+      : null;
+  const requestedBase = qty * lineFactor;
+  const overStock = availableBase !== null && requestedBase > availableBase;
 
   const onSubmit = (values: LineEditValues) => {
+    const gateFactor = factorForUnit(
+      itemsMap[values.itemId ?? ""],
+      values.unitId,
+    );
+    const gateAvgCost =
+      (Number(itemsMap[values.itemId ?? ""]?.averageCost) || 0) * gateFactor;
     const isBelow =
-      !isManual && values.unitPrice > 0 && values.unitPrice < averageCost;
+      !isManual && values.unitPrice > 0 && values.unitPrice < gateAvgCost;
     if (isBelow && !isAdmin) {
       setAdminAlertOpen(true);
       return;
@@ -194,6 +227,7 @@ export function InvoiceLineDialog({
       description: values.description || null,
       quantity: values.quantity,
       unitPrice: values.unitPrice,
+      unitId: values.unitId || null,
       discountAmt: values.discountAmt,
       purchasePrice: values.purchasePrice || null,
       taxRateId: values.taxRateId || null,
@@ -203,6 +237,22 @@ export function InvoiceLineDialog({
     onOpenChange(false);
   };
 
+  /** Suggested purchase cost (COGS) per selected unit — mirrors server D2. */
+  const suggestedPurchaseCost = (item: any, targetUnitId?: string) => {
+    const factor = factorForUnit(item, targetUnitId);
+    const avg = Number(item?.averageCost) || 0;
+    if (avg > 0) return avg * factor;
+    const supplierBase = Number(item?.supplierItems?.[0]?.basePrice);
+    if (!Number.isFinite(supplierBase)) return 0;
+    const purchFactor =
+      Number(
+        (item?.itemUoms ?? []).find((u: any) => u.isPurchaseDefault)?.factor ??
+          1,
+      ) || 1;
+    // supplierBase is per purchase-default unit → per selected unit.
+    return (supplierBase * factor) / purchFactor;
+  };
+
   const handleItemPicked = (picked: any[]) => {
     const selected = picked[0] as any;
     if (!selected) {
@@ -210,16 +260,45 @@ export function InvoiceLineDialog({
       return;
     }
     const tr = taxRatesMap[selected?.taxRate?.id] as any;
-    const supplierBasePrice = selected.supplierItems?.[0]?.basePrice ?? 0;
+    const defaultUnitId = defaultUnitIdFor(selected, "sale");
+    const factor = factorForUnit(selected, defaultUnitId);
     setValue("mode", "item");
     setValue("itemId", selected.id);
     setValue("description", selected.description || undefined);
-    setValue("unitPrice", Number(selected.salesPrice) || 0);
-    setValue("purchasePrice", Number(supplierBasePrice) || 0);
+    setValue("unitId", defaultUnitId ?? undefined);
+    // salesPrice / supplier basePrice are stored per Base Unit / purchase
+    // default — express them in the selected unit.
+    setValue(
+      "unitPrice",
+      Math.round((Number(selected.salesPrice) || 0) * factor * 1e6) / 1e6,
+    );
+    setValue(
+      "purchasePrice",
+      Math.round(suggestedPurchaseCost(selected, defaultUnitId) * 1e6) / 1e6,
+    );
     setValue("taxRateId", selected.taxRate?.id);
     setValue("taxRateSnapshot", tr ? Number(tr.rate) : undefined);
     setValue("taxRateName", tr?.name || undefined);
     setItemPickerOpen(false);
+  };
+
+  const handleUnitChange = (nextUnitId: string) => {
+    const oldFactor = lineFactor;
+    const newFactor = factorForUnit(catalogueItem, nextUnitId);
+    setValue("unitId", nextUnitId, { shouldDirty: true });
+    if (oldFactor !== newFactor) {
+      const nextPrice = convertAmount(price, oldFactor, newFactor);
+      setValue("unitPrice", Math.round(nextPrice * 1e6) / 1e6, {
+        shouldDirty: true,
+      });
+      const prevPurchase = Number(watched?.purchasePrice) || 0;
+      if (prevPurchase > 0) {
+        const nextPurchase = convertAmount(prevPurchase, oldFactor, newFactor);
+        setValue("purchasePrice", Math.round(nextPurchase * 1e6) / 1e6, {
+          shouldDirty: true,
+        });
+      }
+    }
   };
 
   const handleModeChange = (value: string) => {
@@ -280,7 +359,7 @@ export function InvoiceLineDialog({
                     <span>
                       {t("invoices.avgCost")}:{" "}
                       <span className="font-medium text-foreground">
-                        {averageCost.toFixed(3)}
+                        {unitAvgCost.toFixed(3)}
                       </span>
                     </span>
                   )}
@@ -372,6 +451,49 @@ export function InvoiceLineDialog({
               </div>
             )}
 
+            {/* Unit of measure (item lines only) */}
+            {!isManual && unitOptions.length > 0 && (
+              <div className="space-y-1.5">
+                <Label className="text-xs">{t("invoices.unit")}</Label>
+                <Select value={unitId || ""} onValueChange={handleUnitChange}>
+                  <SelectTrigger className="w-full min-w-0">
+                    <SelectValue placeholder={t("invoices.unit")} />
+                  </SelectTrigger>
+                  <SelectContent className="max-w-[75vw]">
+                    {unitOptions.map((u) => (
+                      <SelectItem key={u.unitId} value={u.unitId}>
+                        {u.code}
+                        {u.isBase ? ` (${t("invoices.baseUnitLower")})` : ""}
+                        {u.isSalesDefault ? " ★" : ""}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <div className="flex flex-wrap items-center justify-between gap-x-3 text-xs text-muted-foreground">
+                  <span>
+                    {selectedOption && !selectedOption.isBase
+                      ? `1 ${selectedOption.code} = ${selectedOption.factor} ${baseCode}`
+                      : t("invoices.baseUnitHint")}
+                  </span>
+                  {availableBase !== null && (
+                    <span
+                      className={
+                        overStock
+                          ? "font-medium text-amber-600"
+                          : "tabular-nums"
+                      }
+                    >
+                      {t("invoices.available")}: {availableBase.toFixed(3)}{" "}
+                      {baseCode}
+                      {lineFactor !== 1 &&
+                        ` · ≈ ${(availableBase / lineFactor).toFixed(3)} ${selectedOption?.code ?? ""}`}
+                      {overStock && ` · ${t("invoices.exceedsStock")}`}
+                    </span>
+                  )}
+                </div>
+              </div>
+            )}
+
             {/* Numeric fields: Qty, Unit price, Discount */}
             <div className="grid grid-cols-2 gap-3 max-sm:grid-cols-1">
               <div className="space-y-1.5">
@@ -385,6 +507,11 @@ export function InvoiceLineDialog({
                 {errors.quantity && (
                   <p className="text-xs text-destructive">
                     {errors.quantity.message}
+                  </p>
+                )}
+                {!isManual && lineFactor !== 1 && (
+                  <p className="text-xs text-muted-foreground tabular-nums">
+                    → {(qty * lineFactor).toFixed(3)} {baseCode}
                   </p>
                 )}
               </div>
@@ -474,7 +601,7 @@ export function InvoiceLineDialog({
               <AlertDialogDescription>
                 {t("invoices.adminApprovalRequiredDesc", {
                   price: price.toFixed(3),
-                  averageCost: averageCost.toFixed(3),
+                  averageCost: unitAvgCost.toFixed(3),
                 })}
               </AlertDialogDescription>
             </AlertDialogHeader>

@@ -20,6 +20,7 @@ export interface POPoInput {
     description?: string | null;
     quantity?: number | string | null;
     unitCost?: number | string | null;
+    unitId?: string | null;
     taxRateId?: string | null;
     taxRateSnapshot?: number | string | null;
     taxRateName?: string | null;
@@ -60,6 +61,7 @@ export function poToFormValues(po: POPoInput): POFormValues {
       description: l.description ?? undefined,
       quantity: Number(l.quantity) || 0,
       unitCost: Number(l.unitCost) || 0,
+      unitId: (l as any).unitId ?? undefined,
       taxRateId: l.taxRateId ?? undefined,
       taxRateSnapshot:
         l.taxRateSnapshot != null ? Number(l.taxRateSnapshot) : undefined,
@@ -82,6 +84,7 @@ export function buildPOSubmitPayload(values: POFormValues) {
       description: l.description || undefined,
       quantity: Number(l.quantity),
       unitCost: Number(l.unitCost),
+      unitId: l.unitId || undefined,
       taxRateId: l.taxRateId || undefined,
       taxRateSnapshot: l.taxRateSnapshot ?? undefined,
       taxRateName: l.taxRateName || undefined,

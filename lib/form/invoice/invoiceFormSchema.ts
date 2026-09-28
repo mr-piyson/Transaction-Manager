@@ -12,6 +12,8 @@ export const invoiceLineSchema = z.object({
   description: z.string().nullish(),
   quantity: z.coerce.number().positive("Qty must be > 0"),
   unitPrice: z.coerce.number().min(0, "Price must be >= 0"),
+  /** Selected unit for this line; null/undefined = item Base Unit. */
+  unitId: z.string().nullish(),
   discountAmt: z.coerce.number().min(0).default(0),
   purchasePrice: z.coerce.number().min(0).nullish(),
   taxRateId: z.string().nullish(),

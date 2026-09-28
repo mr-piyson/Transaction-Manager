@@ -306,7 +306,13 @@ export const itemsRouter = router({
               },
             },
           },
-          _count: { select: { invoiceLines: true, purchaseLines: true } },
+          _count: {
+            select: {
+              invoiceLines: true,
+              purchaseLines: true,
+              stockMovements: true,
+            },
+          },
         },
       });
 

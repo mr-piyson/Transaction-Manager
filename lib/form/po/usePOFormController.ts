@@ -16,6 +16,7 @@ import type { POLineData } from "@/components/dialogs/poLineDialog";
 import { type POFormValues, poFormSchema } from "@/lib/form/po/poFormSchema";
 import { buildPOSubmitPayload } from "@/lib/form/po/poMapper";
 import { trpc } from "@/lib/trpc/client";
+import { defaultUnitIdFor } from "@/lib/uom-client";
 
 export interface POFormController {
   mode: "create" | "edit";
@@ -218,6 +219,7 @@ export function usePOFormController({
         itemImage: item.image ?? null,
         quantity: Number(supplierItem?.minOrderQty) || 1,
         unitCost: Number(supplierItem?.basePrice ?? 0) || 0,
+        unitId: defaultUnitIdFor(item, "purchase") ?? null,
         taxRateId: item.taxRate?.id,
         taxRateSnapshot: tr ? Number(tr.rate) : undefined,
         taxRateName: tr?.name || undefined,
@@ -239,6 +241,7 @@ export function usePOFormController({
           description: null,
           quantity: Number(supplierItem?.minOrderQty) || 1,
           unitCost: Number(supplierItem?.basePrice ?? 0) || 0,
+          unitId: defaultUnitIdFor(item, "purchase") ?? null,
           taxRateId: item.taxRate?.id,
           taxRateSnapshot: tr ? Number(tr.rate) : undefined,
           taxRateName: tr?.name || undefined,
@@ -257,6 +260,7 @@ export function usePOFormController({
         description: "",
         quantity: 1,
         unitCost: 0,
+        unitId: null,
       },
     });
   };
@@ -274,6 +278,7 @@ export function usePOFormController({
         description: line?.description || null,
         quantity: Number(line?.quantity) || 0,
         unitCost: Number(line?.unitCost) || 0,
+        unitId: line?.unitId || null,
         taxRateId: line?.taxRateId || null,
         taxRateSnapshot: line?.taxRateSnapshot ?? null,
         taxRateName: line?.taxRateName || null,

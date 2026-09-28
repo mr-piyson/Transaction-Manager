@@ -35,6 +35,7 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from "@/components/ui/empty";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Spinner } from "@/components/ui/spinner";
 import {
@@ -291,10 +292,14 @@ export default function PurchaseOrderDetailPage() {
                 </h1>
                 <div className="space-y-0.5 text-xs text-muted-foreground">
                   {orgData?.crNumber && (
-                    <p>{t("customers.crNumber")}: {orgData.crNumber}</p>
+                    <p>
+                      {t("customers.crNumber")}: {orgData.crNumber}
+                    </p>
                   )}
                   {orgData?.taxId && (
-                    <p>{t("customers.taxId")}: {orgData.taxId}</p>
+                    <p>
+                      {t("customers.taxId")}: {orgData.taxId}
+                    </p>
                   )}
                   {orgData?.vatRegistered && <p>{t("common.vatRegistered")}</p>}
                   {orgData?.phone && <p>{orgData.phone}</p>}
@@ -308,15 +313,20 @@ export default function PurchaseOrderDetailPage() {
                 </span>
                 <p className="text-sm font-semibold mt-1">{po.serial}</p>
                 <div className="mt-2 text-xs text-muted-foreground space-y-0.5">
-                  <p>{t("common.date")}: {po.date ? formatDate(po.date) : "—"}</p>
+                  <p>
+                    {t("common.date")}: {po.date ? formatDate(po.date) : "—"}
+                  </p>
                   {po.expectedDate && (
                     <p>
-                      {t("purchaseOrders.expectedDate")}: {formatDate(po.expectedDate)}
+                      {t("purchaseOrders.expectedDate")}:{" "}
+                      {formatDate(po.expectedDate)}
                     </p>
                   )}
                 </div>
                 <div className="mt-2">
-                  <span className={`inline-block text-xs font-semibold px-2 py-0.5 rounded border ${STATUS_COLORS[po.status] ?? "bg-gray-100 text-gray-800 border-gray-300"}`}>
+                  <span
+                    className={`inline-block text-xs font-semibold px-2 py-0.5 rounded border ${STATUS_COLORS[po.status] ?? "bg-gray-100 text-gray-800 border-gray-300"}`}
+                  >
                     {t(`purchaseOrders.statuses.${po.status}`)}
                   </span>
                 </div>
@@ -332,10 +342,14 @@ export default function PurchaseOrderDetailPage() {
               </h3>
               <p className="font-semibold">{po.supplier?.name ?? "—"}</p>
               {po.supplier?.email && (
-                <p className="text-sm text-muted-foreground">{po.supplier.email}</p>
+                <p className="text-sm text-muted-foreground">
+                  {po.supplier.email}
+                </p>
               )}
               {po.supplier?.phone && (
-                <p className="text-sm text-muted-foreground">{po.supplier.phone}</p>
+                <p className="text-sm text-muted-foreground">
+                  {po.supplier.phone}
+                </p>
               )}
             </div>
             <div>
@@ -371,10 +385,18 @@ export default function PurchaseOrderDetailPage() {
                 <tr className="border-b text-xs text-muted-foreground uppercase">
                   <th className="text-left py-2 pr-2 w-10">#</th>
                   <th className="text-left py-2 pr-2">{t("common.item")}</th>
-                  <th className="text-right py-2 px-2">{t("common.ordered")}</th>
-                  <th className="text-right py-2 px-2">{t("common.received")}</th>
-                  <th className="text-right py-2 px-2">{t("common.remaining")}</th>
-                  <th className="text-right py-2 px-2">{t("purchaseOrders.unitCost")}</th>
+                  <th className="text-right py-2 px-2">
+                    {t("common.ordered")}
+                  </th>
+                  <th className="text-right py-2 px-2">
+                    {t("common.received")}
+                  </th>
+                  <th className="text-right py-2 px-2">
+                    {t("common.remaining")}
+                  </th>
+                  <th className="text-right py-2 px-2">
+                    {t("purchaseOrders.unitCost")}
+                  </th>
                   <th className="text-right py-2 pl-2">{t("common.total")}</th>
                 </tr>
               </thead>
@@ -383,31 +405,58 @@ export default function PurchaseOrderDetailPage() {
                   const qty = Number(line.quantity);
                   const recv = Number(line.receivedQty);
                   const rem = qty - recv;
+                  const unitCode = line.unit?.code || line.item?.unit || "";
                   return (
                     <tr key={line.id} className="border-b last:border-0">
-                      <td className="py-2 pr-2 text-muted-foreground align-top">{idx + 1}</td>
+                      <td className="py-2 pr-2 text-muted-foreground align-top">
+                        {idx + 1}
+                      </td>
                       <td className="py-2 pr-2 align-top">
                         <span className="font-medium">
-                          {line.item ? line.item.name : line.description || "Manual entry"}
+                          {line.item
+                            ? line.item.name
+                            : line.description || "Manual entry"}
                         </span>
                         {line.item?.sku && (
-                          <p className="text-xs text-muted-foreground">SKU: {line.item.sku}</p>
+                          <p className="text-xs text-muted-foreground">
+                            SKU: {line.item.sku}
+                          </p>
                         )}
                         {!line.item && (
-                          <p className="text-xs text-muted-foreground">Manual (no stock)</p>
+                          <p className="text-xs text-muted-foreground">
+                            Manual (no stock)
+                          </p>
                         )}
                       </td>
-                      <td className="py-2 px-2 text-right align-top whitespace-nowrap tabular-nums">{qty.toFixed(3)}</td>
-                      <td className="py-2 px-2 text-right align-top whitespace-nowrap tabular-nums">{recv.toFixed(3)}</td>
-                      <td className="py-2 px-2 text-right align-top whitespace-nowrap tabular-nums">{rem.toFixed(3)}</td>
-                      <td className="py-2 px-2 text-right align-top whitespace-nowrap tabular-nums">{Number(line.unitCost).toFixed(3)}</td>
-                      <td className="py-2 pl-2 text-right align-top whitespace-nowrap font-medium tabular-nums">{Number(line.total).toFixed(3)}</td>
+                      <td className="py-2 px-2 text-right align-top whitespace-nowrap tabular-nums">
+                        {qty.toFixed(3)}
+                        {unitCode && (
+                          <span className="ml-1 text-xs text-muted-foreground">
+                            {unitCode}
+                          </span>
+                        )}
+                      </td>
+                      <td className="py-2 px-2 text-right align-top whitespace-nowrap tabular-nums">
+                        {recv.toFixed(3)}
+                      </td>
+                      <td className="py-2 px-2 text-right align-top whitespace-nowrap tabular-nums">
+                        {rem.toFixed(3)}
+                      </td>
+                      <td className="py-2 px-2 text-right align-top whitespace-nowrap tabular-nums">
+                        {Number(line.unitCost).toFixed(3)}
+                      </td>
+                      <td className="py-2 pl-2 text-right align-top whitespace-nowrap font-medium tabular-nums">
+                        {Number(line.total).toFixed(3)}
+                      </td>
                     </tr>
                   );
                 })}
                 {po.lines.length === 0 && (
                   <tr>
-                    <td colSpan={7} className="py-6 text-center text-muted-foreground">
+                    <td
+                      colSpan={7}
+                      className="py-6 text-center text-muted-foreground"
+                    >
                       {t("purchaseOrders.noLineItems")}
                     </td>
                   </tr>
@@ -420,21 +469,31 @@ export default function PurchaseOrderDetailPage() {
           <div className="px-6 pb-4 sm:px-8">
             <div className="ml-auto w-64 space-y-1 text-sm border-t pt-2">
               <div className="flex justify-between">
-                <span className="text-muted-foreground">{t("common.subtotal")}</span>
-                <span className="tabular-nums">{Number(po.subtotal).toFixed(3)}</span>
+                <span className="text-muted-foreground">
+                  {t("common.subtotal")}
+                </span>
+                <span className="tabular-nums">
+                  {Number(po.subtotal).toFixed(3)}
+                </span>
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">{t("common.tax")}</span>
-                <span className="tabular-nums">{Number(po.taxTotal).toFixed(3)}</span>
+                <span className="tabular-nums">
+                  {Number(po.taxTotal).toFixed(3)}
+                </span>
               </div>
               <div className="flex justify-between font-bold text-base border-t pt-1">
                 <span>{t("common.total")}</span>
-                <span className="tabular-nums">{Number(po.total).toFixed(3)} {po.currency}</span>
+                <span className="tabular-nums">
+                  {Number(po.total).toFixed(3)} {po.currency}
+                </span>
               </div>
               {Number(po.amountOwed) > 0 && (
                 <div className="flex justify-between text-destructive font-medium">
                   <span>{t("common.amountOwed")}</span>
-                  <span className="tabular-nums">{Number(po.amountOwed).toFixed(3)} {po.currency}</span>
+                  <span className="tabular-nums">
+                    {Number(po.amountOwed).toFixed(3)} {po.currency}
+                  </span>
                 </div>
               )}
             </div>
@@ -466,7 +525,9 @@ export default function PurchaseOrderDetailPage() {
                     <TableRow>
                       <TableHead>{t("common.date")}</TableHead>
                       <TableHead>{t("common.item")}</TableHead>
-                      <TableHead className="text-right">{t("common.quantity")}</TableHead>
+                      <TableHead className="text-right">
+                        {t("common.quantity")}
+                      </TableHead>
                       <TableHead>{t("common.warehouse")}</TableHead>
                       <TableHead>{t("common.by")}</TableHead>
                     </TableRow>
@@ -474,18 +535,24 @@ export default function PurchaseOrderDetailPage() {
                   <TableBody>
                     {stockMovements.map((m: any) => (
                       <TableRow key={m.id}>
-                        <TableCell className="text-sm">{formatShortDate(m.createdAt)}</TableCell>
+                        <TableCell className="text-sm">
+                          {formatShortDate(m.createdAt)}
+                        </TableCell>
                         <TableCell>
                           <span className="font-medium">{m.item?.name}</span>
                           {m.item?.sku && (
-                            <span className="text-xs text-muted-foreground ml-1">({m.item.sku})</span>
+                            <span className="text-xs text-muted-foreground ml-1">
+                              ({m.item.sku})
+                            </span>
                           )}
                         </TableCell>
                         <TableCell className="text-right font-medium text-green-600 dark:text-green-400">
                           +{Number(m.quantity).toFixed(3)}
                         </TableCell>
                         <TableCell>{m.toWarehouse?.name ?? "—"}</TableCell>
-                        <TableCell className="text-sm text-muted-foreground">{m.user?.name ?? "—"}</TableCell>
+                        <TableCell className="text-sm text-muted-foreground">
+                          {m.user?.name ?? "—"}
+                        </TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
@@ -493,11 +560,17 @@ export default function PurchaseOrderDetailPage() {
               </div>
               <div className="sm:hidden divide-y">
                 {stockMovements.map((m: any) => (
-                  <div key={m.id} className="px-4 py-3 flex items-center justify-between gap-2">
+                  <div
+                    key={m.id}
+                    className="px-4 py-3 flex items-center justify-between gap-2"
+                  >
                     <div className="min-w-0">
-                      <div className="font-medium text-sm truncate">{m.item?.name}</div>
+                      <div className="font-medium text-sm truncate">
+                        {m.item?.name}
+                      </div>
                       <div className="text-xs text-muted-foreground">
-                        {formatShortDate(m.createdAt)} · {m.toWarehouse?.name ?? "—"} · {m.user?.name ?? "—"}
+                        {formatShortDate(m.createdAt)} ·{" "}
+                        {m.toWarehouse?.name ?? "—"} · {m.user?.name ?? "—"}
                       </div>
                     </div>
                     <div className="text-right shrink-0">
@@ -521,15 +594,21 @@ export default function PurchaseOrderDetailPage() {
               date: po.createdAt ? formatDateTime(po.createdAt) : "—",
             })}
           </span>
-          <span>{t("purchaseOrders.metaVersion", { version: po.version })}</span>
+          <span>
+            {t("purchaseOrders.metaVersion", { version: po.version })}
+          </span>
           {po.receivedAt && (
             <span>
-              {t("purchaseOrders.metaReceivedOn", { date: formatDateTime(po.receivedAt) })}
+              {t("purchaseOrders.metaReceivedOn", {
+                date: formatDateTime(po.receivedAt),
+              })}
             </span>
           )}
           {po.cancelledAt && (
             <span>
-              {t("purchaseOrders.metaCancelledOn", { date: formatDateTime(po.cancelledAt) })}
+              {t("purchaseOrders.metaCancelledOn", {
+                date: formatDateTime(po.cancelledAt),
+              })}
             </span>
           )}
         </div>
@@ -540,16 +619,25 @@ export default function PurchaseOrderDetailPage() {
         open={receiveOpen}
         onOpenChange={setReceiveOpen}
         lines={po.lines}
-        onConfirm={() => receiveMutation.mutate({ id: po.id, version })}
+        onConfirm={(receiveLines) =>
+          receiveMutation.mutate({ id: po.id, version, lines: receiveLines })
+        }
         isPending={receiveMutation.isPending}
       />
 
       {/* Reject dialog */}
-      <Dialog open={rejectOpen} onOpenChange={(v) => { if (!rejectMutation.isPending) setRejectOpen(v); }}>
+      <Dialog
+        open={rejectOpen}
+        onOpenChange={(v) => {
+          if (!rejectMutation.isPending) setRejectOpen(v);
+        }}
+      >
         <DialogContent>
           <DialogHeader>
             <DialogTitle>{t("purchaseOrders.rejectTitle")}</DialogTitle>
-            <DialogDescription>{t("purchaseOrders.rejectDesc", { serial: po.serial })}</DialogDescription>
+            <DialogDescription>
+              {t("purchaseOrders.rejectDesc", { serial: po.serial })}
+            </DialogDescription>
           </DialogHeader>
           <div className="space-y-3">
             <Label htmlFor="reject-reason">{t("common.reason")}</Label>
@@ -562,11 +650,30 @@ export default function PurchaseOrderDetailPage() {
             />
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => { setRejectOpen(false); setRejectReason(""); }} disabled={rejectMutation.isPending}>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setRejectOpen(false);
+                setRejectReason("");
+              }}
+              disabled={rejectMutation.isPending}
+            >
               {t("common.cancel")}
             </Button>
-            <Button variant="destructive" onClick={() => rejectMutation.mutate({ id: po.id, version, reason: rejectReason || undefined })} disabled={rejectMutation.isPending}>
-              {rejectMutation.isPending && <Loader2 className="size-4 mr-1 animate-spin" />}
+            <Button
+              variant="destructive"
+              onClick={() =>
+                rejectMutation.mutate({
+                  id: po.id,
+                  version,
+                  reason: rejectReason || undefined,
+                })
+              }
+              disabled={rejectMutation.isPending}
+            >
+              {rejectMutation.isPending && (
+                <Loader2 className="size-4 mr-1 animate-spin" />
+              )}
               {t("purchaseOrders.rejectPO")}
             </Button>
           </DialogFooter>
@@ -588,7 +695,9 @@ function ReceiveDialog({
   open: boolean;
   onOpenChange: (v: boolean) => void;
   lines: any[];
-  onConfirm: () => void;
+  onConfirm: (
+    receiveLines: { purchaseLineId: string; quantity: number }[],
+  ) => void;
   isPending: boolean;
 }) {
   const tr = useTranslations();
@@ -597,15 +706,37 @@ function ReceiveDialog({
   );
   const allAlreadyReceived = remaining.length === 0;
 
+  // Per-line quantities to receive, keyed by purchaseLineId. An absent entry
+  // falls back to the full remaining amount (receive-all default).
+  const [entered, setEntered] = React.useState<Record<string, string>>({});
+  React.useEffect(() => {
+    if (open) setEntered({});
+  }, [open]);
+
+  const valueFor = (line: any) => {
+    const remainingQty = Number(line.quantity) - Number(line.receivedQty);
+    const raw = entered[line.id];
+    if (raw === undefined) return Math.round(remainingQty * 1e6) / 1e6;
+    const parsed = Number(raw);
+    return Number.isFinite(parsed) && parsed > 0 ? parsed : 0;
+  };
+
+  const pendingLines = remaining
+    .map((line: any) => ({ line, quantity: valueFor(line) }))
+    .filter((r) => r.quantity > 0);
+  const canConfirm = pendingLines.length > 0;
+
   return (
     <Dialog open={open} onOpenChange={(v) => !isPending && onOpenChange(v)}>
-      <DialogContent className="sm:max-w-lg">
+      <DialogContent className="sm:max-w-2xl">
         <DialogHeader>
           <DialogTitle>{tr("purchaseOrders.receiveStock")}</DialogTitle>
           <DialogDescription>
             {allAlreadyReceived
               ? tr("purchaseOrders.allReceived")
-              : tr("purchaseOrders.pendingReceipt", { count: remaining.length })}
+              : tr("purchaseOrders.pendingReceipt", {
+                  count: remaining.length,
+                })}
           </DialogDescription>
         </DialogHeader>
 
@@ -615,28 +746,78 @@ function ReceiveDialog({
               <TableHeader>
                 <TableRow>
                   <TableHead>{tr("common.item")}</TableHead>
-                  <TableHead className="text-right">{tr("common.ordered")}</TableHead>
-                  <TableHead className="text-right">{tr("common.received")}</TableHead>
-                  <TableHead className="text-right">{tr("common.toReceive")}</TableHead>
+                  <TableHead className="text-right">
+                    {tr("common.ordered")}
+                  </TableHead>
+                  <TableHead className="text-right">
+                    {tr("common.received")}
+                  </TableHead>
+                  <TableHead className="text-right">
+                    {tr("purchaseOrders.receiveQty")}
+                  </TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {remaining.map((line: any) => {
                   const qty = Number(line.quantity);
                   const recv = Number(line.receivedQty);
+                  const remainingQty = qty - recv;
+                  const unitCode = line.unit?.code || line.item?.unit || "";
+                  const factor = Number(line.uomFactor) || 1;
+                  const enteredQty = valueFor(line);
+                  const baseQty = enteredQty * factor;
                   return (
                     <TableRow key={line.id}>
                       <TableCell>
                         <span className="font-medium">
-                          {line.item ? line.item.name : line.description || "Manual entry"}
+                          {line.item
+                            ? line.item.name
+                            : line.description || "Manual entry"}
                         </span>
                         {line.item?.sku && (
-                          <span className="text-xs text-muted-foreground ml-1">({line.item.sku})</span>
+                          <span className="text-xs text-muted-foreground ml-1">
+                            ({line.item.sku})
+                          </span>
                         )}
+                        <p className="text-xs text-muted-foreground tabular-nums">
+                          {tr("common.ordered")}: {qty.toFixed(3)} {unitCode} ·{" "}
+                          {tr("common.received")}: {recv.toFixed(3)}
+                        </p>
                       </TableCell>
-                      <TableCell className="text-right tabular-nums">{qty.toFixed(3)}</TableCell>
-                      <TableCell className="text-right tabular-nums">{recv.toFixed(3)}</TableCell>
-                      <TableCell className="text-right font-medium tabular-nums">{(qty - recv).toFixed(3)}</TableCell>
+                      <TableCell className="text-right tabular-nums align-middle">
+                        {remainingQty.toFixed(3)}
+                      </TableCell>
+                      <TableCell className="text-right tabular-nums align-middle">
+                        {recv.toFixed(3)}
+                      </TableCell>
+                      <TableCell className="text-right align-middle">
+                        <div className="flex flex-col items-end gap-0.5">
+                          <Input
+                            type="number"
+                            min={0}
+                            max={remainingQty}
+                            step="any"
+                            className="h-8 w-28 text-right tabular-nums"
+                            value={
+                              entered[line.id] !== undefined
+                                ? entered[line.id]
+                                : String(Math.round(remainingQty * 1e6) / 1e6)
+                            }
+                            onChange={(e) =>
+                              setEntered((prev) => ({
+                                ...prev,
+                                [line.id]: e.target.value,
+                              }))
+                            }
+                            aria-label={tr("purchaseOrders.receiveQty")}
+                          />
+                          {factor !== 1 && (
+                            <span className="text-[11px] text-muted-foreground tabular-nums">
+                              → {baseQty.toFixed(3)} {line.item?.unit ?? ""}
+                            </span>
+                          )}
+                        </div>
+                      </TableCell>
                     </TableRow>
                   );
                 })}
@@ -646,18 +827,28 @@ function ReceiveDialog({
         )}
 
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isPending}>
+          <Button
+            variant="outline"
+            onClick={() => onOpenChange(false)}
+            disabled={isPending}
+          >
             {tr("common.cancel")}
           </Button>
-          <Button onClick={onConfirm} disabled={isPending || allAlreadyReceived}>
+          <Button
+            onClick={() =>
+              onConfirm(
+                pendingLines.map(({ line, quantity }) => ({
+                  purchaseLineId: line.id,
+                  quantity,
+                })),
+              )
+            }
+            disabled={isPending || !canConfirm}
+          >
             {isPending && <Loader2 className="size-4 mr-1 animate-spin" />}
             {allAlreadyReceived
               ? tr("common.close")
-              : tr("purchaseOrders.receiveAll", {
-                  qty: remaining
-                    .reduce((s: number, l: any) => s + Number(l.quantity) - Number(l.receivedQty), 0)
-                    .toFixed(3),
-                })}
+              : tr("purchaseOrders.receiveStock")}
           </Button>
         </DialogFooter>
       </DialogContent>

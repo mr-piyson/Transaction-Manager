@@ -24,6 +24,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { trpc } from "@/lib/trpc/client";
+import {
+  convertAmount,
+  defaultUnitIdFor,
+  factorForUnit,
+  itemUnitOptions,
+} from "@/lib/uom-client";
 import { POItemSelectDialog } from "./poItemSelectDialog";
 
 const lineEditSchema = z
@@ -33,6 +39,7 @@ const lineEditSchema = z
     description: z.string().optional(),
     quantity: z.coerce.number().positive("Qty must be > 0"),
     unitCost: z.coerce.number().min(0, "Unit cost must be >= 0"),
+    unitId: z.string().nullish(),
     taxRateId: z.string().optional(),
     taxRateSnapshot: z.coerce.number().optional(),
     taxRateName: z.string().optional(),
@@ -51,6 +58,7 @@ function initialToDefaults(initial: POLineData): LineEditValues {
     description: initial.description || undefined,
     quantity: initial.quantity,
     unitCost: initial.unitCost,
+    unitId: initial.unitId || undefined,
     taxRateId: initial.taxRateId || undefined,
     taxRateSnapshot: initial.taxRateSnapshot ?? undefined,
     taxRateName: initial.taxRateName || undefined,
@@ -66,6 +74,8 @@ export interface POLineData {
   description?: string | null;
   quantity: number;
   unitCost: number;
+  /** Selected unit; null = item Base Unit. */
+  unitId?: string | null;
   taxRateId?: string | null;
   taxRateSnapshot?: number | null;
   taxRateName?: string | null;
@@ -131,6 +141,7 @@ export function POLineDialog({
   const isManual = mode === "manual";
   const qty = Number(watched?.quantity) || 0;
   const cost = Number(watched?.unitCost) || 0;
+  const unitId = watched?.unitId ?? undefined;
   const lineSubtotal = qty * cost;
   const taxRateId = watched?.taxRateId;
   const taxRatesMap = React.useMemo(
@@ -139,6 +150,15 @@ export function POLineDialog({
   );
   const taxRate = taxRatesMap[taxRateId || ""] as any;
   const lineTax = taxRate ? lineSubtotal * (Number(taxRate.rate) / 100) : 0;
+
+  const catalogueItem = itemId ? (itemsMap[itemId] as any) : undefined;
+  const unitOptions = React.useMemo(
+    () => (isManual ? [] : itemUnitOptions(catalogueItem)),
+    [isManual, catalogueItem],
+  );
+  const selectedOption = unitOptions.find((u) => u.unitId === unitId);
+  const lineFactor = factorForUnit(catalogueItem, unitId);
+  const baseQty = qty * lineFactor;
 
   const onSubmit = (values: LineEditValues) => {
     // Re-derive the display snapshot from the picked item, falling back to the
@@ -155,6 +175,7 @@ export function POLineDialog({
       description: values.description || null,
       quantity: values.quantity,
       unitCost: values.unitCost,
+      unitId: values.mode === "manual" ? null : values.unitId || null,
       taxRateId: values.taxRateId || null,
       taxRateSnapshot: values.taxRateSnapshot ?? null,
       taxRateName: values.taxRateName || null,
@@ -170,14 +191,30 @@ export function POLineDialog({
     }
     const supplierItem = selected.supplierItems?.[0];
     const tr = taxRatesMap[selected?.taxRate?.id] as any;
+    const defaultUnitId = defaultUnitIdFor(selected, "purchase");
     setValue("mode", "item");
     setValue("itemId", selected.id);
     setValue("description", selected.description || undefined);
+    setValue("unitId", defaultUnitId ?? undefined);
+    // Supplier basePrice is expressed in the item's purchase-default unit,
+    // which is the unit selected above — no conversion needed.
     setValue("unitCost", Number(supplierItem?.basePrice ?? 0) || 0);
     setValue("taxRateId", selected.taxRate?.id);
     setValue("taxRateSnapshot", tr ? Number(tr.rate) : undefined);
     setValue("taxRateName", tr?.name || undefined);
     setItemPickerOpen(false);
+  };
+
+  const handleUnitChange = (nextUnitId: string) => {
+    const oldFactor = factorForUnit(catalogueItem, unitId);
+    const newFactor = factorForUnit(catalogueItem, nextUnitId);
+    setValue("unitId", nextUnitId, { shouldDirty: true });
+    if (oldFactor !== newFactor) {
+      const converted = convertAmount(cost, oldFactor, newFactor);
+      setValue("unitCost", Math.round(converted * 1e6) / 1e6, {
+        shouldDirty: true,
+      });
+    }
   };
 
   const handleModeChange = (value: string) => {
@@ -192,7 +229,6 @@ export function POLineDialog({
     }
   };
 
-  const catalogueItem = itemId ? (itemsMap[itemId] as any) : undefined;
   // Fall back to the name/sku snapshot carried on the line so a line whose item
   // is excluded from the supplier-filtered catalogue still shows what it refers to.
   const selectedItem = catalogueItem
@@ -309,6 +345,32 @@ export function POLineDialog({
               </div>
             )}
 
+            {/* Unit of measure (item lines only) */}
+            {!isManual && unitOptions.length > 0 && (
+              <div className="space-y-1.5">
+                <Label className="text-xs">Unit</Label>
+                <Select value={unitId || ""} onValueChange={handleUnitChange}>
+                  <SelectTrigger className="w-full min-w-0">
+                    <SelectValue placeholder="Unit" />
+                  </SelectTrigger>
+                  <SelectContent className="max-w-[75vw]">
+                    {unitOptions.map((u) => (
+                      <SelectItem key={u.unitId} value={u.unitId}>
+                        {u.code}
+                        {u.isBase ? " (base)" : ""}
+                        {u.isPurchaseDefault ? " ★" : ""}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-muted-foreground">
+                  {selectedOption && !selectedOption.isBase
+                    ? `1 ${selectedOption.code} = ${selectedOption.factor} ${catalogueItem?.unit ?? ""}`.trim()
+                    : "Base unit"}
+                </p>
+              </div>
+            )}
+
             {/* Numeric fields: Qty, Unit cost */}
             <div className="grid grid-cols-2 gap-3 max-sm:grid-cols-1">
               <div className="space-y-1.5">
@@ -322,6 +384,11 @@ export function POLineDialog({
                 {errors.quantity && (
                   <p className="text-xs text-destructive">
                     {errors.quantity.message}
+                  </p>
+                )}
+                {!isManual && lineFactor !== 1 && (
+                  <p className="text-xs text-muted-foreground tabular-nums">
+                    → {baseQty.toFixed(3)} {catalogueItem?.unit ?? ""}
                   </p>
                 )}
               </div>

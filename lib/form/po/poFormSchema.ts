@@ -12,6 +12,8 @@ export const poLineSchema = z.object({
   description: z.string().nullable().optional(),
   quantity: z.coerce.number().positive("Qty must be > 0"),
   unitCost: z.coerce.number().min(0, "Unit cost must be >= 0"),
+  /** Selected unit for this line; null/undefined = item Base Unit. */
+  unitId: z.string().nullable().optional(),
   taxRateId: z.string().nullable().optional(),
   taxRateSnapshot: z.coerce.number().nullable().optional(),
   taxRateName: z.string().nullable().optional(),

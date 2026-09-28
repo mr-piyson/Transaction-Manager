@@ -179,6 +179,11 @@ function LineItemsTable({
             </td>
             <td className="py-2 px-2 text-right align-top whitespace-nowrap">
               {Number(line.quantity).toFixed(3)}
+              {line.unit?.code && (
+                <span className="ml-1 text-xs text-muted-foreground">
+                  {line.unit.code}
+                </span>
+              )}
             </td>
             <td className="py-2 px-2 text-right align-top whitespace-nowrap">
               {Number(line.unitPrice).toFixed(3)}

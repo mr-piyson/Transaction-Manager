@@ -35,6 +35,7 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import type { POFormController } from "@/lib/form/po/usePOFormController";
+import { unitCodeFor } from "@/lib/uom-client";
 import { CURRENCIES, cn } from "@/lib/utils";
 
 export function POFormBody({
@@ -249,6 +250,7 @@ export function POFormBody({
                   const isManual = !itemId;
                   const qty = Number(line?.quantity) || 0;
                   const cost = Number(line?.unitCost) || 0;
+                  const unitCode = item ? unitCodeFor(item, line?.unitId) : "";
                   const taxRate = Number(line?.taxRateSnapshot) || 0;
                   const lineSubtotal = qty * cost;
                   const lineTax = lineSubtotal * (taxRate / 100);
@@ -312,6 +314,11 @@ export function POFormBody({
                       </td>
                       <td className="px-2 text-center align-middle tabular-nums">
                         {qty.toFixed(3)}
+                        {unitCode ? (
+                          <span className="ml-1 text-xs text-muted-foreground">
+                            {unitCode}
+                          </span>
+                        ) : null}
                       </td>
                       <td className="px-2 text-center align-middle tabular-nums">
                         {cost.toFixed(3)}

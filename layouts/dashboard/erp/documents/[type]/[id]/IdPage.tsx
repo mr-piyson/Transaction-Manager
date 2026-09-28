@@ -24,10 +24,10 @@ import { useParams, useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import * as React from "react";
 import { toast } from "sonner";
-import { InvoiceFormBody } from "@/components/invoice/invoiceFormBody";
 import { DetailPageHeader } from "@/components/detail-page-header";
 import { useHardDeleteForm } from "@/components/dialogs/hardDeleteForm";
 import { usePaymentForm } from "@/components/dialogs/paymentForm";
+import { InvoiceFormBody } from "@/components/invoice/invoiceFormBody";
 import { InvoiceHistoryPanel } from "@/components/invoices/invoice-history-panel";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -694,6 +694,7 @@ export default function DocumentDetailPage({
               item: l.item
                 ? { name: l.item.name, sku: l.item.sku, image: l.item.image }
                 : null,
+              unit: l.unit ? { code: l.unit.code, name: l.unit.name } : null,
             })),
           }}
         />

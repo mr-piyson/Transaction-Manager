@@ -14,6 +14,7 @@ export function lineToFormValues(line: any): InvoiceLineFormValues {
     description: line.description ?? undefined,
     quantity: Number(line.quantity) || 0,
     unitPrice: Number(line.unitPrice) || 0,
+    unitId: line.unitId ?? undefined,
     discountAmt: Number(line.discountAmt) || 0,
     purchasePrice:
       line.purchasePrice != null ? Number(line.purchasePrice) : undefined,
@@ -79,6 +80,7 @@ export type InvoiceSubmitPayload = {
     description?: string;
     quantity: number;
     unitPrice: number;
+    unitId?: string | null;
     discountAmt: number;
     purchasePrice?: number;
     taxRateId?: string;
@@ -113,6 +115,7 @@ export function buildSubmitPayload(
       description: line.description || undefined,
       quantity: Number(line.quantity),
       unitPrice: Number(line.unitPrice),
+      unitId: line.unitId || null,
       discountAmt: Number(line.discountAmt) || 0,
       purchasePrice: Number(line.purchasePrice) || undefined,
       taxRateId: line.taxRateId || undefined,

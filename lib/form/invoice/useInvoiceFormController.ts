@@ -203,6 +203,7 @@ export function useInvoiceFormController({
       description: data.description || undefined,
       quantity: data.quantity,
       unitPrice: data.unitPrice,
+      unitId: data.unitId || undefined,
       discountAmt: data.discountAmt,
       purchasePrice: data.purchasePrice ?? undefined,
       taxRateId: data.taxRateId || undefined,

@@ -26,6 +26,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import type { InvoiceFormController } from "@/lib/form/invoice/useInvoiceFormController";
+import { unitCodeFor } from "@/lib/uom-client";
 import { CURRENCIES, cn } from "@/lib/utils";
 
 export interface PaperOrgMeta {
@@ -75,6 +76,10 @@ export interface InvoiceReadonlyData {
       name?: string | null;
       sku?: string | null;
       image?: string | null;
+    } | null;
+    unit?: {
+      code?: string | null;
+      name?: string | null;
     } | null;
   }>;
 }
@@ -548,6 +553,11 @@ export function InvoiceFormBody({
                           </td>
                           <td className="px-2 text-center align-middle tabular-nums">
                             {qty.toFixed(3)}
+                            {line.unit?.code ? (
+                              <span className="ml-1 text-xs text-muted-foreground">
+                                {line.unit.code}
+                              </span>
+                            ) : null}
                           </td>
                           <td className="px-2 text-center align-middle tabular-nums">
                             {price.toFixed(3)}
@@ -593,6 +603,9 @@ export function InvoiceFormBody({
                       const qty = Number(lineWatch?.quantity) || 0;
                       const price = Number(lineWatch?.unitPrice) || 0;
                       const discount = Number(lineWatch?.discountAmt) || 0;
+                      const lineUnitCode = item
+                        ? unitCodeFor(item, lineWatch?.unitId)
+                        : "";
                       const lineSubtotal = qty * price;
                       const taxRate = Number(lineWatch?.taxRateSnapshot) || 0;
                       const lineTax =
@@ -654,6 +667,11 @@ export function InvoiceFormBody({
                           </td>
                           <td className="px-2 text-center align-middle tabular-nums">
                             {qty.toFixed(3)}
+                            {lineUnitCode ? (
+                              <span className="ml-1 text-xs text-muted-foreground">
+                                {lineUnitCode}
+                              </span>
+                            ) : null}
                           </td>
                           <td className="px-2 text-center align-middle tabular-nums">
                             {price.toFixed(3)}
@@ -819,6 +837,7 @@ export function InvoiceFormBody({
                       description: existing.description ?? null,
                       quantity: Number(existing.quantity) || 1,
                       unitPrice: Number(existing.unitPrice) || 0,
+                      unitId: existing.unitId ?? null,
                       discountAmt: Number(existing.discountAmt) || 0,
                       purchasePrice: Number(existing.purchasePrice) || null,
                       taxRateId: existing.taxRateId ?? null,
@@ -828,6 +847,7 @@ export function InvoiceFormBody({
                   : {
                       quantity: 1,
                       unitPrice: 0,
+                      unitId: undefined,
                       discountAmt: 0,
                       purchasePrice: 0,
                     }

@@ -298,6 +298,11 @@ export default function PurchaseOrderPrintPage() {
                   </td>
                   <td className="py-2 px-2 text-right align-top whitespace-nowrap">
                     {Number(line.quantity).toFixed(3)}
+                    {(line.unit?.code || line.item?.unit) && (
+                      <span className="ml-1 text-xs text-muted-foreground">
+                        {line.unit?.code || line.item?.unit}
+                      </span>
+                    )}
                     {Number(line.receivedQty) > 0 && (
                       <span className="text-xs text-green-600 ml-1">
                         (✓ {Number(line.receivedQty).toFixed(0)})

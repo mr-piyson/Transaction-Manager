@@ -17,6 +17,7 @@ import {
 import { useAppAbility } from "@/hooks/use-app-ability";
 import { MasterTab } from "./master-tab";
 import { SuppliersTab } from "./suppliers-tab";
+import { UomSection } from "./uom-section";
 import type { Mode } from "./use-item-form";
 import { useItemForm } from "./use-item-form";
 
@@ -239,6 +240,17 @@ export function UnifiedItemDialog({
             <h3 className="text-sm font-medium mb-3">Item Details</h3>
             <MasterTab form={form} canManageMaster={canManageMaster} />
           </div>
+
+          {form.master.type === "PRODUCT" &&
+            (mode === "create" || mode === "edit") && (
+              <div>
+                <UomSection
+                  mode={mode}
+                  editItemId={form.editingItem?.id}
+                  baseUnitCode={form.master.unit}
+                />
+              </div>
+            )}
 
           <div>
             <div className="flex items-center justify-between mb-3">
