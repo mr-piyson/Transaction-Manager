@@ -10,9 +10,7 @@ describe("computeWeightedAverage", () => {
 
   test("weighted average across receipts", () => {
     // 100 @ 2.00 + 50 @ 3.00 → 350 / 150 = 2.333333
-    expect(computeWeightedAverage(100, 2, 50, 150).toString()).toBe(
-      "2.333333",
-    );
+    expect(computeWeightedAverage(100, 2, 50, 150).toString()).toBe("2.333333");
   });
 
   test("existing average is preserved when receiving zero", () => {
@@ -23,9 +21,7 @@ describe("computeWeightedAverage", () => {
 
   test("non-terminating division rounds to 6 dp", () => {
     // 1 unit @ 1.00 + 2 units @ 1.00 → 3/3 = 1; use 100 ÷ 3 case:
-    expect(computeWeightedAverage(0, 0, 3, 100).toString()).toBe(
-      "33.333333",
-    );
+    expect(computeWeightedAverage(0, 0, 3, 100).toString()).toBe("33.333333");
   });
 
   test("rounding never leaks value on exact halves", () => {
@@ -40,8 +36,8 @@ describe("computeWeightedAverage", () => {
   });
 
   test("invalid received qty path throws only on bad input", () => {
-    expect(() =>
-      computeWeightedAverage(10, 1, Number.NaN, 1),
-    ).toThrow(UnprocessableError);
+    expect(() => computeWeightedAverage(10, 1, Number.NaN, 1)).toThrow(
+      UnprocessableError,
+    );
   });
 });
