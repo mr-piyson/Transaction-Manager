@@ -22,6 +22,61 @@ export const supplierItemDraftSchema = z.object({
 export type SupplierItemDraft = z.infer<typeof supplierItemDraftSchema>;
 
 // ---------------------------------------------------------------------------
+// Item UoM Draft — one row per unit including the Base (stock) unit.
+//
+// `factor` is always expressed relative to the Base Unit: 1 `<unit>` =
+// `factor` Base Units. The Base row therefore always has a factor of 1.
+// ---------------------------------------------------------------------------
+
+export const itemUomDraftSchema = z.object({
+  tempId: z.string(),
+  id: z.string().optional(), // Existing ItemUom ID (for edit mode)
+  unitId: z.string(),
+  unitCode: z.string(),
+  unitName: z.string().optional(),
+  factor: z.coerce.number().positive("Factor must be greater than 0"),
+  isPurchaseDefault: z.boolean().default(false),
+  isSalesDefault: z.boolean().default(false),
+  barcode: z.string().max(100).optional(),
+  isActive: z.boolean().default(true),
+});
+
+export type ItemUomDraft = z.infer<typeof itemUomDraftSchema>;
+
+/** A draft row represents the Base (stock) unit when its id matches the item. */
+export function isBaseUomDraft(
+  draft: ItemUomDraft,
+  baseUnitId: string | null | undefined,
+): boolean {
+  return !!baseUnitId && draft.unitId === baseUnitId;
+}
+
+export function makeUomDraft(input: {
+  unitId: string;
+  unitCode: string;
+  unitName?: string;
+  factor?: number;
+  id?: string;
+  isPurchaseDefault?: boolean;
+  isSalesDefault?: boolean;
+  barcode?: string;
+  isActive?: boolean;
+}): ItemUomDraft {
+  return {
+    tempId: generateId(),
+    id: input.id,
+    unitId: input.unitId,
+    unitCode: input.unitCode,
+    unitName: input.unitName,
+    factor: input.factor ?? 1,
+    isPurchaseDefault: input.isPurchaseDefault ?? false,
+    isSalesDefault: input.isSalesDefault ?? false,
+    barcode: input.barcode,
+    isActive: input.isActive ?? true,
+  };
+}
+
+// ---------------------------------------------------------------------------
 // Item Master fields (subset of the full item schema for the unified dialog)
 // ---------------------------------------------------------------------------
 

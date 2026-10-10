@@ -236,9 +236,6 @@ export function ImageUpload({
                   ? "Drop image here"
                   : "Drop image or click to browse"}
             </p>
-            <p className="text-[11px] text-muted-foreground/70">
-              JPG, PNG, or WebP · Max 5 MB · You can also drag from Google
-            </p>
           </div>
         )}
       </div>

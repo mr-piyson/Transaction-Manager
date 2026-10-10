@@ -64,10 +64,40 @@ const itemBaseSchema = z.object({
   bundleLines: z.array(bundleLineSchema).optional(),
 });
 
+/** One alternative unit in the unified item form (base unit lives on Item). */
+const itemUomInputSchema = z.object({
+  id: z.string().optional(),
+  unitId: z.string(),
+  factor: decimalSchema,
+  isPurchaseDefault: z.boolean().default(false),
+  isSalesDefault: z.boolean().default(false),
+  barcode: z.string().max(100).optional(),
+  isActive: z.boolean().optional(),
+});
+
+type ItemUomInput = z.infer<typeof itemUomInputSchema>;
+
 const createItemSchema = itemBaseSchema;
 const updateItemSchema = itemBaseSchema.partial().extend({
   id: z.string(),
+  itemUoms: z.array(itemUomInputSchema).optional(),
 });
+
+/** One supplier price row in the unified item form. */
+const supplierItemInputSchema = z.object({
+  id: z.string().optional(),
+  supplierId: z.string(),
+  supplierSku: z.string().max(100).optional(),
+  supplierName: z.string().max(255).optional(),
+  basePrice: decimalSchema,
+  currency: currencyCodeSchema.default("BHD"),
+  leadTimeDays: z.number().int().min(0).optional(),
+  minOrderQty: decimalSchema.optional(),
+  notes: z.string().max(5000).optional(),
+  isActive: z.boolean().optional(),
+});
+
+type SupplierItemInput = z.infer<typeof supplierItemInputSchema>;
 
 const addItemUomSchema = z.object({
   itemId: z.string(),
@@ -102,6 +132,128 @@ const listItemsSchema = z.object({
   withStock: z.boolean().default(false), // Include aggregated stock levels
 });
 
+/**
+ * Reconciles the supplier prices of an item with the submitted set in a single
+ * transaction: updates known rows, reactivates previously removed ones, creates
+ * new ones and soft-deletes the ones missing from the payload.
+ */
+async function reconcileSupplierItems(
+  tx: Prisma.TransactionClient,
+  orgId: string,
+  itemId: string,
+  inputs: SupplierItemInput[],
+  userId: string,
+  ipAddress?: string,
+): Promise<void> {
+  // Validate every referenced supplier exists in this organization.
+  const supplierIds = [...new Set(inputs.map((i) => i.supplierId))];
+  if (supplierIds.length > 0) {
+    const suppliers = await tx.supplier.findMany({
+      where: {
+        id: { in: supplierIds },
+        organizationId: orgId,
+        deletedAt: null,
+      },
+      select: { id: true },
+    });
+    if (suppliers.length !== supplierIds.length) {
+      const found = new Set(suppliers.map((s) => s.id));
+      const missing = supplierIds.filter((id) => !found.has(id));
+      throw new NotFoundError("Supplier", missing.join(", "));
+    }
+  }
+
+  // At most one price per supplier.
+  const seen = new Set<string>();
+  for (const input of inputs) {
+    if (seen.has(input.supplierId)) {
+      throw new ConflictError(
+        "A supplier is listed more than once. Each supplier can only have one price per item.",
+      );
+    }
+    seen.add(input.supplierId);
+  }
+
+  const existing = await tx.supplierItem.findMany({
+    where: { itemId },
+    select: { id: true, supplierId: true, deletedAt: true },
+  });
+  const byId = new Map(existing.map((e) => [e.id, e]));
+  const bySupplier = new Map(existing.map((e) => [e.supplierId, e]));
+
+  const keepIds = new Set<string>();
+  for (const input of inputs) {
+    const match =
+      (input.id ? byId.get(input.id) : undefined) ??
+      bySupplier.get(input.supplierId);
+    const active = input.isActive ?? true;
+
+    const data = {
+      supplierId: input.supplierId,
+      supplierSku: input.supplierSku ?? null,
+      supplierName: input.supplierName ?? null,
+      basePrice: input.basePrice,
+      currency: input.currency,
+      leadTimeDays: input.leadTimeDays ?? null,
+      minOrderQty: input.minOrderQty ?? "1",
+      notes: input.notes ?? null,
+      isActive: active,
+      deletedAt: active ? null : new Date(),
+    };
+
+    if (match) {
+      keepIds.add(match.id);
+      await tx.supplierItem.update({ where: { id: match.id }, data });
+      await writeAuditLog(
+        {
+          entityType: "SupplierItem",
+          entityId: match.id,
+          action: match.deletedAt ? "CREATE" : "UPDATE",
+          organizationId: orgId,
+          userId,
+          ipAddress,
+        },
+        tx,
+      );
+    } else {
+      const created = await tx.supplierItem.create({
+        data: { ...data, itemId, organizationId: orgId },
+      });
+      keepIds.add(created.id);
+      await writeAuditLog(
+        {
+          entityType: "SupplierItem",
+          entityId: created.id,
+          action: "CREATE",
+          organizationId: orgId,
+          userId,
+          ipAddress,
+        },
+        tx,
+      );
+    }
+  }
+
+  for (const e of existing) {
+    if (keepIds.has(e.id) || e.deletedAt) continue;
+    await tx.supplierItem.update({
+      where: { id: e.id },
+      data: { deletedAt: new Date(), isActive: false },
+    });
+    await writeAuditLog(
+      {
+        entityType: "SupplierItem",
+        entityId: e.id,
+        action: "DELETE",
+        organizationId: orgId,
+        userId,
+        ipAddress,
+      },
+      tx,
+    );
+  }
+}
+
 // ---------------------------------------------------------------------------
 // Router
 // ---------------------------------------------------------------------------
@@ -121,6 +273,225 @@ async function countItemUsage(
     db.purchaseLine.count({ where: { itemId } }),
   ]);
   return movements + invoiceLines + purchaseLines;
+}
+
+/**
+ * Shared validation for a set of alternative units coming from the item form:
+ * units exist in the org, none equals the base unit, no duplicates, and at
+ * most one purchase/sales default.
+ */
+async function validateItemUoms(
+  db: Prisma.TransactionClient,
+  orgId: string,
+  baseUnitId: string | null | undefined,
+  uoms: ItemUomInput[],
+): Promise<void> {
+  if (uoms.length === 0) return;
+
+  const unitIds = [...new Set(uoms.map((u) => u.unitId))];
+  const units = await db.unit.findMany({
+    where: { id: { in: unitIds }, organizationId: orgId, deletedAt: null },
+    select: { id: true },
+  });
+  if (units.length !== unitIds.length) {
+    const found = new Set(units.map((u) => u.id));
+    const missing = unitIds.filter((id) => !found.has(id));
+    throw new NotFoundError("Unit", missing.join(", "));
+  }
+
+  if (baseUnitId && uoms.some((u) => u.unitId === baseUnitId)) {
+    throw new UnprocessableError(
+      "An alternative unit cannot also be the item's base unit.",
+    );
+  }
+
+  const seen = new Set<string>();
+  for (const u of uoms) {
+    if (seen.has(u.unitId)) {
+      throw new ConflictError(
+        "A unit is configured more than once for this item.",
+      );
+    }
+    seen.add(u.unitId);
+  }
+
+  const activeDrafts = uoms.filter((u) => u.isActive !== false);
+  if (activeDrafts.filter((u) => u.isPurchaseDefault).length > 1) {
+    throw new UnprocessableError("Only one purchase-default unit is allowed.");
+  }
+  if (activeDrafts.filter((u) => u.isSalesDefault).length > 1) {
+    throw new UnprocessableError("Only one sales-default unit is allowed.");
+  }
+}
+
+/** Creates the alternative-unit rows for a freshly created item. */
+async function createItemUoms(
+  tx: Prisma.TransactionClient,
+  orgId: string,
+  itemId: string,
+  baseUnitId: string | null | undefined,
+  uoms: ItemUomInput[],
+  userId: string,
+  ipAddress?: string,
+): Promise<void> {
+  await validateItemUoms(tx, orgId, baseUnitId, uoms);
+
+  for (const uom of uoms) {
+    const row = await tx.itemUom.create({
+      data: {
+        itemId,
+        unitId: uom.unitId,
+        factor: assertFactor(uom.factor).toString(),
+        isPurchaseDefault:
+          (uom.isActive ?? true) && (uom.isPurchaseDefault ?? false),
+        isSalesDefault: (uom.isActive ?? true) && (uom.isSalesDefault ?? false),
+        barcode: uom.barcode ?? null,
+        isActive: uom.isActive ?? true,
+        organizationId: orgId,
+      },
+    });
+
+    await writeAuditLog(
+      {
+        entityType: "ItemUom",
+        entityId: row.id,
+        action: "CREATE",
+        diff: {
+          itemId: { before: null, after: itemId },
+          unitId: { before: null, after: uom.unitId },
+          factor: { before: null, after: assertFactor(uom.factor).toString() },
+        },
+        organizationId: orgId,
+        userId,
+        ipAddress,
+      },
+      tx,
+    );
+  }
+}
+
+/**
+ * Reconciles the alternative units of an existing item with the submitted set:
+ * updates known rows, reactivates previously removed units, soft-deletes the
+ * ones missing from the payload. Factors lock once the item has usage.
+ */
+async function reconcileItemUoms(
+  tx: Prisma.TransactionClient,
+  orgId: string,
+  itemId: string,
+  baseUnitId: string | null | undefined,
+  uoms: ItemUomInput[],
+  usage: number,
+  userId: string,
+  ipAddress?: string,
+): Promise<void> {
+  await validateItemUoms(tx, orgId, baseUnitId, uoms);
+
+  const existing = await tx.itemUom.findMany({
+    where: { itemId },
+    select: { id: true, unitId: true, factor: true, deletedAt: true },
+  });
+  const byId = new Map(existing.map((e) => [e.id, e]));
+  const byUnit = new Map(existing.map((e) => [e.unitId, e]));
+
+  const keepIds = new Set<string>();
+  for (const input of uoms) {
+    const match =
+      (input.id ? byId.get(input.id) : undefined) ?? byUnit.get(input.unitId);
+    const factor = assertFactor(input.factor);
+
+    if (match) {
+      keepIds.add(match.id);
+      if (!factor.equals(match.factor) && usage > 0) {
+        throw new UnprocessableError(
+          "This conversion factor can no longer be changed because the item has stock movements or document lines. Deactivate this unit and add a replacement instead.",
+        );
+      }
+      const active = input.isActive ?? true;
+      const updated = await tx.itemUom.update({
+        where: { id: match.id },
+        data: {
+          factor: factor.toString(),
+          isPurchaseDefault: active && (input.isPurchaseDefault ?? false),
+          isSalesDefault: active && (input.isSalesDefault ?? false),
+          barcode: input.barcode ?? null,
+          isActive: active,
+          deletedAt: null,
+        },
+      });
+      await writeAuditLog(
+        {
+          entityType: "ItemUom",
+          entityId: updated.id,
+          action: match.deletedAt ? "CREATE" : "UPDATE",
+          diff: {
+            factor: {
+              before: match.factor.toString(),
+              after: factor.toString(),
+            },
+          },
+          organizationId: orgId,
+          userId,
+          ipAddress,
+        },
+        tx,
+      );
+    } else {
+      const created = await tx.itemUom.create({
+        data: {
+          itemId,
+          unitId: input.unitId,
+          factor: factor.toString(),
+          isPurchaseDefault: input.isPurchaseDefault ?? false,
+          isSalesDefault: input.isSalesDefault ?? false,
+          barcode: input.barcode ?? null,
+          isActive: true,
+          organizationId: orgId,
+        },
+      });
+      keepIds.add(created.id);
+      await writeAuditLog(
+        {
+          entityType: "ItemUom",
+          entityId: created.id,
+          action: "CREATE",
+          diff: {
+            itemId: { before: null, after: itemId },
+            unitId: { before: null, after: input.unitId },
+            factor: { before: null, after: factor.toString() },
+          },
+          organizationId: orgId,
+          userId,
+          ipAddress,
+        },
+        tx,
+      );
+    }
+  }
+
+  for (const e of existing) {
+    if (keepIds.has(e.id) || e.deletedAt) continue;
+    const removed = await tx.itemUom.update({
+      where: { id: e.id },
+      data: {
+        deletedAt: new Date(),
+        isActive: false,
+        isPurchaseDefault: false,
+        isSalesDefault: false,
+      },
+    });
+    await writeAuditLog(
+      {
+        entityType: "ItemUom",
+        entityId: removed.id,
+        action: "DELETE",
+        organizationId: orgId,
+        userId,
+        ipAddress,
+      },
+      tx,
+    );
+  }
 }
 
 export const itemsRouter = router({
@@ -549,20 +920,21 @@ export const itemsRouter = router({
         }
       }
 
-      const { bundleLines, ...itemData } = data;
+      const { bundleLines, itemUoms, ...itemData } = data;
+
+      // Usage governs both the base-unit lock and the factor locks below.
+      const usage = await countItemUsage(ctx.db, id);
 
       // Locking rule: the Base Unit is immutable once the item has been used
       // (any stock movement or document line references it).
       if (
         itemData.unitId !== undefined &&
-        itemData.unitId !== existing.unitId
+        itemData.unitId !== existing.unitId &&
+        usage > 0
       ) {
-        const usage = await countItemUsage(ctx.db, id);
-        if (usage > 0) {
-          throw new UnprocessableError(
-            "This item's base unit can no longer be changed because it has stock movements or document lines.",
-          );
-        }
+        throw new UnprocessableError(
+          "This item's base unit can no longer be changed because it has stock movements or document lines.",
+        );
       }
 
       const updated = await ctx.db.$transaction(async (tx) => {
@@ -586,6 +958,19 @@ export const itemsRouter = router({
               })),
             });
           }
+        }
+
+        if (itemUoms !== undefined) {
+          await reconcileItemUoms(
+            tx,
+            ctx.user.organizationId,
+            id,
+            updated.unitId,
+            itemUoms,
+            usage,
+            ctx.user.id,
+            ctx.ipAddress,
+          );
         }
 
         await writeAuditLog(
@@ -1114,13 +1499,18 @@ export const itemsRouter = router({
             notes: z.string().max(5000).optional(),
           }),
         ),
+        itemUoms: z.array(itemUomInputSchema).optional(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
       assertCan(ctx.ability, "item:create", "Item");
 
       const orgId = ctx.user.organizationId;
-      const { item: itemInput, supplierItems: supplierItemInputs } = input;
+      const {
+        item: itemInput,
+        supplierItems: supplierItemInputs,
+        itemUoms: uomInputs,
+      } = input;
 
       // SKU uniqueness within org
       const existingSku = await ctx.db.item.findFirst({
@@ -1183,6 +1573,19 @@ export const itemsRouter = router({
               organizationId: orgId,
             })),
           });
+        }
+
+        // Create alternative units of measure (base unit is on the item).
+        if (uomInputs && uomInputs.length > 0) {
+          await createItemUoms(
+            tx,
+            orgId,
+            createdItem.id,
+            createdItem.unitId,
+            uomInputs,
+            ctx.user.id,
+            ctx.ipAddress,
+          );
         }
 
         await writeAuditLog(
@@ -1252,5 +1655,125 @@ export const itemsRouter = router({
       });
 
       return result;
+    }),
+
+  // ── UPDATE WITH SUPPLIER ITEMS (single transaction) ───────────────────────
+  // Saves item fields, units of measure and supplier prices together so a form
+  // submit can never half-apply. Any section may be omitted independently.
+  updateWithSupplierItems: orgProcedure
+    .input(
+      z.object({
+        id: z.string(),
+        item: itemBaseSchema.partial().optional(),
+        itemUoms: z.array(itemUomInputSchema).optional(),
+        supplierItems: z.array(supplierItemInputSchema).optional(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const orgId = ctx.user.organizationId;
+      const { id, item: itemInput, itemUoms, supplierItems } = input;
+
+      const existing = await ctx.db.item.findFirst({
+        where: { id, organizationId: orgId, deletedAt: null },
+      });
+      if (!existing) throw new NotFoundError("Item", id);
+
+      assertCan(
+        ctx.ability,
+        "item:update",
+        "Item",
+        existing as Record<string, unknown>,
+      );
+
+      // SKU uniqueness (ignore self).
+      if (itemInput?.sku && itemInput.sku !== existing.sku) {
+        const conflict = await ctx.db.item.findFirst({
+          where: {
+            sku: itemInput.sku,
+            organizationId: orgId,
+            deletedAt: null,
+            NOT: { id },
+          },
+          select: { id: true },
+        });
+        if (conflict) {
+          throw new ConflictError(`SKU "${itemInput.sku}" is already in use.`);
+        }
+      }
+
+      const usage = await countItemUsage(ctx.db, id);
+
+      if (
+        itemInput?.unitId &&
+        itemInput.unitId !== existing.unitId &&
+        usage > 0
+      ) {
+        throw new UnprocessableError(
+          "This item's base unit can no longer be changed because it has stock movements or document lines.",
+        );
+      }
+
+      const { bundleLines: _bundleLines, ...itemData } = itemInput ?? {};
+
+      const updated = await ctx.db.$transaction(async (tx) => {
+        let item = existing;
+        if (itemInput !== undefined) {
+          item = await tx.item.update({
+            where: { id },
+            data: { ...itemData, updatedById: ctx.user.id },
+          });
+        }
+
+        if (itemUoms !== undefined) {
+          await reconcileItemUoms(
+            tx,
+            ctx.user.organizationId,
+            id,
+            item.unitId,
+            itemUoms,
+            usage,
+            ctx.user.id,
+            ctx.ipAddress,
+          );
+        }
+
+        if (supplierItems !== undefined) {
+          await reconcileSupplierItems(
+            tx,
+            ctx.user.organizationId,
+            id,
+            supplierItems,
+            ctx.user.id,
+            ctx.ipAddress,
+          );
+        }
+
+        await writeAuditLog(
+          {
+            entityType: "Item",
+            entityId: id,
+            action: "UPDATE",
+            organizationId: ctx.user.organizationId,
+            userId: ctx.user.id,
+            ipAddress: ctx.ipAddress,
+          },
+          tx,
+        );
+
+        return item;
+      });
+
+      // Garbage collect the replaced/removed image file after commit.
+      const oldImage = existing.image;
+      const newImage = updated.image;
+      if (oldImage && oldImage !== newImage) {
+        try {
+          await deleteUploadByStoragePath(oldImage);
+        } catch (err) {
+          console.error("[Items.updateWithSupplierItems] image GC failed", err);
+        }
+      }
+
+      return updated;
     }),
 });

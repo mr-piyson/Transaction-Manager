@@ -848,6 +848,7 @@ export const purchaseOrdersRouter = router({
         let receivedAnything = false;
         let itemReceivedCost = 0;
         let manualReceivedCost = 0;
+        const receivedItemIds = new Set<string>();
 
         for (const line of po.lines) {
           const orderedQty = Number(line.quantity);
@@ -886,6 +887,7 @@ export const purchaseOrdersRouter = router({
             continue;
           }
           itemReceivedCost += receivedValue;
+          receivedItemIds.add(line.itemId);
 
           // Line snapshots convert the SELECTED-unit amount to BASE units —
           // this is the only conversion on this path.
@@ -968,12 +970,22 @@ export const purchaseOrdersRouter = router({
         const totalReceivedCost = itemReceivedCost + manualReceivedCost;
 
         if (totalReceivedCost > 0) {
+          // Attribute the receipt to its PO (and to the item when the receipt
+          // covers exactly one item and no free-text lines) so it shows up as a
+          // PO purchase on the expenses page instead of an orphan row.
+          const soleItemId =
+            manualReceivedCost === 0 && receivedItemIds.size === 1
+              ? [...receivedItemIds][0]
+              : null;
+
           const expense = await tx.expense.create({
             data: {
               description: `PO #${po.serial} — Items received`,
               amount: totalReceivedCost,
               date: new Date(),
               reference: po.serial,
+              purchaseOrderId: po.id,
+              itemId: soleItemId,
               organizationId: orgId,
               createdById: ctx.user.id,
             },

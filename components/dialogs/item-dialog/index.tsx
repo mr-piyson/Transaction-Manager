@@ -1,170 +1,66 @@
 "use client";
 
-import { Loader2, Plus, TriangleAlert, UserPlus } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import * as React from "react";
-import { useSupplierForm } from "@/components/dialogs";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { useAppAbility } from "@/hooks/use-app-ability";
-import { MasterTab } from "./master-tab";
-import { SuppliersTab } from "./suppliers-tab";
-import { UomSection } from "./uom-section";
-import type { Mode } from "./use-item-form";
-import { useItemForm } from "./use-item-form";
-
-// ---------------------------------------------------------------------------
-// Validation Alert (banner at top of dialog)
-// ---------------------------------------------------------------------------
-
-function ValidationAlert({
-  errors,
-}: {
-  errors: {
-    master: Record<string, string | undefined>;
-    suppliers: Record<string, any>;
-  };
-}) {
-  const messages: string[] = [];
-
-  Object.values(errors.master).forEach((msg) => {
-    if (msg) messages.push(msg);
-  });
-
-  Object.values(errors.suppliers).forEach((draftErrors) => {
-    Object.values(draftErrors).forEach((msg) => {
-      if (msg && typeof msg === "string") messages.push(msg);
-    });
-  });
-
-  if (messages.length === 0) return null;
-
-  return (
-    <Alert variant="destructive" className="mb-4">
-      <TriangleAlert className="h-4 w-4" />
-      <AlertTitle>Please fix the following</AlertTitle>
-      <AlertDescription>
-        <ul className="mt-1 list-disc pl-4 space-y-0.5 text-sm">
-          {messages.map((msg, i) => (
-            <li key={`${msg}-${i}`}>{msg}</li>
-          ))}
-        </ul>
-      </AlertDescription>
-    </Alert>
-  );
-}
-
-// ---------------------------------------------------------------------------
-// Existing Item Preview
-// ---------------------------------------------------------------------------
-
-function ExistingPreview({ item }: { item: any }) {
-  if (!item) return null;
-
-  return (
-    <div className="space-y-3">
-      <div className="rounded-lg border p-4 bg-muted/30 space-y-2">
-        <div className="flex items-center gap-2">
-          <span className="font-medium text-lg">{item.name}</span>
-          <span className="text-sm text-muted-foreground">({item.sku})</span>
-        </div>
-        {item.description && (
-          <p className="text-sm text-muted-foreground">{item.description}</p>
-        )}
-        <div className="flex gap-4 text-sm">
-          {item.type && (
-            <span>
-              <span className="text-muted-foreground">Type:</span> {item.type}
-            </span>
-          )}
-          {item.unit && (
-            <span>
-              <span className="text-muted-foreground">Unit:</span> {item.unit}
-            </span>
-          )}
-          {item.salesPrice !== undefined && (
-            <span>
-              <span className="text-muted-foreground">Price:</span>{" "}
-              {Number(item.salesPrice)}
-            </span>
-          )}
-        </div>
-      </div>
-      <p className="text-sm text-muted-foreground">
-        This item already exists. You can add supplier prices below.
-      </p>
-    </div>
-  );
-}
-
-// ---------------------------------------------------------------------------
-// Dialog Component
-// ---------------------------------------------------------------------------
+import { useSupplierForm } from "../supplierForm";
+import { IdentitySection } from "./identity-section";
+import { PricingSection } from "./pricing-section";
+import { SectionRail } from "./section-rail";
+import { SummaryPanel } from "./summary-panel";
+import { SuppliersSection } from "./suppliers-section";
+import { UnitsSection } from "./units-section";
+import {
+  type ItemIssue,
+  type Mode,
+  type SectionKey,
+  useItemForm,
+} from "./use-item-form";
 
 export interface UnifiedItemDialogProps {
-  /** When provided, the dialog is externally controlled (used by the Provider). */
   open?: boolean;
-  /** Required when `open` is provided. */
   onOpenChange?: (open: boolean) => void;
-  /** Pre-selected supplier for "add-supplier" mode */
   initialSupplierId?: string;
-  /** Pre-existing item for "add-supplier" mode */
   initialItem?: any;
-  /** Initial mode override */
   initialMode?: Mode;
-  /** Item ID for "edit" mode — triggers byId query to load item data */
   editItemId?: string;
   onSuccess?: (itemId: string) => void;
-  /** Rendered as the DialogTrigger — clicking it opens the dialog. */
   children?: React.ReactNode;
 }
+
+const SECTION_IDS: Record<SectionKey, string> = {
+  identity: "sec-identity",
+  units: "sec-units",
+  pricing: "sec-pricing",
+  suppliers: "sec-suppliers",
+};
 
 export function UnifiedItemDialog({
   open: openProp,
   onOpenChange: onOpenChangeProp,
   initialSupplierId,
   initialItem,
-  initialMode,
   editItemId,
   onSuccess,
   children,
 }: UnifiedItemDialogProps) {
-  // ── Internal open state (used when no props are passed) ──────────────
   const [internalOpen, setInternalOpen] = React.useState(false);
-
   const isControlled = openProp !== undefined;
-  const open = isControlled ? openProp! : internalOpen;
+  const open = isControlled ? !!openProp : internalOpen;
 
-  const handleClose = React.useCallback(
-    (nextOpen: boolean) => {
-      if (isControlled) {
-        onOpenChangeProp?.(nextOpen);
-      } else {
-        setInternalOpen(nextOpen);
-      }
+  const handleOpenChange = React.useCallback(
+    (next: boolean) => {
+      if (isControlled) onOpenChangeProp?.(next);
+      else setInternalOpen(next);
     },
     [isControlled, onOpenChangeProp],
   );
 
-  const ability = useAppAbility();
-  const canManageMaster = ability
-    ? ability.can("item:create", "Item") || ability.can("item:update", "Item")
-    : true;
-  const canManageSupplierItems = ability
-    ? ability.can("item:create", "Item") || ability.can("item:update", "Item")
-    : true;
-
   const form = useItemForm({
     open,
-    onOpenChange: handleClose,
+    onOpenChange: handleOpenChange,
     initialSupplierId,
     initialItem,
     editItemId,
@@ -172,149 +68,191 @@ export function UnifiedItemDialog({
   });
 
   const { openCreate: openCreateSupplier } = useSupplierForm();
+  const ability = useAppAbility();
+  const canManageMaster = ability ? ability.can("item:update", "Item") : true;
+  const canManageSuppliers = ability
+    ? ability.can("item:update", "Item")
+    : true;
 
-  const { mode, errors, isSubmitting, submit } = form;
+  const { mode, master, submit, isSubmitting } = form;
+  const supplierMode = mode === "add-supplier" || mode === "existing";
 
-  // Override mode if initialMode is provided
+  const [active, setActive] = React.useState<SectionKey>(
+    supplierMode ? "suppliers" : "identity",
+  );
+  const scrollRef = React.useRef<HTMLElement | null>(null);
+
   React.useEffect(() => {
-    if (open && initialMode) {
-      form.setMode(initialMode);
-    }
-  }, [open, initialMode]); // eslint-disable-line react-hooks/exhaustive-deps
+    setActive(supplierMode ? "suppliers" : "identity");
+  }, [supplierMode]);
 
-  const title = React.useMemo(() => {
-    switch (mode) {
-      case "existing":
-      case "add-supplier":
-        return "Add Supplier Price";
-      case "edit":
-        return "Edit Item";
-      default:
-        return "Create Item";
-    }
-  }, [mode]);
+  // Scroll-spy
+  React.useEffect(() => {
+    if (!open) return;
+    const root = scrollRef.current;
+    if (!root) return;
+    const nodes = Array.from(
+      root.querySelectorAll<HTMLElement>("[data-section]"),
+    );
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting) {
+            const key = entry.target.getAttribute("data-section");
+            if (key) setActive(key as SectionKey);
+          }
+        }
+      },
+      { root, rootMargin: "-15% 0px -70% 0px", threshold: 0 },
+    );
+    for (const node of nodes) observer.observe(node);
+    return () => observer.disconnect();
+  }, [open, mode]);
 
-  const submitLabel = React.useMemo(() => {
-    switch (mode) {
-      case "existing":
-      case "add-supplier":
-        return "Add Supplier Price";
-      case "edit":
-        return "Save Changes";
-      default:
-        return "Create Item";
-    }
-  }, [mode]);
+  const scrollToAnchor = React.useCallback((anchor: string) => {
+    const el = document.getElementById(anchor);
+    if (!el) return;
+    el.scrollIntoView({ behavior: "smooth", block: "center" });
+    const field = el.querySelector<HTMLElement>("input,select,textarea");
+    field?.focus({ preventScroll: true });
+  }, []);
 
-  const hasErrors =
-    Object.keys(errors.master).length > 0 ||
-    Object.values(errors.suppliers).some((e) => Object.keys(e).length > 0);
+  const handleSelect = React.useCallback((key: SectionKey) => {
+    setActive(key);
+    const el = document.getElementById(SECTION_IDS[key]);
+    el?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }, []);
+
+  const handleJump = React.useCallback(
+    (issue: ItemIssue) => scrollToAnchor(issue.anchor),
+    [scrollToAnchor],
+  );
+
+  const disabledSections: SectionKey[] = supplierMode
+    ? ["identity", "units", "pricing"]
+    : [];
+
+  const header = React.useMemo(() => {
+    if (mode === "edit") {
+      return {
+        eyebrow: `Editing ${master.sku || "item"}`,
+        title: "Edit item",
+        desc: "Change details, units or supplier prices. Everything saves together.",
+      };
+    }
+    if (supplierMode) {
+      return {
+        eyebrow: "Existing item",
+        title: "Add supplier price",
+        desc: "This item already exists, so its details stay as they are.",
+      };
+    }
+    return {
+      eyebrow: "New item",
+      title: "Create item",
+    };
+  }, [mode, supplierMode, master.sku]);
+
+  const submitLabel =
+    mode === "create"
+      ? "Create item"
+      : mode === "edit"
+        ? "Save changes"
+        : "Add supplier price";
 
   return (
-    <Dialog open={open} onOpenChange={(v) => !isSubmitting && handleClose(v)}>
+    <Dialog
+      open={open}
+      onOpenChange={(v) => !isSubmitting && handleOpenChange(v)}
+    >
       {children && <DialogTrigger asChild>{children}</DialogTrigger>}
-      <DialogContent className="sm:max-w-2xl">
-        <DialogHeader>
-          <DialogTitle>{title}</DialogTitle>
-          <DialogDescription>
-            {mode === "existing" || mode === "add-supplier"
-              ? "Add supplier pricing to an existing item."
-              : mode === "edit"
-                ? "Update item details and supplier prices."
-                : "Fill in the item details and attach supplier prices."}
-          </DialogDescription>
-        </DialogHeader>
-
-        {hasErrors && <ValidationAlert errors={errors} />}
-
-        <div className="max-h-[70vh] overflow-y-auto pr-2 space-y-6">
-          {(mode === "existing" ||
-            mode === "add-supplier" ||
-            mode === "edit") && (
-            <ExistingPreview
-              item={mode === "edit" ? form.editingItem : form.existingMaster}
-            />
-          )}
-
-          <div>
-            <h3 className="text-sm font-medium mb-3">Item Details</h3>
-            <MasterTab form={form} canManageMaster={canManageMaster} />
-          </div>
-
-          {form.master.type === "PRODUCT" &&
-            (mode === "create" || mode === "edit") && (
-              <div>
-                <UomSection
-                  mode={mode}
-                  editItemId={form.editingItem?.id}
-                  baseUnitCode={form.master.unit}
-                />
-              </div>
-            )}
-
-          <div>
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="text-sm font-medium">Supplier Prices</h3>
-              {canManageSupplierItems && (
-                <div className="flex gap-1.5">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    className="h-7 text-xs"
-                    onClick={() => form.addSupplierDraft()}
-                  >
-                    <Plus className="size-3 mr-1" />
-                    Add
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    className="h-7 text-xs"
-                    onClick={() => openCreateSupplier()}
-                  >
-                    <UserPlus className="size-3 mr-1" />
-                    New
-                  </Button>
-                </div>
-              )}
-            </div>
-            <SuppliersTab
-              form={form}
-              suppliers={form.suppliers}
-              canManageSupplierItems={canManageSupplierItems}
-            />
+      <DialogContent className="flex max-h-[92vh] flex-col gap-0 overflow-hidden p-0 sm:max-w-6xl">
+        {/* Header */}
+        <div className="flex items-start justify-between gap-4 border-b px-6 py-4">
+          <div className="min-w-0">
+            <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+              {header.eyebrow}
+            </p>
+            <h2 className="font-medium text-xl leading-tight">
+              {header.title}
+            </h2>
+            <p className="mt-0.5 text-sm text-muted-foreground">
+              {header.desc}
+            </p>
           </div>
         </div>
 
-        <DialogFooter>
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => handleClose(false)}
-            disabled={isSubmitting}
-          >
-            Cancel
-          </Button>
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => submit(true)}
-            disabled={isSubmitting}
-          >
-            {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Save & Add Another
-          </Button>
-          <Button
-            type="button"
-            onClick={() => submit()}
-            disabled={isSubmitting}
-          >
-            {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            {submitLabel}
-          </Button>
-        </DialogFooter>
+        {/* Body */}
+        <div className="flex min-h-0 flex-1 flex-col overflow-hidden lg:flex-row">
+          <SectionRail
+            form={form}
+            active={active}
+            disabledSections={disabledSections}
+            onSelect={handleSelect}
+          />
+          <div className="flex min-h-0 flex-1 flex-col overflow-y-auto lg:flex-row lg:overflow-hidden">
+            <main
+              ref={scrollRef}
+              className="min-w-0 px-6 lg:flex-1 lg:overflow-y-auto"
+            >
+              {!supplierMode && (
+                <>
+                  <IdentitySection form={form} canManage={canManageMaster} />
+                  <UnitsSection form={form} canManage={canManageMaster} />
+                  <PricingSection form={form} canManage={canManageMaster} />
+                </>
+              )}
+              <SuppliersSection
+                form={form}
+                canManage={canManageSuppliers}
+                onNewSupplier={() =>
+                  openCreateSupplier({
+                    onSuccess: () => form.addSupplierDraft(),
+                  })
+                }
+              />
+            </main>
+            <SummaryPanel form={form} onJump={handleJump} />
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div className="flex flex-wrap items-center justify-between gap-3 border-t px-6 py-3">
+          <span className="text-xs text-muted-foreground" aria-live="polite">
+            {form.dirty ? "Unsaved changes" : "No changes yet"}
+          </span>
+          <div className="flex flex-wrap gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              disabled={isSubmitting}
+              onClick={() => handleOpenChange(false)}
+            >
+              Cancel
+            </Button>
+            {mode !== "edit" && (
+              <Button
+                type="button"
+                variant="outline"
+                disabled={isSubmitting}
+                onClick={() => submit(true)}
+              >
+                {isSubmitting && <Loader2 className="size-4 animate-spin" />}
+                {supplierMode
+                  ? "Save & add another supplier"
+                  : "Save & add another"}
+              </Button>
+            )}
+            <Button
+              type="button"
+              disabled={isSubmitting}
+              onClick={() => submit()}
+            >
+              {isSubmitting && <Loader2 className="size-4 animate-spin" />}
+              {submitLabel}
+            </Button>
+          </div>
+        </div>
       </DialogContent>
     </Dialog>
   );
@@ -390,22 +328,17 @@ export function UnifiedItemFormProvider({
     });
   }, []);
 
-  const handleOpenChange = React.useCallback((open: boolean) => {
-    setState((prev) => ({
-      ...prev,
-      open,
-      editItemId: open ? prev.editItemId : undefined,
-    }));
-  }, []);
+  const contextValue = React.useMemo(
+    () => ({ openCreate, openAddSupplier, openEdit }),
+    [openCreate, openAddSupplier, openEdit],
+  );
 
   return (
-    <UnifiedItemFormContext.Provider
-      value={{ openCreate, openAddSupplier, openEdit }}
-    >
+    <UnifiedItemFormContext.Provider value={contextValue}>
       {children}
       <UnifiedItemDialog
         open={state.open}
-        onOpenChange={handleOpenChange}
+        onOpenChange={(v) => setState((prev) => ({ ...prev, open: v }))}
         initialItem={state.initialItem}
         initialSupplierId={state.initialSupplierId}
         initialMode={state.initialMode}

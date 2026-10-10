@@ -133,9 +133,6 @@ export function ImageUploadStep({
         <p className="text-sm font-medium">
           Drop images here, or click to browse
         </p>
-        <p className="text-xs text-muted-foreground mt-1">
-          JPG, PNG, WebP — named by SKU (e.g. SKU-001.jpg)
-        </p>
       </div>
 
       {images.length > 0 && (

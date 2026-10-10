@@ -165,6 +165,7 @@ export default function PurchaseOrderDetailPage() {
     utils.purchaseOrders.byId.invalidate({ id: params.id });
     utils.purchaseOrders.list.invalidate();
     utils.purchaseOrders.stockMovements.invalidate({ id: params.id });
+    utils.expenses.list.invalidate();
   }
 
   const isPending =

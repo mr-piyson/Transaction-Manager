@@ -7,6 +7,8 @@ import {
   getItemMasterDefaults,
   getSupplierItemDraftDefaults,
   type ItemMasterValues,
+  type ItemUomDraft,
+  makeUomDraft,
   type SupplierItemDraft,
 } from "@/lib/validations/unified-item";
 
@@ -16,16 +18,37 @@ import {
 
 export type Mode = "create" | "existing" | "add-supplier" | "edit";
 
-export type MasterFieldErrors = Partial<Record<keyof ItemMasterValues, string>>;
+export type SectionKey = "identity" | "units" | "pricing" | "suppliers";
 
-export interface SupplierDraftErrors {
-  [tempId: string]: Partial<Record<keyof SupplierItemDraft, string>>;
+export interface ItemIssue {
+  /** Which section the offending field lives in. */
+  section: SectionKey;
+  /** DOM id of the field / row — used to jump to and focus the field. */
+  anchor: string;
+  message: string;
 }
 
-export interface FormErrors {
-  master: MasterFieldErrors;
-  suppliers: SupplierDraftErrors;
+export interface MoneySummary {
+  baseCurrency: string;
+  taxName: string;
+  taxPct: number;
+  /** Sale price including tax. */
+  taxInclusive: number;
+  bestCost: number | null;
+  bestCostSupplierId: string | null;
+  pricedCount: number;
+  marginPct: number | null;
 }
+
+/** Stable DOM ids used by validation to anchor errors and focus fields. */
+export const ANCHORS = {
+  name: "item-field-name",
+  sku: "item-field-sku",
+  price: "item-field-price",
+  unit: "item-field-unit",
+  unitRow: (tempId: string) => `item-unit-${tempId}`,
+  supplierRow: (tempId: string) => `item-supplier-${tempId}`,
+} as const;
 
 export interface UseItemFormReturn {
   mode: Mode;
@@ -34,10 +57,24 @@ export interface UseItemFormReturn {
   editingItem: any | null;
   supplierDrafts: SupplierItemDraft[];
   suppliers: any[];
-  errors: FormErrors;
+  units: any[];
+  categories: any[];
+  taxRates: any[];
+  uomDrafts: ItemUomDraft[];
+  /** True once the item has stock/document usage — base unit & factors lock. */
+  uomFactorLocked: boolean;
+  usageCount: number;
+  isDetailLoading: boolean;
+  issues: ItemIssue[];
+  tried: boolean;
+  dirty: boolean;
+  duplicateItem: any | null;
+  money: MoneySummary;
   isSubmitting: boolean;
   pendingImageFile: File | null;
   imageRemoved: boolean;
+  /** Identity fields are read-only when adding a price to an existing item. */
+  identityLocked: boolean;
 
   setMode: (mode: Mode) => void;
   setMasterField: <K extends keyof ItemMasterValues>(
@@ -48,6 +85,22 @@ export interface UseItemFormReturn {
   setPendingImageFile: (file: File | null) => void;
   setImageRemoved: (removed: boolean) => void;
 
+  /** Marks `unitId` as the Base (stock) unit and re-scales every factor. */
+  setBaseUnit: (unitId: string) => void;
+  addUomDraft: (unit: {
+    id: string;
+    code: string;
+    name?: string;
+    factor?: number;
+    isPurchaseDefault?: boolean;
+    isSalesDefault?: boolean;
+    barcode?: string;
+  }) => void;
+  removeUomDraft: (tempId: string) => void;
+  updateUomDraft: (tempId: string, patch: Partial<ItemUomDraft>) => void;
+  /** Chooses the pre-selected purchase/sales unit. */
+  setDefaultUnit: (kind: "purchase" | "sales", unitId: string) => void;
+
   addSupplierDraft: () => void;
   removeSupplierDraft: (tempId: string) => void;
   updateSupplierDraft: (
@@ -56,30 +109,177 @@ export interface UseItemFormReturn {
   ) => void;
 
   handleMasterNameBlur: () => void;
+  dismissDuplicate: () => void;
+  adoptDuplicate: () => void;
+
+  errorFor: (anchor: string) => string | undefined;
+  supplierCurrency: (draft: SupplierItemDraft) => string;
+  convertToBase: (amount: number, currency: string) => number;
   submit: (keepOpen?: boolean) => Promise<void>;
   reset: () => void;
 }
 
-export interface UseItemFormOptions {
+export interface UseItemFormProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  /** Pre-selected supplier for "add-supplier" mode */
   initialSupplierId?: string;
-  /** Pre-existing item for "add-supplier" mode */
   initialItem?: any;
-  /** Item ID for "edit" mode — triggers byId query */
   editItemId?: string;
   onSuccess?: (itemId: string) => void;
+}
+
+interface LoadConfig {
+  mode: Mode;
+  itemId?: string;
+  supplierId?: string;
+}
+
+// ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
+
+function newTempId(): string {
+  if (typeof crypto !== "undefined" && crypto.randomUUID) {
+    return crypto.randomUUID();
+  }
+  return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
+    const r = (Math.random() * 16) | 0;
+    const v = c === "x" ? r : (r & 0x3) | 0x8;
+    return v.toString(16);
+  });
+}
+
+function usageOfCount(count: any): number {
+  return (
+    (count?.invoiceLines ?? 0) +
+    (count?.purchaseLines ?? 0) +
+    (count?.stockMovements ?? 0)
+  );
+}
+
+/** Builds the ordered list of validation issues for the current form state. */
+function buildIssues(params: {
+  mode: Mode;
+  master: ItemMasterValues;
+  uomDrafts: ItemUomDraft[];
+  supplierDrafts: SupplierItemDraft[];
+  existingItems: any[];
+  editItemId?: string;
+  suppliers: any[];
+}): ItemIssue[] {
+  const {
+    mode,
+    master,
+    uomDrafts,
+    supplierDrafts,
+    existingItems,
+    editItemId,
+    suppliers,
+  } = params;
+  const issues: ItemIssue[] = [];
+  const identityEditable = mode === "create" || mode === "edit";
+
+  if (identityEditable) {
+    if (!master.name.trim()) {
+      issues.push({
+        section: "identity",
+        anchor: ANCHORS.name,
+        message: "Enter an item name.",
+      });
+    }
+
+    const sku = master.sku.trim().toUpperCase();
+    if (!sku) {
+      issues.push({
+        section: "identity",
+        anchor: ANCHORS.sku,
+        message: "Enter an SKU or generate one.",
+      });
+    } else {
+      const clash = existingItems.find(
+        (i: any) => i.sku?.toUpperCase().trim() === sku && i.id !== editItemId,
+      );
+      if (clash) {
+        issues.push({
+          section: "identity",
+          anchor: ANCHORS.sku,
+          message: `This SKU already belongs to ${clash.name}.`,
+        });
+      }
+    }
+
+    if (master.type === "PRODUCT") {
+      if (!master.unitId) {
+        issues.push({
+          section: "units",
+          anchor: ANCHORS.unit,
+          message: "Select a base (stock) unit of measure.",
+        });
+      }
+      for (const draft of uomDrafts) {
+        if (draft.unitId === master.unitId) continue;
+        if (!(draft.factor > 0)) {
+          issues.push({
+            section: "units",
+            anchor: ANCHORS.unitRow(draft.tempId),
+            message: `Enter how many ${master.unit || "base units"} are in one ${draft.unitCode}.`,
+          });
+        }
+      }
+    } else if (!master.unit.trim()) {
+      issues.push({
+        section: "units",
+        anchor: ANCHORS.unit,
+        message: "Choose the unit shown on invoices.",
+      });
+    }
+
+    if (master.salesPrice < 0) {
+      issues.push({
+        section: "pricing",
+        anchor: ANCHORS.price,
+        message: "Price cannot be negative.",
+      });
+    }
+  }
+
+  const nameById = new Map<string, string>(
+    suppliers.map((s: any) => [s.id, s.name]),
+  );
+  const seen = new Set<string>();
+  supplierDrafts.forEach((draft, index) => {
+    const anchor = ANCHORS.supplierRow(draft.tempId);
+    if (!draft.supplierId) {
+      issues.push({
+        section: "suppliers",
+        anchor,
+        message: `Choose a supplier for price ${index + 1}.`,
+      });
+      return;
+    }
+    if (seen.has(draft.supplierId)) {
+      issues.push({
+        section: "suppliers",
+        anchor,
+        message: `${nameById.get(draft.supplierId) ?? "This supplier"} is listed twice. Keep one price per supplier.`,
+      });
+    }
+    seen.add(draft.supplierId);
+    if (!(Number(draft.basePrice) > 0)) {
+      issues.push({
+        section: "suppliers",
+        anchor,
+        message: `Enter a price for ${nameById.get(draft.supplierId) ?? "this supplier"}.`,
+      });
+    }
+  });
+
+  return issues;
 }
 
 // ---------------------------------------------------------------------------
 // Hook
 // ---------------------------------------------------------------------------
-
-let nextTempId = 0;
-function makeTempId() {
-  return `_draft_${++nextTempId}_${Date.now()}`;
-}
 
 export function useItemForm({
   open,
@@ -88,17 +288,26 @@ export function useItemForm({
   initialItem,
   editItemId,
   onSuccess,
-}: UseItemFormOptions): UseItemFormReturn {
+}: UseItemFormProps): UseItemFormReturn {
   const utils = trpc.useUtils();
 
-  // Determine initial mode
-  const getInitialMode = React.useCallback((): Mode => {
-    if (editItemId) return "edit";
-    if (initialItem?.id) return "add-supplier";
-    return "create";
-  }, [editItemId, initialItem?.id]);
+  const getInitialConfig = React.useCallback((): LoadConfig => {
+    if (editItemId) return { mode: "edit", itemId: editItemId };
+    if (initialItem?.id) {
+      return {
+        mode: "add-supplier",
+        itemId: initialItem.id,
+        supplierId: initialSupplierId,
+      };
+    }
+    return { mode: "create" };
+  }, [editItemId, initialItem?.id, initialSupplierId]);
 
-  const [mode, setModeState] = React.useState<Mode>(getInitialMode);
+  const [loadConfig, setLoadConfig] =
+    React.useState<LoadConfig>(getInitialConfig);
+  const [mode, setModeState] = React.useState<Mode>(
+    () => getInitialConfig().mode,
+  );
   const [master, setMasterState] = React.useState<ItemMasterValues>(
     getItemMasterDefaults,
   );
@@ -106,59 +315,26 @@ export function useItemForm({
   const [editingItem, setEditingItem] = React.useState<any | null>(null);
   const [supplierDrafts, setSupplierDrafts] = React.useState<
     SupplierItemDraft[]
-  >(() => {
-    if (initialSupplierId && initialItem) {
-      return [
-        {
-          ...getSupplierItemDraftDefaults(),
-          tempId: makeTempId(),
-          supplierId: initialSupplierId,
-        },
-      ];
-    }
-    return [getSupplierItemDraftDefaults()];
-  });
-  const [errors, setErrors] = React.useState<FormErrors>({
-    master: {},
-    suppliers: {},
-  });
+  >([]);
+  const [uomDrafts, setUomDrafts] = React.useState<ItemUomDraft[]>([]);
+  const [tried, setTried] = React.useState(false);
+  const [dirty, setDirty] = React.useState(false);
+  const [duplicateItem, setDuplicateItem] = React.useState<any | null>(null);
+  const [duplicateDismissed, setDuplicateDismissed] = React.useState(false);
   const [pendingImageFile, setPendingImageFileState] =
     React.useState<File | null>(null);
   const [imageRemoved, setImageRemoved] = React.useState(false);
-  const originalSupplierItemIdsRef = React.useRef<Set<string>>(new Set());
+
+  const initializedRef = React.useRef(false);
+  const prevOpenRef = React.useRef(false);
 
   const setPendingImageFile = React.useCallback((file: File | null) => {
     setPendingImageFileState(file);
   }, []);
 
-  // ── Image upload helper ──────────────────────────────────────────────────
-  const uploadImage = React.useCallback(
-    async (file: File): Promise<string | null> => {
-      try {
-        const formData = new FormData();
-        formData.append("file", file);
-        const res = await fetch("/api/uploads", {
-          method: "POST",
-          body: formData,
-        });
-        if (!res.ok) {
-          const body = await res.json().catch(() => null);
-          throw new Error(body?.error ?? "Upload failed");
-        }
-        const data = await res.json();
-        return data.storagePath as string;
-      } catch (err) {
-        console.error("[uploadImage]", err);
-        toast.error("Image upload failed", {
-          description: err instanceof Error ? err.message : "Please try again.",
-        });
-        return null;
-      }
-    },
-    [],
-  );
+  const markDirty = React.useCallback(() => setDirty(true), []);
 
-  // ── Data queries ────────────────────────────────────────────────────────
+  // ── Data queries ─────────────────────────────────────────────────────────
   const { data: suppliersData } = trpc.suppliers.list.useQuery(
     {},
     { enabled: open },
@@ -174,215 +350,499 @@ export function useItemForm({
     [existingItemsData],
   );
 
-  const { data: units } = trpc.units.list.useQuery(undefined, {
+  const { data: unitsData } = trpc.units.list.useQuery(undefined, {
+    enabled: open,
+  });
+  const units = React.useMemo(() => unitsData ?? [], [unitsData]);
+
+  const { data: categoriesData } = trpc.categories.list.useQuery(undefined, {
+    enabled: open,
+  });
+  const categories = React.useMemo(
+    () => categoriesData ?? [],
+    [categoriesData],
+  );
+
+  const { data: taxRatesData } = trpc.settings.taxRates.list.useQuery(
+    undefined,
+    { enabled: open },
+  );
+  const taxRates = React.useMemo(() => taxRatesData ?? [], [taxRatesData]);
+
+  const { data: orgData } = trpc.organizations.get.useQuery(undefined, {
+    enabled: open,
+  });
+  const baseCurrency = (orgData?.currency as string) ?? "BHD";
+
+  const { data: ratesData } = trpc.exchangeRates.list.useQuery(undefined, {
     enabled: open,
   });
 
-  // Fetch item data for edit mode
-  const { data: editItemData, isLoading: isEditItemLoading } =
+  const detailItemId =
+    loadConfig.mode === "edit" || loadConfig.mode === "add-supplier"
+      ? loadConfig.itemId
+      : undefined;
+
+  const { data: detailItem, isLoading: isDetailLoading } =
     trpc.items.byId.useQuery(
-      { id: editItemId! },
-      { enabled: open && mode === "edit" && !!editItemId },
+      { id: detailItemId as string },
+      { enabled: open && !!detailItemId },
     );
 
-  // Mutations
-  const createMutation = trpc.items.createWithSupplierItems.useMutation({
-    onSuccess(data) {
-      utils.items.list.invalidate();
-      utils.suppliers.list.invalidate();
-      toast.success("Item created with supplier prices", {
-        description: data.item.name,
-      });
-      onSuccess?.(data.item.id);
-      onOpenChange(false);
+  // ── Currency helpers ─────────────────────────────────────────────────────
+  const supplierCurrency = React.useCallback(
+    (draft: SupplierItemDraft) => {
+      if (!draft.supplierId) return draft.currency || baseCurrency;
+      const supplier = suppliers.find((s: any) => s.id === draft.supplierId);
+      return (supplier as any)?.currencyCode ?? baseCurrency;
     },
-    onError(err) {
-      toast.error("Failed to create item", { description: err.message });
-    },
-  });
+    [suppliers, baseCurrency],
+  );
 
-  const updateMutation = trpc.items.update.useMutation({
-    onSuccess(data) {
-      utils.items.list.invalidate();
-      utils.items.byId.invalidate({ id: data.id });
-      toast.success("Item updated", { description: data.name });
-      onSuccess?.(data.id);
-      onOpenChange(false);
+  const convertToBase = React.useCallback(
+    (amount: number, currency: string) => {
+      if (!currency || currency === baseCurrency) return amount;
+      const rows = ratesData ?? [];
+      const direct = rows.find(
+        (r: any) =>
+          r.fromCurrency === currency && r.toCurrency === baseCurrency,
+      );
+      if (direct) return amount * Number(direct.rate);
+      const inverse = rows.find(
+        (r: any) =>
+          r.fromCurrency === baseCurrency && r.toCurrency === currency,
+      );
+      if (inverse && Number(inverse.rate) > 0) {
+        return amount / Number(inverse.rate);
+      }
+      return amount;
     },
-    onError(err) {
-      toast.error("Failed to update item", { description: err.message });
-    },
-  });
+    [ratesData, baseCurrency],
+  );
 
-  // Supplier item mutations (for edit mode)
-  const addSupplierItemMutation = trpc.suppliers.addSupplierItem.useMutation();
-  const updateSupplierItemMutation =
-    trpc.suppliers.updateSupplierItem.useMutation();
-  const deleteSupplierItemMutation =
-    trpc.suppliers.deleteSupplierItem.useMutation();
-
-  // Reset on open — only when `open` transitions to true or initial props change
-  const prevOpenRef = React.useRef(open);
+  // ── Initialisation ───────────────────────────────────────────────────────
   React.useEffect(() => {
-    const wasOpen = prevOpenRef.current;
+    if (open && !prevOpenRef.current) {
+      const cfg = getInitialConfig();
+      setLoadConfig(cfg);
+      setModeState(cfg.mode);
+      initializedRef.current = false;
+      setTried(false);
+      setDirty(false);
+      setDuplicateItem(null);
+      setDuplicateDismissed(false);
+      setPendingImageFileState(null);
+      setImageRemoved(false);
+    }
+    if (!open) initializedRef.current = false;
     prevOpenRef.current = open;
+  }, [open, getInitialConfig]);
 
-    // Only reset when dialog first opens (false → true) or initial props change while open
-    if (!open) return;
-    if (wasOpen && !initialItem?.id && !initialSupplierId && !editItemId)
-      return;
-
-    const m = getInitialMode();
-    setModeState(m);
-    if (editItemId && editItemData) {
-      // Edit mode: pre-fill from fetched item
-      const d = editItemData as any;
-      const unitList = units ?? [];
-      const dUnit =
-        d.unitId ??
-        unitList.find((u: any) => u.code === d.unit)?.id ??
-        undefined;
-      setMasterState(
-        getItemMasterDefaults({
-          type: d.type,
-          sku: d.sku,
-          name: d.name,
-          barcode: d.barcode ?? undefined,
-          description: d.description ?? undefined,
-          image: d.image ?? undefined,
-          unit: d.unit,
-          unitId: dUnit,
-          isSaleable: d.isSaleable,
-          isPurchasable: d.isPurchasable,
-          salesPrice: Number(d.salesPrice),
-          minStock: d.minStock,
-          reorderPoint: d.reorderPoint,
-          reorderQty: d.reorderQty,
-          categoryId: d.categoryId ?? undefined,
-          taxRateId: d.taxRateId ?? undefined,
-          isActive: d.isActive,
+  const initCreate = React.useCallback((unitList: any[]) => {
+    const defaults = getItemMasterDefaults();
+    const def =
+      unitList.find((u: any) => u.isDefault && u.isActive) ??
+      unitList.find((u: any) => u.isActive) ??
+      unitList[0];
+    const drafts: ItemUomDraft[] = [];
+    if (def) {
+      defaults.unitId = def.id;
+      defaults.unit = def.code;
+      drafts.push(
+        makeUomDraft({
+          unitId: def.id,
+          unitCode: def.code,
+          unitName: def.name,
+          factor: 1,
         }),
       );
-      setEditingItem(editItemData);
-      setExistingMaster(null);
-
-      // Load existing supplier items into drafts
-      const existingSupplierItems: any[] = d.supplierItems ?? [];
-      originalSupplierItemIdsRef.current = new Set(
-        existingSupplierItems.map((si: any) => si.id),
-      );
-      if (existingSupplierItems.length > 0) {
-        setSupplierDrafts(
-          existingSupplierItems.map((si: any) => ({
-            tempId: makeTempId(),
-            id: si.id,
-            supplierId: si.supplierId,
-            supplierSku: si.supplierSku ?? undefined,
-            supplierName: si.supplierName ?? undefined,
-            basePrice: Number(si.basePrice),
-            currency: si.currency ?? "BHD",
-            leadTimeDays: si.leadTimeDays ?? undefined,
-            minOrderQty: Number(si.minOrderQty) ?? 1,
-            notes: si.notes ?? undefined,
-            isActive: si.isActive ?? true,
-          })),
-        );
-      } else {
-        setSupplierDrafts([getSupplierItemDraftDefaults()]);
-      }
-    } else if (initialItem?.id) {
-      setMasterState(getItemMasterDefaults(initialItem));
-      setExistingMaster(initialItem);
-      setEditingItem(null);
-    } else {
-      const unitList = units ?? [];
-      const defaultUnit = unitList.find((u: any) => u.isDefault);
-      const defaults = getItemMasterDefaults();
-      if (defaultUnit) {
-        defaults.unitId = defaultUnit.id;
-        defaults.unit = defaultUnit.code;
-      }
-      originalSupplierItemIdsRef.current = new Set();
-      setMasterState(defaults);
-      setExistingMaster(null);
-      setEditingItem(null);
     }
-    // In edit mode, supplier drafts are already loaded from editItemData above.
-    // Only reset supplier drafts for create / add-supplier modes.
-    if (m !== "edit") {
-      setSupplierDrafts(
-        initialSupplierId
-          ? [
-              {
-                ...getSupplierItemDraftDefaults(),
-                tempId: makeTempId(),
-                supplierId: initialSupplierId,
-              },
-            ]
-          : [getSupplierItemDraftDefaults()],
-      );
-    }
-    setErrors({ master: {}, suppliers: {} });
-    setPendingImageFileState(null);
-    setImageRemoved(false);
-  }, [
-    open,
-    getInitialMode,
-    initialItem,
-    initialSupplierId,
-    editItemId,
-    editItemData,
-    units,
-  ]);
-
-  // ── Master field setters ────────────────────────────────────────────────
-
-  const setMode = React.useCallback((m: Mode) => {
-    setModeState(m);
+    setMasterState(defaults);
+    setUomDrafts(drafts);
+    setSupplierDrafts([]);
+    setExistingMaster(null);
+    setEditingItem(null);
   }, []);
 
+  const initFromItem = React.useCallback(
+    (cfg: LoadConfig, item: any) => {
+      const unitList = units ?? [];
+      const codeById = new Map<string, string>(
+        unitList.map((u: any) => [u.id, u.code]),
+      );
+      const base = getItemMasterDefaults(item);
+      if (base.unitId && !base.unit) {
+        base.unit = codeById.get(base.unitId) ?? item.unitRef?.code ?? "pcs";
+      }
+      if (!base.unit && item.unitRef?.code) base.unit = item.unitRef.code;
+      setMasterState(base);
+
+      const isProduct = item.type === "PRODUCT";
+      const drafts: ItemUomDraft[] = [];
+      if (isProduct && item.unitId) {
+        drafts.push(
+          makeUomDraft({
+            unitId: item.unitId,
+            unitCode:
+              item.unit ??
+              item.unitRef?.code ??
+              codeById.get(item.unitId) ??
+              "",
+            factor: 1,
+          }),
+        );
+        for (const u of (item.itemUoms ?? []) as any[]) {
+          if (u.unitId === item.unitId) continue;
+          drafts.push(
+            makeUomDraft({
+              id: u.id,
+              unitId: u.unitId,
+              unitCode: u.unit?.code ?? codeById.get(u.unitId) ?? "",
+              unitName: u.unit?.name,
+              factor: Number(u.factor) || 1,
+              isPurchaseDefault: !!u.isPurchaseDefault,
+              isSalesDefault: !!u.isSalesDefault,
+              barcode: u.barcode ?? undefined,
+              isActive: u.isActive ?? true,
+            }),
+          );
+        }
+      }
+      setUomDrafts(drafts);
+
+      const drafts2: SupplierItemDraft[] = (item.supplierItems ?? []).map(
+        (si: any) => ({
+          ...getSupplierItemDraftDefaults(),
+          tempId: newTempId(),
+          id: si.id,
+          supplierId: si.supplierId,
+          supplierSku: si.supplierSku ?? undefined,
+          supplierName: si.supplierName ?? undefined,
+          basePrice: Number(si.basePrice) || 0,
+          currency: si.currency ?? baseCurrency,
+          leadTimeDays: si.leadTimeDays ?? undefined,
+          minOrderQty: Number(si.minOrderQty) || 1,
+          notes: si.notes ?? undefined,
+          isActive: si.isActive ?? true,
+        }),
+      );
+      if (
+        cfg.supplierId &&
+        !drafts2.some((d) => d.supplierId === cfg.supplierId)
+      ) {
+        const supplier = suppliers.find((s: any) => s.id === cfg.supplierId);
+        drafts2.push({
+          ...getSupplierItemDraftDefaults(),
+          tempId: newTempId(),
+          supplierId: cfg.supplierId,
+          currency: (supplier as any)?.currencyCode ?? baseCurrency,
+        });
+      }
+      setSupplierDrafts(drafts2);
+
+      if (cfg.mode === "edit") {
+        setEditingItem(item);
+        setExistingMaster(null);
+      } else {
+        setExistingMaster(item);
+        setEditingItem(null);
+      }
+      setModeState(cfg.mode);
+    },
+    [units, suppliers, baseCurrency],
+  );
+
+  React.useEffect(() => {
+    if (!open || initializedRef.current) return;
+    if (loadConfig.mode === "create") {
+      if (unitsData === undefined) return;
+      initCreate(units);
+    } else {
+      if (!detailItem) return;
+      initFromItem(loadConfig, detailItem);
+    }
+    initializedRef.current = true;
+  }, [
+    open,
+    loadConfig,
+    detailItem,
+    unitsData,
+    units,
+    initCreate,
+    initFromItem,
+  ]);
+
+  // ── Image upload ─────────────────────────────────────────────────────────
+  const uploadImage = React.useCallback(async (file: File) => {
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      const res = await fetch("/api/uploads", {
+        method: "POST",
+        body: formData,
+      });
+      if (!res.ok) {
+        const body = await res.json().catch(() => null);
+        throw new Error(body?.error ?? "Upload failed");
+      }
+      const data = await res.json();
+      return data.storagePath as string;
+    } catch (err) {
+      console.error("[uploadImage]", err);
+      toast.error("Image upload failed", {
+        description: err instanceof Error ? err.message : "Please try again.",
+      });
+      return null;
+    }
+  }, []);
+
+  // ── Mutations ────────────────────────────────────────────────────────────
+  const createMutation = trpc.items.createWithSupplierItems.useMutation();
+  const updateWithSuppliersMutation =
+    trpc.items.updateWithSupplierItems.useMutation();
+
+  // ── Derived state ────────────────────────────────────────────────────────
+  const targetItem = editingItem ?? existingMaster;
+  const usageCount = React.useMemo(
+    () => usageOfCount(targetItem?._count),
+    [targetItem],
+  );
+  const uomFactorLocked =
+    usageCount > 0 &&
+    (mode === "edit" || mode === "add-supplier" || mode === "existing");
+
+  const issues = React.useMemo(
+    () =>
+      buildIssues({
+        mode,
+        master,
+        uomDrafts,
+        supplierDrafts,
+        existingItems,
+        editItemId: editingItem?.id,
+        suppliers,
+      }),
+    [
+      mode,
+      master,
+      uomDrafts,
+      supplierDrafts,
+      existingItems,
+      editingItem?.id,
+      suppliers,
+    ],
+  );
+
+  const issuesByAnchor = React.useMemo(() => {
+    const map = new Map<string, string>();
+    for (const issue of issues) {
+      if (!map.has(issue.anchor)) map.set(issue.anchor, issue.message);
+    }
+    return map;
+  }, [issues]);
+
+  const errorFor = React.useCallback(
+    (anchor: string) => (tried ? issuesByAnchor.get(anchor) : undefined),
+    [tried, issuesByAnchor],
+  );
+
+  const money = React.useMemo<MoneySummary>(() => {
+    const taxRate = taxRates.find((t: any) => t.id === master.taxRateId);
+    const taxPct = taxRate ? Number(taxRate.rate) : 0;
+    const taxName = taxRate?.name ?? "Tax";
+
+    const priced = supplierDrafts.filter(
+      (d) => d.supplierId && Number(d.basePrice) > 0,
+    );
+    let bestCost: number | null = null;
+    let bestCostSupplierId: string | null = null;
+    for (const draft of priced) {
+      const cost = convertToBase(
+        Number(draft.basePrice),
+        supplierCurrency(draft),
+      );
+      if (bestCost === null || cost < bestCost) {
+        bestCost = cost;
+        bestCostSupplierId = draft.supplierId;
+      }
+    }
+    const marginPct =
+      bestCost !== null && master.salesPrice > 0
+        ? ((master.salesPrice - bestCost) / master.salesPrice) * 100
+        : null;
+
+    return {
+      baseCurrency,
+      taxName,
+      taxPct,
+      taxInclusive: master.salesPrice * (1 + taxPct / 100),
+      bestCost,
+      bestCostSupplierId,
+      pricedCount: priced.length,
+      marginPct,
+    };
+  }, [
+    taxRates,
+    master.taxRateId,
+    master.salesPrice,
+    supplierDrafts,
+    convertToBase,
+    supplierCurrency,
+    baseCurrency,
+  ]);
+
+  // ── Master setters ───────────────────────────────────────────────────────
   const setMasterField = React.useCallback(
     <K extends keyof ItemMasterValues>(
       field: K,
       value: ItemMasterValues[K],
     ) => {
+      markDirty();
       setMasterState((prev) => ({ ...prev, [field]: value }));
-      // Clear error for this field
-      setErrors((prev) => ({
-        ...prev,
-        master: { ...prev.master, [field]: undefined },
-      }));
     },
-    [],
+    [markDirty],
   );
 
-  const setMaster = React.useCallback((m: ItemMasterValues) => {
-    setMasterState(m);
+  const setMaster = React.useCallback(
+    (next: ItemMasterValues) => {
+      markDirty();
+      setMasterState(next);
+    },
+    [markDirty],
+  );
+
+  const setMode = React.useCallback((next: Mode) => {
+    setModeState(next);
   }, []);
 
-  // ── Supplier draft setters ──────────────────────────────────────────────
+  // ── UoM setters ──────────────────────────────────────────────────────────
+  const setBaseUnit = React.useCallback(
+    (unitId: string) => {
+      markDirty();
+      setMasterState((prev) => {
+        const draft = uomDrafts.find((d) => d.unitId === unitId);
+        return { ...prev, unitId, unit: draft?.unitCode ?? prev.unit };
+      });
+      setUomDrafts((prev) => {
+        const newBase = prev.find((d) => d.unitId === unitId);
+        const divisor =
+          newBase?.factor && newBase.factor > 0 ? newBase.factor : 1;
+        return prev.map((d) => ({
+          ...d,
+          factor:
+            d.unitId === unitId
+              ? 1
+              : Math.round((d.factor / divisor) * 1e6) / 1e6,
+          isPurchaseDefault: d.unitId === unitId ? false : d.isPurchaseDefault,
+          isSalesDefault: d.unitId === unitId ? false : d.isSalesDefault,
+        }));
+      });
+    },
+    [uomDrafts, markDirty],
+  );
 
+  const addUomDraft = React.useCallback(
+    (unit: {
+      id: string;
+      code: string;
+      name?: string;
+      factor?: number;
+      isPurchaseDefault?: boolean;
+      isSalesDefault?: boolean;
+      barcode?: string;
+    }) => {
+      markDirty();
+      if (uomDrafts.some((d) => d.unitId === unit.id)) return;
+      const isFirst = uomDrafts.length === 0;
+      setUomDrafts((prev) => [
+        ...prev,
+        makeUomDraft({
+          unitId: unit.id,
+          unitCode: unit.code,
+          unitName: unit.name,
+          factor: isFirst ? 1 : (unit.factor ?? 1),
+          isPurchaseDefault: isFirst
+            ? false
+            : (unit.isPurchaseDefault ?? false),
+          isSalesDefault: isFirst ? false : (unit.isSalesDefault ?? false),
+          barcode: isFirst ? undefined : unit.barcode,
+        }),
+      ]);
+      setMasterState((prev) =>
+        prev.unitId ? prev : { ...prev, unitId: unit.id, unit: unit.code },
+      );
+    },
+    [markDirty, uomDrafts],
+  );
+
+  const removeUomDraft = React.useCallback(
+    (tempId: string) => {
+      markDirty();
+      const removed = uomDrafts.find((d) => d.tempId === tempId);
+      const next = uomDrafts.filter((d) => d.tempId !== tempId);
+      setUomDrafts(next);
+      if (removed && removed.unitId === master.unitId) {
+        if (next.length > 0) {
+          setMasterState((m) => ({
+            ...m,
+            unitId: next[0].unitId,
+            unit: next[0].unitCode,
+          }));
+        } else {
+          setMasterState((m) => ({ ...m, unitId: undefined }));
+        }
+      }
+    },
+    [markDirty, uomDrafts, master.unitId],
+  );
+
+  const updateUomDraft = React.useCallback(
+    (tempId: string, patch: Partial<ItemUomDraft>) => {
+      markDirty();
+      setUomDrafts((prev) =>
+        prev.map((d) => (d.tempId === tempId ? { ...d, ...patch } : d)),
+      );
+    },
+    [markDirty],
+  );
+
+  const setDefaultUnit = React.useCallback(
+    (kind: "purchase" | "sales", unitId: string) => {
+      markDirty();
+      setUomDrafts((prev) =>
+        prev.map((d) => {
+          const isBase = d.unitId === master.unitId;
+          const flag = !isBase && d.unitId === unitId;
+          return kind === "purchase"
+            ? { ...d, isPurchaseDefault: flag }
+            : { ...d, isSalesDefault: flag };
+        }),
+      );
+    },
+    [markDirty, master.unitId],
+  );
+
+  // ── Supplier setters ─────────────────────────────────────────────────────
   const addSupplierDraft = React.useCallback(() => {
+    markDirty();
     setSupplierDrafts((prev) => [...prev, getSupplierItemDraftDefaults()]);
-  }, []);
+  }, [markDirty]);
 
-  const removeSupplierDraft = React.useCallback((tempId: string) => {
-    setSupplierDrafts((prev) => prev.filter((d) => d.tempId !== tempId));
-    setErrors((prev) => {
-      const next = { ...prev.suppliers };
-      delete next[tempId];
-      return { ...prev, suppliers: next };
-    });
-  }, []);
+  const removeSupplierDraft = React.useCallback(
+    (tempId: string) => {
+      markDirty();
+      setSupplierDrafts((prev) => prev.filter((d) => d.tempId !== tempId));
+    },
+    [markDirty],
+  );
 
   const updateSupplierDraft = React.useCallback(
     (tempId: string, patch: Partial<SupplierItemDraft>) => {
+      markDirty();
       setSupplierDrafts((prev) =>
         prev.map((d) => {
           if (d.tempId !== tempId) return d;
           const updated = { ...d, ...patch };
-
-          // Auto-fill currency from supplier
           if (patch.supplierId) {
             const supplier = suppliers.find(
               (s: any) => s.id === patch.supplierId,
@@ -390,312 +850,236 @@ export function useItemForm({
             if (supplier) {
               updated.currency =
                 (supplier as any).currencyCode ?? updated.currency;
-              // Auto-fill master from first supplier if in create mode and master is empty
-              if (mode === "create") {
-                setMasterState((prevMaster) => {
-                  const next = { ...prevMaster };
-                  if (!next.sku && updated.supplierSku) {
-                    next.sku = updated.supplierSku;
-                  }
-                  return next;
-                });
-              }
             }
           }
-
           return updated;
         }),
       );
-
-      // Clear error for this field
-      setErrors((prev) => {
-        const draftErrors = { ...prev.suppliers[tempId] };
-        if (patch.supplierId !== undefined) delete draftErrors.supplierId;
-        if (patch.supplierSku !== undefined) delete draftErrors.supplierSku;
-        if (patch.basePrice !== undefined) delete draftErrors.basePrice;
-        return {
-          ...prev,
-          suppliers: { ...prev.suppliers, [tempId]: draftErrors },
-        };
-      });
     },
-    [suppliers, mode],
+    [suppliers, markDirty],
   );
 
-  // ── Name blur → detect existing item ────────────────────────────────────
-
+  // ── Duplicate detection ──────────────────────────────────────────────────
   const handleMasterNameBlur = React.useCallback(() => {
-    if (!master.name || mode !== "create") return;
+    if (mode !== "create") return;
+    const query = master.name.trim().toLowerCase();
+    if (!query) {
+      setDuplicateItem(null);
+      return;
+    }
     const match = existingItems.find(
-      (i: any) =>
-        i.name.toLowerCase().trim() === master.name.toLowerCase().trim(),
+      (i: any) => i.name?.toLowerCase().trim() === query,
     );
-    if (match) {
-      setExistingMaster(match);
-      setMasterState(getItemMasterDefaults(match));
-      setModeState("existing");
-    }
-  }, [master.name, mode, existingItems]);
+    setDuplicateItem(match ?? null);
+    if (match) setDuplicateDismissed(false);
+  }, [mode, master.name, existingItems]);
 
-  // ── Validation ──────────────────────────────────────────────────────────
+  const dismissDuplicate = React.useCallback(() => {
+    setDuplicateDismissed(true);
+  }, []);
 
-  const validate = React.useCallback((): boolean => {
-    const masterErrors: MasterFieldErrors = {};
+  const adoptDuplicate = React.useCallback(() => {
+    if (!duplicateItem) return;
+    setDuplicateDismissed(true);
+    setDuplicateItem(null);
+    setExistingMaster(duplicateItem);
+    setEditingItem(null);
+    setModeState("add-supplier");
+    initializedRef.current = false;
+    setLoadConfig({
+      mode: "add-supplier",
+      itemId: duplicateItem.id,
+    });
+  }, [duplicateItem]);
 
-    if (mode === "create" || mode === "edit") {
-      if (!master.name.trim()) masterErrors.name = "Item name is required";
-      if (!master.sku.trim()) masterErrors.sku = "Internal SKU is required";
-      if (!master.unit.trim())
-        masterErrors.unit = "Unit of measure is required";
-
-      const skuTaken = existingItems.some(
-        (i: any) =>
-          i.sku.toLowerCase().trim() === master.sku.toLowerCase().trim() &&
-          i.id !== editingItem?.id,
-      );
-      if (skuTaken) masterErrors.sku = "Internal SKU already exists";
-    }
-
-    const supplierErrors: SupplierDraftErrors = {};
-    let hasSupplierErrors = false;
-
-    for (const draft of supplierDrafts) {
-      const hasSupplierData =
-        !!draft.supplierId ||
-        !!draft.supplierSku ||
-        !!draft.supplierName ||
-        draft.basePrice !== 0 ||
-        draft.leadTimeDays !== undefined ||
-        !!draft.notes;
-      if (!hasSupplierData) continue;
-
-      const draftErrors: Partial<Record<keyof SupplierItemDraft, string>> = {};
-      if (!draft.supplierId) draftErrors.supplierId = "Select a supplier";
-      if (draft.basePrice < 0)
-        draftErrors.basePrice = "Valid price is required";
-
-      // Check duplicate supplier in drafts
-      const duplicates = supplierDrafts.filter(
-        (d) => d.supplierId === draft.supplierId,
-      );
-      if (draft.supplierId && duplicates.length > 1) {
-        draftErrors.supplierId = "This supplier is already added";
-      }
-
-      if (Object.keys(draftErrors).length > 0) {
-        supplierErrors[draft.tempId] = draftErrors;
-        hasSupplierErrors = true;
-      }
-    }
-
-    const newErrors: FormErrors = {
-      master: masterErrors,
-      suppliers: supplierErrors,
-    };
-    setErrors(newErrors);
-
-    return Object.keys(masterErrors).length === 0 && !hasSupplierErrors;
-  }, [mode, master, supplierDrafts, existingItems, editingItem]);
-
-  // ── Submit ──────────────────────────────────────────────────────────────
+  // ── Submit ───────────────────────────────────────────────────────────────
+  const resetCreateInternal = React.useCallback(() => {
+    initCreate(units);
+    setTried(false);
+    setDirty(false);
+    setDuplicateItem(null);
+    setDuplicateDismissed(false);
+    setPendingImageFileState(null);
+    setImageRemoved(false);
+  }, [initCreate, units]);
 
   const submit = React.useCallback(
-    async (_keepOpen = false) => {
-      if (!validate()) return;
-
-      // Upload pending image before creating item
-      let imageUrl: string | undefined;
-      if (pendingImageFile) {
-        const uploaded = await uploadImage(pendingImageFile);
-        if (uploaded) {
-          imageUrl = uploaded;
-        }
+    async (keepOpen = false) => {
+      setTried(true);
+      if (issues.length > 0) {
+        const first = issues[0];
+        requestAnimationFrame(() => {
+          const el = document.getElementById(first.anchor);
+          if (el) {
+            el.scrollIntoView({ behavior: "smooth", block: "center" });
+            const field = el.querySelector<HTMLElement>(
+              "input,select,textarea",
+            );
+            field?.focus({ preventScroll: true });
+          }
+        });
+        toast.error(
+          `${issues.length} ${issues.length === 1 ? "thing" : "things"} to fix before saving.`,
+        );
+        return;
       }
 
-      // Determine final image value. The old file (if any) is garbage
-      // collected server-side in items.update/create after the DB write
-      // succeeds, so we only need to send the correct new value here.
+      let uploaded: string | undefined;
+      if (pendingImageFile) {
+        const path = await uploadImage(pendingImageFile);
+        if (path) uploaded = path;
+      }
       const finalImage: string | null | undefined = imageRemoved
-        ? null // clear the image
-        : imageUrl; // new upload (or undefined to keep existing)
+        ? null
+        : uploaded;
 
-      if (mode === "existing" && existingMaster) {
-        // Only add supplier items to existing item
-        const payload = {
-          item: {
-            type: existingMaster.type ?? "PRODUCT",
-            sku: existingMaster.sku,
-            name: existingMaster.name,
-            barcode: existingMaster.barcode ?? undefined,
-            description: existingMaster.description ?? undefined,
-            image:
-              finalImage !== undefined
-                ? finalImage
-                : (existingMaster.image ?? undefined),
-            unit: existingMaster.unit ?? "pcs",
-            unitId: existingMaster.unitId ?? undefined,
-            isSaleable: existingMaster.isSaleable ?? true,
-            isPurchasable: existingMaster.isPurchasable ?? true,
-            salesPrice: Number(existingMaster.salesPrice) ?? 0,
-            minStock: existingMaster.minStock ?? 0,
-            reorderPoint: existingMaster.reorderPoint ?? 0,
-            reorderQty: existingMaster.reorderQty ?? 0,
-            categoryId: existingMaster.categoryId ?? undefined,
-            taxRateId: existingMaster.taxRateId ?? undefined,
-            isActive: existingMaster.isActive ?? true,
-          },
-          supplierItems: supplierDrafts
-            .filter((d) => d.supplierId)
-            .map((d) => ({
-              supplierId: d.supplierId,
-              supplierSku: d.supplierSku,
-              supplierName: d.supplierName,
-              basePrice: String(d.basePrice),
-              currency: d.currency,
-              leadTimeDays: d.leadTimeDays,
-              minOrderQty: String(d.minOrderQty),
-              notes: d.notes,
-            })),
-        };
-        createMutation.mutate(payload);
-      } else if (mode === "edit" && editingItem) {
-        await updateMutation.mutateAsync({
-          id: editingItem.id,
-          type: master.type,
-          sku: master.sku,
-          name: master.name,
-          barcode: master.barcode,
-          description: master.description,
-          image: finalImage !== undefined ? finalImage : (master.image ?? null),
-          unit: master.unit,
-          unitId: master.unitId,
-          isSaleable: master.isSaleable,
-          isPurchasable: master.isPurchasable,
-          salesPrice: String(master.salesPrice),
-          minStock: master.minStock,
-          reorderPoint: master.reorderPoint,
-          reorderQty: master.reorderQty,
-          categoryId: master.categoryId,
-          taxRateId: master.taxRateId,
-        });
+      const serializedUoms = uomDrafts
+        .filter((d) => d.unitId !== master.unitId)
+        .map((d) => ({
+          id: d.id,
+          unitId: d.unitId,
+          factor: d.factor,
+          isPurchaseDefault: d.isPurchaseDefault,
+          isSalesDefault: d.isSalesDefault,
+          barcode: d.barcode || undefined,
+          isActive: d.isActive,
+        }));
 
-        // Process supplier items
-        const currentIds = new Set(
-          supplierDrafts.filter((d) => d.id).map((d) => d.id!),
-        );
+      const supplierPayload = (draft: SupplierItemDraft) => ({
+        supplierId: draft.supplierId,
+        supplierSku: draft.supplierSku || undefined,
+        supplierName: draft.supplierName || undefined,
+        basePrice: String(draft.basePrice),
+        currency: supplierCurrency(draft),
+        leadTimeDays: draft.leadTimeDays,
+        minOrderQty: String(draft.minOrderQty),
+        notes: draft.notes || undefined,
+      });
+      const supplierPayloadWithId = (draft: SupplierItemDraft) => ({
+        id: draft.id,
+        ...supplierPayload(draft),
+        isActive: draft.isActive,
+      });
 
-        // Delete removed supplier items
-        for (const origId of originalSupplierItemIdsRef.current) {
-          if (!currentIds.has(origId)) {
-            await deleteSupplierItemMutation.mutateAsync({ id: origId });
-          }
-        }
+      const itemPayload = {
+        type: master.type,
+        sku: master.sku.trim(),
+        name: master.name.trim(),
+        barcode: master.barcode?.trim() || undefined,
+        description: master.description,
+        image:
+          finalImage !== undefined ? finalImage : (master.image ?? undefined),
+        unit: master.unit,
+        unitId: master.unitId,
+        isSaleable: master.isSaleable,
+        isPurchasable: master.isPurchasable,
+        salesPrice: String(master.salesPrice),
+        minStock: master.minStock,
+        reorderPoint: master.reorderPoint,
+        reorderQty: master.reorderQty,
+        categoryId: master.categoryId || undefined,
+        taxRateId: master.taxRateId || undefined,
+      };
 
-        // Add or update supplier items (skip empty/unassigned drafts)
-        for (const draft of supplierDrafts) {
-          if (!draft.supplierId) continue;
-          if (draft.id) {
-            // Existing — update
-            await updateSupplierItemMutation.mutateAsync({
-              id: draft.id,
-              supplierSku: draft.supplierSku,
-              supplierName: draft.supplierName,
-              basePrice: String(draft.basePrice),
-              currency: draft.currency,
-              leadTimeDays: draft.leadTimeDays,
-              minOrderQty: String(draft.minOrderQty),
-              notes: draft.notes,
-            });
+      const nonEmptySuppliers = supplierDrafts.filter((d) => d.supplierId);
+
+      try {
+        if (mode === "create") {
+          const res = await createMutation.mutateAsync({
+            item: itemPayload,
+            itemUoms: serializedUoms,
+            supplierItems: nonEmptySuppliers.map(supplierPayload),
+          });
+          utils.items.list.invalidate();
+          utils.suppliers.list.invalidate();
+          const unitCount = uomDrafts.length;
+          toast.success(
+            `Created “${master.name}” with ${unitCount} unit${unitCount === 1 ? "" : "s"} and ${nonEmptySuppliers.length} supplier price${nonEmptySuppliers.length === 1 ? "" : "s"}.`,
+          );
+          onSuccess?.(res.item.id);
+          if (keepOpen) {
+            resetCreateInternal();
           } else {
-            // New — add
-            await addSupplierItemMutation.mutateAsync({
-              supplierId: draft.supplierId,
-              itemId: editingItem.id,
-              supplierSku: draft.supplierSku,
-              supplierName: draft.supplierName,
-              basePrice: String(draft.basePrice),
-              currency: draft.currency,
-              leadTimeDays: draft.leadTimeDays,
-              minOrderQty: String(draft.minOrderQty),
-              notes: draft.notes,
-            });
+            onOpenChange(false);
+          }
+        } else if (mode === "edit" && editingItem) {
+          await updateWithSuppliersMutation.mutateAsync({
+            id: editingItem.id,
+            item: itemPayload,
+            itemUoms: serializedUoms,
+            supplierItems: nonEmptySuppliers.map(supplierPayloadWithId),
+          });
+          utils.items.list.invalidate();
+          utils.items.byId.invalidate({ id: editingItem.id });
+          toast.success(`Saved changes to “${master.name}”.`);
+          onSuccess?.(editingItem.id);
+          onOpenChange(false);
+        } else {
+          const target = existingMaster ?? editingItem;
+          if (!target) return;
+          await updateWithSuppliersMutation.mutateAsync({
+            id: target.id,
+            supplierItems: nonEmptySuppliers.map(supplierPayloadWithId),
+          });
+          utils.items.list.invalidate();
+          utils.items.byId.invalidate({ id: target.id });
+          const added = nonEmptySuppliers.length;
+          toast.success(
+            `Added ${added} supplier price${added === 1 ? "" : "s"} to “${target.name}”.`,
+          );
+          onSuccess?.(target.id);
+          if (keepOpen) {
+            setSupplierDrafts((prev) => [
+              ...prev,
+              getSupplierItemDraftDefaults(),
+            ]);
+            setTried(false);
+            setDirty(false);
+          } else {
+            onOpenChange(false);
           }
         }
-
-        await Promise.all([
-          utils.items.list.invalidate(),
-          utils.items.byId.invalidate({ id: editingItem.id }),
-        ]);
-      } else if (mode === "create") {
-        const payload = {
-          item: {
-            type: master.type,
-            sku: master.sku,
-            name: master.name,
-            barcode: master.barcode,
-            description: master.description,
-            image: finalImage !== undefined ? finalImage : undefined,
-            unit: master.unit,
-            unitId: master.unitId,
-            isSaleable: master.isSaleable,
-            isPurchasable: master.isPurchasable,
-            salesPrice: String(master.salesPrice),
-            minStock: master.minStock,
-            reorderPoint: master.reorderPoint,
-            reorderQty: master.reorderQty,
-            categoryId: master.categoryId,
-            taxRateId: master.taxRateId,
-            isActive: master.isActive,
-          },
-          supplierItems: supplierDrafts
-            .filter((d) => d.supplierId)
-            .map((d) => ({
-              supplierId: d.supplierId,
-              supplierSku: d.supplierSku,
-              supplierName: d.supplierName,
-              basePrice: String(d.basePrice),
-              currency: d.currency,
-              leadTimeDays: d.leadTimeDays,
-              minOrderQty: String(d.minOrderQty),
-              notes: d.notes,
-            })),
-        };
-        createMutation.mutate(payload);
+      } catch (err) {
+        toast.error("Could not save item", {
+          description: err instanceof Error ? err.message : undefined,
+        });
       }
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [
-      validate,
-      mode,
-      existingMaster,
+      issues,
+      pendingImageFile,
+      imageRemoved,
+      uomDrafts,
       master,
       supplierDrafts,
-      createMutation,
-      updateMutation,
+      supplierCurrency,
+      mode,
       editingItem,
-      pendingImageFile,
-      uploadImage,
-      imageRemoved,
-      addSupplierItemMutation,
-      updateSupplierItemMutation,
-      deleteSupplierItemMutation,
+      existingMaster,
+      createMutation,
+      updateWithSuppliersMutation,
       utils,
       onSuccess,
       onOpenChange,
+      uploadImage,
     ],
   );
-
-  // ── Reset ───────────────────────────────────────────────────────────────
 
   const reset = React.useCallback(() => {
     setModeState("create");
     setMasterState(getItemMasterDefaults());
     setExistingMaster(null);
     setEditingItem(null);
-    setSupplierDrafts([getSupplierItemDraftDefaults()]);
-    setErrors({ master: {}, suppliers: {} });
+    setSupplierDrafts([]);
+    setUomDrafts([]);
+    setTried(false);
+    setDirty(false);
+    setDuplicateItem(null);
+    setDuplicateDismissed(false);
     setPendingImageFileState(null);
     setImageRemoved(false);
-    originalSupplierItemIdsRef.current = new Set();
+    initializedRef.current = false;
   }, []);
 
   return {
@@ -705,25 +1089,45 @@ export function useItemForm({
     editingItem,
     supplierDrafts,
     suppliers,
-    errors,
+    units,
+    categories,
+    taxRates,
+    uomDrafts,
+    uomFactorLocked,
+    usageCount,
+    isDetailLoading,
+    issues,
+    tried,
+    dirty,
+    duplicateItem: duplicateDismissed ? null : duplicateItem,
+    money,
     isSubmitting:
       createMutation.isPending ||
-      updateMutation.isPending ||
-      addSupplierItemMutation.isPending ||
-      updateSupplierItemMutation.isPending ||
-      deleteSupplierItemMutation.isPending ||
-      isEditItemLoading,
+      updateWithSuppliersMutation.isPending ||
+      isDetailLoading,
     pendingImageFile,
     imageRemoved,
+    identityLocked: mode === "add-supplier" || mode === "existing",
+
     setMode,
     setMasterField,
     setMaster,
     setPendingImageFile,
     setImageRemoved,
+    setBaseUnit,
+    addUomDraft,
+    removeUomDraft,
+    updateUomDraft,
+    setDefaultUnit,
     addSupplierDraft,
     removeSupplierDraft,
     updateSupplierDraft,
     handleMasterNameBlur,
+    dismissDuplicate,
+    adoptDuplicate,
+    errorFor,
+    supplierCurrency,
+    convertToBase,
     submit,
     reset,
   };
