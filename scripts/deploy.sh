@@ -210,7 +210,14 @@ maintenance_enable() {
 }
 
 maintenance_disable() {
-	[[ "$MAINTENANCE_TOUCHED" == true ]] || return 0
+	# Remove the flag whenever it exists, even if this run did not create it.
+	# A flag left behind by an interrupted or rolled-back deploy would otherwise
+	# keep nginx serving the maintenance page forever: maintenance_enable leaves
+	# pre-existing flags untouched and never marks them as "touched".
+	if [[ ! -e "$MAINTENANCE_FLAG" ]]; then
+		MAINTENANCE_TOUCHED=false
+		return 0
+	fi
 	if rm -f "$MAINTENANCE_FLAG" 2>/dev/null; then
 		MAINTENANCE_TOUCHED=false
 		ok "Maintenance page removed — the app is back"
@@ -385,6 +392,12 @@ TARGET_SHA="$(git rev-parse --short "origin/${BRANCH}")"
 if [[ "$PREV_SHA" == "$TARGET_SHA" && "$FORCE" != true ]]; then
 	log "Already on origin/${BRANCH} (${PREV_SHA}); nothing to deploy."
 	log "Use --force to rebuild anyway."
+	# A previous deploy may have been killed before it could clear the flag, so
+	# the site can be stuck in maintenance even though the app is already up.
+	# Since we are not changing anything, just take a live app out of maintenance.
+	if [[ "$DO_RESTART" == true && -e "$MAINTENANCE_FLAG" ]] && app_responds; then
+		maintenance_disable
+	fi
 	exit 0
 fi
 
