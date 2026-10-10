@@ -85,8 +85,13 @@ export interface UseItemFormReturn {
   setPendingImageFile: (file: File | null) => void;
   setImageRemoved: (removed: boolean) => void;
 
-  /** Marks `unitId` as the Base (stock) unit and re-scales every factor. */
-  setBaseUnit: (unitId: string) => void;
+  /** Marks `unitId` as the Base (stock) unit and re-scales every factor.
+   *  Provide `fallback` ({ code, factor } relative to the current base) when the
+   *  unit is not yet part of the ladder — it is added, then promoted. */
+  setBaseUnit: (
+    unitId: string,
+    fallback?: { code: string; factor: number },
+  ) => void;
   addUomDraft: (unit: {
     id: string;
     code: string;
@@ -717,17 +722,25 @@ export function useItemForm({
 
   // ── UoM setters ──────────────────────────────────────────────────────────
   const setBaseUnit = React.useCallback(
-    (unitId: string) => {
+    (unitId: string, fallback?: { code: string; factor: number }) => {
       markDirty();
-      setMasterState((prev) => {
-        const draft = uomDrafts.find((d) => d.unitId === unitId);
-        return { ...prev, unitId, unit: draft?.unitCode ?? prev.unit };
-      });
       setUomDrafts((prev) => {
-        const newBase = prev.find((d) => d.unitId === unitId);
+        const hasUnit = prev.some((d) => d.unitId === unitId);
+        const withUnit =
+          hasUnit || !fallback
+            ? prev
+            : [
+                ...prev,
+                makeUomDraft({
+                  unitId,
+                  unitCode: fallback.code,
+                  factor: fallback.factor > 0 ? fallback.factor : 1,
+                }),
+              ];
+        const newBase = withUnit.find((d) => d.unitId === unitId);
         const divisor =
           newBase?.factor && newBase.factor > 0 ? newBase.factor : 1;
-        return prev.map((d) => ({
+        return withUnit.map((d) => ({
           ...d,
           factor:
             d.unitId === unitId
@@ -736,6 +749,14 @@ export function useItemForm({
           isPurchaseDefault: d.unitId === unitId ? false : d.isPurchaseDefault,
           isSalesDefault: d.unitId === unitId ? false : d.isSalesDefault,
         }));
+      });
+      setMasterState((prev) => {
+        const draft = uomDrafts.find((d) => d.unitId === unitId);
+        return {
+          ...prev,
+          unitId,
+          unit: draft?.unitCode ?? fallback?.code ?? prev.unit,
+        };
       });
     },
     [uomDrafts, markDirty],

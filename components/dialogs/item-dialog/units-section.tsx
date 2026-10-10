@@ -38,6 +38,8 @@ export function UnitsSection({ form, canManage }: UnitsSectionProps) {
 
   const [addUnitId, setAddUnitId] = React.useState("");
   const [addFactor, setAddFactor] = React.useState("");
+  const [pendingBaseId, setPendingBaseId] = React.useState("");
+  const [pendingBaseFactor, setPendingBaseFactor] = React.useState("");
 
   const locked = uomFactorLocked || !canManage;
   const isProduct = master.type === "PRODUCT";
@@ -60,6 +62,34 @@ export function UnitsSection({ form, canManage }: UnitsSectionProps) {
     uomDrafts.find((d) => d.isPurchaseDefault)?.unitId ?? baseUnitId;
   const salesUnitId =
     uomDrafts.find((d) => d.isSalesDefault)?.unitId ?? baseUnitId;
+
+  const pendingBaseUnit = activeUnits.find(
+    (u: any) => u.id === pendingBaseId,
+  ) as { id: string; code: string; name: string } | undefined;
+
+  // Promote a ladder unit directly, or — for a unit that isn't part of the
+  // ladder yet — ask how many current base units it holds, then add + promote.
+  const handleBaseSelect = (unitId: string) => {
+    if (!unitId || unitId === baseUnitId) return;
+    if (uomDrafts.some((d) => d.unitId === unitId)) {
+      setBaseUnit(unitId);
+      setPendingBaseId("");
+      return;
+    }
+    setPendingBaseId(unitId);
+    setPendingBaseFactor("");
+  };
+
+  const confirmPendingBase = () => {
+    const factor = Number(pendingBaseFactor);
+    if (!pendingBaseUnit || !(factor > 0)) return;
+    setBaseUnit(pendingBaseUnit.id, {
+      code: pendingBaseUnit.code,
+      factor,
+    });
+    setPendingBaseId("");
+    setPendingBaseFactor("");
+  };
 
   // ── Service: a single invoice unit ──────────────────────────────────────
   if (!isProduct) {
@@ -156,19 +186,76 @@ export function UnitsSection({ form, canManage }: UnitsSectionProps) {
 
       <div className="space-y-2.5">
         {/* Base row */}
-        <div className="flex items-center gap-3 rounded-lg border border-primary/35 bg-primary/5 px-3.5 py-2.5">
-          <div className="flex flex-col leading-tight">
-            <b className="font-mono font-medium">{master.unit || "—"}</b>
-            <span className="text-xs text-muted-foreground">
-              {units.find((u: any) => u.id === baseUnitId)?.name ?? ""}
+        <div className="space-y-2">
+          <div className="flex flex-wrap items-end gap-3 rounded-lg border border-primary/35 bg-primary/5 px-3.5 py-2.5">
+            <Field className="min-w-[200px] flex-1">
+              <Label htmlFor="item-field-base" className="text-xs">
+                Base (stock) unit
+              </Label>
+              <Select
+                value={baseUnitId}
+                disabled={locked}
+                onValueChange={handleBaseSelect}
+              >
+                <SelectTrigger id="item-field-base" className="h-8">
+                  <SelectValue placeholder="Select base unit" />
+                </SelectTrigger>
+                <SelectContent>
+                  {activeUnits.map((u: any) => (
+                    <SelectItem key={u.id} value={u.id}>
+                      {u.code} — {u.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </Field>
+            <Badge variant="secondary" className="mb-1">
+              BASE
+            </Badge>
+            <span className="mb-1.5 font-mono text-xs text-muted-foreground">
+              stock unit, factor 1
             </span>
           </div>
-          <Badge variant="secondary" className="ml-auto">
-            BASE
-          </Badge>
-          <span className="font-mono text-xs text-muted-foreground">
-            stock unit, factor 1
-          </span>
+
+          {pendingBaseUnit && (
+            <div className="flex flex-wrap items-center gap-2 rounded-lg border border-primary/35 bg-primary/5 px-3.5 py-2.5 text-sm">
+              <span className="font-mono">1 {pendingBaseUnit.code} =</span>
+              <Input
+                type="number"
+                min={0}
+                step="any"
+                autoFocus
+                aria-label={`How many ${master.unit || "base units"} one ${pendingBaseUnit.code} holds`}
+                className="h-8 w-24"
+                value={pendingBaseFactor}
+                onChange={(e) => setPendingBaseFactor(e.target.value)}
+              />
+              <span className="font-mono">{master.unit || "—"}</span>
+              <Button
+                type="button"
+                size="sm"
+                disabled={!(Number(pendingBaseFactor) > 0)}
+                onClick={confirmPendingBase}
+              >
+                Make base
+              </Button>
+              <Button
+                type="button"
+                size="sm"
+                variant="ghost"
+                onClick={() => {
+                  setPendingBaseId("");
+                  setPendingBaseFactor("");
+                }}
+              >
+                Cancel
+              </Button>
+              <p className="w-full text-xs text-muted-foreground">
+                How many {master.unit || "current base units"} one{" "}
+                {pendingBaseUnit.code} holds.
+              </p>
+            </div>
+          )}
         </div>
 
         {/* Alternative rows */}
