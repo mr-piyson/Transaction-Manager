@@ -13,7 +13,7 @@
  *                    Dr COGS                 / Cr Inventory
  *   Credit Note:     Reverses the original invoice posting
  *   Payment Received: Dr Cash/Bank           / Cr Accounts Receivable
- *   PO Received:     Dr Inventory            / Cr Accounts Payable
+ *   PO Received:     Dr Inventory + Dr Input VAT / Cr Accounts Payable
  *   PO Payment:      Dr Accounts Payable     / Cr Cash/Bank
  *   Expense:         Dr Expense Account      / Cr Cash/Bank
  */
@@ -36,11 +36,34 @@ const ACCOUNTS = {
   BANK: "1020",
   ACCOUNTS_RECEIVABLE: "1100",
   INVENTORY: "1200",
+  INPUT_VAT: "1250",
   ACCOUNTS_PAYABLE: "2010",
   TAX_PAYABLE: "2030",
   SALES_REVENUE: "4010",
   COGS: "5010",
 } as const;
+
+// Accounts that must already exist for any posting to succeed. Input VAT is
+// intentionally excluded: it is only needed when a purchase carries tax and is
+// auto-provisioned on demand (see `ensureInputVatAccount`).
+const REQUIRED_ACCOUNT_CODES: string[] = [
+  ACCOUNTS.CASH,
+  ACCOUNTS.BANK,
+  ACCOUNTS.ACCOUNTS_RECEIVABLE,
+  ACCOUNTS.INVENTORY,
+  ACCOUNTS.ACCOUNTS_PAYABLE,
+  ACCOUNTS.TAX_PAYABLE,
+  ACCOUNTS.SALES_REVENUE,
+  ACCOUNTS.COGS,
+];
+
+const INPUT_VAT_ACCOUNT = {
+  code: ACCOUNTS.INPUT_VAT,
+  name: "Input VAT (Recoverable)",
+  type: "ASSET" as const,
+  normalBalance: "DEBIT" as const,
+  isSystemAccount: true,
+};
 
 // ---------------------------------------------------------------------------
 // Resolve accounts for an org (cached per transaction)
@@ -53,7 +76,7 @@ async function resolveAccounts(tx: TransactionClient, organizationId: string) {
     select: { id: true, code: true },
   });
   const map = new Map(accounts.map((a) => [a.code, a.id]));
-  for (const code of codes) {
+  for (const code of REQUIRED_ACCOUNT_CODES) {
     if (!map.has(code)) {
       throw new UnprocessableError(
         `Required ledger account "${code}" not found in chart of accounts.`,
@@ -61,6 +84,38 @@ async function resolveAccounts(tx: TransactionClient, organizationId: string) {
     }
   }
   return map;
+}
+
+/**
+ * Returns the org's recoverable Input VAT account, creating it if the chart of
+ * accounts predates this account (idempotent; safe under races).
+ */
+async function ensureInputVatAccount(
+  tx: TransactionClient,
+  organizationId: string,
+): Promise<string> {
+  const existing = await tx.ledgerAccount.findFirst({
+    where: { code: ACCOUNTS.INPUT_VAT, organizationId },
+    select: { id: true },
+  });
+  if (existing) return existing.id;
+
+  try {
+    const created = await tx.ledgerAccount.create({
+      data: { ...INPUT_VAT_ACCOUNT, organizationId },
+      select: { id: true },
+    });
+    return created.id;
+  } catch {
+    const raced = await tx.ledgerAccount.findFirst({
+      where: { code: ACCOUNTS.INPUT_VAT, organizationId },
+      select: { id: true },
+    });
+    if (raced) return raced.id;
+    throw new UnprocessableError(
+      `Could not provision input VAT account "${ACCOUNTS.INPUT_VAT}".`,
+    );
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -463,6 +518,7 @@ interface PostPOReceivedOptions {
   purchaseOrderId: string;
   serial: string;
   receivedCost: number;
+  taxAmount?: number;
   currency?: string;
   exchangeRate?: number;
 }
@@ -476,13 +532,49 @@ export async function postPOReceived(opts: PostPOReceivedOptions) {
     purchaseOrderId,
     serial,
     receivedCost,
+    taxAmount = 0,
     currency,
     exchangeRate,
   } = opts;
 
-  if (receivedCost <= 0) return null;
+  if (receivedCost <= 0 && taxAmount <= 0) return null;
 
   const accounts = await resolveAccounts(tx, organizationId);
+  const inputVatId =
+    taxAmount > 0
+      ? (accounts.get(ACCOUNTS.INPUT_VAT) ??
+        (await ensureInputVatAccount(tx, organizationId)))
+      : null;
+
+  const lines: Array<{
+    accountId: string;
+    debit: number;
+    credit: number;
+    description: string;
+  }> = [
+    {
+      accountId: accounts.get(ACCOUNTS.INVENTORY)!,
+      debit: receivedCost,
+      credit: 0,
+      description: `PO #${serial} — Inventory`,
+    },
+  ];
+
+  if (inputVatId && taxAmount > 0) {
+    lines.push({
+      accountId: inputVatId,
+      debit: taxAmount,
+      credit: 0,
+      description: `PO #${serial} — Input VAT`,
+    });
+  }
+
+  lines.push({
+    accountId: accounts.get(ACCOUNTS.ACCOUNTS_PAYABLE)!,
+    debit: 0,
+    credit: receivedCost + taxAmount,
+    description: `PO #${serial} — Accounts Payable`,
+  });
 
   return postJournalEntry({
     tx,
@@ -495,20 +587,7 @@ export async function postPOReceived(opts: PostPOReceivedOptions) {
     currency,
     exchangeRate,
     purchaseOrderId,
-    lines: [
-      {
-        accountId: accounts.get(ACCOUNTS.INVENTORY)!,
-        debit: receivedCost,
-        credit: 0,
-        description: `PO #${serial} — Inventory`,
-      },
-      {
-        accountId: accounts.get(ACCOUNTS.ACCOUNTS_PAYABLE)!,
-        debit: 0,
-        credit: receivedCost,
-        description: `PO #${serial} — Accounts Payable`,
-      },
-    ],
+    lines,
   });
 }
 
@@ -526,6 +605,7 @@ interface PostPOExpenseReceivedOptions {
   purchaseOrderId: string;
   serial: string;
   expenseCost: number;
+  taxAmount?: number;
   currency?: string;
   exchangeRate?: number;
 }
@@ -541,13 +621,49 @@ export async function postPOExpenseReceived(
     purchaseOrderId,
     serial,
     expenseCost,
+    taxAmount = 0,
     currency,
     exchangeRate,
   } = opts;
 
-  if (expenseCost <= 0) return null;
+  if (expenseCost <= 0 && taxAmount <= 0) return null;
 
   const accounts = await resolveAccounts(tx, organizationId);
+  const inputVatId =
+    taxAmount > 0
+      ? (accounts.get(ACCOUNTS.INPUT_VAT) ??
+        (await ensureInputVatAccount(tx, organizationId)))
+      : null;
+
+  const lines: Array<{
+    accountId: string;
+    debit: number;
+    credit: number;
+    description: string;
+  }> = [
+    {
+      accountId: accounts.get(ACCOUNTS.COGS)!,
+      debit: expenseCost,
+      credit: 0,
+      description: `PO #${serial} — Purchases/Expense`,
+    },
+  ];
+
+  if (inputVatId && taxAmount > 0) {
+    lines.push({
+      accountId: inputVatId,
+      debit: taxAmount,
+      credit: 0,
+      description: `PO #${serial} — Input VAT`,
+    });
+  }
+
+  lines.push({
+    accountId: accounts.get(ACCOUNTS.ACCOUNTS_PAYABLE)!,
+    debit: 0,
+    credit: expenseCost + taxAmount,
+    description: `PO #${serial} — Accounts Payable`,
+  });
 
   return postJournalEntry({
     tx,
@@ -560,20 +676,7 @@ export async function postPOExpenseReceived(
     currency,
     exchangeRate,
     purchaseOrderId,
-    lines: [
-      {
-        accountId: accounts.get(ACCOUNTS.COGS)!,
-        debit: expenseCost,
-        credit: 0,
-        description: `PO #${serial} — Purchases/Expense`,
-      },
-      {
-        accountId: accounts.get(ACCOUNTS.ACCOUNTS_PAYABLE)!,
-        debit: 0,
-        credit: expenseCost,
-        description: `PO #${serial} — Accounts Payable`,
-      },
-    ],
+    lines,
   });
 }
 

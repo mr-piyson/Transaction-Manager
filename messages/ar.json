@@ -823,6 +823,7 @@
     "postedOn": "تم الترحيل في",
     "postedAt": "وقت الترحيل",
     "linkedPurchaseOrder": "أمر الشراء المرتبط",
+    "vat": "ضريبة القيمة المضافة",
     "viewPurchaseOrder": "عرض أمر الشراء",
     "supplier": "المورد",
     "metaCreated": "تم الإنشاء بواسطة {name} بتاريخ {date}",

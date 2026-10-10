@@ -2150,6 +2150,7 @@ model Expense {
   id          String        @id @default(cuid())
   description String
   amount      Decimal       @db.Decimal(20, 6)
+  taxAmount   Decimal       @default(0) @db.Decimal(20, 6) // VAT/tax portion included in `amount`
   date        DateTime      @default(now())
   reference   String?
   notes       String?

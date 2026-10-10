@@ -848,6 +848,8 @@ export const purchaseOrdersRouter = router({
         let receivedAnything = false;
         let itemReceivedCost = 0;
         let manualReceivedCost = 0;
+        let itemTaxAmount = 0;
+        let manualTaxAmount = 0;
         const receivedItemIds = new Set<string>();
 
         for (const line of po.lines) {
@@ -879,14 +881,20 @@ export const purchaseOrdersRouter = router({
           });
 
           const receivedValue = Number(line.unitCost) * toReceive;
+          // Tax snapshotted on the line covers the full ordered quantity, so
+          // receiving part of a line only recognises its proportional VAT.
+          const receivedTax =
+            orderedQty > 0 ? Number(line.taxAmt) * (toReceive / orderedQty) : 0;
 
           // Manual lines have no linked item — they never touch inventory,
           // stock movements, or item average cost.
           if (!line.itemId) {
             manualReceivedCost += receivedValue;
+            manualTaxAmount += receivedTax;
             continue;
           }
           itemReceivedCost += receivedValue;
+          itemTaxAmount += receivedTax;
           receivedItemIds.add(line.itemId);
 
           // Line snapshots convert the SELECTED-unit amount to BASE units —
@@ -968,8 +976,12 @@ export const purchaseOrdersRouter = router({
         });
 
         const totalReceivedCost = itemReceivedCost + manualReceivedCost;
+        const totalReceivedTax = itemTaxAmount + manualTaxAmount;
+        // The expense mirrors the gross cash cost (net + recoverable VAT) so it
+        // matches the amount owed to the supplier and the AP journal postings.
+        const grossReceivedCost = totalReceivedCost + totalReceivedTax;
 
-        if (totalReceivedCost > 0) {
+        if (grossReceivedCost > 0) {
           // Attribute the receipt to its PO (and to the item when the receipt
           // covers exactly one item and no free-text lines) so it shows up as a
           // PO purchase on the expenses page instead of an orphan row.
@@ -981,7 +993,8 @@ export const purchaseOrdersRouter = router({
           const expense = await tx.expense.create({
             data: {
               description: `PO #${po.serial} — Items received`,
-              amount: totalReceivedCost,
+              amount: grossReceivedCost,
+              taxAmount: totalReceivedTax,
               date: new Date(),
               reference: po.serial,
               purchaseOrderId: po.id,
@@ -991,35 +1004,40 @@ export const purchaseOrdersRouter = router({
             },
           });
 
-          // Double-entry journal: Dr Inventory / Cr Accounts Payable (item lines)
-          const itemJournal = itemReceivedCost
-            ? await postPOReceived({
-                tx,
-                organizationId: orgId,
-                userId: ctx.user.id,
-                ipAddress: ctx.ipAddress,
-                purchaseOrderId: po.id,
-                serial: po.serial,
-                receivedCost: itemReceivedCost,
-                currency: po.currency,
-                exchangeRate: Number(po.exchangeRate),
-              })
-            : null;
+          // Double-entry journal:
+          //   Dr Inventory + Dr Input VAT / Cr Accounts Payable (item lines)
+          const itemJournal =
+            itemReceivedCost > 0 || itemTaxAmount > 0
+              ? await postPOReceived({
+                  tx,
+                  organizationId: orgId,
+                  userId: ctx.user.id,
+                  ipAddress: ctx.ipAddress,
+                  purchaseOrderId: po.id,
+                  serial: po.serial,
+                  receivedCost: itemReceivedCost,
+                  taxAmount: itemTaxAmount,
+                  currency: po.currency,
+                  exchangeRate: Number(po.exchangeRate),
+                })
+              : null;
 
-          // And Dr Expense / Cr Accounts Payable (manual lines)
-          const manualJournal = manualReceivedCost
-            ? await postPOExpenseReceived({
-                tx,
-                organizationId: orgId,
-                userId: ctx.user.id,
-                ipAddress: ctx.ipAddress,
-                purchaseOrderId: po.id,
-                serial: po.serial,
-                expenseCost: manualReceivedCost,
-                currency: po.currency,
-                exchangeRate: Number(po.exchangeRate),
-              })
-            : null;
+          //   Dr Expense + Dr Input VAT / Cr Accounts Payable (manual lines)
+          const manualJournal =
+            manualReceivedCost > 0 || manualTaxAmount > 0
+              ? await postPOExpenseReceived({
+                  tx,
+                  organizationId: orgId,
+                  userId: ctx.user.id,
+                  ipAddress: ctx.ipAddress,
+                  purchaseOrderId: po.id,
+                  serial: po.serial,
+                  expenseCost: manualReceivedCost,
+                  taxAmount: manualTaxAmount,
+                  currency: po.currency,
+                  exchangeRate: Number(po.exchangeRate),
+                })
+              : null;
 
           if (itemJournal || manualJournal) {
             await tx.expense.update({

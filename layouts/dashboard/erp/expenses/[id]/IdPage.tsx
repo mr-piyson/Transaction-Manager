@@ -214,6 +214,11 @@ export default function ExpenseDetailPage() {
               <p className="font-semibold text-lg">
                 {format(Number(expense.amount))}
               </p>
+              {Number(expense.taxAmount) > 0 && (
+                <p className="text-xs text-muted-foreground">
+                  {t("expenses.vat")}: {format(Number(expense.taxAmount))}
+                </p>
+              )}
             </CardContent>
           </Card>
           <Card>

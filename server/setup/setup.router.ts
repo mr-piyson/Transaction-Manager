@@ -78,6 +78,13 @@ const CHART_OF_ACCOUNTS = [
     isSystemAccount: true,
   },
   {
+    code: "1250",
+    name: "Input VAT (Recoverable)",
+    type: "ASSET" as const,
+    normalBalance: "DEBIT" as const,
+    isSystemAccount: true,
+  },
+  {
     code: "1300",
     name: "Prepaid Expenses",
     type: "ASSET" as const,

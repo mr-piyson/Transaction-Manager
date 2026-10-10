@@ -960,6 +960,7 @@
     "postedOn": "Posted on",
     "postedAt": "Posted at",
     "linkedPurchaseOrder": "Linked purchase order",
+    "vat": "VAT",
     "viewPurchaseOrder": "View PO",
     "supplier": "Supplier",
     "metaCreated": "Created by {name} on {date}",
