@@ -443,7 +443,7 @@ export function UnitsSection({ form, canManage }: UnitsSectionProps) {
         </Field>
       </div>
 
-      <p className="pt-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+      {/* <p className="pt-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
         Stock levels, in {master.unit}
       </p>
       <div className="grid gap-4 sm:grid-cols-3">
@@ -486,7 +486,7 @@ export function UnitsSection({ form, canManage }: UnitsSectionProps) {
             }
           />
         </Field>
-      </div>
+      </div> */}
     </section>
   );
 }

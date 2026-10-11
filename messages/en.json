@@ -6,6 +6,8 @@
   },
   "common": {
     "save": "Save",
+    "expenses": "Expenses",
+    "incomes": "Incomes",
     "thisActionCannotBeUndone": "This action cannot be undone",
     "toReceive": "To Receive",
     "viewFull": "View Full",
@@ -1274,6 +1276,9 @@
     "arAgingDescriptionDetail": "Tracks amounts customers owe you and how long they have been outstanding.",
     "generalLedgerDescription": "A complete record of all financial transactions for a selected account.",
     "itemReportDescription": "View inventory levels, stock movements, and item performance across your business.",
+    "moneyOnHand": "Money on Hand",
+    "moneyOnHandDesc": "Total income minus total expenses",
+    "totalRevenueIfSettledDesc": "Amount you would have if all payments were settled",
     "totalRevenueDesc": "Total income from all invoiced sales",
     "grossProfitDesc": "Revenue minus cost of goods sold",
     "netProfitDesc": "Profit after all expenses are deducted",
