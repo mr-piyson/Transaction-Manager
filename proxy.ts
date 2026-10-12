@@ -1,6 +1,13 @@
 import { type NextRequest, NextResponse } from "next/server";
 
-const SESSION_COOKIE = "better-auth.session_token";
+// better-auth prepends "__Secure-" to cookie names when secure cookies are in
+// use (i.e. over https / in production). Checking only the non-prefixed name
+// would make this guard believe the user is logged out in production, which
+// would re-introduce the /erp <-> /auth redirect loop. Match both variants.
+const SESSION_COOKIES = [
+  "better-auth.session_token",
+  "__Secure-better-auth.session_token",
+] as const;
 
 const publicPaths = ["/auth", "/setup", "/reset", "/api"];
 
@@ -10,28 +17,24 @@ function isPublicPath(pathname: string): boolean {
   );
 }
 
+function hasSessionCookie(request: NextRequest): boolean {
+  return SESSION_COOKIES.some((name) => request.cookies.has(name));
+}
+
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
-  const sessionCookie = request.cookies.get(SESSION_COOKIE);
 
+  // Public paths are always allowed through. We intentionally do NOT redirect
+  // away from /auth based on cookie *presence* here: a stale/expired session
+  // cookie would then bounce /auth -> /erp (proxy) while the server layout
+  // bounces /erp -> /auth (invalid session), causing an infinite loop.
+  // The /auth server layout validates the session and redirects valid users.
   if (isPublicPath(pathname)) {
-    if (sessionCookie && pathname.startsWith("/auth")) {
-      const callbackUrl = request.nextUrl.searchParams.get("callbackUrl");
-      const redirectTo =
-        callbackUrl &&
-        callbackUrl.startsWith("/") &&
-        !callbackUrl.startsWith("//")
-          ? callbackUrl
-          : "/erp";
-      return NextResponse.redirect(new URL(redirectTo, request.url));
-    }
     return NextResponse.next();
   }
 
-  if (!sessionCookie) {
-    const url = new URL("/auth", request.url);
-    url.searchParams.set("callbackUrl", pathname);
-    return NextResponse.redirect(url);
+  if (!hasSessionCookie(request)) {
+    return NextResponse.redirect(new URL("/auth", request.url));
   }
 
   return NextResponse.next();
