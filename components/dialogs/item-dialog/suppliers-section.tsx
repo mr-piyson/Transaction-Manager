@@ -162,7 +162,7 @@ export function SuppliersSection({
                   </Button>
                 </div>
 
-                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-2">
                   <Field>
                     <Label className="text-xs">Supplier SKU</Label>
                     <Input
@@ -199,46 +199,6 @@ export function SuppliersSection({
                         }
                       />
                     </div>
-                  </Field>
-
-                  <Field>
-                    <Label className="text-xs">Lead time</Label>
-                    <div className="flex">
-                      <Input
-                        type="number"
-                        min={0}
-                        step={1}
-                        className="rounded-r-none"
-                        value={draft.leadTimeDays ?? ""}
-                        disabled={!canManage}
-                        onChange={(e) =>
-                          updateSupplierDraft(draft.tempId, {
-                            leadTimeDays: e.target.value
-                              ? Number(e.target.value)
-                              : undefined,
-                          })
-                        }
-                      />
-                      <span className="flex items-center rounded-r-md border border-l-0 bg-muted px-2.5 text-xs text-muted-foreground">
-                        days
-                      </span>
-                    </div>
-                  </Field>
-
-                  <Field>
-                    <Label className="text-xs">Min order qty</Label>
-                    <Input
-                      type="number"
-                      min={1}
-                      step="any"
-                      value={draft.minOrderQty}
-                      disabled={!canManage}
-                      onChange={(e) =>
-                        updateSupplierDraft(draft.tempId, {
-                          minOrderQty: Number(e.target.value) || 1,
-                        })
-                      }
-                    />
                   </Field>
                 </div>
 
