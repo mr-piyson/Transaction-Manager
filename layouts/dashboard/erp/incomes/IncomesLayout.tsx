@@ -234,11 +234,6 @@ export default function IncomesLayout({
           return (
             <div className="flex flex-col justify-center overflow-hidden">
               <span className="truncate">{item.description}</span>
-              {item.reference && (
-                <span className="truncate text-[11px] text-muted-foreground">
-                  {item.reference}
-                </span>
-              )}
             </div>
           );
         },
@@ -275,9 +270,9 @@ export default function IncomesLayout({
         cellClass: "text-[12px]",
         cellRenderer: (params: { data: any }) =>
           params.data?.invoice ? (
-            <Badge variant="outline" className="font-mono text-[11px]">
+            <div variant="outline" className="font-mono text-[11px]">
               {params.data.invoice.serial}
-            </Badge>
+            </div>
           ) : (
             <span className="text-muted-foreground">—</span>
           ),
