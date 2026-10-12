@@ -171,6 +171,15 @@ export function ItemPageContent({ item, defaultMode }: ItemPageContentProps) {
   const categoryList = categoryTree ?? [];
   const { data: units } = trpc.units.list.useQuery();
 
+  const supplierUnitCodes = React.useMemo(() => {
+    const map = new Map<string, string>();
+    if (item?.unitId) map.set(item.unitId, item.unit ?? "");
+    for (const u of item?.itemUoms ?? []) {
+      if (!u.deletedAt && u.unit) map.set(u.unitId, u.unit.code);
+    }
+    return map;
+  }, [item]);
+
   const form = useForm<ItemFormValues>({
     resolver: zodResolver(itemFormSchema) as any,
     defaultValues: getItemFormDefaults(
@@ -1419,35 +1428,54 @@ export function ItemPageContent({ item, defaultMode }: ItemPageContentProps) {
                       </CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-2">
-                      {item.supplierItems.map((si: any) => (
-                        <div
-                          key={si.id}
-                          className="flex items-center justify-between p-3 rounded-lg bg-muted/50"
-                        >
-                          <div>
-                            <p className="text-sm font-medium">
-                              {si.supplier.name}
-                            </p>
-                            {si.supplierSku && (
-                              <p className="text-xs text-muted-foreground">
-                                SKU: {si.supplierSku}
-                              </p>
-                            )}
-                          </div>
-                          <div className="text-right">
-                            {si.basePrice && (
+                      {item.supplierItems.map((si: any) => {
+                        const prices = si.prices ?? [];
+                        const hasPrices = prices.length > 0;
+                        return (
+                          <div
+                            key={si.id}
+                            className="flex items-center justify-between p-3 rounded-lg bg-muted/50"
+                          >
+                            <div>
                               <p className="text-sm font-medium">
-                                {Number(si.basePrice).toFixed(3)}
+                                {si.supplier.name}
                               </p>
-                            )}
-                            {si.leadTimeDays && (
-                              <p className="text-xs text-muted-foreground">
-                                {si.leadTimeDays}d lead time
-                              </p>
-                            )}
+                              {si.supplierSku && (
+                                <p className="text-xs text-muted-foreground">
+                                  SKU: {si.supplierSku}
+                                </p>
+                              )}
+                            </div>
+                            <div className="text-right">
+                              {hasPrices ? (
+                                prices.map((p: any) => (
+                                  <p
+                                    key={p.unitId}
+                                    className="text-sm font-medium tabular-nums"
+                                  >
+                                    {Number(p.price).toFixed(3)} {si.currency}
+                                    {supplierUnitCodes.get(p.unitId) ? (
+                                      <span className="ml-1 text-xs font-normal text-muted-foreground">
+                                        /{supplierUnitCodes.get(p.unitId)}
+                                      </span>
+                                    ) : null}
+                                  </p>
+                                ))
+                              ) : si.basePrice ? (
+                                <p className="text-sm font-medium tabular-nums">
+                                  {Number(si.basePrice).toFixed(3)}{" "}
+                                  {si.currency}
+                                </p>
+                              ) : null}
+                              {si.leadTimeDays ? (
+                                <p className="text-xs text-muted-foreground">
+                                  {si.leadTimeDays}d lead time
+                                </p>
+                              ) : null}
+                            </div>
                           </div>
-                        </div>
-                      ))}
+                        );
+                      })}
                     </CardContent>
                   </Card>
                 )}

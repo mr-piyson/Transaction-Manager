@@ -5,18 +5,31 @@ import { currencyCodeSchema } from "@/lib/validations";
 // Supplier Item Draft — used in the form for each supplier price row
 // ---------------------------------------------------------------------------
 
+/** One (unit → price) row a supplier charges for the item. */
+export const supplierItemPriceDraftSchema = z.object({
+  unitId: z.string(),
+  price: z.coerce.number().min(0),
+});
+
+export type SupplierItemPriceDraft = z.infer<
+  typeof supplierItemPriceDraftSchema
+>;
+
 export const supplierItemDraftSchema = z.object({
   tempId: z.string(),
   id: z.string().optional(), // Existing supplierItem ID (for edit mode)
   supplierId: z.string(),
   supplierSku: z.string().max(100).optional(),
   supplierName: z.string().max(255).optional(),
+  /** Derived base-unit price sent to the server for legacy consumers. */
   basePrice: z.coerce.number().min(0, "Valid price is required"),
   currency: currencyCodeSchema.default("BHD"),
   leadTimeDays: z.coerce.number().int().min(0).optional(),
   minOrderQty: z.coerce.number().min(1, "MOQ must be at least 1").default(1),
   notes: z.string().max(5000).optional(),
   isActive: z.boolean().default(true),
+  /** Per-UOM prices; `basePrice` mirrors the item's base-unit row. */
+  prices: z.array(supplierItemPriceDraftSchema).default([]),
 });
 
 export type SupplierItemDraft = z.infer<typeof supplierItemDraftSchema>;
@@ -184,5 +197,6 @@ export function getSupplierItemDraftDefaults(): SupplierItemDraft {
     minOrderQty: 1,
     notes: undefined,
     isActive: true,
+    prices: [],
   };
 }

@@ -29,6 +29,7 @@ import {
   defaultUnitIdFor,
   factorForUnit,
   itemUnitOptions,
+  supplierPriceFor,
 } from "@/lib/uom-client";
 import { POItemSelectDialog } from "./poItemSelectDialog";
 
@@ -196,9 +197,9 @@ export function POLineDialog({
     setValue("itemId", selected.id);
     setValue("description", selected.description || undefined);
     setValue("unitId", defaultUnitId ?? undefined);
-    // Supplier basePrice is expressed in the item's purchase-default unit,
-    // which is the unit selected above — no conversion needed.
-    setValue("unitCost", Number(supplierItem?.basePrice ?? 0) || 0);
+    // Exact per-UOM price for the default purchase unit when defined,
+    // otherwise the supplier's base price (per base unit) as before.
+    setValue("unitCost", supplierPriceFor(supplierItem, defaultUnitId));
     setValue("taxRateId", selected.taxRate?.id);
     setValue("taxRateSnapshot", tr ? Number(tr.rate) : undefined);
     setValue("taxRateName", tr?.name || undefined);
@@ -206,9 +207,22 @@ export function POLineDialog({
   };
 
   const handleUnitChange = (nextUnitId: string) => {
+    const supplierItem = catalogueItem?.supplierItems?.[0];
+    const hasExactPrice = (supplierItem?.prices ?? []).some(
+      (p: any) => p.unitId === nextUnitId && Number(p.price) > 0,
+    );
+    setValue("unitId", nextUnitId, { shouldDirty: true });
+    if (hasExactPrice) {
+      // The supplier quotes a price exactly in this unit — use it as-is.
+      setValue("unitCost", supplierPriceFor(supplierItem, nextUnitId), {
+        shouldDirty: true,
+      });
+      return;
+    }
+    // No per-UOM price: keep the existing unitCost but rescale it for the new
+    // unit using the item's unit ladder factors.
     const oldFactor = factorForUnit(catalogueItem, unitId);
     const newFactor = factorForUnit(catalogueItem, nextUnitId);
-    setValue("unitId", nextUnitId, { shouldDirty: true });
     if (oldFactor !== newFactor) {
       const converted = convertAmount(cost, oldFactor, newFactor);
       setValue("unitCost", Math.round(converted * 1e6) / 1e6, {

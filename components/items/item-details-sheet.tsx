@@ -14,7 +14,7 @@ import {
   XCircle,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { type ReactNode, useState } from "react";
+import { type ReactNode, useMemo, useState } from "react";
 import Barcode from "react-barcode";
 import { useUnifiedItemForm } from "@/components/dialogs";
 import { Badge } from "@/components/ui/badge";
@@ -128,6 +128,15 @@ export function ItemDetailsSheet({
     setPrevImage(item?.image);
     setImgError(false);
   }
+
+  const unitCodes = useMemo(() => {
+    const map = new Map<string, string>();
+    if (item?.unitId) map.set(item.unitId, item.unit ?? "");
+    for (const u of item?.itemUoms ?? []) {
+      if (!u.deletedAt && u.unit) map.set(u.unitId, u.unit.code);
+    }
+    return map;
+  }, [item]);
 
   const close = () => onOpenChange(false);
   const isService = item?.type === "SERVICE";
@@ -432,27 +441,47 @@ export function ItemDetailsSheet({
                     {t("suppliers.itemsSupplied")}
                   </div>
                   <div className="space-y-2">
-                    {item.supplierItems.map((supplierItem: any) => (
-                      <div
-                        key={supplierItem.id}
-                        className="rounded-lg border bg-card px-3 py-2.5"
-                      >
-                        <div className="flex items-center justify-between gap-3">
-                          <span className="truncate text-sm font-medium">
-                            {supplierItem.supplier?.name ?? "—"}
-                          </span>
-                          <span className="shrink-0 text-sm font-semibold tabular-nums">
-                            {Number(supplierItem.basePrice).toFixed(3)}{" "}
-                            {supplierItem.currency}
-                          </span>
+                    {item.supplierItems.map((supplierItem: any) => {
+                      const prices = supplierItem.prices ?? [];
+                      const hasPrices = prices.length > 0;
+                      return (
+                        <div
+                          key={supplierItem.id}
+                          className="rounded-lg border bg-card px-3 py-2.5"
+                        >
+                          <div className="flex items-start justify-between gap-3">
+                            <span className="truncate text-sm font-medium">
+                              {supplierItem.supplier?.name ?? "—"}
+                            </span>
+                            {hasPrices ? (
+                              <div className="shrink-0 text-right text-sm font-semibold tabular-nums">
+                                {prices.map((p: any) => (
+                                  <div key={p.unitId}>
+                                    {Number(p.price).toFixed(3)}{" "}
+                                    {supplierItem.currency}
+                                    {unitCodes.get(p.unitId) ? (
+                                      <span className="ml-1 text-xs font-normal text-muted-foreground">
+                                        /{unitCodes.get(p.unitId)}
+                                      </span>
+                                    ) : null}
+                                  </div>
+                                ))}
+                              </div>
+                            ) : (
+                              <span className="shrink-0 text-sm font-semibold tabular-nums">
+                                {Number(supplierItem.basePrice).toFixed(3)}{" "}
+                                {supplierItem.currency}
+                              </span>
+                            )}
+                          </div>
+                          <p className="mt-1 text-xs text-muted-foreground">
+                            {supplierItem.supplierSku ?? "—"} ·{" "}
+                            {supplierItem.leadTimeDays ?? 0} days · min{" "}
+                            {supplierItem.minOrderQty ?? 1}
+                          </p>
                         </div>
-                        <p className="mt-1 text-xs text-muted-foreground">
-                          {supplierItem.supplierSku ?? "—"} ·{" "}
-                          {supplierItem.leadTimeDays ?? 0} days · min{" "}
-                          {supplierItem.minOrderQty ?? 1}
-                        </p>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 </div>
               )}

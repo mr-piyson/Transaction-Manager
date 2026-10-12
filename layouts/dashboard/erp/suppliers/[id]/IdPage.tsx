@@ -55,6 +55,14 @@ const STATUS_COLORS: Record<string, string> = {
   CLOSED: "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200",
 };
 
+/** Unit code for a supplier-item price row (base unit or an ItemUom). */
+function supplierPriceUnitCode(item: any, unitId: string): string {
+  if (!item) return "";
+  if (item.unitId === unitId) return item.unit ?? "";
+  const hit = (item.itemUoms ?? []).find((u: any) => u.unitId === unitId);
+  return hit?.unit?.code ?? "";
+}
+
 export default function SupplierDetailPage() {
   const params = useParams<{ id: string }>();
   const router = useRouter();
@@ -432,7 +440,27 @@ export default function SupplierDetailPage() {
                       {si.supplierSku ?? "—"}
                     </TableCell>
                     <TableCell className="text-right">
-                      {Number(si.basePrice).toFixed(3)} {si.currency}
+                      {(si.prices?.length ?? 0) > 0 ? (
+                        <div className="space-y-0.5">
+                          {si.prices.map((p: any) => (
+                            <div
+                              key={p.unitId}
+                              className="tabular-nums whitespace-nowrap"
+                            >
+                              {Number(p.price).toFixed(3)} {si.currency}
+                              {supplierPriceUnitCode(si.item, p.unitId) && (
+                                <span className="ml-1 text-xs font-normal text-muted-foreground">
+                                  /{supplierPriceUnitCode(si.item, p.unitId)}
+                                </span>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <span className="tabular-nums whitespace-nowrap">
+                          {Number(si.basePrice).toFixed(3)} {si.currency}
+                        </span>
+                      )}
                     </TableCell>
                     <TableCell className="text-right">
                       {si.leadTimeDays ? `${si.leadTimeDays}d` : "—"}

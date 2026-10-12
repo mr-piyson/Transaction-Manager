@@ -10,6 +10,7 @@ import {
   type ItemUomDraft,
   makeUomDraft,
   type SupplierItemDraft,
+  type SupplierItemPriceDraft,
 } from "@/lib/validations/unified-item";
 
 // ---------------------------------------------------------------------------
@@ -113,6 +114,14 @@ export interface UseItemFormReturn {
     patch: Partial<SupplierItemDraft>,
   ) => void;
 
+  /** Units a supplier price may be quoted in (item base + defined UOMs). */
+  supplierUnitOptions: { unitId: string; code: string }[];
+  /** Unit a freshly added price row defaults to (purchase default, else base). */
+  supplierDefaultUnitId: string;
+  addSupplierPrice: (tempId: string) => void;
+  removeSupplierPrice: (tempId: string, unitId: string) => void;
+  updateSupplierPrice: (tempId: string, unitId: string, price: number) => void;
+
   handleMasterNameBlur: () => void;
   dismissDuplicate: () => void;
   adoptDuplicate: () => void;
@@ -160,6 +169,17 @@ function usageOfCount(count: any): number {
     (count?.purchaseLines ?? 0) +
     (count?.stockMovements ?? 0)
   );
+}
+
+/** Unit a new supplier price row should default to for an item. */
+function defaultSupplierUnitIdFor(
+  item: any,
+  baseUnitId?: string | null,
+): string {
+  const purchaseDefault = (item?.itemUoms ?? []).find(
+    (u: any) => u.isPurchaseDefault && !u.deletedAt && u.isActive !== false,
+  );
+  return purchaseDefault?.unitId ?? baseUnitId ?? item?.unitId ?? "";
 }
 
 /** Builds the ordered list of validation issues for the current form state. */
@@ -270,12 +290,25 @@ function buildIssues(params: {
       });
     }
     seen.add(draft.supplierId);
-    if (!(Number(draft.basePrice) > 0)) {
+
+    const prices = draft.prices ?? [];
+    if (!prices.some((p) => Number(p.price) > 0)) {
       issues.push({
         section: "suppliers",
         anchor,
-        message: `Enter a price for ${nameById.get(draft.supplierId) ?? "this supplier"}.`,
+        message: `Enter at least one unit price for ${nameById.get(draft.supplierId) ?? "this supplier"}.`,
       });
+    }
+    const seenUnits = new Set<string>();
+    for (const p of prices) {
+      if (seenUnits.has(p.unitId)) {
+        issues.push({
+          section: "suppliers",
+          anchor,
+          message: `A unit is listed twice for ${nameById.get(draft.supplierId) ?? "this supplier"}.`,
+        });
+      }
+      seenUnits.add(p.unitId);
     }
   });
 
@@ -516,31 +549,52 @@ export function useItemForm({
       setUomDrafts(drafts);
 
       const drafts2: SupplierItemDraft[] = (item.supplierItems ?? []).map(
-        (si: any) => ({
-          ...getSupplierItemDraftDefaults(),
-          tempId: newTempId(),
-          id: si.id,
-          supplierId: si.supplierId,
-          supplierSku: si.supplierSku ?? undefined,
-          supplierName: si.supplierName ?? undefined,
-          basePrice: Number(si.basePrice) || 0,
-          currency: si.currency ?? baseCurrency,
-          leadTimeDays: si.leadTimeDays ?? undefined,
-          minOrderQty: Number(si.minOrderQty) || 1,
-          notes: si.notes ?? undefined,
-          isActive: si.isActive ?? true,
-        }),
+        (si: any) => {
+          const priceRows: SupplierItemPriceDraft[] = (si.prices ?? []).map(
+            (p: any) => ({
+              unitId: p.unitId,
+              price: Number(p.price) || 0,
+            }),
+          );
+          if (
+            priceRows.length === 0 &&
+            Number(si.basePrice) > 0 &&
+            base.unitId
+          ) {
+            priceRows.push({
+              unitId: base.unitId,
+              price: Number(si.basePrice) || 0,
+            });
+          }
+          return {
+            ...getSupplierItemDraftDefaults(),
+            tempId: newTempId(),
+            id: si.id,
+            supplierId: si.supplierId,
+            supplierSku: si.supplierSku ?? undefined,
+            supplierName: si.supplierName ?? undefined,
+            basePrice: Number(si.basePrice) || 0,
+            currency: si.currency ?? baseCurrency,
+            leadTimeDays: si.leadTimeDays ?? undefined,
+            minOrderQty: Number(si.minOrderQty) || 1,
+            notes: si.notes ?? undefined,
+            isActive: si.isActive ?? true,
+            prices: priceRows,
+          };
+        },
       );
       if (
         cfg.supplierId &&
         !drafts2.some((d) => d.supplierId === cfg.supplierId)
       ) {
         const supplier = suppliers.find((s: any) => s.id === cfg.supplierId);
+        const defaultUnit = defaultSupplierUnitIdFor(item, base.unitId);
         drafts2.push({
           ...getSupplierItemDraftDefaults(),
           tempId: newTempId(),
           supplierId: cfg.supplierId,
           currency: (supplier as any)?.currencyCode ?? baseCurrency,
+          prices: defaultUnit ? [{ unitId: defaultUnit, price: 0 }] : [],
         });
       }
       setSupplierDrafts(drafts2);
@@ -656,16 +710,30 @@ export function useItemForm({
     const taxPct = taxRate ? Number(taxRate.rate) : 0;
     const taxName = taxRate?.name ?? "Tax";
 
+    const baseUnitId = master.unitId;
+    // Normalise each quoted price to a per-base-unit figure so prices quoted in
+    // different units (e.g. per box vs per piece) compare fairly.
+    const factorOf = (unitId: string) => {
+      if (!baseUnitId || unitId === baseUnitId) return 1;
+      const hit = uomDrafts.find((d) => d.unitId === unitId);
+      const f = Number(hit?.factor) || 1;
+      return f > 0 ? f : 1;
+    };
     const priced = supplierDrafts.filter(
-      (d) => d.supplierId && Number(d.basePrice) > 0,
+      (d) => d.supplierId && (d.prices ?? []).some((p) => Number(p.price) > 0),
     );
     let bestCost: number | null = null;
     let bestCostSupplierId: string | null = null;
     for (const draft of priced) {
-      const cost = convertToBase(
-        Number(draft.basePrice),
-        supplierCurrency(draft),
-      );
+      let draftBest: number | null = null;
+      for (const p of draft.prices ?? []) {
+        const price = Number(p.price) || 0;
+        if (price <= 0) continue;
+        const perBase = price / factorOf(p.unitId);
+        if (draftBest === null || perBase < draftBest) draftBest = perBase;
+      }
+      if (draftBest === null) continue;
+      const cost = convertToBase(draftBest, supplierCurrency(draft));
       if (bestCost === null || cost < bestCost) {
         bestCost = cost;
         bestCostSupplierId = draft.supplierId;
@@ -690,7 +758,9 @@ export function useItemForm({
     taxRates,
     master.taxRateId,
     master.salesPrice,
+    master.unitId,
     supplierDrafts,
+    uomDrafts,
     convertToBase,
     supplierCurrency,
     baseCurrency,
@@ -802,6 +872,16 @@ export function useItemForm({
       const removed = uomDrafts.find((d) => d.tempId === tempId);
       const next = uomDrafts.filter((d) => d.tempId !== tempId);
       setUomDrafts(next);
+      // Drop any supplier price rows quoted in the removed unit — it is no
+      // longer part of the item's unit ladder.
+      if (removed) {
+        setSupplierDrafts((prev) =>
+          prev.map((d) => ({
+            ...d,
+            prices: (d.prices ?? []).filter((p) => p.unitId !== removed.unitId),
+          })),
+        );
+      }
       if (removed && removed.unitId === master.unitId) {
         if (next.length > 0) {
           setMasterState((m) => ({
@@ -843,11 +923,40 @@ export function useItemForm({
     [markDirty, master.unitId],
   );
 
-  // ── Supplier setters ─────────────────────────────────────────────────────
+  // ── Supplier price units + setters ───────────────────────────────────────
+  const supplierUnitOptions = React.useMemo(() => {
+    const opts: { unitId: string; code: string }[] = [];
+    if (master.unitId) {
+      opts.push({ unitId: master.unitId, code: master.unit || "base" });
+    }
+    for (const d of uomDrafts) {
+      if (d.unitId === master.unitId) continue;
+      opts.push({ unitId: d.unitId, code: d.unitCode });
+    }
+    return opts;
+  }, [master.unitId, master.unit, uomDrafts]);
+
+  const supplierDefaultUnitId = React.useMemo(
+    () =>
+      uomDrafts.find((d) => d.isPurchaseDefault)?.unitId ??
+      master.unitId ??
+      uomDrafts[0]?.unitId ??
+      "",
+    [uomDrafts, master.unitId],
+  );
+
   const addSupplierDraft = React.useCallback(() => {
     markDirty();
-    setSupplierDrafts((prev) => [...prev, getSupplierItemDraftDefaults()]);
-  }, [markDirty]);
+    setSupplierDrafts((prev) => [
+      ...prev,
+      {
+        ...getSupplierItemDraftDefaults(),
+        prices: supplierDefaultUnitId
+          ? [{ unitId: supplierDefaultUnitId, price: 0 }]
+          : [],
+      },
+    ]);
+  }, [markDirty, supplierDefaultUnitId]);
 
   const removeSupplierDraft = React.useCallback(
     (tempId: string) => {
@@ -878,6 +987,62 @@ export function useItemForm({
       );
     },
     [suppliers, markDirty],
+  );
+
+  const addSupplierPrice = React.useCallback(
+    (tempId: string) => {
+      markDirty();
+      setSupplierDrafts((prev) =>
+        prev.map((d) => {
+          if (d.tempId !== tempId) return d;
+          const prices = d.prices ?? [];
+          const used = new Set(prices.map((p) => p.unitId));
+          const next = supplierUnitOptions.find((u) => !used.has(u.unitId));
+          if (!next) return d;
+          return {
+            ...d,
+            prices: [...prices, { unitId: next.unitId, price: 0 }],
+          };
+        }),
+      );
+    },
+    [markDirty, supplierUnitOptions],
+  );
+
+  const removeSupplierPrice = React.useCallback(
+    (tempId: string, unitId: string) => {
+      markDirty();
+      setSupplierDrafts((prev) =>
+        prev.map((d) =>
+          d.tempId === tempId
+            ? {
+                ...d,
+                prices: (d.prices ?? []).filter((p) => p.unitId !== unitId),
+              }
+            : d,
+        ),
+      );
+    },
+    [markDirty],
+  );
+
+  const updateSupplierPrice = React.useCallback(
+    (tempId: string, unitId: string, price: number) => {
+      markDirty();
+      setSupplierDrafts((prev) =>
+        prev.map((d) =>
+          d.tempId === tempId
+            ? {
+                ...d,
+                prices: (d.prices ?? []).map((p) =>
+                  p.unitId === unitId ? { ...p, price } : p,
+                ),
+              }
+            : d,
+        ),
+      );
+    },
+    [markDirty],
   );
 
   // ── Duplicate detection ──────────────────────────────────────────────────
@@ -966,15 +1131,31 @@ export function useItemForm({
           isActive: d.isActive,
         }));
 
+      const validUnitIds = new Set(supplierUnitOptions.map((u) => u.unitId));
+      const deriveBasePrice = (draft: SupplierItemDraft) => {
+        const prices = draft.prices ?? [];
+        const baseRow = prices.find((p) => p.unitId === master.unitId);
+        if (baseRow) return Number(baseRow.price) || 0;
+        const pd = prices.find((p) => p.unitId === supplierDefaultUnitId);
+        if (pd) return Number(pd.price) || 0;
+        const first = prices.find((p) => Number(p.price) > 0);
+        return first ? Number(first.price) || 0 : 0;
+      };
       const supplierPayload = (draft: SupplierItemDraft) => ({
         supplierId: draft.supplierId,
         supplierSku: draft.supplierSku || undefined,
         supplierName: draft.supplierName || undefined,
-        basePrice: String(draft.basePrice),
+        basePrice: String(deriveBasePrice(draft)),
         currency: supplierCurrency(draft),
         leadTimeDays: draft.leadTimeDays,
         minOrderQty: String(draft.minOrderQty),
         notes: draft.notes || undefined,
+        prices: (draft.prices ?? [])
+          .filter(
+            (p) =>
+              p.unitId && Number(p.price) > 0 && validUnitIds.has(p.unitId),
+          )
+          .map((p) => ({ unitId: p.unitId, price: String(p.price) })),
       });
       const supplierPayloadWithId = (draft: SupplierItemDraft) => ({
         id: draft.id,
@@ -1052,7 +1233,12 @@ export function useItemForm({
           if (keepOpen) {
             setSupplierDrafts((prev) => [
               ...prev,
-              getSupplierItemDraftDefaults(),
+              {
+                ...getSupplierItemDraftDefaults(),
+                prices: supplierDefaultUnitId
+                  ? [{ unitId: supplierDefaultUnitId, price: 0 }]
+                  : [],
+              },
             ]);
             setTried(false);
             setDirty(false);
@@ -1075,6 +1261,8 @@ export function useItemForm({
       master,
       supplierDrafts,
       supplierCurrency,
+      supplierUnitOptions,
+      supplierDefaultUnitId,
       mode,
       editingItem,
       existingMaster,
@@ -1143,6 +1331,11 @@ export function useItemForm({
     addSupplierDraft,
     removeSupplierDraft,
     updateSupplierDraft,
+    supplierUnitOptions,
+    supplierDefaultUnitId,
+    addSupplierPrice,
+    removeSupplierPrice,
+    updateSupplierPrice,
     handleMasterNameBlur,
     dismissDuplicate,
     adoptDuplicate,

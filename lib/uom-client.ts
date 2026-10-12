@@ -112,3 +112,31 @@ export function convertAmount(
   if (!fromFactor || !toFactor || fromFactor === toFactor) return amount;
   return (amount * fromFactor) / toFactor;
 }
+
+interface SupplierItemPriceLike {
+  unitId: string;
+  price: number | string | null;
+}
+
+export interface SupplierItemLike {
+  basePrice?: number | string | null;
+  prices?: SupplierItemPriceLike[] | null;
+}
+
+/**
+ * Unit cost a supplier charges for an item in `unitId`. Uses the exact
+ * per-UOM price when one is defined for that unit; otherwise falls back to
+ * `basePrice` (the item's base-unit price, kept in sync by the server).
+ */
+export function supplierPriceFor(
+  supplierItem: SupplierItemLike | null | undefined,
+  unitId: string | null | undefined,
+): number {
+  if (!supplierItem) return 0;
+  const prices = supplierItem.prices ?? [];
+  if (unitId) {
+    const hit = prices.find((p) => p.unitId === unitId);
+    if (hit) return Number(hit.price) || 0;
+  }
+  return Number(supplierItem.basePrice) || 0;
+}

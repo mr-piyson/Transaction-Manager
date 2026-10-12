@@ -1,5 +1,11 @@
+import type { Prisma } from "@prisma/client";
 import { z } from "zod";
-import { ConflictError, ForbiddenError, NotFoundError } from "@/lib/error";
+import {
+  ConflictError,
+  ForbiddenError,
+  NotFoundError,
+  UnprocessableError,
+} from "@/lib/error";
 import { assertCan, orgProcedure, router } from "@/lib/trpc/context";
 import {
   currencyCodeSchema,
@@ -38,6 +44,69 @@ const listSuppliersSchema = z.object({
   sortBy: z.enum(["name", "createdAt", "updatedAt"]).default("createdAt"),
   sortOrder: sortOrderSchema,
 });
+
+/**
+ * Validates that every per-UOM price references a unit configured on the item
+ * (its base unit or an active ItemUom) and syncs the price rows to match the
+ * submitted set (upsert + delete rows for missing units).
+ */
+async function syncSupplierItemPrices(
+  tx: Prisma.TransactionClient,
+  orgId: string,
+  supplierItemId: string,
+  itemId: string,
+  prices: { unitId: string; price: string | number }[],
+): Promise<void> {
+  const item = await tx.item.findFirst({
+    where: { id: itemId, organizationId: orgId },
+    select: {
+      unitId: true,
+      itemUoms: {
+        where: { deletedAt: null, isActive: true },
+        select: { unitId: true },
+      },
+    },
+  });
+  const allowed = new Set<string>();
+  if (item?.unitId) allowed.add(item.unitId);
+  for (const u of item?.itemUoms ?? []) allowed.add(u.unitId);
+
+  const byUnit = new Map<string, string>();
+  for (const p of prices) {
+    if (!allowed.has(p.unitId)) {
+      throw new UnprocessableError(
+        "A supplier price uses a unit that is not configured for this item.",
+      );
+    }
+    byUnit.set(p.unitId, String(p.price));
+  }
+
+  const keep = new Set<string>();
+  for (const [unitId, price] of byUnit) {
+    const row = await tx.supplierItemPrice.upsert({
+      where: {
+        supplierItemId_unitId: { supplierItemId, unitId },
+      },
+      create: {
+        supplierItemId,
+        unitId,
+        price,
+        organizationId: orgId,
+      },
+      update: { price },
+    });
+    keep.add(row.id);
+  }
+
+  const existing = await tx.supplierItemPrice.findMany({
+    where: { supplierItemId },
+    select: { id: true },
+  });
+  for (const e of existing) {
+    if (keep.has(e.id)) continue;
+    await tx.supplierItemPrice.delete({ where: { id: e.id } });
+  }
+}
 
 export const suppliersRouter = router({
   list: orgProcedure
@@ -121,7 +190,23 @@ export const suppliersRouter = router({
               basePrice: true,
               currency: true,
               leadTimeDays: true,
-              item: { select: { id: true, name: true, sku: true } },
+              prices: { select: { unitId: true, price: true } },
+              item: {
+                select: {
+                  id: true,
+                  name: true,
+                  sku: true,
+                  unitId: true,
+                  unit: true,
+                  itemUoms: {
+                    where: { deletedAt: null, isActive: true },
+                    select: {
+                      unitId: true,
+                      unit: { select: { id: true, code: true } },
+                    },
+                  },
+                },
+              },
             },
           },
           _count: { select: { purchaseOrders: true, supplierItems: true } },
@@ -353,6 +438,15 @@ export const suppliersRouter = router({
         leadTimeDays: z.number().int().min(0).optional(),
         minOrderQty: decimalSchema.optional(),
         notes: z.string().max(5000).optional(),
+        /** Per-UOM prices; `basePrice` mirrors the item's base-unit row. */
+        prices: z
+          .array(
+            z.object({
+              unitId: z.string(),
+              price: decimalSchema,
+            }),
+          )
+          .optional(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
@@ -419,6 +513,16 @@ export const suppliersRouter = router({
             tx,
           );
 
+          if (input.prices) {
+            await syncSupplierItemPrices(
+              tx,
+              ctx.user.organizationId,
+              updated.id,
+              input.itemId,
+              input.prices,
+            );
+          }
+
           return updated;
         });
       }
@@ -451,6 +555,16 @@ export const suppliersRouter = router({
           tx,
         );
 
+        if (input.prices) {
+          await syncSupplierItemPrices(
+            tx,
+            ctx.user.organizationId,
+            created.id,
+            input.itemId,
+            input.prices,
+          );
+        }
+
         return created;
       });
     }),
@@ -466,10 +580,19 @@ export const suppliersRouter = router({
         leadTimeDays: z.number().int().min(0).optional(),
         minOrderQty: decimalSchema.optional(),
         notes: z.string().max(5000).optional(),
+        /** Per-UOM prices; `basePrice` mirrors the item's base-unit row. */
+        prices: z
+          .array(
+            z.object({
+              unitId: z.string(),
+              price: decimalSchema,
+            }),
+          )
+          .optional(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      const { id, ...data } = input;
+      const { id, prices, ...data } = input;
 
       const existing = await ctx.db.supplierItem.findFirst({
         where: { id, organizationId: ctx.user.organizationId, deletedAt: null },
@@ -485,6 +608,16 @@ export const suppliersRouter = router({
 
       return ctx.db.$transaction(async (tx) => {
         const updated = await tx.supplierItem.update({ where: { id }, data });
+
+        if (prices !== undefined) {
+          await syncSupplierItemPrices(
+            tx,
+            ctx.user.organizationId,
+            id,
+            existing.itemId,
+            prices,
+          );
+        }
 
         await writeAuditLog(
           {

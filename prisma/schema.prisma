@@ -396,6 +396,7 @@ model Organization {
   purchasePayments       PurchasePayment[]
   contracts              Contract[]
   supplierItems          SupplierItem[]
+  supplierItemPrices     SupplierItemPrice[]
   expenseCategories      ExpenseCategory[]
   expenses               Expense[]
   incomes                Income[]
@@ -1358,11 +1359,40 @@ model SupplierItem {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  prices SupplierItemPrice[]
+
   @@unique([supplierId, supplierSku])
   @@unique([supplierId, itemId])
   @@index([itemId])
   @@index([organizationId])
   @@index([supplierId])
+  @@schema("public")
+}
+
+/// A price one supplier quotes for one item in a specific unit of measure.
+/// Prices are in the parent SupplierItem.currency. `SupplierItem.basePrice` is
+/// kept in sync as the item's Base-Unit price for legacy consumers / fallback.
+model SupplierItemPrice {
+  id String @id @default(cuid())
+
+  supplierItemId String
+  supplierItem   SupplierItem @relation(fields: [supplierItemId], references: [id], onDelete: Cascade)
+
+  unitId String
+  unit   Unit   @relation(fields: [unitId], references: [id])
+
+  price Decimal @db.Decimal(20, 6)
+
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([supplierItemId, unitId])
+  @@index([supplierItemId])
+  @@index([unitId])
+  @@index([organizationId])
   @@schema("public")
 }
 
@@ -1471,6 +1501,7 @@ model Unit {
   itemUoms   ItemUom[]
   invoiceLines  InvoiceLine[]
   purchaseLines PurchaseLine[]
+  supplierItemPrices SupplierItemPrice[]
 
   @@unique([code, organizationId])
   @@index([organizationId])

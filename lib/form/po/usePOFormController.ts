@@ -16,7 +16,7 @@ import type { POLineData } from "@/components/dialogs/poLineDialog";
 import { type POFormValues, poFormSchema } from "@/lib/form/po/poFormSchema";
 import { buildPOSubmitPayload } from "@/lib/form/po/poMapper";
 import { trpc } from "@/lib/trpc/client";
-import { defaultUnitIdFor } from "@/lib/uom-client";
+import { defaultUnitIdFor, supplierPriceFor } from "@/lib/uom-client";
 
 export interface POFormController {
   mode: "create" | "edit";
@@ -211,6 +211,7 @@ export function usePOFormController({
     for (const item of selected) {
       const supplierItem = item.supplierItems?.[0];
       const tr = item.taxRate as any;
+      const unitId = defaultUnitIdFor(item, "purchase") ?? null;
       append({
         mode: "item",
         itemId: item.id,
@@ -218,8 +219,8 @@ export function usePOFormController({
         itemSku: item.sku ?? null,
         itemImage: item.image ?? null,
         quantity: Number(supplierItem?.minOrderQty) || 1,
-        unitCost: Number(supplierItem?.basePrice ?? 0) || 0,
-        unitId: defaultUnitIdFor(item, "purchase") ?? null,
+        unitCost: supplierPriceFor(supplierItem, unitId),
+        unitId,
         taxRateId: item.taxRate?.id,
         taxRateSnapshot: tr ? Number(tr.rate) : undefined,
         taxRateName: tr?.name || undefined,
@@ -230,6 +231,7 @@ export function usePOFormController({
       const item = selected[0];
       const tr = item.taxRate as any;
       const supplierItem = item.supplierItems?.[0];
+      const unitId = defaultUnitIdFor(item, "purchase") ?? null;
       setEditingLine({
         index: fields.length,
         data: {
@@ -240,8 +242,8 @@ export function usePOFormController({
           itemImage: item.image ?? null,
           description: null,
           quantity: Number(supplierItem?.minOrderQty) || 1,
-          unitCost: Number(supplierItem?.basePrice ?? 0) || 0,
-          unitId: defaultUnitIdFor(item, "purchase") ?? null,
+          unitCost: supplierPriceFor(supplierItem, unitId),
+          unitId,
           taxRateId: item.taxRate?.id,
           taxRateSnapshot: tr ? Number(tr.rate) : undefined,
           taxRateName: tr?.name || undefined,

@@ -84,6 +84,11 @@ const updateItemSchema = itemBaseSchema.partial().extend({
 });
 
 /** One supplier price row in the unified item form. */
+const supplierItemPriceInputSchema = z.object({
+  unitId: z.string(),
+  price: decimalSchema,
+});
+
 const supplierItemInputSchema = z.object({
   id: z.string().optional(),
   supplierId: z.string(),
@@ -95,6 +100,8 @@ const supplierItemInputSchema = z.object({
   minOrderQty: decimalSchema.optional(),
   notes: z.string().max(5000).optional(),
   isActive: z.boolean().optional(),
+  /** Per-UOM prices; `basePrice` mirrors the item's base-unit row. */
+  prices: z.array(supplierItemPriceInputSchema).optional(),
 });
 
 type SupplierItemInput = z.infer<typeof supplierItemInputSchema>;
@@ -131,6 +138,78 @@ const listItemsSchema = z.object({
   sortOrder: sortOrderSchema,
   withStock: z.boolean().default(false), // Include aggregated stock levels
 });
+
+/**
+ * Reconciles the per-UOM prices of a supplier item with the submitted set.
+ * Validates each unit belongs to the item (base unit or an active ItemUom),
+ * upserts changed rows and hard-deletes rows no longer present.
+ */
+async function reconcileSupplierItemPrices(
+  tx: Prisma.TransactionClient,
+  orgId: string,
+  supplierItemId: string,
+  itemId: string,
+  prices: { unitId: string; price: string }[],
+  _userId: string,
+  _ipAddress?: string,
+): Promise<void> {
+  const item = await tx.item.findFirst({
+    where: { id: itemId, organizationId: orgId },
+    select: {
+      unitId: true,
+      itemUoms: {
+        where: { deletedAt: null, isActive: true },
+        select: { unitId: true },
+      },
+    },
+  });
+  const allowed = new Set<string>();
+  if (item?.unitId) allowed.add(item.unitId);
+  for (const u of item?.itemUoms ?? []) allowed.add(u.unitId);
+
+  const byUnit = new Map<string, string>();
+  for (const p of prices) {
+    if (!allowed.has(p.unitId)) {
+      throw new UnprocessableError(
+        "A supplier price uses a unit that is not configured for this item.",
+      );
+    }
+    byUnit.set(p.unitId, p.price);
+  }
+
+  const existing = await tx.supplierItemPrice.findMany({
+    where: { supplierItemId },
+    select: { id: true, unitId: true },
+  });
+  const existingByUnit = new Map(existing.map((e) => [e.unitId, e.id]));
+  const keep = new Set<string>();
+
+  for (const [unitId, price] of byUnit) {
+    const matchId = existingByUnit.get(unitId);
+    if (matchId) {
+      keep.add(matchId);
+      await tx.supplierItemPrice.update({
+        where: { id: matchId },
+        data: { price },
+      });
+    } else {
+      const created = await tx.supplierItemPrice.create({
+        data: {
+          supplierItemId,
+          unitId,
+          price,
+          organizationId: orgId,
+        },
+      });
+      keep.add(created.id);
+    }
+  }
+
+  for (const e of existing) {
+    if (keep.has(e.id)) continue;
+    await tx.supplierItemPrice.delete({ where: { id: e.id } });
+  }
+}
 
 /**
  * Reconciles the supplier prices of an item with the submitted set in a single
@@ -215,6 +294,17 @@ async function reconcileSupplierItems(
         },
         tx,
       );
+      if (input.prices !== undefined) {
+        await reconcileSupplierItemPrices(
+          tx,
+          orgId,
+          match.id,
+          itemId,
+          input.prices,
+          userId,
+          ipAddress,
+        );
+      }
     } else {
       const created = await tx.supplierItem.create({
         data: { ...data, itemId, organizationId: orgId },
@@ -231,11 +321,25 @@ async function reconcileSupplierItems(
         },
         tx,
       );
+      if (input.prices !== undefined) {
+        await reconcileSupplierItemPrices(
+          tx,
+          orgId,
+          created.id,
+          itemId,
+          input.prices,
+          userId,
+          ipAddress,
+        );
+      }
     }
   }
 
   for (const e of existing) {
     if (keepIds.has(e.id) || e.deletedAt) continue;
+    await tx.supplierItemPrice.deleteMany({
+      where: { supplierItemId: e.id },
+    });
     await tx.supplierItem.update({
       where: { id: e.id },
       data: { deletedAt: new Date(), isActive: false },
@@ -588,6 +692,7 @@ export const itemsRouter = router({
                     basePrice: true,
                     leadTimeDays: true,
                     minOrderQty: true,
+                    prices: { select: { unitId: true, price: true } },
                   },
                   take: 1,
                 },
@@ -657,6 +762,7 @@ export const itemsRouter = router({
             where: { isActive: true, deletedAt: null },
             include: {
               supplier: { select: { id: true, name: true } },
+              prices: { select: { unitId: true, price: true } },
             },
           },
           ...(input.withStock
@@ -1423,6 +1529,7 @@ export const itemsRouter = router({
             supplierSku: true,
             basePrice: true,
             supplier: { select: { id: true, name: true } },
+            prices: { select: { unitId: true, price: true } },
           },
         },
       },
@@ -1497,6 +1604,7 @@ export const itemsRouter = router({
             leadTimeDays: z.number().int().min(0).optional(),
             minOrderQty: decimalSchema.optional(),
             notes: z.string().max(5000).optional(),
+            prices: z.array(supplierItemPriceInputSchema).optional(),
           }),
         ),
         itemUoms: z.array(itemUomInputSchema).optional(),
@@ -1549,6 +1657,20 @@ export const itemsRouter = router({
           );
         }
         seenPairs.add(key);
+      }
+
+      // Every per-UOM price must reference a unit configured on this item.
+      const allowedUnits = new Set<string>();
+      if (itemInput.unitId) allowedUnits.add(itemInput.unitId);
+      for (const u of uomInputs ?? []) allowedUnits.add(u.unitId);
+      for (const si of supplierItemInputs) {
+        for (const p of si.prices ?? []) {
+          if (!allowedUnits.has(p.unitId)) {
+            throw new UnprocessableError(
+              "A supplier price uses a unit that is not configured for this item.",
+            );
+          }
+        }
       }
 
       const { bundleLines, ...itemData } = itemInput;
@@ -1617,28 +1739,39 @@ export const itemsRouter = router({
           }
         }
 
-        // 3. Create supplier items
-        const createdSupplierItems = await tx.supplierItem.createMany({
-          data: supplierItemInputs.map((si) => ({
-            supplierId: si.supplierId,
-            itemId: createdItem.id,
-            supplierSku: si.supplierSku,
-            supplierName: si.supplierName,
-            basePrice: si.basePrice,
-            currency: si.currency,
-            leadTimeDays: si.leadTimeDays,
-            minOrderQty: si.minOrderQty ?? 1,
-            notes: si.notes,
-            organizationId: orgId,
-          })),
-        });
-
-        // Audit log each supplier item
+        // 3. Create supplier items (+ their per-UOM prices)
+        let supplierItemsCount = 0;
         for (const si of supplierItemInputs) {
+          const createdSi = await tx.supplierItem.create({
+            data: {
+              supplierId: si.supplierId,
+              itemId: createdItem.id,
+              supplierSku: si.supplierSku,
+              supplierName: si.supplierName,
+              basePrice: si.basePrice,
+              currency: si.currency,
+              leadTimeDays: si.leadTimeDays,
+              minOrderQty: si.minOrderQty ?? 1,
+              notes: si.notes,
+              organizationId: orgId,
+            },
+          });
+          supplierItemsCount++;
+          if (si.prices && si.prices.length > 0) {
+            await tx.supplierItemPrice.createMany({
+              data: si.prices.map((p) => ({
+                supplierItemId: createdSi.id,
+                unitId: p.unitId,
+                price: String(p.price),
+                organizationId: orgId,
+              })),
+            });
+          }
+
           await writeAuditLog(
             {
               entityType: "SupplierItem",
-              entityId: `${createdItem.id}:${si.supplierId}`,
+              entityId: createdSi.id,
               action: "CREATE",
               organizationId: orgId,
               userId: ctx.user.id,
@@ -1650,7 +1783,7 @@ export const itemsRouter = router({
 
         return {
           item: createdItem,
-          supplierItemsCount: createdSupplierItems.count,
+          supplierItemsCount,
         };
       });
 

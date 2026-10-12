@@ -29,7 +29,6 @@ export function SuppliersSection({
 }: SuppliersSectionProps) {
   const {
     mode,
-    master,
     suppliers,
     supplierDrafts,
     money,
@@ -37,6 +36,10 @@ export function SuppliersSection({
     removeSupplierDraft,
     updateSupplierDraft,
     supplierCurrency,
+    supplierUnitOptions,
+    addSupplierPrice,
+    removeSupplierPrice,
+    updateSupplierPrice,
   } = form;
 
   return (
@@ -51,7 +54,7 @@ export function SuppliersSection({
           <p className="text-sm text-muted-foreground">
             {mode === "add-supplier" || mode === "existing"
               ? "Prices already on file are listed. Add a new one below."
-              : "Who sells it and at what price. Prices are per base unit."}
+              : "Who sells it and at what price. Set a price for each unit you buy in."}
           </p>
         </div>
         <div className="flex gap-2">
@@ -162,44 +165,124 @@ export function SuppliersSection({
                   </Button>
                 </div>
 
-                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-2">
-                  <Field>
-                    <Label className="text-xs">Supplier SKU</Label>
-                    <Input
-                      className="font-mono"
-                      placeholder="Their code"
-                      value={draft.supplierSku ?? ""}
-                      disabled={!canManage}
-                      onChange={(e) =>
-                        updateSupplierDraft(draft.tempId, {
-                          supplierSku: e.target.value || undefined,
-                        })
-                      }
-                    />
-                  </Field>
+                <Field>
+                  <Label className="text-xs">Supplier SKU</Label>
+                  <Input
+                    className="font-mono"
+                    placeholder="Their code"
+                    value={draft.supplierSku ?? ""}
+                    disabled={!canManage}
+                    onChange={(e) =>
+                      updateSupplierDraft(draft.tempId, {
+                        supplierSku: e.target.value || undefined,
+                      })
+                    }
+                  />
+                </Field>
 
-                  <Field>
-                    <Label className="text-xs">Price per {master.unit}</Label>
-                    <div className="flex">
-                      <span className="flex items-center rounded-l-md border border-r-0 bg-muted px-2.5 font-mono text-xs text-muted-foreground">
-                        {currency}
-                      </span>
-                      <Input
-                        type="number"
-                        min={0}
-                        step="0.001"
-                        placeholder="0.000"
-                        className="rounded-l-none font-mono"
-                        value={draft.basePrice}
-                        disabled={!canManage}
-                        onChange={(e) =>
-                          updateSupplierDraft(draft.tempId, {
-                            basePrice: Number(e.target.value) || 0,
-                          })
-                        }
-                      />
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between gap-2">
+                    <Label className="text-xs">Prices per unit</Label>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="h-7 px-2 text-xs"
+                      disabled={
+                        !canManage ||
+                        draft.prices.length >= supplierUnitOptions.length
+                      }
+                      onClick={() => addSupplierPrice(draft.tempId)}
+                    >
+                      <Plus className="size-3.5" />
+                      Add unit price
+                    </Button>
+                  </div>
+
+                  {draft.prices.length === 0 ? (
+                    <p className="rounded-md border border-dashed px-3 py-2 text-xs text-muted-foreground">
+                      No prices yet. Add one per unit this supplier sells it in.
+                    </p>
+                  ) : (
+                    <div className="space-y-2">
+                      {draft.prices.map((row) => {
+                        const otherUnits = new Set(
+                          draft.prices
+                            .filter((p) => p.unitId !== row.unitId)
+                            .map((p) => p.unitId),
+                        );
+                        return (
+                          <div
+                            key={row.unitId}
+                            className="flex items-center gap-2"
+                          >
+                            <Select
+                              value={row.unitId}
+                              disabled={!canManage}
+                              onValueChange={(v) =>
+                                updateSupplierDraft(draft.tempId, {
+                                  prices: draft.prices.map((p) =>
+                                    p.unitId === row.unitId
+                                      ? { ...p, unitId: v }
+                                      : p,
+                                  ),
+                                })
+                              }
+                            >
+                              <SelectTrigger className="h-9 flex-1">
+                                <SelectValue placeholder="Unit" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {supplierUnitOptions.map((u) => (
+                                  <SelectItem
+                                    key={u.unitId}
+                                    value={u.unitId}
+                                    disabled={otherUnits.has(u.unitId)}
+                                  >
+                                    {u.code}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                            <div className="flex">
+                              <span className="flex items-center rounded-l-md border border-r-0 bg-muted px-2.5 font-mono text-xs text-muted-foreground">
+                                {currency}
+                              </span>
+                              <Input
+                                type="number"
+                                min={0}
+                                step="0.001"
+                                placeholder="0.000"
+                                className="w-28 rounded-l-none font-mono"
+                                value={row.price}
+                                disabled={!canManage}
+                                onChange={(e) =>
+                                  updateSupplierPrice(
+                                    draft.tempId,
+                                    row.unitId,
+                                    Number(e.target.value) || 0,
+                                  )
+                                }
+                              />
+                            </div>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon"
+                              disabled={!canManage}
+                              className="text-muted-foreground hover:text-destructive"
+                              onClick={() =>
+                                removeSupplierPrice(draft.tempId, row.unitId)
+                              }
+                              aria-label="Remove unit price"
+                            >
+                              <Trash2 className="size-4" />
+                            </Button>
+                          </div>
+                        );
+                      })}
                     </div>
-                  </Field>
+                  )}
                 </div>
 
                 {rowError && (

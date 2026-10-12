@@ -15,6 +15,11 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  defaultUnitIdFor,
+  supplierPriceFor,
+  unitCodeFor,
+} from "@/lib/uom-client";
 import { cn } from "@/lib/utils";
 
 export interface POItemSelectDialogProps {
@@ -252,7 +257,9 @@ export function POItemSelectDialog({
                 const isExisting = existingSet.has(item.id);
                 const isSelected = selected.has(item.id);
                 const supplierItem = item.supplierItems?.[0];
-                const price = Number(supplierItem?.basePrice ?? 0) || 0;
+                const defaultUnitId = defaultUnitIdFor(item, "purchase");
+                const price = supplierPriceFor(supplierItem, defaultUnitId);
+                const priceUnit = unitCodeFor(item, defaultUnitId);
                 const stock = Number(item.totalStock) ?? 0;
 
                 return (
@@ -344,6 +351,11 @@ export function POItemSelectDialog({
                     <div className="flex flex-col items-end shrink-0 gap-0.5">
                       <span className="text-sm font-medium tabular-nums">
                         {price.toFixed(3)}
+                        {priceUnit ? (
+                          <span className="ml-1 text-[10px] text-muted-foreground">
+                            /{priceUnit}
+                          </span>
+                        ) : null}
                       </span>
                       <span
                         className={cn(
