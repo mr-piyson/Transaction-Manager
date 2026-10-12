@@ -270,7 +270,7 @@ export default function IncomesLayout({
         cellClass: "text-[12px]",
         cellRenderer: (params: { data: any }) =>
           params.data?.invoice ? (
-            <div variant="outline" className="font-mono text-[11px]">
+            <div className="font-mono text-[11px]">
               {params.data.invoice.serial}
             </div>
           ) : (
