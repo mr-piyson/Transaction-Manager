@@ -1,10 +1,11 @@
 "use client";
 
+import { mergeProps } from "@base-ui/react/merge-props";
+import { useRender } from "@base-ui/react/use-render";
 import type { ItemInstance } from "@headless-tree/core";
 import { ChevronDownIcon, MinusIcon, PlusIcon } from "lucide-react";
-import { Slot } from "radix-ui";
 import {
-  type ButtonHTMLAttributes,
+  type ComponentProps,
   type CSSProperties,
   createContext,
   type HTMLAttributes,
@@ -32,19 +33,18 @@ function useTreeContext<T = any>() {
   return useContext(TreeContext) as TreeContextValue<T>;
 }
 
-interface TreeProps extends HTMLAttributes<HTMLDivElement> {
+type TreeProps = useRender.ComponentProps<"div"> & {
   indent?: number;
   tree?: any;
   toggleIconType?: ToggleIconType;
-  asChild?: boolean;
-}
+};
 
 function Tree({
   indent = 20,
   tree,
   className,
   toggleIconType = "chevron",
-  asChild = false,
+  render,
   ...props
 }: TreeProps) {
   const containerProps =
@@ -62,31 +62,38 @@ function Tree({
     "--tree-indent": `${indent}px`,
   } as CSSProperties;
 
-  const Comp = asChild ? Slot.Root : "div";
+  const element = useRender({
+    defaultTagName: "div",
+    render,
+    props: mergeProps<"div">(
+      {
+        "data-slot": "tree",
+        style: mergedStyle,
+        className: cn("flex flex-col", className),
+      } as ComponentProps<"div">,
+      otherProps,
+    ),
+  });
 
   return (
     <TreeContext.Provider value={{ indent, tree, toggleIconType }}>
-      <Comp
-        data-slot="tree"
-        style={mergedStyle}
-        className={cn("flex flex-col", className)}
-        {...otherProps}
-      />
+      {element}
     </TreeContext.Provider>
   );
 }
 
-interface TreeItemProps<T = any>
-  extends Omit<ButtonHTMLAttributes<HTMLButtonElement>, "indent"> {
+type TreeItemProps<T = any> = Omit<
+  useRender.ComponentProps<"button">,
+  "indent"
+> & {
   item: ItemInstance<T>;
   indent?: number;
-  asChild?: boolean;
-}
+};
 
 function TreeItem<T = any>({
   item,
   className,
-  asChild = false,
+  render,
   children,
   ...props
 }: TreeItemProps<T>) {
@@ -133,84 +140,91 @@ function TreeItem<T = any>({
         ? item.isMatchingSearch() || false
         : undefined,
     "aria-expanded": item.isExpanded(),
-  };
+  } as ComponentProps<"button">;
 
-  const Comp = asChild ? Slot.Root : "button";
+  const element = useRender({
+    defaultTagName: "button",
+    render,
+    props: mergeProps<"button">(defaultProps, otherProps),
+  });
 
   return (
     <TreeContext.Provider value={{ ...parentContext, currentItem: item }}>
-      <Comp {...defaultProps} {...otherProps}>
-        {children}
-      </Comp>
+      {element}
     </TreeContext.Provider>
   );
 }
 
-interface TreeItemLabelProps<T = any> extends HTMLAttributes<HTMLSpanElement> {
+type TreeItemLabelProps<T = any> = useRender.ComponentProps<"span"> & {
   item?: ItemInstance<T>;
-  asChild?: boolean;
-}
+};
 
 function TreeItemLabel<T = any>({
   item: propItem,
   children,
   className,
-  asChild = false,
+  render,
   ...props
 }: TreeItemLabelProps<T>) {
   const { currentItem, toggleIconType } = useTreeContext<T>();
   const item = propItem || currentItem;
+
+  const element = useRender({
+    enabled: !!item,
+    defaultTagName: "span",
+    render,
+    props: mergeProps<"span">(
+      {
+        "data-slot": "tree-item-label",
+        className: cn(
+          "in-focus-visible:ring-ring/50 bg-background hover:bg-accent in-data-[selected=true]:bg-accent in-data-[selected=true]:text-accent-foreground in-data-[drag-target=true]:bg-accent flex items-center gap-1 transition-colors not-in-data-[folder=true]:ps-7 in-focus-visible:ring-[3px]  [&_svg]:pointer-events-none [&_svg]:shrink-0",
+          "rounded-md",
+          "py-1.5",
+          "px-2",
+          "text-sm",
+          className,
+        ),
+      } as ComponentProps<"span">,
+      props,
+      {
+        children: render ? (
+          children
+        ) : item ? (
+          <>
+            {item.isFolder() &&
+              (toggleIconType === "plus-minus" ? (
+                item.isExpanded() ? (
+                  <MinusIcon
+                    className="text-muted-foreground size-3.5"
+                    stroke="currentColor"
+                    strokeWidth="1"
+                  />
+                ) : (
+                  <PlusIcon
+                    className="text-muted-foreground size-3.5"
+                    stroke="currentColor"
+                    strokeWidth="1"
+                  />
+                )
+              ) : (
+                <ChevronDownIcon className="text-muted-foreground rtl:rotate-0 size-4 in-aria-[expanded=false]:-rotate-90 rtl:in-aria-[expanded=false]:-rotate-270" />
+              ))}
+            {children ||
+              (typeof item.getItemName === "function"
+                ? item.getItemName()
+                : null)}
+          </>
+        ) : null,
+      },
+    ),
+  });
 
   if (!item) {
     console.warn("TreeItemLabel: No item provided via props or context");
     return null;
   }
 
-  const Comp = asChild ? Slot.Root : "span";
-
-  return (
-    <Comp
-      data-slot="tree-item-label"
-      className={cn(
-        "in-focus-visible:ring-ring/50 bg-background hover:bg-accent in-data-[selected=true]:bg-accent in-data-[selected=true]:text-accent-foreground in-data-[drag-target=true]:bg-accent flex items-center gap-1 transition-colors not-in-data-[folder=true]:ps-7 in-focus-visible:ring-[3px]  [&_svg]:pointer-events-none [&_svg]:shrink-0",
-        "rounded-md",
-        "py-1.5",
-        "px-2",
-        "text-sm",
-        className,
-      )}
-      {...props}
-    >
-      {asChild ? (
-        children
-      ) : (
-        <>
-          {item.isFolder() &&
-            (toggleIconType === "plus-minus" ? (
-              item.isExpanded() ? (
-                <MinusIcon
-                  className="text-muted-foreground size-3.5"
-                  stroke="currentColor"
-                  strokeWidth="1"
-                />
-              ) : (
-                <PlusIcon
-                  className="text-muted-foreground size-3.5"
-                  stroke="currentColor"
-                  strokeWidth="1"
-                />
-              )
-            ) : (
-              <ChevronDownIcon className="text-muted-foreground rtl:rotate-0 size-4 in-aria-[expanded=false]:-rotate-90 rtl:in-aria-[expanded=false]:-rotate-270" />
-            ))}
-          {children ||
-            (typeof item.getItemName === "function"
-              ? item.getItemName()
-              : null)}
-        </>
-      )}
-    </Comp>
-  );
+  return element;
 }
 
 function TreeDragLine({ className, ...props }: HTMLAttributes<HTMLDivElement>) {

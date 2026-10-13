@@ -195,7 +195,7 @@ export function UnitsSection({ form, canManage }: UnitsSectionProps) {
               <Select
                 value={baseUnitId}
                 disabled={locked}
-                onValueChange={handleBaseSelect}
+                onValueChange={(v) => handleBaseSelect(v ?? "")}
               >
                 <SelectTrigger id="item-field-base" className="h-8">
                   <SelectValue placeholder="Select base unit" />
@@ -338,7 +338,7 @@ export function UnitsSection({ form, canManage }: UnitsSectionProps) {
             <Label className="text-xs">Unit</Label>
             <Select
               value={addUnitId}
-              onValueChange={setAddUnitId}
+              onValueChange={(v) => setAddUnitId(v ?? "")}
               disabled={availableUnits.length === 0}
             >
               <SelectTrigger>
@@ -402,7 +402,7 @@ export function UnitsSection({ form, canManage }: UnitsSectionProps) {
           <Select
             value={purchaseUnitId}
             disabled={locked}
-            onValueChange={(v) => setDefaultUnit("purchase", v)}
+            onValueChange={(v) => setDefaultUnit("purchase", v ?? "")}
           >
             <SelectTrigger id="item-field-buy">
               <SelectValue />
@@ -424,7 +424,7 @@ export function UnitsSection({ form, canManage }: UnitsSectionProps) {
           <Select
             value={salesUnitId}
             disabled={locked}
-            onValueChange={(val) => setDefaultUnit("sales", val)}
+            onValueChange={(val) => setDefaultUnit("sales", val ?? "")}
           >
             <SelectTrigger id="item-field-sell">
               <SelectValue />

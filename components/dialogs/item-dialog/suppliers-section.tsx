@@ -130,7 +130,9 @@ export function SuppliersSection({
                     value={draft.supplierId}
                     disabled={!canManage}
                     onValueChange={(v) =>
-                      updateSupplierDraft(draft.tempId, { supplierId: v })
+                      updateSupplierDraft(draft.tempId, {
+                        supplierId: v ?? undefined,
+                      })
                     }
                   >
                     <SelectTrigger className="flex-1 font-medium">
@@ -223,7 +225,7 @@ export function SuppliersSection({
                                 updateSupplierDraft(draft.tempId, {
                                   prices: draft.prices.map((p) =>
                                     p.unitId === row.unitId
-                                      ? { ...p, unitId: v }
+                                      ? { ...p, unitId: v ?? "" }
                                       : p,
                                   ),
                                 })

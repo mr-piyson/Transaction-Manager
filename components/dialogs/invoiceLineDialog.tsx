@@ -455,7 +455,10 @@ export function InvoiceLineDialog({
             {!isManual && unitOptions.length > 0 && (
               <div className="space-y-1.5">
                 <Label className="text-xs">{t("invoices.unit")}</Label>
-                <Select value={unitId || ""} onValueChange={handleUnitChange}>
+                <Select
+                  value={unitId || ""}
+                  onValueChange={(v) => handleUnitChange(v ?? "")}
+                >
                   <SelectTrigger className="w-full min-w-0">
                     <SelectValue placeholder={t("invoices.unit")} />
                   </SelectTrigger>
@@ -538,6 +541,7 @@ export function InvoiceLineDialog({
                 <Select
                   value={taxRateId || "none"}
                   onValueChange={(v) => {
+                    if (v == null) return;
                     const tr =
                       v === "none" ? undefined : (taxRatesMap[v] as any);
                     setValue("taxRateId", v === "none" ? undefined : v);

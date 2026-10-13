@@ -604,11 +604,13 @@ export default function DocumentDetailPage({
   // ── Build header actions dropdown ────────────────────────────────────────
   const headerActions = showActions ? (
     <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" aria-label={t("common.more")}>
-          <MoreHorizontal className="size-4" />
-        </Button>
-      </DropdownMenuTrigger>
+      <DropdownMenuTrigger
+        render={
+          <Button variant="ghost" size="icon" aria-label={t("common.more")}>
+            <MoreHorizontal className="size-4" />
+          </Button>
+        }
+      />
       <DropdownMenuContent align="end">
         {actions.map((action) => (
           <DropdownMenuItem

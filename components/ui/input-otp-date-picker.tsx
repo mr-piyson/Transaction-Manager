@@ -466,17 +466,19 @@ export const DateInput = React.forwardRef<HTMLInputElement, DateInputProps>(
           )}
 
           <Popover open={open} onOpenChange={setOpen}>
-            <PopoverTrigger asChild>
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                disabled={disabled}
-                className="h-9 w-9 shrink-0"
-              >
-                <CalendarIcon className="size-4 text-muted-foreground" />
-              </Button>
-            </PopoverTrigger>
+            <PopoverTrigger
+              render={
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  disabled={disabled}
+                  className="h-9 w-9 shrink-0"
+                >
+                  <CalendarIcon className="size-4 text-muted-foreground" />
+                </Button>
+              }
+            ></PopoverTrigger>
             <PopoverContent className="w-auto p-0" align="end">
               <Calendar
                 mode="single"
@@ -707,17 +709,19 @@ export function DatePicker({
           </button>
         )}
         <Popover open={open} onOpenChange={setOpen}>
-          <PopoverTrigger asChild>
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              disabled={disabled}
-              className="absolute right-0 top-0 h-full px-2 hover:bg-transparent"
-            >
-              <CalendarIcon className="size-4 text-muted-foreground" />
-            </Button>
-          </PopoverTrigger>
+          <PopoverTrigger
+            render={
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                disabled={disabled}
+                className="absolute right-0 top-0 h-full px-2 hover:bg-transparent"
+              >
+                <CalendarIcon className="size-4 text-muted-foreground" />
+              </Button>
+            }
+          ></PopoverTrigger>
           <PopoverContent className="w-auto p-0" align="end">
             <Calendar
               mode="single"

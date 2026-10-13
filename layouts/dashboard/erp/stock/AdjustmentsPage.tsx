@@ -150,54 +150,58 @@ export default function AdjustmentsPage() {
                 }}
               >
                 <ContextMenu>
-                  <ContextMenuTrigger asChild>
-                    <button
-                      type="button"
-                      onClick={() => setSelectedMovement(m)}
-                      className="block h-full w-full text-left"
-                    >
-                      <div className="flex items-center gap-3 px-4 py-2.5 border-b border-border/50 hover:bg-muted/40">
-                        <div
-                          className={cn(
-                            "flex size-7 shrink-0 items-center justify-center rounded-full",
-                            isDecrease
-                              ? "bg-red-100 text-red-700 dark:bg-red-900/50 dark:text-red-300"
-                              : "bg-green-100 text-green-700 dark:bg-green-900/50 dark:text-green-300",
-                          )}
-                        >
-                          {isDecrease ? (
-                            <ArrowUpRight className="size-4" />
-                          ) : (
-                            <ArrowDownRight className="size-4" />
-                          )}
-                        </div>
-                        <div className="min-w-0 flex-1">
-                          <p className="truncate font-medium">{m.item.name}</p>
-                          <p className="truncate text-xs text-muted-foreground">
-                            {m.adjustmentReason?.name ??
-                              t(`stock.movementTypes.${m.type}`)}{" "}
-                            · {warehouseName}
-                          </p>
-                        </div>
-                        <div className="shrink-0 text-right">
-                          <p
+                  <ContextMenuTrigger
+                    render={
+                      <button
+                        type="button"
+                        onClick={() => setSelectedMovement(m)}
+                        className="block h-full w-full text-left"
+                      >
+                        <div className="flex items-center gap-3 px-4 py-2.5 border-b border-border/50 hover:bg-muted/40">
+                          <div
                             className={cn(
-                              "font-semibold tabular-nums",
+                              "flex size-7 shrink-0 items-center justify-center rounded-full",
                               isDecrease
-                                ? "text-destructive"
-                                : "text-green-600 dark:text-green-400",
+                                ? "bg-red-100 text-red-700 dark:bg-red-900/50 dark:text-red-300"
+                                : "bg-green-100 text-green-700 dark:bg-green-900/50 dark:text-green-300",
                             )}
                           >
-                            {isDecrease ? "" : "+"}
-                            {Number(m.quantity).toFixed(3)}
-                          </p>
-                          <p className="text-xs text-muted-foreground">
-                            {formatDateTime(m.createdAt)}
-                          </p>
+                            {isDecrease ? (
+                              <ArrowUpRight className="size-4" />
+                            ) : (
+                              <ArrowDownRight className="size-4" />
+                            )}
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <p className="truncate font-medium">
+                              {m.item.name}
+                            </p>
+                            <p className="truncate text-xs text-muted-foreground">
+                              {m.adjustmentReason?.name ??
+                                t(`stock.movementTypes.${m.type}`)}{" "}
+                              · {warehouseName}
+                            </p>
+                          </div>
+                          <div className="shrink-0 text-right">
+                            <p
+                              className={cn(
+                                "font-semibold tabular-nums",
+                                isDecrease
+                                  ? "text-destructive"
+                                  : "text-green-600 dark:text-green-400",
+                              )}
+                            >
+                              {isDecrease ? "" : "+"}
+                              {Number(m.quantity).toFixed(3)}
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              {formatDateTime(m.createdAt)}
+                            </p>
+                          </div>
                         </div>
-                      </div>
-                    </button>
-                  </ContextMenuTrigger>
+                      </button>
+                    }
+                  ></ContextMenuTrigger>
                   <ContextMenuContent>
                     <ContextMenuItem onClick={() => setSelectedMovement(m)}>
                       <Eye className="size-4 mr-2" />

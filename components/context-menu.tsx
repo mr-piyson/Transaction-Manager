@@ -656,7 +656,7 @@ export function UniversalContextMenu({
   // so the context menu never opened and onClick handlers never fired.
   return (
     <ContextMenu>
-      <ContextMenuTrigger asChild>{children}</ContextMenuTrigger>
+      <ContextMenuTrigger render={<>{children}</>}></ContextMenuTrigger>
       <ContextMenuContent>
         <DesktopMenuItems items={items} />
       </ContextMenuContent>

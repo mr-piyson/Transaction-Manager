@@ -156,17 +156,26 @@ export function ItemDetailsSheet({
   const StockIcon = stockStatus.icon;
 
   return (
-    <Sheet modal={false} open={!!itemId} onOpenChange={onOpenChange}>
+    <Sheet
+      modal={false}
+      open={!!itemId}
+      // A non-modal Base UI dialog is dismissed whenever focus moves outside it.
+      // When this sheet is opened from the items context menu, the menu restores
+      // focus to the previously focused element as it closes, so the focus
+      // change would immediately close the sheet again. Ignore focus-outside
+      // dismissals (via eventDetails.cancel()); the explicit close controls,
+      // Escape, and outside clicks still dismiss the sheet.
+      onOpenChange={(open, eventDetails) => {
+        if (eventDetails.reason === "focus-out") {
+          eventDetails.cancel();
+          return;
+        }
+        onOpenChange(open);
+      }}
+    >
       <SheetContent
         side="right"
         showOverlay={false}
-        // A non-modal Radix dialog is dismissed whenever focus moves outside it.
-        // When this sheet is opened from the items context menu, the menu
-        // restores focus to the previously focused element as it closes, so the
-        // focus change would immediately close the sheet again. Ignore
-        // focus-outside dismissals; the explicit close controls, Escape, and
-        // outside clicks still dismiss the sheet.
-        onFocusOutside={(event) => event.preventDefault()}
         className="w-full gap-0 overflow-hidden border-l bg-background p-0 shadow-2xl sm:max-w-md"
       >
         <SheetHeader className="sr-only">

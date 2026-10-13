@@ -27,8 +27,8 @@ export default function NotFound() {
             The page you are looking for does not exist or has been moved.
           </EmptyDescription>
         </EmptyHeader>
-        <Button asChild>
-          <Link href="/">{t("common.goBack")}</Link>
+        <Button render={<Link href="/" />} nativeButton={false}>
+          {t("common.goBack")}
         </Button>
       </Empty>
     </div>

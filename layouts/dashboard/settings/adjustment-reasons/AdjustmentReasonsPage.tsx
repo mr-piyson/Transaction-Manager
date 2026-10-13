@@ -130,6 +130,7 @@ export default function AdjustmentReasonsPage() {
                     <Select
                       value={editType}
                       onValueChange={(v) => {
+                        if (v === null) return;
                         setEditType(v);
                         const dir =
                           v === "ADJUSTMENT_UP" ? "INCREASE" : "DECREASE";
@@ -292,7 +293,7 @@ export default function AdjustmentReasonsPage() {
                 </SelectItem>
               </SelectContent>
             </Select>
-            <Select value={newType} onValueChange={setNewType}>
+            <Select value={newType} onValueChange={(v) => setNewType(v ?? "")}>
               <SelectTrigger className="h-8 w-40">
                 <SelectValue />
               </SelectTrigger>

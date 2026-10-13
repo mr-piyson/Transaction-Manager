@@ -85,7 +85,7 @@ export function ActionsDropdown({
   if (!mounted || !isMobile) {
     return (
       <DropdownMenu onOpenChange={onOpenChange}>
-        <DropdownMenuTrigger asChild>
+        <DropdownMenuTrigger render={
           <Button
             variant="ghost"
             size="icon"
@@ -95,6 +95,7 @@ export function ActionsDropdown({
           >
             {trigger ?? <MoreHorizontal className="size-4" />}
           </Button>
+        }>
         </DropdownMenuTrigger>
         <DropdownMenuContent
           align={align}

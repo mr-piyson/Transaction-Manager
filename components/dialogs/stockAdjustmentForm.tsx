@@ -283,7 +283,7 @@ export function StockAdjustmentFormDialog({
                 </Label>
                 <Select
                   value={warehouseId}
-                  onValueChange={(v) => setValue("warehouseId", v)}
+                  onValueChange={(v) => setValue("warehouseId", v ?? "")}
                 >
                   <SelectTrigger id="adjust-warehouse">
                     <SelectValue
@@ -309,7 +309,7 @@ export function StockAdjustmentFormDialog({
                 <Label htmlFor="adjust-reason">{t("stock.reason")} *</Label>
                 <Select
                   value={reasonId}
-                  onValueChange={(v) => setValue("reasonId", v)}
+                  onValueChange={(v) => setValue("reasonId", v ?? "")}
                 >
                   <SelectTrigger id="adjust-reason">
                     <SelectValue

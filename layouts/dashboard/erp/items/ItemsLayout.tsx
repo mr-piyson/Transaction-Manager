@@ -281,24 +281,26 @@ export default function ItemsLayout({
                         }}
                       >
                         <ContextMenu>
-                          <ContextMenuTrigger asChild>
-                            <button
-                              type="button"
-                              onClick={() => setSelectedItemId(item.id)}
-                              className="block h-full w-full text-left"
-                            >
-                              <ItemListItem
-                                key={`${item.id}-${item.image ?? "no-img"}`}
-                                data={item}
-                                className={cn(
-                                  "hover:bg-muted/40 border border-transparent",
-                                  selectedItemId === item.id
-                                    ? "border-primary bg-primary/10"
-                                    : "",
-                                )}
-                              />
-                            </button>
-                          </ContextMenuTrigger>
+                          <ContextMenuTrigger
+                            render={
+                              <button
+                                type="button"
+                                onClick={() => setSelectedItemId(item.id)}
+                                className="block h-full w-full text-left"
+                              >
+                                <ItemListItem
+                                  key={`${item.id}-${item.image ?? "no-img"}`}
+                                  data={item}
+                                  className={cn(
+                                    "hover:bg-muted/40 border border-transparent",
+                                    selectedItemId === item.id
+                                      ? "border-primary bg-primary/10"
+                                      : "",
+                                  )}
+                                />
+                              </button>
+                            }
+                          ></ContextMenuTrigger>
                           <ContextMenuContent>
                             <ContextMenuItem
                               onClick={() => setSelectedItemId(item.id)}

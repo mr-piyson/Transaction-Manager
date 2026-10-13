@@ -415,12 +415,11 @@ export default function PermissionsPage() {
           </Button>
           <Button
             className="gap-2 shrink-0 shadow-md hover:shadow-lg transition-all duration-200"
-            asChild
+            render={<Link href="/settings/users" />}
+            nativeButton={false}
           >
-            <Link href="/settings/users">
-              <UserPlus className="size-4" />
-              <span>Manage Members</span>
-            </Link>
+            <UserPlus className="size-4" />
+            <span>Manage Members</span>
           </Button>
         </div>
       </div>
@@ -563,15 +562,17 @@ export default function PermissionsPage() {
                     </div>
 
                     <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="size-8 hover:bg-muted/80"
-                        >
-                          <MoreHorizontal className="size-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
+                      <DropdownMenuTrigger
+                        render={
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="size-8 hover:bg-muted/80"
+                          >
+                            <MoreHorizontal className="size-4" />
+                          </Button>
+                        }
+                      />
                       <DropdownMenuContent align="end" className="min-w-44">
                         <DropdownMenuItem
                           onClick={() => openRolePermsDialog(role)}

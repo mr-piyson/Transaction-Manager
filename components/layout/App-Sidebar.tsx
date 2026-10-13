@@ -515,22 +515,20 @@ export function AppSidebar({ ...props }: AppSidebarProps) {
                       active && "text-primary font-semibold",
                       isFocused && "bg-accent!",
                     )}
-                    asChild={!isFolder && !!itemData.href}
+                    render={
+                      !isFolder && !!itemData.href ? (
+                        <Link
+                          href={itemData.href}
+                          onClick={(e) => {
+                            e.preventDefault();
+                            handleNavigate(itemData.href!);
+                          }}
+                          className="flex items-center gap-1 rounded-md py-1.5 px-2 text-sm"
+                        />
+                      ) : undefined
+                    }
                   >
-                    {!isFolder && itemData.href ? (
-                      <Link
-                        href={itemData.href}
-                        onClick={(e) => {
-                          e.preventDefault();
-                          handleNavigate(itemData.href!);
-                        }}
-                        className="flex items-center gap-1 rounded-md py-1.5 px-2 text-sm"
-                      >
-                        {labelContent}
-                      </Link>
-                    ) : (
-                      labelContent
-                    )}
+                    {labelContent}
                   </TreeItemLabel>
                 </TreeItem>
               );
@@ -576,22 +574,24 @@ function AppSwitcher({
     <SidebarMenu>
       <SidebarMenuItem>
         <DropdownMenu open={dropdownOpen} onOpenChange={setDropdownOpen}>
-          <DropdownMenuTrigger asChild>
-            <SidebarMenuButton
-              size="lg"
-              dir={isRtl ? "rtl" : "ltr"}
-              className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
-            >
-              <Logo className="size-8!" />
+          <DropdownMenuTrigger
+            render={
+              <SidebarMenuButton
+                size="lg"
+                dir={isRtl ? "rtl" : "ltr"}
+                className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+              >
+                <Logo className="size-8!" />
 
-              <div className="grid flex-1 text-left text-sm leading-tight">
-                <span className="truncate font-semibold text-lg">
-                  {t(currentApp.nameKey)}
-                </span>
-              </div>
-              <ChevronDown className="ml-auto size-4 text-muted-foreground" />
-            </SidebarMenuButton>
-          </DropdownMenuTrigger>
+                <div className="grid flex-1 text-left text-sm leading-tight">
+                  <span className="truncate font-semibold text-lg">
+                    {t(currentApp.nameKey)}
+                  </span>
+                </div>
+                <ChevronDown className="ml-auto size-4 text-muted-foreground" />
+              </SidebarMenuButton>
+            }
+          />
           <DropdownMenuContent
             className="w-[--radix-dropdown-menu-trigger-width] min-w-56 rounded-lg"
             side={"bottom"}

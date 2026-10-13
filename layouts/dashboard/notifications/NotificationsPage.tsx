@@ -139,7 +139,7 @@ export default function NotificationsPage() {
         />
         <Select
           value={statusFilter || "all"}
-          onValueChange={(v) => setStatusFilter(v === "all" ? "" : v)}
+          onValueChange={(v) => setStatusFilter(v === "all" ? "" : (v ?? ""))}
         >
           <SelectTrigger className="w-32 h-9">
             <SelectValue placeholder={t("common.filter")} />

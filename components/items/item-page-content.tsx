@@ -600,7 +600,7 @@ export function ItemPageContent({ item, defaultMode }: ItemPageContentProps) {
                         <Label htmlFor="type">Type *</Label>
                         <Select
                           value={selectedType}
-                          onValueChange={handleTypeChange}
+                          onValueChange={(v) => handleTypeChange(v ?? "")}
                         >
                           <SelectTrigger>
                             <SelectValue />

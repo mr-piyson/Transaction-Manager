@@ -203,29 +203,29 @@ export function SupplierItemFormDialog({
                   open={itemPopoverOpen}
                   onOpenChange={setItemPopoverOpen}
                 >
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="outline"
-                      role="combobox"
-                      aria-expanded={itemPopoverOpen}
-                      className="w-full justify-between font-normal"
-                    >
-                      {selectedItem ? (
-                        <span className="flex items-center gap-2">
-                          <span className="font-medium">
-                            {selectedItem.name}
-                          </span>
-                          <span className="text-xs text-muted-foreground">
-                            ({selectedItem.sku})
-                          </span>
+                  <PopoverTrigger
+                    render={
+                      <Button
+                        variant="outline"
+                        role="combobox"
+                        aria-expanded={itemPopoverOpen}
+                        className="w-full justify-between font-normal"
+                      />
+                    }
+                  >
+                    {selectedItem ? (
+                      <span className="flex items-center gap-2">
+                        <span className="font-medium">{selectedItem.name}</span>
+                        <span className="text-xs text-muted-foreground">
+                          ({selectedItem.sku})
                         </span>
-                      ) : (
-                        <span className="text-muted-foreground">
-                          Search and select an item...
-                        </span>
-                      )}
-                      <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                    </Button>
+                      </span>
+                    ) : (
+                      <span className="text-muted-foreground">
+                        Search and select an item...
+                      </span>
+                    )}
+                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                   </PopoverTrigger>
                   <PopoverContent
                     className="w-[var(--radix-popover-trigger-width)] p-0"

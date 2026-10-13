@@ -62,28 +62,29 @@ export function CityCombobox({
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
-        {children ? (
-          children
-        ) : (
-          <Button
-            variant="outline"
-            role="combobox"
-            aria-expanded={open}
-            className="w-75 justify-between"
-          >
-            <div className="flex items-center gap-2 overflow-hidden">
-              <MapPin className="h-4 w-4 shrink-0 opacity-50" />
-              <span className="truncate">
-                {value
-                  ? cities.find((city) => city.id === value)?.en
-                  : "Select city..."}
-              </span>
-            </div>
-            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-          </Button>
-        )}
-      </PopoverTrigger>
+      <PopoverTrigger
+        nativeButton={!children}
+        render={
+          children ?? (
+            <Button
+              variant="outline"
+              role="combobox"
+              aria-expanded={open}
+              className="w-75 justify-between"
+            >
+              <div className="flex items-center gap-2 overflow-hidden">
+                <MapPin className="h-4 w-4 shrink-0 opacity-50" />
+                <span className="truncate">
+                  {value
+                    ? cities.find((city) => city.id === value)?.en
+                    : "Select city..."}
+                </span>
+              </div>
+              <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+            </Button>
+          )
+        }
+      />
       <PopoverContent className="w-75 p-0">
         <Command shouldFilter={false}>
           <CommandInput

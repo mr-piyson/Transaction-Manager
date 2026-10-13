@@ -140,24 +140,26 @@ export default function IncomesLayout({
           const item = params.data;
           return (
             <ContextMenu>
-              <ContextMenuTrigger asChild>
-                <Link
-                  href={`/erp/incomes/${item.id}`}
-                  scroll={false}
-                  draggable={false}
-                  className="block w-full h-full"
-                >
-                  <IncomeListItem
-                    data={item}
-                    className={cn(
-                      "hover:bg-muted/40 border border-transparent",
-                      activeItem === item.id
-                        ? "border-primary bg-primary/10"
-                        : "",
-                    )}
-                  />
-                </Link>
-              </ContextMenuTrigger>
+              <ContextMenuTrigger
+                render={
+                  <Link
+                    href={`/erp/incomes/${item.id}`}
+                    scroll={false}
+                    draggable={false}
+                    className="block w-full h-full"
+                  >
+                    <IncomeListItem
+                      data={item}
+                      className={cn(
+                        "hover:bg-muted/40 border border-transparent",
+                        activeItem === item.id
+                          ? "border-primary bg-primary/10"
+                          : "",
+                      )}
+                    />
+                  </Link>
+                }
+              />
               <ContextMenuContent>
                 <ContextMenuItem
                   onClick={() => router.push(`/erp/incomes/${item.id}`)}
@@ -297,11 +299,13 @@ export default function IncomesLayout({
           const item = params.data;
           return (
             <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                  <MoreHorizontal className="size-4" />
-                </Button>
-              </DropdownMenuTrigger>
+              <DropdownMenuTrigger
+                render={
+                  <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                    <MoreHorizontal className="size-4" />
+                  </Button>
+                }
+              />
               <DropdownMenuContent align="end">
                 <DropdownMenuItem
                   onClick={() => router.push(`/erp/incomes/${item.id}`)}

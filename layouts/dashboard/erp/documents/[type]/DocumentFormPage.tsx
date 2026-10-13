@@ -236,10 +236,13 @@ function NotFoundState({ documentType }: { documentType: DocumentKind }) {
           <h2 className="text-lg font-semibold">
             {t("invoices.documentNotFound")}
           </h2>
-          <Button asChild variant="outline" size="sm">
-            <Link href={`/erp/documents/${documentType}`}>
-              {t("common.back")}
-            </Link>
+          <Button
+            render={<Link href={`/erp/documents/${documentType}`} />}
+            nativeButton={false}
+            variant="outline"
+            size="sm"
+          >
+            {t("common.back")}
           </Button>
         </CardContent>
       </Card>

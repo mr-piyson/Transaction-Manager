@@ -231,31 +231,35 @@ export function MoneyEntryFilterBar({ kind }: MoneyEntryFilterBarProps) {
       <TooltipProvider>
         <div className="flex items-center rounded-lg border p-0.5">
           <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant={viewMode === "list" ? "secondary" : "ghost"}
-                size="sm"
-                className="h-7 px-2"
-                onClick={() => setViewMode("list")}
-              >
-                <List className="size-3.5" />
-              </Button>
-            </TooltipTrigger>
+            <TooltipTrigger
+              render={
+                <Button
+                  variant={viewMode === "list" ? "secondary" : "ghost"}
+                  size="sm"
+                  className="h-7 px-2"
+                  onClick={() => setViewMode("list")}
+                >
+                  <List className="size-3.5" />
+                </Button>
+              }
+            />
             <TooltipContent side="bottom">
               <p>{t("common.listView")}</p>
             </TooltipContent>
           </Tooltip>
           <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant={viewMode === "table" ? "secondary" : "ghost"}
-                size="sm"
-                className="h-7 px-2"
-                onClick={() => setViewMode("table")}
-              >
-                <Table2 className="size-3.5" />
-              </Button>
-            </TooltipTrigger>
+            <TooltipTrigger
+              render={
+                <Button
+                  variant={viewMode === "table" ? "secondary" : "ghost"}
+                  size="sm"
+                  className="h-7 px-2"
+                  onClick={() => setViewMode("table")}
+                >
+                  <Table2 className="size-3.5" />
+                </Button>
+              }
+            />
             <TooltipContent side="bottom">
               <p>{t("common.tableView")}</p>
             </TooltipContent>

@@ -96,11 +96,17 @@ export function FormPageScaffold({
           />
         ) : (
           <header className="flex flex-wrap items-center gap-2 border-b bg-background px-4 py-3 sm:px-6">
-            <Button asChild variant="ghost" size="icon" className="-ms-1">
-              <Link href={backHref}>
-                <ArrowLeft className="h-4 w-4" />
-              </Link>
-            </Button>
+            <Button
+              render={
+                <Link href={backHref}>
+                  <ArrowLeft className="h-4 w-4" />
+                </Link>
+              }
+              nativeButton={false}
+              variant="ghost"
+              size="icon"
+              className="-ms-1"
+            />
             <div className="min-w-0 flex-1">
               <h1 className="truncate text-lg font-semibold leading-tight">
                 {title}

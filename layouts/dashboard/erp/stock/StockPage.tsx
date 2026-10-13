@@ -169,46 +169,48 @@ export default function StockPage() {
                 }}
               >
                 <ContextMenu>
-                  <ContextMenuTrigger asChild>
-                    <div className="group flex items-center gap-3 px-4 py-2.5 border-b border-border/50 hover:bg-muted/40 cursor-default">
-                      <div className="flex size-9 shrink-0 items-center justify-center rounded-md border bg-muted">
-                        {s.item.image ? (
-                          // biome-ignore lint/performance/noImgElement: item images can be SVG/data URIs/external hosts that next/image cannot optimize; matches ItemListItem rendering
-                          <img
-                            src={s.item.image}
-                            alt={s.item.name}
-                            className="size-full rounded-md object-cover"
-                          />
-                        ) : (
-                          <Package className="size-4 text-muted-foreground" />
-                        )}
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <p className="truncate font-medium">{s.item.name}</p>
-                        <p className="truncate text-xs text-muted-foreground">
-                          {s.item.sku ?? "—"} · {s.warehouse.name}
-                        </p>
-                      </div>
-                      <div className="shrink-0 text-right">
-                        <p
-                          className={cn(
-                            "font-semibold tabular-nums",
-                            s.quantity <= 0 && "text-destructive",
+                  <ContextMenuTrigger
+                    render={
+                      <div className="group flex items-center gap-3 px-4 py-2.5 border-b border-border/50 hover:bg-muted/40 cursor-default">
+                        <div className="flex size-9 shrink-0 items-center justify-center rounded-md border bg-muted">
+                          {s.item.image ? (
+                            // biome-ignore lint/performance/noImgElement: item images can be SVG/data URIs/external hosts that next/image cannot optimize; matches ItemListItem rendering
+                            <img
+                              src={s.item.image}
+                              alt={s.item.name}
+                              className="size-full rounded-md object-cover"
+                            />
+                          ) : (
+                            <Package className="size-4 text-muted-foreground" />
                           )}
-                        >
-                          {Number(s.quantity).toFixed(3)}{" "}
-                          <span className="text-xs font-normal text-muted-foreground">
-                            {s.item.unit ?? ""}
-                          </span>
-                        </p>
-                        {s.isLowStock && (
-                          <p className="text-xs text-destructive">
-                            {t("stock.lowStock")}
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <p className="truncate font-medium">{s.item.name}</p>
+                          <p className="truncate text-xs text-muted-foreground">
+                            {s.item.sku ?? "—"} · {s.warehouse.name}
                           </p>
-                        )}
+                        </div>
+                        <div className="shrink-0 text-right">
+                          <p
+                            className={cn(
+                              "font-semibold tabular-nums",
+                              s.quantity <= 0 && "text-destructive",
+                            )}
+                          >
+                            {Number(s.quantity).toFixed(3)}{" "}
+                            <span className="text-xs font-normal text-muted-foreground">
+                              {s.item.unit ?? ""}
+                            </span>
+                          </p>
+                          {s.isLowStock && (
+                            <p className="text-xs text-destructive">
+                              {t("stock.lowStock")}
+                            </p>
+                          )}
+                        </div>
                       </div>
-                    </div>
-                  </ContextMenuTrigger>
+                    }
+                  ></ContextMenuTrigger>
                   <ContextMenuContent>
                     <ContextMenuItem
                       onClick={() =>

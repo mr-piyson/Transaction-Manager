@@ -82,15 +82,17 @@ export default function SettingsLayout({
             title={t("settings.title")}
             icon={<Settings className="size-5" />}
           >
-            <SheetTrigger asChild>
-              <Button variant="outline" size="sm" className="md:hidden gap-2">
-                <Menu className="size-4" />
-                {t(
-                  NAV_ITEMS.find((i) => i.id === activeSection)?.labelKey ??
-                    "settings.title",
-                )}
-              </Button>
-            </SheetTrigger>
+            <SheetTrigger
+              render={
+                <Button variant="outline" size="sm" className="md:hidden gap-2">
+                  <Menu className="size-4" />
+                  {t(
+                    NAV_ITEMS.find((i) => i.id === activeSection)?.labelKey ??
+                      "settings.title",
+                  )}
+                </Button>
+              }
+            />
           </Header>
           <SheetContent side="left" className="w-64 p-4">
             <SheetHeader>

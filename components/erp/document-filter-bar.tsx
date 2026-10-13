@@ -98,7 +98,7 @@ export function DocumentFilterTrigger({
 
   return (
     <Drawer direction="right">
-      <DrawerTrigger asChild>
+      <DrawerTrigger>
         <Button variant="ghost" size="sm" className="relative h-8 shrink-0">
           <SlidersHorizontal className="size-3.5" />
           {activeFilterCount > 0 && (

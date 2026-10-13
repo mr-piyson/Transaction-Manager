@@ -268,7 +268,7 @@ export default function ChartOfAccountsPage() {
                   <Select
                     value={form.type}
                     onValueChange={(v) =>
-                      setForm((prev) => ({ ...prev, type: v }))
+                      setForm((prev) => ({ ...prev, type: v ?? "" }))
                     }
                   >
                     <SelectTrigger>
@@ -287,7 +287,7 @@ export default function ChartOfAccountsPage() {
                   <Select
                     value={form.normalBalance}
                     onValueChange={(v) =>
-                      setForm((prev) => ({ ...prev, normalBalance: v }))
+                      setForm((prev) => ({ ...prev, normalBalance: v ?? "" }))
                     }
                   >
                     <SelectTrigger>
@@ -306,7 +306,7 @@ export default function ChartOfAccountsPage() {
                   <Select
                     value={form.parentId}
                     onValueChange={(v) =>
-                      setForm((prev) => ({ ...prev, parentId: v }))
+                      setForm((prev) => ({ ...prev, parentId: v ?? "" }))
                     }
                   >
                     <SelectTrigger>
@@ -400,7 +400,7 @@ export default function ChartOfAccountsPage() {
                     value={editForm.type}
                     onValueChange={(v) =>
                       setEditForm((prev) =>
-                        prev ? { ...prev, type: v } : null,
+                        prev ? { ...prev, type: v ?? "" } : null,
                       )
                     }
                   >
@@ -421,7 +421,7 @@ export default function ChartOfAccountsPage() {
                     value={editForm.normalBalance}
                     onValueChange={(v) =>
                       setEditForm((prev) =>
-                        prev ? { ...prev, normalBalance: v } : null,
+                        prev ? { ...prev, normalBalance: v ?? "" } : null,
                       )
                     }
                   >

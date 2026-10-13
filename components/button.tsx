@@ -1,4 +1,4 @@
-import { Slot } from "@radix-ui/react-slot";
+import { Button as ButtonPrimitive } from "@base-ui/react/button";
 import type { UseMutationResult } from "@tanstack/react-query";
 import { cva, type VariantProps } from "class-variance-authority";
 import { AlertTriangle, Loader2 } from "lucide-react";
@@ -39,7 +39,7 @@ const buttonVariants = cva(
 export interface ButtonProps
   extends Omit<React.ComponentProps<"button">, "children">,
     VariantProps<typeof buttonVariants> {
-  asChild?: boolean;
+  render?: ButtonPrimitive.Props["render"];
   children?: React.ReactNode;
 
   /** * Directly pass a TanStack Mutation object.
@@ -63,7 +63,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       className,
       variant,
       size,
-      asChild = false,
+      render,
       children,
       mutation,
       isLoading: manualIsLoading,
@@ -88,11 +88,10 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       onClick?.(e);
     };
 
-    const Comp = asChild ? Slot : "button";
-
     return (
-      <Comp
+      <ButtonPrimitive
         ref={ref}
+        render={render}
         className={cn(buttonVariants({ variant, size, className }))}
         disabled={disabled || loading}
         onClick={handleClick}
@@ -112,7 +111,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         ) : (
           children
         )}
-      </Comp>
+      </ButtonPrimitive>
     );
   },
 );

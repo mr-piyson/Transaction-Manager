@@ -652,7 +652,7 @@ export default function UsersSettingsPage() {
           {/* Filter by Role */}
           <Select
             value={selectedRoleFilter}
-            onValueChange={setSelectedRoleFilter}
+            onValueChange={(v) => setSelectedRoleFilter(v ?? "")}
           >
             <SelectTrigger className="w-full sm:w-[160px]">
               <SelectValue placeholder="All Roles" />
@@ -670,7 +670,7 @@ export default function UsersSettingsPage() {
           {/* Filter by Status */}
           <Select
             value={selectedStatusFilter}
-            onValueChange={setSelectedStatusFilter}
+            onValueChange={(v) => setSelectedStatusFilter(v ?? "")}
           >
             <SelectTrigger className="w-full sm:w-[140px]">
               <SelectValue placeholder="All Status" />
@@ -802,19 +802,22 @@ export default function UsersSettingsPage() {
                         {/* Interactive Role Cell with HoverCard */}
                         <TableCell>
                           {roleId ? (
-                            <HoverCard openDelay={200}>
-                              <HoverCardTrigger asChild>
-                                <div className="flex items-center gap-2 cursor-pointer hover:underline decoration-dotted underline-offset-4 decoration-muted-foreground w-fit py-1">
-                                  <RoleIcon
-                                    name={roleName}
-                                    icon={roleIcon}
-                                    color={roleColor}
-                                  />
-                                  <span className="text-sm font-medium">
-                                    {roleName}
-                                  </span>
-                                </div>
-                              </HoverCardTrigger>
+                            <HoverCard>
+                              <HoverCardTrigger
+                                delay={200}
+                                render={
+                                  <div className="flex items-center gap-2 cursor-pointer hover:underline decoration-dotted underline-offset-4 decoration-muted-foreground w-fit py-1">
+                                    <RoleIcon
+                                      name={roleName}
+                                      icon={roleIcon}
+                                      color={roleColor}
+                                    />
+                                    <span className="text-sm font-medium">
+                                      {roleName}
+                                    </span>
+                                  </div>
+                                }
+                              />
                               <HoverCardContent className="w-80 p-4 border bg-popover text-popover-foreground rounded-xl shadow-xl z-50">
                                 <div className="space-y-3">
                                   <div className="flex items-center gap-2.5">
@@ -919,15 +922,17 @@ export default function UsersSettingsPage() {
                         {/* Action Operations */}
                         <TableCell className="text-right pr-4">
                           <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="size-8 hover:bg-muted/80"
-                              >
-                                <MoreHorizontal className="size-4" />
-                              </Button>
-                            </DropdownMenuTrigger>
+                            <DropdownMenuTrigger
+                              render={
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="size-8 hover:bg-muted/80"
+                                >
+                                  <MoreHorizontal className="size-4" />
+                                </Button>
+                              }
+                            />
                             <DropdownMenuContent
                               align="end"
                               className="min-w-44"
@@ -1183,7 +1188,7 @@ export default function UsersSettingsPage() {
               <Select
                 value={form.roleId}
                 onValueChange={(v) =>
-                  setForm((prev) => ({ ...prev, roleId: v }))
+                  setForm((prev) => ({ ...prev, roleId: v ?? "" }))
                 }
               >
                 <SelectTrigger id="role" className="w-full">

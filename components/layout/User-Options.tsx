@@ -88,33 +88,35 @@ export function NavUser() {
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button
-          variant="ghost"
-          size="sm"
-          className="h-10 data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
-        >
-          <Avatar className="h-8 w-8 rounded-lg">
-            <AvatarImage src={user?.image || ""} alt={user?.name || ""} />
-            <AvatarFallback
-              className="rounded-lg"
-              style={{
-                backgroundColor: getAvatarColor(user?.name || ""),
-                color: getContrastColor(getAvatarColor(user?.name || "")),
-              }}
-            >
-              <User2 size={16} />
-            </AvatarFallback>
-          </Avatar>
-          {!isMobile && (
-            <div className="grid flex-1 text-left text-sm leading-tight">
-              <span className="truncate font-medium">{user?.name}</span>
-              <span className="truncate text-xs">{user?.email}</span>
-            </div>
-          )}
-          <ChevronsUpDown className="ml-auto size-4" />
-        </Button>
-      </DropdownMenuTrigger>
+      <DropdownMenuTrigger
+        render={
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-10 data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+          >
+            <Avatar className="h-8 w-8 rounded-lg">
+              <AvatarImage src={user?.image || ""} alt={user?.name || ""} />
+              <AvatarFallback
+                className="rounded-lg"
+                style={{
+                  backgroundColor: getAvatarColor(user?.name || ""),
+                  color: getContrastColor(getAvatarColor(user?.name || "")),
+                }}
+              >
+                <User2 size={16} />
+              </AvatarFallback>
+            </Avatar>
+            {!isMobile && (
+              <div className="grid flex-1 text-left text-sm leading-tight">
+                <span className="truncate font-medium">{user?.name}</span>
+                <span className="truncate text-xs">{user?.email}</span>
+              </div>
+            )}
+            <ChevronsUpDown className="ml-auto size-4" />
+          </Button>
+        }
+      />
       <DropdownMenuContent className="w-56 bg-popover border-border">
         <DropdownMenuLabel className="p-0 font-normal">
           <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
@@ -161,12 +163,14 @@ export function NavUser() {
           <LocaleSwitcherMenu />
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
-        <DropdownMenuItem asChild>
-          <Link href="/settings" className="flex items-center gap-2">
-            <Settings className="size-4" />
-            <span>{t("layout.settings")}</span>
-          </Link>
-        </DropdownMenuItem>
+        <DropdownMenuItem
+          render={
+            <Link href="/settings" className="flex items-center gap-2">
+              <Settings className="size-4" />
+              <span>{t("layout.settings")}</span>
+            </Link>
+          }
+        />
         <DropdownMenuSeparator />
         <DropdownMenuItem variant="destructive" onClick={handleSignOut}>
           <LogOut />

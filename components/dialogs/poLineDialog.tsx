@@ -363,7 +363,10 @@ export function POLineDialog({
             {!isManual && unitOptions.length > 0 && (
               <div className="space-y-1.5">
                 <Label className="text-xs">Unit</Label>
-                <Select value={unitId || ""} onValueChange={handleUnitChange}>
+                <Select
+                  value={unitId || ""}
+                  onValueChange={(v) => handleUnitChange(v ?? "")}
+                >
                   <SelectTrigger className="w-full min-w-0">
                     <SelectValue placeholder="Unit" />
                   </SelectTrigger>
@@ -435,6 +438,7 @@ export function POLineDialog({
               <Select
                 value={taxRateId || "none"}
                 onValueChange={(v) => {
+                  if (v == null) return;
                   const tr = v === "none" ? undefined : (taxRatesMap[v] as any);
                   setValue("taxRateId", v === "none" ? undefined : v);
                   setValue("taxRateSnapshot", tr ? Number(tr.rate) : undefined);

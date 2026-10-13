@@ -108,7 +108,9 @@ function FinancialForm({
         <Field label={t("settings.currency")}>
           <Select
             value={form.currency}
-            onValueChange={(v) => setForm((prev) => ({ ...prev, currency: v }))}
+            onValueChange={(v) =>
+              setForm((prev) => ({ ...prev, currency: v ?? "" }))
+            }
           >
             <SelectTrigger className="w-full">
               <SelectValue />
@@ -305,7 +307,9 @@ function ExchangeRateSection({ baseCurrency }: { baseCurrency: CurrencyCode }) {
                 {syncSettings?.enabled && (
                   <Select
                     value={syncSettings?.frequency ?? "daily"}
-                    onValueChange={handleFrequencyChange}
+                    onValueChange={(v) => {
+                      if (v !== null) handleFrequencyChange(v);
+                    }}
                     disabled={updateSyncSettings.isPending}
                   >
                     <SelectTrigger className="w-[120px]">

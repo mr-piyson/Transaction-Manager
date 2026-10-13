@@ -1332,16 +1332,18 @@ export default function ItemReportPage() {
 
                   {/* Column Toggle */}
                   <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="size-7"
-                        title="Toggle columns"
-                      >
-                        <Columns3 className="size-3.5" />
-                      </Button>
-                    </DropdownMenuTrigger>
+                    <DropdownMenuTrigger
+                      render={
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="size-7"
+                          title="Toggle columns"
+                        >
+                          <Columns3 className="size-3.5" />
+                        </Button>
+                      }
+                    ></DropdownMenuTrigger>
                     <DropdownMenuContent
                       align="end"
                       className="w-48"

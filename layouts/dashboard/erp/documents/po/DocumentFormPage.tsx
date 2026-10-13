@@ -142,8 +142,13 @@ function NotFoundState() {
           <h2 className="text-lg font-semibold">
             {t("purchaseOrders.doesNotExist")}
           </h2>
-          <Button asChild variant="outline" size="sm">
-            <Link href="/erp/purchase-orders">{t("common.back")}</Link>
+          <Button
+            render={<Link href="/erp/purchase-orders" />}
+            nativeButton={false}
+            variant="outline"
+            size="sm"
+          >
+            {t("common.back")}
           </Button>
         </CardContent>
       </Card>
