@@ -442,51 +442,6 @@ export function UnitsSection({ form, canManage }: UnitsSectionProps) {
           </p>
         </Field>
       </div>
-
-      {/* <p className="pt-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-        Stock levels, in {master.unit}
-      </p>
-      <div className="grid gap-4 sm:grid-cols-3">
-        <Field>
-          <Label htmlFor="item-field-min-stock">Minimum stock</Label>
-          <Input
-            id="item-field-min-stock"
-            type="number"
-            min={0}
-            step={1}
-            value={master.minStock}
-            onChange={(e) =>
-              setMasterField("minStock", Number(e.target.value) || 0)
-            }
-          />
-        </Field>
-        <Field>
-          <Label htmlFor="item-field-reorder-point">Reorder point</Label>
-          <Input
-            id="item-field-reorder-point"
-            type="number"
-            min={0}
-            step={1}
-            value={master.reorderPoint}
-            onChange={(e) =>
-              setMasterField("reorderPoint", Number(e.target.value) || 0)
-            }
-          />
-        </Field>
-        <Field>
-          <Label htmlFor="item-field-reorder-qty">Reorder quantity</Label>
-          <Input
-            id="item-field-reorder-qty"
-            type="number"
-            min={0}
-            step={1}
-            value={master.reorderQty}
-            onChange={(e) =>
-              setMasterField("reorderQty", Number(e.target.value) || 0)
-            }
-          />
-        </Field>
-      </div> */}
     </section>
   );
 }
