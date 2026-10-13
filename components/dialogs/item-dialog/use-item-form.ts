@@ -364,7 +364,7 @@ export function useItemForm({
   const [imageRemoved, setImageRemoved] = React.useState(false);
 
   const initializedRef = React.useRef(false);
-  const prevOpenRef = React.useRef(false);
+  const [prevOpen, setPrevOpen] = React.useState(open);
 
   const setPendingImageFile = React.useCallback((file: File | null) => {
     setPendingImageFileState(file);
@@ -459,8 +459,16 @@ export function useItemForm({
   );
 
   // ── Initialisation ───────────────────────────────────────────────────────
-  React.useEffect(() => {
-    if (open && !prevOpenRef.current) {
+  // Reset the form to the requested item synchronously during render when the
+  // dialog opens. Doing this in an effect leaves `loadConfig` one render behind
+  // `open`, so the initialisation effect below can consume the *previously*
+  // edited item (still cached by react-query), initialise from it, and then
+  // lock that stale item in via `initializedRef`. That is why the first time an
+  // item was edited after another one the dialog showed the previous item, and
+  // only the next attempt showed the correct one.
+  if (open !== prevOpen) {
+    setPrevOpen(open);
+    if (open) {
       const cfg = getInitialConfig();
       setLoadConfig(cfg);
       setModeState(cfg.mode);
@@ -471,10 +479,10 @@ export function useItemForm({
       setDuplicateDismissed(false);
       setPendingImageFileState(null);
       setImageRemoved(false);
+    } else {
+      initializedRef.current = false;
     }
-    if (!open) initializedRef.current = false;
-    prevOpenRef.current = open;
-  }, [open, getInitialConfig]);
+  }
 
   const initCreate = React.useCallback((unitList: any[]) => {
     const defaults = getItemMasterDefaults();
