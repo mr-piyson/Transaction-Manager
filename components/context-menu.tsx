@@ -650,13 +650,21 @@ export function UniversalContextMenu({
     );
   }
 
-  // ─── FIX: Use asChild + a plain div wrapper instead of the broken render prop ───
-  // The original code used `render={<div>{children}</div>}` which is not a valid
-  // Radix/shadcn API. This caused the trigger to never receive right-click events,
-  // so the context menu never opened and onClick handlers never fired.
+  // ─── Attach the context menu directly to the child element ───────────────────
+  // Base UI (like Radix's `asChild`) replaces the trigger's own element via the
+  // `render` prop. Passing a Fragment here is invalid: Base UI clones the render
+  // element and injects trigger props (e.g. `onContextMenu`), which React rejects
+  // on `React.Fragment`. Use the child element itself, and fall back to a wrapper
+  // element when there is no single child element to attach to.
+  const trigger = React.isValidElement(children) ? (
+    children
+  ) : (
+    <div className={className}>{children}</div>
+  );
+
   return (
     <ContextMenu>
-      <ContextMenuTrigger render={<>{children}</>}></ContextMenuTrigger>
+      <ContextMenuTrigger render={trigger} />
       <ContextMenuContent>
         <DesktopMenuItems items={items} />
       </ContextMenuContent>
