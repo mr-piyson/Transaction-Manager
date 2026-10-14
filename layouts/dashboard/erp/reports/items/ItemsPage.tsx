@@ -1379,10 +1379,8 @@ export default function ItemReportPage() {
                           return (
                             <DropdownMenuItem
                               key={field}
-                              onSelect={(e) => {
-                                e.preventDefault();
-                                toggleColumn(field);
-                              }}
+                              closeOnClick={false}
+                              onClick={() => toggleColumn(field)}
                               className="gap-2"
                             >
                               <div

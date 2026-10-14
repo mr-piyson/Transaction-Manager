@@ -150,10 +150,8 @@ export const DesktopMenuItems = React.memo(function DesktopMenuItems({
             <ContextMenuItem
               key={item.id}
               disabled={item.disabled}
-              onSelect={(e) => {
-                e.preventDefault();
-                item.onCheckedChange?.(!item.checked);
-              }}
+              closeOnClick={false}
+              onClick={() => item.onCheckedChange?.(!item.checked)}
               className="flex items-center justify-between gap-4"
             >
               <span className="flex items-center gap-2">
@@ -273,10 +271,8 @@ export const DropdownMenuItems = React.memo(function DropdownMenuItems({
             <DropdownMenuItem
               key={item.id}
               disabled={item.disabled}
-              onSelect={(e) => {
-                e.preventDefault();
-                item.onCheckedChange?.(!item.checked);
-              }}
+              closeOnClick={false}
+              onClick={() => item.onCheckedChange?.(!item.checked)}
               className="flex items-center justify-between gap-4"
             >
               <span className="flex items-center gap-2">
@@ -327,7 +323,7 @@ export const DropdownMenuItems = React.memo(function DropdownMenuItems({
           <DropdownMenuItem
             key={item.id}
             disabled={item.disabled}
-            onSelect={() => actionItem.onClick?.(item)}
+            onClick={() => actionItem.onClick?.(item)}
             variant={actionItem.destructive ? "destructive" : "default"}
           >
             <span className="flex items-center gap-2">
