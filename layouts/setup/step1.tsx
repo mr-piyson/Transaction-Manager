@@ -23,6 +23,10 @@ export function Step1Language() {
       <div className="space-y-2">
         <Label>System Language</Label>
         <Select
+          items={[
+            { value: "en", label: "English" },
+            { value: "ar", label: "العربية" },
+          ]}
           value={language}
           onValueChange={(val) =>
             setValue("language", val as "en" | "ar", { shouldValidate: true })
@@ -41,6 +45,10 @@ export function Step1Language() {
       <div className="space-y-2">
         <Label>Default Currency</Label>
         <Select
+          items={(Object.keys(CURRENCIES) as CurrencyCode[]).map((code) => ({
+            value: code,
+            label: `${code} – ${CURRENCIES[code].label}`,
+          }))}
           value={currency}
           onValueChange={(val) =>
             setValue("currency", val as CurrencyCode, { shouldValidate: true })

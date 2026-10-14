@@ -266,6 +266,10 @@ export default function ChartOfAccountsPage() {
                 </Field>
                 <Field label={t("common.type")}>
                   <Select
+                    items={ACCOUNT_TYPES.map((acct) => ({
+                      value: acct.value,
+                      label: t(acct.labelKey),
+                    }))}
                     value={form.type}
                     onValueChange={(v) =>
                       setForm((prev) => ({ ...prev, type: v ?? "" }))
@@ -285,6 +289,10 @@ export default function ChartOfAccountsPage() {
                 </Field>
                 <Field label={t("common.status")}>
                   <Select
+                    items={NORMAL_BALANCES.map((b) => ({
+                      value: b.value,
+                      label: t(b.labelKey),
+                    }))}
                     value={form.normalBalance}
                     onValueChange={(v) =>
                       setForm((prev) => ({ ...prev, normalBalance: v ?? "" }))
@@ -304,6 +312,13 @@ export default function ChartOfAccountsPage() {
                 </Field>
                 <Field label={t("common.parent")}>
                   <Select
+                    items={[
+                      { value: "", label: t("common.none") },
+                      ...accounts.map((acct: any) => ({
+                        value: acct.id,
+                        label: `${acct.code} - ${acct.name}`,
+                      })),
+                    ]}
                     value={form.parentId}
                     onValueChange={(v) =>
                       setForm((prev) => ({ ...prev, parentId: v ?? "" }))
@@ -397,6 +412,10 @@ export default function ChartOfAccountsPage() {
                 </Field>
                 <Field label={t("common.type")}>
                   <Select
+                    items={ACCOUNT_TYPES.map((acct) => ({
+                      value: acct.value,
+                      label: t(acct.labelKey),
+                    }))}
                     value={editForm.type}
                     onValueChange={(v) =>
                       setEditForm((prev) =>
@@ -418,6 +437,10 @@ export default function ChartOfAccountsPage() {
                 </Field>
                 <Field label={t("common.status")}>
                   <Select
+                    items={NORMAL_BALANCES.map((b) => ({
+                      value: b.value,
+                      label: t(b.labelKey),
+                    }))}
                     value={editForm.normalBalance}
                     onValueChange={(v) =>
                       setEditForm((prev) =>
@@ -450,6 +473,10 @@ export default function ChartOfAccountsPage() {
               </Field>
               <Field label={t("users.status")}>
                 <Select
+                  items={[
+                    { value: "active", label: t("users.active") },
+                    { value: "inactive", label: t("users.inactive") },
+                  ]}
                   value={editForm.isActive ? "active" : "inactive"}
                   onValueChange={(v) =>
                     setEditForm((prev) =>

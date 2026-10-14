@@ -651,6 +651,10 @@ export default function UsersSettingsPage() {
         <div className="flex gap-3 w-full sm:w-auto shrink-0 flex-wrap sm:flex-nowrap">
           {/* Filter by Role */}
           <Select
+            items={[
+              { value: "all", label: "All Roles" },
+              ...roles.map((r) => ({ value: r.id, label: r.name })),
+            ]}
             value={selectedRoleFilter}
             onValueChange={(v) => setSelectedRoleFilter(v ?? "")}
           >
@@ -669,6 +673,11 @@ export default function UsersSettingsPage() {
 
           {/* Filter by Status */}
           <Select
+            items={[
+              { value: "all", label: "All Status" },
+              { value: "active", label: "Active Only" },
+              { value: "inactive", label: "Inactive Only" },
+            ]}
             value={selectedStatusFilter}
             onValueChange={(v) => setSelectedStatusFilter(v ?? "")}
           >
@@ -1186,6 +1195,10 @@ export default function UsersSettingsPage() {
             <Field>
               <Label htmlFor="role">{t("users.role")} *</Label>
               <Select
+                items={roles.map((role) => ({
+                  value: role.id,
+                  label: role.name,
+                }))}
                 value={form.roleId}
                 onValueChange={(v) =>
                   setForm((prev) => ({ ...prev, roleId: v ?? "" }))

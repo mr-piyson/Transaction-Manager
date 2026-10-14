@@ -86,6 +86,12 @@ export function ItemFilterSheet({
               Item type
             </label>
             <Select
+              items={[
+                { value: "ALL", label: "All types" },
+                { value: "PRODUCT", label: "Product" },
+                { value: "SERVICE", label: "Service" },
+                { value: "BUNDLE", label: "Bundle" },
+              ]}
               value={filters.type || "ALL"}
               onValueChange={(value) =>
                 updateFilters({
@@ -114,6 +120,14 @@ export function ItemFilterSheet({
               Category
             </label>
             <Select
+              items={[
+                { value: "ALL", label: "All categories" },
+                ...categories.map((category) => ({
+                  value: category.id,
+                  label: category.name,
+                })),
+                { value: UNCATEGORIZED_CATEGORY_ID, label: "Others" },
+              ]}
               value={filters.categoryId ?? "ALL"}
               onValueChange={(value) =>
                 updateFilters({ categoryId: value === "ALL" ? null : value })

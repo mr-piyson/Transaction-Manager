@@ -128,6 +128,13 @@ export default function AdjustmentReasonsPage() {
                       autoFocus
                     />
                     <Select
+                      items={(r.isSystem
+                        ? [r.movementType as string]
+                        : TYPES_BY_DIRECTION[r.direction]
+                      ).map((mt) => ({
+                        value: mt,
+                        label: t(`stock.movementTypes.${mt}`),
+                      }))}
                       value={editType}
                       onValueChange={(v) => {
                         if (v === null) return;
@@ -278,6 +285,16 @@ export default function AdjustmentReasonsPage() {
               }}
             />
             <Select
+              items={[
+                {
+                  value: "DECREASE",
+                  label: t("stock.adjustments.writeOffs"),
+                },
+                {
+                  value: "INCREASE",
+                  label: t("stock.adjustments.increases"),
+                },
+              ]}
               value={newDirection}
               onValueChange={(v) => switchDirection(v as Direction)}
             >
@@ -293,7 +310,14 @@ export default function AdjustmentReasonsPage() {
                 </SelectItem>
               </SelectContent>
             </Select>
-            <Select value={newType} onValueChange={(v) => setNewType(v ?? "")}>
+            <Select
+              items={TYPES_BY_DIRECTION[newDirection].map((mt) => ({
+                value: mt,
+                label: t(`stock.movementTypes.${mt}`),
+              }))}
+              value={newType}
+              onValueChange={(v) => setNewType(v ?? "")}
+            >
               <SelectTrigger className="h-8 w-40">
                 <SelectValue />
               </SelectTrigger>

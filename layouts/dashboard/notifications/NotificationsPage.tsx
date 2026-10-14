@@ -138,6 +138,12 @@ export default function NotificationsPage() {
           className="max-w-xs h-9"
         />
         <Select
+          items={[
+            { value: "all", label: t("notifications.all") },
+            { value: "UNREAD", label: t("notifications.unread") },
+            { value: "READ", label: t("common.read") },
+            { value: "ARCHIVED", label: t("notifications.archived") },
+          ]}
           value={statusFilter || "all"}
           onValueChange={(v) => setStatusFilter(v === "all" ? "" : (v ?? ""))}
         >

@@ -314,6 +314,18 @@ export function SupplierItemFormDialog({
               <Field>
                 <Label htmlFor="currency">Currency</Label>
                 <Select
+                  items={[
+                    "USD",
+                    "BHD",
+                    "EUR",
+                    "GBP",
+                    "JPY",
+                    "AED",
+                    "SAR",
+                    "KWD",
+                    "QAR",
+                    "OMR",
+                  ].map((c) => ({ value: c, label: c }))}
                   value={watch("currency")}
                   onValueChange={(v) => setValue("currency", v as any)}
                 >

@@ -157,6 +157,13 @@ export function MoneyEntryFilterBar({ kind }: MoneyEntryFilterBarProps) {
                   {isExpense ? t("expenses.category") : t("incomes.customer")}
                 </Label>
                 <Select
+                  items={[
+                    { value: "all", label: t("common.all") },
+                    ...entityOptions.map((opt) => ({
+                      value: opt.id,
+                      label: opt.name,
+                    })),
+                  ]}
                   value={entityFilter || "all"}
                   onValueChange={(v) => setEntityFilter(v === "all" ? null : v)}
                 >

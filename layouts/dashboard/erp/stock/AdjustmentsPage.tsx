@@ -87,7 +87,15 @@ export default function AdjustmentsPage() {
             {t("stock.adjustments.record")}
           </span>
         </Button>
-        <Select value={direction} onValueChange={setDirection}>
+        <Select
+          items={[
+            { value: "all", label: t("common.all") },
+            { value: "DECREASE", label: t("stock.adjustments.writeOffs") },
+            { value: "INCREASE", label: t("stock.adjustments.increases") },
+          ]}
+          value={direction}
+          onValueChange={setDirection}
+        >
           <SelectTrigger className="w-36 shrink-0" aria-label="Direction">
             <SelectValue />
           </SelectTrigger>
@@ -101,7 +109,17 @@ export default function AdjustmentsPage() {
             </SelectItem>
           </SelectContent>
         </Select>
-        <Select value={reasonId} onValueChange={setReasonId}>
+        <Select
+          items={[
+            { value: "all", label: t("stock.allReasons") },
+            ...(reasonList ?? []).map((r) => ({
+              value: r.id,
+              label: r.name,
+            })),
+          ]}
+          value={reasonId}
+          onValueChange={setReasonId}
+        >
           <SelectTrigger className="w-40 shrink-0" aria-label="Reason">
             <SelectValue />
           </SelectTrigger>
@@ -114,7 +132,17 @@ export default function AdjustmentsPage() {
             ))}
           </SelectContent>
         </Select>
-        <Select value={warehouseId} onValueChange={setWarehouseId}>
+        <Select
+          items={[
+            { value: "all", label: t("common.all") },
+            ...(warehouseList ?? []).map((wh) => ({
+              value: wh.id,
+              label: wh.name,
+            })),
+          ]}
+          value={warehouseId}
+          onValueChange={setWarehouseId}
+        >
           <SelectTrigger className="w-40 shrink-0" aria-label="Warehouse">
             <SelectValue />
           </SelectTrigger>

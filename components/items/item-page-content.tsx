@@ -599,6 +599,10 @@ export function ItemPageContent({ item, defaultMode }: ItemPageContentProps) {
                       <Field>
                         <Label htmlFor="type">Type *</Label>
                         <Select
+                          items={[
+                            { value: "PRODUCT", label: "Product" },
+                            { value: "SERVICE", label: "Service" },
+                          ]}
                           value={selectedType}
                           onValueChange={(v) => handleTypeChange(v ?? "")}
                         >
@@ -642,6 +646,10 @@ export function ItemPageContent({ item, defaultMode }: ItemPageContentProps) {
                       <Field>
                         <Label htmlFor="unit">Unit *</Label>
                         <Select
+                          items={(units ?? []).map((u: any) => ({
+                            value: u.id,
+                            label: `${u.code} — ${u.name}`,
+                          }))}
                           value={watch("unitId") ?? ""}
                           onValueChange={(v) => {
                             setValue("unitId", v || undefined);
@@ -817,6 +825,10 @@ export function ItemPageContent({ item, defaultMode }: ItemPageContentProps) {
                       <Field>
                         <Label>{t("items.category")}</Label>
                         <Select
+                          items={categoryList.map((cat: any) => ({
+                            value: cat.id,
+                            label: cat.name,
+                          }))}
                           value={watch("categoryId") ?? ""}
                           onValueChange={(v) =>
                             setValue("categoryId", v || undefined)
@@ -837,6 +849,10 @@ export function ItemPageContent({ item, defaultMode }: ItemPageContentProps) {
                       <Field>
                         <Label>{t("common.tax")}</Label>
                         <Select
+                          items={(taxRates ?? []).map((tr: any) => ({
+                            value: tr.id,
+                            label: `${tr.name} (${Number(tr.rate)}%)`,
+                          }))}
                           value={watch("taxRateId") ?? ""}
                           onValueChange={(v) =>
                             setValue("taxRateId", v || undefined)

@@ -127,6 +127,10 @@ export function SuppliersSection({
               >
                 <div className="flex items-center gap-2">
                   <Select
+                    items={suppliers.map((s: any) => ({
+                      value: s.id,
+                      label: s.name,
+                    }))}
                     value={draft.supplierId}
                     disabled={!canManage}
                     onValueChange={(v) =>
@@ -219,6 +223,10 @@ export function SuppliersSection({
                             className="flex items-center gap-2"
                           >
                             <Select
+                              items={supplierUnitOptions.map((u) => ({
+                                value: u.unitId,
+                                label: u.code,
+                              }))}
                               value={row.unitId}
                               disabled={!canManage}
                               onValueChange={(v) =>

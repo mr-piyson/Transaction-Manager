@@ -96,7 +96,17 @@ export default function MovementsPage() {
     <div className="h-full w-full flex flex-col">
       {/* Filters */}
       <div className="flex w-full items-center gap-2 border-b px-4 py-2 shrink-0 overflow-x-auto">
-        <Select value={type} onValueChange={setType}>
+        <Select
+          items={[
+            { value: "all", label: t("stock.allTypes") },
+            ...MOVEMENT_TYPES.map((mt) => ({
+              value: mt,
+              label: t(`stock.movementTypes.${mt}`),
+            })),
+          ]}
+          value={type}
+          onValueChange={setType}
+        >
           <SelectTrigger className="w-44 shrink-0" aria-label="Movement type">
             <SelectValue />
           </SelectTrigger>
@@ -109,7 +119,17 @@ export default function MovementsPage() {
             ))}
           </SelectContent>
         </Select>
-        <Select value={warehouseId} onValueChange={setWarehouseId}>
+        <Select
+          items={[
+            { value: "all", label: t("common.all") },
+            ...(warehouseList ?? []).map((wh) => ({
+              value: wh.id,
+              label: wh.name,
+            })),
+          ]}
+          value={warehouseId}
+          onValueChange={setWarehouseId}
+        >
           <SelectTrigger className="w-44 shrink-0" aria-label="Warehouse">
             <SelectValue />
           </SelectTrigger>

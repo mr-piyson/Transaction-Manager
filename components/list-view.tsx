@@ -177,7 +177,20 @@ export function ListView<T extends object>({
             )}
           >
             {fields.length > 1 && (
-              <Select value={searchField} onValueChange={setSearchField}>
+              <Select
+                items={[
+                  {
+                    value: "__all__",
+                    label: isRtl ? "جميع الحقول" : "All fields",
+                  },
+                  ...fields.map((field) => ({
+                    value: field.key,
+                    label: field.label ?? field.key,
+                  })),
+                ]}
+                value={searchField}
+                onValueChange={setSearchField}
+              >
                 <SelectTrigger
                   size="sm"
                   className={cn(

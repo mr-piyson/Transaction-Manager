@@ -282,6 +282,10 @@ export function StockAdjustmentFormDialog({
                   {t("common.warehouse")} *
                 </Label>
                 <Select
+                  items={warehouses.map((wh) => ({
+                    value: wh.id,
+                    label: wh.name,
+                  }))}
                   value={warehouseId}
                   onValueChange={(v) => setValue("warehouseId", v ?? "")}
                 >
@@ -308,6 +312,16 @@ export function StockAdjustmentFormDialog({
               <Field>
                 <Label htmlFor="adjust-reason">{t("stock.reason")} *</Label>
                 <Select
+                  items={[
+                    ...decreaseReasons.map((r: AdjustmentReason) => ({
+                      value: r.id,
+                      label: r.name,
+                    })),
+                    ...increaseReasons.map((r: AdjustmentReason) => ({
+                      value: r.id,
+                      label: r.name,
+                    })),
+                  ]}
                   value={reasonId}
                   onValueChange={(v) => setValue("reasonId", v ?? "")}
                 >

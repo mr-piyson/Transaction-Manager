@@ -108,6 +108,10 @@ export function UnitsSection({ form, canManage }: UnitsSectionProps) {
         <Field id={ANCHORS.unit} className="max-w-xs">
           <Label htmlFor={ANCHORS.unit}>Unit on invoices</Label>
           <Select
+            items={activeUnits.map((u: any) => ({
+              value: u.id,
+              label: `${u.code} — ${u.name}`,
+            }))}
             value={master.unitId ?? ""}
             disabled={locked}
             onValueChange={(val) => {
@@ -193,6 +197,10 @@ export function UnitsSection({ form, canManage }: UnitsSectionProps) {
                 Base (stock) unit
               </Label>
               <Select
+                items={activeUnits.map((u: any) => ({
+                  value: u.id,
+                  label: `${u.code} — ${u.name}`,
+                }))}
                 value={baseUnitId}
                 disabled={locked}
                 onValueChange={(v) => handleBaseSelect(v ?? "")}
@@ -337,6 +345,10 @@ export function UnitsSection({ form, canManage }: UnitsSectionProps) {
           <Field>
             <Label className="text-xs">Unit</Label>
             <Select
+              items={availableUnits.map((u: any) => ({
+                value: u.id,
+                label: `${u.code} — ${u.name}`,
+              }))}
               value={addUnitId}
               onValueChange={(v) => setAddUnitId(v ?? "")}
               disabled={availableUnits.length === 0}
@@ -400,6 +412,10 @@ export function UnitsSection({ form, canManage }: UnitsSectionProps) {
         <Field>
           <Label htmlFor="item-field-buy">Buy in</Label>
           <Select
+            items={unitListForDefaults.map((d: any) => ({
+              value: d.unitId,
+              label: d.unitCode,
+            }))}
             value={purchaseUnitId}
             disabled={locked}
             onValueChange={(v) => setDefaultUnit("purchase", v ?? "")}
@@ -422,6 +438,10 @@ export function UnitsSection({ form, canManage }: UnitsSectionProps) {
         <Field>
           <Label htmlFor="item-field-sell">Sell in</Label>
           <Select
+            items={unitListForDefaults.map((d: any) => ({
+              value: d.unitId,
+              label: d.unitCode,
+            }))}
             value={salesUnitId}
             disabled={locked}
             onValueChange={(val) => setDefaultUnit("sales", val ?? "")}

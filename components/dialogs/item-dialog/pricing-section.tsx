@@ -108,6 +108,10 @@ export function PricingSection({ form, canManage }: PricingSectionProps) {
         <Field>
           <Label htmlFor="item-field-tax">Tax rate</Label>
           <Select
+            items={taxRates.map((t: any) => ({
+              value: t.id,
+              label: `${t.name} (${Number(t.rate)}%)`,
+            }))}
             value={master.taxRateId ?? ""}
             disabled={!editable}
             onValueChange={(v) => setMasterField("taxRateId", v || undefined)}

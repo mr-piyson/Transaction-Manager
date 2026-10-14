@@ -259,6 +259,7 @@ export function InvoiceFormBody({
                 </div>
               ) : (
                 <Select
+                  items={invoiceTypeOptions}
                   value={watch?.("type")}
                   onValueChange={(v) =>
                     setValue?.("type", v as any, { shouldDirty: true })
@@ -355,6 +356,10 @@ export function InvoiceFormBody({
                 />
               ) : (
                 <Select
+                  items={customers.map((c: any) => ({
+                    value: c.id,
+                    label: c.name,
+                  }))}
                   value={watch?.("customerId") || ""}
                   onValueChange={(v) =>
                     setValue?.("customerId", v, { shouldDirty: true })
@@ -410,6 +415,10 @@ export function InvoiceFormBody({
                 </p>
               ) : (
                 <Select
+                  items={warehouses.map((w: any) => ({
+                    value: w.id,
+                    label: w.name,
+                  }))}
                   value={watch?.("warehouseId") || ""}
                   onValueChange={(v) =>
                     setValue?.("warehouseId", v, { shouldDirty: true })
@@ -752,6 +761,10 @@ export function InvoiceFormBody({
                     </span>
                   ) : (
                     <Select
+                      items={Object.keys(CURRENCIES).map((c) => ({
+                        value: c,
+                        label: c,
+                      }))}
                       value={watch?.("currency")}
                       onValueChange={(v) =>
                         setValue?.("currency", v as any, { shouldDirty: true })

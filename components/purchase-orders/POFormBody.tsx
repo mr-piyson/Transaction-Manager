@@ -139,6 +139,10 @@ export function POFormBody({
           <div className="min-w-0">
             <PaperLabel>{t("purchaseOrders.warehouse")} *</PaperLabel>
             <Select
+              items={controller.warehouses.map((w: any) => ({
+                value: w.id,
+                label: w.name,
+              }))}
               value={watch("warehouseId")}
               onValueChange={(v) =>
                 setValue("warehouseId", v, { shouldDirty: true })
@@ -372,6 +376,10 @@ export function POFormBody({
                 <span>{t("common.total")}</span>
                 <div className="flex items-center gap-1.5">
                   <Select
+                    items={Object.keys(CURRENCIES).map((c) => ({
+                      value: c,
+                      label: c,
+                    }))}
                     value={currency}
                     onValueChange={(v) =>
                       setValue("currency", v as any, { shouldDirty: true })

@@ -268,6 +268,10 @@ export function SubscriptionFormDialog({
               <Field>
                 <Label htmlFor="currency">Currency</Label>
                 <Select
+                  items={Object.keys(CURRENCIES).map((c) => ({
+                    value: c,
+                    label: c,
+                  }))}
                   value={watch("currency")}
                   onValueChange={(v) => setValue("currency", v as any)}
                 >
@@ -289,6 +293,10 @@ export function SubscriptionFormDialog({
               <Field>
                 <Label>Billing cycle</Label>
                 <Select
+                  items={BILLING_CYCLES.map((c) => ({
+                    value: c.value,
+                    label: c.label,
+                  }))}
                   value={watchBillingCycle}
                   onValueChange={(v) =>
                     setValue("billingCycle", v as any, { shouldValidate: true })
@@ -309,6 +317,10 @@ export function SubscriptionFormDialog({
               <Field>
                 <Label>Payment method</Label>
                 <Select
+                  items={PAYMENT_METHODS.map((m) => ({
+                    value: m.value,
+                    label: m.label,
+                  }))}
                   value={watch("method")}
                   onValueChange={(v) => setValue("method", v as any)}
                 >
@@ -400,6 +412,10 @@ export function SubscriptionFormDialog({
               <Field>
                 <Label>Category</Label>
                 <Select
+                  items={categories.map((c: any) => ({
+                    value: c.id,
+                    label: c.name,
+                  }))}
                   value={watch("categoryId") ?? ""}
                   onValueChange={(v) => setValue("categoryId", v || undefined)}
                 >
@@ -418,6 +434,10 @@ export function SubscriptionFormDialog({
               <Field>
                 <Label>Department</Label>
                 <Select
+                  items={departments.map((d: any) => ({
+                    value: d.id,
+                    label: d.name,
+                  }))}
                   value={watch("departmentId") ?? ""}
                   onValueChange={(v) =>
                     setValue("departmentId", v || undefined)

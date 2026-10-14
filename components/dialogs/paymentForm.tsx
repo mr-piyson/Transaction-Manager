@@ -152,6 +152,10 @@ export function PaymentFormDialog({
             <Field orientation="vertical">
               <Label>Method *</Label>
               <Select
+                items={PAYMENT_METHODS.map((m) => ({
+                  value: m.value,
+                  label: m.label,
+                }))}
                 value={watch("method")}
                 onValueChange={(v) =>
                   setValue("method", v as any, { shouldValidate: true })

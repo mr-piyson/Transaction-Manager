@@ -456,6 +456,10 @@ export function InvoiceLineDialog({
               <div className="space-y-1.5">
                 <Label className="text-xs">{t("invoices.unit")}</Label>
                 <Select
+                  items={unitOptions.map((u) => ({
+                    value: u.unitId,
+                    label: `${u.code}${u.isBase ? ` (${t("invoices.baseUnitLower")})` : ""}${u.isSalesDefault ? " ★" : ""}`,
+                  }))}
                   value={unitId || ""}
                   onValueChange={(v) => handleUnitChange(v ?? "")}
                 >
@@ -539,6 +543,13 @@ export function InvoiceLineDialog({
               <div className="space-y-1.5">
                 <Label className="text-xs">{t("invoices.taxRate")}</Label>
                 <Select
+                  items={[
+                    { value: "none", label: t("invoices.noTax") },
+                    ...taxRates.map((tr: any) => ({
+                      value: tr.id,
+                      label: `${tr.name} (${Number(tr.rate)}%)`,
+                    })),
+                  ]}
                   value={taxRateId || "none"}
                   onValueChange={(v) => {
                     if (v == null) return;

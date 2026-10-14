@@ -223,6 +223,7 @@ export function IdentitySection({ form, canManage }: IdentitySectionProps) {
         <Field>
           <Label htmlFor="item-field-category">Category</Label>
           <Select
+            items={categories.map((c: any) => ({ value: c.id, label: c.name }))}
             value={master.categoryId ?? ""}
             disabled={!editable}
             onValueChange={(v) => setMasterField("categoryId", v || undefined)}

@@ -107,6 +107,10 @@ function FinancialForm({
       <SectionCard title={t("settings.currency")}>
         <Field label={t("settings.currency")}>
           <Select
+            items={(Object.keys(CURRENCIES) as CurrencyCode[]).map((code) => ({
+              value: code,
+              label: `${CURRENCIES[code].label} (${CURRENCIES[code].symbol})`,
+            }))}
             value={form.currency}
             onValueChange={(v) =>
               setForm((prev) => ({ ...prev, currency: v ?? "" }))
@@ -126,6 +130,10 @@ function FinancialForm({
         </Field>
         <Field label={t("common.date")}>
           <Select
+            items={MONTHS.map((month, i) => ({
+              value: String(i + 1),
+              label: month,
+            }))}
             value={String(form.fiscalYearStartMonth)}
             onValueChange={(v) =>
               setForm((prev) => ({ ...prev, fiscalYearStartMonth: Number(v) }))
@@ -306,6 +314,11 @@ function ExchangeRateSection({ baseCurrency }: { baseCurrency: CurrencyCode }) {
                 />
                 {syncSettings?.enabled && (
                   <Select
+                    items={[
+                      { value: "daily", label: "Daily" },
+                      { value: "weekly", label: "Weekly" },
+                      { value: "monthly", label: "Monthly" },
+                    ]}
                     value={syncSettings?.frequency ?? "daily"}
                     onValueChange={(v) => {
                       if (v !== null) handleFrequencyChange(v);

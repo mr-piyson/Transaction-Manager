@@ -197,6 +197,10 @@ export function ContractFormDialog({
               <Field>
                 <Label htmlFor="status">Status</Label>
                 <Select
+                  items={[
+                    { value: "DRAFT", label: "Draft" },
+                    { value: "ACTIVE", label: "Active" },
+                  ]}
                   value={watchStatus}
                   onValueChange={(v) => setValue("status", v as any)}
                 >
@@ -212,6 +216,10 @@ export function ContractFormDialog({
               <Field>
                 <Label htmlFor="customerId">Customer</Label>
                 <Select
+                  items={customers.map((c: any) => ({
+                    value: c.id,
+                    label: c.name,
+                  }))}
                   value={watchCustomerId ?? ""}
                   onValueChange={(v) => setValue("customerId", v || undefined)}
                 >
@@ -243,6 +251,10 @@ export function ContractFormDialog({
               <Field>
                 <Label htmlFor="currency">Currency</Label>
                 <Select
+                  items={Object.keys(CURRENCIES).map((c) => ({
+                    value: c,
+                    label: c,
+                  }))}
                   value={watchCurrency}
                   onValueChange={(v) => setValue("currency", v as any)}
                 >

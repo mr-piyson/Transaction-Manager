@@ -191,6 +191,13 @@ export function PreviewStep({
             <Skeleton className="h-9 w-64" />
           ) : (
             <Select
+              items={[
+                { value: "none", label: "No supplier" },
+                ...suppliers.map((s) => ({
+                  value: s.id,
+                  label: s.code ? `${s.code} — ${s.name}` : s.name,
+                })),
+              ]}
               value={supplierId || "none"}
               onValueChange={(v) => onSupplierChange?.(v === "none" ? "" : v)}
             >

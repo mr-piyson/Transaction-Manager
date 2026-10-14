@@ -127,6 +127,10 @@ export function ExchangeRateDialog({
             <Field orientation="vertical">
               <Label>From Currency *</Label>
               <Select
+                items={allCurrencies.map((code) => ({
+                  value: code,
+                  label: `${CURRENCIES[code].symbol} ${code}`,
+                }))}
                 value={watch("fromCurrency")}
                 onValueChange={(v) =>
                   setValue("fromCurrency", v as CurrencyCode, {
@@ -151,6 +155,10 @@ export function ExchangeRateDialog({
             <Field orientation="vertical">
               <Label>To Currency *</Label>
               <Select
+                items={allCurrencies.map((code) => ({
+                  value: code,
+                  label: `${CURRENCIES[code].symbol} ${code}`,
+                }))}
                 value={watch("toCurrency")}
                 onValueChange={(v) =>
                   setValue("toCurrency", v as CurrencyCode, {
