@@ -165,7 +165,7 @@ export function UnifiedItemDialog({
       open={open}
       onOpenChange={(v) => !isSubmitting && handleOpenChange(v)}
     >
-      {children && <DialogTrigger render={children as React.ReactElement} />}
+      {children}
       <DialogContent className="flex max-h-[92vh] flex-col gap-0 overflow-hidden p-0 sm:max-w-6xl">
         {/* Header */}
         <div className="flex items-start justify-between gap-4 border-b px-6 py-4">

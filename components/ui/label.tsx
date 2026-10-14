@@ -1,12 +1,10 @@
 "use client";
 
-import type * as React from "react";
-
-import { cn } from "@/lib/utils";
+import * as React from "react";
+import { cn } from "cn";
 
 function Label({ className, ...props }: React.ComponentProps<"label">) {
   return (
-    // biome-ignore lint/a11y/noLabelWithoutControl: generic label primitive; association is supplied by consumers via htmlFor
     <label
       data-slot="label"
       className={cn(

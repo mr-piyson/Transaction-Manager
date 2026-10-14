@@ -98,19 +98,21 @@ export function DocumentFilterTrigger({
 
   return (
     <Drawer direction="right">
-      <DrawerTrigger>
-        <Button variant="ghost" size="sm" className="relative h-8 shrink-0">
-          <SlidersHorizontal className="size-3.5" />
-          {activeFilterCount > 0 && (
-            <Badge
-              variant="destructive"
-              className="absolute -top-1.5 -right-1.5 h-4 min-w-4 px-1 text-[10px] rounded-full"
-            >
-              {activeFilterCount}
-            </Badge>
-          )}
-        </Button>
-      </DrawerTrigger>
+      <DrawerTrigger
+        render={
+          <Button variant="ghost" size="sm" className="relative h-8 shrink-0">
+            <SlidersHorizontal className="size-3.5" />
+            {activeFilterCount > 0 && (
+              <Badge
+                variant="destructive"
+                className="absolute -top-1.5 -right-1.5 h-4 min-w-4 px-1 text-[10px] rounded-full"
+              >
+                {activeFilterCount}
+              </Badge>
+            )}
+          </Button>
+        }
+      />
       <DrawerContent className="w-[300px] sm:w-[340px]">
         <DrawerHeader>
           <DrawerTitle className="flex items-center gap-2">
@@ -124,11 +126,13 @@ export function DocumentFilterTrigger({
 
         <DrawerFooter className="flex-row items-center justify-between border-t pt-4">
           <ClearButton type={type} />
-          <DrawerClose asChild>
-            <Button variant="outline" size="sm" className="ml-auto">
-              {t("common.done")}
-            </Button>
-          </DrawerClose>
+          <DrawerClose
+            render={
+              <Button variant="outline" size="sm" className="ml-auto">
+                {t("common.done")}
+              </Button>
+            }
+          />
         </DrawerFooter>
       </DrawerContent>
     </Drawer>

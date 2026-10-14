@@ -85,18 +85,19 @@ export function ActionsDropdown({
   if (!mounted || !isMobile) {
     return (
       <DropdownMenu onOpenChange={onOpenChange}>
-        <DropdownMenuTrigger render={
-          <Button
-            variant="ghost"
-            size="icon"
-            aria-label={label}
-            disabled={disabled}
-            className={cn("size-8", triggerClassName)}
-          >
-            {trigger ?? <MoreHorizontal className="size-4" />}
-          </Button>
-        }>
-        </DropdownMenuTrigger>
+        <DropdownMenuTrigger
+          render={
+            <Button
+              variant="ghost"
+              size="icon"
+              aria-label={label}
+              disabled={disabled}
+              className={cn("size-8", triggerClassName)}
+            >
+              {trigger ?? <MoreHorizontal className="size-4" />}
+            </Button>
+          }
+        ></DropdownMenuTrigger>
         <DropdownMenuContent
           align={align}
           side={side}

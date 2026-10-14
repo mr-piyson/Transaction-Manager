@@ -74,6 +74,7 @@
     "react-is": "^19.3.0",
     "react-resizable-panels": "^4.14.4",
     "recharts": "3.8.0",
+    "shadcn": "^4.21.4",
     "sharp": "^0.34.5",
     "sonner": "^2.0.8",
     "superjson": "^2.2.6",

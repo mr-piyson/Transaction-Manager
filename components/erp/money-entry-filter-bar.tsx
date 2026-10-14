@@ -107,20 +107,22 @@ export function MoneyEntryFilterBar({ kind }: MoneyEntryFilterBarProps) {
         </Button>
         <Separator orientation="vertical" className="h-5" />
         <Drawer direction="right">
-          <DrawerTrigger asChild>
-            <Button variant="outline" size="sm" className="relative gap-1.5">
-              <SlidersHorizontal className="size-3.5" />
-              <span className="hidden sm:inline">{t("common.filter")}</span>
-              {activeFilterCount > 0 && (
-                <Badge
-                  variant="destructive"
-                  className="absolute -top-1.5 -right-1.5 h-4 min-w-4 px-1 text-[10px] rounded-full"
-                >
-                  {activeFilterCount}
-                </Badge>
-              )}
-            </Button>
-          </DrawerTrigger>
+          <DrawerTrigger
+            render={
+              <Button variant="outline" size="sm" className="relative gap-1.5">
+                <SlidersHorizontal className="size-3.5" />
+                <span className="hidden sm:inline">{t("common.filter")}</span>
+                {activeFilterCount > 0 && (
+                  <Badge
+                    variant="destructive"
+                    className="absolute -top-1.5 -right-1.5 h-4 min-w-4 px-1 text-[10px] rounded-full"
+                  >
+                    {activeFilterCount}
+                  </Badge>
+                )}
+              </Button>
+            }
+          />
           <DrawerContent className="w-[340px] sm:w-[380px]">
             <DrawerHeader>
               <DrawerTitle className="flex items-center gap-2">
@@ -217,11 +219,13 @@ export function MoneyEntryFilterBar({ kind }: MoneyEntryFilterBarProps) {
                   {t("common.clearFilters")}
                 </Button>
               )}
-              <DrawerClose asChild>
-                <Button variant="outline" size="sm" className="ml-auto">
-                  {t("common.done")}
-                </Button>
-              </DrawerClose>
+              <DrawerClose
+                render={
+                  <Button variant="outline" size="sm" className="ml-auto">
+                    {t("common.done")}
+                  </Button>
+                }
+              />
             </DrawerFooter>
           </DrawerContent>
         </Drawer>

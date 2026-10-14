@@ -1,16 +1,19 @@
-"use client";
-
-import type * as React from "react";
+import { cn } from "cn";
 
 function AspectRatio({
-  ratio = 1,
-  style,
+  ratio,
+  className,
   ...props
-}: React.ComponentProps<"div"> & { ratio?: number }) {
+}: React.ComponentProps<"div"> & { ratio: number }) {
   return (
     <div
       data-slot="aspect-ratio"
-      style={{ aspectRatio: ratio, ...style }}
+      style={
+        {
+          "--ratio": ratio,
+        } as React.CSSProperties
+      }
+      className={cn("relative aspect-(--ratio)", className)}
       {...props}
     />
   );

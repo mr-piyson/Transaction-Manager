@@ -189,10 +189,10 @@ export function AlertProvider({ children }: { children: ReactNode }) {
             </AlertDialogTitle>
 
             {opts?.description && (
-              <AlertDialogDescription render={
-                <div>{opts.description}</div>
-              } className="w-full ">
-              </AlertDialogDescription>
+              <AlertDialogDescription
+                render={<div>{opts.description}</div>}
+                className="w-full "
+              ></AlertDialogDescription>
             )}
           </AlertDialogHeader>
 

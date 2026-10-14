@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist, Geist_Mono, Inter } from "next/font/google";
 import "./globals.css";
 import { cookies } from "next/headers";
 import { NuqsAdapter } from "nuqs/adapters/next/app";
@@ -9,6 +9,9 @@ import { ThemeProvider } from "@/components/Theme-Provider";
 import { DirectionProvider } from "@/components/ui/direction";
 import { DateFormatProvider } from "@/hooks/use-date-format";
 import TrpcProvider from "@/lib/trpc/provider";
+import { cn } from "@/lib/utils";
+
+const geist = Geist({ subsets: ["latin"], variable: "--font-sans" });
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -36,7 +39,12 @@ export default async function RootLayout(props: any) {
   const dir = locale === "ar" ? "rtl" : "ltr";
 
   return (
-    <html lang={locale} dir={dir} suppressHydrationWarning>
+    <html
+      lang={locale}
+      dir={dir}
+      suppressHydrationWarning
+      className={cn("font-sans", geist.variable)}
+    >
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
@@ -48,14 +56,14 @@ export default async function RootLayout(props: any) {
               enableSystem={true}
               storageKey={"theme"}
             >
-              <DirectionProvider direction={dir} dir={dir}>
+              <DirectionProvider direction={dir}>
                 <TrpcProvider>
                   <DateFormatProvider>{props.children}</DateFormatProvider>
                 </TrpcProvider>
               </DirectionProvider>
             </ThemeProvider>
           </I18nProvider>
-          <Toaster position="top-center" />
+          <Toaster position={dir === "rtl" ? "bottom-left" : "bottom-right"} />
         </NuqsAdapter>
       </body>
     </html>
