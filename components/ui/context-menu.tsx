@@ -62,9 +62,18 @@ function ContextMenuContent({
   );
 }
 
+/**
+ * Tracks whether a label is already inside a `ContextMenuGroup` or
+ * `ContextMenuRadioGroup`. Base UI's `GroupLabel` requires a group context
+ * ancestor, but a standalone label (as this API allows) needs its own group.
+ */
+const ContextMenuGroupContext = React.createContext(false);
+
 function ContextMenuGroup({ ...props }: ContextMenuPrimitive.Group.Props) {
   return (
-    <ContextMenuPrimitive.Group data-slot="context-menu-group" {...props} />
+    <ContextMenuGroupContext.Provider value>
+      <ContextMenuPrimitive.Group data-slot="context-menu-group" {...props} />
+    </ContextMenuGroupContext.Provider>
   );
 }
 
@@ -75,7 +84,8 @@ function ContextMenuLabel({
 }: ContextMenuPrimitive.GroupLabel.Props & {
   inset?: boolean;
 }) {
-  return (
+  const inGroup = React.useContext(ContextMenuGroupContext);
+  const label = (
     <ContextMenuPrimitive.GroupLabel
       data-slot="context-menu-label"
       data-inset={inset}
@@ -85,6 +95,14 @@ function ContextMenuLabel({
       )}
       {...props}
     />
+  );
+
+  // Base UI throws "MenuGroupContext is missing" when GroupLabel has no
+  // Group/RadioGroup ancestor, so wrap standalone labels in one.
+  return inGroup ? (
+    label
+  ) : (
+    <ContextMenuPrimitive.Group>{label}</ContextMenuPrimitive.Group>
   );
 }
 
@@ -188,10 +206,12 @@ function ContextMenuRadioGroup({
   ...props
 }: ContextMenuPrimitive.RadioGroup.Props) {
   return (
-    <ContextMenuPrimitive.RadioGroup
-      data-slot="context-menu-radio-group"
-      {...props}
-    />
+    <ContextMenuGroupContext.Provider value>
+      <ContextMenuPrimitive.RadioGroup
+        data-slot="context-menu-radio-group"
+        {...props}
+      />
+    </ContextMenuGroupContext.Provider>
   );
 }
 

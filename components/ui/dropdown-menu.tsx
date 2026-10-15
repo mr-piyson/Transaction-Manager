@@ -51,8 +51,21 @@ function DropdownMenuContent({
   );
 }
 
+/**
+ * Tracks whether a label is already inside a `DropdownMenuGroup` or
+ * `DropdownMenuRadioGroup`. Base UI's `Menu.GroupLabel` requires a
+ * `MenuGroupContext` ancestor, but Radix's label (which this API mirrors)
+ * works standalone — so `DropdownMenuLabel` provides its own group when
+ * rendered outside one.
+ */
+const DropdownMenuGroupContext = React.createContext(false);
+
 function DropdownMenuGroup({ ...props }: MenuPrimitive.Group.Props) {
-  return <MenuPrimitive.Group data-slot="dropdown-menu-group" {...props} />;
+  return (
+    <DropdownMenuGroupContext.Provider value>
+      <MenuPrimitive.Group data-slot="dropdown-menu-group" {...props} />
+    </DropdownMenuGroupContext.Provider>
+  );
 }
 
 function DropdownMenuLabel({
@@ -62,7 +75,8 @@ function DropdownMenuLabel({
 }: MenuPrimitive.GroupLabel.Props & {
   inset?: boolean;
 }) {
-  return (
+  const inGroup = React.useContext(DropdownMenuGroupContext);
+  const label = (
     <MenuPrimitive.GroupLabel
       data-slot="dropdown-menu-label"
       data-inset={inset}
@@ -73,6 +87,10 @@ function DropdownMenuLabel({
       {...props}
     />
   );
+
+  // Base UI throws "MenuGroupContext is missing" when GroupLabel has no
+  // Group/RadioGroup ancestor, so wrap standalone labels in one.
+  return inGroup ? label : <MenuPrimitive.Group>{label}</MenuPrimitive.Group>;
 }
 
 function DropdownMenuItem({
@@ -185,10 +203,12 @@ function DropdownMenuCheckboxItem({
 
 function DropdownMenuRadioGroup({ ...props }: MenuPrimitive.RadioGroup.Props) {
   return (
-    <MenuPrimitive.RadioGroup
-      data-slot="dropdown-menu-radio-group"
-      {...props}
-    />
+    <DropdownMenuGroupContext.Provider value>
+      <MenuPrimitive.RadioGroup
+        data-slot="dropdown-menu-radio-group"
+        {...props}
+      />
+    </DropdownMenuGroupContext.Provider>
   );
 }
 
