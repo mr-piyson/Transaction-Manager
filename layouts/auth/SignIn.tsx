@@ -62,7 +62,7 @@ export default function SignInTab() {
   }
 
   return (
-    <Card>
+    <Card className="border">
       <CardHeader>
         <CardTitle className="text-2xl font-bold">{t("auth.signIn")}</CardTitle>
         <CardDescription>{t("auth.signInSubtitle")}</CardDescription>

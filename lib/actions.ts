@@ -84,12 +84,6 @@ export const NAV_ITEMS = [
     icon: Layers,
   },
   {
-    id: "import-items",
-    labelKey: "common.import",
-    href: "/erp/items/import",
-    icon: Package,
-  },
-  {
     id: "units",
     labelKey: "settings.units.title",
     href: "/settings/units",
@@ -112,18 +106,6 @@ export const NAV_ITEMS = [
     labelKey: "settings.sessions",
     href: "/settings/sessions",
     icon: LogOut,
-  },
-  {
-    id: "hrms",
-    labelKey: "settings.hrms.title",
-    href: "/settings/hrms",
-    icon: Briefcase,
-  },
-  {
-    id: "kiosks",
-    labelKey: "settings.kiosks.title",
-    href: "/settings/kiosks",
-    icon: Monitor,
   },
   {
     id: "appearance",
