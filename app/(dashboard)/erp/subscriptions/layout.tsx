@@ -13,7 +13,6 @@ import { useSubscriptionForm } from "@/components/dialogs/subscriptionForm";
 import { Header } from "@/components/layout/App-Header";
 import { NotificationBell } from "@/components/layout/NotificationBell";
 import { ListView } from "@/components/list-view";
-import { SubscriptionListItem } from "@/components/subscriptions/subscription-list-item";
 import { Button } from "@/components/ui/button";
 import {
   ResizableHandle,
@@ -23,6 +22,7 @@ import {
 import { useIsMobile } from "@/hooks/use-mobile";
 import { trpc } from "@/lib/trpc/client";
 import { cn } from "@/lib/utils";
+import { SubscriptionListItem } from "./subscription-list-item";
 
 const subscriptionsSegment = "subscriptions";
 

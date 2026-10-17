@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import QuotationNewPage from "../QuotationNewPage";
+import QuotationNewPage from "./quotation-form";
 
 export default function NewQuotationRoute() {
   return (

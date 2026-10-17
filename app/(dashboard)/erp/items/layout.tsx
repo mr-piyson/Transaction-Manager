@@ -23,14 +23,6 @@ import { alert } from "@/components/Alert-dialog";
 import { AuthGuard } from "@/components/auth-guard";
 import { useUnifiedItemForm } from "@/components/dialogs";
 import { useHardDeleteForm } from "@/components/dialogs/hardDeleteForm";
-import { ItemDetailsSheet } from "@/components/items/item-details-sheet";
-import {
-  DEFAULT_ITEM_FILTERS,
-  ItemFilterSheet,
-  type ItemFilterValues,
-  UNCATEGORIZED_CATEGORY_ID,
-} from "@/components/items/item-filter-sheet";
-import { ItemListItem } from "@/components/items/item-list-item";
 import { Header } from "@/components/layout/App-Header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -48,6 +40,14 @@ import {
 } from "@/components/ui/input-group";
 import { trpc } from "@/lib/trpc/client";
 import { cn } from "@/lib/utils";
+import { ItemDetailsSheet } from "./item-details-sheet";
+import {
+  DEFAULT_ITEM_FILTERS,
+  ItemFilterSheet,
+  type ItemFilterValues,
+  UNCATEGORIZED_CATEGORY_ID,
+} from "./item-filter-sheet";
+import { ItemListItem } from "./item-list-item";
 
 const title = "Items";
 

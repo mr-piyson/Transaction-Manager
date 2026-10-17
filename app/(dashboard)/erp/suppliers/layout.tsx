@@ -14,7 +14,6 @@ import { useSupplierForm } from "@/components/dialogs";
 import { useHardDeleteForm } from "@/components/dialogs/hardDeleteForm";
 import { Header } from "@/components/layout/App-Header";
 import { ListView } from "@/components/list-view";
-import { SupplierListItem } from "@/components/suppliers/supplier-list-item";
 import { Button } from "@/components/ui/button";
 import {
   ResizableHandle,
@@ -24,6 +23,7 @@ import {
 import { useIsMobile } from "@/hooks/use-mobile";
 import { trpc } from "@/lib/trpc/client";
 import { cn } from "@/lib/utils";
+import { SupplierListItem } from "./supplier-list-item";
 
 const title = "Suppliers";
 

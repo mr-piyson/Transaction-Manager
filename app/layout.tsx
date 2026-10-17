@@ -3,13 +3,13 @@ import { Geist, Geist_Mono, Inter } from "next/font/google";
 import "./globals.css";
 import { cookies } from "next/headers";
 import { NuqsAdapter } from "nuqs/adapters/next/app";
-import { I18nProvider } from "@/components/i18n-provider";
-import { Toaster } from "@/components/sonner";
-import { ThemeProvider } from "@/components/Theme-Provider";
 import { DirectionProvider } from "@/components/ui/direction";
 import { DateFormatProvider } from "@/hooks/use-date-format";
 import TrpcProvider from "@/lib/trpc/provider";
 import { cn } from "@/lib/utils";
+import { I18nProvider } from "./i18n-provider";
+import { Toaster } from "./sonner";
+import { ThemeProvider } from "./theme-provider";
 
 const geist = Geist({ subsets: ["latin"], variable: "--font-sans" });
 

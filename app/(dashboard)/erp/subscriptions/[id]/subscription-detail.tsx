@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/card";
 import { useDateFormat } from "@/hooks/use-date-format";
 import { formatAmount } from "@/lib/utils";
-import { SubscriptionStatusBadge } from "./subscription-status-badge";
+import { SubscriptionStatusBadge } from "../subscription-status-badge";
 
 const methodLabels: Record<string, string> = {
   CASH: "Cash",

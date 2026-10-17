@@ -1,9 +1,9 @@
 "use client";
 
 import { AlertProvider } from "@/components/Alert-dialog";
-import { DashboardShell } from "@/components/layout/Dashboard-Shell";
-import { SplashScreen } from "@/components/Splash-Screen";
 import { CurrencyProvider } from "@/hooks/use-currency";
+import { DashboardShell } from "./dashboard-shell";
+import { SplashScreen } from "./splash-screen";
 
 export default function DashboardLayout({
   children,

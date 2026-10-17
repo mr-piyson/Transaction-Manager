@@ -5,7 +5,6 @@ import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { FormPageScaffold } from "@/components/form/FormPageScaffold";
-import { POFormBody } from "@/components/purchase-orders/POFormBody";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useCurrency } from "@/hooks/use-currency";
@@ -14,6 +13,7 @@ import type { POFormValues } from "@/lib/form/po/poFormSchema";
 import { buildPOCreateDefaults, poToFormValues } from "@/lib/form/po/poMapper";
 import { usePOFormController } from "@/lib/form/po/usePOFormController";
 import { trpc } from "@/lib/trpc/client";
+import { POFormBody } from "./po-form-body";
 
 export function DocumentFormPage({ mode }: { mode: "create" | "edit" }) {
   const params = useParams<{ id?: string }>();

@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import POEditPage from "../../POEditPage";
+import POEditPage from "./po-form";
 
 export default function EditPORoute() {
   return (

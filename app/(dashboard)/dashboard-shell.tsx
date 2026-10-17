@@ -1,8 +1,8 @@
 "use client";
 
 import type { ReactNode } from "react";
+import { AppSidebar } from "@/components/layout/App-Sidebar";
 import { SidebarProvider } from "@/components/sidebar";
-import { AppSidebar } from "./App-Sidebar";
 
 interface DashboardShellProps {
   children: ReactNode;

@@ -11,10 +11,6 @@ import {
 import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useStockAdjustmentForm } from "@/components/dialogs";
-import {
-  AdjustmentDetailsSheet,
-  type AdjustmentMovement,
-} from "@/components/stock/adjustment-details-sheet";
 import { Button } from "@/components/ui/button";
 import {
   ContextMenu,
@@ -32,6 +28,10 @@ import {
 import { formatDateTime } from "@/lib/date";
 import { trpc } from "@/lib/trpc/client";
 import { cn } from "@/lib/utils";
+import {
+  AdjustmentDetailsSheet,
+  type AdjustmentMovement,
+} from "./adjustment-details-sheet";
 
 export default function AdjustmentsPage() {
   const t = useTranslations();

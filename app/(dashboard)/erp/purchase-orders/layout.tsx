@@ -1,6 +1,6 @@
 "use client";
 
-import POLayout from "../documents/po/TypeLayout";
+import POLayout from "./po-layout";
 
 export default function PurchaseOrdersLayout({
   children,

@@ -1,3 +1,3 @@
 "use client";
 
-export { default } from "../../documents/po/[id]/IdPage";
+export { default } from "./po-detail";

@@ -1,9 +1,9 @@
 import { differenceInDays } from "date-fns";
 import { CalendarClock } from "lucide-react";
 import type { HTMLAttributes } from "react";
+import { Progress } from "@/components/ui/progress";
 import { useDateFormat } from "@/hooks/use-date-format";
 import { cn, formatAmount } from "@/lib/utils";
-import { Progress } from "@/components/ui/progress";
 import { SubscriptionStatusBadge } from "./subscription-status-badge";
 
 const cycleLabels: Record<string, string> = {

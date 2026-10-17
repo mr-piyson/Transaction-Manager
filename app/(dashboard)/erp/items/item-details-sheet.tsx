@@ -16,7 +16,7 @@ import {
 import { useTranslations } from "next-intl";
 import { type ReactNode, useMemo, useState } from "react";
 import Barcode from "react-barcode";
-import { useUnifiedItemForm } from "@/components/dialogs";
+import { useUnifiedItemForm } from "@/components/dialogs/index";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -34,9 +34,9 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
+import { Spinner } from "@/components/ui/spinner";
 import { trpc } from "@/lib/trpc/client";
 import { cn } from "@/lib/utils";
-import { Spinner } from "../ui/spinner";
 
 interface ItemDetailsSheetProps {
   itemId: string | null;

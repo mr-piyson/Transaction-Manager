@@ -10,7 +10,6 @@ import { alert } from "@/components/Alert-dialog";
 import { AuthGuard } from "@/components/auth-guard";
 import type { ContextMenuItemSchema } from "@/components/context-menu";
 import { UniversalContextMenu } from "@/components/context-menu";
-import { Customer_List_Item } from "@/components/customers/customer-list-item";
 import { useCustomerForm } from "@/components/dialogs";
 import { useHardDeleteForm } from "@/components/dialogs/hardDeleteForm";
 import { Header } from "@/components/layout/App-Header";
@@ -24,6 +23,7 @@ import {
 import { useIsMobile } from "@/hooks/use-mobile";
 import { trpc } from "@/lib/trpc/client";
 import { cn } from "@/lib/utils";
+import { Customer_List_Item } from "./customer-list-item";
 
 const title = "Customers";
 

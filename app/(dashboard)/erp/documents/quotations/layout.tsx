@@ -1,6 +1,6 @@
 "use client";
 
-import DocumentsLayout from "../[type]/TypeLayout";
+import DocumentsLayout from "@/components/documents/document-layout";
 
 export default function QuotationsLayout({
   children,

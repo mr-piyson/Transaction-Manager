@@ -12,8 +12,6 @@ import { UniversalContextMenu } from "@/components/context-menu";
 import { useHardDeleteForm } from "@/components/dialogs/hardDeleteForm";
 import { Header } from "@/components/layout/App-Header";
 import { ListView } from "@/components/list-view";
-import { buildPOActions } from "@/components/purchase-orders/po-actions";
-import { POListItem } from "@/components/purchase-orders/po-list-item";
 import { Button } from "@/components/ui/button";
 import {
   ResizableHandle,
@@ -24,6 +22,8 @@ import { useAppAbility } from "@/hooks/use-app-ability";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { trpc } from "@/lib/trpc/client";
 import { cn } from "@/lib/utils";
+import { buildPOActions } from "./po-actions";
+import { POListItem } from "./po-list-item";
 
 const route = "purchase-orders";
 

@@ -14,8 +14,6 @@ import { useParams, useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { alert } from "@/components/Alert-dialog";
-import { ContractDetail } from "@/components/contracts/contract-detail";
-import { ContractStatusBadge } from "@/components/contracts/contract-status-badge";
 import { useContractForm } from "@/components/dialogs";
 import { useHardDeleteForm } from "@/components/dialogs/hardDeleteForm";
 import { Button } from "@/components/ui/button";
@@ -35,6 +33,8 @@ import {
 } from "@/components/ui/empty";
 import { Spinner } from "@/components/ui/spinner";
 import { trpc } from "@/lib/trpc/client";
+import { ContractStatusBadge } from "../contract-status-badge";
+import { ContractDetail } from "./contract-detail";
 
 export default function ContractDetailPage() {
   const params = useParams<{ id: string }>();

@@ -18,7 +18,6 @@ import { alert } from "@/components/Alert-dialog";
 import { useHardDeleteForm } from "@/components/dialogs/hardDeleteForm";
 import { useRenewalForm } from "@/components/dialogs/renewalForm";
 import { useSubscriptionForm } from "@/components/dialogs/subscriptionForm";
-import { SubscriptionDetail } from "@/components/subscriptions/subscription-detail";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -37,6 +36,7 @@ import {
 import { Spinner } from "@/components/ui/spinner";
 import { useAppAbility } from "@/hooks/use-app-ability";
 import { trpc } from "@/lib/trpc/client";
+import { SubscriptionDetail } from "./subscription-detail";
 
 export default function SubscriptionDetailPage() {
   const params = useParams<{ id: string }>();

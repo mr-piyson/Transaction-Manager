@@ -27,7 +27,6 @@ import { AuthGuard } from "@/components/auth-guard";
 import { useExpenseForm } from "@/components/dialogs";
 import { useHardDeleteForm } from "@/components/dialogs/hardDeleteForm";
 import { MoneyEntryFilterBar } from "@/components/erp/money-entry-filter-bar";
-import { ExpenseListItem } from "@/components/expenses/expense-list-item";
 import { Header } from "@/components/layout/App-Header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -50,6 +49,7 @@ import { useDateFormat } from "@/hooks/use-date-format";
 import { useTableTheme } from "@/hooks/use-table-theme";
 import { trpc } from "@/lib/trpc/client";
 import { cn } from "@/lib/utils";
+import { ExpenseListItem } from "./expense-list-item";
 
 ModuleRegistry.registerModules([AllCommunityModule]);
 

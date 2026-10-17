@@ -11,12 +11,10 @@ import { useParams, useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import * as React from "react";
 import { toast } from "sonner";
-import { ActionsDropdown } from "@/components/actions-menu";
 import { DetailPageHeader } from "@/components/detail-page-header";
 import { useExpenseForm } from "@/components/dialogs/expenseForm";
 import { useHardDeleteForm } from "@/components/dialogs/hardDeleteForm";
 import { PAPER_THEME, paperSheetClass } from "@/components/form/paper";
-import { buildPOActions } from "@/components/purchase-orders/po-actions";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -51,6 +49,8 @@ import { useAppAbility } from "@/hooks/use-app-ability";
 import { useDateFormat } from "@/hooks/use-date-format";
 import { trpc } from "@/lib/trpc/client";
 import { cn } from "@/lib/utils";
+import { buildPOActions } from "../po-actions";
+import { ActionsDropdown } from "./actions-menu";
 
 const STATUS_COLORS: Record<string, string> = {
   DRAFT: "bg-muted text-muted-foreground",

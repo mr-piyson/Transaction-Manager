@@ -2,7 +2,7 @@
 
 import { Package } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { ItemImportWizard } from "@/components/items/bulk-import/wizard";
+import { ItemImportWizard } from "./wizard";
 
 export default function ItemMasterPage() {
   const t = useTranslations();

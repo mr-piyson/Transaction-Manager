@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import InvoiceNewPage from "../InvoiceNewPage";
+import InvoiceNewPage from "./invoice-form";
 
 export default function NewInvoiceRoute() {
   return (

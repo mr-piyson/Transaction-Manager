@@ -5,10 +5,9 @@ import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { useSession } from "@/auth/auth-client";
 
-const LandingClient = dynamic(
-  () => import("@/components/landing/LandingClient"),
-  { ssr: false },
-);
+const LandingClient = dynamic(() => import("./_landing/landing-client"), {
+  ssr: false,
+});
 
 export default function RootPage() {
   const router = useRouter();

@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { getSession } from "@/auth/auth-server";
-import AuthLayoutClient from "./AuthLayout";
+import AuthLayoutClient from "./auth-layout";
 
 export default async function AuthLayout({
   children,

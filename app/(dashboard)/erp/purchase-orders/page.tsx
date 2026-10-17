@@ -1,6 +1,6 @@
 "use client";
 
-import PurchaseOrdersPage from "../documents/po/TypePage";
+import PurchaseOrdersPage from "./po-page";
 
 export default function PurchaseOrdersPageWrapper() {
   return <PurchaseOrdersPage />;

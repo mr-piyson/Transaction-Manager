@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import PONewPage from "../PONewPage";
+import PONewPage from "./po-form";
 
 export default function NewPORoute() {
   return (

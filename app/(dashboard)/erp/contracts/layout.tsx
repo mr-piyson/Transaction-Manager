@@ -8,7 +8,6 @@ import { useCallback } from "react";
 import { AuthGuard } from "@/components/auth-guard";
 import type { ContextMenuItemSchema } from "@/components/context-menu";
 import { UniversalContextMenu } from "@/components/context-menu";
-import { ContractListItem } from "@/components/contracts/contract-list-item";
 import { useContractForm } from "@/components/dialogs";
 import { useHardDeleteForm } from "@/components/dialogs/hardDeleteForm";
 import { Header } from "@/components/layout/App-Header";
@@ -23,6 +22,7 @@ import {
 import { useIsMobile } from "@/hooks/use-mobile";
 import { trpc } from "@/lib/trpc/client";
 import { cn } from "@/lib/utils";
+import { ContractListItem } from "./contract-list-item";
 
 const contractsSegment = "contracts";
 

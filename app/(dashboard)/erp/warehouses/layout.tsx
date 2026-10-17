@@ -18,10 +18,10 @@ import {
   ResizablePanel,
   ResizablePanelGroup,
 } from "@/components/ui/resizable";
-import { WarehouseListItem } from "@/components/warehouses/warehouse-list-item";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { trpc } from "@/lib/trpc/client";
 import { cn } from "@/lib/utils";
+import { WarehouseListItem } from "./warehouse-list-item";
 
 const warehousesSegment = "warehouses";
 

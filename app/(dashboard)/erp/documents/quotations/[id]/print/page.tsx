@@ -1,6 +1,6 @@
 "use client";
 
-import DocumentPrintPage from "../../../[type]/[id]/print/PrintPage";
+import DocumentPrintPage from "@/components/documents/document-print-page";
 
 export default function QuotationPrintPage() {
   return <DocumentPrintPage documentType="quotations" />;
