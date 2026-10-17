@@ -1,6 +1,6 @@
 import { promises as fs } from "fs";
 import { z } from "zod";
-import { assertCan, orgProcedure, router } from "@/lib/trpc/context";
+import { orgProcedure, router } from "@/lib/trpc/context";
 import * as storage from "../services/file/storage.service";
 
 // ---------------------------------------------------------------------------
@@ -84,11 +84,7 @@ export const storageRouter = router({
    * Scan the filesystem and database for storage inconsistencies.
    * Returns four categories of issues.
    */
-  scan: orgProcedure.query(async ({ ctx }) => {
-    assertCan(ctx.ability, "org:settings:read", "Organization", {
-      organizationId: ctx.user.organizationId,
-    });
-
+  scan: orgProcedure.require("org:settings:read").query(async ({ ctx }) => {
     const orgId = ctx.user.organizationId;
 
     // 1. Get all File records from DB
@@ -225,12 +221,9 @@ export const storageRouter = router({
    * Also deletes all Attachments pointing to this file.
    */
   removeFile: orgProcedure
+    .require("org:settings:update")
     .input(z.object({ fileId: z.string() }))
     .mutation(async ({ ctx, input }) => {
-      assertCan(ctx.ability, "org:settings:update", "Organization", {
-        organizationId: ctx.user.organizationId,
-      });
-
       const orgId = ctx.user.organizationId;
       const file = await ctx.db.file.findUnique({
         where: { id: input.fileId },
@@ -270,12 +263,9 @@ export const storageRouter = router({
    * Delete an orphaned physical file from disk (no DB record).
    */
   removeDiskFile: orgProcedure
+    .require("org:settings:update")
     .input(z.object({ storagePath: z.string() }))
     .mutation(async ({ ctx, input }) => {
-      assertCan(ctx.ability, "org:settings:update", "Organization", {
-        organizationId: ctx.user.organizationId,
-      });
-
       const removed = await storage.remove(input.storagePath);
       return { removed };
     }),
@@ -284,6 +274,7 @@ export const storageRouter = router({
    * Nullify an image/storagePath reference on an entity.
    */
   removeImageRef: orgProcedure
+    .require("org:settings:update")
     .input(
       z.object({
         entityType: z.enum(["Item", "Organization", "User"]),
@@ -292,10 +283,6 @@ export const storageRouter = router({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      assertCan(ctx.ability, "org:settings:update", "Organization", {
-        organizationId: ctx.user.organizationId,
-      });
-
       const data: Record<string, null> = { [input.field]: null };
 
       switch (input.entityType) {
@@ -320,185 +307,181 @@ export const storageRouter = router({
    * Bulk-remove all unused File records (no attachments, no image refs)
    * and their physical files.
    */
-  removeOrphanedRecords: orgProcedure.mutation(async ({ ctx }) => {
-    assertCan(ctx.ability, "org:settings:update", "Organization", {
-      organizationId: ctx.user.organizationId,
-    });
+  removeOrphanedRecords: orgProcedure
+    .require("org:settings:update")
+    .mutation(async ({ ctx }) => {
+      const orgId = ctx.user.organizationId;
 
-    const orgId = ctx.user.organizationId;
+      // Find all files referenced by attachments or image fields
+      const attachmentFileIds = (
+        await ctx.db.attachment.findMany({
+          where: { organizationId: orgId },
+          select: { fileId: true },
+        })
+      ).map((a: { fileId: string }) => a.fileId);
 
-    // Find all files referenced by attachments or image fields
-    const attachmentFileIds = (
-      await ctx.db.attachment.findMany({
-        where: { organizationId: orgId },
-        select: { fileId: true },
-      })
-    ).map((a: { fileId: string }) => a.fileId);
+      const imageRefs = await collectImageRefs(ctx.db, orgId);
+      const refPaths = referencedPaths(imageRefs);
 
-    const imageRefs = await collectImageRefs(ctx.db, orgId);
-    const refPaths = referencedPaths(imageRefs);
-
-    // Find all files
-    const allFiles = await ctx.db.file.findMany({
-      select: { id: true, storagePath: true },
-    });
-
-    const unusedFileIds: string[] = [];
-    const unusedPaths: string[] = [];
-
-    for (const file of allFiles) {
-      const hasAttachment = attachmentFileIds.includes(file.id);
-      const isReferenced = refPaths.has(file.storagePath);
-      if (!hasAttachment && !isReferenced) {
-        unusedFileIds.push(file.id);
-        unusedPaths.push(file.storagePath);
-      }
-    }
-
-    // Delete attachments for unused files (should be 0, but be safe)
-    if (unusedFileIds.length > 0) {
-      await ctx.db.attachment.deleteMany({
-        where: { fileId: { in: unusedFileIds } },
+      // Find all files
+      const allFiles = await ctx.db.file.findMany({
+        select: { id: true, storagePath: true },
       });
 
-      // Delete physical files
-      for (const p of unusedPaths) {
-        await storage.remove(p);
+      const unusedFileIds: string[] = [];
+      const unusedPaths: string[] = [];
+
+      for (const file of allFiles) {
+        const hasAttachment = attachmentFileIds.includes(file.id);
+        const isReferenced = refPaths.has(file.storagePath);
+        if (!hasAttachment && !isReferenced) {
+          unusedFileIds.push(file.id);
+          unusedPaths.push(file.storagePath);
+        }
       }
 
-      // Delete DB records
-      await ctx.db.file.deleteMany({
-        where: { id: { in: unusedFileIds } },
-      });
-    }
+      // Delete attachments for unused files (should be 0, but be safe)
+      if (unusedFileIds.length > 0) {
+        await ctx.db.attachment.deleteMany({
+          where: { fileId: { in: unusedFileIds } },
+        });
 
-    return { removed: unusedFileIds.length };
-  }),
+        // Delete physical files
+        for (const p of unusedPaths) {
+          await storage.remove(p);
+        }
+
+        // Delete DB records
+        await ctx.db.file.deleteMany({
+          where: { id: { in: unusedFileIds } },
+        });
+      }
+
+      return { removed: unusedFileIds.length };
+    }),
 
   /**
    * One-click cleanup: remove all orphaned records, orphaned disk files,
    * and fix all dangling image refs.
    */
-  cleanAll: orgProcedure.mutation(async ({ ctx }) => {
-    assertCan(ctx.ability, "org:settings:update", "Organization", {
-      organizationId: ctx.user.organizationId,
-    });
+  cleanAll: orgProcedure
+    .require("org:settings:update")
+    .mutation(async ({ ctx }) => {
+      const orgId = ctx.user.organizationId;
+      let recordsRemoved = 0;
+      let diskFilesRemoved = 0;
+      let refsFixed = 0;
 
-    const orgId = ctx.user.organizationId;
-    let recordsRemoved = 0;
-    let diskFilesRemoved = 0;
-    let refsFixed = 0;
-
-    // 1. Get all File records
-    const dbFiles = await ctx.db.file.findMany({
-      select: { id: true, storagePath: true },
-    });
-
-    // 2. Get all disk files
-    const diskFiles = await storage.listAllFiles();
-    const diskPathSet = new Set(diskFiles.map((f) => f.storagePath));
-
-    // 3. Get image refs
-    const imageRefs = await collectImageRefs(ctx.db, orgId);
-
-    // 4. Get attachment fileIds
-    const attachmentFileIds = new Set(
-      (
-        await ctx.db.attachment.findMany({
-          where: { organizationId: orgId },
-          select: { fileId: true },
-        })
-      ).map((a: { fileId: string }) => a.fileId),
-    );
-
-    // --- Remove orphaned DB records ---
-    for (const dbFile of dbFiles) {
-      if (!diskPathSet.has(dbFile.storagePath)) {
-        await ctx.db.attachment.deleteMany({ where: { fileId: dbFile.id } });
-        await ctx.db.file.delete({ where: { id: dbFile.id } });
-        recordsRemoved++;
-      }
-    }
-
-    // --- Remove orphaned disk files ---
-    const dbStoragePaths = new Set(dbFiles.map((f) => f.storagePath));
-    for (const diskFile of diskFiles) {
-      if (!dbStoragePaths.has(diskFile.storagePath)) {
-        await storage.remove(diskFile.storagePath);
-        diskFilesRemoved++;
-      }
-    }
-
-    // --- Fix dangling image refs ---
-    for (const ref of imageRefs) {
-      const exists = await storage.exists(ref.imagePath);
-      if (!exists) {
-        const data: Record<string, null> = { [ref.field]: null };
-        switch (ref.entityType) {
-          case "Item":
-            await ctx.db.item.update({ where: { id: ref.entityId }, data });
-            break;
-          case "Organization":
-            await ctx.db.organization.update({
-              where: { id: ref.entityId },
-              data,
-            });
-            break;
-          case "User":
-            await ctx.db.user.update({ where: { id: ref.entityId }, data });
-            break;
-        }
-        refsFixed++;
-      }
-    }
-
-    // --- Remove unused files (no attachments, no image refs) ---
-    // Re-fetch after cleanup
-    const remainingFiles = await ctx.db.file.findMany({
-      select: { id: true, storagePath: true },
-    });
-
-    const newAttachmentIds = new Set(
-      (
-        await ctx.db.attachment.findMany({
-          where: { organizationId: orgId },
-          select: { fileId: true },
-        })
-      ).map((a: { fileId: string }) => a.fileId),
-    );
-
-    const newImageRefs = await collectImageRefs(ctx.db, orgId);
-    const newRefPaths = referencedPaths(newImageRefs);
-
-    const unusedIds: string[] = [];
-    const unusedPaths: string[] = [];
-
-    for (const file of remainingFiles) {
-      if (!diskPathSet.has(file.storagePath)) continue;
-      const hasAttachment = newAttachmentIds.has(file.id);
-      const isReferenced = newRefPaths.has(file.storagePath);
-      if (!hasAttachment && !isReferenced) {
-        unusedIds.push(file.id);
-        unusedPaths.push(file.storagePath);
-      }
-    }
-
-    if (unusedIds.length > 0) {
-      await ctx.db.attachment.deleteMany({
-        where: { fileId: { in: unusedIds } },
+      // 1. Get all File records
+      const dbFiles = await ctx.db.file.findMany({
+        select: { id: true, storagePath: true },
       });
-      for (const p of unusedPaths) {
-        await storage.remove(p);
-      }
-      await ctx.db.file.deleteMany({ where: { id: { in: unusedIds } } });
-      recordsRemoved += unusedIds.length;
-    }
 
-    return {
-      recordsRemoved,
-      diskFilesRemoved,
-      refsFixed,
-      total: recordsRemoved + diskFilesRemoved + refsFixed,
-    };
-  }),
+      // 2. Get all disk files
+      const diskFiles = await storage.listAllFiles();
+      const diskPathSet = new Set(diskFiles.map((f) => f.storagePath));
+
+      // 3. Get image refs
+      const imageRefs = await collectImageRefs(ctx.db, orgId);
+
+      // 4. Get attachment fileIds
+      const attachmentFileIds = new Set(
+        (
+          await ctx.db.attachment.findMany({
+            where: { organizationId: orgId },
+            select: { fileId: true },
+          })
+        ).map((a: { fileId: string }) => a.fileId),
+      );
+
+      // --- Remove orphaned DB records ---
+      for (const dbFile of dbFiles) {
+        if (!diskPathSet.has(dbFile.storagePath)) {
+          await ctx.db.attachment.deleteMany({ where: { fileId: dbFile.id } });
+          await ctx.db.file.delete({ where: { id: dbFile.id } });
+          recordsRemoved++;
+        }
+      }
+
+      // --- Remove orphaned disk files ---
+      const dbStoragePaths = new Set(dbFiles.map((f) => f.storagePath));
+      for (const diskFile of diskFiles) {
+        if (!dbStoragePaths.has(diskFile.storagePath)) {
+          await storage.remove(diskFile.storagePath);
+          diskFilesRemoved++;
+        }
+      }
+
+      // --- Fix dangling image refs ---
+      for (const ref of imageRefs) {
+        const exists = await storage.exists(ref.imagePath);
+        if (!exists) {
+          const data: Record<string, null> = { [ref.field]: null };
+          switch (ref.entityType) {
+            case "Item":
+              await ctx.db.item.update({ where: { id: ref.entityId }, data });
+              break;
+            case "Organization":
+              await ctx.db.organization.update({
+                where: { id: ref.entityId },
+                data,
+              });
+              break;
+            case "User":
+              await ctx.db.user.update({ where: { id: ref.entityId }, data });
+              break;
+          }
+          refsFixed++;
+        }
+      }
+
+      // --- Remove unused files (no attachments, no image refs) ---
+      // Re-fetch after cleanup
+      const remainingFiles = await ctx.db.file.findMany({
+        select: { id: true, storagePath: true },
+      });
+
+      const newAttachmentIds = new Set(
+        (
+          await ctx.db.attachment.findMany({
+            where: { organizationId: orgId },
+            select: { fileId: true },
+          })
+        ).map((a: { fileId: string }) => a.fileId),
+      );
+
+      const newImageRefs = await collectImageRefs(ctx.db, orgId);
+      const newRefPaths = referencedPaths(newImageRefs);
+
+      const unusedIds: string[] = [];
+      const unusedPaths: string[] = [];
+
+      for (const file of remainingFiles) {
+        if (!diskPathSet.has(file.storagePath)) continue;
+        const hasAttachment = newAttachmentIds.has(file.id);
+        const isReferenced = newRefPaths.has(file.storagePath);
+        if (!hasAttachment && !isReferenced) {
+          unusedIds.push(file.id);
+          unusedPaths.push(file.storagePath);
+        }
+      }
+
+      if (unusedIds.length > 0) {
+        await ctx.db.attachment.deleteMany({
+          where: { fileId: { in: unusedIds } },
+        });
+        for (const p of unusedPaths) {
+          await storage.remove(p);
+        }
+        await ctx.db.file.deleteMany({ where: { id: { in: unusedIds } } });
+        recordsRemoved += unusedIds.length;
+      }
+
+      return {
+        recordsRemoved,
+        diskFilesRemoved,
+        refsFixed,
+        total: recordsRemoved + diskFilesRemoved + refsFixed,
+      };
+    }),
 });

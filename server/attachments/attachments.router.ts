@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { NotFoundError } from "@/lib/error";
-import { assertCan, orgProcedure, router } from "@/lib/trpc/context";
+import { orgProcedure, router } from "@/lib/trpc/context";
 import * as attachmentService from "../services/file/attachment.service";
 
 // ---------------------------------------------------------------------------
@@ -36,10 +36,9 @@ const deleteByEntitySchema = z.object({
 export const attachmentsRouter = router({
   // ── CREATE ───────────────────────────────────────────────────────────────
   create: orgProcedure
+    .require("invoice:create")
     .input(createAttachmentSchema)
     .mutation(async ({ ctx, input }) => {
-      assertCan(ctx.ability, "invoice:create", "Invoice");
-
       const attachment = await attachmentService.createAttachment({
         fileId: input.fileId,
         entityType: input.entityType,
@@ -71,10 +70,9 @@ export const attachmentsRouter = router({
 
   // ── DELETE ───────────────────────────────────────────────────────────────
   delete: orgProcedure
+    .require("invoice:delete")
     .input(deleteAttachmentSchema)
     .mutation(async ({ ctx, input }) => {
-      assertCan(ctx.ability, "invoice:delete", "Invoice");
-
       const deleted = await attachmentService.deleteAttachment(input.id);
       if (!deleted) throw new NotFoundError("Attachment", input.id);
       return { success: true };
@@ -82,10 +80,9 @@ export const attachmentsRouter = router({
 
   // ── DELETE ALL BY ENTITY ─────────────────────────────────────────────────
   deleteByEntity: orgProcedure
+    .require("invoice:delete")
     .input(deleteByEntitySchema)
     .mutation(async ({ ctx, input }) => {
-      assertCan(ctx.ability, "invoice:delete", "Invoice");
-
       const count = await attachmentService.deleteByEntity(
         input.entityType,
         input.entityId,

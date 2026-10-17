@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { ForbiddenError, NotFoundError } from "@/lib/error";
-import { assertCan, orgProcedure, router } from "@/lib/trpc/context";
+import { orgProcedure, router } from "@/lib/trpc/context";
 import { reversePostedEntry } from "../journals/journal.service";
 import { postIncome } from "../journals/journal-posting.service";
 import { writeAuditLog } from "../shared/audit.service";
@@ -16,6 +16,7 @@ const PAYMENT_METHODS = [
 
 export const incomesRouter = router({
   list: orgProcedure
+    .require("income:read")
     .input(
       z.object({
         search: z.string().optional(),
@@ -25,8 +26,6 @@ export const incomesRouter = router({
       }),
     )
     .query(async ({ ctx, input }) => {
-      assertCan(ctx.ability, "income:read", "Income");
-
       const { search, customerId, dateFrom, dateTo } = input;
       const orgId = ctx.user.organizationId;
 
@@ -73,10 +72,9 @@ export const incomesRouter = router({
     }),
 
   byId: orgProcedure
+    .require("income:read")
     .input(z.object({ id: z.string() }))
     .query(async ({ ctx, input }) => {
-      assertCan(ctx.ability, "income:read", "Income");
-
       const orgId = ctx.user.organizationId;
 
       const income = await ctx.db.income.findFirst({
@@ -107,6 +105,7 @@ export const incomesRouter = router({
     }),
 
   create: orgProcedure
+    .require("income:create")
     .input(
       z.object({
         description: z.string().min(1).max(1000),
@@ -120,8 +119,6 @@ export const incomesRouter = router({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      assertCan(ctx.ability, "income:create", "Income");
-
       const orgId = ctx.user.organizationId;
 
       if (input.customerId) {
@@ -204,6 +201,7 @@ export const incomesRouter = router({
     }),
 
   update: orgProcedure
+    .require("income:update")
     .input(
       z.object({
         id: z.string(),
@@ -218,8 +216,6 @@ export const incomesRouter = router({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      assertCan(ctx.ability, "income:update", "Income");
-
       const { id, ...data } = input;
       const orgId = ctx.user.organizationId;
 
@@ -343,10 +339,9 @@ export const incomesRouter = router({
     }),
 
   delete: orgProcedure
+    .require("income:delete")
     .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
-      assertCan(ctx.ability, "income:delete", "Income");
-
       const income = await ctx.db.income.findFirst({
         where: {
           id: input.id,

@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { ConflictError, ForbiddenError, NotFoundError } from "@/lib/error";
-import { assertCan, orgProcedure, router } from "@/lib/trpc/context";
+import { orgProcedure, router } from "@/lib/trpc/context";
 import { reversePostedEntry } from "../journals/journal.service";
 import { postExpense } from "../journals/journal-posting.service";
 import { writeAuditLog } from "../shared/audit.service";
@@ -16,6 +16,7 @@ const PAYMENT_METHODS = [
 
 export const expensesRouter = router({
   list: orgProcedure
+    .require("expense:read")
     .input(
       z.object({
         search: z.string().optional(),
@@ -25,8 +26,6 @@ export const expensesRouter = router({
       }),
     )
     .query(async ({ ctx, input }) => {
-      assertCan(ctx.ability, "expense:read", "Expense");
-
       const { search, categoryId, dateFrom, dateTo } = input;
       const orgId = ctx.user.organizationId;
 
@@ -74,10 +73,9 @@ export const expensesRouter = router({
     }),
 
   byId: orgProcedure
+    .require("expense:read")
     .input(z.object({ id: z.string() }))
     .query(async ({ ctx, input }) => {
-      assertCan(ctx.ability, "expense:read", "Expense");
-
       const orgId = ctx.user.organizationId;
 
       const expense = await ctx.db.expense.findFirst({
@@ -116,6 +114,7 @@ export const expensesRouter = router({
     }),
 
   create: orgProcedure
+    .require("expense:create")
     .input(
       z.object({
         description: z.string().min(1).max(1000),
@@ -132,8 +131,6 @@ export const expensesRouter = router({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      assertCan(ctx.ability, "expense:create", "Expense");
-
       const orgId = ctx.user.organizationId;
 
       if (input.categoryId) {
@@ -228,6 +225,7 @@ export const expensesRouter = router({
     }),
 
   update: orgProcedure
+    .require("expense:update")
     .input(
       z.object({
         id: z.string(),
@@ -244,8 +242,6 @@ export const expensesRouter = router({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      assertCan(ctx.ability, "expense:update", "Expense");
-
       const { id, ...data } = input;
       const orgId = ctx.user.organizationId;
 
@@ -391,10 +387,9 @@ export const expensesRouter = router({
     }),
 
   delete: orgProcedure
+    .require("expense:delete")
     .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
-      assertCan(ctx.ability, "expense:delete", "Expense");
-
       const expense = await ctx.db.expense.findFirst({
         where: {
           id: input.id,
@@ -512,9 +507,7 @@ export const expensesRouter = router({
 
   // ── Expense categories (no create path existed anywhere before) ───────────
   categories: router({
-    list: orgProcedure.query(async ({ ctx }) => {
-      assertCan(ctx.ability, "expense:read", "Expense");
-
+    list: orgProcedure.require("expense:read").query(async ({ ctx }) => {
       return ctx.db.expenseCategory.findMany({
         where: { organizationId: ctx.user.organizationId, deletedAt: null },
         orderBy: { createdAt: "desc" },
@@ -526,6 +519,7 @@ export const expensesRouter = router({
     }),
 
     create: orgProcedure
+      .require("expense:create")
       .input(
         z.object({
           name: z.string().min(1).max(200),
@@ -533,8 +527,6 @@ export const expensesRouter = router({
         }),
       )
       .mutation(async ({ ctx, input }) => {
-        assertCan(ctx.ability, "expense:create", "Expense");
-
         const orgId = ctx.user.organizationId;
 
         const existing = await ctx.db.expenseCategory.findFirst({
@@ -586,6 +578,7 @@ export const expensesRouter = router({
       }),
 
     update: orgProcedure
+      .require("expense:update")
       .input(
         z.object({
           id: z.string(),
@@ -595,8 +588,6 @@ export const expensesRouter = router({
         }),
       )
       .mutation(async ({ ctx, input }) => {
-        assertCan(ctx.ability, "expense:update", "Expense");
-
         const { id, ...data } = input;
         const orgId = ctx.user.organizationId;
 
@@ -664,10 +655,9 @@ export const expensesRouter = router({
       }),
 
     delete: orgProcedure
+      .require("expense:delete")
       .input(z.object({ id: z.string() }))
       .mutation(async ({ ctx, input }) => {
-        assertCan(ctx.ability, "expense:delete", "Expense");
-
         const orgId = ctx.user.organizationId;
 
         const existing = await ctx.db.expenseCategory.findFirst({

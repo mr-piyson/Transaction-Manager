@@ -1,7 +1,7 @@
 import type { Prisma } from "@prisma/client";
 import { z } from "zod";
 import { ForbiddenError, NotFoundError } from "@/lib/error";
-import { assertCan, orgProcedure, router } from "@/lib/trpc/context";
+import { orgProcedure, router } from "@/lib/trpc/context";
 import { cuidSchema, paymentMethodSchema } from "@/lib/validations";
 import { postExpense } from "../journals/journal-posting.service";
 import { NOTIFICATION_TYPES } from "../notifications/notifications.shared";
@@ -83,6 +83,7 @@ async function getOrganizationCurrency(
 
 export const subscriptionsRouter = router({
   list: orgProcedure
+    .require("subscription:read")
     .input(
       z.object({
         search: z.string().optional(),
@@ -94,8 +95,6 @@ export const subscriptionsRouter = router({
       }),
     )
     .query(async ({ ctx, input }) => {
-      assertCan(ctx.ability, "subscription:read", "Subscription");
-
       const { search, status, categoryId, departmentId, dueWithinDays } = input;
       const orgId = ctx.user.organizationId;
 
@@ -136,10 +135,9 @@ export const subscriptionsRouter = router({
     }),
 
   byId: orgProcedure
+    .require("subscription:read")
     .input(z.object({ id: cuidSchema }))
     .query(async ({ ctx, input }) => {
-      assertCan(ctx.ability, "subscription:read", "Subscription");
-
       const orgId = ctx.user.organizationId;
 
       const subscription = await ctx.db.subscription.findFirst({
@@ -168,9 +166,7 @@ export const subscriptionsRouter = router({
     }),
 
   departments: {
-    list: orgProcedure.query(async ({ ctx }) => {
-      assertCan(ctx.ability, "subscription:read", "Subscription");
-
+    list: orgProcedure.require("subscription:read").query(async ({ ctx }) => {
       return ctx.db.department.findMany({
         where: {
           organizationId: ctx.user.organizationId,
@@ -188,9 +184,7 @@ export const subscriptionsRouter = router({
    * subscription:read (not org:settings:read) so regular users who can
    * create subscriptions can still fetch the defaults.
    */
-  defaults: orgProcedure.query(async ({ ctx }) => {
-    assertCan(ctx.ability, "subscription:read", "Subscription");
-
+  defaults: orgProcedure.require("subscription:read").query(async ({ ctx }) => {
     const setting = await ctx.db.organizationSetting.findUnique({
       where: {
         organizationId_key: {
@@ -213,6 +207,7 @@ export const subscriptionsRouter = router({
    * reschedules the cron task immediately (live), without a server restart.
    */
   updateRenewalSettings: orgProcedure
+    .require("org:settings:update")
     .input(
       z.object({
         defaultAlertDaysBefore: z.number().int().min(0).max(365).optional(),
@@ -223,10 +218,6 @@ export const subscriptionsRouter = router({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      assertCan(ctx.ability, "org:settings:update", "Organization", {
-        organizationId: ctx.user.organizationId,
-      });
-
       const orgId = ctx.user.organizationId;
 
       const updates: { key: string; value: string }[] = [];
@@ -278,65 +269,67 @@ export const subscriptionsRouter = router({
       return { success: true, appliedCronExpression };
     }),
 
-  create: orgProcedure.input(createSchema).mutation(async ({ ctx, input }) => {
-    assertCan(ctx.ability, "subscription:create", "Subscription");
+  create: orgProcedure
+    .require("subscription:create")
+    .input(createSchema)
+    .mutation(async ({ ctx, input }) => {
+      const orgId = ctx.user.organizationId;
 
-    const orgId = ctx.user.organizationId;
+      if (input.categoryId) {
+        await assertCategoryExists(ctx.db, orgId, input.categoryId);
+      }
 
-    if (input.categoryId) {
-      await assertCategoryExists(ctx.db, orgId, input.categoryId);
-    }
-
-    return ctx.db.$transaction(async (tx) => {
-      const subscription = await tx.subscription.create({
-        data: {
-          name: input.name,
-          vendor: input.vendor,
-          url: input.url,
-          description: input.description,
-          notes: input.notes,
-          billingCycle: input.billingCycle,
-          customCycleDays: input.customCycleDays,
-          amount: input.amount,
-          currency:
-            input.currency ?? (await getOrganizationCurrency(tx, orgId)),
-          method: input.method,
-          autoRenew: input.autoRenew,
-          startDate: input.startDate,
-          nextRenewalDate: input.nextRenewalDate,
-          alertDaysBefore: input.alertDaysBefore,
-          categoryId: input.categoryId,
-          departmentId: input.departmentId,
-          organizationId: orgId,
-          createdById: ctx.user.id,
-        },
-      });
-
-      await writeAuditLog(
-        {
-          entityType: "Subscription",
-          entityId: subscription.id,
-          action: "CREATE",
-          diff: {
-            name: { before: null, after: input.name },
-            amount: { before: null, after: input.amount },
-            nextRenewalDate: {
-              before: null,
-              after: input.nextRenewalDate,
-            },
+      return ctx.db.$transaction(async (tx) => {
+        const subscription = await tx.subscription.create({
+          data: {
+            name: input.name,
+            vendor: input.vendor,
+            url: input.url,
+            description: input.description,
+            notes: input.notes,
+            billingCycle: input.billingCycle,
+            customCycleDays: input.customCycleDays,
+            amount: input.amount,
+            currency:
+              input.currency ?? (await getOrganizationCurrency(tx, orgId)),
+            method: input.method,
+            autoRenew: input.autoRenew,
+            startDate: input.startDate,
+            nextRenewalDate: input.nextRenewalDate,
+            alertDaysBefore: input.alertDaysBefore,
+            categoryId: input.categoryId,
+            departmentId: input.departmentId,
+            organizationId: orgId,
+            createdById: ctx.user.id,
           },
-          organizationId: orgId,
-          userId: ctx.user.id,
-          ipAddress: ctx.ipAddress,
-        },
-        tx,
-      );
+        });
 
-      return subscription;
-    });
-  }),
+        await writeAuditLog(
+          {
+            entityType: "Subscription",
+            entityId: subscription.id,
+            action: "CREATE",
+            diff: {
+              name: { before: null, after: input.name },
+              amount: { before: null, after: input.amount },
+              nextRenewalDate: {
+                before: null,
+                after: input.nextRenewalDate,
+              },
+            },
+            organizationId: orgId,
+            userId: ctx.user.id,
+            ipAddress: ctx.ipAddress,
+          },
+          tx,
+        );
+
+        return subscription;
+      });
+    }),
 
   update: orgProcedure
+    .require("subscription:update")
     .input(
       z
         .object({
@@ -370,8 +363,6 @@ export const subscriptionsRouter = router({
         }),
     )
     .mutation(async ({ ctx, input }) => {
-      assertCan(ctx.ability, "subscription:update", "Subscription");
-
       const { id, ...data } = input;
       const orgId = ctx.user.organizationId;
 
@@ -422,10 +413,9 @@ export const subscriptionsRouter = router({
     }),
 
   delete: orgProcedure
+    .require("subscription:delete")
     .input(z.object({ id: cuidSchema }))
     .mutation(async ({ ctx, input }) => {
-      assertCan(ctx.ability, "subscription:delete", "Subscription");
-
       const orgId = ctx.user.organizationId;
 
       const existing = await ctx.db.subscription.findFirst({
@@ -517,6 +507,7 @@ export const subscriptionsRouter = router({
    * cron job never mutates it, it only alerts.
    */
   renew: orgProcedure
+    .require("subscription:renew")
     .input(
       z.object({
         id: cuidSchema,
@@ -526,8 +517,6 @@ export const subscriptionsRouter = router({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      assertCan(ctx.ability, "subscription:renew", "Subscription");
-
       const orgId = ctx.user.organizationId;
 
       const subscription = await ctx.db.subscription.findFirst({

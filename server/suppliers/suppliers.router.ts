@@ -110,10 +110,9 @@ async function syncSupplierItemPrices(
 
 export const suppliersRouter = router({
   list: orgProcedure
+    .require("po:read")
     .input(listSuppliersSchema)
     .query(async ({ ctx, input }) => {
-      assertCan(ctx.ability, "po:read", "all");
-
       const { search, isActive, includeSystem, sortBy, sortOrder } = input;
       const orgId = ctx.user.organizationId;
 
@@ -155,10 +154,9 @@ export const suppliersRouter = router({
     }),
 
   byId: orgProcedure
+    .require("po:read")
     .input(z.object({ id: z.string() }))
     .query(async ({ ctx, input }) => {
-      assertCan(ctx.ability, "po:read", "all");
-
       const supplier = await ctx.db.supplier.findFirst({
         where: {
           id: input.id,
@@ -218,10 +216,9 @@ export const suppliersRouter = router({
     }),
 
   create: orgProcedure
+    .require("po:create")
     .input(createSupplierSchema)
     .mutation(async ({ ctx, input }) => {
-      assertCan(ctx.ability, "po:create", "all");
-
       if (input.code) {
         const existing = await ctx.db.supplier.findFirst({
           where: {
@@ -427,6 +424,7 @@ export const suppliersRouter = router({
   // ── SUPPLIER ITEMS ─────────────────────────────────────────────────────────
 
   addSupplierItem: orgProcedure
+    .require("po:update")
     .input(
       z.object({
         supplierId: z.string(),
@@ -450,8 +448,6 @@ export const suppliersRouter = router({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      assertCan(ctx.ability, "po:update", "all");
-
       const supplier = await ctx.db.supplier.findFirst({
         where: {
           id: input.supplierId,

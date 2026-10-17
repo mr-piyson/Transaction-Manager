@@ -1,10 +1,8 @@
 import { z } from "zod";
-import { assertCan, orgProcedure, router } from "@/lib/trpc/context";
+import { orgProcedure, router } from "@/lib/trpc/context";
 
 export const reportsRouter = router({
-  summary: orgProcedure.query(async ({ ctx }) => {
-    assertCan(ctx.ability, "report:financial", "all");
-
+  summary: orgProcedure.require("report:financial").query(async ({ ctx }) => {
     const orgId = ctx.user.organizationId;
 
     const [
@@ -116,90 +114,92 @@ export const reportsRouter = router({
     };
   }),
 
-  monthlyRevenue: orgProcedure.query(async ({ ctx }) => {
-    assertCan(ctx.ability, "report:financial", "all");
+  monthlyRevenue: orgProcedure
+    .require("report:financial")
+    .query(async ({ ctx }) => {
+      const orgId = ctx.user.organizationId;
+      const now = new Date();
+      const twelveMonthsAgo = new Date(
+        now.getFullYear(),
+        now.getMonth() - 11,
+        1,
+      );
 
-    const orgId = ctx.user.organizationId;
-    const now = new Date();
-    const twelveMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 11, 1);
+      const invoices = await ctx.db.invoice.findMany({
+        where: {
+          organizationId: orgId,
+          type: "INVOICE",
+          deletedAt: null,
+          status: { notIn: ["CANCELLED", "DELETED", "DRAFT"] },
+          date: { gte: twelveMonthsAgo },
+        },
+        select: { date: true, total: true, costTotal: true },
+      });
 
-    const invoices = await ctx.db.invoice.findMany({
-      where: {
-        organizationId: orgId,
-        type: "INVOICE",
-        deletedAt: null,
-        status: { notIn: ["CANCELLED", "DELETED", "DRAFT"] },
-        date: { gte: twelveMonthsAgo },
-      },
-      select: { date: true, total: true, costTotal: true },
-    });
+      const monthly: Record<
+        string,
+        { revenue: number; cost: number; count: number }
+      > = {};
 
-    const monthly: Record<
-      string,
-      { revenue: number; cost: number; count: number }
-    > = {};
-
-    for (let i = 0; i < 12; i++) {
-      const d = new Date(now.getFullYear(), now.getMonth() - 11 + i, 1);
-      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
-      monthly[key] = { revenue: 0, cost: 0, count: 0 };
-    }
-
-    for (const inv of invoices) {
-      const d = new Date(inv.date);
-      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
-      if (monthly[key]) {
-        monthly[key].revenue += Number(inv.total);
-        monthly[key].cost += Number(inv.costTotal);
-        monthly[key].count += 1;
+      for (let i = 0; i < 12; i++) {
+        const d = new Date(now.getFullYear(), now.getMonth() - 11 + i, 1);
+        const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+        monthly[key] = { revenue: 0, cost: 0, count: 0 };
       }
-    }
 
-    return Object.entries(monthly).map(([month, data]) => ({
-      month,
-      revenue: data.revenue,
-      cost: data.cost,
-      profit: data.revenue - data.cost,
-      count: data.count,
-    }));
-  }),
+      for (const inv of invoices) {
+        const d = new Date(inv.date);
+        const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+        if (monthly[key]) {
+          monthly[key].revenue += Number(inv.total);
+          monthly[key].cost += Number(inv.costTotal);
+          monthly[key].count += 1;
+        }
+      }
 
-  invoiceStatusDistribution: orgProcedure.query(async ({ ctx }) => {
-    assertCan(ctx.ability, "report:financial", "all");
+      return Object.entries(monthly).map(([month, data]) => ({
+        month,
+        revenue: data.revenue,
+        cost: data.cost,
+        profit: data.revenue - data.cost,
+        count: data.count,
+      }));
+    }),
 
-    const orgId = ctx.user.organizationId;
+  invoiceStatusDistribution: orgProcedure
+    .require("report:financial")
+    .query(async ({ ctx }) => {
+      const orgId = ctx.user.organizationId;
 
-    const statuses = [
-      "PAID",
-      "SENT",
-      "PARTIAL",
-      "OVERDUE",
-      "DRAFT",
-      "CANCELLED",
-      "DISPUTED",
-    ] as const;
-    const counts = await Promise.all(
-      statuses.map((status) =>
-        ctx.db.invoice.count({
-          where: {
-            organizationId: orgId,
-            type: "INVOICE",
-            deletedAt: null,
-            status,
-          },
-        }),
-      ),
-    );
+      const statuses = [
+        "PAID",
+        "SENT",
+        "PARTIAL",
+        "OVERDUE",
+        "DRAFT",
+        "CANCELLED",
+        "DISPUTED",
+      ] as const;
+      const counts = await Promise.all(
+        statuses.map((status) =>
+          ctx.db.invoice.count({
+            where: {
+              organizationId: orgId,
+              type: "INVOICE",
+              deletedAt: null,
+              status,
+            },
+          }),
+        ),
+      );
 
-    return statuses
-      .map((status, i) => ({ status, count: counts[i] }))
-      .filter((s) => s.count > 0)
-      .sort((a, b) => b.count - a.count);
-  }),
+      return statuses
+        .map((status, i) => ({ status, count: counts[i] }))
+        .filter((s) => s.count > 0)
+        .sort((a, b) => b.count - a.count);
+    }),
 
-  arAging: orgProcedure.query(async ({ ctx }) => {
-    assertCan(ctx.ability, "report:financial", "all");
-
+  arAging: orgProcedure.require("report:financial").query(async ({ ctx }) => {
     const orgId = ctx.user.organizationId;
     const now = new Date();
 
@@ -248,108 +248,110 @@ export const reportsRouter = router({
     ];
   }),
 
-  revenueVsExpenses: orgProcedure.query(async ({ ctx }) => {
-    assertCan(ctx.ability, "report:financial", "all");
+  revenueVsExpenses: orgProcedure
+    .require("report:financial")
+    .query(async ({ ctx }) => {
+      const orgId = ctx.user.organizationId;
+      const now = new Date();
+      const twelveMonthsAgo = new Date(
+        now.getFullYear(),
+        now.getMonth() - 11,
+        1,
+      );
 
-    const orgId = ctx.user.organizationId;
-    const now = new Date();
-    const twelveMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 11, 1);
+      const [invoices, expenses, incomes] = await ctx.db.$transaction([
+        ctx.db.invoice.findMany({
+          where: {
+            organizationId: orgId,
+            type: "INVOICE",
+            deletedAt: null,
+            status: { notIn: ["CANCELLED", "DELETED", "DRAFT"] },
+            date: { gte: twelveMonthsAgo },
+          },
+          select: { date: true, total: true },
+        }),
+        ctx.db.expense.findMany({
+          where: {
+            organizationId: orgId,
+            deletedAt: null,
+            date: { gte: twelveMonthsAgo },
+          },
+          select: { date: true, amount: true },
+        }),
+        ctx.db.income.findMany({
+          where: {
+            organizationId: orgId,
+            deletedAt: null,
+            date: { gte: twelveMonthsAgo },
+          },
+          select: { date: true, amount: true },
+        }),
+      ]);
 
-    const [invoices, expenses, incomes] = await ctx.db.$transaction([
-      ctx.db.invoice.findMany({
-        where: {
-          organizationId: orgId,
-          type: "INVOICE",
-          deletedAt: null,
-          status: { notIn: ["CANCELLED", "DELETED", "DRAFT"] },
-          date: { gte: twelveMonthsAgo },
-        },
-        select: { date: true, total: true },
-      }),
-      ctx.db.expense.findMany({
-        where: {
-          organizationId: orgId,
-          deletedAt: null,
-          date: { gte: twelveMonthsAgo },
-        },
-        select: { date: true, amount: true },
-      }),
-      ctx.db.income.findMany({
-        where: {
-          organizationId: orgId,
-          deletedAt: null,
-          date: { gte: twelveMonthsAgo },
-        },
-        select: { date: true, amount: true },
-      }),
-    ]);
+      const useIncome = incomes.length > 0;
 
-    const useIncome = incomes.length > 0;
+      const monthly: Record<string, { revenue: number; expenses: number }> = {};
 
-    const monthly: Record<string, { revenue: number; expenses: number }> = {};
-
-    for (let i = 0; i < 12; i++) {
-      const d = new Date(now.getFullYear(), now.getMonth() - 11 + i, 1);
-      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
-      monthly[key] = { revenue: 0, expenses: 0 };
-    }
-
-    if (useIncome) {
-      for (const inc of incomes) {
-        const d = new Date(inc.date);
+      for (let i = 0; i < 12; i++) {
+        const d = new Date(now.getFullYear(), now.getMonth() - 11 + i, 1);
         const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
-        if (monthly[key]) monthly[key].revenue += Number(inc.amount);
+        monthly[key] = { revenue: 0, expenses: 0 };
       }
-    } else {
-      for (const inv of invoices) {
-        const d = new Date(inv.date);
+
+      if (useIncome) {
+        for (const inc of incomes) {
+          const d = new Date(inc.date);
+          const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+          if (monthly[key]) monthly[key].revenue += Number(inc.amount);
+        }
+      } else {
+        for (const inv of invoices) {
+          const d = new Date(inv.date);
+          const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+          if (monthly[key]) monthly[key].revenue += Number(inv.total);
+        }
+      }
+
+      for (const exp of expenses) {
+        const d = new Date(exp.date);
         const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
-        if (monthly[key]) monthly[key].revenue += Number(inv.total);
+        if (monthly[key]) monthly[key].expenses += Number(exp.amount);
       }
-    }
 
-    for (const exp of expenses) {
-      const d = new Date(exp.date);
-      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
-      if (monthly[key]) monthly[key].expenses += Number(exp.amount);
-    }
+      return Object.entries(monthly).map(([month, data]) => ({
+        month,
+        ...data,
+      }));
+    }),
 
-    return Object.entries(monthly).map(([month, data]) => ({
-      month,
-      ...data,
-    }));
-  }),
-
-  salesByCustomer: orgProcedure.query(async ({ ctx }) => {
-    assertCan(ctx.ability, "report:sales", "all");
-
-    const customers = await ctx.db.customer.findMany({
-      where: { organizationId: ctx.user.organizationId, deletedAt: null },
-      select: {
-        id: true,
-        name: true,
-        invoices: {
-          where: { status: { notIn: ["CANCELLED", "DELETED", "DRAFT"] } },
-          select: { total: true, status: true },
+  salesByCustomer: orgProcedure
+    .require("report:sales")
+    .query(async ({ ctx }) => {
+      const customers = await ctx.db.customer.findMany({
+        where: { organizationId: ctx.user.organizationId, deletedAt: null },
+        select: {
+          id: true,
+          name: true,
+          invoices: {
+            where: { status: { notIn: ["CANCELLED", "DELETED", "DRAFT"] } },
+            select: { total: true, status: true },
+          },
         },
-      },
-    });
+      });
 
-    return customers
-      .map((c) => ({
-        id: c.id,
-        name: c.name,
-        totalSales: Number(
-          c.invoices.reduce((sum, inv) => sum + Number(inv.total), 0),
-        ),
-        invoiceCount: c.invoices.length,
-      }))
-      .sort((a, b) => b.totalSales - a.totalSales);
-  }),
+      return customers
+        .map((c) => ({
+          id: c.id,
+          name: c.name,
+          totalSales: Number(
+            c.invoices.reduce((sum, inv) => sum + Number(inv.total), 0),
+          ),
+          invoiceCount: c.invoices.length,
+        }))
+        .sort((a, b) => b.totalSales - a.totalSales);
+    }),
 
-  topItems: orgProcedure.query(async ({ ctx }) => {
-    assertCan(ctx.ability, "report:inventory", "all");
-
+  topItems: orgProcedure.require("report:inventory").query(async ({ ctx }) => {
     const items = await ctx.db.item.findMany({
       where: {
         organizationId: ctx.user.organizationId,
@@ -389,14 +391,13 @@ export const reportsRouter = router({
 
   // ── TRIAL BALANCE ──────────────────────────────────────────────────────────
   trialBalance: orgProcedure
+    .require("report:financial")
     .input(
       z.object({
         asOf: z.coerce.date().optional(),
       }),
     )
     .query(async ({ ctx, input }) => {
-      assertCan(ctx.ability, "report:financial", "all");
-
       const orgId = ctx.user.organizationId;
 
       // Get all posted journal lines
@@ -485,6 +486,7 @@ export const reportsRouter = router({
 
   // ── GENERAL LEDGER ─────────────────────────────────────────────────────────
   generalLedger: orgProcedure
+    .require("report:financial")
     .input(
       z.object({
         accountId: z.string(),
@@ -493,8 +495,6 @@ export const reportsRouter = router({
       }),
     )
     .query(async ({ ctx, input }) => {
-      assertCan(ctx.ability, "report:financial", "all");
-
       const orgId = ctx.user.organizationId;
 
       const account = await ctx.db.ledgerAccount.findFirst({
@@ -563,14 +563,13 @@ export const reportsRouter = router({
 
   // ── BALANCE SHEET ──────────────────────────────────────────────────────────
   balanceSheet: orgProcedure
+    .require("report:financial")
     .input(
       z.object({
         asOf: z.coerce.date().optional(),
       }),
     )
     .query(async ({ ctx, input }) => {
-      assertCan(ctx.ability, "report:financial", "all");
-
       const orgId = ctx.user.organizationId;
 
       const lines = await ctx.db.journalLine.findMany({
@@ -669,6 +668,7 @@ export const reportsRouter = router({
 
   // ── PROFIT & LOSS ──────────────────────────────────────────────────────────
   profitAndLoss: orgProcedure
+    .require("report:financial")
     .input(
       z.object({
         dateFrom: z.coerce.date().optional(),
@@ -676,8 +676,6 @@ export const reportsRouter = router({
       }),
     )
     .query(async ({ ctx, input }) => {
-      assertCan(ctx.ability, "report:financial", "all");
-
       const orgId = ctx.user.organizationId;
 
       const lines = await ctx.db.journalLine.findMany({
@@ -772,9 +770,7 @@ export const reportsRouter = router({
     }),
 
   // ── AP AGING (simple bucket summary) ──────────────────────────────────────
-  apAging: orgProcedure.query(async ({ ctx }) => {
-    assertCan(ctx.ability, "report:financial", "all");
-
+  apAging: orgProcedure.require("report:financial").query(async ({ ctx }) => {
     const orgId = ctx.user.organizationId;
     const now = new Date();
 
@@ -823,128 +819,128 @@ export const reportsRouter = router({
   }),
 
   // ── AP AGING (detailed with PO list) ──────────────────────────────────────
-  apAgingDetailed: orgProcedure.query(async ({ ctx }) => {
-    assertCan(ctx.ability, "report:financial", "all");
+  apAgingDetailed: orgProcedure
+    .require("report:financial")
+    .query(async ({ ctx }) => {
+      const orgId = ctx.user.organizationId;
+      const now = new Date();
 
-    const orgId = ctx.user.organizationId;
-    const now = new Date();
+      const outstandingPOs = await ctx.db.purchaseOrder.findMany({
+        where: {
+          organizationId: orgId,
+          deletedAt: null,
+          status: { notIn: ["CANCELLED", "CLOSED"] },
+          amountOwed: { gt: 0 },
+        },
+        select: {
+          id: true,
+          serial: true,
+          total: true,
+          amountOwed: true,
+          expectedDate: true,
+          date: true,
+          currency: true,
+          supplier: { select: { name: true } },
+        },
+        orderBy: { date: "desc" },
+      });
 
-    const outstandingPOs = await ctx.db.purchaseOrder.findMany({
-      where: {
-        organizationId: orgId,
-        deletedAt: null,
-        status: { notIn: ["CANCELLED", "CLOSED"] },
-        amountOwed: { gt: 0 },
-      },
-      select: {
-        id: true,
-        serial: true,
-        total: true,
-        amountOwed: true,
-        expectedDate: true,
-        date: true,
-        currency: true,
-        supplier: { select: { name: true } },
-      },
-      orderBy: { date: "desc" },
-    });
-
-    const buckets = {
-      current: { amount: 0, count: 0, pos: [] as any[] },
-      days1to30: { amount: 0, count: 0, pos: [] as any[] },
-      days31to60: { amount: 0, count: 0, pos: [] as any[] },
-      days61to90: { amount: 0, count: 0, pos: [] as any[] },
-      days91plus: { amount: 0, count: 0, pos: [] as any[] },
-    };
-
-    for (const po of outstandingPOs) {
-      const amount = Number(po.amountOwed);
-      const daysOverdue = po.expectedDate
-        ? Math.floor(
-            (now.getTime() - new Date(po.expectedDate).getTime()) /
-              (1000 * 60 * 60 * 24),
-          )
-        : 0;
-
-      const poData = {
-        id: po.id,
-        serial: po.serial,
-        total: Number(po.total),
-        amountOwed: amount,
-        dueDate: po.expectedDate,
-        date: po.date,
-        currency: po.currency,
-        supplierName: po.supplier?.name ?? "—",
-        daysOverdue: Math.max(0, daysOverdue),
+      const buckets = {
+        current: { amount: 0, count: 0, pos: [] as any[] },
+        days1to30: { amount: 0, count: 0, pos: [] as any[] },
+        days31to60: { amount: 0, count: 0, pos: [] as any[] },
+        days61to90: { amount: 0, count: 0, pos: [] as any[] },
+        days91plus: { amount: 0, count: 0, pos: [] as any[] },
       };
 
-      if (daysOverdue <= 0) {
-        buckets.current.amount += amount;
-        buckets.current.count += 1;
-        buckets.current.pos.push(poData);
-      } else if (daysOverdue <= 30) {
-        buckets.days1to30.amount += amount;
-        buckets.days1to30.count += 1;
-        buckets.days1to30.pos.push(poData);
-      } else if (daysOverdue <= 60) {
-        buckets.days31to60.amount += amount;
-        buckets.days31to60.count += 1;
-        buckets.days31to60.pos.push(poData);
-      } else if (daysOverdue <= 90) {
-        buckets.days61to90.amount += amount;
-        buckets.days61to90.count += 1;
-        buckets.days61to90.pos.push(poData);
-      } else {
-        buckets.days91plus.amount += amount;
-        buckets.days91plus.count += 1;
-        buckets.days91plus.pos.push(poData);
+      for (const po of outstandingPOs) {
+        const amount = Number(po.amountOwed);
+        const daysOverdue = po.expectedDate
+          ? Math.floor(
+              (now.getTime() - new Date(po.expectedDate).getTime()) /
+                (1000 * 60 * 60 * 24),
+            )
+          : 0;
+
+        const poData = {
+          id: po.id,
+          serial: po.serial,
+          total: Number(po.total),
+          amountOwed: amount,
+          dueDate: po.expectedDate,
+          date: po.date,
+          currency: po.currency,
+          supplierName: po.supplier?.name ?? "—",
+          daysOverdue: Math.max(0, daysOverdue),
+        };
+
+        if (daysOverdue <= 0) {
+          buckets.current.amount += amount;
+          buckets.current.count += 1;
+          buckets.current.pos.push(poData);
+        } else if (daysOverdue <= 30) {
+          buckets.days1to30.amount += amount;
+          buckets.days1to30.count += 1;
+          buckets.days1to30.pos.push(poData);
+        } else if (daysOverdue <= 60) {
+          buckets.days31to60.amount += amount;
+          buckets.days31to60.count += 1;
+          buckets.days31to60.pos.push(poData);
+        } else if (daysOverdue <= 90) {
+          buckets.days61to90.amount += amount;
+          buckets.days61to90.count += 1;
+          buckets.days61to90.pos.push(poData);
+        } else {
+          buckets.days91plus.amount += amount;
+          buckets.days91plus.count += 1;
+          buckets.days91plus.pos.push(poData);
+        }
       }
-    }
 
-    const grandTotal = Object.values(buckets).reduce(
-      (sum, b) => sum + b.amount,
-      0,
-    );
-    const totalCount = Object.values(buckets).reduce(
-      (sum, b) => sum + b.count,
-      0,
-    );
+      const grandTotal = Object.values(buckets).reduce(
+        (sum, b) => sum + b.amount,
+        0,
+      );
+      const totalCount = Object.values(buckets).reduce(
+        (sum, b) => sum + b.count,
+        0,
+      );
 
-    return {
-      buckets: [
-        {
-          bucket: "Current",
-          amount: buckets.current.amount,
-          count: buckets.current.count,
-          pos: buckets.current.pos,
-        },
-        {
-          bucket: "1–30 Days",
-          amount: buckets.days1to30.amount,
-          count: buckets.days1to30.count,
-          pos: buckets.days1to30.pos,
-        },
-        {
-          bucket: "31–60 Days",
-          amount: buckets.days31to60.amount,
-          count: buckets.days31to60.count,
-          pos: buckets.days31to60.pos,
-        },
-        {
-          bucket: "61–90 Days",
-          amount: buckets.days61to90.amount,
-          count: buckets.days61to90.count,
-          pos: buckets.days61to90.pos,
-        },
-        {
-          bucket: "90+ Days",
-          amount: buckets.days91plus.amount,
-          count: buckets.days91plus.count,
-          pos: buckets.days91plus.pos,
-        },
-      ],
-      grandTotal,
-      totalCount,
-    };
-  }),
+      return {
+        buckets: [
+          {
+            bucket: "Current",
+            amount: buckets.current.amount,
+            count: buckets.current.count,
+            pos: buckets.current.pos,
+          },
+          {
+            bucket: "1–30 Days",
+            amount: buckets.days1to30.amount,
+            count: buckets.days1to30.count,
+            pos: buckets.days1to30.pos,
+          },
+          {
+            bucket: "31–60 Days",
+            amount: buckets.days31to60.amount,
+            count: buckets.days31to60.count,
+            pos: buckets.days31to60.pos,
+          },
+          {
+            bucket: "61–90 Days",
+            amount: buckets.days61to90.amount,
+            count: buckets.days61to90.count,
+            pos: buckets.days61to90.pos,
+          },
+          {
+            bucket: "90+ Days",
+            amount: buckets.days91plus.amount,
+            count: buckets.days91plus.count,
+            pos: buckets.days91plus.pos,
+          },
+        ],
+        grandTotal,
+        totalCount,
+      };
+    }),
 });

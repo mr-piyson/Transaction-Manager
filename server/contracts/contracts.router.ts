@@ -41,10 +41,9 @@ const listContractsSchema = z.object({
 
 export const contractsRouter = router({
   list: orgProcedure
+    .require("invoice:read")
     .input(listContractsSchema)
     .query(async ({ ctx, input }) => {
-      assertCan(ctx.ability, "invoice:read", "Invoice");
-
       const { search, status, customerId, expiringSoon, sortBy, sortOrder } =
         input;
       const orgId = ctx.user.organizationId;
@@ -97,10 +96,9 @@ export const contractsRouter = router({
     }),
 
   byId: orgProcedure
+    .require("invoice:read")
     .input(z.object({ id: z.string() }))
     .query(async ({ ctx, input }) => {
-      assertCan(ctx.ability, "invoice:read", "Invoice");
-
       const contract = await ctx.db.contract.findFirst({
         where: {
           id: input.id,
@@ -121,10 +119,9 @@ export const contractsRouter = router({
     }),
 
   create: orgProcedure
+    .require("invoice:create")
     .input(createContractSchema)
     .mutation(async ({ ctx, input }) => {
-      assertCan(ctx.ability, "invoice:create", "Invoice");
-
       const orgId = ctx.user.organizationId;
 
       if (input.customerId) {

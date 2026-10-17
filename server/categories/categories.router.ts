@@ -17,8 +17,7 @@ const updateCategorySchema = categoryBaseSchema.partial().extend({
 });
 
 export const categoriesRouter = router({
-  list: orgProcedure.query(async ({ ctx }) => {
-    assertCan(ctx.ability, "category:read", "ItemCategory");
+  list: orgProcedure.require("category:read").query(async ({ ctx }) => {
     return ctx.db.itemCategory.findMany({
       where: { organizationId: ctx.user.organizationId, deletedAt: null },
       orderBy: { createdAt: "desc" },
@@ -26,9 +25,9 @@ export const categoriesRouter = router({
   }),
 
   byId: orgProcedure
+    .require("category:read")
     .input(z.object({ id: z.string() }))
     .query(async ({ ctx, input }) => {
-      assertCan(ctx.ability, "category:read", "ItemCategory");
       const category = await ctx.db.itemCategory.findFirst({
         where: {
           id: input.id,
@@ -41,9 +40,9 @@ export const categoriesRouter = router({
     }),
 
   create: orgProcedure
+    .require("category:create")
     .input(createCategorySchema)
     .mutation(async ({ ctx, input }) => {
-      assertCan(ctx.ability, "category:create", "ItemCategory");
       const orgId = ctx.user.organizationId;
 
       const existing = await ctx.db.itemCategory.findFirst({
@@ -115,10 +114,9 @@ export const categoriesRouter = router({
     }),
 
   delete: orgProcedure
+    .require("category:delete")
     .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
-      assertCan(ctx.ability, "category:delete", "ItemCategory");
-
       const existing = await ctx.db.itemCategory.findFirst({
         where: {
           id: input.id,

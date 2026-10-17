@@ -19,7 +19,7 @@ import type {
   ContextMenuItemSchema,
   ContextMenuSeparatorItem,
 } from "@/components/context-menu";
-import type { Action, AppAbilityType } from "@/lib/abilities";
+import type { Action, AppAbilityType } from "@/lib/permissions";
 
 /**
  * Universal purchase-order actions.

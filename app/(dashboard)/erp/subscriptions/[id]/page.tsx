@@ -51,9 +51,9 @@ export default function SubscriptionDetailPage() {
   const { data: me } = trpc.auth.me.useQuery();
   const isSuperAdmin = me?.platformRole === "SUPER_ADMIN";
 
-  const canRenew = ability?.can("subscription:renew" as any, "Subscription");
-  const canUpdate = ability?.can("subscription:update" as any, "Subscription");
-  const canDelete = ability?.can("subscription:delete" as any, "Subscription");
+  const canRenew = ability?.can("subscription:renew", "Subscription");
+  const canUpdate = ability?.can("subscription:update", "Subscription");
+  const canDelete = ability?.can("subscription:delete", "Subscription");
 
   const {
     data: subscription,

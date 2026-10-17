@@ -29,10 +29,9 @@ const listWarehousesSchema = z.object({
 
 export const warehousesRouter = router({
   list: orgProcedure
+    .require("stock:read")
     .input(listWarehousesSchema)
     .query(async ({ ctx, input }) => {
-      assertCan(ctx.ability, "stock:read", "all");
-
       const { search, isActive, sortBy, sortOrder } = input;
       const orgId = ctx.user.organizationId;
 
@@ -60,10 +59,9 @@ export const warehousesRouter = router({
     }),
 
   byId: orgProcedure
+    .require("stock:read")
     .input(z.object({ id: z.string() }))
     .query(async ({ ctx, input }) => {
-      assertCan(ctx.ability, "stock:read", "all");
-
       const warehouse = await ctx.db.warehouse.findFirst({
         where: {
           id: input.id,
@@ -77,10 +75,9 @@ export const warehousesRouter = router({
     }),
 
   create: orgProcedure
+    .require("stock:transfer")
     .input(createWarehouseSchema)
     .mutation(async ({ ctx, input }) => {
-      assertCan(ctx.ability, "stock:transfer", "all");
-
       const orgId = ctx.user.organizationId;
 
       if (input.code) {

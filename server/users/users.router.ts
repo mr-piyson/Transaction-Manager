@@ -2,7 +2,7 @@ import { hashPassword } from "better-auth/crypto";
 import { z } from "zod";
 import { auth } from "@/lib/auth/auth-server";
 import { ForbiddenError, NotFoundError } from "@/lib/error";
-import { assertCan, orgProcedure, router } from "@/lib/trpc/context";
+import { orgProcedure, router } from "@/lib/trpc/context";
 import { writeAuditLog } from "../shared/audit.service";
 
 const userBaseSchema = z.object({
@@ -46,10 +46,7 @@ const userRoleInclude = (orgId: string) => ({
 });
 
 export const usersRouter = router({
-  list: orgProcedure.query(async ({ ctx }) => {
-    assertCan(ctx.ability, "user:manage", "User", {
-      organizationId: ctx.user.organizationId,
-    });
+  list: orgProcedure.require("user:manage").query(async ({ ctx }) => {
     const orgId = ctx.user.organizationId!;
 
     return ctx.db.user.findMany({
@@ -60,6 +57,7 @@ export const usersRouter = router({
   }),
 
   create: orgProcedure
+    .require("user:manage")
     .input(
       userBaseSchema.extend({
         roleId: z.string(),
@@ -68,9 +66,6 @@ export const usersRouter = router({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      assertCan(ctx.ability, "user:manage", "User", {
-        organizationId: ctx.user.organizationId,
-      });
       const orgId = ctx.user.organizationId!;
 
       const existingUser = await ctx.db.user.findFirst({
@@ -248,6 +243,7 @@ export const usersRouter = router({
     }),
 
   update: orgProcedure
+    .require("user:manage")
     .input(
       z.object({
         id: z.string().min(1),
@@ -263,9 +259,6 @@ export const usersRouter = router({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      assertCan(ctx.ability, "user:manage", "User", {
-        organizationId: ctx.user.organizationId,
-      });
       const orgId = ctx.user.organizationId!;
       const { id, roleId, ...data } = input;
 
@@ -337,6 +330,7 @@ export const usersRouter = router({
     }),
 
   setPassword: orgProcedure
+    .require("user:manage")
     .input(
       z.object({
         id: z.string().min(1),
@@ -344,10 +338,6 @@ export const usersRouter = router({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      assertCan(ctx.ability, "user:manage", "User", {
-        organizationId: ctx.user.organizationId,
-      });
-
       const user = await ctx.db.user.findFirst({
         where: {
           id: input.id,
@@ -379,12 +369,9 @@ export const usersRouter = router({
     }),
 
   sendPasswordReset: orgProcedure
+    .require("user:manage")
     .input(z.object({ id: z.string().min(1) }))
     .mutation(async ({ ctx, input }) => {
-      assertCan(ctx.ability, "user:manage", "User", {
-        organizationId: ctx.user.organizationId,
-      });
-
       const user = await ctx.db.user.findFirst({
         where: {
           id: input.id,
@@ -406,12 +393,9 @@ export const usersRouter = router({
     }),
 
   toggleActive: orgProcedure
+    .require("user:manage")
     .input(z.object({ id: z.string().min(1) }))
     .mutation(async ({ ctx, input }) => {
-      assertCan(ctx.ability, "user:manage", "User", {
-        organizationId: ctx.user.organizationId,
-      });
-
       const user = await ctx.db.user.findFirst({
         where: {
           id: input.id,
@@ -432,12 +416,9 @@ export const usersRouter = router({
     }),
 
   delete: orgProcedure
+    .require("user:manage")
     .input(z.object({ id: z.string().min(1) }))
     .mutation(async ({ ctx, input }) => {
-      assertCan(ctx.ability, "user:manage", "User", {
-        organizationId: ctx.user.organizationId,
-      });
-
       const user = await ctx.db.user.findFirst({
         where: {
           id: input.id,
@@ -484,10 +465,7 @@ export const usersRouter = router({
   // ── Dynamic Roles CRUD ──────────────────────────────────────────────────
 
   roles: {
-    list: orgProcedure.query(async ({ ctx }) => {
-      assertCan(ctx.ability, "user:manage", "User", {
-        organizationId: ctx.user.organizationId,
-      });
+    list: orgProcedure.require("user:manage").query(async ({ ctx }) => {
       const orgId = ctx.user.organizationId!;
 
       return ctx.db.role.findMany({
@@ -501,6 +479,7 @@ export const usersRouter = router({
     }),
 
     create: orgProcedure
+      .require("role:manage")
       .input(
         z.object({
           name: z.string().min(1).max(100),
@@ -510,10 +489,6 @@ export const usersRouter = router({
         }),
       )
       .mutation(async ({ ctx, input }) => {
-        assertCan(ctx.ability, "role:manage", "all", {
-          organizationId: ctx.user.organizationId,
-        });
-
         return ctx.db.role.create({
           data: {
             name: input.name,
@@ -526,6 +501,7 @@ export const usersRouter = router({
       }),
 
     update: orgProcedure
+      .require("role:manage")
       .input(
         z.object({
           id: z.string(),
@@ -536,9 +512,6 @@ export const usersRouter = router({
         }),
       )
       .mutation(async ({ ctx, input }) => {
-        assertCan(ctx.ability, "role:manage", "all", {
-          organizationId: ctx.user.organizationId,
-        });
         const { id, ...data } = input;
 
         const role = await ctx.db.role.findFirst({
@@ -556,12 +529,9 @@ export const usersRouter = router({
       }),
 
     delete: orgProcedure
+      .require("role:manage")
       .input(z.object({ id: z.string().min(1) }))
       .mutation(async ({ ctx, input }) => {
-        assertCan(ctx.ability, "role:manage", "all", {
-          organizationId: ctx.user.organizationId,
-        });
-
         const role = await ctx.db.role.findFirst({
           where: {
             id: input.id,
@@ -588,11 +558,7 @@ export const usersRouter = router({
   // ── Permissions ──────────────────────────────────────────────────────────
 
   permissions: {
-    list: orgProcedure.query(async ({ ctx }) => {
-      assertCan(ctx.ability, "user:manage", "User", {
-        organizationId: ctx.user.organizationId,
-      });
-
+    list: orgProcedure.require("user:manage").query(async ({ ctx }) => {
       const permissions = await ctx.db.permission.findMany({
         orderBy: [{ module: "asc" }, { code: "asc" }],
       });
@@ -614,20 +580,14 @@ export const usersRouter = router({
       }, {});
     }),
 
-    listAll: orgProcedure.query(async ({ ctx }) => {
-      assertCan(ctx.ability, "user:manage", "User", {
-        organizationId: ctx.user.organizationId,
-      });
+    listAll: orgProcedure.require("user:manage").query(async ({ ctx }) => {
       return ctx.db.permission.findMany({
         orderBy: [{ module: "asc" }, { code: "asc" }],
       });
     }),
   },
 
-  orgRoles: orgProcedure.query(async ({ ctx }) => {
-    assertCan(ctx.ability, "user:manage", "User", {
-      organizationId: ctx.user.organizationId,
-    });
+  orgRoles: orgProcedure.require("user:manage").query(async ({ ctx }) => {
     const orgId = ctx.user.organizationId!;
 
     return ctx.db.role.findMany({
@@ -644,12 +604,9 @@ export const usersRouter = router({
 
   rolePermissions: {
     list: orgProcedure
+      .require("user:manage")
       .input(z.object({ roleId: z.string() }))
       .query(async ({ ctx, input }) => {
-        assertCan(ctx.ability, "user:manage", "User", {
-          organizationId: ctx.user.organizationId,
-        });
-
         const rolePerms = await ctx.db.rolePermission.findMany({
           where: { roleId: input.roleId },
           include: { permission: true },
@@ -658,14 +615,11 @@ export const usersRouter = router({
       }),
 
     update: orgProcedure
+      .require("role:manage")
       .input(
         z.object({ roleId: z.string(), permissionIds: z.array(z.string()) }),
       )
       .mutation(async ({ ctx, input }) => {
-        assertCan(ctx.ability, "role:manage", "all", {
-          organizationId: ctx.user.organizationId,
-        });
-
         const role = await ctx.db.role.findUnique({
           where: { id: input.roleId },
           select: { systemKey: true },
@@ -690,10 +644,7 @@ export const usersRouter = router({
       }),
   },
 
-  countByRole: orgProcedure.query(async ({ ctx }) => {
-    assertCan(ctx.ability, "user:manage", "User", {
-      organizationId: ctx.user.organizationId,
-    });
+  countByRole: orgProcedure.require("user:manage").query(async ({ ctx }) => {
     const orgId = ctx.user.organizationId!;
 
     const counts = await ctx.db.userOrganizationRole.groupBy({

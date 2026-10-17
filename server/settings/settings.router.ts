@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { ConflictError, NotFoundError } from "@/lib/error";
-import { assertCan, orgProcedure, router } from "@/lib/trpc/context";
+import { orgProcedure, router } from "@/lib/trpc/context";
 import { currencyCodeSchema } from "@/lib/validations";
 import { writeAuditLog } from "../shared/audit.service";
 import { storageRouter } from "./storage.router";
@@ -31,10 +31,7 @@ const ledgerAccountBaseSchema = z.object({
 });
 
 export const settingsRouter = router({
-  getOrg: orgProcedure.query(async ({ ctx }) => {
-    assertCan(ctx.ability, "org:settings:read", "Organization", {
-      organizationId: ctx.user.organizationId,
-    });
+  getOrg: orgProcedure.require("org:settings:read").query(async ({ ctx }) => {
     const org = await ctx.db.organization.findUnique({
       where: { id: ctx.user.organizationId },
       include: { settings: true },
@@ -43,6 +40,7 @@ export const settingsRouter = router({
   }),
 
   updateOrg: orgProcedure
+    .require("org:settings:update")
     .input(
       z.object({
         name: z.string().min(2).optional(),
@@ -62,9 +60,6 @@ export const settingsRouter = router({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      assertCan(ctx.ability, "org:settings:update", "Organization", {
-        organizationId: ctx.user.organizationId,
-      });
       return ctx.db.organization.update({
         where: { id: ctx.user.organizationId },
         data: input,
@@ -73,10 +68,7 @@ export const settingsRouter = router({
 
   // Tax Rates
   taxRates: {
-    list: orgProcedure.query(async ({ ctx }) => {
-      assertCan(ctx.ability, "org:settings:read", "Organization", {
-        organizationId: ctx.user.organizationId,
-      });
+    list: orgProcedure.require("org:settings:read").query(async ({ ctx }) => {
       return ctx.db.taxRate.findMany({
         where: { organizationId: ctx.user.organizationId },
         orderBy: { createdAt: "desc" },
@@ -84,11 +76,9 @@ export const settingsRouter = router({
     }),
 
     create: orgProcedure
+      .require("org:settings:update")
       .input(taxRateBaseSchema)
       .mutation(async ({ ctx, input }) => {
-        assertCan(ctx.ability, "org:settings:update", "Organization", {
-          organizationId: ctx.user.organizationId,
-        });
         const orgId = ctx.user.organizationId;
 
         const existing = await ctx.db.taxRate.findFirst({
@@ -127,11 +117,9 @@ export const settingsRouter = router({
       }),
 
     update: orgProcedure
+      .require("org:settings:update")
       .input(taxRateBaseSchema.partial().extend({ id: z.string() }))
       .mutation(async ({ ctx, input }) => {
-        assertCan(ctx.ability, "org:settings:update", "Organization", {
-          organizationId: ctx.user.organizationId,
-        });
         const { id, ...data } = input;
         const orgId = ctx.user.organizationId;
 
@@ -167,11 +155,9 @@ export const settingsRouter = router({
       }),
 
     delete: orgProcedure
+      .require("org:settings:update")
       .input(z.object({ id: z.string() }))
       .mutation(async ({ ctx, input }) => {
-        assertCan(ctx.ability, "org:settings:update", "Organization", {
-          organizationId: ctx.user.organizationId,
-        });
         const existing = await ctx.db.taxRate.findFirst({
           where: { id: input.id, organizationId: ctx.user.organizationId },
           select: { id: true, isDefault: true },
@@ -204,10 +190,7 @@ export const settingsRouter = router({
 
   // Chart of Accounts
   chartOfAccounts: {
-    list: orgProcedure.query(async ({ ctx }) => {
-      assertCan(ctx.ability, "org:settings:read", "Organization", {
-        organizationId: ctx.user.organizationId,
-      });
+    list: orgProcedure.require("org:settings:read").query(async ({ ctx }) => {
       return ctx.db.ledgerAccount.findMany({
         where: { organizationId: ctx.user.organizationId },
         orderBy: { createdAt: "desc" },
@@ -216,11 +199,9 @@ export const settingsRouter = router({
     }),
 
     create: orgProcedure
+      .require("org:settings:update")
       .input(ledgerAccountBaseSchema)
       .mutation(async ({ ctx, input }) => {
-        assertCan(ctx.ability, "org:settings:update", "Organization", {
-          organizationId: ctx.user.organizationId,
-        });
         const orgId = ctx.user.organizationId;
 
         const existing = await ctx.db.ledgerAccount.findFirst({
@@ -254,11 +235,9 @@ export const settingsRouter = router({
       }),
 
     update: orgProcedure
+      .require("org:settings:update")
       .input(ledgerAccountBaseSchema.partial().extend({ id: z.string() }))
       .mutation(async ({ ctx, input }) => {
-        assertCan(ctx.ability, "org:settings:update", "Organization", {
-          organizationId: ctx.user.organizationId,
-        });
         const { id, ...data } = input;
         const existing = await ctx.db.ledgerAccount.findFirst({
           where: { id, organizationId: ctx.user.organizationId },
@@ -288,11 +267,9 @@ export const settingsRouter = router({
       }),
 
     delete: orgProcedure
+      .require("org:settings:update")
       .input(z.object({ id: z.string() }))
       .mutation(async ({ ctx, input }) => {
-        assertCan(ctx.ability, "org:settings:update", "Organization", {
-          organizationId: ctx.user.organizationId,
-        });
         const existing = await ctx.db.ledgerAccount.findFirst({
           where: { id: input.id, organizationId: ctx.user.organizationId },
           include: { children: { select: { id: true } } },
@@ -327,11 +304,9 @@ export const settingsRouter = router({
 
   // Organization settings (key-value)
   updateSetting: orgProcedure
+    .require("org:settings:update")
     .input(z.object({ key: z.string(), value: z.string() }))
     .mutation(async ({ ctx, input }) => {
-      assertCan(ctx.ability, "org:settings:update", "Organization", {
-        organizationId: ctx.user.organizationId,
-      });
       return ctx.db.organizationSetting.upsert({
         where: {
           organizationId_key: {
@@ -349,11 +324,9 @@ export const settingsRouter = router({
     }),
 
   getSetting: orgProcedure
+    .require("org:settings:read")
     .input(z.object({ key: z.string() }))
     .query(async ({ ctx, input }) => {
-      assertCan(ctx.ability, "org:settings:read", "Organization", {
-        organizationId: ctx.user.organizationId,
-      });
       const setting = await ctx.db.organizationSetting.findUnique({
         where: {
           organizationId_key: {
@@ -365,18 +338,17 @@ export const settingsRouter = router({
       return setting?.value ?? null;
     }),
 
-  getSettings: orgProcedure.query(async ({ ctx }) => {
-    assertCan(ctx.ability, "org:settings:read", "Organization", {
-      organizationId: ctx.user.organizationId,
-    });
-    const settings = await ctx.db.organizationSetting.findMany({
-      where: { organizationId: ctx.user.organizationId },
-    });
-    return settings.reduce<Record<string, string>>(
-      (acc, s) => ({ ...acc, [s.key]: s.value }),
-      {},
-    );
-  }),
+  getSettings: orgProcedure
+    .require("org:settings:read")
+    .query(async ({ ctx }) => {
+      const settings = await ctx.db.organizationSetting.findMany({
+        where: { organizationId: ctx.user.organizationId },
+      });
+      return settings.reduce<Record<string, string>>(
+        (acc, s) => ({ ...acc, [s.key]: s.value }),
+        {},
+      );
+    }),
 
   storage: storageRouter,
 });

@@ -17,8 +17,7 @@ const updateUnitSchema = unitBaseSchema.partial().extend({
 });
 
 export const unitsRouter = router({
-  list: orgProcedure.query(async ({ ctx }) => {
-    assertCan(ctx.ability, "unit:read", "Unit");
+  list: orgProcedure.require("unit:read").query(async ({ ctx }) => {
     return ctx.db.unit.findMany({
       where: { organizationId: ctx.user.organizationId, deletedAt: null },
       orderBy: { createdAt: "desc" },
@@ -26,9 +25,9 @@ export const unitsRouter = router({
   }),
 
   byId: orgProcedure
+    .require("unit:read")
     .input(z.object({ id: z.string() }))
     .query(async ({ ctx, input }) => {
-      assertCan(ctx.ability, "unit:read", "Unit");
       const unit = await ctx.db.unit.findFirst({
         where: {
           id: input.id,
@@ -41,9 +40,9 @@ export const unitsRouter = router({
     }),
 
   create: orgProcedure
+    .require("unit:create")
     .input(createUnitSchema)
     .mutation(async ({ ctx, input }) => {
-      assertCan(ctx.ability, "unit:create", "Unit");
       const orgId = ctx.user.organizationId;
 
       const existing = await ctx.db.unit.findFirst({
@@ -131,10 +130,9 @@ export const unitsRouter = router({
     }),
 
   delete: orgProcedure
+    .require("unit:delete")
     .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
-      assertCan(ctx.ability, "unit:delete", "Unit");
-
       const existing = await ctx.db.unit.findFirst({
         where: {
           id: input.id,

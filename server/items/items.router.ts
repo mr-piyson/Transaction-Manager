@@ -600,146 +600,146 @@ async function reconcileItemUoms(
 
 export const itemsRouter = router({
   // ── LIST ──────────────────────────────────────────────────────────────────
-  list: orgProcedure.input(listItemsSchema).query(async ({ ctx, input }) => {
-    assertCan(ctx.ability, "item:read", "Item");
+  list: orgProcedure
+    .require("item:read")
+    .input(listItemsSchema)
+    .query(async ({ ctx, input }) => {
+      const {
+        search,
+        type,
+        categoryId,
+        supplierId,
+        isActive,
+        isSaleable,
+        lowStock,
+        sortBy,
+        sortOrder,
+        withStock,
+      } = input;
+      const orgId = ctx.user.organizationId;
 
-    const {
-      search,
-      type,
-      categoryId,
-      supplierId,
-      isActive,
-      isSaleable,
-      lowStock,
-      sortBy,
-      sortOrder,
-      withStock,
-    } = input;
-    const orgId = ctx.user.organizationId;
-
-    const where = {
-      organizationId: orgId,
-      deletedAt: null,
-      ...(type ? { type } : {}),
-      ...(categoryId !== undefined ? { categoryId } : {}),
-      ...(isActive !== undefined ? { isActive } : {}),
-      ...(isSaleable !== undefined ? { isSaleable } : {}),
-      ...(supplierId
-        ? {
-            supplierItems: {
-              some: { supplierId, isActive: true, deletedAt: null },
-            },
-          }
-        : {}),
-      ...(search
-        ? {
-            OR: [
-              { name: { contains: search, mode: "insensitive" as const } },
-              { sku: { contains: search, mode: "insensitive" as const } },
-              { barcode: { contains: search, mode: "insensitive" as const } },
-              {
-                description: {
-                  contains: search,
-                  mode: "insensitive" as const,
-                },
+      const where = {
+        organizationId: orgId,
+        deletedAt: null,
+        ...(type ? { type } : {}),
+        ...(categoryId !== undefined ? { categoryId } : {}),
+        ...(isActive !== undefined ? { isActive } : {}),
+        ...(isSaleable !== undefined ? { isSaleable } : {}),
+        ...(supplierId
+          ? {
+              supplierItems: {
+                some: { supplierId, isActive: true, deletedAt: null },
               },
-            ],
-          }
-        : {}),
-    };
-
-    const [items] = await ctx.db.$transaction([
-      ctx.db.item.findMany({
-        where,
-        orderBy: { [sortBy]: sortOrder },
-        select: {
-          id: true,
-          sku: true,
-          barcode: true,
-          name: true,
-          image: true,
-          type: true,
-          unit: true,
-          unitId: true,
-          salesPrice: true,
-          averageCost: true,
-          minStock: true,
-          reorderPoint: true,
-          isSaleable: true,
-          isPurchasable: true,
-          isActive: true,
-          itemUoms: {
-            where: { deletedAt: null, isActive: true },
-            select: {
-              unitId: true,
-              factor: true,
-              isPurchaseDefault: true,
-              isSalesDefault: true,
-              barcode: true,
-              unit: { select: { id: true, code: true, name: true } },
-            },
-            orderBy: { createdAt: "asc" as const },
-          },
-          category: { select: { id: true, name: true, color: true } },
-          taxRate: { select: { id: true, name: true, rate: true } },
-          // Aggregate stock across all warehouses if requested
-          ...(supplierId
-            ? {
-                supplierItems: {
-                  where: { supplierId, isActive: true, deletedAt: null },
-                  select: {
-                    supplierSku: true,
-                    basePrice: true,
-                    leadTimeDays: true,
-                    minOrderQty: true,
-                    prices: { select: { unitId: true, price: true } },
-                  },
-                  take: 1,
-                },
-              }
-            : {}),
-          ...(withStock
-            ? {
-                stock: {
-                  select: {
-                    quantity: true,
-                    warehouse: { select: { id: true, name: true } },
+            }
+          : {}),
+        ...(search
+          ? {
+              OR: [
+                { name: { contains: search, mode: "insensitive" as const } },
+                { sku: { contains: search, mode: "insensitive" as const } },
+                { barcode: { contains: search, mode: "insensitive" as const } },
+                {
+                  description: {
+                    contains: search,
+                    mode: "insensitive" as const,
                   },
                 },
-              }
-            : {}),
-        },
-      }),
-      ctx.db.item.count({ where }),
-    ]);
-
-    // Post-process: add totalStock and lowStockFlag
-    const enriched = items.map((item) => {
-      const stockRows = "stock" in item ? item.stock : [];
-      const totalStock = stockRows.reduce(
-        (sum, s) => sum + Number(s.quantity),
-        0,
-      );
-      return {
-        ...item,
-        totalStock: withStock ? totalStock : undefined,
-        isLowStock: withStock ? totalStock <= item.reorderPoint : undefined,
+              ],
+            }
+          : {}),
       };
-    });
 
-    // Apply lowStock filter post-aggregation (can't do in Prisma directly)
-    const filtered =
-      lowStock && withStock ? enriched.filter((i) => i.isLowStock) : enriched;
+      const [items] = await ctx.db.$transaction([
+        ctx.db.item.findMany({
+          where,
+          orderBy: { [sortBy]: sortOrder },
+          select: {
+            id: true,
+            sku: true,
+            barcode: true,
+            name: true,
+            image: true,
+            type: true,
+            unit: true,
+            unitId: true,
+            salesPrice: true,
+            averageCost: true,
+            minStock: true,
+            reorderPoint: true,
+            isSaleable: true,
+            isPurchasable: true,
+            isActive: true,
+            itemUoms: {
+              where: { deletedAt: null, isActive: true },
+              select: {
+                unitId: true,
+                factor: true,
+                isPurchaseDefault: true,
+                isSalesDefault: true,
+                barcode: true,
+                unit: { select: { id: true, code: true, name: true } },
+              },
+              orderBy: { createdAt: "asc" as const },
+            },
+            category: { select: { id: true, name: true, color: true } },
+            taxRate: { select: { id: true, name: true, rate: true } },
+            // Aggregate stock across all warehouses if requested
+            ...(supplierId
+              ? {
+                  supplierItems: {
+                    where: { supplierId, isActive: true, deletedAt: null },
+                    select: {
+                      supplierSku: true,
+                      basePrice: true,
+                      leadTimeDays: true,
+                      minOrderQty: true,
+                      prices: { select: { unitId: true, price: true } },
+                    },
+                    take: 1,
+                  },
+                }
+              : {}),
+            ...(withStock
+              ? {
+                  stock: {
+                    select: {
+                      quantity: true,
+                      warehouse: { select: { id: true, name: true } },
+                    },
+                  },
+                }
+              : {}),
+          },
+        }),
+        ctx.db.item.count({ where }),
+      ]);
 
-    return filtered;
-  }),
+      // Post-process: add totalStock and lowStockFlag
+      const enriched = items.map((item) => {
+        const stockRows = "stock" in item ? item.stock : [];
+        const totalStock = stockRows.reduce(
+          (sum, s) => sum + Number(s.quantity),
+          0,
+        );
+        return {
+          ...item,
+          totalStock: withStock ? totalStock : undefined,
+          isLowStock: withStock ? totalStock <= item.reorderPoint : undefined,
+        };
+      });
+
+      // Apply lowStock filter post-aggregation (can't do in Prisma directly)
+      const filtered =
+        lowStock && withStock ? enriched.filter((i) => i.isLowStock) : enriched;
+
+      return filtered;
+    }),
 
   // ── GET BY ID ─────────────────────────────────────────────────────────────
   byId: orgProcedure
+    .require("item:read")
     .input(z.object({ id: z.string(), withStock: z.boolean().default(true) }))
     .query(async ({ ctx, input }) => {
-      assertCan(ctx.ability, "item:read", "Item");
-
       const item = await ctx.db.item.findFirst({
         where: {
           id: input.id,
@@ -799,10 +799,9 @@ export const itemsRouter = router({
 
   // ── GET BY SKU ────────────────────────────────────────────────────────────
   bySku: orgProcedure
+    .require("item:read")
     .input(z.object({ sku: z.string() }))
     .query(async ({ ctx, input }) => {
-      assertCan(ctx.ability, "item:read", "Item");
-
       const item = await ctx.db.item.findFirst({
         where: {
           sku: input.sku,
@@ -825,6 +824,7 @@ export const itemsRouter = router({
 
   // ── BULK IMPORT ──────────────────────────────────────────────────────────
   bulkImport: orgProcedure
+    .require("item:create")
     .input(
       z.object({
         items: z.array(
@@ -848,8 +848,6 @@ export const itemsRouter = router({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      assertCan(ctx.ability, "item:create", "Item");
-
       const { bulkImportItems } = await import("./import.service");
 
       return bulkImportItems(input.items, input, {
@@ -862,6 +860,7 @@ export const itemsRouter = router({
 
   // ── RESOLVE PRICE (for invoice line creation) ─────────────────────────────
   resolvePrice: orgProcedure
+    .require("item:read")
     .input(
       z.object({
         itemId: z.string(),
@@ -870,8 +869,6 @@ export const itemsRouter = router({
       }),
     )
     .query(async ({ ctx, input }) => {
-      assertCan(ctx.ability, "item:read", "Item");
-
       const item = await ctx.db.item.findFirst({
         where: {
           id: input.itemId,
@@ -935,10 +932,9 @@ export const itemsRouter = router({
 
   // ── CREATE ────────────────────────────────────────────────────────────────
   create: orgProcedure
+    .require("item:create")
     .input(createItemSchema)
     .mutation(async ({ ctx, input }) => {
-      assertCan(ctx.ability, "item:create", "Item");
-
       // SKU uniqueness within org
       const existing = await ctx.db.item.findFirst({
         where: {
@@ -1112,9 +1108,9 @@ export const itemsRouter = router({
 
   // ── UNITS OF MEASURE (per-item conversions) ──────────────────────────────
   addUom: orgProcedure
+    .require("item:update")
     .input(addItemUomSchema)
     .mutation(async ({ ctx, input }) => {
-      assertCan(ctx.ability, "item:update", "Item");
       const orgId = ctx.user.organizationId;
 
       const item = await ctx.db.item.findFirst({
@@ -1216,9 +1212,9 @@ export const itemsRouter = router({
     }),
 
   updateUom: orgProcedure
+    .require("item:update")
     .input(updateItemUomSchema)
     .mutation(async ({ ctx, input }) => {
-      assertCan(ctx.ability, "item:update", "Item");
       const orgId = ctx.user.organizationId;
 
       const row = await ctx.db.itemUom.findFirst({
@@ -1313,9 +1309,9 @@ export const itemsRouter = router({
     }),
 
   removeUom: orgProcedure
+    .require("item:update")
     .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
-      assertCan(ctx.ability, "item:update", "Item");
       const orgId = ctx.user.organizationId;
 
       const row = await ctx.db.itemUom.findFirst({
@@ -1467,10 +1463,9 @@ export const itemsRouter = router({
 
   // ── STOCK SUMMARY ─────────────────────────────────────────────────────────
   stockSummary: orgProcedure
+    .require("stock:read")
     .input(z.object({ itemId: z.string() }))
     .query(async ({ ctx, input }) => {
-      assertCan(ctx.ability, "stock:read", "Stock");
-
       const stocks = await ctx.db.stock.findMany({
         where: {
           itemId: input.itemId,
@@ -1488,9 +1483,7 @@ export const itemsRouter = router({
     }),
 
   // ── REPORT ──────────────────────────────────────────────────────────────
-  report: orgProcedure.query(async ({ ctx }) => {
-    assertCan(ctx.ability, "report:inventory", "all");
-
+  report: orgProcedure.require("report:inventory").query(async ({ ctx }) => {
     const orgId = ctx.user.organizationId;
 
     const items = await ctx.db.item.findMany({
@@ -1591,6 +1584,7 @@ export const itemsRouter = router({
 
   // ── CREATE WITH SUPPLIER ITEMS ────────────────────────────────────────
   createWithSupplierItems: orgProcedure
+    .require("item:create")
     .input(
       z.object({
         item: itemBaseSchema,
@@ -1611,8 +1605,6 @@ export const itemsRouter = router({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      assertCan(ctx.ability, "item:create", "Item");
-
       const orgId = ctx.user.organizationId;
       const {
         item: itemInput,

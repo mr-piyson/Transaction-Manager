@@ -69,10 +69,9 @@ const listCustomersSchema = z.object({
 export const customersRouter = router({
   // ── LIST ──────────────────────────────────────────────────────────────────
   list: orgProcedure
+    .require("customer:read")
     .input(listCustomersSchema)
     .query(async ({ ctx, input }) => {
-      assertCan(ctx.ability, "customer:read", "Customer");
-
       const { search, isActive, sortBy, sortOrder } = input;
       const orgId = ctx.user.organizationId;
 
@@ -115,10 +114,9 @@ export const customersRouter = router({
 
   // ── GET BY ID ─────────────────────────────────────────────────────────────
   byId: orgProcedure
+    .require("customer:read")
     .input(z.object({ id: z.string() }))
     .query(async ({ ctx, input }) => {
-      assertCan(ctx.ability, "customer:read", "Customer");
-
       const customer = await ctx.db.customer.findFirst({
         where: {
           id: input.id,
@@ -143,10 +141,9 @@ export const customersRouter = router({
 
   // ── CREATE ────────────────────────────────────────────────────────────────
   create: orgProcedure
+    .require("customer:create")
     .input(createCustomerSchema)
     .mutation(async ({ ctx, input }) => {
-      assertCan(ctx.ability, "customer:create", "Customer");
-
       // Code uniqueness check within org
       if (input.code) {
         const existing = await ctx.db.customer.findFirst({
@@ -412,10 +409,9 @@ export const customersRouter = router({
   // ── CREDIT BALANCE ────────────────────────────────────────────────────────
   // Returns outstanding AR balance for a customer (sum of unpaid invoices)
   creditBalance: orgProcedure
+    .require("customer:read")
     .input(z.object({ id: z.string() }))
     .query(async ({ ctx, input }) => {
-      assertCan(ctx.ability, "customer:read", "Customer");
-
       const [customer, invoiceAggregate] = await ctx.db.$transaction([
         ctx.db.customer.findFirst({
           where: {

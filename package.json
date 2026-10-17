@@ -11,6 +11,7 @@
     "update": "bun run deploy:yes",
     "lint": "biome check .",
     "format": "biome format --write .",
+    "check:authz": "node scripts/check-permissions.mjs",
     "sync": "bunx prisma generate && bunx prisma db push ",
     "backup": "bash ./scripts/backup.sh"
   },
@@ -18,7 +19,6 @@
     "@base-ui/react": "^1.9.0",
     "@better-auth/cli": "^1.4.21",
     "@better-auth/core": "^1.7.7",
-    "@casl/ability": "^7.0.1",
     "@headless-tree/core": "^1.7.0",
     "@headless-tree/react": "^1.7.0",
     "@hookform/resolvers": "^5.9.1",

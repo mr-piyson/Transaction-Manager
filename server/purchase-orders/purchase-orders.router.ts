@@ -96,10 +96,9 @@ const listPurchaseOrdersSchema = z.object({
 
 export const purchaseOrdersRouter = router({
   list: orgProcedure
+    .require("po:read")
     .input(listPurchaseOrdersSchema)
     .query(async ({ ctx, input }) => {
-      assertCan(ctx.ability, "po:read", "PurchaseOrder");
-
       const { search, status, supplierId, sortBy, sortOrder } = input;
       const orgId = ctx.user.organizationId;
 
@@ -146,10 +145,9 @@ export const purchaseOrdersRouter = router({
     }),
 
   byId: orgProcedure
+    .require("po:read")
     .input(z.object({ id: z.string() }))
     .query(async ({ ctx, input }) => {
-      assertCan(ctx.ability, "po:read", "PurchaseOrder");
-
       const order = await ctx.db.purchaseOrder.findFirst({
         where: {
           id: input.id,
@@ -188,9 +186,9 @@ export const purchaseOrdersRouter = router({
     }),
 
   stockMovements: orgProcedure
+    .require("stock:read")
     .input(z.object({ id: z.string() }))
     .query(async ({ ctx, input }) => {
-      assertCan(ctx.ability, "stock:read", "StockMovement");
       return ctx.db.stockMovement.findMany({
         where: {
           purchaseLine: { purchaseOrderId: input.id },
@@ -207,10 +205,9 @@ export const purchaseOrdersRouter = router({
     }),
 
   create: orgProcedure
+    .require("po:create")
     .input(createPurchaseOrderSchema)
     .mutation(async ({ ctx, input }) => {
-      assertCan(ctx.ability, "po:create", "PurchaseOrder");
-
       const orgId = ctx.user.organizationId;
       const { lines: lineInputs, ...orderData } = input;
 

@@ -5,7 +5,7 @@ import {
   type Action,
   type AppAbilityType,
   defineAbilitiesFor,
-} from "@/lib/abilities";
+} from "@/lib/permissions";
 import { trpc } from "@/lib/trpc/client";
 
 export function useAppAbility(): AppAbilityType | null {

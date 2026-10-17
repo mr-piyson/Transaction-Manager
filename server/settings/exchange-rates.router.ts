@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { ConflictError, NotFoundError } from "@/lib/error";
-import { assertCan, orgProcedure, router } from "@/lib/trpc/context";
+import { orgProcedure, router } from "@/lib/trpc/context";
 import { currencyCodeSchema } from "@/lib/validations";
 import {
   fetchLatestRates,
@@ -33,10 +33,7 @@ export const exchangeRatesRouter = router({
   /**
    * Get all exchange rates for the organization (latest per currency pair)
    */
-  list: orgProcedure.query(async ({ ctx }) => {
-    assertCan(ctx.ability, "exchange-rate:read", "all", {
-      organizationId: ctx.user.organizationId,
-    });
+  list: orgProcedure.require("exchange-rate:read").query(async ({ ctx }) => {
     const orgId = ctx.user.organizationId;
 
     // Get the latest rate for each currency pair
@@ -71,6 +68,7 @@ export const exchangeRatesRouter = router({
    * Get the latest rate for a specific currency pair
    */
   getRate: orgProcedure
+    .require("exchange-rate:read")
     .input(
       z.object({
         fromCurrency: currencyCodeSchema,
@@ -78,9 +76,6 @@ export const exchangeRatesRouter = router({
       }),
     )
     .query(async ({ ctx, input }) => {
-      assertCan(ctx.ability, "exchange-rate:read", "all", {
-        organizationId: ctx.user.organizationId,
-      });
       if (input.fromCurrency === input.toCurrency) {
         return { rate: 1 };
       }
@@ -117,40 +112,40 @@ export const exchangeRatesRouter = router({
   /**
    * Get latest rates directly from Frankfurter API (preview before sync)
    */
-  getLatest: orgProcedure.query(async ({ ctx }) => {
-    assertCan(ctx.ability, "exchange-rate:read", "all", {
-      organizationId: ctx.user.organizationId,
-    });
-    const org = await ctx.db.organization.findUnique({
-      where: { id: ctx.user.organizationId },
-      select: { currency: true },
-    });
+  getLatest: orgProcedure
+    .require("exchange-rate:read")
+    .query(async ({ ctx }) => {
+      const org = await ctx.db.organization.findUnique({
+        where: { id: ctx.user.organizationId },
+        select: { currency: true },
+      });
 
-    if (!org?.currency) {
-      throw new NotFoundError("Organization", ctx.user.organizationId);
-    }
+      if (!org?.currency) {
+        throw new NotFoundError("Organization", ctx.user.organizationId);
+      }
 
-    const baseCurrency = org.currency;
-    const allCurrencies = await ctx.db.currency.findMany({
-      where: { isActive: true },
-      select: { code: true },
-    });
-    const targetCurrencies = allCurrencies
-      .map((c) => c.code)
-      .filter((c) => c !== baseCurrency);
+      const baseCurrency = org.currency;
+      const allCurrencies = await ctx.db.currency.findMany({
+        where: { isActive: true },
+        select: { code: true },
+      });
+      const targetCurrencies = allCurrencies
+        .map((c) => c.code)
+        .filter((c) => c !== baseCurrency);
 
-    const response = await fetchLatestRates(baseCurrency, targetCurrencies);
-    return {
-      baseCurrency,
-      date: response.date,
-      rates: response.rates,
-    };
-  }),
+      const response = await fetchLatestRates(baseCurrency, targetCurrencies);
+      return {
+        baseCurrency,
+        date: response.date,
+        rates: response.rates,
+      };
+    }),
 
   /**
    * Add or update a manual exchange rate
    */
   manualUpsert: orgProcedure
+    .require("exchange-rate:update")
     .input(
       z.object({
         fromCurrency: currencyCodeSchema,
@@ -160,9 +155,6 @@ export const exchangeRatesRouter = router({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      assertCan(ctx.ability, "exchange-rate:update", "all", {
-        organizationId: ctx.user.organizationId,
-      });
       const orgId = ctx.user.organizationId;
 
       if (input.fromCurrency === input.toCurrency) {
@@ -205,11 +197,9 @@ export const exchangeRatesRouter = router({
    * Delete a manual exchange rate
    */
   delete: orgProcedure
+    .require("exchange-rate:update")
     .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
-      assertCan(ctx.ability, "exchange-rate:update", "all", {
-        organizationId: ctx.user.organizationId,
-      });
       const orgId = ctx.user.organizationId;
 
       const existing = await ctx.db.exchangeRate.findFirst({
@@ -233,87 +223,87 @@ export const exchangeRatesRouter = router({
   /**
    * Trigger immediate sync from Frankfurter API
    */
-  syncNow: orgProcedure.mutation(async ({ ctx }) => {
-    assertCan(ctx.ability, "exchange-rate:sync", "all", {
-      organizationId: ctx.user.organizationId,
-    });
-    const orgId = ctx.user.organizationId;
+  syncNow: orgProcedure
+    .require("exchange-rate:sync")
+    .mutation(async ({ ctx }) => {
+      const orgId = ctx.user.organizationId;
 
-    const org = await ctx.db.organization.findUnique({
-      where: { id: orgId },
-      select: { currency: true },
-    });
+      const org = await ctx.db.organization.findUnique({
+        where: { id: orgId },
+        select: { currency: true },
+      });
 
-    if (!org?.currency) {
-      throw new NotFoundError("Organization", orgId);
-    }
+      if (!org?.currency) {
+        throw new NotFoundError("Organization", orgId);
+      }
 
-    const baseCurrency = org.currency;
+      const baseCurrency = org.currency;
 
-    // Use the centralized full sync function
-    const result = await fullSyncCurrenciesAndRates(baseCurrency, orgId);
+      // Use the centralized full sync function
+      const result = await fullSyncCurrenciesAndRates(baseCurrency, orgId);
 
-    // Update last synced timestamp
-    await ctx.db.organizationSetting.upsert({
-      where: {
-        organizationId_key: {
+      // Update last synced timestamp
+      await ctx.db.organizationSetting.upsert({
+        where: {
+          organizationId_key: {
+            organizationId: orgId,
+            key: SYNC_SETTINGS_KEYS.LAST_SYNCED,
+          },
+        },
+        create: {
           organizationId: orgId,
           key: SYNC_SETTINGS_KEYS.LAST_SYNCED,
+          value: new Date().toISOString(),
         },
-      },
-      create: {
-        organizationId: orgId,
-        key: SYNC_SETTINGS_KEYS.LAST_SYNCED,
-        value: new Date().toISOString(),
-      },
-      update: { value: new Date().toISOString() },
-    });
+        update: { value: new Date().toISOString() },
+      });
 
-    return {
-      success: true,
-      ratesUpdated: result.ratesSynced,
-      baseCurrency,
-    };
-  }),
+      return {
+        success: true,
+        ratesUpdated: result.ratesSynced,
+        baseCurrency,
+      };
+    }),
 
   /**
    * Get sync settings for the organization
    */
-  getSyncSettings: orgProcedure.query(async ({ ctx }) => {
-    assertCan(ctx.ability, "exchange-rate:read", "all", {
-      organizationId: ctx.user.organizationId,
-    });
-    const orgId = ctx.user.organizationId;
+  getSyncSettings: orgProcedure
+    .require("exchange-rate:read")
+    .query(async ({ ctx }) => {
+      const orgId = ctx.user.organizationId;
 
-    const settings = await ctx.db.organizationSetting.findMany({
-      where: {
-        organizationId: orgId,
-        key: {
-          in: Object.values(SYNC_SETTINGS_KEYS),
+      const settings = await ctx.db.organizationSetting.findMany({
+        where: {
+          organizationId: orgId,
+          key: {
+            in: Object.values(SYNC_SETTINGS_KEYS),
+          },
         },
-      },
-    });
+      });
 
-    const settingsMap = settings.reduce<Record<string, string>>((acc, s) => {
-      acc[s.key] = s.value;
-      return acc;
-    }, {});
+      const settingsMap = settings.reduce<Record<string, string>>((acc, s) => {
+        acc[s.key] = s.value;
+        return acc;
+      }, {});
 
-    return {
-      enabled: settingsMap[SYNC_SETTINGS_KEYS.ENABLED] === "true",
-      frequency: (settingsMap[SYNC_SETTINGS_KEYS.FREQUENCY] ||
-        "daily") as SyncFrequency,
-      lastSyncedAt: settingsMap[SYNC_SETTINGS_KEYS.LAST_SYNCED] || null,
-      cronExpression: getCronExpression(
-        (settingsMap[SYNC_SETTINGS_KEYS.FREQUENCY] || "daily") as SyncFrequency,
-      ),
-    };
-  }),
+      return {
+        enabled: settingsMap[SYNC_SETTINGS_KEYS.ENABLED] === "true",
+        frequency: (settingsMap[SYNC_SETTINGS_KEYS.FREQUENCY] ||
+          "daily") as SyncFrequency,
+        lastSyncedAt: settingsMap[SYNC_SETTINGS_KEYS.LAST_SYNCED] || null,
+        cronExpression: getCronExpression(
+          (settingsMap[SYNC_SETTINGS_KEYS.FREQUENCY] ||
+            "daily") as SyncFrequency,
+        ),
+      };
+    }),
 
   /**
    * Update sync settings
    */
   updateSyncSettings: orgProcedure
+    .require("exchange-rate:update")
     .input(
       z.object({
         enabled: z.boolean(),
@@ -321,9 +311,6 @@ export const exchangeRatesRouter = router({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      assertCan(ctx.ability, "exchange-rate:update", "all", {
-        organizationId: ctx.user.organizationId,
-      });
       const orgId = ctx.user.organizationId;
 
       await ctx.db.$transaction(async (tx) => {

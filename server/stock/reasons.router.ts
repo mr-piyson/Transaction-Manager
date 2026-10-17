@@ -116,9 +116,7 @@ const updateReasonSchema = reasonBaseSchema.partial().extend({
 // ---------------------------------------------------------------------------
 
 export const stockReasonsRouter = router({
-  list: orgProcedure.query(async ({ ctx }) => {
-    assertCan(ctx.ability, "stock:read", "Stock");
-
+  list: orgProcedure.require("stock:read").query(async ({ ctx }) => {
     const orgId = ctx.user.organizationId;
     await ensureDefaultAdjustmentReasons(ctx.db, orgId);
 
@@ -129,9 +127,9 @@ export const stockReasonsRouter = router({
   }),
 
   byId: orgProcedure
+    .require("stock:read")
     .input(z.object({ id: z.string() }))
     .query(async ({ ctx, input }) => {
-      assertCan(ctx.ability, "stock:read", "Stock");
       const reason = await ctx.db.stockAdjustmentReason.findFirst({
         where: {
           id: input.id,
@@ -144,9 +142,9 @@ export const stockReasonsRouter = router({
     }),
 
   create: orgProcedure
+    .require("stock:adjust")
     .input(createReasonSchema)
     .mutation(async ({ ctx, input }) => {
-      assertCan(ctx.ability, "stock:adjust", "Stock");
       const orgId = ctx.user.organizationId;
 
       if (
@@ -258,10 +256,9 @@ export const stockReasonsRouter = router({
     }),
 
   delete: orgProcedure
+    .require("stock:adjust")
     .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
-      assertCan(ctx.ability, "stock:adjust", "Stock");
-
       const existing = await ctx.db.stockAdjustmentReason.findFirst({
         where: {
           id: input.id,

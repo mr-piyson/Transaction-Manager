@@ -1,11 +1,20 @@
 import { fileTypeFromBuffer } from "file-type";
 import { type NextRequest, NextResponse } from "next/server";
+import { getRequestAuth } from "@/lib/permissions/server";
 import { readByStoragePath } from "@/server/services/file/storage.service";
 
 export async function GET(
   _req: NextRequest,
   { params }: { params: Promise<{ path: string[] }> },
 ) {
+  // Gate file streaming on an authenticated org member. `/uploads/*` is
+  // rewritten here, and image URLs are same-origin so the session cookie is
+  // always present on legitimate requests.
+  const auth = await getRequestAuth();
+  if (!auth?.user.organizationId) {
+    return new NextResponse("Unauthorized", { status: 401 });
+  }
+
   const segments = (await params).path;
 
   if (!segments || segments.length === 0) {
@@ -42,7 +51,7 @@ export async function GET(
     headers: {
       "Content-Type": contentType,
       "Content-Length": String(buffer.length),
-      "Cache-Control": "public, max-age=86400, immutable",
+      "Cache-Control": "private, max-age=86400",
       "Content-Disposition": "inline",
     },
   });

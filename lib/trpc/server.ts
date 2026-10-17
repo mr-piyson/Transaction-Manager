@@ -1,8 +1,9 @@
 import type { Prisma } from "@prisma/client";
 import type { FetchCreateContextFnOptions } from "@trpc/server/adapters/fetch";
 import type { NextRequest } from "next/server";
-import { type AppAbilityType, defineAbilitiesFor } from "@/lib/abilities";
 import { auth } from "@/lib/auth/auth-server";
+import { type AppAbilityType, defineAbilitiesFor } from "@/lib/permissions";
+import { resolvePermissionUser } from "@/lib/permissions/load";
 import db from "../db";
 
 // ---------------------------------------------------------------------------
@@ -120,37 +121,20 @@ export async function createContext(
     };
   }
 
-  const uor = dbUser.userOrganizationRoles[0];
-  const orgRole = uor?.customRole?.systemKey ?? uor?.role ?? null;
-  const roleId = uor?.roleId ?? null;
-  let permissionCodes: string[] = [];
-
-  if (roleId && dbUser.platformRole !== "SUPER_ADMIN") {
-    const rolePerms = await db.rolePermission.findMany({
-      where: { roleId },
-      select: { permission: { select: { code: true } } },
-    });
-    permissionCodes = rolePerms.map((rp) => rp.permission.code);
-  }
+  const permissionUser = await resolvePermissionUser(dbUser);
 
   const contextUser: ContextUser = {
-    id: dbUser.id,
+    id: permissionUser.id,
     name: dbUser.name,
     email: dbUser.email,
     organizationId: dbUser.organizationId,
     platformRole: dbUser.platformRole,
-    orgRole,
-    permissions: permissionCodes,
+    orgRole: permissionUser.orgRole ?? null,
+    permissions: permissionUser.permissions,
   };
 
-  // Synchronously compute CASL Ability for direct procedure access
-  const ability = defineAbilitiesFor({
-    id: dbUser.id,
-    platformRole: dbUser.platformRole,
-    orgRole: orgRole ?? undefined,
-    organizationId: dbUser.organizationId ?? undefined,
-    permissions: permissionCodes as import("@/lib/abilities").Action[],
-  });
+  // Permission set for direct procedure access (`.require` / `assertCan`).
+  const ability = defineAbilitiesFor(permissionUser);
 
   return {
     db,

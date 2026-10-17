@@ -12,7 +12,7 @@ import {
   EmptyTitle,
 } from "@/components/ui/empty";
 import { useAppAbility } from "@/hooks/use-app-ability";
-import type { Action, SubjectName } from "@/lib/abilities";
+import type { Action, SubjectName } from "@/lib/permissions";
 
 interface AuthGuardProps {
   permission: Action;

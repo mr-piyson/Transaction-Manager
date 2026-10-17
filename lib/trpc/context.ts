@@ -21,15 +21,15 @@
  * the action type). Middleware enforces authentication; procedures enforce
  * authorization.
  *
- * EXCEPTION: use the `assertCan` helper inside procedures for inline CASL
- * checks so that denials throw consistent ForbiddenError instances.
+ * EXCEPTION: use the `assertCan` helper inside procedures for inline
+ * record-level permission checks so that denials throw consistent ForbiddenError
+ * instances. Action-level checks should use `.require(code)` instead.
  */
 
-import { subject as caslSubject } from "@casl/ability";
 import { initTRPC, TRPCError } from "@trpc/server";
 import superjson from "superjson";
 import { ZodError } from "zod";
-import type { Action, AppAbilityType, Subjects } from "../abilities";
+import type { Action, AppAbilityType, Subjects } from "@/lib/permissions";
 import { ForbiddenError, UnauthorizedError } from "../error";
 import type { Context } from "./server";
 
@@ -120,10 +120,10 @@ const hasOrg = middleware(({ ctx, next }) => {
 });
 
 // ---------------------------------------------------------------------------
-// assertCan — inline CASL check helper
+// assertCan — inline record-level permission helper
 //
-// Use inside procedure bodies (not middleware) so you can pass the actual
-// Prisma record for field-level and condition-level checks.
+// Use inside procedure bodies AFTER fetching a record, to enforce organization
+// scoping / per-record rules. For action-level checks prefer `.require(code)`.
 //
 // Usage:
 //   assertCan(ctx.ability, "invoice:update", "Invoice", existingInvoice);
@@ -132,14 +132,12 @@ const hasOrg = middleware(({ ctx, next }) => {
 export function assertCan(
   ability: AppAbilityType,
   action: Action,
-  subjectName: Subjects,
+  // The subject is informational only (the engine is flat); kept so the ~40
+  // record-level call sites that pass a Prisma record keep their signature.
+  _subjectName?: Subjects,
   record?: Record<string, unknown>,
 ): void {
-  const target = record
-    ? caslSubject(subjectName as string, record)
-    : subjectName;
-
-  if (!ability.can(action, target as Subjects)) {
+  if (!ability.can(action, _subjectName, record)) {
     const [resource, ...rest] = action.split(":");
     throw new ForbiddenError(rest.join(":") || action, resource ?? action);
   }
@@ -152,17 +150,48 @@ export function assertCan(
 /** No authentication required. */
 export const publicProcedure = t.procedure.use(loggerMiddleware);
 
-/** Requires a valid session. user is non-null. */
-export const protectedProcedure = t.procedure
+/**
+ * Permission middleware backing `.require(...)`.
+ *
+ * Declarative action-level checks: the required permission is visible on the
+ * procedure signature instead of buried in the body, and the CI check
+ * (scripts/check-permissions.mjs) can assert every procedure declares one.
+ * Record/state checks still use inline `assertCan(...)` after the fetch.
+ */
+const permissionMiddleware = (required: Action | Action[]) =>
+  middleware(({ ctx, next }) => {
+    const list = Array.isArray(required) ? required : [required];
+    if (!list.some((code) => ctx.ability.can(code))) {
+      const [resource, ...rest] = list[0].split(":");
+      throw new ForbiddenError(rest.join(":") || list[0], resource ?? list[0]);
+    }
+    return next();
+  });
+
+const protectedProcedureBase = t.procedure.use(loggerMiddleware).use(isAuthed);
+
+/**
+ * Requires a valid session. user is non-null.
+ * `.require(code)` adds a declarative permission check.
+ */
+export const protectedProcedure = Object.assign(protectedProcedureBase, {
+  require: (required: Action | Action[]) =>
+    protectedProcedureBase.use(permissionMiddleware(required)),
+});
+
+const orgProcedureBase = t.procedure
   .use(loggerMiddleware)
-  .use(isAuthed);
+  .use(isAuthed)
+  .use(hasOrg);
 
 /**
  * Requires session + org membership.
  * user.organizationId is non-null.
  * Use this for all ERP domain operations.
+ *
+ * `.require(code)` adds a declarative permission check (see permissionMiddleware).
  */
-export const orgProcedure = t.procedure
-  .use(loggerMiddleware)
-  .use(isAuthed)
-  .use(hasOrg);
+export const orgProcedure = Object.assign(orgProcedureBase, {
+  require: (required: Action | Action[]) =>
+    orgProcedureBase.use(permissionMiddleware(required)),
+});

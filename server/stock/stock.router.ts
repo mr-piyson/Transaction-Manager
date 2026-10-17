@@ -2,7 +2,7 @@ import type { StockMovementType } from "@prisma/client";
 import { z } from "zod";
 import { NotFoundError, UnprocessableError } from "@/lib/error";
 import { generateSerial } from "@/lib/sequences";
-import { assertCan, orgProcedure, router } from "@/lib/trpc/context";
+import { orgProcedure, router } from "@/lib/trpc/context";
 import { sortOrderSchema } from "@/lib/validations";
 import { postAdjustment } from "../journals/journal-posting.service";
 import { writeAuditLog } from "../shared/audit.service";
@@ -72,72 +72,72 @@ const listAdjustmentsSchema = z.object({
 });
 
 export const stockRouter = router({
-  list: orgProcedure.input(listStockSchema).query(async ({ ctx, input }) => {
-    assertCan(ctx.ability, "stock:read", "Stock");
+  list: orgProcedure
+    .require("stock:read")
+    .input(listStockSchema)
+    .query(async ({ ctx, input }) => {
+      const { search, warehouseId, categoryId, lowStock, sortBy, sortOrder } =
+        input;
+      const orgId = ctx.user.organizationId;
 
-    const { search, warehouseId, categoryId, lowStock, sortBy, sortOrder } =
-      input;
-    const orgId = ctx.user.organizationId;
+      const itemWhere: Record<string, unknown> = {
+        organizationId: orgId,
+        deletedAt: null,
+        ...(categoryId ? { categoryId } : {}),
+        ...(search
+          ? {
+              OR: [
+                { name: { contains: search, mode: "insensitive" as const } },
+                { sku: { contains: search, mode: "insensitive" as const } },
+              ],
+            }
+          : {}),
+      };
 
-    const itemWhere: Record<string, unknown> = {
-      organizationId: orgId,
-      deletedAt: null,
-      ...(categoryId ? { categoryId } : {}),
-      ...(search
-        ? {
-            OR: [
-              { name: { contains: search, mode: "insensitive" as const } },
-              { sku: { contains: search, mode: "insensitive" as const } },
-            ],
-          }
-        : {}),
-    };
+      const stockWhere: Record<string, unknown> = {
+        organizationId: orgId,
+        ...(warehouseId ? { warehouseId } : {}),
+        item: itemWhere,
+      };
 
-    const stockWhere: Record<string, unknown> = {
-      organizationId: orgId,
-      ...(warehouseId ? { warehouseId } : {}),
-      item: itemWhere,
-    };
-
-    const stockRows = await ctx.db.stock.findMany({
-      where: stockWhere,
-      orderBy:
-        sortBy === "itemName"
-          ? { item: { name: sortOrder } }
-          : sortBy === "warehouseName"
-            ? { warehouse: { name: sortOrder } }
-            : { [sortBy]: sortOrder },
-      include: {
-        item: {
-          select: {
-            id: true,
-            sku: true,
-            name: true,
-            unit: true,
-            reorderPoint: true,
-            image: true,
+      const stockRows = await ctx.db.stock.findMany({
+        where: stockWhere,
+        orderBy:
+          sortBy === "itemName"
+            ? { item: { name: sortOrder } }
+            : sortBy === "warehouseName"
+              ? { warehouse: { name: sortOrder } }
+              : { [sortBy]: sortOrder },
+        include: {
+          item: {
+            select: {
+              id: true,
+              sku: true,
+              name: true,
+              unit: true,
+              reorderPoint: true,
+              image: true,
+            },
           },
+          warehouse: { select: { id: true, name: true } },
         },
-        warehouse: { select: { id: true, name: true } },
-      },
-    });
+      });
 
-    let enriched = stockRows.map((s) => ({
-      ...s,
-      isLowStock: Number(s.quantity) <= s.item.reorderPoint,
-      quantity: Number(s.quantity),
-    }));
+      let enriched = stockRows.map((s) => ({
+        ...s,
+        isLowStock: Number(s.quantity) <= s.item.reorderPoint,
+        quantity: Number(s.quantity),
+      }));
 
-    if (lowStock) enriched = enriched.filter((s) => s.isLowStock);
+      if (lowStock) enriched = enriched.filter((s) => s.isLowStock);
 
-    return enriched;
-  }),
+      return enriched;
+    }),
 
   byItem: orgProcedure
+    .require("stock:read")
     .input(z.object({ itemId: z.string() }))
     .query(async ({ ctx, input }) => {
-      assertCan(ctx.ability, "stock:read", "Stock");
-
       const stocks = await ctx.db.stock.findMany({
         where: {
           itemId: input.itemId,
@@ -155,10 +155,9 @@ export const stockRouter = router({
     }),
 
   movements: orgProcedure
+    .require("stock:read")
     .input(listMovementsSchema)
     .query(async ({ ctx, input }) => {
-      assertCan(ctx.ability, "stock:read", "Stock");
-
       const { itemId, type, warehouseId, dateFrom, dateTo, sortBy, sortOrder } =
         input;
       const orgId = ctx.user.organizationId;
@@ -201,10 +200,9 @@ export const stockRouter = router({
 
   // ── LIST: manual adjustments (ADJUSTMENT_UP / ADJUSTMENT_DOWN / DAMAGE) ────
   adjustments: orgProcedure
+    .require("stock:read")
     .input(listAdjustmentsSchema)
     .query(async ({ ctx, input }) => {
-      assertCan(ctx.ability, "stock:read", "Stock");
-
       const {
         itemId,
         warehouseId,
@@ -278,10 +276,9 @@ export const stockRouter = router({
 
   // ── MUTATION: record a loss/damage/correction adjustment ───────────────────
   recordAdjustment: orgProcedure
+    .require("stock:adjust")
     .input(recordAdjustmentSchema)
     .mutation(async ({ ctx, input }) => {
-      assertCan(ctx.ability, "stock:adjust", "Stock");
-
       const orgId = ctx.user.organizationId;
 
       const item = await ctx.db.item.findFirst({
@@ -423,10 +420,9 @@ export const stockRouter = router({
     }),
 
   adjust: orgProcedure
+    .require("stock:adjust")
     .input(adjustStockSchema)
     .mutation(async ({ ctx, input }) => {
-      assertCan(ctx.ability, "stock:adjust", "Stock");
-
       const orgId = ctx.user.organizationId;
 
       const item = await ctx.db.item.findFirst({
@@ -511,10 +507,9 @@ export const stockRouter = router({
     }),
 
   transfer: orgProcedure
+    .require("stock:transfer")
     .input(transferStockSchema)
     .mutation(async ({ ctx, input }) => {
-      assertCan(ctx.ability, "stock:transfer", "Stock");
-
       const orgId = ctx.user.organizationId;
 
       if (input.fromWarehouseId === input.toWarehouseId) {
@@ -629,6 +624,7 @@ export const stockRouter = router({
 
   // ── BATCH: stock for a set of items in a single warehouse ──────────────────
   forItems: orgProcedure
+    .require("stock:read")
     .input(
       z.object({
         itemIds: z.array(z.string()),
@@ -636,8 +632,6 @@ export const stockRouter = router({
       }),
     )
     .query(async ({ ctx, input }) => {
-      assertCan(ctx.ability, "stock:read", "Stock");
-
       const stocks = await ctx.db.stock.findMany({
         where: {
           itemId: { in: input.itemIds },

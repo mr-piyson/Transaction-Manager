@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { UnprocessableError } from "@/lib/error";
-import { assertCan, orgProcedure, router } from "@/lib/trpc/context";
+import { orgProcedure, router } from "@/lib/trpc/context";
 import { writeAuditLog } from "../shared/audit.service";
 import {
   createJournalEntrySchema,
@@ -17,10 +17,9 @@ import {
 export const journalsRouter = router({
   // ── LIST ──────────────────────────────────────────────────────────────────
   list: orgProcedure
+    .require("journal:entry")
     .input(listJournalEntriesSchema)
     .query(async ({ ctx, input }) => {
-      assertCan(ctx.ability, "journal:entry", "JournalEntry");
-
       const { search, status, accountId, dateFrom, dateTo, sortBy, sortOrder } =
         input;
       const orgId = ctx.user.organizationId;
@@ -93,10 +92,9 @@ export const journalsRouter = router({
 
   // ── GET BY ID ──────────────────────────────────────────────────────────────
   byId: orgProcedure
+    .require("journal:entry")
     .input(z.object({ id: z.string() }))
     .query(async ({ ctx, input }) => {
-      assertCan(ctx.ability, "journal:entry", "JournalEntry");
-
       const entry = await ctx.db.journalEntry.findFirst({
         where: { id: input.id, organizationId: ctx.user.organizationId },
         include: {
@@ -121,10 +119,9 @@ export const journalsRouter = router({
 
   // ── CREATE (draft) ────────────────────────────────────────────────────────
   create: orgProcedure
+    .require("journal:entry")
     .input(createJournalEntrySchema)
     .mutation(async ({ ctx, input }) => {
-      assertCan(ctx.ability, "journal:entry", "JournalEntry");
-
       const { lines, ...meta } = input;
 
       return ctx.db.$transaction(async (tx) => {
@@ -156,10 +153,9 @@ export const journalsRouter = router({
 
   // ── POST (DRAFT → POSTED) ─────────────────────────────────────────────────
   post: orgProcedure
+    .require("journal:entry")
     .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
-      assertCan(ctx.ability, "journal:entry", "JournalEntry");
-
       return ctx.db.$transaction(async (tx) => {
         const entry = await postDraftEntry(
           tx,
@@ -187,10 +183,9 @@ export const journalsRouter = router({
 
   // ── VOID (DRAFT → VOID) ───────────────────────────────────────────────────
   void: orgProcedure
+    .require("journal:entry")
     .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
-      assertCan(ctx.ability, "journal:entry", "JournalEntry");
-
       return ctx.db.$transaction(async (tx) => {
         const entry = await voidDraftEntry(
           tx,
@@ -217,10 +212,9 @@ export const journalsRouter = router({
 
   // ── REVERSE (POSTED → creates new reversal entry) ─────────────────────────
   reverse: orgProcedure
+    .require("journal:entry")
     .input(z.object({ id: z.string(), reason: z.string().max(500).optional() }))
     .mutation(async ({ ctx, input }) => {
-      assertCan(ctx.ability, "journal:entry", "JournalEntry");
-
       return ctx.db.$transaction(async (tx) => {
         const reversal = await reversePostedEntry(
           tx,
@@ -249,14 +243,13 @@ export const journalsRouter = router({
 
   // ── ACCOUNT BALANCES ──────────────────────────────────────────────────────
   balances: orgProcedure
+    .require("journal:entry")
     .input(
       z.object({
         asOf: z.coerce.date().optional(),
       }),
     )
     .query(async ({ ctx, input }) => {
-      assertCan(ctx.ability, "journal:entry", "JournalEntry");
-
       const balances = await getAccountBalances(
         ctx.db,
         ctx.user.organizationId,

@@ -31,7 +31,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Switch } from "@/components/ui/switch";
 import { useIsMobile } from "@/hooks/use-mobile";
-import type { Action } from "@/lib/abilities";
+import type { Action } from "@/lib/permissions";
 import { cn } from "@/lib/utils";
 
 // ─── Discriminated Union Schema Types ────────────────────────────────────────

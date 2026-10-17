@@ -3,19 +3,18 @@
  *
  * This registry drives everything:
  *   - DB seeding (`prisma db seed` via prisma/seed/index.ts)
- *   - The CASL `Action` type in lib/abilities.ts (derived from this array,
+ *   - The `Action` type in lib/permissions/engine.ts (derived from this array,
  *     so a code present here but missing elsewhere — or vice versa — fails
  *     to compile instead of silently breaking authorization)
  *   - Boot-time permission sync (server/shared/permission-sync.ts)
  *
- * IMPORTANT: codes MUST match what routers pass to assertCan(), e.g.
- * "invoice:create" ↔ assertCan(ctx.ability, "invoice:create", "Invoice").
+ * IMPORTANT: codes MUST match what routers pass to `.require()` / `assertCan()`,
+ * e.g. "invoice:create" ↔ orgProcedure.require("invoice:create").
  *
  * To add a feature's permissions:
  *   1. Add entries here (module = display group in Settings → Permissions).
- *   2. Map the resource prefix in RESOURCE_TO_SUBJECT_MAP (lib/abilities.ts).
- *   3. Add mutation codes to MUTATION_ACTIONS (lib/abilities.ts).
- *   4. Deploy — rows and OWNER grants are synced automatically at boot.
+ *   2. Add route entries in lib/permissions/routes.ts (if it has pages).
+ *   3. Deploy — rows and OWNER grants are synced automatically at boot.
  */
 
 export interface PermissionDefinition {
