@@ -3,7 +3,7 @@
 import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
-import { useSession } from "@/auth/auth-client";
+import { useSession } from "@/lib/auth/auth-client";
 
 const LandingClient = dynamic(() => import("./_landing/landing-client"), {
   ssr: false,

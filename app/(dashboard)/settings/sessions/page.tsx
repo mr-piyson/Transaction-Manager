@@ -11,10 +11,10 @@ import {
 import { useTranslations } from "next-intl";
 import { useCallback, useMemo } from "react";
 import { toast } from "sonner";
-import { useSession } from "@/auth/auth-client";
 import { alert } from "@/components/Alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { useSession } from "@/lib/auth/auth-client";
 import { trpc } from "@/lib/trpc/client";
 import { SectionCard } from "../_shared";
 

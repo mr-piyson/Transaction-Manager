@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { getCurrentUser } from "@/auth/auth-server";
+import { getCurrentUser } from "@/lib/auth/auth-server";
 import db from "@/lib/db";
 import DashboardLayoutClient from "./dashboard-layout";
 

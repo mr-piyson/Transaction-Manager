@@ -29,8 +29,8 @@ import {
 import { useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
 import { useCallback } from "react";
-import { signOut } from "@/auth/auth-client";
 import { useLocaleSwitcher } from "@/hooks/use-locale";
+import { signOut } from "@/lib/auth/auth-client";
 
 // --- Types ---
 

@@ -10,7 +10,6 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
-import { useSession } from "@/auth/auth-client";
 import { LocaleSwitcherMenu } from "@/components/locale-switcher";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -26,6 +25,7 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useActionHandlers } from "@/lib/actions";
+import { useSession } from "@/lib/auth/auth-client";
 import { Button } from "../ui/button";
 
 export function NavUser() {

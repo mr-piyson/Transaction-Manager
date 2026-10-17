@@ -4,9 +4,9 @@ import { CheckCircle2, Crown, Loader2, Shield } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
-import { useSession } from "@/auth/auth-client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useSession } from "@/lib/auth/auth-client";
 import { trpc } from "@/lib/trpc/client";
 import { Field, SectionCard } from "../_shared";
 

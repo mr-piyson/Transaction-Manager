@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { auth } from "@/auth/auth-server";
+import { auth } from "@/lib/auth/auth-server";
 import { ConflictError } from "@/lib/error";
 import { publicProcedure, t } from "@/lib/trpc/context";
 import {

@@ -1,8 +1,8 @@
 import type { Prisma } from "@prisma/client";
 import type { FetchCreateContextFnOptions } from "@trpc/server/adapters/fetch";
 import type { NextRequest } from "next/server";
-import { auth } from "@/auth/auth-server";
 import { type AppAbilityType, defineAbilitiesFor } from "@/lib/abilities";
+import { auth } from "@/lib/auth/auth-server";
 import db from "../db";
 
 // ---------------------------------------------------------------------------

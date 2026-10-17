@@ -1,7 +1,7 @@
 import { TRPCError } from "@trpc/server";
 import { headers } from "next/headers";
 import { z } from "zod";
-import { auth } from "@/auth/auth-server";
+import { auth } from "@/lib/auth/auth-server";
 import { protectedProcedure, publicProcedure, t } from "@/lib/trpc/context";
 
 export const authRouter = t.router({

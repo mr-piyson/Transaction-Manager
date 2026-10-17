@@ -1,6 +1,6 @@
 import { hashPassword } from "better-auth/crypto";
 import { z } from "zod";
-import { auth } from "@/auth/auth-server";
+import { auth } from "@/lib/auth/auth-server";
 import { ForbiddenError, NotFoundError } from "@/lib/error";
 import { assertCan, orgProcedure, router } from "@/lib/trpc/context";
 import { writeAuditLog } from "../shared/audit.service";
