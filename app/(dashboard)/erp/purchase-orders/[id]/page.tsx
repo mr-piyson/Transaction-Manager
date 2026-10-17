@@ -1,2 +1,3 @@
 "use client";
-export { default } from "@/layouts/dashboard/erp/purchase-orders/[id]/IdPage";
+
+export { default } from "../../documents/po/[id]/IdPage";

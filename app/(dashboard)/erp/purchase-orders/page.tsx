@@ -1,2 +1,7 @@
 "use client";
-export { default } from "@/layouts/dashboard/erp/purchase-orders/PurchaseOrdersPage";
+
+import PurchaseOrdersPage from "../documents/po/TypePage";
+
+export default function PurchaseOrdersPageWrapper() {
+  return <PurchaseOrdersPage />;
+}

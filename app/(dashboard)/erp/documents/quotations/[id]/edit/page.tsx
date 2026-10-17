@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import QuotationEditPage from "@/layouts/dashboard/erp/documents/quotations/QuotationEditPage";
+import QuotationEditPage from "../../QuotationEditPage";
 
 export default function EditQuotationRoute() {
   return (

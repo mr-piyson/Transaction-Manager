@@ -1,2 +1,5 @@
-"use client";
-export { default } from "@/layouts/dashboard/erp/ErpLayout";
+import { DialogsProvider } from "@/components/dialogs";
+
+export default function ErpLayout({ children }: { children: React.ReactNode }) {
+  return <DialogsProvider>{children}</DialogsProvider>;
+}

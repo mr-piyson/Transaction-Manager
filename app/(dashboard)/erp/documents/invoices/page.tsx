@@ -1,1 +1,7 @@
-export { default } from "@/layouts/dashboard/erp/documents/invoices/InvoicesPage";
+"use client";
+
+import DocumentsPage from "../[type]/TypePage";
+
+export default function InvoicesPage() {
+  return <DocumentsPage documentType="invoices" />;
+}

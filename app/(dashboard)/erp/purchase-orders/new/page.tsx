@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import PONewPage from "@/layouts/dashboard/erp/purchase-orders/PONewPage";
+import PONewPage from "../PONewPage";
 
 export default function NewPORoute() {
   return (

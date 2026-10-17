@@ -1,2 +1,5 @@
-"use client";
-export { default } from "@/layouts/dashboard/settings/SettingsPage";
+import { redirect } from "next/navigation";
+
+export default function SettingsPage() {
+  redirect("/settings/general");
+}

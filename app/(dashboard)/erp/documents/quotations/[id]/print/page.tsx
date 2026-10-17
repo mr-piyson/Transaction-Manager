@@ -1,1 +1,7 @@
-export { default } from "@/layouts/dashboard/erp/documents/quotations/QuotationPrintPage";
+"use client";
+
+import DocumentPrintPage from "../../../[type]/[id]/print/PrintPage";
+
+export default function QuotationPrintPage() {
+  return <DocumentPrintPage documentType="quotations" />;
+}

@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import InvoiceNewPage from "@/layouts/dashboard/erp/documents/invoices/InvoiceNewPage";
+import InvoiceNewPage from "../InvoiceNewPage";
 
 export default function NewInvoiceRoute() {
   return (
