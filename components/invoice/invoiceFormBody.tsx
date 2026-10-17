@@ -26,7 +26,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import type { InvoiceFormController } from "@/lib/form/invoice/useInvoiceFormController";
-import { unitCodeFor } from "@/lib/uom-client";
+import { unitCodeFor } from "@/lib/uom/uom-client";
 import { CURRENCIES, cn } from "@/lib/utils";
 
 export interface PaperOrgMeta {

@@ -19,7 +19,7 @@ import {
   defaultUnitIdFor,
   supplierPriceFor,
   unitCodeFor,
-} from "@/lib/uom-client";
+} from "@/lib/uom/uom-client";
 import { cn } from "@/lib/utils";
 
 export interface POItemSelectDialogProps {

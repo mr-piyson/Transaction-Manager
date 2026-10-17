@@ -16,7 +16,7 @@ import type { POLineData } from "@/components/dialogs/poLineDialog";
 import { type POFormValues, poFormSchema } from "@/lib/form/po/poFormSchema";
 import { buildPOSubmitPayload } from "@/lib/form/po/poMapper";
 import { trpc } from "@/lib/trpc/client";
-import { defaultUnitIdFor, supplierPriceFor } from "@/lib/uom-client";
+import { defaultUnitIdFor, supplierPriceFor } from "@/lib/uom/uom-client";
 
 export interface POFormController {
   mode: "create" | "edit";

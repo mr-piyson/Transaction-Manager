@@ -35,7 +35,7 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import type { POFormController } from "@/lib/form/po/usePOFormController";
-import { unitCodeFor } from "@/lib/uom-client";
+import { unitCodeFor } from "@/lib/uom/uom-client";
 import { CURRENCIES, cn } from "@/lib/utils";
 
 export function POFormBody({

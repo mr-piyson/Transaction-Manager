@@ -12,7 +12,7 @@ import {
   baseUnitAmount,
   convertToBase,
   resolveUomFactor,
-} from "@/lib/uom-converter";
+} from "@/lib/uom/uom-converter";
 import { currencyCodeSchema, sortOrderSchema } from "@/lib/validations";
 import {
   postPOExpenseReceived,

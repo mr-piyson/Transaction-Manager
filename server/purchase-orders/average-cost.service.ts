@@ -14,7 +14,7 @@ import {
   type DecimalInput,
   deriveBaseUnitCost,
   roundCost,
-} from "@/lib/uom-converter";
+} from "@/lib/uom/uom-converter";
 
 function toDec(value: DecimalInput, label: string): Prisma.Decimal {
   const d = value instanceof Prisma.Decimal ? value : new Prisma.Decimal(value);

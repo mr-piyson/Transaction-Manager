@@ -22,7 +22,7 @@ import {
   UnprocessableError,
 } from "@/lib/error";
 import { assertCan, orgProcedure, router } from "@/lib/trpc/context";
-import { assertFactor } from "@/lib/uom-converter";
+import { assertFactor } from "@/lib/uom/uom-converter";
 import {
   currencyCodeSchema,
   decimalSchema,

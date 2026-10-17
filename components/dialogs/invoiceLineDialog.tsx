@@ -40,7 +40,7 @@ import {
   defaultUnitIdFor,
   factorForUnit,
   itemUnitOptions,
-} from "@/lib/uom-client";
+} from "@/lib/uom/uom-client";
 
 const lineEditSchema = z.object({
   mode: z.enum(["item", "manual"]).default("item"),

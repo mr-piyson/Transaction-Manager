@@ -30,7 +30,7 @@ import {
   factorForUnit,
   itemUnitOptions,
   supplierPriceFor,
-} from "@/lib/uom-client";
+} from "@/lib/uom/uom-client";
 import { POItemSelectDialog } from "./poItemSelectDialog";
 
 const lineEditSchema = z
