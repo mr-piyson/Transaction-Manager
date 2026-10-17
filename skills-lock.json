@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "skills": {
+    "graphify": {
+      "source": "graphify-labs/graphify",
+      "sourceType": "github",
+      "skillPath": "graphify/SKILL.md",
+      "computedHash": "d35b31d1f7736281bdf130b9a0f0780e27eabb53b7551504a0657345b92f09b5"
+    },
+    "ponytail": {
+      "source": "dietrichgebert/ponytail",
+      "sourceType": "github",
+      "skillPath": "skills/ponytail/SKILL.md",
+      "computedHash": "061f887d9e3e735f85db3be3655a8936a00f24d5fb65ac4ab74a968a770fe342"
+    }
+  }
+}
