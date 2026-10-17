@@ -113,6 +113,14 @@ export const ROUTE_PERMISSIONS: readonly RoutePermissionRule[] = [
     match: "/settings",
     read: "org:settings:read",
   },
+  {
+    match: "/settings/permissions",
+    read: "role:manage",
+  },
+  {
+    match: "/settings/users",
+    read: "user:manage",
+  },
 ] as const;
 
 function normalize(pathname: string): string {
