@@ -15,10 +15,12 @@
  *
  * Bump VERSION whenever the caching rules or the precache list change: it
  * names the caches and makes the activate handler drop the previous
- * generation (and its stale entries) on the next load.
+ * generation (and its stale entries) on the next load. It also forces the
+ * install handler to re-fetch the precached pages (e.g. a redesigned
+ * /offline.html), which would otherwise stay frozen in the old cache.
  */
 
-const VERSION = "v2";
+const VERSION = "v3";
 const STATIC_CACHE = `tm-static-${VERSION}`;
 const RUNTIME_CACHE = `tm-runtime-${VERSION}`;
 

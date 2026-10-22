@@ -1,252 +1,525 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Offline — Transaction Manager</title>
-    <meta name="theme-color" content="#2c2742" />
-    <meta name="robots" content="noindex, nofollow" />
-    <style>
-      :root {
-        color-scheme: light dark;
-        --background: #ffffff;
-        --foreground: #17141d;
-        --muted: #606060;
-        --card: #f5f5f5;
-        --border: #cccccc;
-        --primary: #2c2742;
-        --primary-foreground: #fbfbfb;
-      }
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="robots" content="noindex, nofollow" />
+<title>Offline — Transaction Manager</title>
+<meta name="theme-color" content="#2c2742" />
+<script>
+  /* Sync with next-themes (storageKey="theme") before first paint to avoid a flash */
+  (() => {
+    try {
+      const stored = localStorage.getItem("theme");
+      const dark = stored === "dark" || (stored !== "light" && matchMedia("(prefers-color-scheme: dark)").matches);
+      document.documentElement.classList.add(dark ? "dark" : "light");
+      const meta = document.querySelector('meta[name="theme-color"]');
+      if (meta) meta.setAttribute("content", dark ? "#191919" : "#ffffff");
+    } catch {}
+  })();
+</script>
+<style>
+:root{
+  color-scheme:light dark;
+  --bg:#ffffff; --bg-tint:#f4f3fa; --card:rgba(255,255,255,.78);
+  --fg:#17141d; --muted:#606060; --border:#cccccc;
+  --brand:#2c2742; --brand-2:#6366f1; --brand-3:#c3ebfe;
+  --node:99,102,241;
+  --warn:#f59e0b; --warn-soft:rgba(245,158,11,.14);
+  --ok:#10b981;
+  --ok-soft:rgba(16,185,129,.14);
+  --shadow:0 1px 2px rgba(0,0,0,.05),0 18px 50px rgba(44,39,66,.12);
+}
+.dark{
+  color-scheme:dark;
+  --bg:#191919; --bg-tint:#242424; --card:rgba(36,36,36,.78);
+  --fg:#fbfbfb; --muted:#888888; --border:#454545;
+  --brand:#00558d; --brand-2:#007acc; --brand-3:#7c4dff;
+  --node:0,153,204;
+  --warn:#fbbf24; --warn-soft:rgba(251,191,36,.14);
+  --ok:#34d399;
+  --ok-soft:rgba(52,211,153,.14);
+  --shadow:0 1px 2px rgba(0,0,0,.5),0 18px 50px rgba(0,0,0,.45);
+}
+.light{color-scheme:light}
+@media (prefers-color-scheme:dark){
+  :root:not(.light){
+    color-scheme:dark;
+    --bg:#191919; --bg-tint:#242424; --card:rgba(36,36,36,.78);
+    --fg:#fbfbfb; --muted:#888888; --border:#454545;
+    --brand:#00558d; --brand-2:#007acc; --brand-3:#7c4dff;
+    --node:0,153,204;
+    --warn:#fbbf24; --warn-soft:rgba(251,191,36,.14);
+    --ok:#34d399;
+    --ok-soft:rgba(52,211,153,.14);
+    --shadow:0 1px 2px rgba(0,0,0,.5),0 18px 50px rgba(0,0,0,.45);
+  }
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%}
+body{
+  font-family:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  background:radial-gradient(120% 90% at 50% 0%,var(--bg-tint) 0%,var(--bg) 60%);
+  color:var(--fg);
+  display:flex;justify-content:center;
+  min-height:100dvh;padding:24px;overflow-x:hidden;overflow-y:auto;position:relative;
+  -webkit-font-smoothing:antialiased;
+}
 
-      @media (prefers-color-scheme: dark) {
-        :root {
-          --background: #191919;
-          --foreground: #fbfbfb;
-          --muted: #888888;
-          --card: #242424;
-          --border: #454545;
-          --primary: #00558d;
-          --primary-foreground: #fbfbfb;
+/* ------------------------------------------------------------------ backdrops */
+.aurora{position:fixed;inset:0;z-index:0;overflow:hidden;pointer-events:none}
+.aurora i{
+  position:absolute;width:52vmax;height:52vmax;border-radius:50%;
+  filter:blur(90px);opacity:.22;will-change:transform;
+}
+.aurora i:nth-child(1){background:var(--brand-2);top:-20vmax;left:-14vmax;animation:d1 26s ease-in-out infinite alternate}
+.aurora i:nth-child(2){background:var(--brand-3);bottom:-24vmax;right:-16vmax;animation:d2 32s ease-in-out infinite alternate}
+.aurora i:nth-child(3){background:var(--brand);width:34vmax;height:34vmax;top:35%;left:55%;opacity:.14;animation:d3 38s ease-in-out infinite alternate}
+@keyframes d1{to{transform:translate(18vmax,12vmax) scale(1.15)}}
+@keyframes d2{to{transform:translate(-16vmax,-10vmax) scale(1.1)}}
+@keyframes d3{to{transform:translate(-22vmax,8vmax) scale(.85)}}
+
+canvas#bg{position:fixed;inset:0;width:100%;height:100%;z-index:1;pointer-events:none}
+
+/* Signal search sweep — a light bar hunting for a connection */
+.scan{
+  position:fixed;left:0;right:0;height:38vh;z-index:1;pointer-events:none;
+  background:linear-gradient(180deg,transparent,color-mix(in srgb,var(--brand-2) 10%,transparent) 55%,transparent);
+  opacity:.75;animation:sweep 6.5s cubic-bezier(.5,0,.5,1) infinite;
+}
+@keyframes sweep{0%{transform:translateY(-45vh);opacity:0}12%{opacity:.8}88%{opacity:.8}100%{transform:translateY(115vh);opacity:0}}
+
+/* Film grain */
+.grain{
+  position:fixed;inset:-50%;z-index:1;pointer-events:none;opacity:.05;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E");
+  animation:grain 8s steps(6) infinite;
+}
+@keyframes grain{
+  0%{transform:translate(0,0)}20%{transform:translate(-3%,2%)}40%{transform:translate(2%,-3%)}
+  60%{transform:translate(-2%,-2%)}80%{transform:translate(3%,1%)}100%{transform:translate(0,0)}
+}
+
+/* ---------------------------------------------------------------------- card */
+.card{
+  position:relative;z-index:2;width:100%;max-width:452px;margin:auto;
+  padding:36px 36px 26px;text-align:center;
+  background:var(--card);border:1px solid var(--border);border-radius:22px;
+  backdrop-filter:blur(16px) saturate(150%);-webkit-backdrop-filter:blur(16px) saturate(150%);
+  box-shadow:var(--shadow);
+}
+/* Animated gradient hairline border */
+.card::before{
+  content:"";position:absolute;inset:0;border-radius:inherit;padding:1px;
+  background:conic-gradient(from var(--angle,0deg),
+    transparent 0deg,
+    color-mix(in srgb, var(--brand-2) 65%, transparent) 55deg,
+    color-mix(in srgb, var(--brand-3) 60%, transparent) 125deg,
+    color-mix(in srgb, var(--warn) 50%, transparent) 195deg,
+    transparent 265deg,
+    transparent 360deg);
+  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
+  -webkit-mask-composite:xor;mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
+  mask-composite:exclude;pointer-events:none;opacity:.8;
+}
+@property --angle{syntax:"<angle>";inherits:false;initial-value:0deg}
+@supports (background:conic-gradient(from var(--angle,0deg),red,blue)){
+  .card::before{animation:spin 9s linear infinite}
+}
+@keyframes spin{to{--angle:360deg}}
+
+/* ------------------------------------------------------------------- brand */
+.brand{position:relative;width:58px;height:78px;margin:0 auto 20px}
+.brand .logo{width:58px;height:78px;display:block;filter:drop-shadow(0 8px 18px color-mix(in srgb,var(--brand) 25%,transparent))}
+.brand .halo{
+  position:absolute;inset:-16px -20px;border-radius:50%;
+  border:1px solid color-mix(in srgb,var(--brand-2) 35%,transparent);
+  animation:halo 3.4s ease-out infinite;
+}
+@keyframes halo{
+  0%{transform:scale(.72);opacity:.9}
+  100%{transform:scale(1.25);opacity:0}
+}
+
+/* -------------------------------------------------------------------- badge */
+.pill{
+  display:inline-flex;align-items:center;gap:8px;padding:5px 13px;margin-bottom:16px;
+  border-radius:9999px;border:1px solid var(--border);font-size:12.5px;font-weight:600;
+  color:var(--fg);background:var(--ok-soft);
+}
+.dot{position:relative;width:8px;height:8px;border-radius:50%;background:var(--warn);box-shadow:0 0 10px 1px color-mix(in srgb,var(--warn) 55%,transparent)}
+.dot::after{content:"";position:absolute;inset:0;border-radius:50%;border:1px solid color-mix(in srgb,var(--warn) 60%,transparent);animation:pulse 1.8s ease-out infinite}
+@keyframes pulse{0%{transform:scale(1);opacity:.8}100%{transform:scale(3.4);opacity:0}}
+
+h1{font-size:23px;font-weight:700;letter-spacing:-.02em;margin-bottom:10px}
+.body{font-size:14.5px;line-height:1.65;color:var(--muted)}
+
+/* ------------------------------------------------------------------ signal */
+.signal{
+  display:flex;align-items:center;justify-content:center;gap:12px;
+  margin:22px 0 4px;padding:14px;border-radius:16px;
+  border:1px solid var(--border);background:color-mix(in srgb,var(--bg-tint) 65%,transparent);
+  transition:border-color .35s ease,background .35s ease;
+}
+.signal .waves{position:relative;width:34px;height:34px;flex:0 0 34px;color:var(--muted)}
+.signal .waves .wifi{width:34px;height:34px;display:block;overflow:visible}
+.signal .waves .w-arc,.signal .waves .w-dot{transform-box:fill-box;transform-origin:center}
+.signal .waves .w-arc{opacity:.55;animation:arc 2.4s ease-in-out infinite}
+.signal .waves .w-arc-3{animation-delay:.15s}
+.signal .waves .w-arc-2{animation-delay:.3s}
+.signal .waves .w-arc-1{animation-delay:.45s}
+.signal .waves .w-dot{opacity:.55;animation:dot 2.4s ease-in-out infinite}
+@keyframes arc{0%,100%{opacity:.22;transform:scale(.92)}45%{opacity:1;transform:scale(1.03)}}
+@keyframes dot{0%,100%{opacity:.3;transform:scale(.88)}45%{opacity:1;transform:scale(1.15)}}
+.signal .waves .slash{
+  position:absolute;inset:0;width:34px;height:34px;color:var(--warn);
+  stroke-width:2.6;stroke-linecap:round;
+  stroke-dasharray:32;stroke-dashoffset:32;
+  animation:slashIn .55s ease-out .25s forwards;
+  transition:opacity .35s ease;
+}
+@keyframes slashIn{to{stroke-dashoffset:0}}
+
+/* Signal found: the icon settles, turns green and the slash disappears. */
+.signal[data-state="online"]{border-color:color-mix(in srgb,var(--ok) 40%,var(--border));background:color-mix(in srgb,var(--ok) 7%,transparent)}
+.signal[data-state="online"] .waves{color:var(--ok)}
+.signal[data-state="online"] .waves .wifi{filter:drop-shadow(0 0 9px color-mix(in srgb,var(--ok) 55%,transparent))}
+.signal[data-state="online"] .waves .w-arc,
+.signal[data-state="online"] .waves .w-dot{animation:none;opacity:1}
+.signal[data-state="online"] .waves .slash{opacity:0;animation:none;stroke-dashoffset:32}
+.signal .label{font-size:13px;font-weight:600;color:var(--muted);text-align:left}
+.signal .label small{display:block;font-weight:500;font-size:12px;opacity:.8;margin-top:2px}
+
+/* -------------------------------------------------------------------- facts */
+.facts{list-style:none;text-align:left;margin:20px 0 0;display:grid;gap:10px}
+.facts li{
+  display:flex;align-items:flex-start;gap:10px;
+  font-size:13.5px;line-height:1.5;color:var(--muted);
+}
+.facts svg{width:16px;height:16px;flex:0 0 16px;margin-top:2px;color:var(--brand-2)}
+.facts li strong{color:var(--fg);font-weight:600}
+
+/* ------------------------------------------------------------------- button */
+.btn{
+  -webkit-appearance:none;appearance:none;cursor:pointer;font:inherit;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  width:fit-content;margin:24px auto 0;padding:11px 20px;border-radius:12px;border:1px solid transparent;
+  background:linear-gradient(135deg,var(--brand),var(--brand-2));
+  color:#fff;font-size:14px;font-weight:600;letter-spacing:.01em;
+  box-shadow:0 6px 20px color-mix(in srgb,var(--brand-2) 30%,transparent);
+  transition:transform .15s ease,box-shadow .15s ease,opacity .15s ease;
+}
+.btn:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 10px 26px color-mix(in srgb,var(--brand-2) 38%,transparent)}
+.btn:active:not(:disabled){transform:translateY(0)}
+.btn:disabled{opacity:.45;cursor:not-allowed;box-shadow:none}
+.btn[data-state="offline"]{background:linear-gradient(135deg,color-mix(in srgb,var(--brand) 82%,transparent),color-mix(in srgb,var(--brand-2) 82%,transparent));box-shadow:none}
+.btn[data-state="offline"]:hover{transform:none}
+.btn:focus-visible{outline:2px solid var(--fg);outline-offset:3px}
+.btn svg{width:16px;height:16px}
+.btn.loading svg{animation:rot 1s linear infinite}
+@keyframes rot{to{transform:rotate(360deg)}}
+.btn.shake{animation:shake .42s cubic-bezier(.36,.07,.19,.97)}
+@keyframes shake{
+  10%,90%{transform:translateX(-2px)}20%,80%{transform:translateX(3px)}
+  30%,50%,70%{transform:translateX(-5px)}40%,60%{transform:translateX(5px)}
+}
+
+/* ------------------------------------------------------------------- status */
+.status{
+  display:flex;align-items:center;gap:8px;justify-content:center;
+  margin:14px 0 0;font-size:12.5px;color:var(--muted);min-height:1.2em;
+}
+.status .spinner{
+  width:12px;height:12px;border-radius:50%;border:2px solid color-mix(in srgb,var(--muted) 35%,transparent);
+  border-top-color:var(--muted);animation:rot .9s linear infinite;
+}
+.status .spinner.ok{border-color:var(--ok);border-top-color:transparent;animation:none}
+
+.foot{margin-top:22px;padding-top:16px;border-top:1px solid var(--border);font-size:12px;font-weight:500;color:var(--muted);letter-spacing:.02em}
+
+@media (max-width:420px){
+  .card{padding:28px 20px 22px}
+  h1{font-size:21px}
+}
+/* Short viewports (landscape phones, split screens): keep everything reachable. */
+@media (max-height:700px){
+  .card{padding:24px 28px 20px}
+  .brand{width:44px;height:60px;margin-bottom:14px}
+  .brand .logo{width:44px;height:60px}
+  .pill{margin-bottom:12px}
+  h1{font-size:20px}
+  .body{font-size:13.5px}
+  .signal{margin:16px 0 2px;padding:10px}
+  .facts{margin-top:14px;gap:8px}
+  .facts li{font-size:12.5px}
+  .btn{margin-top:18px}
+  .foot{margin-top:16px;padding-top:12px}
+}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation:none!important;transition:none!important}
+}
+</style>
+</head>
+<body>
+<div class="aurora" aria-hidden="true"><i></i><i></i><i></i></div>
+<canvas id="bg" aria-hidden="true"></canvas>
+<div class="scan" aria-hidden="true"></div>
+<div class="grain" aria-hidden="true"></div>
+
+<main class="card">
+  <div class="brand">
+    <span class="halo" aria-hidden="true"></span>
+    <svg class="logo" viewBox="0 0 186 249" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Transaction Manager">
+      <title>diamond</title>
+      <path d="M99,0 L0,155.5 L65.5,101 Z" fill="url(#paint0_linear)" stroke="none" />
+      <path d="M95,95.5 L65.5,101 L99,0 Z" fill="url(#paint1_linear)" stroke="none" />
+      <path d="M95,95.5 L65.5,101 L0,155.5 Z" fill="hsl(222, 90%, 63%)" stroke="none" />
+      <path d="M95,95.5 L0,155.5 L185.5,95.5 Z" fill="url(#paint2_linear)" stroke="none" />
+      <path d="M91,155.5 L185.5,95.5 L0,155.5 Z" fill="hsl(222, 90%, 43%)" stroke="none" />
+      <path d="M87.5,249 L121,149.5 L185.5,95.5 Z" fill="url(#paint3_linear)" stroke="none" />
+      <path d="M91,155.5 L121,149.5 L87.5,249 Z" fill="hsl(222, 80%, 73%)" stroke="none" />
+      <path d="M91,155.5 L121,149.5 L185.5,95.5 Z" fill="hsl(222, 80%, 73%)" stroke="none" />
+      <defs>
+        <linearGradient id="paint0_linear" x1="0%" y1="0%" x2="100%" y2="100%" gradientUnits="userSpaceOnUse">
+          <stop offset="0%" stop-color="hsl(222, 90%, 33%)" />
+          <stop offset="50%" stop-color="hsl(222, 90%, 63%)" />
+          <stop offset="100%" stop-color="hsl(222, 60%, 97%)" />
+        </linearGradient>
+        <linearGradient id="paint1_linear" x1="0%" y1="50%" x2="100%" y2="50%" gradientUnits="userSpaceOnUse">
+          <stop offset="0%" stop-color="hsl(222, 90%, 63%)" />
+          <stop offset="100%" stop-color="hsl(222, 70%, 88%)" />
+        </linearGradient>
+        <linearGradient id="paint2_linear" x1="50%" y1="0%" x2="50%" y2="100%" gradientUnits="userSpaceOnUse">
+          <stop offset="0%" stop-color="hsl(222, 80%, 73%)" />
+          <stop offset="100%" stop-color="hsl(222, 90%, 63%)" />
+        </linearGradient>
+        <linearGradient id="paint3_linear" x1="0%" y1="0%" x2="100%" y2="100%" gradientUnits="userSpaceOnUse">
+          <stop offset="0%" stop-color="hsl(222, 90%, 33%)" />
+          <stop offset="60%" stop-color="hsl(222, 90%, 63%)" />
+          <stop offset="100%" stop-color="hsl(222, 60%, 97%)" />
+        </linearGradient>
+      </defs>
+    </svg>
+  </div>
+
+  <span class="pill"><span class="dot" aria-hidden="true"></span><span id="pillText">No connection</span></span>
+
+  <h1>You're offline</h1>
+  <p class="body">
+    Transaction Manager needs a live connection to load this screen. Nothing you
+    saved is lost — reconnect and pick up exactly where you left off.
+  </p>
+
+  <div class="signal" id="signal" data-state="offline">
+    <span class="waves" aria-hidden="true">
+      <svg class="wifi" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="1em" height="1em">
+        <path d="M0 0h32v32H0z" fill="none" />
+        <circle class="w-dot" cx="16" cy="25" r="2" fill="currentColor" />
+        <path class="w-arc w-arc-3" fill="currentColor" d="m10.47 19.233l1.414 1.413a5.97 5.97 0 0 1 8.223-.009l1.413-1.413a7.963 7.963 0 0 0-11.05.01Z" />
+        <path class="w-arc w-arc-2" fill="currentColor" d="m6.229 14.993l1.414 1.413a11.955 11.955 0 0 1 16.704-.01l1.413-1.413a13.95 13.95 0 0 0-19.531.01" />
+        <path class="w-arc w-arc-1" fill="currentColor" d="M30 10.741a19.94 19.94 0 0 0-28 0v.023l1.404 1.404a17.934 17.934 0 0 1 25.181-.01L30 10.743Z" />
+      </svg>
+      <svg class="slash" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+        <path d="M5 5 L27 27" />
+      </svg>
+    </span>
+    <span class="label" id="signalLabel">
+      Searching for a signal
+      <small id="signalHint">We’ll reconnect automatically the moment you’re back.</small>
+    </span>
+  </div>
+
+  <ul class="facts">
+    <li>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+      <span><strong>Your work is safe.</strong> Nothing was sent or lost — we only failed to reach the server.</span>
+    </li>
+    <li>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+      <span><strong>Data stays private.</strong> Financial records are never cached on shared devices.</span>
+    </li>
+    <li>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></svg>
+      <span><strong>One tap to resume.</strong> Retrying reloads this page and restores your session.</span>
+    </li>
+  </ul>
+
+  <button id="retry" class="btn" type="button">
+    <svg id="retryIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" />
+      <path d="M21 3v5h-5" />
+      <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" />
+      <path d="M8 16H3v5" />
+    </svg>
+    <span id="retryLabel">Try again</span>
+  </button>
+
+  <p class="status" id="status" role="status" aria-live="polite">
+    <span class="spinner" id="statusSpinner" aria-hidden="true"></span>
+    <span id="statusText">Waiting for a connection…</span>
+  </p>
+
+  <p class="foot">Transaction Manager</p>
+</main>
+
+<script>
+(() => {
+  const btn = document.getElementById("retry");
+  const btnLabel = document.getElementById("retryLabel");
+  const statusText = document.getElementById("statusText");
+  const statusSpinner = document.getElementById("statusSpinner");
+  const pillText = document.getElementById("pillText");
+  const signal = document.getElementById("signal");
+  const signalLabel = document.getElementById("signalLabel");
+  const signalHint = document.getElementById("signalHint");
+  const dot = document.querySelector(".pill .dot");
+
+  const AUTO_RETRY_SECONDS = 15;
+  let seconds = AUTO_RETRY_SECONDS;
+
+  const setOnline = (online) => {
+    pillText.textContent = online ? "Signal found" : "No connection";
+    signalLabel.firstChild.nodeValue = online ? "Signal found" : "Searching for a signal";
+    signalHint.textContent = online
+      ? "Retrying the request automatically…"
+      : "We’ll reconnect automatically the moment you’re back.";
+    dot.style.background = online ? "var(--ok)" : "";
+    dot.style.boxShadow = online ? "0 0 10px 1px var(--ok)" : "";
+    btn.dataset.state = online ? "online" : "offline";
+    signal.dataset.state = online ? "online" : "offline";
+  };
+
+  const setStatus = (text, state) => {
+    statusText.textContent = text;
+    statusSpinner.classList.toggle("ok", state === "ok");
+  };
+
+  const reload = () => {
+    btn.classList.add("loading");
+    btnLabel.textContent = "Reconnecting…";
+    btn.disabled = true;
+    setStatus("Reconnecting…", "loading");
+    location.reload();
+  };
+
+  /* Auto-retry countdown — only counts down while a connection exists. */
+  const tick = () => {
+    if (navigator.onLine) {
+      seconds -= 1;
+      if (seconds <= 0) { reload(); return; }
+      setStatus(`Retrying automatically in ${seconds}s…`, "loading");
+    } else {
+      seconds = AUTO_RETRY_SECONDS;
+      setStatus("Waiting for a connection…", "loading");
+    }
+  };
+
+  const sync = () => {
+    const online = navigator.onLine;
+    setOnline(online);
+    if (online) {
+      setStatus("Connection restored — reconnecting…", "ok");
+      setTimeout(reload, 600);
+    } else {
+      setStatus("Connection lost — waiting for a signal…", "loading");
+    }
+  };
+
+  btn.addEventListener("click", () => {
+    if (!navigator.onLine) {
+      setStatus("Still offline — we’ll keep watching for a signal.", "loading");
+      btn.classList.remove("shake");
+      void btn.offsetWidth; /* restart the animation */
+      btn.classList.add("shake");
+      return;
+    }
+    reload();
+  });
+
+  addEventListener("online", sync);
+  addEventListener("offline", () => {
+    setOnline(false);
+    setStatus("Connection lost — waiting for a signal…", "loading");
+  });
+
+  setOnline(navigator.onLine);
+  if (navigator.onLine) {
+    /* The browser has a connection but the server did not answer. */
+    setStatus(`Server unreachable — retrying automatically in ${AUTO_RETRY_SECONDS}s…`, "loading");
+  } else {
+    setStatus("Waiting for a connection…", "loading");
+  }
+
+  setInterval(tick, 1000);
+
+  /* ------------------------------------------------------------------ canvas */
+  const cv = document.getElementById("bg");
+  const ctx = cv.getContext("2d");
+  const reduce = matchMedia("(prefers-reduced-motion: reduce)");
+  const mouse = { x: -9999, y: -9999 };
+  let W, H, dpr, nodes = [], raf = 0, rgb = "99,102,241";
+
+  const readColor = () => {
+    rgb = getComputedStyle(document.documentElement).getPropertyValue("--node").trim() || rgb;
+  };
+
+  const resize = () => {
+    dpr = Math.min(devicePixelRatio || 1, 2);
+    W = innerWidth; H = innerHeight;
+    cv.width = W * dpr; cv.height = H * dpr;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    const count = Math.max(26, Math.min(92, Math.round((W * H) / 16000)));
+    nodes = Array.from({ length: count }, () => ({
+      x: Math.random() * W, y: Math.random() * H,
+      vx: (Math.random() - .5) * .35, vy: (Math.random() - .5) * .35,
+      r: Math.random() * 1.6 + .8,
+      dead: Math.random() < .18,
+    }));
+  };
+
+  const LINK = 140;
+  const draw = () => {
+    ctx.clearRect(0, 0, W, H);
+    for (let i = 0; i < nodes.length; i++) {
+      const a = nodes[i];
+      if (!reduce.matches) {
+        a.x += a.vx; a.y += a.vy;
+        if (a.x < -20) a.x = W + 20; else if (a.x > W + 20) a.x = -20;
+        if (a.y < -20) a.y = H + 20; else if (a.y > H + 20) a.y = -20;
+        const mx = a.x - mouse.x, my = a.y - mouse.y, md = mx * mx + my * my;
+        if (md < 14400) { const f = (1 - Math.sqrt(md) / 120) * .6; a.x += mx * f * .02; a.y += my * f * .02; }
+      }
+      for (let j = i + 1; j < nodes.length; j++) {
+        const b = nodes[j], dx = a.x - b.x, dy = a.y - b.y, d = dx * dx + dy * dy;
+        if (d < LINK * LINK) {
+          /* "Dead" nodes have broken links — the visual metaphor for being offline. */
+          const broken = a.dead || b.dead;
+          const alpha = (1 - Math.sqrt(d) / LINK) * (broken ? .12 : .32);
+          ctx.strokeStyle = `rgba(${rgb},${alpha})`;
+          ctx.lineWidth = 1;
+          ctx.setLineDash(broken ? [3, 5] : []);
+          ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
         }
       }
+      ctx.setLineDash([]);
+      ctx.fillStyle = `rgba(${rgb},${a.dead ? .28 : .68})`;
+      ctx.beginPath(); ctx.arc(a.x, a.y, a.r, 0, 6.2832); ctx.fill();
+    }
+    if (!reduce.matches) raf = requestAnimationFrame(draw);
+  };
 
-      * {
-        box-sizing: border-box;
-      }
+  const start = () => { cancelAnimationFrame(raf); readColor(); draw(); };
 
-      body {
-        margin: 0;
-        min-height: 100dvh;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 1.5rem;
-        background: var(--background);
-        color: var(--foreground);
-        font-family:
-          ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
-          "Helvetica Neue", Arial, sans-serif;
-        -webkit-font-smoothing: antialiased;
-      }
+  addEventListener("resize", () => { resize(); start(); });
+  addEventListener("pointermove", (e) => { mouse.x = e.clientX; mouse.y = e.clientY; }, { passive: true });
+  addEventListener("pointerleave", () => { mouse.x = mouse.y = -9999; });
+  document.addEventListener("visibilitychange", () => (document.hidden ? cancelAnimationFrame(raf) : start()));
+  matchMedia("(prefers-color-scheme: dark)").addEventListener("change", start);
+  reduce.addEventListener("change", start);
+  new MutationObserver(start).observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
 
-      main {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 1.25rem;
-        text-align: center;
-        max-width: 26rem;
-      }
-
-      .mark {
-        width: 4.5rem;
-        height: 4.5rem;
-        border-radius: 1rem;
-        background: var(--primary);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-      }
-
-      .mark svg {
-        width: 3rem;
-        height: 3rem;
-      }
-
-      .icon {
-        width: 3rem;
-        height: 3rem;
-        border-radius: 9999px;
-        background: var(--card);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: var(--muted);
-      }
-
-      .icon svg {
-        width: 1.5rem;
-        height: 1.5rem;
-      }
-
-      h1 {
-        margin: 0;
-        font-size: 1.5rem;
-        font-weight: 700;
-        letter-spacing: -0.02em;
-      }
-
-      p {
-        margin: 0;
-        font-size: 0.875rem;
-        line-height: 1.6;
-        color: var(--muted);
-      }
-
-      button {
-        appearance: none;
-        border: 1px solid transparent;
-        background: var(--primary);
-        color: var(--primary-foreground);
-        font: inherit;
-        font-size: 0.875rem;
-        font-weight: 500;
-        padding: 0.5rem 1rem;
-        border-radius: 0.5rem;
-        cursor: pointer;
-        display: inline-flex;
-        align-items: center;
-        gap: 0.375rem;
-      }
-
-      button:disabled {
-        opacity: 0.5;
-        cursor: not-allowed;
-      }
-
-      button:focus-visible {
-        outline: 2px solid var(--foreground);
-        outline-offset: 2px;
-      }
-
-      .status {
-        font-size: 0.75rem;
-        color: var(--muted);
-        min-height: 1rem;
-      }
-    </style>
-  </head>
-  <body>
-    <main>
-      <div class="mark ">
-        <svg
-          width="100%"
-          height="100%"
-          viewBox="0 0 186 249"
-          xmlns="http://www.w3.org/2000/svg"
-          role="img"
-          aria-label="Transaction Manager"
-        >
-          <path d="M99,0 L0,155.5 L65.5,101 Z" fill="url(#paint0_linear)" />
-          <path d="M95,95.5 L65.5,101 L99,0 Z" fill="url(#paint1_linear)" />
-          <path d="M95,95.5 L0,155.5 L185.5,95.5 Z" fill="url(#paint2_linear)" />
-          <path d="M91,155.5 L185.5,95.5 L0,155.5 Z" fill="hsl(223, 90%, 43%)" />
-          <path d="M87.5,249 L121,149.5 L185.5,95.5 Z" fill="url(#paint3_linear)" />
-          <path d="M91,155.5 L121,149.5 L87.5,249 Z" fill="hsl(223, 80%, 73%)" />
-          <defs>
-            <linearGradient id="paint0_linear" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stop-color="hsl(223, 90%, 33%)" />
-              <stop offset="50%" stop-color="hsl(223, 90%, 63%)" />
-              <stop offset="100%" stop-color="hsl(223, 60%, 97%)" />
-            </linearGradient>
-            <linearGradient id="paint1_linear" x1="0%" y1="50%" x2="100%" y2="50%">
-              <stop offset="0%" stop-color="hsl(223, 90%, 63%)" />
-              <stop offset="100%" stop-color="hsl(223, 70%, 88%)" />
-            </linearGradient>
-            <linearGradient id="paint2_linear" x1="50%" y1="0%" x2="50%" y2="100%">
-              <stop offset="0%" stop-color="hsl(223, 80%, 73%)" />
-              <stop offset="100%" stop-color="hsl(223, 90%, 63%)" />
-            </linearGradient>
-            <linearGradient id="paint3_linear" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stop-color="hsl(223, 90%, 33%)" />
-              <stop offset="60%" stop-color="hsl(223, 90%, 63%)" />
-              <stop offset="100%" stop-color="hsl(223, 60%, 97%)" />
-            </linearGradient>
-          </defs>
-        </svg>
-      </div>
-
-      <div class="icon">
-        <svg
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          aria-hidden="true"
-        >
-          <path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z" />
-          <path d="m2 2 20 20" />
-        </svg>
-      </div>
-
-      <h1>You are offline</h1>
-
-      <p>
-        This page needs an internet connection. Your work is safe — reconnect
-        and try again.
-      </p>
-
-      <button id="retry" type="button">
-        <svg
-          width="16"
-          height="16"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          aria-hidden="true"
-        >
-          <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" />
-          <path d="M21 3v5h-5" />
-          <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" />
-          <path d="M8 16H3v5" />
-        </svg>
-        Reload
-      </button>
-
-      <p class="status" id="status"></p>
-    </main>
-
-    <script>
-      (function () {
-        var button = document.getElementById("retry");
-        var status = document.getElementById("status");
-
-        function refresh() {
-          var online = navigator.onLine;
-          button.disabled = !online;
-          status.textContent = online
-            ? "Your connection is back."
-            : "Waiting for a connection…";
-        }
-
-        button.addEventListener("click", function () {
-          window.location.reload();
-        });
-
-        window.addEventListener("online", function () {
-          refresh();
-          window.location.reload();
-        });
-
-        window.addEventListener("offline", refresh);
-
-        refresh();
-      })();
-    </script>
-  </body>
+  resize(); start();
+})();
+</script>
+</body>
 </html>

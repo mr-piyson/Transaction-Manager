@@ -231,7 +231,7 @@ await test("navigation succeeds from the network when online", async () => {
 });
 
 await test("navigations are never written to the cache", async () => {
-  const runtime = await caches.open("tm-runtime-v2");
+  const runtime = await caches.open("tm-runtime-v3");
   assert.equal(runtime.store.size, 0, "runtime cache should stay empty");
 });
 
@@ -258,8 +258,8 @@ await test("/api/* is never cached", async () => {
   const response = await dispatchFetch(makeRequest("/api/trpc/invoice.list"));
   assert.equal(response, null, "API routes must bypass the worker entirely");
 
-  const runtime = await caches.open("tm-runtime-v2");
-  const staticCache = await caches.open("tm-static-v2");
+  const runtime = await caches.open("tm-runtime-v3");
+  const staticCache = await caches.open("tm-static-v3");
   assert.equal(runtime.store.size, 0);
   assert.equal(staticCache.store.size > 0, true); // only the precache entries
   assert.equal(networkCalls.length, before, "the worker must not fetch it");
@@ -326,7 +326,7 @@ await test("activate drops caches from older versions", async () => {
   const keys = await caches.keys();
   assert.equal(keys.includes("tm-static-v0"), false);
   assert.equal(keys.includes("tm-runtime-v0"), false);
-  assert.equal(keys.includes("tm-static-v2"), true);
+  assert.equal(keys.includes("tm-static-v3"), true);
 });
 
 // --- Report ----------------------------------------------------------------
