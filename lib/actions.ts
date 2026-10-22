@@ -31,6 +31,7 @@ import { useTheme } from "next-themes";
 import { useCallback } from "react";
 import { useLocaleSwitcher } from "@/hooks/use-locale";
 import { signOut } from "@/lib/auth/auth-client";
+import { clearServiceWorkerCaches } from "@/lib/pwa";
 
 // --- Types ---
 
@@ -161,6 +162,9 @@ export function useActionHandlers() {
 
   const handleSignOut = useCallback(async () => {
     await signOut();
+    // Drop anything the service worker cached so the next user on this device
+    // does not inherit the previous session's shell.
+    await clearServiceWorkerCaches();
     router.push("/auth");
   }, [router]);
 

@@ -9,7 +9,23 @@ const SESSION_COOKIES = [
   "__Secure-better-auth.session_token",
 ] as const;
 
-const publicPaths = ["/auth", "/setup", "/reset", "/api"];
+const publicPaths = [
+  // The marketing landing page. app/page.tsx renders it for anonymous
+  // visitors and client-side redirects signed-in users to /erp, so it must
+  // not be gated by the proxy.
+  "/",
+  "/auth",
+  "/setup",
+  "/reset",
+  "/api",
+  // PWA assets. The browser fetches these without a session (and the service
+  // worker precaches /offline.html before the user ever signs in), so
+  // redirecting them to /auth would break installation entirely.
+  "/sw.js",
+  "/manifest.webmanifest",
+  "/offline.html",
+  "/icons",
+];
 
 function isPublicPath(pathname: string): boolean {
   return publicPaths.some(

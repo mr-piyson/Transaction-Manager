@@ -1,0 +1,252 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Offline — Transaction Manager</title>
+    <meta name="theme-color" content="#2c2742" />
+    <meta name="robots" content="noindex, nofollow" />
+    <style>
+      :root {
+        color-scheme: light dark;
+        --background: #ffffff;
+        --foreground: #17141d;
+        --muted: #606060;
+        --card: #f5f5f5;
+        --border: #cccccc;
+        --primary: #2c2742;
+        --primary-foreground: #fbfbfb;
+      }
+
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --background: #191919;
+          --foreground: #fbfbfb;
+          --muted: #888888;
+          --card: #242424;
+          --border: #454545;
+          --primary: #00558d;
+          --primary-foreground: #fbfbfb;
+        }
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100dvh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 1.5rem;
+        background: var(--background);
+        color: var(--foreground);
+        font-family:
+          ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
+          "Helvetica Neue", Arial, sans-serif;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      main {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 1.25rem;
+        text-align: center;
+        max-width: 26rem;
+      }
+
+      .mark {
+        width: 4.5rem;
+        height: 4.5rem;
+        border-radius: 1rem;
+        background: var(--primary);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .mark svg {
+        width: 3rem;
+        height: 3rem;
+      }
+
+      .icon {
+        width: 3rem;
+        height: 3rem;
+        border-radius: 9999px;
+        background: var(--card);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--muted);
+      }
+
+      .icon svg {
+        width: 1.5rem;
+        height: 1.5rem;
+      }
+
+      h1 {
+        margin: 0;
+        font-size: 1.5rem;
+        font-weight: 700;
+        letter-spacing: -0.02em;
+      }
+
+      p {
+        margin: 0;
+        font-size: 0.875rem;
+        line-height: 1.6;
+        color: var(--muted);
+      }
+
+      button {
+        appearance: none;
+        border: 1px solid transparent;
+        background: var(--primary);
+        color: var(--primary-foreground);
+        font: inherit;
+        font-size: 0.875rem;
+        font-weight: 500;
+        padding: 0.5rem 1rem;
+        border-radius: 0.5rem;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.375rem;
+      }
+
+      button:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+
+      button:focus-visible {
+        outline: 2px solid var(--foreground);
+        outline-offset: 2px;
+      }
+
+      .status {
+        font-size: 0.75rem;
+        color: var(--muted);
+        min-height: 1rem;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <div class="mark ">
+        <svg
+          width="100%"
+          height="100%"
+          viewBox="0 0 186 249"
+          xmlns="http://www.w3.org/2000/svg"
+          role="img"
+          aria-label="Transaction Manager"
+        >
+          <path d="M99,0 L0,155.5 L65.5,101 Z" fill="url(#paint0_linear)" />
+          <path d="M95,95.5 L65.5,101 L99,0 Z" fill="url(#paint1_linear)" />
+          <path d="M95,95.5 L0,155.5 L185.5,95.5 Z" fill="url(#paint2_linear)" />
+          <path d="M91,155.5 L185.5,95.5 L0,155.5 Z" fill="hsl(223, 90%, 43%)" />
+          <path d="M87.5,249 L121,149.5 L185.5,95.5 Z" fill="url(#paint3_linear)" />
+          <path d="M91,155.5 L121,149.5 L87.5,249 Z" fill="hsl(223, 80%, 73%)" />
+          <defs>
+            <linearGradient id="paint0_linear" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="hsl(223, 90%, 33%)" />
+              <stop offset="50%" stop-color="hsl(223, 90%, 63%)" />
+              <stop offset="100%" stop-color="hsl(223, 60%, 97%)" />
+            </linearGradient>
+            <linearGradient id="paint1_linear" x1="0%" y1="50%" x2="100%" y2="50%">
+              <stop offset="0%" stop-color="hsl(223, 90%, 63%)" />
+              <stop offset="100%" stop-color="hsl(223, 70%, 88%)" />
+            </linearGradient>
+            <linearGradient id="paint2_linear" x1="50%" y1="0%" x2="50%" y2="100%">
+              <stop offset="0%" stop-color="hsl(223, 80%, 73%)" />
+              <stop offset="100%" stop-color="hsl(223, 90%, 63%)" />
+            </linearGradient>
+            <linearGradient id="paint3_linear" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="hsl(223, 90%, 33%)" />
+              <stop offset="60%" stop-color="hsl(223, 90%, 63%)" />
+              <stop offset="100%" stop-color="hsl(223, 60%, 97%)" />
+            </linearGradient>
+          </defs>
+        </svg>
+      </div>
+
+      <div class="icon">
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          aria-hidden="true"
+        >
+          <path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z" />
+          <path d="m2 2 20 20" />
+        </svg>
+      </div>
+
+      <h1>You are offline</h1>
+
+      <p>
+        This page needs an internet connection. Your work is safe — reconnect
+        and try again.
+      </p>
+
+      <button id="retry" type="button">
+        <svg
+          width="16"
+          height="16"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          aria-hidden="true"
+        >
+          <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" />
+          <path d="M21 3v5h-5" />
+          <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" />
+          <path d="M8 16H3v5" />
+        </svg>
+        Reload
+      </button>
+
+      <p class="status" id="status"></p>
+    </main>
+
+    <script>
+      (function () {
+        var button = document.getElementById("retry");
+        var status = document.getElementById("status");
+
+        function refresh() {
+          var online = navigator.onLine;
+          button.disabled = !online;
+          status.textContent = online
+            ? "Your connection is back."
+            : "Waiting for a connection…";
+        }
+
+        button.addEventListener("click", function () {
+          window.location.reload();
+        });
+
+        window.addEventListener("online", function () {
+          refresh();
+          window.location.reload();
+        });
+
+        window.addEventListener("offline", refresh);
+
+        refresh();
+      })();
+    </script>
+  </body>
+</html>

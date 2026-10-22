@@ -1,6 +1,7 @@
 "use client";
 
 import { createContext, useCallback, useContext, useMemo } from "react";
+import { useSession } from "@/lib/auth/auth-client";
 import {
   DATE_DISPLAY_FORMATS,
   DATE_INPUT_FORMATS,
@@ -53,7 +54,15 @@ export function DateFormatProvider({
 }: {
   children: React.ReactNode;
 }) {
+  // This provider lives in the ROOT layout, so it is mounted on every page —
+  // including the public ones (landing, /auth, /setup) where nobody is
+  // signed in. `settings.getSettings` is an org-scoped procedure, so firing
+  // it anonymously just produced a 401 in the console. Only ask for the
+  // settings once we actually have a session; until then the defaults below
+  // are used.
+  const { data: session } = useSession();
   const { data: settings } = trpc.settings.getSettings.useQuery(undefined, {
+    enabled: !!session?.user,
     staleTime: 5 * 60 * 1000,
   });
 
