@@ -28,7 +28,7 @@ export function InstallPrompt() {
           className="fixed inset-x-3 bottom-3 z-50 sm:inset-x-auto sm:bottom-5 sm:left-5 sm:max-w-sm"
         >
           <div className="flex items-start gap-3 rounded-xl border border-border bg-popover p-4 shadow-lg">
-            <div className="flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-primary">
+            <div className="flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-lg">
               <Logo className="size-7" primaryColor="#4A7BF5" />
             </div>
 
