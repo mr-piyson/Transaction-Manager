@@ -34,6 +34,7 @@ export interface HardDeleteInfo {
   tags: number;
   notifications: number;
   attachments: number;
+  addresses: number;
 }
 
 /**
@@ -65,6 +66,7 @@ export async function getHardDeleteInfo(
     tags,
     notifications,
     attachments,
+    addresses,
   ] = await Promise.all([
     tx.invoice.count({ where: { customerId } }),
     tx.contract.count({ where: { customerId } }),
@@ -84,6 +86,9 @@ export async function getHardDeleteInfo(
     tx.attachment.count({
       where: { entityType: "Customer", entityId: customerId },
     }),
+    tx.address.count({
+      where: { entityType: "Customer", entityId: customerId },
+    }),
   ]);
 
   return {
@@ -99,6 +104,7 @@ export async function getHardDeleteInfo(
     tags,
     notifications,
     attachments,
+    addresses,
   };
 }
 
@@ -219,6 +225,9 @@ export async function hardDeleteCustomerTree(
     where: { entityType: "Customer", entityId: customerId },
   });
   await tx.attachment.deleteMany({
+    where: { entityType: "Customer", entityId: customerId },
+  });
+  await tx.address.deleteMany({
     where: { entityType: "Customer", entityId: customerId },
   });
 

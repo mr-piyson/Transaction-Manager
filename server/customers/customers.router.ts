@@ -48,6 +48,10 @@ const customerBaseSchema = z.object({
   creditTermsDays: z.number().int().min(0).max(365).optional(),
   currencyCode: currencyCodeSchema.optional(),
   priceListId: z.string().optional(),
+  /** Street address — persisted in the polymorphic Address table. */
+  address: z.string().max(500).optional(),
+  /** City/town — selected from the hard-coded Bahrain list or free text. */
+  city: z.string().max(100).optional(),
 });
 
 const createCustomerSchema = customerBaseSchema;
@@ -117,26 +121,36 @@ export const customersRouter = router({
     .require("customer:read")
     .input(z.object({ id: z.string() }))
     .query(async ({ ctx, input }) => {
-      const customer = await ctx.db.customer.findFirst({
-        where: {
-          id: input.id,
-          organizationId: ctx.user.organizationId,
-          deletedAt: null,
-        },
-        include: {
-          priceList: { select: { id: true, name: true } },
-          _count: {
-            select: {
-              invoices: { where: { deletedAt: null } },
-              contracts: { where: { deletedAt: null, status: "ACTIVE" } },
+      const [customer, address] = await Promise.all([
+        ctx.db.customer.findFirst({
+          where: {
+            id: input.id,
+            organizationId: ctx.user.organizationId,
+            deletedAt: null,
+          },
+          include: {
+            priceList: { select: { id: true, name: true } },
+            _count: {
+              select: {
+                invoices: { where: { deletedAt: null } },
+                contracts: { where: { deletedAt: null, status: "ACTIVE" } },
+              },
             },
           },
-        },
-      });
+        }),
+        ctx.db.address.findFirst({
+          where: { entityType: "Customer", entityId: input.id },
+          orderBy: [{ isPrimary: "desc" }, { createdAt: "asc" }],
+        }),
+      ]);
 
       if (!customer) throw new NotFoundError("Customer", input.id);
 
-      return customer;
+      return {
+        ...customer,
+        address: address?.line1 ?? null,
+        city: address?.city ?? null,
+      };
     }),
 
   // ── CREATE ────────────────────────────────────────────────────────────────
@@ -144,11 +158,13 @@ export const customersRouter = router({
     .require("customer:create")
     .input(createCustomerSchema)
     .mutation(async ({ ctx, input }) => {
+      const { address, city, ...customerData } = input;
+
       // Code uniqueness check within org
-      if (input.code) {
+      if (customerData.code) {
         const existing = await ctx.db.customer.findFirst({
           where: {
-            code: input.code,
+            code: customerData.code,
             organizationId: ctx.user.organizationId,
             deletedAt: null,
           },
@@ -156,7 +172,7 @@ export const customersRouter = router({
         });
         if (existing) {
           throw new ConflictError(
-            `Customer code "${input.code}" is already in use.`,
+            `Customer code "${customerData.code}" is already in use.`,
           );
         }
       }
@@ -164,11 +180,27 @@ export const customersRouter = router({
       const customer = await ctx.db.$transaction(async (tx) => {
         const created = await tx.customer.create({
           data: {
-            ...input,
+            ...customerData,
             organizationId: ctx.user.organizationId,
             createdById: ctx.user.id,
           },
         });
+
+        const addressLine = address?.trim();
+        const cityName = city?.trim();
+        if (addressLine || cityName) {
+          await tx.address.create({
+            data: {
+              entityType: "Customer",
+              entityId: created.id,
+              line1: addressLine ?? "",
+              city: cityName || null,
+              countryCode: "BH",
+              isPrimary: true,
+              isDefault: true,
+            },
+          });
+        }
 
         await writeAuditLog(
           {
@@ -192,7 +224,7 @@ export const customersRouter = router({
   update: orgProcedure
     .input(updateCustomerSchema)
     .mutation(async ({ ctx, input }) => {
-      const { id, ...data } = input;
+      const { id, address, city, ...data } = input;
 
       const existing = await ctx.db.customer.findFirst({
         where: { id, organizationId: ctx.user.organizationId, deletedAt: null },
@@ -229,6 +261,41 @@ export const customersRouter = router({
           where: { id },
           data: { ...data, updatedById: ctx.user.id },
         });
+
+        // Address lives in the shared polymorphic Address table.
+        if (address !== undefined || city !== undefined) {
+          const existingAddress = await tx.address.findFirst({
+            where: { entityType: "Customer", entityId: id },
+            orderBy: [{ isPrimary: "desc" }, { createdAt: "asc" }],
+            select: { id: true },
+          });
+
+          const addressLine = address?.trim() ?? "";
+          const cityName = city?.trim() || null;
+
+          if (!addressLine && !cityName) {
+            if (existingAddress) {
+              await tx.address.delete({ where: { id: existingAddress.id } });
+            }
+          } else if (existingAddress) {
+            await tx.address.update({
+              where: { id: existingAddress.id },
+              data: { line1: addressLine, city: cityName },
+            });
+          } else {
+            await tx.address.create({
+              data: {
+                entityType: "Customer",
+                entityId: id,
+                line1: addressLine,
+                city: cityName,
+                countryCode: "BH",
+                isPrimary: true,
+                isDefault: true,
+              },
+            });
+          }
+        }
 
         // Build diff for audit
         const diff: Record<string, { before: unknown; after: unknown }> = {};

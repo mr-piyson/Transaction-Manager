@@ -15,6 +15,7 @@ import {
   Link2,
   Loader2,
   type LucideIcon,
+  MapPin,
   Package,
   Paperclip,
   Receipt,
@@ -162,6 +163,7 @@ const CUSTOMER_ROWS: RelatedRow[] = [
     labelKey: "hardDelete.opportunities",
   },
   { key: "crmLeads", icon: UserPlus, labelKey: "hardDelete.leads" },
+  { key: "addresses", icon: MapPin, labelKey: "hardDelete.addresses" },
   ...POLYMORPHIC_ROWS,
 ];
 

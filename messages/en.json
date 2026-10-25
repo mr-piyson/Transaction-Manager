@@ -625,6 +625,7 @@
     "contacts": "CRM contacts",
     "opportunities": "Opportunities",
     "leads": "Leads",
+    "addresses": "Addresses",
     "purchaseOrders": "Purchase orders",
     "unlinked": "will be unlinked",
     "confirmLabel": "Delete permanently",

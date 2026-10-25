@@ -1,8 +1,15 @@
 "use client";
 
-import { ArrowLeft, Edit, MoreHorizontal, Users } from "lucide-react";
+import {
+  ArrowLeft,
+  Edit,
+  MoreHorizontal,
+  ShieldAlert,
+  Trash2,
+  Users,
+} from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { alert } from "@/components/Alert-dialog";
 import { DetailPageHeader } from "@/components/detail-page-header";
@@ -27,6 +34,7 @@ import {
 } from "@/components/ui/empty";
 import { Spinner } from "@/components/ui/spinner";
 import { useDateFormat } from "@/hooks/use-date-format";
+import { findBahrainCity } from "@/lib/bahrain-cities";
 import { trpc } from "@/lib/trpc/client";
 
 export default function CustomerDetailPage() {
@@ -38,6 +46,7 @@ export default function CustomerDetailPage() {
   const { data: me } = trpc.auth.me.useQuery();
   const isSuperAdmin = me?.platformRole === "SUPER_ADMIN";
   const t = useTranslations();
+  const locale = useLocale();
   const { formatDateTime } = useDateFormat();
 
   const {
@@ -141,6 +150,13 @@ export default function CustomerDetailPage() {
   const creditUtilization =
     creditLimit > 0 ? (outstandingBalance / creditLimit) * 100 : 0;
 
+  const cityRecord = findBahrainCity(customer.city);
+  const cityLabel = cityRecord
+    ? locale === "ar"
+      ? cityRecord.ar
+      : cityRecord.en
+    : customer.city;
+
   return (
     <div className="flex flex-col h-screen">
       <DetailPageHeader
@@ -158,6 +174,47 @@ export default function CustomerDetailPage() {
             </Badge>
           )
         }
+        actions={
+          <DropdownMenu>
+            <DropdownMenuTrigger
+              render={
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  aria-label={t("common.actions")}
+                >
+                  <MoreHorizontal className="size-4" />
+                </Button>
+              }
+            />
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={handleEdit}>
+                <Edit className="size-4" />
+                {t("common.edit")}
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={handleDelete}
+                disabled={isPending}
+                variant="destructive"
+              >
+                <Trash2 className="size-4" />
+                {t("common.delete")}
+              </DropdownMenuItem>
+              {isSuperAdmin && (
+                <>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem
+                    onClick={handleHardDelete}
+                    variant="destructive"
+                  >
+                    <ShieldAlert className="size-4" />
+                    {t("hardDelete.menu")}
+                  </DropdownMenuItem>
+                </>
+              )}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        }
       />
 
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
@@ -174,6 +231,11 @@ export default function CustomerDetailPage() {
               <p className="text-xs text-muted-foreground">
                 {customer.email ?? "—"}
               </p>
+              {(customer.address || cityLabel) && (
+                <p className="mt-1 text-xs text-muted-foreground">
+                  {[customer.address, cityLabel].filter(Boolean).join(", ")}
+                </p>
+              )}
             </CardContent>
           </Card>
           <Card>

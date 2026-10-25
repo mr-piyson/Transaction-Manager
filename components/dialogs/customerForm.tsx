@@ -21,12 +21,20 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2, TriangleAlert } from "lucide-react";
 import * as React from "react";
-import { type SubmitHandler, useForm } from "react-hook-form";
+import { Controller, type SubmitHandler, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 // shadcn v4 primitives ── no <Form> wrapper component
+import {
+  Combobox,
+  ComboboxContent,
+  ComboboxEmpty,
+  ComboboxInput,
+  ComboboxItem,
+  ComboboxList,
+} from "@/components/ui/combobox";
 import {
   Dialog,
   DialogContent,
@@ -38,6 +46,13 @@ import {
 import { Field } from "@/components/ui/field"; // shadcn v4
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  BAHRAIN_CITIES,
+  type BahrainCity,
+  findBahrainCityByQuery,
+  matchesBahrainCity,
+  normalizeCitySearch,
+} from "@/lib/bahrain-cities";
 import { trpc } from "@/lib/trpc/client";
 import { Label } from "../ui/label";
 
@@ -92,6 +107,162 @@ function ValidationAlert({ errors }: ValidationAlertProps) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+// CityCombobox  (Bahrain list + free-text "create")
+// ─────────────────────────────────────────────────────────────────────────────
+
+interface CityComboboxProps {
+  id?: string;
+  value: string;
+  onChange: (value: string) => void;
+  invalid?: boolean;
+}
+
+/** Canonical English name for known cities, otherwise the value as typed. */
+function cityLabel(value: string): string {
+  return findBahrainCityByQuery(value)?.en ?? value;
+}
+
+/**
+ * City picker that searches the hard-coded Bahrain list in English or Arabic
+ * and also accepts a city that isn't in the list. Typed text is offered as the
+ * last option ("Add new"); confirming it saves the text verbatim. Arabic or
+ * accent variants of a known city are normalised to its English name.
+ */
+function CityCombobox({ id, value, onChange, invalid }: CityComboboxProps) {
+  const [customCities, setCustomCities] = React.useState<BahrainCity[]>([]);
+  const [typed, setTyped] = React.useState(() => cityLabel(value));
+  const typedRef = React.useRef(typed);
+  const valueRef = React.useRef(value);
+  // While the popup is closing, Base UI resets the input to the selected value.
+  // Ignore those resets so a freshly typed (or committed) city is not clobbered.
+  const suppressInputResetRef = React.useRef(false);
+
+  const updateTyped = React.useCallback((next: string) => {
+    typedRef.current = next;
+    setTyped(next);
+  }, []);
+
+  // Re-sync the input when the form loads or resets another customer.
+  React.useEffect(() => {
+    if (valueRef.current !== value) {
+      valueRef.current = value;
+      updateTyped(cityLabel(value));
+    }
+  }, [value, updateTyped]);
+
+  const cities = React.useMemo(() => {
+    const list: BahrainCity[] = [...BAHRAIN_CITIES];
+    for (const city of customCities) {
+      if (!list.some((item) => item.en === city.en)) list.push(city);
+    }
+    // A saved custom city must be an option, otherwise the combobox cannot
+    // display it (and would drop it) as the selected value.
+    if (value && !list.some((item) => item.en === value)) {
+      list.push({ en: value, ar: "" });
+    }
+    return list;
+  }, [customCities, value]);
+
+  const query = typed.trim();
+
+  const typedCity = React.useMemo<BahrainCity | null>(() => {
+    if (!query) return null;
+    const q = normalizeCitySearch(query);
+    const known = cities.some(
+      (city) =>
+        normalizeCitySearch(city.en) === q ||
+        normalizeCitySearch(city.ar) === q,
+    );
+    return known ? null : { en: query, ar: "" };
+  }, [cities, query]);
+
+  // Typed city goes last so a real match is highlighted first.
+  const options = typedCity ? [...cities, typedCity] : cities;
+  const selected =
+    findBahrainCityByQuery(value) ??
+    options.find((city) => city.en === value) ??
+    null;
+
+  function commit(raw: string) {
+    const known = findBahrainCityByQuery(raw);
+    const next = known?.en ?? raw.trim();
+
+    if (next && !known) {
+      setCustomCities((prev) =>
+        prev.some(
+          (city) => normalizeCitySearch(city.en) === normalizeCitySearch(next),
+        )
+          ? prev
+          : [...prev, { en: next, ar: "" }],
+      );
+    }
+
+    updateTyped(next);
+    if (valueRef.current !== next) {
+      valueRef.current = next;
+      onChange(next);
+    }
+  }
+
+  return (
+    <Combobox
+      items={options}
+      value={selected}
+      onValueChange={(city) => commit(city?.en ?? "")}
+      inputValue={typed}
+      onInputValueChange={(next) => {
+        if (suppressInputResetRef.current) return;
+        updateTyped(next);
+      }}
+      onOpenChange={(open) => {
+        if (!open) commit(typedRef.current);
+      }}
+      onOpenChangeComplete={(open) => {
+        if (open) return;
+        suppressInputResetRef.current = true;
+        commit(typedRef.current);
+        window.setTimeout(() => {
+          suppressInputResetRef.current = false;
+        }, 0);
+      }}
+      itemToStringLabel={(city) => city.en}
+      isItemEqualToValue={(item, city) => item.en === city.en}
+      filter={(city, search) => matchesBahrainCity(city, search)}
+    >
+      <ComboboxInput
+        id={id}
+        placeholder="Search or type a city"
+        showClear
+        className="w-full"
+        aria-invalid={invalid}
+      />
+      <ComboboxContent>
+        <ComboboxEmpty>No city found — press Enter to add it.</ComboboxEmpty>
+        <ComboboxList>
+          {(city: BahrainCity) => (
+            <ComboboxItem key={city.en} value={city}>
+              <span>{city.en}</span>
+              {city === typedCity ? (
+                <span className="ms-auto text-xs text-muted-foreground">
+                  Add new
+                </span>
+              ) : city.ar ? (
+                <span
+                  dir="rtl"
+                  className="ms-auto text-xs text-muted-foreground"
+                >
+                  {city.ar}
+                </span>
+              ) : null}
+            </ComboboxItem>
+          )}
+        </ComboboxList>
+      </ComboboxContent>
+    </Combobox>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // CustomerFormDialog  (controlled, composable)
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -114,6 +285,7 @@ export function CustomerFormDialog({
   const utils = trpc.useUtils();
 
   const {
+    control,
     register,
     handleSubmit,
     reset,
@@ -123,16 +295,26 @@ export function CustomerFormDialog({
     defaultValues: defaults(customer),
   });
 
+  // Callers often only pass the fields they already have (e.g. the list passes
+  // name/phone/email). Fetch the full record so untouched fields — especially
+  // creditLimit — aren't reset to their defaults when saving.
+  const { data: fullCustomer } = trpc.customers.byId.useQuery(
+    { id: customer?.id ?? "" },
+    { enabled: open && isEdit },
+  );
+  const source = isEdit ? (fullCustomer ?? customer) : undefined;
+
   // Re-populate whenever the dialog (re)opens with new data
   React.useEffect(() => {
-    if (open) reset(defaults(customer));
-  }, [open, customer, reset]);
+    if (open) reset(defaults(source));
+  }, [open, source, reset]);
 
   // ── mutations ──────────────────────────────────────────────────────────────
 
   const createMutation = trpc.customers.create.useMutation({
     onSuccess(data) {
       utils.customers.list.invalidate();
+      utils.customers.byId.invalidate({ id: data.id });
       toast.success("Customer created", { description: data.name });
       onSuccess?.(data.id);
       onOpenChange(false);
@@ -145,6 +327,7 @@ export function CustomerFormDialog({
   const updateMutation = trpc.customers.update.useMutation({
     onSuccess(data) {
       utils.customers.list.invalidate();
+      utils.customers.byId.invalidate({ id: data.id });
       toast.success("Customer updated", { description: data.name });
       onSuccess?.(data.id);
       onOpenChange(false);
@@ -219,18 +402,28 @@ export function CustomerFormDialog({
             </div>
 
             {/* Address + City */}
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               <Field>
                 <Label htmlFor="address">Address</Label>
                 <Input
                   id="address"
-                  placeholder="123 Main St"
+                  placeholder="Building 1, Road 2, Block 3"
                   {...register("address")}
                 />
               </Field>
               <Field>
                 <Label htmlFor="city">City</Label>
-                <Input id="city" placeholder="Manama" {...register("city")} />
+                <Controller
+                  control={control}
+                  name="city"
+                  render={({ field }) => (
+                    <CityCombobox
+                      id="city"
+                      value={field.value ?? ""}
+                      onChange={field.onChange}
+                    />
+                  )}
+                />
               </Field>
             </div>
 
@@ -388,18 +581,26 @@ export function useCustomerForm(): CustomerFormContextValue {
 // Helpers
 // ─────────────────────────────────────────────────────────────────────────────
 
-function defaults(
-  customer?: { id: string } & Partial<CustomerFormValues>,
-): CustomerFormValues {
+/** The server serialises Prisma Decimals as strings, so accept both shapes. */
+type CustomerDefaultsSource = { id: string } & Partial<
+  Record<keyof CustomerFormValues, unknown>
+>;
+
+function asText(value: unknown): string | undefined {
+  if (value === null || value === undefined) return undefined;
+  return String(value);
+}
+
+function defaults(customer?: CustomerDefaultsSource): CustomerFormValues {
+  const creditLimit = Number(customer?.creditLimit);
   return {
-    name: customer?.name ?? "",
-    phone: customer?.phone ?? undefined,
-    email: customer?.email ?? undefined,
-    address: customer?.address ?? undefined,
-    city: customer?.city ?? undefined,
-    taxId: customer?.taxId ?? undefined,
-    notes: customer?.notes ?? undefined,
-    creditLimit:
-      typeof customer?.creditLimit === "number" ? customer.creditLimit : 0,
+    name: asText(customer?.name) ?? "",
+    phone: asText(customer?.phone),
+    email: asText(customer?.email),
+    address: asText(customer?.address),
+    city: asText(customer?.city),
+    taxId: asText(customer?.taxId),
+    notes: asText(customer?.notes),
+    creditLimit: Number.isFinite(creditLimit) ? creditLimit : 0,
   };
 }
