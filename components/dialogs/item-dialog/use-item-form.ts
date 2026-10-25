@@ -852,6 +852,10 @@ export function useItemForm({
     }) => {
       markDirty();
       if (uomDrafts.some((d) => d.unitId === unit.id)) return;
+      // Only one big (alternative) unit is allowed besides the small (base) unit.
+      const baseId = master.unitId ?? "";
+      const hasAlt = uomDrafts.some((d) => d.unitId !== baseId);
+      if (hasAlt && unit.id !== baseId) return;
       const isFirst = uomDrafts.length === 0;
       setUomDrafts((prev) => [
         ...prev,
@@ -871,7 +875,7 @@ export function useItemForm({
         prev.unitId ? prev : { ...prev, unitId: unit.id, unit: unit.code },
       );
     },
-    [markDirty, uomDrafts],
+    [markDirty, uomDrafts, master.unitId],
   );
 
   const removeUomDraft = React.useCallback(

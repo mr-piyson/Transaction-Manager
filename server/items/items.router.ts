@@ -426,6 +426,14 @@ async function validateItemUoms(
   if (activeDrafts.filter((u) => u.isSalesDefault).length > 1) {
     throw new UnprocessableError("Only one sales-default unit is allowed.");
   }
+  // Only one "big" (alternative) unit is allowed in addition to the small
+  // (base) unit — no multi-unit ladders.
+  const activeAltUnits = activeDrafts.filter((u) => u.unitId !== baseUnitId);
+  if (activeAltUnits.length > 1) {
+    throw new UnprocessableError(
+      "An item can have only one big unit in addition to its small (base) unit.",
+    );
+  }
 }
 
 /** Creates the alternative-unit rows for a freshly created item. */
@@ -1122,6 +1130,36 @@ export const itemsRouter = router({
       if (item.unitId && input.unitId === item.unitId) {
         throw new UnprocessableError(
           "The base unit is already active with an implicit factor of 1 — it cannot be added as an alternative unit.",
+        );
+      }
+
+      // Only one "big" (alternative) unit is allowed per item. If an active
+      // alternative unit already exists (and it isn't the same unit being
+      // reactivated), reject the addition.
+      const activeAltCount = await ctx.db.itemUom.count({
+        where: {
+          itemId: input.itemId,
+          organizationId: orgId,
+          deletedAt: null,
+          isActive: true,
+          ...(item.unitId ? { unitId: { not: item.unitId } } : {}),
+        },
+      });
+      if (
+        activeAltCount > 0 &&
+        !(await ctx.db.itemUom.findFirst({
+          where: {
+            itemId: input.itemId,
+            unitId: input.unitId,
+            organizationId: orgId,
+            deletedAt: null,
+            isActive: true,
+          },
+          select: { id: true },
+        }))
+      ) {
+        throw new ConflictError(
+          "This item already has a big unit. Remove it first.",
         );
       }
 
