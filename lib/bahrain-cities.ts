@@ -167,7 +167,6 @@ export const BAHRAIN_CITIES: readonly BahrainCity[] = [
 
   // Additional northern villages and localities
   { en: "Jid Al Haj", ar: "جد الحاج" },
-  { en: "North Sehla", ar: "السهلة الشمالية" },
   { en: "South Sehla", ar: "السهلة الجنوبية" },
   { en: "Jabalat Al Burhama", ar: "جبلة البرهامة" },
   { en: "Jiddah Maqabah", ar: "جدة المقابة" },
