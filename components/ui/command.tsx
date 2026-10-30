@@ -4,6 +4,7 @@ import { Command as CommandPrimitive } from "cmdk";
 import { cn } from "cn";
 import { CheckIcon, SearchIcon } from "lucide-react";
 import type * as React from "react";
+import { forwardRef } from "react";
 import {
   Dialog,
   DialogContent,
@@ -35,12 +36,14 @@ function CommandDialog({
   children,
   className,
   showCloseButton = false,
+  initialFocus,
   ...props
 }: Omit<React.ComponentProps<typeof Dialog>, "children"> & {
   title?: string;
   description?: string;
   className?: string;
   showCloseButton?: boolean;
+  initialFocus?: React.ComponentProps<typeof DialogContent>["initialFocus"];
   children: React.ReactNode;
 }) {
   return (
@@ -55,6 +58,7 @@ function CommandDialog({
           className,
         )}
         showCloseButton={showCloseButton}
+        initialFocus={initialFocus}
       >
         {children}
       </DialogContent>
@@ -62,14 +66,15 @@ function CommandDialog({
   );
 }
 
-function CommandInput({
-  className,
-  ...props
-}: React.ComponentProps<typeof CommandPrimitive.Input>) {
+const CommandInput = forwardRef<
+  React.ElementRef<typeof CommandPrimitive.Input>,
+  React.ComponentProps<typeof CommandPrimitive.Input>
+>(function CommandInput({ className, ...props }, ref) {
   return (
     <div data-slot="command-input-wrapper" className="p-1 pb-0">
       <InputGroup className="h-8! rounded-lg! border-input/30 bg-input/30 shadow-none! *:data-[slot=input-group-addon]:pl-2!">
         <CommandPrimitive.Input
+          ref={ref}
           data-slot="command-input"
           className={cn(
             "w-full text-sm outline-hidden disabled:cursor-not-allowed disabled:opacity-50",
@@ -83,7 +88,7 @@ function CommandInput({
       </InputGroup>
     </div>
   );
-}
+});
 
 function CommandList({
   className,

@@ -10,7 +10,7 @@ import {
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import * as React from "react";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { RouteConfig } from "@/components/layout/App-Sidebar";
 import { Button } from "@/components/ui/button";
 import {
@@ -114,6 +114,17 @@ function CommandPalette({
   const t = useTranslations();
   const router = useRouter();
   const paletteActions = usePaletteActions(t as (key: string) => string);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (open) {
+      // Defer to ensure the dialog content (and input) is mounted.
+      const id = requestAnimationFrame(() => {
+        inputRef.current?.focus();
+      });
+      return () => cancelAnimationFrame(id);
+    }
+  }, [open]);
 
   const tCast = t as (key: string) => string;
 
@@ -160,9 +171,14 @@ function CommandPalette({
   );
 
   return (
-    <CommandDialog open={open} onOpenChange={onOpenChange}>
+    <CommandDialog
+      open={open}
+      onOpenChange={onOpenChange}
+      initialFocus={inputRef}
+    >
       <Command className="rounded-lg">
         <CommandInput
+          ref={inputRef}
           placeholder={t("common.search") ?? "Type a command or search..."}
         />
         <CommandList className="max-h-[60vh]">
