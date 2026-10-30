@@ -16,11 +16,7 @@ export default function AccessDeniedPage() {
           permission in Settings &rarr; Permissions.
         </p>
       </div>
-      <Button
-        variant="outline"
-        nativeButton={false}
-        render={<Link href="/" />}
-      >
+      <Button variant="outline" nativeButton={false} render={<Link href="/" />}>
         Back to dashboard
       </Button>
     </div>

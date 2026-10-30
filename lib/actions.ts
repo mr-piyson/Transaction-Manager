@@ -11,6 +11,7 @@ import {
   ClipboardPen,
   Coins,
   HardDrive,
+  Keyboard,
   Languages,
   Layers,
   LogOut,
@@ -113,6 +114,12 @@ export const NAV_ITEMS = [
     labelKey: "settings.appearance",
     href: "/settings/appearance",
     icon: Palette,
+  },
+  {
+    id: "shortcuts",
+    labelKey: "settings.shortcuts.title",
+    href: "/settings/shortcuts",
+    icon: Keyboard,
   },
   {
     id: "date-time",

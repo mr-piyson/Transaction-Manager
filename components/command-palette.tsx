@@ -1,5 +1,6 @@
 "use client";
 
+import { useAppHotkeys, useHotkey } from "@tanstack/react-hotkeys";
 import {
   ArrowDownIcon,
   ArrowUpIcon,
@@ -24,6 +25,7 @@ import {
   CommandSeparator,
 } from "@/components/ui/command";
 import { Kbd } from "@/components/ui/kbd";
+import { useHotkeyLabel } from "@/hooks/use-hotkey-label";
 import { usePaletteActions } from "@/lib/actions";
 import { apps } from "@/lib/apps";
 
@@ -64,17 +66,13 @@ function flattenRoutes(
 export function CommandPaletteTrigger() {
   const t = useTranslations();
   const [open, setOpen] = useState(false);
+  const appHotkeys = useAppHotkeys();
+  const paletteHotkey = appHotkeys["commandPalette.toggle"].hotkey;
+  const paletteLabel = useHotkeyLabel(paletteHotkey);
 
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
-        e.preventDefault();
-        setOpen((prev) => !prev);
-      }
-    };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, []);
+  useHotkey(appHotkeys["commandPalette.toggle"], () => {
+    setOpen((prev) => !prev);
+  });
 
   return (
     <>
@@ -88,9 +86,7 @@ export function CommandPaletteTrigger() {
           <Search className="size-3.5" />
           <span className="text-xs">{t("common.search") ?? "Search"}</span>
         </span>
-        <Kbd className="text-[10px] h-5 px-1">
-          <span className="text-xs">⌘</span>K
-        </Kbd>
+        <Kbd className="text-[10px] h-5 px-1">{paletteLabel ?? "—"}</Kbd>
       </Button>
       <button
         className="lg:hidden p-2 text-muted-foreground transition-colors"

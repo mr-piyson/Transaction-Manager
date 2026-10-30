@@ -17,6 +17,7 @@ import { reportsRouter } from "./reports/reports.router";
 import { exchangeRatesRouter } from "./settings/exchange-rates.router";
 import { settingsRouter } from "./settings/settings.router";
 import { setupRouter } from "./setup/setup.router";
+import { shortcutsRouter } from "./shortcuts/shortcuts.router";
 import { stockRouter } from "./stock/stock.router";
 import { subscriptionsRouter } from "./subscriptions/subscriptions.router";
 import { suppliersRouter } from "./suppliers/suppliers.router";
@@ -43,6 +44,7 @@ export const appRouter = t.router({
   reports: reportsRouter,
   settings: settingsRouter,
   setup: setupRouter,
+  shortcuts: shortcutsRouter,
   stock: stockRouter,
   subscriptions: subscriptionsRouter,
   suppliers: suppliersRouter,

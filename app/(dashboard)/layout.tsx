@@ -16,5 +16,22 @@ export default async function DashboardLayout({
     redirect("/auth");
   }
 
-  return <DashboardLayoutClient>{children}</DashboardLayoutClient>;
+  const shortcuts = await db.userShortcut.findMany({
+    where: { userId: user.id },
+    select: { action: true, shortcut: true },
+  });
+
+  const customHotkeys = shortcuts.reduce<Record<string, string | null>>(
+    (acc, row) => {
+      acc[row.action] = row.shortcut;
+      return acc;
+    },
+    {},
+  );
+
+  return (
+    <DashboardLayoutClient customHotkeys={customHotkeys}>
+      {children}
+    </DashboardLayoutClient>
+  );
 }

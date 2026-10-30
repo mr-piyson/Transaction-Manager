@@ -547,6 +547,7 @@ model User {
   accounts              Account[]
   sessions              Session[]
   userOrganizationRoles UserOrganizationRole[]
+  shortcuts             UserShortcut[]
 
   // Audit back-references
   createdInvoices       Invoice[]          @relation("InvoiceCreatedBy")
@@ -588,6 +589,26 @@ model User {
   @@index([organizationId])
   @@index([deletedAt])
   @@map("user")
+  @@schema("public")
+}
+
+/// A per-user keyboard shortcut override. Rows exist only when the user has
+/// changed a shortcut from its code-defined default. A null shortcut means the
+/// action was explicitly unbound.
+model UserShortcut {
+  id String @id @default(cuid())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  action   String // App hotkey id, e.g. "commandPalette.toggle"
+  shortcut String? // TanStack hotkey string. null = unbound.
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, action])
+  @@index([userId])
   @@schema("public")
 }
 

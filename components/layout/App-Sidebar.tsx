@@ -6,6 +6,7 @@ import {
   syncDataLoaderFeature,
 } from "@headless-tree/core";
 import { useTree } from "@headless-tree/react";
+import { useAppHotkeys, useHotkey } from "@tanstack/react-hotkeys";
 import Fuse from "fuse.js";
 import {
   Check,
@@ -41,6 +42,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Spinner } from "@/components/ui/spinner";
+import { useHotkeyLabel } from "@/hooks/use-hotkey-label";
 import { apps, getAppFromPath } from "@/lib/apps";
 import type { AppActions, AppSubjects } from "@/lib/permissions";
 import { cn } from "@/lib/utils";
@@ -385,26 +387,23 @@ export function AppSidebar({ ...props }: AppSidebarProps) {
     }
   }, [currentPath, getItemIdForPath, getAncestors, tree, searchQuery]);
 
-  // Cmd/Ctrl + K: focus search input (expand sidebar if collapsed)
-  // Escape: clear search and blur input
-  useEffect(() => {
-    const handler = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === "k") {
-        e.preventDefault();
-        setOpen(true);
-        setTimeout(() => searchInputRef.current?.focus(), 50);
-      }
-      if (
-        e.key === "Escape" &&
-        document.activeElement === searchInputRef.current
-      ) {
-        handleSearchChange("");
-        searchInputRef.current?.blur();
-      }
-    };
-    window.addEventListener("keydown", handler);
-    return () => window.removeEventListener("keydown", handler);
-  }, [setOpen, handleSearchChange]);
+  const appHotkeys = useAppHotkeys();
+  const sidebarSearchHotkey = appHotkeys["sidebar.search.focus"].hotkey;
+  const sidebarSearchLabel = useHotkeyLabel(sidebarSearchHotkey);
+
+  // Focus sidebar search using the user-configurable app hotkey.
+  useHotkey(appHotkeys["sidebar.search.focus"], () => {
+    setOpen(true);
+    setTimeout(() => searchInputRef.current?.focus(), 50);
+  });
+
+  // Escape clears search and blurs the input.
+  useHotkey("Escape", () => {
+    if (document.activeElement === searchInputRef.current) {
+      handleSearchChange("");
+      searchInputRef.current?.blur();
+    }
+  });
 
   const isActive = (href?: string) => {
     if (!href) return false;
@@ -453,9 +452,7 @@ export function AppSidebar({ ...props }: AppSidebarProps) {
                   <X className="size-3.5" />
                 </InputGroupButton>
               ) : (
-                <Kbd>
-                  <span className="text-xs">⌘</span>K
-                </Kbd>
+                <Kbd>{sidebarSearchLabel ?? "—"}</Kbd>
               )}
             </InputGroupAddon>
           </InputGroup>
@@ -516,7 +513,7 @@ export function AppSidebar({ ...props }: AppSidebarProps) {
                       isFocused && "bg-accent!",
                     )}
                     render={
-                      !isFolder && !!itemData.href ? (
+                      !isFolder && itemData.href ? (
                         <Link
                           href={itemData.href}
                           onClick={(e) => {
