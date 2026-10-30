@@ -14,6 +14,7 @@ const publicPaths = [
   // visitors and client-side redirects signed-in users to /erp, so it must
   // not be gated by the proxy.
   "/",
+  "/test_palette",
   "/auth",
   "/setup",
   "/reset",
