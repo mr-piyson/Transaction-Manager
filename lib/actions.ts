@@ -4,7 +4,6 @@ import type { LucideIcon } from "lucide-react";
 import {
   Bell,
   BookType,
-  Briefcase,
   Building2,
   Calendar,
   CalendarClock,
@@ -15,9 +14,7 @@ import {
   Languages,
   Layers,
   LogOut,
-  Monitor,
   Moon,
-  Package,
   Palette,
   Percent,
   Ruler,
