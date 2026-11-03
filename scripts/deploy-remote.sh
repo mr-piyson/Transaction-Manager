@@ -101,9 +101,12 @@ fi
 # --- Stream the log until a completion marker is printed ---
 # If this SSH connection drops, the deploy keeps running on the server.
 # Re-run this script to re-attach: it detects the running deploy and resumes monitoring.
+# Always bound the stream with a remote `timeout`: `tail --pid` alone is not
+# enough, so a stalled tail or a deploy process that outlives its log can never
+# make the local stream hang forever.
 TAIL_CMD="timeout 1800 tail -f -n +1 \"${DEPLOY_LOG}\""
 if [ -n "${REMOTE_PID}" ]; then
-	TAIL_CMD="tail -f --pid=${REMOTE_PID} -n +1 \"${DEPLOY_LOG}\""
+	TAIL_CMD="timeout 1800 tail -f --pid=${REMOTE_PID} -n +1 \"${DEPLOY_LOG}\""
 fi
 
 log "Streaming deployment output (Ctrl-C detaches; the deploy continues on the server)..."
