@@ -11,7 +11,6 @@ import { UniversalContextMenu } from "@/components/context-menu";
 import { useContractForm } from "@/components/dialogs";
 import { useHardDeleteForm } from "@/components/dialogs/hardDeleteForm";
 import { Header } from "@/components/layout/App-Header";
-import { NotificationBell } from "@/components/layout/NotificationBell";
 import { ListView } from "@/components/list-view";
 import { Button } from "@/components/ui/button";
 import {
@@ -132,7 +131,6 @@ export default function ContractsLayout({
       <div className="flex h-screen flex-col overflow-hidden">
         <Header
           title={t("contracts.title")}
-          rightContent={<NotificationBell />}
           icon={<Handshake className="size-5" />}
         />
         <div className="flex-1 min-h-0 w-full">

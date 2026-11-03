@@ -11,7 +11,6 @@ import { UniversalContextMenu } from "@/components/context-menu";
 import { useHardDeleteForm } from "@/components/dialogs/hardDeleteForm";
 import { useSubscriptionForm } from "@/components/dialogs/subscriptionForm";
 import { Header } from "@/components/layout/App-Header";
-import { NotificationBell } from "@/components/layout/NotificationBell";
 import { ListView } from "@/components/list-view";
 import { Button } from "@/components/ui/button";
 import {
@@ -129,7 +128,6 @@ export default function SubscriptionsLayout({
       <div className="flex h-screen flex-col overflow-hidden">
         <Header
           title={t("subscriptions.title")}
-          rightContent={<NotificationBell />}
           icon={<CalendarClock className="size-5" />}
         />
         <div className="flex-1 min-h-0 w-full">

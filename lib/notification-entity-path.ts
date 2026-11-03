@@ -10,7 +10,9 @@ export function getNotificationEntityPath(
   if (!entityType || !entityId) return null;
   switch (entityType) {
     case "Invoice":
-      return `/erp/invoices/${entityId}`;
+      return `/erp/documents/invoices/${entityId}`;
+    case "Quotation":
+      return `/erp/documents/quotations/${entityId}`;
     case "PurchaseOrder":
       return `/erp/purchase-orders/${entityId}`;
     case "Subscription":

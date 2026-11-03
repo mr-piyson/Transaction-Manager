@@ -4,6 +4,7 @@ import type { LucideIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import type { ReactNode } from "react";
 import { CommandPaletteTrigger } from "@/components/command-palette";
+import { NotificationBell } from "@/components/layout/NotificationBell";
 import { NavUser } from "@/components/layout/User-Options";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
@@ -93,6 +94,8 @@ export function Header({
       )}
       {/* Command Palette */}
       <CommandPaletteTrigger />
+      {/* Notifications */}
+      <NotificationBell />
       {/* User DropDown */}
       <NavUser />
     </header>

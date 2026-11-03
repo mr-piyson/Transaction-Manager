@@ -27,6 +27,7 @@
   --default: #c3ebfe;
   --default-foreground: #1e4974;
   --destructive: #a82b2b;
+  --destructive-foreground: #fbfbfb;
   --warning: #b56927;
   --success: #1d8645;
   --info: #6366f1;
@@ -66,7 +67,7 @@
   --accent-foreground: #fbfbfb;
   --default: #1a3150;
   --default-foreground: #0099cc;
-  --destructive-foreground: #501a2d;
+  --destructive-foreground: #ecccd7;
   --destructive: #b33752;
   --success-foreground: #227336;
   --success: #4ec06c;
