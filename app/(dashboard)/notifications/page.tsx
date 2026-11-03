@@ -24,6 +24,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { getNotificationEntityPath } from "@/lib/notification-entity-path";
 import { trpc } from "@/lib/trpc/client";
 import { cn } from "@/lib/utils";
 
@@ -42,6 +43,10 @@ const STATUS_ICONS: Record<string, typeof Bell> = {
   approval_request: BellDot,
   invoice_approved: CheckCheck,
   invoice_rejected: Archive,
+  payment_received: CheckCheck,
+  overdue: Archive,
+  subscription_renewal_due: BellDot,
+  contract_expiring: BellDot,
 };
 
 export default function NotificationsPage() {
@@ -98,17 +103,11 @@ export default function NotificationsPage() {
     entityType?: string | null;
     entityId?: string | null;
   }) => {
-    if (notification.entityType && notification.entityId) {
-      const path =
-        notification.entityType === "Invoice"
-          ? `/erp/invoices/${notification.entityId}`
-          : notification.entityType === "PurchaseOrder"
-            ? `/erp/purchase-orders/${notification.entityId}`
-            : notification.entityType === "Subscription"
-              ? `/erp/subscriptions/${notification.entityId}`
-              : null;
-      if (path) router.push(path);
-    }
+    const path = getNotificationEntityPath(
+      notification.entityType,
+      notification.entityId,
+    );
+    if (path) router.push(path);
   };
 
   return (

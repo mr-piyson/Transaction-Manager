@@ -1,5 +1,7 @@
 import type { Prisma } from "@prisma/client";
 
+export { getNotificationEntityPath } from "@/lib/notification-entity-path";
+
 export const NOTIFICATION_TYPES = {
   APPROVAL_REQUEST: "approval_request",
   INVOICE_APPROVED: "invoice_approved",
@@ -19,6 +21,9 @@ export const NOTIFICATION_TYPES = {
   // Fired once per billing cycle when a subscription enters its alert window
   // (nextRenewalDate - alertDaysBefore).
   SUBSCRIPTION_RENEWAL_DUE: "subscription_renewal_due",
+  // Fired once per contract when it enters its expiry alert window
+  // (endDate - renewalAlertDays) while still ACTIVE.
+  CONTRACT_EXPIRING: "contract_expiring",
 } as const;
 
 export const NOTIFICATION_SETTINGS_KEYS = {
@@ -39,24 +44,8 @@ export const NOTIFICATION_SETTINGS_KEYS = {
   [NOTIFICATION_TYPES.PAYMENT_DELETED]: "notify_payment_deleted",
   [NOTIFICATION_TYPES.SUBSCRIPTION_RENEWAL_DUE]:
     "notify_subscription_renewal_due",
+  [NOTIFICATION_TYPES.CONTRACT_EXPIRING]: "notify_contract_expiring",
 } as const;
-
-export function getNotificationEntityPath(
-  entityType: string | null | undefined,
-  entityId: string | null | undefined,
-): string | null {
-  if (!entityType || !entityId) return null;
-  switch (entityType) {
-    case "Invoice":
-      return `/erp/invoices/${entityId}`;
-    case "PurchaseOrder":
-      return `/erp/purchase-orders/${entityId}`;
-    case "Subscription":
-      return `/erp/subscriptions/${entityId}`;
-    default:
-      return null;
-  }
-}
 
 export type NotificationCreateInput = {
   title: string;

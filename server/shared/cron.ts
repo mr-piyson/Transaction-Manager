@@ -299,6 +299,102 @@ async function checkUpcomingSubscriptionRenewals() {
   }
 }
 
+// ── Contract expiry alerts ───────────────────────────────────────────────────
+// Read-mostly — only creates Notification rows; never mutates Contract dates.
+async function checkUpcomingContractExpiries() {
+  const now = new Date();
+
+  // ACTIVE contracts whose expiry alert window has opened. Same approach as
+  // subscriptions — bounded candidate set, precise per-row filter in JS.
+  const candidates = await db.contract.findMany({
+    where: {
+      status: "ACTIVE",
+      deletedAt: null,
+      endDate: { lte: new Date(now.getTime() + 365 * 86_400_000) },
+    },
+    select: {
+      id: true,
+      serial: true,
+      title: true,
+      endDate: true,
+      renewalAlertDays: true,
+      organizationId: true,
+    },
+  });
+
+  const due = candidates.filter((c) => {
+    const windowStart = new Date(
+      c.endDate.getTime() - c.renewalAlertDays * 86_400_000,
+    );
+    return now >= windowStart;
+  });
+
+  if (due.length === 0) return;
+
+  // Dedupe: skip contracts that already have a live alert raised within
+  // their current expiry window.
+  const existingNotifications = await db.notification.findMany({
+    where: {
+      type: NOTIFICATION_TYPES.CONTRACT_EXPIRING,
+      entityType: "Contract",
+      entityId: { in: due.map((c) => c.id) },
+      status: { in: ["UNREAD", "READ"] },
+    },
+    select: { entityId: true, createdAt: true },
+  });
+
+  const existingByEntity = new Map<string, Date>();
+  for (const n of existingNotifications) {
+    if (n.entityId) existingByEntity.set(n.entityId, n.createdAt);
+  }
+
+  let notified = 0;
+
+  for (const contract of due) {
+    const windowStart = new Date(
+      contract.endDate.getTime() - contract.renewalAlertDays * 86_400_000,
+    );
+    const existingCreatedAt = existingByEntity.get(contract.id);
+    if (existingCreatedAt && existingCreatedAt >= windowStart) continue;
+
+    const setting = await db.organizationSetting.findFirst({
+      where: {
+        organizationId: contract.organizationId,
+        key: NOTIFICATION_SETTINGS_KEYS[NOTIFICATION_TYPES.CONTRACT_EXPIRING],
+      },
+      select: { value: true },
+    });
+
+    const title = "Contract Expiring";
+    const body = `${contract.serial} "${contract.title}" expires on ${contract.endDate.toLocaleDateString()}.`;
+
+    await db.$transaction(async (tx) => {
+      const contractUsers = await tx.user.findMany({
+        where: { organizationId: contract.organizationId },
+        select: { id: true },
+      });
+
+      for (const user of contractUsers) {
+        await createNotification(tx, setting?.value === "true", {
+          title,
+          body,
+          type: NOTIFICATION_TYPES.CONTRACT_EXPIRING,
+          entityType: "Contract",
+          entityId: contract.id,
+          userId: user.id,
+          organizationId: contract.organizationId,
+        });
+      }
+    });
+
+    notified++;
+  }
+
+  if (notified > 0) {
+    console.log(`[cron] Checked contract expiries: ${notified} alerts raised`);
+  }
+}
+
 // The scheduler is process-global but settings are per-org — mirror
 // getSyncFrequency() and use the most common value across organizations.
 async function getRenewalCheckFrequency(): Promise<string> {
@@ -325,6 +421,17 @@ function scheduleSubscriptionRenewals(frequencySetting: string): void {
   });
   activeTasks.set("subscription-renewals", task);
   console.log(`[cron] Registered subscription renewal check (${expression})`);
+
+  // Contract expiry checks run on the same cadence as subscription renewals.
+  if (shouldRun("contract-expiries")) {
+    const expiryTask = cron.schedule(expression, () => {
+      checkUpcomingContractExpiries().catch((err) =>
+        console.error("[cron] contract expiry check failed:", err),
+      );
+    });
+    activeTasks.set("contract-expiries", expiryTask);
+    console.log(`[cron] Registered contract expiry check (${expression})`);
+  }
 }
 
 // Exchange rate sync job

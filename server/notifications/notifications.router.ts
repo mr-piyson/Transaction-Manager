@@ -15,6 +15,10 @@ const listSchema = z.object({
   search: z.string().optional(),
 });
 
+// Read IDs only from the newest page; the bell/page work newest-first and the
+// table grows unbounded (archived/dismissed rows are never pruned).
+const LIST_PAGE_SIZE = 200;
+
 export const notificationsRouter = router({
   list: orgProcedure.input(listSchema).query(async ({ ctx, input }) => {
     const { search, status } = input;
@@ -33,6 +37,7 @@ export const notificationsRouter = router({
     const data = await ctx.db.notification.findMany({
       where: where as any,
       orderBy: { createdAt: "desc" },
+      take: LIST_PAGE_SIZE,
     });
 
     return data;

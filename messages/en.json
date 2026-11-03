@@ -1402,6 +1402,8 @@
     "notifOverdueDesc": "When an invoice becomes overdue",
     "notifSubscriptionRenewalDue": "Subscription Renewals",
     "notifSubscriptionRenewalDueDesc": "When a subscription enters its renewal window",
+    "notifContractExpiring": "Contract Expiry",
+    "notifContractExpiringDesc": "When an active contract enters its expiry alert window",
     "subscriptionsNav": "Subscriptions",
     "invoiceDefaults": "Invoice Defaults",
     "defaultTaxRate": "Default Tax Rate",

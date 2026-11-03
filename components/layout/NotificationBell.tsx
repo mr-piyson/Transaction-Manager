@@ -11,6 +11,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { getNotificationEntityPath } from "@/lib/notification-entity-path";
 import { trpc } from "@/lib/trpc/client";
 import { cn } from "@/lib/utils";
 
@@ -65,15 +66,7 @@ export function NotificationBell() {
     entityType: string | null | undefined,
     entityId: string | null | undefined,
   ) => {
-    if (!entityType || !entityId) return;
-    const path =
-      entityType === "Invoice"
-        ? `/erp/invoices/${entityId}`
-        : entityType === "PurchaseOrder"
-          ? `/erp/purchase-orders/${entityId}`
-          : entityType === "Subscription"
-            ? `/erp/subscriptions/${entityId}`
-            : null;
+    const path = getNotificationEntityPath(entityType, entityId);
     if (path) {
       setOpen(false);
       router.push(path);
