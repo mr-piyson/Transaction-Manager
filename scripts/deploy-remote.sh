@@ -81,12 +81,25 @@ else
 	fi
 	# The launch also waits server-side for deploy.pid: a fully cached deploy can
 	# finish in about a second, which is far too short for client-side polling.
-	ssh "${SSH_OPTIONS[@]}" "${DEPLOY_HOST}" "export PATH=\"\$HOME/.bun/bin:\$PATH\"; cd \"${DEPLOY_PATH}\" && setsid nohup env ${ENV_OVERRIDES} ./scripts/deploy.sh -b \"${DEPLOY_BRANCH}\" -y${EXTRA_ARGS} > \"${DEPLOY_LOG}\" 2>&1 < /dev/null & for _ in \$(seq 1 100); do if [ -s \"${DEPLOY_PID}\" ]; then cat \"${DEPLOY_PID}\"; break; fi; sleep 0.1; done" || error "Could not launch the remote deploy on ${DEPLOY_HOST}"
+	# Fast no-op deploys finish so quickly that they delete ${DEPLOY_PID} before
+	# the pid-capture loop below runs, so the pid printed by the launch loop is
+	# kept as the primary source (numeric-only line).
+	LAUNCH_OUT="$(ssh "${SSH_OPTIONS[@]}" "${DEPLOY_HOST}" "export PATH=\"\$HOME/.bun/bin:\$PATH\"; cd \"${DEPLOY_PATH}\" && setsid nohup env ${ENV_OVERRIDES} ./scripts/deploy.sh -b \"${DEPLOY_BRANCH}\" -y${EXTRA_ARGS} > \"${DEPLOY_LOG}\" 2>&1 < /dev/null & for _ in \$(seq 1 100); do if [ -s \"${DEPLOY_PID}\" ]; then cat \"${DEPLOY_PID}\"; break; fi; sleep 0.1; done" )"
+	[ $? -eq 0 ] || { echo "${LAUNCH_OUT}"; error "Could not launch the remote deploy on ${DEPLOY_HOST}"; }
+	REMOTE_PID_FROM_LAUNCH="$(printf '%s\n' "${LAUNCH_OUT}" | grep -E '^[0-9]+$' | tail -n 1 || true)"
+	[ -n "${REMOTE_PID_FROM_LAUNCH}" ] &&
+		log "Deploy process on server (pid ${REMOTE_PID_FROM_LAUNCH}). Log: ${DEPLOY_LOG}"
 fi
 
 # --- Pick up the remote deploy pid (written by deploy.sh on startup) ---
-REMOTE_PID=""
+# The pid from the launch output wins (it cannot be lost to the cleanup race);
+# the loop below only runs when the launch did not print one.
+REMOTE_PID="${REMOTE_PID_FROM_LAUNCH:-}"
 for _ in $(seq 1 10); do
+	case "${REMOTE_PID}" in
+	'' | *[!0-9]*) REMOTE_PID="" ;;
+	*) break ;;
+	esac
 	REMOTE_PID="$(ssh "${SSH_OPTIONS[@]}" "${DEPLOY_HOST}" "cat \"${DEPLOY_PID}\" 2>/dev/null" 2>/dev/null || true)"
 	if [ -n "${REMOTE_PID}" ]; then break; fi
 	sleep 1
@@ -95,16 +108,18 @@ done
 if [ -n "${REMOTE_PID}" ]; then
 	log "Deploy process on server (pid ${REMOTE_PID}). Log: ${DEPLOY_LOG}"
 else
-	warn "Could not read the remote deploy pid. Falling back to plain tail with a timeout."
+	warn "Could not read the remote deploy pid. Streaming until a completion marker appears in the log."
 fi
 
 # --- Stream the log until a completion marker is printed ---
 # If this SSH connection drops, the deploy keeps running on the server.
 # Re-run this script to re-attach: it detects the running deploy and resumes monitoring.
-# Always bound the stream with a remote `timeout`: `tail --pid` alone is not
-# enough, so a stalled tail or a deploy process that outlives its log can never
-# make the local stream hang forever.
-TAIL_CMD="timeout 1800 tail -f -n +1 \"${DEPLOY_LOG}\""
+# Both stream variants are bound by a remote `timeout`:
+#   - pid known: tail until the deploy process dies
+#   - pid unknown: poll the log until a marker appears, then print it once —
+#     a blind `tail -f` would just sit there for the full timeout because nothing
+#     asks it to stop
+TAIL_CMD="timeout 1800 sh -c 'until grep -qE \"DEPLOY_(SUCCESS|FAILED)\" \"\$1\" 2>/dev/null; do sleep 1; done; tail -n +1 \"\$1\"' sh \"${DEPLOY_LOG}\""
 if [ -n "${REMOTE_PID}" ]; then
 	TAIL_CMD="timeout 1800 tail -f --pid=${REMOTE_PID} -n +1 \"${DEPLOY_LOG}\""
 fi
