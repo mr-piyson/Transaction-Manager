@@ -87,8 +87,6 @@ else
 	LAUNCH_OUT="$(ssh "${SSH_OPTIONS[@]}" "${DEPLOY_HOST}" "export PATH=\"\$HOME/.bun/bin:\$PATH\"; cd \"${DEPLOY_PATH}\" && setsid nohup env ${ENV_OVERRIDES} ./scripts/deploy.sh -b \"${DEPLOY_BRANCH}\" -y${EXTRA_ARGS} > \"${DEPLOY_LOG}\" 2>&1 < /dev/null & for _ in \$(seq 1 100); do if [ -s \"${DEPLOY_PID}\" ]; then cat \"${DEPLOY_PID}\"; break; fi; sleep 0.1; done" )"
 	[ $? -eq 0 ] || { echo "${LAUNCH_OUT}"; error "Could not launch the remote deploy on ${DEPLOY_HOST}"; }
 	REMOTE_PID_FROM_LAUNCH="$(printf '%s\n' "${LAUNCH_OUT}" | grep -E '^[0-9]+$' | tail -n 1 || true)"
-	[ -n "${REMOTE_PID_FROM_LAUNCH}" ] &&
-		log "Deploy process on server (pid ${REMOTE_PID_FROM_LAUNCH}). Log: ${DEPLOY_LOG}"
 fi
 
 # --- Pick up the remote deploy pid (written by deploy.sh on startup) ---
