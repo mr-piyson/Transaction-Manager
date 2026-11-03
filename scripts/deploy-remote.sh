@@ -114,16 +114,28 @@ echo ""
 
 set +e
 # No local `timeout` wrapper: macOS has no coreutils timeout, and the remote
-# command already bounds itself (tail --pid, or `timeout` on the server).
-ssh "${SSH_OPTIONS[@]}" "${DEPLOY_HOST}" "${TAIL_CMD}" 2>/dev/null |
-	awk '/DEPLOY_(SUCCESS|FAILED)/{exit} {print; fflush()}'
+# command already bounds itself (remote `timeout 1800`, always).
+# The marker is captured as it streams, so a failed follow-up round-trip
+# cannot lose an outcome we already observed.
+MARKER="$(ssh "${SSH_OPTIONS[@]}" "${DEPLOY_HOST}" "${TAIL_CMD}" 2>/dev/null |
+	awk '/DEPLOY_(SUCCESS|FAILED)/{print $0; fflush(); exit} {print; fflush()}')"
 STREAM_STATUS=${PIPESTATUS[0]}
 set -e
 
 echo ""
 
-# --- Fetch the final result marker from the server log ---
-STATUS="$(ssh "${SSH_OPTIONS[@]}" "${DEPLOY_HOST}" "grep -hE 'DEPLOY_(SUCCESS|FAILED)' \"${DEPLOY_LOG}\" | tail -n 1" 2>/dev/null || true)"
+# --- Fetch the final result marker from the server log (fallback + retries) ---
+STATUS="${MARKER}"
+if [ -z "${STATUS}" ]; then
+	for _ in 1 2 3; do
+		STATUS="$(ssh "${SSH_OPTIONS[@]}" "${DEPLOY_HOST}" "grep -hE 'DEPLOY_(SUCCESS|FAILED)' \"${DEPLOY_LOG}\" | tail -n 1" 2>/dev/null || true)"
+		case "${STATUS}" in
+		*DEPLOY_SUCCESS* | *DEPLOY_FAILED*) break ;;
+		*) STATUS="" ;; # transient failure — the marker is still being written
+		esac
+		sleep 2
+	done
+fi
 
 case "${STATUS}" in
 *DEPLOY_SUCCESS*)
