@@ -4,10 +4,10 @@ import type { GridApi } from "ag-grid-community";
 import { Download, Printer } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 interface ReportPrintButtonProps {
   gridApiRef?: React.RefObject<GridApi | null>;
-  title?: string;
   filename?: string;
   showExport?: boolean;
   className?: string;
@@ -15,7 +15,6 @@ interface ReportPrintButtonProps {
 
 export function ReportPrintButton({
   gridApiRef,
-  title,
   filename,
   showExport = true,
   className,
@@ -31,25 +30,27 @@ export function ReportPrintButton({
   };
 
   return (
-    <div className={`flex items-center gap-2 ${className ?? ""}`}>
+    <div className={cn("flex items-center gap-2", className)}>
       <Button
         variant="ghost"
         size="sm"
-        className="text-xs gap-1 print:hidden"
+        className="print:hidden"
+        aria-label={t("common.print")}
         onClick={handlePrint}
       >
-        <Printer className="size-3.5" />
-        {t("common.print")}
+        <Printer data-icon="inline-start" />
+        <span className="hidden sm:inline">{t("common.print")}</span>
       </Button>
       {showExport && gridApiRef && (
         <Button
           variant="outline"
           size="sm"
-          className="text-xs gap-1 print:hidden"
+          className="print:hidden"
+          aria-label={t("common.export")}
           onClick={handleExport}
         >
-          <Download className="size-3.5" />
-          {t("common.export")}
+          <Download data-icon="inline-start" />
+          <span className="hidden sm:inline">{t("common.export")}</span>
         </Button>
       )}
     </div>
@@ -73,12 +74,12 @@ export function ReportCsvExportButton({
     <Button
       variant="outline"
       size="sm"
-      className={`text-xs gap-1 print:hidden ${className ?? ""}`}
+      className={cn("print:hidden", className)}
       onClick={() =>
         gridApiRef.current?.exportDataAsCsv({ fileName: filename })
       }
     >
-      <Download className="size-3.5" />
+      <Download data-icon="inline-start" />
       {t("common.export")}
     </Button>
   );

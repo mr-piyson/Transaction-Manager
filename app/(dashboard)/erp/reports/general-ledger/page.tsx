@@ -1,40 +1,39 @@
 "use client";
 
-import {
-  AllCommunityModule,
-  type ColDef,
-  type GridApi,
-  ModuleRegistry,
-} from "ag-grid-community";
-import { AgGridReact } from "ag-grid-react";
+import type { ColDef, GridApi } from "ag-grid-community";
 import { BookOpen } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { useMemo, useRef, useState } from "react";
-import { ReportCsvExportButton, ReportLayout } from "@/components/reports";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { useId, useMemo, useRef, useState } from "react";
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
+  ReportCard,
+  ReportDateFilter,
+  ReportEmpty,
+  ReportLayout,
+  ReportPrintButton,
+  ReportTable,
+  ReportToolbar,
+} from "@/components/reports";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
+import { Field, FieldLabel } from "@/components/ui/field";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useCurrency } from "@/hooks/use-currency";
 import { useDateFormat } from "@/hooks/use-date-format";
-import { useTableTheme } from "@/hooks/use-table-theme";
 import { trpc } from "@/lib/trpc/client";
 import { cn } from "@/lib/utils";
-
-ModuleRegistry.registerModules([AllCommunityModule]);
 
 export default function GeneralLedgerPage() {
   const t = useTranslations();
   const { format } = useCurrency();
   const { formatShortDate } = useDateFormat();
-  const theme = useTableTheme();
+  const accountSelectId = useId();
   const gridApiRef = useRef<GridApi | null>(null);
 
   const [selectedAccountId, setSelectedAccountId] = useState("");
@@ -63,7 +62,7 @@ export default function GeneralLedgerPage() {
         field: "date",
         headerName: t("common.date"),
         width: 120,
-        valueFormatter: (p) => (p.value ? formatShortDate(p.value) : "\u2014"),
+        valueFormatter: (p) => (p.value ? formatShortDate(p.value) : "—"),
       },
       {
         field: "entryNumber",
@@ -85,7 +84,7 @@ export default function GeneralLedgerPage() {
         width: 120,
         cellRenderer: (p: any) => (
           <span className="text-xs text-muted-foreground">
-            {p.value || "\u2014"}
+            {p.value || "—"}
           </span>
         ),
       },
@@ -94,7 +93,7 @@ export default function GeneralLedgerPage() {
         headerName: t("reports.totalDebit"),
         width: 130,
         type: "rightAligned",
-        valueFormatter: (p) => (p.value > 0 ? format(p.value) : "-"),
+        valueFormatter: (p) => (p.value > 0 ? format(p.value) : "—"),
         cellClass: "font-mono text-[11px] tabular-nums",
       },
       {
@@ -102,7 +101,7 @@ export default function GeneralLedgerPage() {
         headerName: t("reports.totalCredit"),
         width: 130,
         type: "rightAligned",
-        valueFormatter: (p) => (p.value > 0 ? format(p.value) : "-"),
+        valueFormatter: (p) => (p.value > 0 ? format(p.value) : "—"),
         cellClass: "font-mono text-[11px] tabular-nums",
       },
       {
@@ -113,222 +112,177 @@ export default function GeneralLedgerPage() {
         valueFormatter: (p) => format(p.value),
         cellClass: (p) =>
           cn(
-            "font-mono text-[11px] tabular-nums font-bold",
-            p.value >= 0
-              ? "text-emerald-600 dark:text-emerald-500"
-              : "text-red-600 dark:text-red-500",
+            "font-mono text-[11px] font-semibold tabular-nums",
+            p.value >= 0 ? "text-success" : "text-destructive",
           ),
       },
     ],
     [format, formatShortDate, t],
   );
 
-  const defaultColDef = useMemo(
-    () => ({ resizable: true, sortable: true, filter: true }),
-    [],
-  );
-
   const accountOptions = useMemo(() => {
     if (!accounts) return [];
     return accounts
-      .filter((a) => a.allowDirectPosting !== false)
-      .map((a) => ({
-        id: a.id,
-        label: `${a.code} - ${a.name}`,
-        type: a.type,
+      .filter((account) => account.allowDirectPosting !== false)
+      .map((account) => ({
+        value: account.id,
+        label: `${account.code} - ${account.name}`,
       }));
   }, [accounts]);
 
   const periodLabel = useMemo(() => {
-    if (dateFrom && dateTo) return `${dateFrom} \u2192 ${dateTo}`;
-    if (dateFrom) return `${dateFrom} \u2192`;
-    if (dateTo) return `\u2192 ${dateTo}`;
-    return "";
-  }, [dateFrom, dateTo]);
+    if (dateFrom && dateTo) return `${dateFrom} → ${dateTo}`;
+    if (dateFrom) return `${dateFrom} →`;
+    if (dateTo) return `→ ${dateTo}`;
+    return t("reports.allTime");
+  }, [dateFrom, dateTo, t]);
 
   return (
     <ReportLayout
       title={t("reports.generalLedger")}
+      description={t("reports.generalLedgerDescription")}
+      period={periodLabel}
       icon={<BookOpen className="size-5" />}
+      actions={
+        <ReportPrintButton gridApiRef={gridApiRef} filename="general-ledger" />
+      }
     >
-      <Card className="print:shadow-none">
-        <CardContent className="p-4">
-          <div className="flex flex-wrap items-end gap-4">
-            <div className="flex flex-col gap-1.5 flex-1 min-w-[250px]">
-              <Label className="text-xs font-medium text-muted-foreground">
-                {t("common.account")}
-              </Label>
-              {accountsLoading ? (
-                <Skeleton className="h-9 w-full" />
-              ) : (
-                <select
-                  value={selectedAccountId}
-                  onChange={(e) => setSelectedAccountId(e.target.value)}
-                  className="h-9 rounded-md border border-input bg-background px-3 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                >
-                  <option value="">{t("reports.selectAccount")}</option>
-                  {accountOptions.map((a) => (
-                    <option key={a.id} value={a.id}>
-                      {a.label}
-                    </option>
-                  ))}
-                </select>
-              )}
-            </div>
-            <div className="flex flex-col gap-1.5">
-              <Label className="text-xs font-medium text-muted-foreground">
-                {t("common.from")}
-              </Label>
-              <input
-                type="date"
-                value={dateFrom}
-                onChange={(e) => setDateFrom(e.target.value)}
-                className="h-9 rounded-md border border-input bg-background px-3 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-              />
-            </div>
-            <div className="flex flex-col gap-1.5">
-              <Label className="text-xs font-medium text-muted-foreground">
-                {t("common.to")}
-              </Label>
-              <input
-                type="date"
-                value={dateTo}
-                onChange={(e) => setDateTo(e.target.value)}
-                className="h-9 rounded-md border border-input bg-background px-3 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-              />
-            </div>
-            {(dateFrom || dateTo) && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => {
-                  setDateFrom("");
-                  setDateTo("");
-                }}
-              >
-                {t("common.clear")}
-              </Button>
-            )}
-          </div>
-        </CardContent>
-      </Card>
+      <ReportToolbar>
+        <Field className="w-full gap-1.5 sm:w-[320px]">
+          <FieldLabel
+            htmlFor={accountSelectId}
+            className="text-xs text-muted-foreground"
+          >
+            {t("common.account")}
+          </FieldLabel>
+          {accountsLoading ? (
+            <Skeleton className="h-8 w-full" />
+          ) : (
+            <Select
+              items={accountOptions}
+              value={selectedAccountId || null}
+              onValueChange={(value) => setSelectedAccountId(value ?? "")}
+            >
+              <SelectTrigger id={accountSelectId} className="w-full">
+                <SelectValue placeholder={t("reports.selectAccount")} />
+              </SelectTrigger>
+              <SelectContent>
+                {accountOptions.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
+        </Field>
+
+        <ReportDateFilter
+          dateFrom={dateFrom}
+          dateTo={dateTo}
+          onDateFromChange={setDateFrom}
+          onDateToChange={setDateTo}
+          onClear={() => {
+            setDateFrom("");
+            setDateTo("");
+          }}
+        />
+      </ReportToolbar>
 
       {data?.account && (
-        <Card className="print:shadow-none">
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <div className="flex items-center gap-2">
-                  <span className="font-mono text-sm font-medium">
-                    {data.account.code}
-                  </span>
-                  <span className="font-semibold">{data.account.name}</span>
-                  <Badge variant="outline" className="text-[10px]">
-                    {data.account.type}
-                  </Badge>
-                </div>
-                <div className="text-xs text-muted-foreground mt-1">
-                  {t("reports.normalBalance")}: {data.account.normalBalance}
-                </div>
+        <Card>
+          <CardContent className="flex flex-wrap items-center justify-between gap-4">
+            <div className="min-w-0">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="font-mono text-sm font-medium">
+                  {data.account.code}
+                </span>
+                <span className="truncate font-semibold">
+                  {data.account.name}
+                </span>
+                <Badge variant="outline" className="text-[10px]">
+                  {data.account.type}
+                </Badge>
               </div>
-              <div className="text-right">
-                <div className="text-xs text-muted-foreground">
-                  {t("reports.closingBalance")}
-                </div>
-                <div
-                  className={cn(
-                    "text-lg font-bold",
-                    data.closingBalance >= 0
-                      ? "text-emerald-600 dark:text-emerald-500"
-                      : "text-red-600 dark:text-red-500",
-                  )}
-                >
-                  {format(data.closingBalance)}
-                </div>
-              </div>
+              <p className="mt-1 text-xs text-muted-foreground">
+                {t("reports.normalBalance")}: {data.account.normalBalance}
+              </p>
+            </div>
+            <div className="text-right">
+              <p className="text-xs text-muted-foreground">
+                {t("reports.closingBalance")}
+              </p>
+              <p
+                className={cn(
+                  "mt-0.5 text-lg font-semibold tabular-nums",
+                  data.closingBalance >= 0
+                    ? "text-success"
+                    : "text-destructive",
+                )}
+              >
+                {format(data.closingBalance)}
+              </p>
             </div>
           </CardContent>
         </Card>
       )}
 
-      <Card className="print:shadow-none">
-        <CardHeader className="pb-3 flex flex-row items-center justify-between">
-          <div>
-            <CardTitle className="text-base flex items-center gap-2">
-              <BookOpen className="size-4 text-primary" />
-              {t("reports.generalLedger")}
-            </CardTitle>
-            <CardDescription>
-              {data?.transactions.length ?? 0} {t("reports.transactions")}
-              {periodLabel && ` \u00B7 ${periodLabel}`}
-            </CardDescription>
-          </div>
-          {selectedAccountId && (
-            <ReportCsvExportButton
-              gridApiRef={gridApiRef}
-              filename={`general-ledger-${data?.account?.code ?? "all"}`}
-            />
-          )}
-        </CardHeader>
-        <CardContent className="p-0">
-          {!selectedAccountId ? (
-            <div className="flex flex-col items-center py-12 text-muted-foreground">
-              <BookOpen className="size-8 mb-2 opacity-30" />
-              <p className="text-sm">{t("reports.selectAccountToView")}</p>
-            </div>
-          ) : isLoading ? (
-            <div className="p-6 space-y-3">
-              {Array.from({ length: 8 }).map((_, i) => (
-                <Skeleton key={i} className="h-10 w-full" />
-              ))}
-            </div>
-          ) : data?.transactions.length === 0 ? (
-            <div className="flex flex-col items-center py-12 text-muted-foreground">
-              <BookOpen className="size-8 mb-2 opacity-30" />
-              <p className="text-sm">{t("reports.noTransactions")}</p>
-            </div>
-          ) : (
-            <div className="h-[500px] w-full">
-              <AgGridReact
-                rowData={data?.transactions ?? []}
-                columnDefs={columnDefs}
-                defaultColDef={defaultColDef}
-                theme={theme}
-                animateRows
-                onGridReady={(params) => {
-                  gridApiRef.current = params.api;
-                }}
-                domLayout="normal"
-                getRowId={(params) =>
-                  `${params.data.entryNumber}-${params.data.id}`
-                }
-                suppressScrollOnNewData
-                enableCellTextSelection
-                ensureDomOrder
-              />
-            </div>
-          )}
-        </CardContent>
-        {data && data.transactions.length > 0 && (
-          <div className="border-t p-4">
-            <div className="flex items-center justify-between text-sm">
+      <ReportCard
+        title={t("reports.generalLedger")}
+        description={
+          selectedAccountId
+            ? `${data?.transactions.length ?? 0} ${t("reports.transactions")} · ${periodLabel}`
+            : t("reports.selectAccountToView")
+        }
+        icon={<BookOpen className="size-4" />}
+        contentClassName="p-0"
+        footer={
+          data && data.transactions.length > 0 ? (
+            <div className="flex w-full items-center justify-between text-sm">
               <span className="text-muted-foreground">
                 {t("reports.closingBalance")}
               </span>
               <span
                 className={cn(
-                  "font-mono font-bold",
+                  "font-mono font-semibold",
                   data.closingBalance >= 0
-                    ? "text-emerald-600 dark:text-emerald-500"
-                    : "text-red-600 dark:text-red-500",
+                    ? "text-success"
+                    : "text-destructive",
                 )}
               >
                 {format(data.closingBalance)}
               </span>
             </div>
+          ) : null
+        }
+      >
+        {!selectedAccountId ? (
+          <ReportEmpty
+            icon={<BookOpen />}
+            title={t("reports.selectAccount")}
+            description={t("reports.selectAccountToView")}
+          />
+        ) : isLoading ? (
+          <div className="flex flex-col gap-2 p-6">
+            {Array.from({ length: 8 }).map((_, index) => (
+              <Skeleton key={index} className="h-10 w-full" />
+            ))}
           </div>
+        ) : data?.transactions.length === 0 ? (
+          <ReportEmpty
+            icon={<BookOpen />}
+            title={t("reports.noTransactions")}
+            description={t("reports.generalLedgerDescription")}
+          />
+        ) : (
+          <ReportTable
+            rowData={data?.transactions ?? []}
+            columnDefs={columnDefs}
+            gridApiRef={gridApiRef}
+            getRowId={(params) => params.data.entryNumber}
+          />
         )}
-      </Card>
+      </ReportCard>
     </ReportLayout>
   );
 }

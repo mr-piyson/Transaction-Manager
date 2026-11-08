@@ -24,8 +24,13 @@ import { useTranslations } from "next-intl";
 import { useCallback, useMemo, useRef, useState } from "react";
 import { Bar, BarChart, Cell, Pie, PieChart, XAxis, YAxis } from "recharts";
 import { toast } from "sonner";
-import { useUnifiedItemForm } from "@/components/dialogs";
 import { Header } from "@/components/layout/App-Header";
+import {
+  ReportCard,
+  ReportEmpty,
+  ReportKpiCard,
+  ReportToolbar,
+} from "@/components/reports";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -33,7 +38,6 @@ import {
   CardContent,
   CardFooter,
   CardHeader,
-  CardTitle,
 } from "@/components/ui/card";
 import {
   ChartContainer,
@@ -62,6 +66,7 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { Skeleton } from "@/components/ui/skeleton";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { useCurrency } from "@/hooks/use-currency";
 import { trpc } from "@/lib/trpc/client";
 import { cn } from "@/lib/utils";
@@ -129,60 +134,15 @@ const CHART_COLORS = [
 ];
 
 const QUICK_FILTERS = [
-  { key: "all", label: "All" },
-  { key: "saleable", label: "Saleable" },
-  { key: "purchasable", label: "Purchasable" },
-  { key: "low", label: "Low Stock" },
-  { key: "out", label: "Out of Stock" },
-  { key: "recent", label: "Recently Added" },
+  { key: "all", labelKey: "common.all" },
+  { key: "saleable", labelKey: "items.saleable" },
+  { key: "purchasable", labelKey: "items.purchasable" },
+  { key: "low", labelKey: "items.lowStock" },
+  { key: "out", labelKey: "items.outOfStock" },
+  { key: "recent", labelKey: "items.recentlyAdded" },
 ] as const;
 
 type QuickFilterKey = (typeof QUICK_FILTERS)[number]["key"];
-
-// ─── KPI Card ──────────────────────────────────────────────────────────────────
-
-function KpiCard({
-  title,
-  value,
-  icon,
-  loading,
-  variant,
-}: {
-  title: string;
-  value: string;
-  icon: React.ReactNode;
-  loading?: boolean;
-  variant?: "default" | "warning" | "danger";
-}) {
-  return (
-    <Card className="relative overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5 group">
-      <CardHeader className="pb-2 flex flex-row items-center justify-between">
-        <CardTitle className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-          {title}
-        </CardTitle>
-        <div
-          className={cn(
-            "size-9 rounded-xl flex items-center justify-center transition-colors",
-            variant === "warning"
-              ? "bg-yellow-100 text-yellow-600 dark:bg-yellow-900/50 dark:text-yellow-400"
-              : variant === "danger"
-                ? "bg-red-100 text-red-600 dark:bg-red-900/50 dark:text-red-400"
-                : "bg-primary/10 text-primary group-hover:bg-primary/20",
-          )}
-        >
-          {icon}
-        </div>
-      </CardHeader>
-      <CardContent>
-        {loading ? (
-          <Skeleton className="h-7 w-24" />
-        ) : (
-          <div className="text-2xl font-bold tracking-tight">{value}</div>
-        )}
-      </CardContent>
-    </Card>
-  );
-}
 
 // ─── Chart Skeleton ────────────────────────────────────────────────────────────
 
@@ -477,7 +437,6 @@ function exportCsv(
 export default function ItemReportPage() {
   const t = useTranslations();
   const { format } = useCurrency();
-  const { openCreate } = useUnifiedItemForm();
 
   const { data: rawItems, isLoading } = trpc.items.report.useQuery();
 
@@ -1094,7 +1053,7 @@ export default function ItemReportPage() {
 
   // ── Filter Handlers ──────────────────────────────────────────────────
 
-  const _handleClearAll = useCallback(() => {
+  const handleClearAll = useCallback(() => {
     setQuickFilter("all");
     setSearchQuery("");
   }, []);
@@ -1103,197 +1062,201 @@ export default function ItemReportPage() {
     <div className="flex flex-col h-screen bg-background">
       <Header
         title={t("reports.inventoryReport")}
-        subtitle={`${kpis.total} items`}
+        subtitle={t("reports.itemsCount", { count: kpis.total })}
       />
 
       <main className="flex-1 overflow-y-auto">
-        <div className="p-4 sm:p-6 space-y-6 max-w-[1600px] mx-auto">
+        <div className="mx-auto flex max-w-[1600px] flex-col gap-6 p-4 sm:p-6">
           {/* KPI Cards */}
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
-            <KpiCard
-              title="Total Items"
+          <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-6">
+            <ReportKpiCard
+              title={t("reports.totalItems")}
               value={kpis.total.toString()}
               icon={<Package className="size-4" />}
               loading={isLoading}
             />
-            <KpiCard
-              title="Categories"
+            <ReportKpiCard
+              title={t("reports.categories")}
               value={kpis.categories.toString()}
               icon={<Tag className="size-4" />}
+              variant="info"
               loading={isLoading}
             />
-            <KpiCard
-              title="Low Stock"
+            <ReportKpiCard
+              title={t("items.lowStock")}
               value={kpis.lowStock.toString()}
               icon={<Weight className="size-4" />}
               loading={isLoading}
               variant="warning"
             />
-            <KpiCard
-              title="Out of Stock"
+            <ReportKpiCard
+              title={t("items.outOfStock")}
               value={kpis.outOfStock.toString()}
               icon={<XCircle className="size-4" />}
               loading={isLoading}
               variant="danger"
             />
-            <KpiCard
-              title="Avg Price"
+            <ReportKpiCard
+              title={t("reports.avgPrice")}
               value={format(kpis.avgPrice)}
               icon={<Tag className="size-4" />}
               loading={isLoading}
             />
-            <KpiCard
-              title="Inventory Value"
+            <ReportKpiCard
+              title={t("reports.inventoryValue")}
               value={format(kpis.inventoryValue)}
               icon={<ShoppingCart className="size-4" />}
+              variant="success"
               loading={isLoading}
             />
           </div>
 
           {/* Charts */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm flex items-center gap-2">
-                  <Box className="size-4 text-primary" />
-                  Items by Category
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                {isLoading ? (
-                  <ChartSkeleton />
-                ) : categoryChartData.length === 0 ? (
-                  <p className="text-sm text-muted-foreground text-center py-12">
-                    {t("common.noData")}
-                  </p>
-                ) : (
-                  <ChartContainer
-                    config={{}}
-                    className="aspect-auto h-[220px] w-full"
+            <ReportCard
+              title={t("reports.itemsByCategory")}
+              icon={<Box className="size-4" />}
+            >
+              {isLoading ? (
+                <ChartSkeleton />
+              ) : categoryChartData.length === 0 ? (
+                <p className="text-sm text-muted-foreground text-center py-12">
+                  {t("common.noData")}
+                </p>
+              ) : (
+                <ChartContainer
+                  config={{}}
+                  className="aspect-auto h-[220px] w-full"
+                >
+                  <BarChart
+                    data={categoryChartData.slice(0, 8)}
+                    margin={{ top: 5, right: 10, left: 10, bottom: 0 }}
                   >
-                    <BarChart
-                      data={categoryChartData.slice(0, 8)}
-                      margin={{ top: 5, right: 10, left: 10, bottom: 0 }}
-                    >
-                      <ChartTooltip
-                        cursor={false}
-                        content={<ChartTooltipContent indicator="dot" />}
-                      />
-                      <XAxis
-                        dataKey="name"
-                        tickLine={false}
-                        axisLine={false}
-                        tickMargin={8}
-                      />
-                      <YAxis tickLine={false} axisLine={false} tickMargin={8} />
-                      <Bar dataKey="value" radius={[4, 4, 0, 0]} barSize={24}>
-                        {categoryChartData.slice(0, 8).map((_, i) => (
-                          <Cell
-                            key={i}
-                            fill={CHART_COLORS[i % CHART_COLORS.length]}
-                          />
-                        ))}
-                      </Bar>
-                    </BarChart>
-                  </ChartContainer>
-                )}
-              </CardContent>
-            </Card>
+                    <ChartTooltip
+                      cursor={false}
+                      content={<ChartTooltipContent indicator="dot" />}
+                    />
+                    <XAxis
+                      dataKey="name"
+                      tickLine={false}
+                      axisLine={false}
+                      tickMargin={8}
+                    />
+                    <YAxis tickLine={false} axisLine={false} tickMargin={8} />
+                    <Bar dataKey="value" radius={[4, 4, 0, 0]} barSize={24}>
+                      {categoryChartData.slice(0, 8).map((_, i) => (
+                        <Cell
+                          key={i}
+                          fill={CHART_COLORS[i % CHART_COLORS.length]}
+                        />
+                      ))}
+                    </Bar>
+                  </BarChart>
+                </ChartContainer>
+              )}
+            </ReportCard>
 
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm flex items-center gap-2">
-                  <Layers className="size-4 text-primary" />
-                  Stock by Warehouse
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                {isLoading ? (
-                  <ChartSkeleton />
-                ) : warehouseChartData.length === 0 ? (
-                  <p className="text-sm text-muted-foreground text-center py-12">
-                    {t("common.noData")}
-                  </p>
-                ) : (
-                  <ChartContainer
-                    config={{}}
-                    className="aspect-auto h-[220px] w-full"
-                  >
-                    <PieChart>
-                      <ChartTooltip
-                        cursor={false}
-                        content={<ChartTooltipContent hideLabel />}
-                      />
-                      <Pie
-                        data={warehouseChartData}
-                        dataKey="value"
-                        nameKey="name"
-                        cx="50%"
-                        cy="50%"
-                        innerRadius={50}
-                        outerRadius={80}
-                        paddingAngle={2}
-                      >
-                        {warehouseChartData.map((_, i) => (
-                          <Cell
-                            key={i}
-                            fill={CHART_COLORS[i % CHART_COLORS.length]}
-                          />
-                        ))}
-                      </Pie>
-                      <ChartLegend
-                        content={<ChartLegendContent nameKey="name" />}
-                        verticalAlign="bottom"
-                      />
-                    </PieChart>
-                  </ChartContainer>
-                )}
-              </CardContent>
-            </Card>
+            <ReportCard
+              title={t("reports.stockByWarehouse")}
+              icon={<Layers className="size-4" />}
+            >
+              {isLoading ? (
+                <ChartSkeleton />
+              ) : warehouseChartData.length === 0 ? (
+                <p className="text-sm text-muted-foreground text-center py-12">
+                  {t("common.noData")}
+                </p>
+              ) : (
+                <ChartContainer
+                  config={{}}
+                  className="aspect-auto h-[220px] w-full"
+                >
+                  <PieChart>
+                    <ChartTooltip
+                      cursor={false}
+                      content={<ChartTooltipContent hideLabel />}
+                    />
+                    <Pie
+                      data={warehouseChartData}
+                      dataKey="value"
+                      nameKey="name"
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={50}
+                      outerRadius={80}
+                      paddingAngle={2}
+                    >
+                      {warehouseChartData.map((_, i) => (
+                        <Cell
+                          key={i}
+                          fill={CHART_COLORS[i % CHART_COLORS.length]}
+                        />
+                      ))}
+                    </Pie>
+                    <ChartLegend
+                      content={<ChartLegendContent nameKey="name" />}
+                      verticalAlign="bottom"
+                    />
+                  </PieChart>
+                </ChartContainer>
+              )}
+            </ReportCard>
           </div>
 
           {/* Main Content: Grid */}
-          <div className="space-y-4">
+          <div className="flex flex-col gap-4">
             {/* Search + Quick Filters */}
-            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
-              <div className="flex-1 w-full sm:max-w-md">
+            <ReportToolbar>
+              <div className="w-full sm:max-w-md">
                 <InputGroup>
                   <InputGroupAddon align="inline-start">
-                    <Search className="size-3.5" />
+                    <Search />
                   </InputGroupAddon>
                   <InputGroupInput
-                    placeholder="Search SKU, barcode, name, category..."
+                    type="search"
+                    aria-label={t("reports.searchItemsPlaceholder")}
+                    placeholder={t("reports.searchItemsPlaceholder")}
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                   />
                   {searchQuery && (
                     <InputGroupAddon align="inline-end">
-                      <button
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon-xs"
+                        aria-label={t("common.clear")}
                         onClick={() => setSearchQuery("")}
-                        className="size-5 rounded hover:bg-muted flex items-center justify-center"
                       >
-                        <X className="size-3 text-muted-foreground" />
-                      </button>
+                        <X />
+                      </Button>
                     </InputGroupAddon>
                   )}
                 </InputGroup>
               </div>
 
               {/* Quick Filters */}
-              <div className="flex flex-wrap gap-1.5">
-                {QUICK_FILTERS.map((qf) => (
-                  <Button
-                    key={qf.key}
-                    variant={quickFilter === qf.key ? "default" : "outline"}
-                    size="sm"
-                    className="text-xs h-7"
-                    onClick={() => setQuickFilter(qf.key)}
+              <ToggleGroup
+                value={[quickFilter]}
+                onValueChange={(values) => {
+                  const next = values[0] as QuickFilterKey | undefined;
+                  if (next) setQuickFilter(next);
+                }}
+                variant="outline"
+                size="sm"
+                spacing={0}
+                className="flex-wrap"
+              >
+                {QUICK_FILTERS.map((quickFilterOption) => (
+                  <ToggleGroupItem
+                    key={quickFilterOption.key}
+                    value={quickFilterOption.key}
                   >
-                    {qf.label}
-                  </Button>
+                    {t(quickFilterOption.labelKey)}
+                  </ToggleGroupItem>
                 ))}
-              </div>
-            </div>
+              </ToggleGroup>
+            </ReportToolbar>
 
             {/* Virtualized item list */}
             <Card
@@ -1347,7 +1310,7 @@ export default function ItemReportPage() {
                     <DropdownMenuContent
                       align="end"
                       className="w-48"
-                      onCloseAutoFocus={(e) => e.preventDefault()}
+                      finalFocus={false}
                     >
                       {Object.entries(visibleColumns).map(
                         ([field, visible]) => {
@@ -1446,9 +1409,25 @@ export default function ItemReportPage() {
                   )}
                 >
                   {isLoading ? (
-                    <div className="flex items-center justify-center h-full">
+                    <div className="flex h-full items-center justify-center">
                       <Skeleton className="h-[500px] w-full" />
                     </div>
+                  ) : filteredItems.length === 0 ? (
+                    <ReportEmpty
+                      icon={<Package />}
+                      title={t("items.noItems")}
+                      description={t("reports.itemReportDescription")}
+                      action={
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={handleClearAll}
+                        >
+                          {t("common.clear")}
+                        </Button>
+                      }
+                      className="h-full border-0 bg-transparent"
+                    />
                   ) : (
                     <div
                       ref={listRef}
@@ -1518,7 +1497,10 @@ export default function ItemReportPage() {
               </CardContent>
               <CardFooter className="m-0">
                 <p className="text-sm text-muted-foreground">
-                  Showing {filteredItems.length} of {items.length} items
+                  {t("reports.showingItems", {
+                    count: filteredItems.length,
+                    total: items.length,
+                  })}
                 </p>
               </CardFooter>
             </Card>

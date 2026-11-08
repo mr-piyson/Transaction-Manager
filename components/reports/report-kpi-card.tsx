@@ -1,6 +1,8 @@
 "use client";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ArrowDown, ArrowUp } from "lucide-react";
+import type { ReactNode } from "react";
+import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 
@@ -8,66 +10,92 @@ type KpiVariant = "default" | "success" | "danger" | "warning" | "info";
 
 const variantStyles: Record<KpiVariant, string> = {
   default: "bg-primary/10 text-primary",
-  success: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-500",
-  danger: "bg-red-500/10 text-red-600 dark:text-red-500",
-  warning: "bg-amber-500/10 text-amber-600 dark:text-amber-500",
-  info: "bg-blue-500/10 text-blue-600 dark:text-blue-500",
+  success: "bg-success/10 text-success",
+  danger: "bg-destructive/10 text-destructive",
+  warning: "bg-warning/10 text-warning",
+  info: "bg-info/10 text-info",
 };
 
 interface ReportKpiCardProps {
   title: string;
   value: string;
-  icon: React.ReactNode;
+  icon: ReactNode;
   variant?: KpiVariant;
   loading?: boolean;
-  count?: number;
   countLabel?: string;
   sub?: string;
+  trend?: { dir: "up" | "down"; label: string };
+  className?: string;
 }
 
+/**
+ * Compact KPI tile used across every report so the numbers read the same way.
+ */
 export function ReportKpiCard({
   title,
   value,
   icon,
   variant = "default",
   loading,
-  count,
   countLabel,
   sub,
+  trend,
+  className,
 }: ReportKpiCardProps) {
   return (
-    <Card className="relative overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5 group">
-      <CardHeader className="pb-2 flex flex-row items-center justify-between">
-        <CardTitle className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-          {title}
-        </CardTitle>
-        <div
-          className={cn(
-            "size-9 rounded-xl flex items-center justify-center transition-colors group-hover:opacity-80",
-            variantStyles[variant],
-          )}
-        >
-          {icon}
+    <Card
+      size="sm"
+      className={cn(
+        "relative overflow-hidden transition-shadow hover:ring-foreground/20",
+        className,
+      )}
+    >
+      <CardContent className="flex flex-col gap-2">
+        <div className="flex items-start justify-between gap-3">
+          <p className="text-[11px] font-semibold tracking-wider text-muted-foreground uppercase">
+            {title}
+          </p>
+          <div
+            aria-hidden="true"
+            className={cn(
+              "flex size-8 shrink-0 items-center justify-center rounded-lg",
+              variantStyles[variant],
+            )}
+          >
+            {icon}
+          </div>
         </div>
-      </CardHeader>
-      <CardContent>
+
         {loading ? (
-          <div className="space-y-2">
+          <div className="flex flex-col gap-2">
             <Skeleton className="h-7 w-24" />
-            {count !== undefined && <Skeleton className="h-3 w-16" />}
+            <Skeleton className="h-3 w-20" />
           </div>
         ) : (
-          <>
-            <div className="text-2xl font-bold tracking-tight">{value}</div>
-            {count !== undefined && (
-              <p className="text-xs text-muted-foreground mt-0.5">
-                {count} {countLabel ?? ""}
+          <div className="flex flex-col gap-0.5">
+            <p className="text-xl leading-tight font-semibold tracking-tight tabular-nums sm:text-2xl">
+              {value}
+            </p>
+            {countLabel && (
+              <p className="text-xs text-muted-foreground">{countLabel}</p>
+            )}
+            {sub && <p className="text-xs text-muted-foreground">{sub}</p>}
+            {trend && (
+              <p
+                className={cn(
+                  "mt-1 flex items-center gap-1 text-xs font-medium",
+                  trend.dir === "up" ? "text-success" : "text-destructive",
+                )}
+              >
+                {trend.dir === "up" ? (
+                  <ArrowUp className="size-3" aria-hidden="true" />
+                ) : (
+                  <ArrowDown className="size-3" aria-hidden="true" />
+                )}
+                {trend.label}
               </p>
             )}
-            {sub && (
-              <p className="text-xs text-muted-foreground mt-0.5">{sub}</p>
-            )}
-          </>
+          </div>
         )}
       </CardContent>
     </Card>

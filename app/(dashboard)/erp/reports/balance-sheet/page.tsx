@@ -1,41 +1,29 @@
 "use client";
 
-import {
-  AllCommunityModule,
-  type ColDef,
-  type GridApi,
-  ModuleRegistry,
-} from "ag-grid-community";
-import { AgGridReact } from "ag-grid-react";
-import { AlertCircle, CheckCircle2, Landmark, Scale } from "lucide-react";
+import type { ColDef, GridApi } from "ag-grid-community";
+import { Landmark, Scale } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useMemo, useRef, useState } from "react";
 import {
   ReportAsOfFilter,
-  ReportCsvExportButton,
+  ReportBalanceAlert,
+  ReportCard,
+  ReportEmpty,
   ReportKpiCard,
   ReportLayout,
+  ReportPrintButton,
+  ReportTable,
+  ReportToolbar,
 } from "@/components/reports";
-import { Badge } from "@/components/ui/badge";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useCurrency } from "@/hooks/use-currency";
-import { useTableTheme } from "@/hooks/use-table-theme";
 import { trpc } from "@/lib/trpc/client";
 import { cn } from "@/lib/utils";
-
-ModuleRegistry.registerModules([AllCommunityModule]);
 
 export default function BalanceSheetPage() {
   const t = useTranslations();
   const { format } = useCurrency();
-  const theme = useTableTheme();
   const gridApiRef = useRef<GridApi | null>(null);
 
   const [asOfDate, setAsOfDate] = useState("");
@@ -185,62 +173,57 @@ export default function BalanceSheetPage() {
             !p.data?.isSection &&
               !p.data?.isTotal &&
               !p.data?.isGrandTotal &&
-              (p.value < 0
-                ? "text-red-600 dark:text-red-500"
-                : "text-emerald-600 dark:text-emerald-500"),
+              (p.value < 0 ? "text-destructive" : "text-success"),
           ),
       },
     ],
     [format, t],
   );
 
-  const defaultColDef = useMemo(
-    () => ({ resizable: true, sortable: true, filter: true }),
-    [],
-  );
+  const difference = data
+    ? Math.abs(data.totalAssets - data.totalLiabilities - data.totalEquity)
+    : 0;
+  const period = asOfDate
+    ? `${t("reports.asOf")} ${asOfDate}`
+    : t("reports.currentDate");
 
   return (
     <ReportLayout
       title={t("reports.balanceSheet")}
+      description={t("reports.balanceSheetDescription")}
+      period={period}
       icon={<Landmark className="size-5" />}
+      actions={
+        <ReportPrintButton gridApiRef={gridApiRef} filename="balance-sheet" />
+      }
     >
-      <ReportAsOfFilter
-        asOfDate={asOfDate}
-        onDateChange={setAsOfDate}
-        onClear={() => setAsOfDate("")}
-        description={t("reports.balanceSheetDescription")}
-      />
+      <ReportToolbar>
+        <ReportAsOfFilter
+          asOfDate={asOfDate}
+          onDateChange={setAsOfDate}
+          onClear={() => setAsOfDate("")}
+          description={t("reports.balanceSheetDescription")}
+        />
+      </ReportToolbar>
 
       {data && (
-        <Card className="print:shadow-none">
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                {data.isBalanced ? (
-                  <>
-                    <CheckCircle2 className="size-5 text-emerald-600 dark:text-emerald-500" />
-                    <span className="text-sm font-medium text-emerald-600 dark:text-emerald-500">
-                      {t("reports.balanced")}
-                    </span>
-                  </>
-                ) : (
-                  <>
-                    <AlertCircle className="size-5 text-red-600 dark:text-red-500" />
-                    <span className="text-sm font-medium text-red-600 dark:text-red-500">
-                      {t("reports.unbalanced")}
-                    </span>
-                  </>
-                )}
-              </div>
-              <Badge variant={data.isBalanced ? "default" : "destructive"}>
-                {data.isBalanced ? "\u2713" : "\u2717"}
-              </Badge>
-            </div>
-          </CardContent>
-        </Card>
+        <ReportBalanceAlert
+          balanced={data.isBalanced}
+          title={
+            data.isBalanced ? t("reports.balanced") : t("reports.unbalanced")
+          }
+          description={
+            data.isBalanced
+              ? `${format(data.totalAssets)} = ${format(data.totalLiabilities)} + ${format(data.totalEquity)}`
+              : `${t("reports.difference")}: ${format(difference)}`
+          }
+        />
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+      <section
+        aria-label={t("reports.balanceSheet")}
+        className="grid grid-cols-1 gap-3 md:grid-cols-3"
+      >
         <ReportKpiCard
           title={t("reports.totalAssets")}
           value={data ? format(data.totalAssets) : "-"}
@@ -259,87 +242,82 @@ export default function BalanceSheetPage() {
           title={t("reports.totalEquity")}
           value={data ? format(data.totalEquity) : "-"}
           icon={<Scale className="size-4" />}
-          variant="default"
           loading={isLoading}
         />
-      </div>
+      </section>
 
-      <Card className="print:shadow-none">
-        <CardHeader className="pb-3 flex flex-row items-center justify-between">
-          <div>
-            <CardTitle className="text-base flex items-center gap-2">
-              <Landmark className="size-4 text-primary" />
-              {t("reports.balanceSheet")}
-            </CardTitle>
-            <CardDescription>
-              {asOfDate
-                ? `${t("reports.asOf")} ${asOfDate}`
-                : t("reports.currentDate")}
-            </CardDescription>
+      <ReportCard
+        title={t("reports.balanceSheet")}
+        description={period}
+        icon={<Landmark className="size-4" />}
+        contentClassName="p-0"
+      >
+        {isLoading ? (
+          <div className="flex flex-col gap-2 p-6">
+            {Array.from({ length: 10 }).map((_, index) => (
+              <Skeleton key={index} className="h-10 w-full" />
+            ))}
           </div>
-          <ReportCsvExportButton
-            gridApiRef={gridApiRef}
-            filename="balance-sheet"
+        ) : rowData.length === 0 ? (
+          <ReportEmpty
+            icon={<Landmark />}
+            title={t("reports.noData")}
+            description={t("reports.balanceSheetDescription")}
           />
-        </CardHeader>
-        <CardContent className="p-0">
-          {isLoading ? (
-            <div className="p-6 space-y-3">
-              {Array.from({ length: 10 }).map((_, i) => (
-                <Skeleton key={i} className="h-10 w-full" />
-              ))}
-            </div>
-          ) : rowData.length === 0 ? (
-            <div className="flex flex-col items-center py-12 text-muted-foreground">
-              <Landmark className="size-8 mb-2 opacity-30" />
-              <p className="text-sm">{t("reports.noData")}</p>
-            </div>
-          ) : (
-            <div className="h-[500px] w-full">
-              <AgGridReact
-                rowData={rowData}
-                columnDefs={columnDefs}
-                defaultColDef={defaultColDef}
-                theme={theme}
-                animateRows
-                onGridReady={(params) => {
-                  gridApiRef.current = params.api;
-                }}
-                domLayout="normal"
-                getRowId={(params) => params.data.id}
-                suppressScrollOnNewData
-                enableCellTextSelection
-                ensureDomOrder
-                getRowClass={(params) => {
-                  if (params.data.isGrandTotal) return "font-bold bg-primary/5";
-                  if (params.data.isTotal) return "font-semibold bg-muted/30";
-                  if (params.data.isSection) return "font-bold bg-muted/20";
-                  return "";
-                }}
-              />
-            </div>
-          )}
-        </CardContent>
-      </Card>
+        ) : (
+          <ReportTable
+            rowData={rowData}
+            columnDefs={columnDefs}
+            gridApiRef={gridApiRef}
+            getRowId={(params) => params.data.id}
+            getRowClass={(params) => {
+              if (params.data.isGrandTotal) return "font-bold bg-primary/5";
+              if (params.data.isTotal) return "font-semibold bg-muted/30";
+              if (params.data.isSection) return "font-bold bg-muted/20";
+              return "";
+            }}
+          />
+        )}
+      </ReportCard>
 
       {data && (
-        <Card className="print:shadow-none">
-          <CardContent className="p-6">
-            <div className="text-center">
-              <div className="text-sm text-muted-foreground mb-2">
-                {t("reports.accountingEquation")}
-              </div>
-              <div className="flex items-center justify-center gap-4 text-lg font-semibold">
-                <span className="text-emerald-600 dark:text-emerald-500">
-                  {format(data.totalAssets)}
-                </span>
-                <span className="text-muted-foreground">=</span>
-                <span className="text-red-600 dark:text-red-500">
-                  {format(data.totalLiabilities)}
-                </span>
-                <span className="text-muted-foreground">+</span>
-                <span className="text-primary">{format(data.totalEquity)}</span>
-              </div>
+        <Card>
+          <CardContent className="grid gap-3 sm:grid-cols-[1fr_auto_1fr_auto_1fr] sm:items-center">
+            <div className="rounded-lg bg-success/5 p-3 ring-1 ring-success/20">
+              <p className="text-xs text-muted-foreground">
+                {t("reports.totalAssets")}
+              </p>
+              <p className="mt-1 text-lg font-semibold text-success tabular-nums">
+                {format(data.totalAssets)}
+              </p>
+            </div>
+            <span
+              aria-hidden="true"
+              className="hidden text-center text-xl font-semibold text-muted-foreground sm:block"
+            >
+              =
+            </span>
+            <div className="rounded-lg bg-destructive/5 p-3 ring-1 ring-destructive/20">
+              <p className="text-xs text-muted-foreground">
+                {t("reports.totalLiabilities")}
+              </p>
+              <p className="mt-1 text-lg font-semibold text-destructive tabular-nums">
+                {format(data.totalLiabilities)}
+              </p>
+            </div>
+            <span
+              aria-hidden="true"
+              className="hidden text-center text-xl font-semibold text-muted-foreground sm:block"
+            >
+              +
+            </span>
+            <div className="rounded-lg bg-primary/5 p-3 ring-1 ring-primary/20">
+              <p className="text-xs text-muted-foreground">
+                {t("reports.totalEquity")}
+              </p>
+              <p className="mt-1 text-lg font-semibold text-primary tabular-nums">
+                {format(data.totalEquity)}
+              </p>
             </div>
           </CardContent>
         </Card>

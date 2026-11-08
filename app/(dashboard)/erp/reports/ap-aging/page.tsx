@@ -1,44 +1,32 @@
 "use client";
 
-import {
-  AllCommunityModule,
-  type ColDef,
-  type GridApi,
-  ModuleRegistry,
-} from "ag-grid-community";
-import { AgGridReact } from "ag-grid-react";
+import type { ColDef, GridApi } from "ag-grid-community";
 import { Clock, FileDown, Truck } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useMemo, useRef, useState } from "react";
 import { Bar, BarChart, Cell, XAxis, YAxis } from "recharts";
 import {
-  ReportCsvExportButton,
+  ReportCard,
+  ReportEmpty,
   ReportKpiCard,
   ReportLayout,
+  ReportPrintButton,
+  ReportTable,
 } from "@/components/reports";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import {
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart";
+import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useCurrency } from "@/hooks/use-currency";
 import { useDateFormat } from "@/hooks/use-date-format";
-import { useTableTheme } from "@/hooks/use-table-theme";
 import { trpc } from "@/lib/trpc/client";
 import { cn } from "@/lib/utils";
-
-ModuleRegistry.registerModules([AllCommunityModule]);
 
 const BUCKET_COLORS = [
   "hsl(var(--chart-2))",
@@ -61,7 +49,6 @@ export default function APAgingPage() {
   const router = useRouter();
   const { format } = useCurrency();
   const { formatShortDate } = useDateFormat();
-  const theme = useTableTheme();
   const gridApiRef = useRef<GridApi | null>(null);
 
   const [selectedBucket, setSelectedBucket] = useState<string | null>(null);
@@ -75,24 +62,34 @@ export default function APAgingPage() {
 
   const chartData = useMemo(() => {
     if (!data) return [];
-    return data.buckets.map((b, i) => ({
-      bucket: bucketLabels[i] ?? b.bucket,
-      rawBucket: b.bucket,
-      amount: Math.round(b.amount),
-      count: b.count,
+    return data.buckets.map((bucket, index) => ({
+      bucket: bucketLabels[index] ?? bucket.bucket,
+      rawBucket: bucket.bucket,
+      amount: Math.round(bucket.amount),
+      count: bucket.count,
     }));
   }, [data, bucketLabels]);
 
   const selectedBucketData = useMemo(() => {
     if (!data || !selectedBucket) return null;
-    return data.buckets.find((b) => b.bucket === selectedBucket);
+    return data.buckets.find((bucket) => bucket.bucket === selectedBucket);
   }, [data, selectedBucket]);
 
   const poList = useMemo(() => {
     if (selectedBucketData) return selectedBucketData.pos;
     if (!data) return [];
-    return data.buckets.flatMap((b) => b.pos);
+    return data.buckets.flatMap((bucket) => bucket.pos);
   }, [data, selectedBucketData]);
+
+  const selectedBucketLabel = useMemo(() => {
+    if (!selectedBucket) return null;
+    const index = data?.buckets.findIndex(
+      (bucket) => bucket.bucket === selectedBucket,
+    );
+    return index !== undefined && index >= 0
+      ? bucketLabels[index]
+      : selectedBucket;
+  }, [bucketLabels, data, selectedBucket]);
 
   const columnDefs = useMemo<ColDef[]>(
     () => [
@@ -101,7 +98,7 @@ export default function APAgingPage() {
         headerName: t("common.serial"),
         width: 140,
         cellRenderer: (p: any) => (
-          <span className="font-medium text-sm">{p.value}</span>
+          <span className="text-sm font-medium">{p.value}</span>
         ),
       },
       {
@@ -116,7 +113,7 @@ export default function APAgingPage() {
         width: 120,
         type: "rightAligned",
         valueFormatter: (p) => format(p.value),
-        cellClass: "font-mono text-[11px]",
+        cellClass: "font-mono text-[11px] tabular-nums",
       },
       {
         field: "amountOwed",
@@ -124,22 +121,21 @@ export default function APAgingPage() {
         width: 130,
         type: "rightAligned",
         valueFormatter: (p) => format(p.value),
-        cellClass:
-          "font-mono text-[11px] font-bold text-red-600 dark:text-red-500",
+        cellClass: "font-mono text-[11px] font-semibold tabular-nums",
       },
       {
         field: "dueDate",
         headerName: t("common.dueDate"),
         width: 120,
-        valueFormatter: (p) => (p.value ? formatShortDate(p.value) : "\u2014"),
+        valueFormatter: (p) => (p.value ? formatShortDate(p.value) : "—"),
         cellClass: (p) => {
           if (!p.value) return "";
           const days = Math.floor(
             (Date.now() - new Date(p.value).getTime()) / (1000 * 60 * 60 * 24),
           );
-          if (days > 90) return "text-red-600 dark:text-red-500 font-bold";
-          if (days > 60) return "text-red-600 dark:text-red-500";
-          if (days > 30) return "text-amber-600 dark:text-amber-500";
+          if (days > 90) return "text-destructive font-bold";
+          if (days > 60) return "text-destructive";
+          if (days > 30) return "text-warning";
           return "";
         },
       },
@@ -151,21 +147,19 @@ export default function APAgingPage() {
         cellRenderer: (p: any) => {
           if (p.value <= 0) {
             return (
-              <Badge variant="outline" className="text-[10px] h-5">
+              <Badge variant="outline" className="h-5 text-[10px]">
                 {t("reports.agingCurrent")}
               </Badge>
             );
           }
           const variant =
-            p.value > 90
+            p.value > 60
               ? "destructive"
-              : p.value > 60
-                ? "destructive"
-                : p.value > 30
-                  ? "default"
-                  : "secondary";
+              : p.value > 30
+                ? "default"
+                : "secondary";
           return (
-            <Badge variant={variant} className="text-[10px] h-5">
+            <Badge variant={variant} className="h-5 text-[10px]">
               {p.value} {t("common.days")}
             </Badge>
           );
@@ -175,246 +169,258 @@ export default function APAgingPage() {
     [format, formatShortDate, t],
   );
 
-  const defaultColDef = useMemo(
-    () => ({ resizable: true, sortable: true, filter: true }),
-    [],
-  );
-
   const chartConfig = useMemo(
     () => ({ amount: { label: t("common.amount") } }),
     [t],
   );
 
+  const hasOutstanding = (data?.grandTotal ?? 0) > 0;
+
   return (
     <ReportLayout
       title={t("reports.apAging")}
+      description={t("reports.apAgingDescription")}
+      period={t("reports.currentDate")}
       icon={<Clock className="size-5" />}
+      actions={
+        <ReportPrintButton gridApiRef={gridApiRef} filename="ap-aging" />
+      }
     >
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+      <section
+        aria-label={t("reports.apAging")}
+        className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-5"
+      >
         {isLoading
-          ? Array.from({ length: 5 }).map((_, i) => (
-              <Card key={i}>
-                <CardContent className="p-4">
-                  <Skeleton className="h-7 w-24" />
-                </CardContent>
-              </Card>
+          ? BUCKET_KEYS.map((key) => (
+              <ReportKpiCard
+                key={key}
+                title={t(`reports.${key}`)}
+                value="-"
+                icon={<Clock className="size-4" />}
+                loading
+              />
             ))
-          : data?.buckets.map((bucket, i) => (
+          : data?.buckets.map((bucket, index) => (
               <ReportKpiCard
                 key={bucket.bucket}
-                title={bucketLabels[i] ?? bucket.bucket}
+                title={bucketLabels[index] ?? bucket.bucket}
                 value={format(bucket.amount)}
                 countLabel={t("reports.poCount", { count: bucket.count })}
                 icon={<Clock className="size-4" />}
-                variant={i === 0 ? "default" : i <= 2 ? "warning" : "danger"}
+                variant={
+                  index === 0 ? "default" : index <= 2 ? "warning" : "danger"
+                }
               />
             ))}
-      </div>
+      </section>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <Card className="lg:col-span-2 print:shadow-none">
-          <CardHeader>
-            <CardTitle className="text-base flex items-center gap-2">
-              <Truck className="size-4 text-primary" />
-              {t("reports.apAging")}
-            </CardTitle>
-            <CardDescription>{t("reports.apAgingDescription")}</CardDescription>
-          </CardHeader>
-          <CardContent>
-            {isLoading ? (
-              <Skeleton className="h-[300px] w-full" />
-            ) : chartData.length === 0 ? (
-              <p className="text-sm text-muted-foreground text-center py-12">
-                {t("reports.noOutstandingPayables")}
-              </p>
-            ) : (
-              <ChartContainer
-                config={chartConfig}
-                className="aspect-auto h-[300px] w-full"
-              >
-                <BarChart
-                  data={chartData}
-                  margin={{ top: 5, right: 10, left: 10, bottom: 5 }}
-                  onClick={(data: any) => {
-                    if (data?.activePayload?.[0]) {
-                      const rawBucket = data.activePayload[0].payload.rawBucket;
-                      setSelectedBucket(
-                        selectedBucket === rawBucket ? null : rawBucket,
-                      );
-                    }
-                  }}
-                >
-                  <ChartTooltip
-                    cursor={false}
-                    content={
-                      <ChartTooltipContent
-                        indicator="dot"
-                        formatter={(value: any) => format(Number(value))}
-                      />
-                    }
-                  />
-                  <XAxis
-                    dataKey="bucket"
-                    tickLine={false}
-                    axisLine={false}
-                    tickMargin={8}
-                  />
-                  <YAxis
-                    tickLine={false}
-                    axisLine={false}
-                    tickMargin={8}
-                    tickFormatter={(n) =>
-                      n >= 1000 ? `${(n / 1000).toFixed(0)}K` : String(n)
-                    }
-                  />
-                  <Bar dataKey="amount" radius={[4, 4, 0, 0]} barSize={32}>
-                    {chartData.map((entry, i) => (
-                      <Cell
-                        key={entry.rawBucket}
-                        fill={BUCKET_COLORS[i]}
-                        fillOpacity={
-                          selectedBucket === null ||
-                          selectedBucket === entry.rawBucket
-                            ? 1
-                            : 0.3
-                        }
-                      />
-                    ))}
-                  </Bar>
-                </BarChart>
-              </ChartContainer>
-            )}
-          </CardContent>
-        </Card>
-
-        <Card className="print:shadow-none">
-          <CardHeader>
-            <CardTitle className="text-base flex items-center gap-2">
-              <Clock className="size-4 text-primary" />
-              {t("common.summary")}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {isLoading ? (
-              <div className="space-y-3">
-                {Array.from({ length: 5 }).map((_, i) => (
-                  <Skeleton key={i} className="h-10 w-full" />
-                ))}
-              </div>
-            ) : (
-              <div className="space-y-3">
-                {data?.buckets.map((bucket, i) => (
-                  <button
-                    key={bucket.bucket}
-                    onClick={() =>
-                      setSelectedBucket(
-                        selectedBucket === bucket.bucket ? null : bucket.bucket,
-                      )
-                    }
-                    className={cn(
-                      "w-full flex items-center justify-between p-3 rounded-lg border transition-colors",
-                      selectedBucket === bucket.bucket
-                        ? "bg-primary/10 border-primary/30"
-                        : "hover:bg-muted/50",
-                    )}
-                  >
-                    <div className="text-left">
-                      <div className="text-sm font-medium">
-                        {bucketLabels[i] ?? bucket.bucket}
-                      </div>
-                      <div className="text-xs text-muted-foreground">
-                        {t("reports.poCount", { count: bucket.count })}
-                      </div>
-                    </div>
-                    <div className="text-sm font-semibold">
-                      {format(bucket.amount)}
-                    </div>
-                  </button>
-                ))}
-                <div className="pt-3 border-t">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium">
-                      {t("reports.totalPOs")}
-                    </span>
-                    <span className="text-sm font-bold">
-                      {data?.totalCount}
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between mt-1">
-                    <span className="text-sm font-medium">
-                      {t("reports.totalOutstanding")}
-                    </span>
-                    <span className="text-lg font-bold text-red-600 dark:text-red-500">
-                      {data ? format(data.grandTotal) : "-"}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      </div>
-
-      <Card className="print:shadow-none">
-        <CardHeader className="pb-3 flex flex-row items-center justify-between">
-          <div>
-            <CardTitle className="text-base flex items-center gap-2">
-              <FileDown className="size-4 text-primary" />
-              {selectedBucket ? `${selectedBucket} - ` : ""}
-              {t("reports.purchaseOrders")}
-            </CardTitle>
-            <CardDescription>
-              {poList.length} {t("reports.outstandingPOs")}
-            </CardDescription>
-          </div>
-          <div className="flex items-center gap-2 print:hidden">
-            {selectedBucket && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setSelectedBucket(null)}
-              >
-                {t("common.clear")}
-              </Button>
-            )}
-            <ReportCsvExportButton
-              gridApiRef={gridApiRef}
-              filename="ap-aging"
-            />
-          </div>
-        </CardHeader>
-        <CardContent className="p-0">
+      <section className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+        <ReportCard
+          className="lg:col-span-2"
+          title={t("reports.apAging")}
+          description={t("reports.apAgingDescription")}
+          icon={<Truck className="size-4" />}
+        >
           {isLoading ? (
-            <div className="p-6 space-y-3">
-              {Array.from({ length: 5 }).map((_, i) => (
-                <Skeleton key={i} className="h-10 w-full" />
+            <Skeleton className="h-[300px] w-full" />
+          ) : !hasOutstanding ? (
+            <ReportEmpty
+              icon={<Truck />}
+              title={t("reports.noOutstandingPayables")}
+              description={t("reports.noOutstandingPayablesDesc")}
+              action={
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => router.push("/erp/purchase-orders")}
+                >
+                  {t("reports.purchaseOrders")}
+                </Button>
+              }
+            />
+          ) : (
+            <ChartContainer
+              config={chartConfig}
+              className="aspect-auto h-[300px] w-full"
+            >
+              <BarChart
+                data={chartData}
+                margin={{ top: 5, right: 10, left: 10, bottom: 5 }}
+                onClick={(next: any) => {
+                  const rawBucket =
+                    next?.activePayload?.[0]?.payload?.rawBucket;
+                  if (!rawBucket) return;
+                  setSelectedBucket(
+                    selectedBucket === rawBucket ? null : rawBucket,
+                  );
+                }}
+              >
+                <ChartTooltip
+                  cursor={false}
+                  content={
+                    <ChartTooltipContent
+                      indicator="dot"
+                      formatter={(value: any) => format(Number(value))}
+                    />
+                  }
+                />
+                <XAxis
+                  dataKey="bucket"
+                  tickLine={false}
+                  axisLine={false}
+                  tickMargin={8}
+                />
+                <YAxis
+                  tickLine={false}
+                  axisLine={false}
+                  tickMargin={8}
+                  tickFormatter={(value) =>
+                    value >= 1000
+                      ? `${(value / 1000).toFixed(0)}K`
+                      : String(value)
+                  }
+                />
+                <Bar dataKey="amount" radius={[4, 4, 0, 0]} barSize={32}>
+                  {chartData.map((entry, index) => (
+                    <Cell
+                      key={entry.rawBucket}
+                      fill={BUCKET_COLORS[index]}
+                      fillOpacity={
+                        selectedBucket === null ||
+                        selectedBucket === entry.rawBucket
+                          ? 1
+                          : 0.3
+                      }
+                    />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ChartContainer>
+          )}
+        </ReportCard>
+
+        <ReportCard
+          title={t("common.summary")}
+          description={t("reports.totalOutstanding")}
+          icon={<Clock className="size-4" />}
+        >
+          {isLoading ? (
+            <div className="flex flex-col gap-2">
+              {BUCKET_KEYS.map((key) => (
+                <Skeleton key={key} className="h-14 w-full" />
               ))}
             </div>
           ) : (
-            <div className="h-[400px] w-full">
-              <AgGridReact
-                rowData={poList}
-                columnDefs={columnDefs}
-                defaultColDef={defaultColDef}
-                theme={theme}
-                animateRows
-                onGridReady={(params) => {
-                  gridApiRef.current = params.api;
-                }}
-                domLayout="normal"
-                getRowId={(params) => params.data.id}
-                suppressScrollOnNewData
-                enableCellTextSelection
-                ensureDomOrder
-                onRowClicked={(params) => {
-                  router.push(`/erp/purchase-orders/${params.data.id}`);
-                }}
-                getRowClass={() => "cursor-pointer"}
-              />
+            <div className="flex flex-col gap-2">
+              {data?.buckets.map((bucket, index) => (
+                <button
+                  type="button"
+                  key={bucket.bucket}
+                  aria-pressed={selectedBucket === bucket.bucket}
+                  onClick={() =>
+                    setSelectedBucket(
+                      selectedBucket === bucket.bucket ? null : bucket.bucket,
+                    )
+                  }
+                  className={cn(
+                    "flex w-full items-center justify-between gap-3 rounded-lg border p-3 text-left transition-colors",
+                    selectedBucket === bucket.bucket
+                      ? "border-primary/40 bg-primary/5"
+                      : "border-border hover:bg-muted/60",
+                  )}
+                >
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-medium">
+                      {bucketLabels[index] ?? bucket.bucket}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {t("reports.poCount", { count: bucket.count })}
+                    </p>
+                  </div>
+                  <span className="shrink-0 text-sm font-semibold tabular-nums">
+                    {format(bucket.amount)}
+                  </span>
+                </button>
+              ))}
+
+              <Separator className="my-1" />
+
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-muted-foreground">
+                  {t("reports.totalPOs")}
+                </span>
+                <span className="font-semibold tabular-nums">
+                  {data?.totalCount ?? 0}
+                </span>
+              </div>
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-muted-foreground">
+                  {t("reports.totalOutstanding")}
+                </span>
+                <span className="text-base font-semibold text-destructive tabular-nums">
+                  {data ? format(data.grandTotal) : "—"}
+                </span>
+              </div>
             </div>
           )}
-        </CardContent>
-      </Card>
+        </ReportCard>
+      </section>
+
+      <ReportCard
+        title={
+          selectedBucketLabel
+            ? `${selectedBucketLabel} · ${t("reports.purchaseOrders")}`
+            : t("reports.purchaseOrders")
+        }
+        description={`${poList.length} ${t("reports.outstandingPOs")}`}
+        icon={<FileDown className="size-4" />}
+        action={
+          selectedBucket ? (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setSelectedBucket(null)}
+            >
+              {t("common.clear")}
+            </Button>
+          ) : null
+        }
+        contentClassName="p-0"
+      >
+        {isLoading ? (
+          <div className="flex flex-col gap-2 p-6">
+            {Array.from({ length: 5 }).map((_, index) => (
+              <Skeleton key={index} className="h-10 w-full" />
+            ))}
+          </div>
+        ) : poList.length === 0 ? (
+          <ReportEmpty
+            icon={<Truck />}
+            title={t("reports.noOutstandingPayables")}
+            description={t("reports.noOutstandingPayablesDesc")}
+            action={
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => router.push("/erp/purchase-orders")}
+              >
+                {t("reports.purchaseOrders")}
+              </Button>
+            }
+          />
+        ) : (
+          <ReportTable
+            rowData={poList}
+            columnDefs={columnDefs}
+            gridApiRef={gridApiRef}
+            getRowId={(params) => params.data.id}
+            onRowClicked={(params) =>
+              router.push(`/erp/purchase-orders/${params.data.id}`)
+            }
+            getRowClass={() => "cursor-pointer"}
+          />
+        )}
+      </ReportCard>
     </ReportLayout>
   );
 }

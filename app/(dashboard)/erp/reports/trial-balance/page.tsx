@@ -1,41 +1,29 @@
 "use client";
 
-import {
-  AllCommunityModule,
-  type ColDef,
-  type GridApi,
-  ModuleRegistry,
-} from "ag-grid-community";
-import { AgGridReact } from "ag-grid-react";
-import { AlertCircle, CheckCircle2, Scale } from "lucide-react";
+import type { ColDef, GridApi } from "ag-grid-community";
+import { Scale } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useMemo, useRef, useState } from "react";
 import {
   ReportAsOfFilter,
-  ReportCsvExportButton,
+  ReportBalanceAlert,
+  ReportCard,
+  ReportEmpty,
   ReportKpiCard,
   ReportLayout,
+  ReportPrintButton,
+  ReportTable,
+  ReportToolbar,
 } from "@/components/reports";
 import { Badge } from "@/components/ui/badge";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useCurrency } from "@/hooks/use-currency";
-import { useTableTheme } from "@/hooks/use-table-theme";
 import { trpc } from "@/lib/trpc/client";
 import { cn } from "@/lib/utils";
-
-ModuleRegistry.registerModules([AllCommunityModule]);
 
 export default function TrialBalancePage() {
   const t = useTranslations();
   const { format } = useCurrency();
-  const theme = useTableTheme();
   const gridApiRef = useRef<GridApi | null>(null);
 
   const [asOfDate, setAsOfDate] = useState("");
@@ -68,7 +56,7 @@ export default function TrialBalancePage() {
         headerName: t("common.type"),
         width: 120,
         cellRenderer: (p: any) => (
-          <Badge variant="outline" className="text-[10px] h-5 mt-1.5">
+          <Badge variant="outline" className="h-5 text-[10px]">
             {p.value}
           </Badge>
         ),
@@ -76,16 +64,9 @@ export default function TrialBalancePage() {
       {
         field: "normalBalance",
         headerName: t("reports.normalBalance"),
-        width: 100,
+        width: 110,
         cellRenderer: (p: any) => (
-          <span
-            className={cn(
-              "text-xs font-medium",
-              p.value === "DEBIT"
-                ? "text-blue-600 dark:text-blue-500"
-                : "text-purple-600 dark:text-purple-500",
-            )}
-          >
+          <span className="text-xs font-medium text-muted-foreground">
             {p.value}
           </span>
         ),
@@ -95,7 +76,7 @@ export default function TrialBalancePage() {
         headerName: t("reports.totalDebit"),
         width: 130,
         type: "rightAligned",
-        valueFormatter: (p) => (p.value > 0 ? format(p.value) : "-"),
+        valueFormatter: (p) => (p.value > 0 ? format(p.value) : "—"),
         cellClass: "font-mono text-[11px] tabular-nums",
       },
       {
@@ -103,7 +84,7 @@ export default function TrialBalancePage() {
         headerName: t("reports.totalCredit"),
         width: 130,
         type: "rightAligned",
-        valueFormatter: (p) => (p.value > 0 ? format(p.value) : "-"),
+        valueFormatter: (p) => (p.value > 0 ? format(p.value) : "—"),
         cellClass: "font-mono text-[11px] tabular-nums",
       },
       {
@@ -114,173 +95,131 @@ export default function TrialBalancePage() {
         valueFormatter: (p) => format(p.value),
         cellClass: (p) =>
           cn(
-            "font-mono text-[11px] tabular-nums font-bold",
-            p.value >= 0
-              ? "text-emerald-600 dark:text-emerald-500"
-              : "text-red-600 dark:text-red-500",
+            "font-mono text-[11px] font-semibold tabular-nums",
+            p.value >= 0 ? "text-success" : "text-destructive",
           ),
       },
     ],
     [format, t],
   );
 
-  const defaultColDef = useMemo(
-    () => ({ resizable: true, sortable: true, filter: true }),
-    [],
-  );
+  const period = asOfDate
+    ? `${t("reports.asOf")} ${asOfDate}`
+    : t("reports.currentDate");
+  const difference = data ? Math.abs(data.totalDebit - data.totalCredit) : 0;
 
   return (
     <ReportLayout
       title={t("reports.trialBalance")}
+      description={t("reports.trialBalanceDescription")}
+      period={period}
       icon={<Scale className="size-5" />}
+      actions={
+        <ReportPrintButton gridApiRef={gridApiRef} filename="trial-balance" />
+      }
     >
-      <ReportAsOfFilter
-        asOfDate={asOfDate}
-        onDateChange={setAsOfDate}
-        onClear={() => setAsOfDate("")}
-        description={t("reports.trialBalanceDescription")}
-      />
+      <ReportToolbar>
+        <ReportAsOfFilter
+          asOfDate={asOfDate}
+          onDateChange={setAsOfDate}
+          onClear={() => setAsOfDate("")}
+          description={t("reports.trialBalanceDescription")}
+        />
+      </ReportToolbar>
 
       {data && (
-        <Card className="print:shadow-none">
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                {data.isBalanced ? (
-                  <>
-                    <CheckCircle2 className="size-5 text-emerald-600 dark:text-emerald-500" />
-                    <span className="text-sm font-medium text-emerald-600 dark:text-emerald-500">
-                      {t("reports.trialBalanced")}
-                    </span>
-                  </>
-                ) : (
-                  <>
-                    <AlertCircle className="size-5 text-red-600 dark:text-red-500" />
-                    <span className="text-sm font-medium text-red-600 dark:text-red-500">
-                      {t("reports.trialUnbalanced")}
-                    </span>
-                  </>
-                )}
-              </div>
-              <Badge variant={data.isBalanced ? "default" : "destructive"}>
-                {data.isBalanced ? "\u2713 Balanced" : "\u2717 Unbalanced"}
-              </Badge>
-            </div>
-          </CardContent>
-        </Card>
+        <ReportBalanceAlert
+          balanced={data.isBalanced}
+          title={
+            data.isBalanced
+              ? t("reports.trialBalanced")
+              : t("reports.trialUnbalanced")
+          }
+          description={`${t("reports.difference")}: ${format(difference)}`}
+        />
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+      <section
+        aria-label={t("reports.trialBalance")}
+        className="grid grid-cols-1 gap-3 md:grid-cols-3"
+      >
         <ReportKpiCard
           title={t("reports.totalDebit")}
           value={data ? format(data.totalDebit) : "-"}
           icon={<Scale className="size-4" />}
-          variant="default"
           loading={isLoading}
         />
         <ReportKpiCard
           title={t("reports.totalCredit")}
           value={data ? format(data.totalCredit) : "-"}
           icon={<Scale className="size-4" />}
-          variant="default"
           loading={isLoading}
         />
         <ReportKpiCard
           title={t("reports.difference")}
-          value={
-            data ? format(Math.abs(data.totalDebit - data.totalCredit)) : "-"
-          }
+          value={data ? format(difference) : "-"}
           icon={<Scale className="size-4" />}
           variant={data?.isBalanced ? "success" : "danger"}
           loading={isLoading}
         />
-      </div>
+      </section>
 
-      <Card className="print:shadow-none">
-        <CardHeader className="pb-3 flex flex-row items-center justify-between">
-          <div>
-            <CardTitle className="text-base flex items-center gap-2">
-              <Scale className="size-4 text-primary" />
-              {t("reports.trialBalance")}
-            </CardTitle>
-            <CardDescription>
-              {asOfDate
-                ? `${t("reports.asOf")} ${asOfDate}`
-                : t("reports.currentDate")}{" "}
-              · {data?.accounts.length ?? 0} {t("reports.accounts")}
-            </CardDescription>
+      <ReportCard
+        title={t("reports.trialBalance")}
+        description={`${period} · ${data?.accounts.length ?? 0} ${t("reports.accounts")}`}
+        icon={<Scale className="size-4" />}
+        contentClassName="p-0"
+        footer={
+          data ? (
+            <div className="flex w-full flex-wrap items-center justify-between gap-3 text-sm">
+              <span className="text-muted-foreground">
+                {t("reports.totalDebit")}:{" "}
+                <span className="font-mono font-semibold text-foreground">
+                  {format(data.totalDebit)}
+                </span>
+              </span>
+              <span className="text-muted-foreground">
+                {t("reports.totalCredit")}:{" "}
+                <span className="font-mono font-semibold text-foreground">
+                  {format(data.totalCredit)}
+                </span>
+              </span>
+              <span className="text-muted-foreground">
+                {t("reports.difference")}:{" "}
+                <span
+                  className={cn(
+                    "font-mono font-semibold",
+                    data.isBalanced ? "text-success" : "text-destructive",
+                  )}
+                >
+                  {format(difference)}
+                </span>
+              </span>
+            </div>
+          ) : null
+        }
+      >
+        {isLoading ? (
+          <div className="flex flex-col gap-2 p-6">
+            {Array.from({ length: 10 }).map((_, index) => (
+              <Skeleton key={index} className="h-10 w-full" />
+            ))}
           </div>
-          <ReportCsvExportButton
-            gridApiRef={gridApiRef}
-            filename="trial-balance"
+        ) : (data?.accounts.length ?? 0) === 0 ? (
+          <ReportEmpty
+            icon={<Scale />}
+            title={t("reports.noData")}
+            description={t("reports.trialBalanceDescription")}
           />
-        </CardHeader>
-        <CardContent className="p-0">
-          {isLoading ? (
-            <div className="p-6 space-y-3">
-              {Array.from({ length: 10 }).map((_, i) => (
-                <Skeleton key={i} className="h-10 w-full" />
-              ))}
-            </div>
-          ) : (data?.accounts.length ?? 0) === 0 ? (
-            <div className="flex flex-col items-center py-12 text-muted-foreground">
-              <Scale className="size-8 mb-2 opacity-30" />
-              <p className="text-sm">{t("reports.noData")}</p>
-            </div>
-          ) : (
-            <div className="h-[500px] w-full">
-              <AgGridReact
-                rowData={data?.accounts ?? []}
-                columnDefs={columnDefs}
-                defaultColDef={defaultColDef}
-                theme={theme}
-                animateRows
-                onGridReady={(params) => {
-                  gridApiRef.current = params.api;
-                }}
-                domLayout="normal"
-                getRowId={(params) => params.data.accountId}
-                suppressScrollOnNewData
-                enableCellTextSelection
-                ensureDomOrder
-              />
-            </div>
-          )}
-        </CardContent>
-        {data && (
-          <div className="border-t p-4">
-            <div className="flex items-center justify-between text-sm">
-              <span className="text-muted-foreground">
-                {t("reports.totalDebit")}
-              </span>
-              <span className="font-mono font-semibold">
-                {format(data.totalDebit)}
-              </span>
-            </div>
-            <div className="flex items-center justify-between text-sm mt-1">
-              <span className="text-muted-foreground">
-                {t("reports.totalCredit")}
-              </span>
-              <span className="font-mono font-semibold">
-                {format(data.totalCredit)}
-              </span>
-            </div>
-            <div className="flex items-center justify-between text-sm mt-2 pt-2 border-t">
-              <span className="font-medium">{t("reports.difference")}</span>
-              <span
-                className={cn(
-                  "font-mono font-bold",
-                  data.isBalanced
-                    ? "text-emerald-600 dark:text-emerald-500"
-                    : "text-red-600 dark:text-red-500",
-                )}
-              >
-                {format(Math.abs(data.totalDebit - data.totalCredit))}
-              </span>
-            </div>
-          </div>
+        ) : (
+          <ReportTable
+            rowData={data?.accounts ?? []}
+            columnDefs={columnDefs}
+            gridApiRef={gridApiRef}
+            getRowId={(params) => params.data.accountId}
+          />
         )}
-      </Card>
+      </ReportCard>
     </ReportLayout>
   );
 }

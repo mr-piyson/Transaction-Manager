@@ -1,40 +1,28 @@
 "use client";
 
-import {
-  AllCommunityModule,
-  type ColDef,
-  type GridApi,
-  ModuleRegistry,
-} from "ag-grid-community";
-import { AgGridReact } from "ag-grid-react";
-import { DollarSign, TrendingUp, Wallet } from "lucide-react";
+import type { ColDef, GridApi } from "ag-grid-community";
+import { TrendingUp, Wallet } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useMemo, useRef, useState } from "react";
 import {
-  ReportCsvExportButton,
+  ReportCard,
   ReportDateFilter,
+  ReportEmpty,
   ReportKpiCard,
   ReportLayout,
+  ReportPrintButton,
+  ReportTable,
+  ReportToolbar,
 } from "@/components/reports";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useCurrency } from "@/hooks/use-currency";
-import { useTableTheme } from "@/hooks/use-table-theme";
 import { trpc } from "@/lib/trpc/client";
 import { cn } from "@/lib/utils";
-
-ModuleRegistry.registerModules([AllCommunityModule]);
 
 export default function ProfitAndLossPage() {
   const t = useTranslations();
   const { format } = useCurrency();
-  const theme = useTableTheme();
   const gridApiRef = useRef<GridApi | null>(null);
 
   const [dateFrom, setDateFrom] = useState("");
@@ -135,22 +123,11 @@ export default function ProfitAndLossPage() {
           cn(
             "font-mono text-[11px] tabular-nums",
             p.data?.isSubtotal && "font-bold",
-            p.value < 0
-              ? "text-red-600 dark:text-red-500"
-              : "text-emerald-600 dark:text-emerald-500",
+            p.value < 0 ? "text-destructive" : "text-success",
           ),
       },
     ],
     [format, t],
-  );
-
-  const defaultColDef = useMemo(
-    () => ({
-      resizable: true,
-      sortable: true,
-      filter: true,
-    }),
-    [],
   );
 
   const periodLabel = useMemo(() => {
@@ -163,21 +140,31 @@ export default function ProfitAndLossPage() {
   return (
     <ReportLayout
       title={t("reports.profitAndLoss")}
+      description={t("reports.profitAndLossDescription")}
+      period={periodLabel}
       icon={<TrendingUp className="size-5" />}
+      actions={
+        <ReportPrintButton gridApiRef={gridApiRef} filename="profit-and-loss" />
+      }
     >
-      <ReportDateFilter
-        dateFrom={dateFrom}
-        dateTo={dateTo}
-        onDateFromChange={setDateFrom}
-        onDateToChange={setDateTo}
-        onClear={() => {
-          setDateFrom("");
-          setDateTo("");
-        }}
-        description={t("reports.trialBalanceDescription")}
-      />
+      <ReportToolbar>
+        <ReportDateFilter
+          dateFrom={dateFrom}
+          dateTo={dateTo}
+          onDateFromChange={setDateFrom}
+          onDateToChange={setDateTo}
+          onClear={() => {
+            setDateFrom("");
+            setDateTo("");
+          }}
+          description={t("reports.profitAndLossDescription")}
+        />
+      </ReportToolbar>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+      <section
+        aria-label={t("reports.profitAndLoss")}
+        className="grid grid-cols-1 gap-3 md:grid-cols-3"
+      >
         <ReportKpiCard
           title={t("reports.totalRevenue")}
           value={data ? format(data.totalRevenue) : "-"}
@@ -195,85 +182,63 @@ export default function ProfitAndLossPage() {
         <ReportKpiCard
           title={t("reports.netIncome")}
           value={data ? format(data.netIncome) : "-"}
-          icon={<DollarSign className="size-4" />}
+          icon={<TrendingUp className="size-4" />}
           variant={data && data.netIncome >= 0 ? "success" : "danger"}
           loading={isLoading}
         />
-      </div>
+      </section>
 
-      <Card className="print:shadow-none">
-        <CardHeader className="pb-3 flex flex-row items-center justify-between">
-          <div>
-            <CardTitle className="text-base flex items-center gap-2">
-              <TrendingUp className="size-4 text-primary" />
-              {t("reports.profitAndLoss")}
-            </CardTitle>
-            <CardDescription>{periodLabel}</CardDescription>
+      <ReportCard
+        title={t("reports.profitAndLoss")}
+        description={periodLabel}
+        icon={<TrendingUp className="size-4" />}
+        contentClassName="p-0"
+      >
+        {isLoading ? (
+          <div className="flex flex-col gap-2 p-6">
+            {Array.from({ length: 8 }).map((_, index) => (
+              <Skeleton key={index} className="h-10 w-full" />
+            ))}
           </div>
-          <ReportCsvExportButton
-            gridApiRef={gridApiRef}
-            filename="profit-and-loss"
+        ) : data && data.revenue.length === 0 && data.expenses.length === 0 ? (
+          <ReportEmpty
+            icon={<TrendingUp />}
+            title={t("reports.noData")}
+            description={t("reports.profitAndLossDescription")}
           />
-        </CardHeader>
-        <CardContent className="p-0">
-          {isLoading ? (
-            <div className="p-6 space-y-3">
-              {Array.from({ length: 8 }).map((_, i) => (
-                <Skeleton key={i} className="h-10 w-full" />
-              ))}
-            </div>
-          ) : rowData.length === 0 ? (
-            <div className="flex flex-col items-center py-12 text-muted-foreground">
-              <TrendingUp className="size-8 mb-2 opacity-30" />
-              <p className="text-sm">{t("reports.noData")}</p>
-            </div>
-          ) : (
-            <div className="h-[500px] w-full">
-              <AgGridReact
-                rowData={rowData}
-                columnDefs={columnDefs}
-                defaultColDef={defaultColDef}
-                theme={theme}
-                animateRows
-                onGridReady={(params) => {
-                  gridApiRef.current = params.api;
-                }}
-                domLayout="normal"
-                getRowId={(params) => params.data.id}
-                suppressScrollOnNewData
-                enableCellTextSelection
-                ensureDomOrder
-                getRowClass={(params) =>
-                  params.data.isSubtotal ? "font-semibold bg-muted/50" : ""
-                }
-              />
-            </div>
-          )}
-        </CardContent>
-      </Card>
+        ) : (
+          <ReportTable
+            rowData={rowData}
+            columnDefs={columnDefs}
+            gridApiRef={gridApiRef}
+            getRowId={(params) => params.data.id}
+            getRowClass={(params) =>
+              params.data.isSubtotal ? "font-semibold bg-muted/50" : ""
+            }
+          />
+        )}
+      </ReportCard>
 
-      {data && (
-        <Card className="print:shadow-none">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div className="text-sm text-muted-foreground">
+      {data && (data.revenue.length > 0 || data.expenses.length > 0) && (
+        <Card>
+          <CardContent className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <p className="text-xs text-muted-foreground">
                 {t("reports.netIncome")}
-              </div>
-              <div
-                className={cn(
-                  "text-xl font-bold",
-                  data.netIncome >= 0
-                    ? "text-emerald-600 dark:text-emerald-500"
-                    : "text-red-600 dark:text-red-500",
-                )}
-              >
-                {format(data.netIncome)}
-              </div>
+              </p>
+              <p className="mt-1 text-xs text-muted-foreground">
+                {data.revenue.length} {t("reports.revenueAccounts")} ·{" "}
+                {data.expenses.length} {t("reports.expenseAccounts")}
+              </p>
             </div>
-            <div className="mt-2 text-xs text-muted-foreground">
-              {data.revenue.length} {t("reports.revenueAccounts")} ·{" "}
-              {data.expenses.length} {t("reports.expenseAccounts")}
-            </div>
+            <p
+              className={cn(
+                "text-2xl font-semibold tabular-nums",
+                data.netIncome >= 0 ? "text-success" : "text-destructive",
+              )}
+            >
+              {format(data.netIncome)}
+            </p>
           </CardContent>
         </Card>
       )}
