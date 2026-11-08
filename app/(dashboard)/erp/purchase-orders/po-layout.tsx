@@ -70,11 +70,17 @@ export default function POLayout({ children }: { children?: React.ReactNode }) {
   const renderCard = useCallback(
     (item: any) => {
       const menuItems = buildPOActions({
-        po: { id: item.id, serial: item.serial, status: item.status },
+        po: {
+          id: item.id,
+          serial: item.serial,
+          status: item.status,
+          amountOwed: item.amountOwed,
+        },
         t,
         ability,
         isSuperAdmin,
         handlers: {
+          pay: () => router.push(`/erp/${route}/${item.id}?pay=true`),
           edit: () => handleEdit(item),
           submit: () => router.push(`/erp/${route}/${item.id}`),
           approve: () => router.push(`/erp/${route}/${item.id}`),

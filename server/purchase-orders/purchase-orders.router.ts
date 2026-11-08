@@ -960,7 +960,11 @@ export const purchaseOrdersRouter = router({
           throw new UnprocessableError("Nothing to receive.");
         }
 
-        const newStatus = allFullyReceived ? "RECEIVED" : "PARTIAL_RECEIVED";
+        const newStatus = allFullyReceived
+          ? Number(po.amountOwed) <= 1e-6
+            ? "CLOSED"
+            : "RECEIVED"
+          : "PARTIAL_RECEIVED";
 
         const updated = await tx.purchaseOrder.update({
           where: { id: input.id },
@@ -1115,7 +1119,11 @@ export const purchaseOrdersRouter = router({
         "PurchaseOrder",
         po as Record<string, unknown>,
       );
-      if (!["RECEIVED", "PARTIAL_RECEIVED", "INVOICED"].includes(po.status)) {
+      if (
+        !["ORDERED", "RECEIVED", "PARTIAL_RECEIVED", "INVOICED"].includes(
+          po.status,
+        )
+      ) {
         throw new UnprocessableError(
           `PO in status "${po.status}" cannot be paid.`,
         );
@@ -1148,11 +1156,17 @@ export const purchaseOrdersRouter = router({
         const newAmountPaid = currentPaid + input.amount;
         const newAmountOwed = Math.max(0, total - newAmountPaid);
 
+        // If the order has been fully received (or invoiced) and balance is settled, mark CLOSED
+        const isClosed =
+          (po.status === "RECEIVED" || po.status === "INVOICED") &&
+          newAmountOwed <= 1e-6;
+
         const updated = await tx.purchaseOrder.update({
           where: { id: input.id },
           data: {
             amountPaid: newAmountPaid,
             amountOwed: newAmountOwed,
+            status: isClosed ? "CLOSED" : po.status,
             version: { increment: 1 },
             updatedById: ctx.user.id,
           },
@@ -1194,6 +1208,21 @@ export const purchaseOrdersRouter = router({
           },
           tx,
         );
+
+        if (isClosed) {
+          await writeAuditLog(
+            {
+              entityType: "PurchaseOrder",
+              entityId: input.id,
+              action: "STATUS_CHANGE",
+              diff: { status: { before: po.status, after: "CLOSED" } },
+              organizationId: orgId,
+              userId: ctx.user.id,
+              ipAddress: ctx.ipAddress,
+            },
+            tx,
+          );
+        }
 
         return updated;
       });

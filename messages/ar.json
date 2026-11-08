@@ -780,6 +780,8 @@
     "amountOwed": "المبلغ المستحق",
     "stockMovements": "حركات المخزون",
     "noLineItems": "لا توجد بنود",
+    "recordPayment": "تسجيل الدفع",
+    "paymentRecorded": "تم تسجيل الدفع",
     "allReceived": "جميع البنود تم استلامها بالكامل.",
     "recordExpense": "تسجيل مصروف المورد",
     "toReceive": "للاستلام",

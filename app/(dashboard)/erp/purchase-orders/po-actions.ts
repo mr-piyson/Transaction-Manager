@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  Banknote,
   CheckCircle,
   Edit,
   Eye,
@@ -43,6 +44,7 @@ export type POActionKey =
   | "reject"
   | "order"
   | "receive"
+  | "pay"
   | "cancel"
   | "delete"
   | "hardDelete"
@@ -53,6 +55,7 @@ export interface POActionRecord {
   id: string;
   serial: string;
   status: string;
+  amountOwed?: number | string | null | any;
 }
 
 export type POActionHandlers = Partial<Record<POActionKey, () => void>>;
@@ -77,10 +80,10 @@ const STATUS_ACTIONS: Partial<Record<string, POActionKey[]>> = {
   DRAFT: ["submit", "edit", "delete"],
   PENDING_APPROVAL: ["approve", "reject", "cancel"],
   APPROVED: ["order", "cancel"],
-  ORDERED: ["receive", "cancel"],
-  PARTIAL_RECEIVED: ["receive", "cancel"],
-  RECEIVED: [],
-  INVOICED: [],
+  ORDERED: ["receive", "pay", "cancel"],
+  PARTIAL_RECEIVED: ["receive", "pay", "cancel"],
+  RECEIVED: ["pay"],
+  INVOICED: ["pay"],
   CANCELLED: [],
   CLOSED: [],
 };
@@ -121,6 +124,11 @@ const ACTION_DEFS: Record<POActionKey, ActionDef> = {
     labelKey: "purchaseOrders.receiveStock",
     icon: Package,
     permission: "po:receive",
+  },
+  pay: {
+    labelKey: "purchaseOrders.recordPayment",
+    icon: Banknote,
+    permission: "po:update",
   },
   cancel: {
     labelKey: "common.cancel",
@@ -193,6 +201,13 @@ export function buildPOActions(ctx: POActionsContext): ContextMenuItemSchema[] {
   ): ContextMenuItemSchema[] => {
     const out: ContextMenuItemSchema[] = [];
     for (const key of keys) {
+      if (
+        key === "pay" &&
+        po.amountOwed !== undefined &&
+        Number(po.amountOwed) <= 0
+      ) {
+        continue;
+      }
       const def = ACTION_DEFS[key];
       if (!has(def.permission) || !handlers[key]) continue;
       out.push(...actionItem(key, ctx));

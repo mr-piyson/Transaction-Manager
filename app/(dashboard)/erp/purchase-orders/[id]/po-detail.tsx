@@ -2,12 +2,12 @@
 
 import {
   ArrowLeft,
+  Banknote,
   History,
   Loader2,
-  Package,
   ShoppingCart,
 } from "lucide-react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import * as React from "react";
 import { toast } from "sonner";
@@ -48,9 +48,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { useAppAbility } from "@/hooks/use-app-ability";
 import { useDateFormat } from "@/hooks/use-date-format";
 import { trpc } from "@/lib/trpc/client";
-import { cn } from "@/lib/utils";
 import { buildPOActions } from "../po-actions";
 import { ActionsDropdown } from "./actions-menu";
+import { POPaymentDialog } from "./po-payment-dialog";
 
 const STATUS_COLORS: Record<string, string> = {
   DRAFT: "bg-muted text-muted-foreground",
@@ -102,10 +102,18 @@ export default function PurchaseOrderDetailPage() {
   );
 
   const ability = useAppAbility();
+  const searchParams = useSearchParams();
 
   const [receiveOpen, setReceiveOpen] = React.useState(false);
   const [rejectOpen, setRejectOpen] = React.useState(false);
   const [rejectReason, setRejectReason] = React.useState("");
+  const [payOpen, setPayOpen] = React.useState(false);
+
+  React.useEffect(() => {
+    if (searchParams.get("pay") === "true") {
+      setPayOpen(true);
+    }
+  }, [searchParams]);
 
   const submitMutation = trpc.purchaseOrders.submitForApproval.useMutation({
     onSuccess: () => {
@@ -166,6 +174,8 @@ export default function PurchaseOrderDetailPage() {
     utils.purchaseOrders.list.invalidate();
     utils.purchaseOrders.stockMovements.invalidate({ id: params.id });
     utils.expenses.list.invalidate();
+    utils.reports.apAging.invalidate();
+    utils.reports.apAgingDetailed.invalidate();
   }
 
   const isPending =
@@ -230,7 +240,12 @@ export default function PurchaseOrderDetailPage() {
   };
 
   const menuItems = buildPOActions({
-    po: { id: po.id, serial: po.serial, status: po.status },
+    po: {
+      id: po.id,
+      serial: po.serial,
+      status: po.status,
+      amountOwed: Number(po.amountOwed ?? 0),
+    },
     t,
     ability,
     isSuperAdmin,
@@ -242,6 +257,7 @@ export default function PurchaseOrderDetailPage() {
       reject: () => setRejectOpen(true),
       order: () => orderMutation.mutate({ id: po.id, version }),
       receive: () => setReceiveOpen(true),
+      pay: () => setPayOpen(true),
       cancel: () => cancelMutation.mutate({ id: po.id, version }),
       delete: () => deleteMutation.mutate({ id: po.id }),
       hardDelete: handleHardDelete,
@@ -254,6 +270,13 @@ export default function PurchaseOrderDetailPage() {
   });
 
   const showActions = menuItems.length > 0;
+
+  const canPay =
+    (ability?.can("po:update", "PurchaseOrder") ?? false) &&
+    ["ORDERED", "PARTIAL_RECEIVED", "RECEIVED", "INVOICED"].includes(
+      po.status,
+    ) &&
+    Number(po.amountOwed) > 0;
 
   return (
     <div className="h-full overflow-y-auto bg-muted/30">
@@ -490,11 +513,24 @@ export default function PurchaseOrderDetailPage() {
                 </span>
               </div>
               {Number(po.amountOwed) > 0 && (
-                <div className="flex justify-between text-destructive font-medium">
+                <div className="flex justify-between items-center text-destructive font-medium">
                   <span>{t("common.amountOwed")}</span>
-                  <span className="tabular-nums">
-                    {Number(po.amountOwed).toFixed(3)} {po.currency}
-                  </span>
+                  <div className="flex items-center gap-2">
+                    <span className="tabular-nums">
+                      {Number(po.amountOwed).toFixed(3)} {po.currency}
+                    </span>
+                    {canPay && (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="h-6 px-2 text-xs border-destructive/30 hover:bg-destructive/10 text-destructive"
+                        onClick={() => setPayOpen(true)}
+                      >
+                        <Banknote className="size-3 mr-1" />
+                        {t("purchaseOrders.recordPayment")}
+                      </Button>
+                    )}
+                  </div>
                 </div>
               )}
             </div>
@@ -577,6 +613,76 @@ export default function PurchaseOrderDetailPage() {
                     <div className="text-right shrink-0">
                       <div className="text-sm font-medium text-green-600 dark:text-green-400 tabular-nums">
                         +{Number(m.quantity).toFixed(3)}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Payments */}
+        {po.payments && po.payments.length > 0 && (
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-semibold flex items-center gap-2">
+                <Banknote className="size-4" /> {t("common.payments")}
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-0">
+              <div className="hidden sm:block">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>{t("common.date")}</TableHead>
+                      <TableHead>{t("common.method")}</TableHead>
+                      <TableHead className="text-right">
+                        {t("common.amount")}
+                      </TableHead>
+                      <TableHead>{t("common.reference")}</TableHead>
+                      <TableHead>{t("common.notes")}</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {po.payments.map((p: any) => (
+                      <TableRow key={p.id}>
+                        <TableCell className="text-sm">
+                          {formatShortDate(p.date)}
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant="outline" className="text-xs">
+                            {p.method?.replace(/_/g, " ")}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-right font-medium font-mono tabular-nums">
+                          {Number(p.amount).toFixed(3)} {po.currency}
+                        </TableCell>
+                        <TableCell className="text-sm text-muted-foreground">
+                          {p.reference ?? "—"}
+                        </TableCell>
+                        <TableCell className="text-sm text-muted-foreground">
+                          {p.notes ?? "—"}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+              <div className="sm:hidden divide-y">
+                {po.payments.map((p: any) => (
+                  <div
+                    key={p.id}
+                    className="px-4 py-3 flex items-center justify-between gap-2"
+                  >
+                    <div className="min-w-0">
+                      <div className="font-medium text-sm font-mono tabular-nums">
+                        {Number(p.amount).toFixed(3)} {po.currency}
+                      </div>
+                      <div className="text-xs text-muted-foreground">
+                        {formatShortDate(p.date)} ·{" "}
+                        {p.method?.replace(/_/g, " ")}
+                        {p.reference && ` · ${p.reference}`}
                       </div>
                     </div>
                   </div>
@@ -680,6 +786,14 @@ export default function PurchaseOrderDetailPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Payment dialog */}
+      <POPaymentDialog
+        open={payOpen}
+        onOpenChange={setPayOpen}
+        po={po}
+        onSuccess={invalidate}
+      />
     </div>
   );
 }
