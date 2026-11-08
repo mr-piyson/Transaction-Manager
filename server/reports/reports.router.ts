@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { orgProcedure, router } from "@/lib/trpc/context";
+import { countLowStockItems } from "../shared/low-stock";
 
 export const reportsRouter = router({
   summary: orgProcedure.require("report:financial").query(async ({ ctx }) => {
@@ -13,7 +14,6 @@ export const reportsRouter = router({
       customerCount,
       supplierCount,
       itemCount,
-      lowStockCount,
       paidInvoicesAgg,
       expenseAgg,
       incomeAgg,
@@ -62,9 +62,6 @@ export const reportsRouter = router({
       ctx.db.item.count({
         where: { organizationId: orgId, isActive: true, deletedAt: null },
       }),
-      ctx.db.stock.count({
-        where: { organizationId: orgId, quantity: { lte: 0 } },
-      }),
       ctx.db.invoice.aggregate({
         where: {
           organizationId: orgId,
@@ -83,6 +80,8 @@ export const reportsRouter = router({
         _sum: { amount: true },
       }),
     ]);
+
+    const lowStockCount = await countLowStockItems(ctx.db, orgId);
 
     const hasIncomeData = incomeAgg._sum.amount !== null;
     const totalRevenue = hasIncomeData

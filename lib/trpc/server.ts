@@ -15,6 +15,7 @@ const userSelect = {
   email: true,
   organizationId: true,
   platformRole: true,
+  timezone: true,
   userOrganizationRoles: {
     where: {
       isActive: true,
@@ -129,6 +130,7 @@ export async function createContext(
     email: dbUser.email,
     organizationId: dbUser.organizationId,
     platformRole: dbUser.platformRole,
+    timezone: dbUser.timezone,
     orgRole: permissionUser.orgRole ?? null,
     permissions: permissionUser.permissions,
   };

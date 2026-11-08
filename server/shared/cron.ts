@@ -10,6 +10,7 @@ import {
   SUBSCRIPTION_SETTING_KEYS,
 } from "../subscriptions/subscriptions.shared";
 import { fullSyncCurrenciesAndRates } from "./frankfurter";
+import { findLowStockItems } from "./low-stock";
 
 function shouldRun(jobName: string): boolean {
   return (
@@ -97,36 +98,7 @@ async function checkOverdueInvoices() {
 
 // Every 6 hours: check for low stock items
 async function checkLowStock() {
-  const items = await db.item.findMany({
-    where: {
-      reorderPoint: { gt: 0 },
-      deletedAt: null,
-      isActive: true,
-    },
-    select: {
-      id: true,
-      name: true,
-      sku: true,
-      reorderPoint: true,
-      organizationId: true,
-    },
-  });
-
-  const stockAggs = await db.stock.groupBy({
-    by: ["itemId"],
-    where: { itemId: { in: items.map((i) => i.id) } },
-    _sum: { quantity: true },
-  });
-
-  const stockMap = new Map<string, number>();
-  for (const row of stockAggs) {
-    stockMap.set(row.itemId, Number(row._sum.quantity ?? 0));
-  }
-
-  const lowStockItems = items.filter((item) => {
-    const totalStock = stockMap.get(item.id) ?? 0;
-    return totalStock <= item.reorderPoint;
-  });
+  const lowStockItems = await findLowStockItems(db);
 
   if (lowStockItems.length === 0) return;
 
