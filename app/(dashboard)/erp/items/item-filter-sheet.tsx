@@ -67,7 +67,7 @@ export function ItemFilterSheet({
   const reset = () => onApply(DEFAULT_ITEM_FILTERS);
 
   return (
-    <Drawer open={open} onOpenChange={onOpenChange} direction="right">
+    <Drawer open={open} onOpenChange={onOpenChange} swipeDirection="right" >
       <DrawerContent className="w-[300px] sm:w-[340px]">
         <DrawerHeader>
           <div className="flex items-center gap-2">

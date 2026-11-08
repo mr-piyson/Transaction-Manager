@@ -82,7 +82,7 @@ export function ItemListItem({ data, className, ...props }: ItemListItemProps) {
   return (
     <div
       className={cn(
-        "relative grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 p-3",
+        "relative grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 p-3 text-start",
         className,
       )}
       {...props}
@@ -142,8 +142,6 @@ export function ItemListItem({ data, className, ...props }: ItemListItemProps) {
           )}
         </Badge>
       </div>
-
-      <Separator className="absolute inset-x-0 bottom-0 bg-border/50" />
     </div>
   );
 }

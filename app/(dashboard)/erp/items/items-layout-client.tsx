@@ -1,43 +1,30 @@
 "use client";
 
-import { useVirtualizer } from "@tanstack/react-virtual";
 import {
   Download,
   Edit,
   Eye,
   Filter,
   Package,
-  Plus,
-  Search,
   ShieldAlert,
   Trash2,
-  X,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import type * as React from "react";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { alert } from "@/components/Alert-dialog";
 import { AuthGuard } from "@/components/auth-guard";
+import type { ContextMenuItemSchema } from "@/components/context-menu";
+import { UniversalContextMenu } from "@/components/context-menu";
 import { useUnifiedItemForm } from "@/components/dialogs";
 import { useHardDeleteForm } from "@/components/dialogs/hardDeleteForm";
 import { Header } from "@/components/layout/App-Header";
+import { ListView } from "@/components/list-view";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  ContextMenu,
-  ContextMenuContent,
-  ContextMenuItem,
-  ContextMenuSeparator,
-  ContextMenuTrigger,
-} from "@/components/ui/context-menu";
-import {
-  InputGroup,
-  InputGroupAddon,
-  InputGroupInput,
-} from "@/components/ui/input-group";
 import {
   ResizableHandle,
   ResizablePanel,
@@ -68,13 +55,9 @@ export default function ItemsLayout({
   const [itemFilters, setItemFilters] =
     useState<ItemFilterValues>(DEFAULT_ITEM_FILTERS);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [scrollReady, setScrollReady] = useState(false);
-  const scrollRef = useRef<HTMLDivElement>(null);
 
   const { data: categoryList } = trpc.categories.list.useQuery();
   const { data, isPending } = trpc.items.list.useQuery({
-    search: searchQuery.trim() || undefined,
     type: itemFilters.type || undefined,
     categoryId:
       itemFilters.categoryId === UNCATEGORIZED_CATEGORY_ID
@@ -88,6 +71,7 @@ export default function ItemsLayout({
     lowStock: itemFilters.lowStock ? true : undefined,
     withStock: true,
   });
+
   const router = useRouter();
   const pathname = usePathname();
   const isMobile = useIsMobile();
@@ -115,22 +99,115 @@ export default function ItemsLayout({
     itemFilters.lowStock,
   ].filter(Boolean).length;
 
-  const setScrollRef = useCallback((node: HTMLDivElement | null) => {
-    scrollRef.current = node;
-    setScrollReady(Boolean(node));
-  }, []);
-  const virtualizer = useVirtualizer({
-    count: items.length,
-    getScrollElement: () => scrollRef.current,
-    estimateSize: () => 72,
-    overscan: 5,
-  });
+  const listSearch = useMemo(
+    () => ({
+      collapsible: true,
+      placeholder: t("items.searchItems"),
+      // A single combined field keeps the collapsible search usable even when
+      // the list panel is dragged narrow (a multi-field selector would eat the
+      // whole input).
+      fields: [
+        {
+          key: "all",
+          label: t("common.search"),
+          getValue: (item: any) =>
+            [item.name, item.sku, item.barcode, item.category?.name]
+              .filter(Boolean)
+              .join(" "),
+        },
+      ],
+    }),
+    [t],
+  );
 
-  useEffect(() => {
-    if (scrollReady && items.length > 0) {
-      virtualizer.scrollToIndex(0);
-    }
-  }, [scrollReady, items.length, virtualizer]);
+  const renderCard = useCallback(
+    (item: any) => {
+      const menuItems: ContextMenuItemSchema[] = [
+        {
+          id: "view",
+          label: t("common.viewDetails"),
+          icon: Eye,
+          onClick: () => router.push(`/erp/items/${item.id}`),
+        },
+        {
+          id: "edit",
+          label: t("common.edit"),
+          icon: Edit,
+          onClick: () =>
+            openEdit({
+              itemId: item.id,
+              onSuccess: () => {
+                utils.items.list.invalidate();
+                utils.items.byId.invalidate({ id: item.id });
+              },
+            }),
+        },
+        { id: "sep1", type: "separator" as const },
+        {
+          id: "delete",
+          label: t("common.delete"),
+          icon: Trash2,
+          destructive: true,
+          disabled: deleteMutation.isPending,
+          onClick: () =>
+            alert.delete({
+              title: t("common.confirmDeleteTitle"),
+              description: "This action cannot be undone.",
+              confirmText: t("common.delete"),
+              onConfirm: async () => {
+                await deleteMutation.mutateAsync({ id: item.id });
+              },
+            }),
+        },
+        ...(isSuperAdmin
+          ? [
+              { id: "sep2", type: "separator" as const },
+              {
+                id: "hardDelete",
+                label: t("hardDelete.menu"),
+                icon: ShieldAlert,
+                destructive: true,
+                onClick: () =>
+                  openHardDelete({
+                    kind: "item",
+                    id: item.id,
+                    title: item.sku ?? item.name,
+                  }),
+              },
+            ]
+          : []),
+      ];
+
+      return (
+        <UniversalContextMenu items={menuItems}>
+          <Link
+            href={`/erp/items/${item.id}`}
+            scroll={false}
+            draggable={false}
+            className="block h-full w-full"
+          >
+            <ItemListItem
+              data={item}
+              className={cn(
+                "hover:bg-muted/40 border border-transparent",
+                activeItemId === item.id ? "border-primary bg-primary/10" : "",
+              )}
+            />
+          </Link>
+        </UniversalContextMenu>
+      );
+    },
+    [
+      activeItemId,
+      openEdit,
+      deleteMutation,
+      utils,
+      router,
+      isSuperAdmin,
+      openHardDelete,
+      t,
+    ],
+  );
 
   return (
     <AuthGuard permission="item:read" subject="Item">
@@ -153,273 +230,69 @@ export default function ItemsLayout({
                   minSize={240}
                   className="h-full min-w-0"
                 >
-                  <div className="@container h-full w-full flex flex-col">
-                    <div className="flex min-h-14 w-full min-w-0 flex-wrap items-center gap-2 border-b px-3 py-2 shrink-0 @sm:px-4">
+                  <ListView
+                    data={items}
+                    isLoading={isPending}
+                    className="h-full"
+                    search={listSearch}
+                    rowHeight={72}
+                    emptyTitle={t("items.noItems")}
+                    emptyDescription={t("items.selectDescription")}
+                    emptyIcon={
+                      <Package className="size-20 text-muted-foreground" />
+                    }
+                    cardRenderer={renderCard}
+                    toolbarStart={
                       <Button
                         size="sm"
-                        aria-label={t("items.createItem")}
-                        title={t("items.createItem")}
-                        className="h-8 shrink-0"
+                        className="h-8"
                         onClick={() =>
                           openCreate({
                             onSuccess: () => utils.items.list.invalidate(),
                           })
                         }
                       >
-                        <Plus className="size-3.5" />
-                        <span className="hidden @sm:inline">
-                          {t("items.createItem")}
-                        </span>
+                        {t("common.new")}
                       </Button>
-                      <InputGroup className="order-last h-8 w-full min-w-0 @md:order-none @md:w-auto @md:flex-1">
-                        <InputGroupAddon align="inline-start">
-                          <Search className="size-3.5" />
-                        </InputGroupAddon>
-                        <InputGroupInput
-                          placeholder={t("items.searchItems")}
-                          aria-label={t("items.searchItems")}
-                          value={searchQuery}
-                          onChange={(event) =>
-                            setSearchQuery(event.target.value)
-                          }
-                        />
-                        {searchQuery && (
-                          <InputGroupAddon align="inline-end">
-                            <button
-                              type="button"
-                              aria-label={t("common.clear")}
-                              onClick={() => setSearchQuery("")}
-                              className="flex size-5 items-center justify-center rounded hover:bg-muted"
-                            >
-                              <X className="size-3 text-muted-foreground" />
-                            </button>
-                          </InputGroupAddon>
-                        )}
-                      </InputGroup>
-                      <Button
-                        variant={
-                          activeFilterCount > 0 ? "secondary" : "outline"
-                        }
-                        size="sm"
-                        aria-label={
-                          activeFilterCount > 0
-                            ? `${t("common.filter")} (${activeFilterCount})`
-                            : t("common.filter")
-                        }
-                        title={t("common.filter")}
-                        className="h-8 shrink-0"
-                        onClick={() => setIsFilterOpen(true)}
-                      >
-                        <Filter className="size-3.5" />
-                        <span className="hidden @sm:inline">
-                          {t("common.filter")}
-                        </span>
-                        {activeFilterCount > 0 && (
-                          <Badge>{activeFilterCount}</Badge>
-                        )}
-                      </Button>
-                      <div className="shrink-0">
+                    }
+                    toolbarEnd={
+                      <div className="flex shrink-0 items-center gap-1">
                         <Link href="/erp/items/import">
                           <Button
-                            variant="outline"
+                            variant="ghost"
                             size="sm"
-                            aria-label={t("common.import")}
-                            title={t("common.import")}
-                            className="h-8"
+                            className="h-8 shrink-0"
+                            aria-label={t("items.import.title")}
+                            title={t("items.import.title")}
                           >
                             <Download className="size-3.5" />
-                            <span className="hidden @xl:inline">
-                              {t("common.import")}
-                            </span>
                           </Button>
                         </Link>
-                      </div>
-                    </div>
-                    {/* Category filter bar */}
-                    <div className="w-full min-w-0 border-b px-3 py-1.5 shrink-0 overflow-hidden @sm:px-4">
-                      <div className="flex items-center gap-2 overflow-x-auto w-full pb-1">
-                        <Filter className="size-3.5 text-muted-foreground shrink-0" />
-                        <button
-                          className={cn(
-                            "shrink-0 rounded-full px-3 py-1 text-xs font-medium transition-colors",
-                            itemFilters.categoryId === null
-                              ? "bg-primary text-primary-foreground"
-                              : "bg-muted text-muted-foreground hover:bg-muted/80",
-                          )}
-                          onClick={() =>
-                            setItemFilters((current) => ({
-                              ...current,
-                              categoryId: null,
-                            }))
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="relative h-8 shrink-0"
+                          aria-label={
+                            activeFilterCount > 0
+                              ? `${t("common.filter")} (${activeFilterCount})`
+                              : t("common.filter")
                           }
+                          title={t("common.filter")}
+                          onClick={() => setIsFilterOpen(true)}
                         >
-                          {t("common.all")}
-                        </button>
-                        <button
-                          className={cn(
-                            "shrink-0 rounded-full px-3 py-1 text-xs font-medium transition-colors",
-                            itemFilters.categoryId === UNCATEGORIZED_CATEGORY_ID
-                              ? "bg-primary text-primary-foreground"
-                              : "bg-muted text-muted-foreground hover:bg-muted/80",
-                          )}
-                          onClick={() =>
-                            setItemFilters((current) => ({
-                              ...current,
-                              categoryId:
-                                current.categoryId === UNCATEGORIZED_CATEGORY_ID
-                                  ? null
-                                  : UNCATEGORIZED_CATEGORY_ID,
-                            }))
-                          }
-                        >
-                          {t("common.other")}
-                        </button>
-                        {categoryList?.map((cat) => (
-                          <button
-                            key={cat.id}
-                            className={cn(
-                              "shrink-0 rounded-full px-3 py-1 text-xs font-medium transition-colors whitespace-nowrap flex items-center gap-1.5",
-                              itemFilters.categoryId === cat.id
-                                ? "bg-primary text-primary-foreground"
-                                : "bg-muted text-muted-foreground hover:bg-muted/80",
-                            )}
-                            onClick={() =>
-                              setItemFilters((current) => ({
-                                ...current,
-                                categoryId:
-                                  current.categoryId === cat.id ? null : cat.id,
-                              }))
-                            }
-                          >
-                            {cat.color && (
-                              <span
-                                className="size-2 rounded-full shrink-0"
-                                style={{ backgroundColor: cat.color }}
-                              />
-                            )}
-                            {cat.name}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                    <div
-                      ref={setScrollRef}
-                      className="min-h-0 flex-1 overflow-y-auto"
-                    >
-                      <div
-                        className="relative w-full"
-                        style={{ height: `${virtualizer.getTotalSize()}px` }}
-                      >
-                        {virtualizer.getVirtualItems().map((virtualItem) => {
-                          const item = items[virtualItem.index];
-                          return (
-                            <div
-                              key={item.id}
-                              data-index={virtualItem.index}
-                              ref={virtualizer.measureElement}
-                              className="absolute left-0 w-full"
-                              style={{
-                                transform: `translateY(${virtualItem.start}px)`,
-                              }}
+                          <Filter className="size-3.5" />
+                          {activeFilterCount > 0 && (
+                            <Badge
+                              variant="destructive"
+                              className="absolute -top-1.5 -right-1.5 h-4 min-w-4 rounded-full px-1 text-[10px]"
                             >
-                              <ContextMenu>
-                                <ContextMenuTrigger
-                                  render={
-                                    <Link
-                                      href={`/erp/items/${item.id}`}
-                                      scroll={false}
-                                      draggable={false}
-                                      className="block h-full w-full text-left"
-                                    >
-                                      <ItemListItem
-                                        key={`${item.id}-${item.image ?? "no-img"}`}
-                                        data={item}
-                                        className={cn(
-                                          "hover:bg-muted/40 border border-transparent",
-                                          activeItemId === item.id
-                                            ? "border-primary bg-primary/10"
-                                            : "",
-                                        )}
-                                      />
-                                    </Link>
-                                  }
-                                ></ContextMenuTrigger>
-                                <ContextMenuContent>
-                                  <ContextMenuItem
-                                    onClick={() =>
-                                      router.push(`/erp/items/${item.id}`)
-                                    }
-                                  >
-                                    <Eye className="size-4 mr-2" />
-                                    {t("common.viewDetails")}
-                                  </ContextMenuItem>
-                                  <ContextMenuItem
-                                    onClick={() =>
-                                      openEdit({
-                                        itemId: item.id,
-                                        onSuccess: () => {
-                                          utils.items.list.invalidate();
-                                          utils.items.byId.invalidate({
-                                            id: item.id,
-                                          });
-                                        },
-                                      })
-                                    }
-                                  >
-                                    <Edit className="size-4 mr-2" />
-                                    {t("common.edit")}
-                                  </ContextMenuItem>
-                                  <ContextMenuSeparator />
-                                  <ContextMenuItem
-                                    onClick={() =>
-                                      alert.delete({
-                                        title: t("common.confirmDeleteTitle"),
-                                        description:
-                                          "This action cannot be undone.",
-                                        confirmText: t("common.delete"),
-                                        onConfirm: async () => {
-                                          await deleteMutation.mutateAsync({
-                                            id: item.id,
-                                          });
-                                        },
-                                      })
-                                    }
-                                    variant="destructive"
-                                  >
-                                    <Trash2 className="size-4 mr-2" />
-                                    {t("common.delete")}
-                                  </ContextMenuItem>
-                                  {isSuperAdmin && (
-                                    <>
-                                      <ContextMenuSeparator />
-                                      <ContextMenuItem
-                                        onClick={() =>
-                                          openHardDelete({
-                                            kind: "item",
-                                            id: item.id,
-                                            title: item.sku ?? item.name,
-                                          })
-                                        }
-                                        variant="destructive"
-                                      >
-                                        <ShieldAlert className="size-4 mr-2" />
-                                        {t("hardDelete.menu")}
-                                      </ContextMenuItem>
-                                    </>
-                                  )}
-                                </ContextMenuContent>
-                              </ContextMenu>
-                            </div>
-                          );
-                        })}
+                              {activeFilterCount}
+                            </Badge>
+                          )}
+                        </Button>
                       </div>
-                      {isPending && (
-                        <div className="p-4 text-center text-muted-foreground">
-                          Loading...
-                        </div>
-                      )}
-                    </div>
-                  </div>
+                    }
+                  />
                 </ResizablePanel>
               )}
               {isDetailRoute && (
