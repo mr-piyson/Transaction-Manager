@@ -202,12 +202,12 @@ function BooleanPill({ value }: { value: boolean }) {
   const t = useTranslations();
   return (
     <Badge
-      variant={value ? "secondary" : "outline"}
+      variant="outline"
       className={cn(
         "gap-1 font-normal",
         value
-          ? "text-emerald-700 dark:text-emerald-400"
-          : "text-muted-foreground",
+          ? "bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-200"
+          : "bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-200",
       )}
     >
       {value ? <Check className="size-3" /> : <X className="size-3" />}
@@ -520,6 +520,17 @@ export default function ItemDetailPage() {
               <SectionHeading icon={Info} title={t("common.details")} />
               <dl className="grid grid-cols-1 gap-x-6 gap-y-3 p-3 @xs:grid-cols-2 @2xl:grid-cols-3">
                 <Field
+                  label={t("items.itemId")}
+                  value={
+                    <span className="flex min-w-0 items-center gap-1">
+                      <span className="truncate font-mono text-[11px]">
+                        {item.id}
+                      </span>
+                      <CopyButton value={item.id} label="item ID" />
+                    </span>
+                  }
+                />
+                <Field
                   label={t("items.category")}
                   value={item.category?.name ?? "—"}
                 />
@@ -540,23 +551,20 @@ export default function ItemDetailPage() {
                   }
                 />
                 <Field
+                  label={t("items.createdAt")}
+                  value={item.createdAt ? formatDateTime(item.createdAt) : "—"}
+                />
+                <Field
+                  label={t("items.updatedAt")}
+                  value={item.updatedAt ? formatDateTime(item.updatedAt) : "—"}
+                />
+                <Field
                   label={t("items.saleable")}
                   value={<BooleanPill value={item.isSaleable} />}
                 />
                 <Field
                   label={t("items.purchasable")}
                   value={<BooleanPill value={item.isPurchasable} />}
-                />
-                <Field
-                  label={t("items.itemId")}
-                  value={
-                    <span className="flex min-w-0 items-center gap-1">
-                      <span className="truncate font-mono text-[11px]">
-                        {item.id}
-                      </span>
-                      <CopyButton value={item.id} label="item ID" />
-                    </span>
-                  }
                 />
               </dl>
             </Card>
@@ -897,12 +905,6 @@ export default function ItemDetailPage() {
 
             {/* Audit + usage, useful when reviewing whether an item is safe to change */}
             <div className="flex flex-wrap items-center gap-x-4 gap-y-1 px-1 pb-1 text-[11px] text-muted-foreground">
-              <span>
-                {t("items.updated")} {formatDateTime(item.updatedAt)}
-              </span>
-              <span>
-                {t("items.created")} {formatDateTime(item.createdAt)}
-              </span>
               {counts && (
                 <>
                   <span>

@@ -738,6 +738,8 @@
   },
   "items": {
     "title": "Items",
+    "createdAt": "Created At",
+    "updatedAt": "Updated At",
     "salesPrice": "Selling Price",
     "createItem": "Create Item",
     "editItem": "Edit Item",
