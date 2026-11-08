@@ -14,7 +14,7 @@ import {
   X,
 } from "lucide-react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import type * as React from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -38,9 +38,14 @@ import {
   InputGroupAddon,
   InputGroupInput,
 } from "@/components/ui/input-group";
+import {
+  ResizableHandle,
+  ResizablePanel,
+  ResizablePanelGroup,
+} from "@/components/ui/resizable";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { trpc } from "@/lib/trpc/client";
 import { cn } from "@/lib/utils";
-import { ItemDetailsSheet } from "./item-details-sheet";
 import {
   DEFAULT_ITEM_FILTERS,
   ItemFilterSheet,
@@ -48,8 +53,6 @@ import {
   UNCATEGORIZED_CATEGORY_ID,
 } from "./item-filter-sheet";
 import { ItemListItem } from "./item-list-item";
-
-const title = "Items";
 
 export default function ItemsLayout({
   children,
@@ -65,7 +68,6 @@ export default function ItemsLayout({
   const [itemFilters, setItemFilters] =
     useState<ItemFilterValues>(DEFAULT_ITEM_FILTERS);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
-  const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [scrollReady, setScrollReady] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -86,15 +88,20 @@ export default function ItemsLayout({
     lowStock: itemFilters.lowStock ? true : undefined,
     withStock: true,
   });
+  const router = useRouter();
   const pathname = usePathname();
-  const isListRoute = pathname === `/erp/${title.toLowerCase()}`;
+  const isMobile = useIsMobile();
+  const isListView = pathname === "/erp/items";
+  const isImportRoute = pathname.startsWith("/erp/items/import");
+  const isDetailRoute = !isListView && !isImportRoute;
+  const activeItemId = isDetailRoute ? (pathname.split("/")[3] ?? null) : null;
 
   const utils = trpc.useUtils();
   const deleteMutation = trpc.items.delete.useMutation({
     onSuccess: () => {
       utils.items.list.invalidate();
       toast.success(t("common.itemDeleted"));
-      setSelectedItemId(null);
+      if (activeItemId) router.push("/erp/items");
     },
     onError: (error) => toast.error(error.message),
   });
@@ -133,257 +140,284 @@ export default function ItemsLayout({
           icon={<Package className="size-5" />}
         />
         <div className="flex-1 min-h-0 w-full">
-          {isListRoute ? (
-            <div className="h-full w-full flex flex-col">
-              <div className="flex w-full min-w-0 flex-nowrap items-center gap-2 overflow-x-auto border-b px-4 py-2 shrink-0">
-                <div className="flex min-w-max flex-1 flex-nowrap items-center gap-2">
-                  <Button
-                    size="sm"
-                    onClick={() =>
-                      openCreate({
-                        onSuccess: () => utils.items.list.invalidate(),
-                      })
-                    }
-                  >
-                    <Plus className="size-3.5" />
-                    <span className="hidden sm:inline">
-                      {t("items.createItem")}
-                    </span>
-                  </Button>
-                  <InputGroup className="w-52 shrink-0 sm:w-64">
-                    <InputGroupAddon align="inline-start">
-                      <Search className="size-3.5" />
-                    </InputGroupAddon>
-                    <InputGroupInput
-                      placeholder="Search items..."
-                      value={searchQuery}
-                      onChange={(event) => setSearchQuery(event.target.value)}
-                    />
-                    {searchQuery && (
-                      <InputGroupAddon align="inline-end">
-                        <button
-                          type="button"
-                          aria-label="Clear search"
-                          onClick={() => setSearchQuery("")}
-                          className="flex size-5 items-center justify-center rounded hover:bg-muted"
-                        >
-                          <X className="size-3 text-muted-foreground" />
-                        </button>
-                      </InputGroupAddon>
-                    )}
-                  </InputGroup>
-                  <Button
-                    variant={activeFilterCount > 0 ? "secondary" : "outline"}
-                    size="sm"
-                    onClick={() => setIsFilterOpen(true)}
-                  >
-                    <Filter className="size-3.5" />
-                    <span className="hidden sm:inline">Filters</span>
-                    {activeFilterCount > 0 && (
-                      <Badge>{activeFilterCount}</Badge>
-                    )}
-                  </Button>
-                </div>
-                <div className="ml-auto flex shrink-0 items-center gap-2">
-                  <Link href="/erp/items/import">
-                    <Button variant="outline" size="sm">
-                      <Download className="size-3.5" />
-                      <span className="hidden md:block">Import</span>
-                    </Button>
-                  </Link>
-                </div>
-              </div>
-              {/* Category filter bar */}
-              <div className="w-full min-w-0 border-b px-4 py-1.5 shrink-0 overflow-hidden">
-                <div className="flex items-center gap-2 overflow-x-auto w-full pb-1">
-                  <Filter className="size-3.5 text-muted-foreground shrink-0" />
-                  <button
-                    className={cn(
-                      "shrink-0 rounded-full px-3 py-1 text-xs font-medium transition-colors",
-                      itemFilters.categoryId === null
-                        ? "bg-primary text-primary-foreground"
-                        : "bg-muted text-muted-foreground hover:bg-muted/80",
-                    )}
-                    onClick={() =>
-                      setItemFilters((current) => ({
-                        ...current,
-                        categoryId: null,
-                      }))
-                    }
-                  >
-                    {t("common.all")}
-                  </button>
-                  <button
-                    className={cn(
-                      "shrink-0 rounded-full px-3 py-1 text-xs font-medium transition-colors",
-                      itemFilters.categoryId === UNCATEGORIZED_CATEGORY_ID
-                        ? "bg-primary text-primary-foreground"
-                        : "bg-muted text-muted-foreground hover:bg-muted/80",
-                    )}
-                    onClick={() =>
-                      setItemFilters((current) => ({
-                        ...current,
-                        categoryId:
-                          current.categoryId === UNCATEGORIZED_CATEGORY_ID
-                            ? null
-                            : UNCATEGORIZED_CATEGORY_ID,
-                      }))
-                    }
-                  >
-                    {t("common.other")}
-                  </button>
-                  {categoryList?.map((cat) => (
-                    <button
-                      key={cat.id}
-                      className={cn(
-                        "shrink-0 rounded-full px-3 py-1 text-xs font-medium transition-colors whitespace-nowrap flex items-center gap-1.5",
-                        itemFilters.categoryId === cat.id
-                          ? "bg-primary text-primary-foreground"
-                          : "bg-muted text-muted-foreground hover:bg-muted/80",
-                      )}
-                      onClick={() =>
-                        setItemFilters((current) => ({
-                          ...current,
-                          categoryId:
-                            current.categoryId === cat.id ? null : cat.id,
-                        }))
-                      }
-                    >
-                      {cat.color && (
-                        <span
-                          className="size-2 rounded-full shrink-0"
-                          style={{ backgroundColor: cat.color }}
-                        />
-                      )}
-                      {cat.name}
-                    </button>
-                  ))}
-                </div>
-              </div>
-              <div
-                ref={setScrollRef}
-                className="min-h-0 flex-1 overflow-y-auto"
-              >
-                <div
-                  className="relative w-full"
-                  style={{ height: `${virtualizer.getTotalSize()}px` }}
+          {isImportRoute ? (
+            <div className="h-full w-full overflow-y-auto">{children}</div>
+          ) : (
+            <ResizablePanelGroup
+              defaultLayout={{ list: 50, detail: 50 }}
+              className="h-full"
+            >
+              {(isListView || !isMobile) && (
+                <ResizablePanel
+                  id="list"
+                  minSize={240}
+                  className="h-full min-w-0"
                 >
-                  {virtualizer.getVirtualItems().map((virtualItem) => {
-                    const item = items[virtualItem.index];
-                    return (
-                      <div
-                        key={item.id}
-                        data-index={virtualItem.index}
-                        ref={virtualizer.measureElement}
-                        className="absolute left-0 w-full"
-                        style={{
-                          transform: `translateY(${virtualItem.start}px)`,
-                        }}
-                      >
-                        <ContextMenu>
-                          <ContextMenuTrigger
-                            render={
+                  <div className="h-full w-full flex flex-col">
+                    <div className="flex h-14 w-full min-w-0 flex-nowrap items-center gap-2 overflow-x-auto border-b px-4 py-2 shrink-0">
+                      <div className="flex min-w-max flex-1 flex-nowrap items-center gap-2">
+                        <Button
+                          size="sm"
+                          onClick={() =>
+                            openCreate({
+                              onSuccess: () => utils.items.list.invalidate(),
+                            })
+                          }
+                        >
+                          <Plus className="size-3.5" />
+                          <span className="hidden sm:inline">
+                            {t("items.createItem")}
+                          </span>
+                        </Button>
+                        <InputGroup className="w-52 shrink-0 sm:w-64">
+                          <InputGroupAddon align="inline-start">
+                            <Search className="size-3.5" />
+                          </InputGroupAddon>
+                          <InputGroupInput
+                            placeholder="Search items..."
+                            value={searchQuery}
+                            onChange={(event) =>
+                              setSearchQuery(event.target.value)
+                            }
+                          />
+                          {searchQuery && (
+                            <InputGroupAddon align="inline-end">
                               <button
                                 type="button"
-                                onClick={() => setSelectedItemId(item.id)}
-                                className="block h-full w-full text-left"
+                                aria-label="Clear search"
+                                onClick={() => setSearchQuery("")}
+                                className="flex size-5 items-center justify-center rounded hover:bg-muted"
                               >
-                                <ItemListItem
-                                  key={`${item.id}-${item.image ?? "no-img"}`}
-                                  data={item}
-                                  className={cn(
-                                    "hover:bg-muted/40 border border-transparent",
-                                    selectedItemId === item.id
-                                      ? "border-primary bg-primary/10"
-                                      : "",
-                                  )}
-                                />
+                                <X className="size-3 text-muted-foreground" />
                               </button>
-                            }
-                          ></ContextMenuTrigger>
-                          <ContextMenuContent>
-                            <ContextMenuItem
-                              onClick={() => setSelectedItemId(item.id)}
-                            >
-                              <Eye className="size-4 mr-2" />
-                              {t("common.viewDetails")}
-                            </ContextMenuItem>
-                            <ContextMenuItem
-                              onClick={() =>
-                                openEdit({
-                                  itemId: item.id,
-                                  onSuccess: () => {
-                                    utils.items.list.invalidate();
-                                    utils.items.byId.invalidate({
-                                      id: item.id,
-                                    });
-                                  },
-                                })
-                              }
-                            >
-                              <Edit className="size-4 mr-2" />
-                              {t("common.edit")}
-                            </ContextMenuItem>
-                            <ContextMenuSeparator />
-                            <ContextMenuItem
-                              onClick={() =>
-                                alert.delete({
-                                  title: t("common.confirmDeleteTitle"),
-                                  description: "This action cannot be undone.",
-                                  confirmText: t("common.delete"),
-                                  onConfirm: async () => {
-                                    await deleteMutation.mutateAsync({
-                                      id: item.id,
-                                    });
-                                  },
-                                })
-                              }
-                              variant="destructive"
-                            >
-                              <Trash2 className="size-4 mr-2" />
-                              {t("common.delete")}
-                            </ContextMenuItem>
-                            {isSuperAdmin && (
-                              <>
-                                <ContextMenuSeparator />
-                                <ContextMenuItem
-                                  onClick={() =>
-                                    openHardDelete({
-                                      kind: "item",
-                                      id: item.id,
-                                      title: item.sku ?? item.name,
-                                    })
-                                  }
-                                  variant="destructive"
-                                >
-                                  <ShieldAlert className="size-4 mr-2" />
-                                  {t("hardDelete.menu")}
-                                </ContextMenuItem>
-                              </>
-                            )}
-                          </ContextMenuContent>
-                        </ContextMenu>
+                            </InputGroupAddon>
+                          )}
+                        </InputGroup>
+                        <Button
+                          variant={
+                            activeFilterCount > 0 ? "secondary" : "outline"
+                          }
+                          size="sm"
+                          onClick={() => setIsFilterOpen(true)}
+                        >
+                          <Filter className="size-3.5" />
+                          <span className="hidden sm:inline">Filters</span>
+                          {activeFilterCount > 0 && (
+                            <Badge>{activeFilterCount}</Badge>
+                          )}
+                        </Button>
                       </div>
-                    );
-                  })}
-                </div>
-                {isPending && (
-                  <div className="p-4 text-center text-muted-foreground">
-                    Loading...
+                      <div className="ml-auto flex shrink-0 items-center gap-2">
+                        <Link href="/erp/items/import">
+                          <Button variant="outline" size="sm">
+                            <Download className="size-3.5" />
+                            <span className="hidden md:block">Import</span>
+                          </Button>
+                        </Link>
+                      </div>
+                    </div>
+                    {/* Category filter bar */}
+                    <div className="w-full min-w-0 border-b px-4 py-1.5 shrink-0 overflow-hidden">
+                      <div className="flex items-center gap-2 overflow-x-auto w-full pb-1">
+                        <Filter className="size-3.5 text-muted-foreground shrink-0" />
+                        <button
+                          className={cn(
+                            "shrink-0 rounded-full px-3 py-1 text-xs font-medium transition-colors",
+                            itemFilters.categoryId === null
+                              ? "bg-primary text-primary-foreground"
+                              : "bg-muted text-muted-foreground hover:bg-muted/80",
+                          )}
+                          onClick={() =>
+                            setItemFilters((current) => ({
+                              ...current,
+                              categoryId: null,
+                            }))
+                          }
+                        >
+                          {t("common.all")}
+                        </button>
+                        <button
+                          className={cn(
+                            "shrink-0 rounded-full px-3 py-1 text-xs font-medium transition-colors",
+                            itemFilters.categoryId === UNCATEGORIZED_CATEGORY_ID
+                              ? "bg-primary text-primary-foreground"
+                              : "bg-muted text-muted-foreground hover:bg-muted/80",
+                          )}
+                          onClick={() =>
+                            setItemFilters((current) => ({
+                              ...current,
+                              categoryId:
+                                current.categoryId === UNCATEGORIZED_CATEGORY_ID
+                                  ? null
+                                  : UNCATEGORIZED_CATEGORY_ID,
+                            }))
+                          }
+                        >
+                          {t("common.other")}
+                        </button>
+                        {categoryList?.map((cat) => (
+                          <button
+                            key={cat.id}
+                            className={cn(
+                              "shrink-0 rounded-full px-3 py-1 text-xs font-medium transition-colors whitespace-nowrap flex items-center gap-1.5",
+                              itemFilters.categoryId === cat.id
+                                ? "bg-primary text-primary-foreground"
+                                : "bg-muted text-muted-foreground hover:bg-muted/80",
+                            )}
+                            onClick={() =>
+                              setItemFilters((current) => ({
+                                ...current,
+                                categoryId:
+                                  current.categoryId === cat.id ? null : cat.id,
+                              }))
+                            }
+                          >
+                            {cat.color && (
+                              <span
+                                className="size-2 rounded-full shrink-0"
+                                style={{ backgroundColor: cat.color }}
+                              />
+                            )}
+                            {cat.name}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                    <div
+                      ref={setScrollRef}
+                      className="min-h-0 flex-1 overflow-y-auto"
+                    >
+                      <div
+                        className="relative w-full"
+                        style={{ height: `${virtualizer.getTotalSize()}px` }}
+                      >
+                        {virtualizer.getVirtualItems().map((virtualItem) => {
+                          const item = items[virtualItem.index];
+                          return (
+                            <div
+                              key={item.id}
+                              data-index={virtualItem.index}
+                              ref={virtualizer.measureElement}
+                              className="absolute left-0 w-full"
+                              style={{
+                                transform: `translateY(${virtualItem.start}px)`,
+                              }}
+                            >
+                              <ContextMenu>
+                                <ContextMenuTrigger
+                                  render={
+                                    <Link
+                                      href={`/erp/items/${item.id}`}
+                                      scroll={false}
+                                      draggable={false}
+                                      className="block h-full w-full text-left"
+                                    >
+                                      <ItemListItem
+                                        key={`${item.id}-${item.image ?? "no-img"}`}
+                                        data={item}
+                                        className={cn(
+                                          "hover:bg-muted/40 border border-transparent",
+                                          activeItemId === item.id
+                                            ? "border-primary bg-primary/10"
+                                            : "",
+                                        )}
+                                      />
+                                    </Link>
+                                  }
+                                ></ContextMenuTrigger>
+                                <ContextMenuContent>
+                                  <ContextMenuItem
+                                    onClick={() =>
+                                      router.push(`/erp/items/${item.id}`)
+                                    }
+                                  >
+                                    <Eye className="size-4 mr-2" />
+                                    {t("common.viewDetails")}
+                                  </ContextMenuItem>
+                                  <ContextMenuItem
+                                    onClick={() =>
+                                      openEdit({
+                                        itemId: item.id,
+                                        onSuccess: () => {
+                                          utils.items.list.invalidate();
+                                          utils.items.byId.invalidate({
+                                            id: item.id,
+                                          });
+                                        },
+                                      })
+                                    }
+                                  >
+                                    <Edit className="size-4 mr-2" />
+                                    {t("common.edit")}
+                                  </ContextMenuItem>
+                                  <ContextMenuSeparator />
+                                  <ContextMenuItem
+                                    onClick={() =>
+                                      alert.delete({
+                                        title: t("common.confirmDeleteTitle"),
+                                        description:
+                                          "This action cannot be undone.",
+                                        confirmText: t("common.delete"),
+                                        onConfirm: async () => {
+                                          await deleteMutation.mutateAsync({
+                                            id: item.id,
+                                          });
+                                        },
+                                      })
+                                    }
+                                    variant="destructive"
+                                  >
+                                    <Trash2 className="size-4 mr-2" />
+                                    {t("common.delete")}
+                                  </ContextMenuItem>
+                                  {isSuperAdmin && (
+                                    <>
+                                      <ContextMenuSeparator />
+                                      <ContextMenuItem
+                                        onClick={() =>
+                                          openHardDelete({
+                                            kind: "item",
+                                            id: item.id,
+                                            title: item.sku ?? item.name,
+                                          })
+                                        }
+                                        variant="destructive"
+                                      >
+                                        <ShieldAlert className="size-4 mr-2" />
+                                        {t("hardDelete.menu")}
+                                      </ContextMenuItem>
+                                    </>
+                                  )}
+                                </ContextMenuContent>
+                              </ContextMenu>
+                            </div>
+                          );
+                        })}
+                      </div>
+                      {isPending && (
+                        <div className="p-4 text-center text-muted-foreground">
+                          Loading...
+                        </div>
+                      )}
+                    </div>
                   </div>
-                )}
-              </div>
-            </div>
-          ) : (
-            <div className="h-full w-full overflow-y-auto">{children}</div>
+                </ResizablePanel>
+              )}
+              {isDetailRoute && (
+                <>
+                  {!isMobile && <ResizableHandle className="hidden md:flex" />}
+                  <ResizablePanel
+                    id="detail"
+                    minSize={280}
+                    className="h-full w-full min-w-0"
+                  >
+                    {children}
+                  </ResizablePanel>
+                </>
+              )}
+            </ResizablePanelGroup>
           )}
         </div>
-        <ItemDetailsSheet
-          itemId={selectedItemId}
-          onOpenChange={(open) => {
-            if (!open) setSelectedItemId(null);
-          }}
-        />
         <ItemFilterSheet
           open={isFilterOpen}
           filters={itemFilters}
