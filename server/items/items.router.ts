@@ -30,6 +30,7 @@ import {
 } from "@/lib/validations";
 import { deleteUploadByStoragePath } from "@/server/services/file/upload.service";
 import { writeAuditLog } from "../shared/audit.service";
+import { isLowStock } from "../shared/low-stock";
 import { getHardDeleteInfo, hardDeleteItemTree } from "./hard-delete.service";
 
 // ---------------------------------------------------------------------------
@@ -1578,12 +1579,22 @@ export const itemsRouter = router({
         0,
       );
 
+      // Same rule as the dashboard/reports low-stock cards: active non-service
+      // items with a reorder point. Using minStock here made the two numbers
+      // disagree.
       const stockStatus =
-        totalStock <= 0
-          ? "out"
-          : totalStock <= item.minStock
-            ? "low"
-            : "in_stock";
+        item.type === "SERVICE"
+          ? "in_stock"
+          : totalStock <= 0
+            ? "out"
+            : isLowStock({
+                  totalStock,
+                  reorderPoint: item.reorderPoint,
+                  isActive: item.isActive,
+                  type: item.type,
+                })
+              ? "low"
+              : "in_stock";
 
       const inventoryValue = totalStock * Number(item.averageCost);
 

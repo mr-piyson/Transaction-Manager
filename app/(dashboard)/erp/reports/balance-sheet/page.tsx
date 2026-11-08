@@ -185,7 +185,9 @@ export default function BalanceSheetPage() {
             !p.data?.isSection &&
               !p.data?.isTotal &&
               !p.data?.isGrandTotal &&
-              "text-emerald-600 dark:text-emerald-500",
+              (p.value < 0
+                ? "text-red-600 dark:text-red-500"
+                : "text-emerald-600 dark:text-emerald-500"),
           ),
       },
     ],

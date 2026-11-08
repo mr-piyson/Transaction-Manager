@@ -445,14 +445,16 @@ export default function ReportsPage() {
                   <KpiCard
                     title={t("reports.grossProfit")}
                     value={summary ? format(summary.grossProfit) : "-"}
-                    sub={t("reports.marginPercent", {
-                      percent: summary
-                        ? (
-                            (summary.grossProfit / summary.revenue.total) *
-                            100
-                          ).toFixed(1)
-                        : 0,
-                    })}
+                    sub={
+                      summary && summary.revenue.total !== 0
+                        ? t("reports.marginPercent", {
+                            percent: (
+                              (summary.grossProfit / summary.revenue.total) *
+                              100
+                            ).toFixed(1),
+                          })
+                        : undefined
+                    }
                     description={t("reports.grossProfitDesc")}
                     icon={<Wallet className="size-4" />}
                     loading={summaryLoadingState}
@@ -581,14 +583,16 @@ export default function ReportsPage() {
               <KpiCard
                 title={t("reports.grossProfit")}
                 value={summary ? format(summary.grossProfit) : "-"}
-                sub={t("reports.marginPercent", {
-                  percent: summary
-                    ? (
-                        (summary.grossProfit / summary.revenue.total) *
-                        100
-                      ).toFixed(1)
-                    : 0,
-                })}
+                sub={
+                  summary && summary.revenue.total !== 0
+                    ? t("reports.marginPercent", {
+                        percent: (
+                          (summary.grossProfit / summary.revenue.total) *
+                          100
+                        ).toFixed(1),
+                      })
+                    : undefined
+                }
                 description={t("reports.grossProfitDesc")}
                 icon={<Wallet className="size-4" />}
                 loading={summaryLoadingState}

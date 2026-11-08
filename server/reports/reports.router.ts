@@ -1,6 +1,173 @@
+import type { PrismaClient } from "@prisma/client";
 import { z } from "zod";
 import { orgProcedure, router } from "@/lib/trpc/context";
 import { countLowStockItems } from "../shared/low-stock";
+
+// Document statuses that must never count as recognised revenue.
+const NON_REVENUE_STATUSES = [
+  "DRAFT",
+  "PENDING_APPROVAL",
+  "APPROVED",
+  "CANCELLED",
+  "DELETED",
+] as const;
+
+const OPEN_INVOICE_STATUSES = ["SENT", "PARTIAL", "OVERDUE"] as const;
+
+// "Placed" = sent to a supplier. Drafts/approvals are not purchases yet.
+const PLACED_PO_STATUSES = [
+  "ORDERED",
+  "PARTIAL_RECEIVED",
+  "RECEIVED",
+  "INVOICED",
+  "CLOSED",
+] as const;
+
+// POs that represent a payable. Closed POs are settled.
+const PAYABLE_PO_STATUSES = [
+  "ORDERED",
+  "PARTIAL_RECEIVED",
+  "RECEIVED",
+  "INVOICED",
+] as const;
+
+const PNL_ACCOUNT_TYPES = ["REVENUE", "CONTRA_REVENUE", "EXPENSE"] as const;
+
+type ReportDb = Pick<PrismaClient, "journalLine" | "ledgerAccount">;
+
+function startOfDay(date: Date): Date {
+  const value = new Date(date);
+  value.setUTCHours(0, 0, 0, 0);
+  return value;
+}
+
+function endOfDay(date: Date): Date {
+  const value = new Date(date);
+  value.setUTCHours(23, 59, 59, 999);
+  return value;
+}
+
+/** UTC key so month buckets don't shift with the server's timezone. */
+function monthKey(date: Date): string {
+  return `${date.getUTCFullYear()}-${String(date.getUTCMonth() + 1).padStart(2, "0")}`;
+}
+
+interface PnlAccountTotal {
+  code: string;
+  name: string;
+  balance: number;
+}
+
+/**
+ * Single source of truth for revenue and expenses: posted journal lines.
+ * Contra-revenue is naturally negative because revenue is credit − debit.
+ */
+async function computePnl(
+  db: ReportDb,
+  orgId: string,
+  range: { from?: Date; to?: Date } = {},
+): Promise<{
+  revenue: PnlAccountTotal[];
+  expenses: PnlAccountTotal[];
+  totalRevenue: number;
+  totalExpenses: number;
+  netIncome: number;
+  monthly: Record<string, { revenue: number; expenses: number }>;
+}> {
+  const date =
+    range.from || range.to
+      ? {
+          ...(range.from ? { gte: startOfDay(range.from) } : {}),
+          ...(range.to ? { lte: endOfDay(range.to) } : {}),
+        }
+      : undefined;
+
+  const lines = await db.journalLine.findMany({
+    where: {
+      organizationId: orgId,
+      journalEntry: {
+        status: "POSTED",
+        ...(date ? { date } : {}),
+      },
+    },
+    select: {
+      accountId: true,
+      debit: true,
+      credit: true,
+      journalEntry: { select: { date: true } },
+    },
+  });
+
+  const lineAccountIds = [...new Set(lines.map((line) => line.accountId))];
+  const accounts = await db.ledgerAccount.findMany({
+    where: {
+      organizationId: orgId,
+      type: { in: [...PNL_ACCOUNT_TYPES] },
+      // Keep de-activated accounts that still have posted lines, so totals
+      // stay in balance after a chart-of-accounts change.
+      ...(lineAccountIds.length > 0
+        ? { OR: [{ isActive: true }, { id: { in: lineAccountIds } }] }
+        : { isActive: true }),
+    },
+    select: { id: true, code: true, name: true, type: true },
+    orderBy: { code: "asc" },
+  });
+
+  const accountsById = new Map(
+    accounts.map((account) => [account.id, account]),
+  );
+  const totals = new Map<string, { debit: number; credit: number }>();
+  const monthly: Record<string, { revenue: number; expenses: number }> = {};
+
+  for (const line of lines) {
+    const account = accountsById.get(line.accountId);
+    if (!account) continue;
+
+    const debit = Number(line.debit);
+    const credit = Number(line.credit);
+    const accountTotal = totals.get(account.id) ?? { debit: 0, credit: 0 };
+    accountTotal.debit += debit;
+    accountTotal.credit += credit;
+    totals.set(account.id, accountTotal);
+
+    const key = monthKey(line.journalEntry.date);
+    const bucket = monthly[key] ?? { revenue: 0, expenses: 0 };
+    if (account.type === "EXPENSE") bucket.expenses += debit - credit;
+    else bucket.revenue += credit - debit;
+    monthly[key] = bucket;
+  }
+
+  const revenue: PnlAccountTotal[] = [];
+  const expenses: PnlAccountTotal[] = [];
+
+  for (const account of accounts) {
+    const accountTotal = totals.get(account.id);
+    if (!accountTotal) continue;
+
+    // Expense is debit-normal; revenue is credit-normal. A contra account
+    // (debit-normal) therefore comes out negative and reduces the section.
+    const balance =
+      account.type === "EXPENSE"
+        ? accountTotal.debit - accountTotal.credit
+        : accountTotal.credit - accountTotal.debit;
+    const item = { code: account.code, name: account.name, balance };
+
+    if (account.type === "EXPENSE") expenses.push(item);
+    else revenue.push(item);
+  }
+
+  const totalRevenue = revenue.reduce((sum, item) => sum + item.balance, 0);
+  const totalExpenses = expenses.reduce((sum, item) => sum + item.balance, 0);
+
+  return {
+    revenue,
+    expenses,
+    totalRevenue,
+    totalExpenses,
+    netIncome: totalRevenue - totalExpenses,
+    monthly,
+  };
+}
 
 export const reportsRouter = router({
   summary: orgProcedure.require("report:financial").query(async ({ ctx }) => {
@@ -8,16 +175,38 @@ export const reportsRouter = router({
 
     const [
       invoiceAgg,
-      openInvoiceCount,
+      outstandingAgg,
+      collectedAgg,
+      creditNoteAgg,
       poAgg,
       activeContractCount,
       customerCount,
       supplierCount,
       itemCount,
-      paidInvoicesAgg,
-      expenseAgg,
-      incomeAgg,
     ] = await ctx.db.$transaction([
+      // Issued invoices only — drafts/approvals are not revenue yet.
+      ctx.db.invoice.aggregate({
+        where: {
+          organizationId: orgId,
+          type: "INVOICE",
+          deletedAt: null,
+          status: { notIn: [...NON_REVENUE_STATUSES] },
+        },
+        _sum: { costTotal: true },
+        _count: true,
+      }),
+      // Same statuses as AR aging so the card and the aging report agree.
+      ctx.db.invoice.aggregate({
+        where: {
+          organizationId: orgId,
+          type: "INVOICE",
+          deletedAt: null,
+          status: { in: [...OPEN_INVOICE_STATUSES] },
+        },
+        _sum: { amountDue: true },
+        _count: true,
+      }),
+      // Cash actually received, including part-paid invoices.
       ctx.db.invoice.aggregate({
         where: {
           organizationId: orgId,
@@ -25,28 +214,32 @@ export const reportsRouter = router({
           deletedAt: null,
           status: { notIn: ["CANCELLED", "DELETED"] },
         },
-        _sum: { total: true, amountDue: true, costTotal: true },
-        _count: true,
+        _sum: { amountPaid: true },
       }),
-      ctx.db.invoice.count({
+      ctx.db.invoice.aggregate({
         where: {
           organizationId: orgId,
-          type: "INVOICE",
+          type: "CREDIT_NOTE",
           deletedAt: null,
-          status: { in: ["SENT", "PARTIAL", "OVERDUE"] },
+          status: { notIn: [...NON_REVENUE_STATUSES] },
         },
+        _sum: { costTotal: true },
       }),
       ctx.db.purchaseOrder.aggregate({
         where: {
           organizationId: orgId,
           deletedAt: null,
-          status: { notIn: ["CANCELLED", "CLOSED"] },
+          status: { in: [...PLACED_PO_STATUSES] },
         },
         _sum: { total: true, amountOwed: true },
         _count: true,
       }),
       ctx.db.contract.count({
-        where: { organizationId: orgId, deletedAt: null },
+        where: {
+          organizationId: orgId,
+          status: "ACTIVE",
+          deletedAt: null,
+        },
       }),
       ctx.db.customer.count({
         where: { organizationId: orgId, isActive: true, deletedAt: null },
@@ -62,44 +255,30 @@ export const reportsRouter = router({
       ctx.db.item.count({
         where: { organizationId: orgId, isActive: true, deletedAt: null },
       }),
-      ctx.db.invoice.aggregate({
-        where: {
-          organizationId: orgId,
-          type: "INVOICE",
-          deletedAt: null,
-          status: "PAID",
-        },
-        _sum: { total: true },
-      }),
-      ctx.db.expense.aggregate({
-        where: { organizationId: orgId, deletedAt: null },
-        _sum: { amount: true },
-      }),
-      ctx.db.income.aggregate({
-        where: { organizationId: orgId, deletedAt: null },
-        _sum: { amount: true },
-      }),
     ]);
 
-    const lowStockCount = await countLowStockItems(ctx.db, orgId);
+    const [pnl, lowStockCount] = await Promise.all([
+      computePnl(ctx.db, orgId),
+      countLowStockItems(ctx.db, orgId),
+    ]);
 
-    const hasIncomeData = incomeAgg._sum.amount !== null;
-    const totalRevenue = hasIncomeData
-      ? Number(incomeAgg._sum.amount)
-      : Number(invoiceAgg._sum.total ?? 0);
-    const totalCost = Number(invoiceAgg._sum.costTotal ?? 0);
-    const totalExpenses = Number(expenseAgg._sum.amount ?? 0);
+    const costOfGoods = Math.max(
+      0,
+      Number(invoiceAgg._sum.costTotal ?? 0) -
+        Number(creditNoteAgg._sum.costTotal ?? 0),
+    );
 
     return {
-      revenue: { total: totalRevenue, count: invoiceAgg._count },
-      costOfGoods: totalCost,
-      grossProfit: totalRevenue - totalCost,
-      expenses: totalExpenses,
-      netProfit: totalRevenue - totalCost - totalExpenses,
-      collected: { total: Number(paidInvoicesAgg._sum.total ?? 0) },
+      revenue: { total: pnl.totalRevenue, count: invoiceAgg._count },
+      costOfGoods,
+      grossProfit: pnl.totalRevenue - costOfGoods,
+      // GL expenses already include COGS; net income must not subtract COGS twice.
+      expenses: pnl.totalExpenses,
+      netProfit: pnl.netIncome,
+      collected: { total: Number(collectedAgg._sum.amountPaid ?? 0) },
       outstanding: {
-        total: Number(invoiceAgg._sum.amountDue ?? 0),
-        count: openInvoiceCount,
+        total: Number(outstandingAgg._sum.amountDue ?? 0),
+        count: outstandingAgg._count,
       },
       purchases: {
         total: Number(poAgg._sum.total ?? 0),
@@ -119,21 +298,22 @@ export const reportsRouter = router({
       const orgId = ctx.user.organizationId;
       const now = new Date();
       const twelveMonthsAgo = new Date(
-        now.getFullYear(),
-        now.getMonth() - 11,
-        1,
+        Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - 11, 1),
       );
 
-      const invoices = await ctx.db.invoice.findMany({
-        where: {
-          organizationId: orgId,
-          type: "INVOICE",
-          deletedAt: null,
-          status: { notIn: ["CANCELLED", "DELETED", "DRAFT"] },
-          date: { gte: twelveMonthsAgo },
-        },
-        select: { date: true, total: true, costTotal: true },
-      });
+      const [pnl, documents] = await Promise.all([
+        computePnl(ctx.db, orgId, { from: twelveMonthsAgo }),
+        ctx.db.invoice.findMany({
+          where: {
+            organizationId: orgId,
+            type: { in: ["INVOICE", "CREDIT_NOTE"] },
+            deletedAt: null,
+            status: { notIn: [...NON_REVENUE_STATUSES] },
+            date: { gte: twelveMonthsAgo },
+          },
+          select: { type: true, date: true, costTotal: true },
+        }),
+      ]);
 
       const monthly: Record<
         string,
@@ -141,19 +321,28 @@ export const reportsRouter = router({
       > = {};
 
       for (let i = 0; i < 12; i++) {
-        const d = new Date(now.getFullYear(), now.getMonth() - 11 + i, 1);
-        const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
-        monthly[key] = { revenue: 0, cost: 0, count: 0 };
+        const key = monthKey(
+          new Date(
+            Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - 11 + i, 1),
+          ),
+        );
+        monthly[key] = {
+          revenue: pnl.monthly[key]?.revenue ?? 0,
+          cost: 0,
+          count: 0,
+        };
       }
 
-      for (const inv of invoices) {
-        const d = new Date(inv.date);
-        const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
-        if (monthly[key]) {
-          monthly[key].revenue += Number(inv.total);
-          monthly[key].cost += Number(inv.costTotal);
-          monthly[key].count += 1;
-        }
+      for (const document of documents) {
+        const key = monthKey(new Date(document.date));
+        const bucket = monthly[key];
+        if (!bucket) continue;
+
+        // Credit notes reverse both revenue (already in the GL) and COGS.
+        bucket.cost +=
+          (document.type === "CREDIT_NOTE" ? -1 : 1) *
+          Number(document.costTotal);
+        if (document.type === "INVOICE") bucket.count += 1;
       }
 
       return Object.entries(monthly).map(([month, data]) => ({
@@ -253,68 +442,23 @@ export const reportsRouter = router({
       const orgId = ctx.user.organizationId;
       const now = new Date();
       const twelveMonthsAgo = new Date(
-        now.getFullYear(),
-        now.getMonth() - 11,
-        1,
+        Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - 11, 1),
       );
 
-      const [invoices, expenses, incomes] = await ctx.db.$transaction([
-        ctx.db.invoice.findMany({
-          where: {
-            organizationId: orgId,
-            type: "INVOICE",
-            deletedAt: null,
-            status: { notIn: ["CANCELLED", "DELETED", "DRAFT"] },
-            date: { gte: twelveMonthsAgo },
-          },
-          select: { date: true, total: true },
-        }),
-        ctx.db.expense.findMany({
-          where: {
-            organizationId: orgId,
-            deletedAt: null,
-            date: { gte: twelveMonthsAgo },
-          },
-          select: { date: true, amount: true },
-        }),
-        ctx.db.income.findMany({
-          where: {
-            organizationId: orgId,
-            deletedAt: null,
-            date: { gte: twelveMonthsAgo },
-          },
-          select: { date: true, amount: true },
-        }),
-      ]);
-
-      const useIncome = incomes.length > 0;
+      const pnl = await computePnl(ctx.db, orgId, { from: twelveMonthsAgo });
 
       const monthly: Record<string, { revenue: number; expenses: number }> = {};
 
       for (let i = 0; i < 12; i++) {
-        const d = new Date(now.getFullYear(), now.getMonth() - 11 + i, 1);
-        const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
-        monthly[key] = { revenue: 0, expenses: 0 };
-      }
-
-      if (useIncome) {
-        for (const inc of incomes) {
-          const d = new Date(inc.date);
-          const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
-          if (monthly[key]) monthly[key].revenue += Number(inc.amount);
-        }
-      } else {
-        for (const inv of invoices) {
-          const d = new Date(inv.date);
-          const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
-          if (monthly[key]) monthly[key].revenue += Number(inv.total);
-        }
-      }
-
-      for (const exp of expenses) {
-        const d = new Date(exp.date);
-        const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
-        if (monthly[key]) monthly[key].expenses += Number(exp.amount);
+        const key = monthKey(
+          new Date(
+            Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - 11 + i, 1),
+          ),
+        );
+        monthly[key] = {
+          revenue: pnl.monthly[key]?.revenue ?? 0,
+          expenses: pnl.monthly[key]?.expenses ?? 0,
+        };
       }
 
       return Object.entries(monthly).map(([month, data]) => ({
@@ -332,8 +476,13 @@ export const reportsRouter = router({
           id: true,
           name: true,
           invoices: {
-            where: { status: { notIn: ["CANCELLED", "DELETED", "DRAFT"] } },
-            select: { total: true, status: true },
+            where: {
+              organizationId: ctx.user.organizationId,
+              type: "INVOICE",
+              deletedAt: null,
+              status: { notIn: [...NON_REVENUE_STATUSES] },
+            },
+            select: { total: true, taxTotal: true, status: true },
           },
         },
       });
@@ -343,7 +492,10 @@ export const reportsRouter = router({
           id: c.id,
           name: c.name,
           totalSales: Number(
-            c.invoices.reduce((sum, inv) => sum + Number(inv.total), 0),
+            c.invoices.reduce(
+              (sum, inv) => sum + Number(inv.total) - Number(inv.taxTotal),
+              0,
+            ),
           ),
           invoiceCount: c.invoices.length,
         }))
@@ -364,9 +516,14 @@ export const reportsRouter = router({
         salesPrice: true,
         invoiceLines: {
           where: {
-            invoice: { status: { notIn: ["CANCELLED", "DELETED", "DRAFT"] } },
+            invoice: {
+              organizationId: ctx.user.organizationId,
+              type: "INVOICE",
+              deletedAt: null,
+              status: { notIn: [...NON_REVENUE_STATUSES] },
+            },
           },
-          select: { quantity: true, total: true },
+          select: { quantity: true, total: true, taxAmt: true },
         },
       },
     });
@@ -381,7 +538,10 @@ export const reportsRouter = router({
           item.invoiceLines.reduce((sum, l) => sum + Number(l.quantity), 0),
         ),
         totalRevenue: Number(
-          item.invoiceLines.reduce((sum, l) => sum + Number(l.total), 0),
+          item.invoiceLines.reduce(
+            (sum, l) => sum + Number(l.total) - Number(l.taxAmt),
+            0,
+          ),
         ),
       }))
       .sort((a, b) => b.totalRevenue - a.totalRevenue)
@@ -405,7 +565,7 @@ export const reportsRouter = router({
           organizationId: orgId,
           journalEntry: {
             status: "POSTED",
-            ...(input.asOf ? { date: { lte: input.asOf } } : {}),
+            ...(input.asOf ? { date: { lte: endOfDay(input.asOf) } } : {}),
           },
         },
         select: {
@@ -415,9 +575,17 @@ export const reportsRouter = router({
         },
       });
 
-      // Get all active accounts
+      const lineAccountIds = [...new Set(lines.map((line) => line.accountId))];
+
+      // Include de-activated accounts that still carry posted lines, otherwise
+      // their debits/credits vanish and a balanced ledger looks unbalanced.
       const accounts = await ctx.db.ledgerAccount.findMany({
-        where: { organizationId: orgId, isActive: true },
+        where: {
+          organizationId: orgId,
+          ...(lineAccountIds.length > 0
+            ? { OR: [{ isActive: true }, { id: { in: lineAccountIds } }] }
+            : { isActive: true }),
+        },
         select: {
           id: true,
           code: true,
@@ -501,16 +669,35 @@ export const reportsRouter = router({
       });
       if (!account) return null;
 
+      const rangeFrom = input.dateFrom ? startOfDay(input.dateFrom) : undefined;
+      const rangeTo = input.dateTo ? endOfDay(input.dateTo) : undefined;
+
+      // Opening balance of the range, so the running balance is the real
+      // account balance and not a range-relative subtotal.
+      const openingAgg = rangeFrom
+        ? await ctx.db.journalLine.aggregate({
+            where: {
+              organizationId: orgId,
+              accountId: input.accountId,
+              journalEntry: {
+                status: "POSTED",
+                date: { lt: rangeFrom },
+              },
+            },
+            _sum: { debit: true, credit: true },
+          })
+        : null;
+
       const entries = await ctx.db.journalEntry.findMany({
         where: {
           organizationId: orgId,
           status: "POSTED",
           lines: { some: { accountId: input.accountId } },
-          ...(input.dateFrom || input.dateTo
+          ...(rangeFrom || rangeTo
             ? {
                 date: {
-                  ...(input.dateFrom ? { gte: input.dateFrom } : {}),
-                  ...(input.dateTo ? { lte: input.dateTo } : {}),
+                  ...(rangeFrom ? { gte: rangeFrom } : {}),
+                  ...(rangeTo ? { lte: rangeTo } : {}),
                 },
               }
             : {}),
@@ -524,22 +711,33 @@ export const reportsRouter = router({
         orderBy: { date: "asc" },
       });
 
-      let runningBalance = 0;
-      const transactions = entries.map((entry) => {
-        const line = entry.lines[0];
-        const debit = Number(line?.debit ?? 0);
-        const credit = Number(line?.credit ?? 0);
+      const signedBalance = (debit: number, credit: number) =>
+        account.normalBalance === "DEBIT" ? debit - credit : credit - debit;
 
-        if (account.normalBalance === "DEBIT") {
-          runningBalance += debit - credit;
-        } else {
-          runningBalance += credit - debit;
-        }
+      let runningBalance = openingAgg
+        ? signedBalance(
+            Number(openingAgg._sum.debit ?? 0),
+            Number(openingAgg._sum.credit ?? 0),
+          )
+        : 0;
+
+      const transactions = entries.map((entry) => {
+        // One entry can post more than one line to the same account.
+        const debit = entry.lines.reduce(
+          (sum, line) => sum + Number(line.debit),
+          0,
+        );
+        const credit = entry.lines.reduce(
+          (sum, line) => sum + Number(line.credit),
+          0,
+        );
+
+        runningBalance += signedBalance(debit, credit);
 
         return {
           date: entry.date,
           entryNumber: entry.entryNumber,
-          description: line?.description ?? entry.description,
+          description: entry.lines[0]?.description ?? entry.description,
           reference: entry.reference,
           debit,
           credit,
@@ -576,24 +774,27 @@ export const reportsRouter = router({
           organizationId: orgId,
           journalEntry: {
             status: "POSTED",
-            ...(input.asOf ? { date: { lte: input.asOf } } : {}),
+            ...(input.asOf ? { date: { lte: endOfDay(input.asOf) } } : {}),
           },
         },
         select: { accountId: true, debit: true, credit: true },
       });
 
+      const lineAccountIds = [...new Set(lines.map((line) => line.accountId))];
+
       const accounts = await ctx.db.ledgerAccount.findMany({
         where: {
           organizationId: orgId,
-          isActive: true,
           type: { in: ["ASSET", "LIABILITY", "EQUITY", "CONTRA_ASSET"] },
+          ...(lineAccountIds.length > 0
+            ? { OR: [{ isActive: true }, { id: { in: lineAccountIds } }] }
+            : { isActive: true }),
         },
         select: {
           id: true,
           code: true,
           name: true,
           type: true,
-          normalBalance: true,
         },
         orderBy: { code: "asc" },
       });
@@ -625,15 +826,20 @@ export const reportsRouter = router({
           totalDebit: 0,
           totalCredit: 0,
         };
+
+        // Debit-normal sections (assets, contra-assets) keep debit − credit,
+        // so accumulated depreciation reduces assets instead of adding to them.
+        // Credit-normal sections do the opposite; Drawings (debit-normal
+        // equity) therefore reduces equity.
         const balance =
-          account.normalBalance === "DEBIT"
-            ? totals.totalDebit - totals.totalCredit
-            : totals.totalCredit - totals.totalDebit;
+          account.type === "LIABILITY" || account.type === "EQUITY"
+            ? totals.totalCredit - totals.totalDebit
+            : totals.totalDebit - totals.totalCredit;
 
         const item = {
           code: account.code,
           name: account.name,
-          balance: Math.abs(balance),
+          balance,
         };
 
         if (account.type === "ASSET" || account.type === "CONTRA_ASSET") {
@@ -643,6 +849,22 @@ export const reportsRouter = router({
         } else if (account.type === "EQUITY") {
           equity.push(item);
         }
+      }
+
+      // The app has no year-end closing entry, so current-period profit is
+      // still sitting in revenue/expense accounts. Present it as equity;
+      // without it the balance sheet can never balance.
+      const pnl = await computePnl(ctx.db, orgId, { to: input.asOf });
+      const netIncome = pnl.netIncome;
+      const earningsAccount = equity.find((item) => item.code === "3030");
+      if (earningsAccount) {
+        earningsAccount.balance += netIncome;
+      } else if (Math.abs(netIncome) > 0.000001) {
+        equity.push({
+          code: "3030",
+          name: "Current Year Earnings",
+          balance: netIncome,
+        });
       }
 
       const totalAssets = assets.reduce((sum, a) => sum + a.balance, 0);
@@ -675,94 +897,17 @@ export const reportsRouter = router({
       }),
     )
     .query(async ({ ctx, input }) => {
-      const orgId = ctx.user.organizationId;
-
-      const lines = await ctx.db.journalLine.findMany({
-        where: {
-          organizationId: orgId,
-          journalEntry: {
-            status: "POSTED",
-            ...(input.dateFrom || input.dateTo
-              ? {
-                  date: {
-                    ...(input.dateFrom ? { gte: input.dateFrom } : {}),
-                    ...(input.dateTo ? { lte: input.dateTo } : {}),
-                  },
-                }
-              : {}),
-          },
-        },
-        select: { accountId: true, debit: true, credit: true },
+      const pnl = await computePnl(ctx.db, ctx.user.organizationId, {
+        from: input.dateFrom,
+        to: input.dateTo,
       });
-
-      const accounts = await ctx.db.ledgerAccount.findMany({
-        where: {
-          organizationId: orgId,
-          isActive: true,
-          type: { in: ["REVENUE", "EXPENSE", "CONTRA_REVENUE"] },
-        },
-        select: {
-          id: true,
-          code: true,
-          name: true,
-          type: true,
-          normalBalance: true,
-        },
-        orderBy: { code: "asc" },
-      });
-
-      const accountTotals = new Map<
-        string,
-        { totalDebit: number; totalCredit: number }
-      >();
-      for (const line of lines) {
-        const existing = accountTotals.get(line.accountId) ?? {
-          totalDebit: 0,
-          totalCredit: 0,
-        };
-        existing.totalDebit += Number(line.debit);
-        existing.totalCredit += Number(line.credit);
-        accountTotals.set(line.accountId, existing);
-      }
-
-      const revenue: Array<{ code: string; name: string; balance: number }> =
-        [];
-      const expenses: Array<{ code: string; name: string; balance: number }> =
-        [];
-
-      for (const account of accounts) {
-        const totals = accountTotals.get(account.id) ?? {
-          totalDebit: 0,
-          totalCredit: 0,
-        };
-        const balance =
-          account.normalBalance === "DEBIT"
-            ? totals.totalDebit - totals.totalCredit
-            : totals.totalCredit - totals.totalDebit;
-
-        const item = {
-          code: account.code,
-          name: account.name,
-          balance: Math.abs(balance),
-        };
-
-        if (account.type === "REVENUE" || account.type === "CONTRA_REVENUE") {
-          revenue.push(item);
-        } else if (account.type === "EXPENSE") {
-          expenses.push(item);
-        }
-      }
-
-      const totalRevenue = revenue.reduce((sum, r) => sum + r.balance, 0);
-      const totalExpenses = expenses.reduce((sum, e) => sum + e.balance, 0);
-      const netIncome = totalRevenue - totalExpenses;
 
       return {
-        revenue,
-        expenses,
-        totalRevenue,
-        totalExpenses,
-        netIncome,
+        revenue: pnl.revenue,
+        expenses: pnl.expenses,
+        totalRevenue: pnl.totalRevenue,
+        totalExpenses: pnl.totalExpenses,
+        netIncome: pnl.netIncome,
         dateFrom: input.dateFrom ?? null,
         dateTo: input.dateTo ?? null,
       };
@@ -777,7 +922,7 @@ export const reportsRouter = router({
       where: {
         organizationId: orgId,
         deletedAt: null,
-        status: { notIn: ["CANCELLED", "CLOSED"] },
+        status: { in: [...PAYABLE_PO_STATUSES] },
         amountOwed: { gt: 0 },
       },
       select: { expectedDate: true, amountOwed: true, total: true },
@@ -828,7 +973,7 @@ export const reportsRouter = router({
         where: {
           organizationId: orgId,
           deletedAt: null,
-          status: { notIn: ["CANCELLED", "CLOSED"] },
+          status: { in: [...PAYABLE_PO_STATUSES] },
           amountOwed: { gt: 0 },
         },
         select: {

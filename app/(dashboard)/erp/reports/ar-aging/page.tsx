@@ -204,7 +204,6 @@ export default function ARAgingPage() {
                 key={bucket.bucket}
                 title={bucketLabels[i] ?? bucket.bucket}
                 value={format(bucket.amount)}
-                count={bucket.count}
                 countLabel={t("reports.invoiceCount", { count: bucket.count })}
                 icon={<Receipt className="size-4" />}
                 variant={i === 0 ? "default" : i <= 2 ? "warning" : "danger"}

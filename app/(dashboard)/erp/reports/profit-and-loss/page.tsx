@@ -130,7 +130,7 @@ export default function ProfitAndLossPage() {
         headerName: t("common.amount"),
         width: 150,
         type: "rightAligned",
-        valueFormatter: (p) => format(Math.abs(p.value)),
+        valueFormatter: (p) => format(p.value),
         cellClass: (p) =>
           cn(
             "font-mono text-[11px] tabular-nums",

@@ -7,8 +7,7 @@ import {
   ModuleRegistry,
 } from "ag-grid-community";
 import { AgGridReact } from "ag-grid-react";
-import { BookOpen, ChevronLeft } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { BookOpen } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useMemo, useRef, useState } from "react";
 import { ReportCsvExportButton, ReportLayout } from "@/components/reports";
@@ -33,7 +32,6 @@ ModuleRegistry.registerModules([AllCommunityModule]);
 
 export default function GeneralLedgerPage() {
   const t = useTranslations();
-  const router = useRouter();
   const { format } = useCurrency();
   const { formatShortDate } = useDateFormat();
   const theme = useTableTheme();
@@ -112,7 +110,7 @@ export default function GeneralLedgerPage() {
         headerName: t("reports.balance"),
         width: 140,
         type: "rightAligned",
-        valueFormatter: (p) => format(Math.abs(p.value)),
+        valueFormatter: (p) => format(p.value),
         cellClass: (p) =>
           cn(
             "font-mono text-[11px] tabular-nums font-bold",
@@ -245,7 +243,7 @@ export default function GeneralLedgerPage() {
                       : "text-red-600 dark:text-red-500",
                   )}
                 >
-                  {format(Math.abs(data.closingBalance))}
+                  {format(data.closingBalance)}
                 </div>
               </div>
             </div>
@@ -325,7 +323,7 @@ export default function GeneralLedgerPage() {
                     : "text-red-600 dark:text-red-500",
                 )}
               >
-                {format(Math.abs(data.closingBalance))}
+                {format(data.closingBalance)}
               </span>
             </div>
           </div>

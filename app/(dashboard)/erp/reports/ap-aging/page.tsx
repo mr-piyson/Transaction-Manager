@@ -204,7 +204,6 @@ export default function APAgingPage() {
                 key={bucket.bucket}
                 title={bucketLabels[i] ?? bucket.bucket}
                 value={format(bucket.amount)}
-                count={bucket.count}
                 countLabel={t("reports.poCount", { count: bucket.count })}
                 icon={<Clock className="size-4" />}
                 variant={i === 0 ? "default" : i <= 2 ? "warning" : "danger"}

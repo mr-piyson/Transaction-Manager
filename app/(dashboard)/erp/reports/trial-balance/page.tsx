@@ -111,7 +111,7 @@ export default function TrialBalancePage() {
         headerName: t("reports.balance"),
         width: 130,
         type: "rightAligned",
-        valueFormatter: (p) => format(Math.abs(p.value)),
+        valueFormatter: (p) => format(p.value),
         cellClass: (p) =>
           cn(
             "font-mono text-[11px] tabular-nums font-bold",
