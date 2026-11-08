@@ -153,71 +153,90 @@ export default function ItemsLayout({
                   minSize={240}
                   className="h-full min-w-0"
                 >
-                  <div className="h-full w-full flex flex-col">
-                    <div className="flex h-14 w-full min-w-0 flex-nowrap items-center gap-2 overflow-x-auto border-b px-4 py-2 shrink-0">
-                      <div className="flex min-w-max flex-1 flex-nowrap items-center gap-2">
-                        <Button
-                          size="sm"
-                          onClick={() =>
-                            openCreate({
-                              onSuccess: () => utils.items.list.invalidate(),
-                            })
+                  <div className="@container h-full w-full flex flex-col">
+                    <div className="flex min-h-14 w-full min-w-0 flex-wrap items-center gap-2 border-b px-3 py-2 shrink-0 @sm:px-4">
+                      <Button
+                        size="sm"
+                        aria-label={t("items.createItem")}
+                        title={t("items.createItem")}
+                        className="h-8 shrink-0"
+                        onClick={() =>
+                          openCreate({
+                            onSuccess: () => utils.items.list.invalidate(),
+                          })
+                        }
+                      >
+                        <Plus className="size-3.5" />
+                        <span className="hidden @sm:inline">
+                          {t("items.createItem")}
+                        </span>
+                      </Button>
+                      <InputGroup className="order-last h-8 w-full min-w-0 @md:order-none @md:w-auto @md:flex-1">
+                        <InputGroupAddon align="inline-start">
+                          <Search className="size-3.5" />
+                        </InputGroupAddon>
+                        <InputGroupInput
+                          placeholder={t("items.searchItems")}
+                          aria-label={t("items.searchItems")}
+                          value={searchQuery}
+                          onChange={(event) =>
+                            setSearchQuery(event.target.value)
                           }
-                        >
-                          <Plus className="size-3.5" />
-                          <span className="hidden sm:inline">
-                            {t("items.createItem")}
-                          </span>
-                        </Button>
-                        <InputGroup className="w-52 shrink-0 sm:w-64">
-                          <InputGroupAddon align="inline-start">
-                            <Search className="size-3.5" />
+                        />
+                        {searchQuery && (
+                          <InputGroupAddon align="inline-end">
+                            <button
+                              type="button"
+                              aria-label={t("common.clear")}
+                              onClick={() => setSearchQuery("")}
+                              className="flex size-5 items-center justify-center rounded hover:bg-muted"
+                            >
+                              <X className="size-3 text-muted-foreground" />
+                            </button>
                           </InputGroupAddon>
-                          <InputGroupInput
-                            placeholder="Search items..."
-                            value={searchQuery}
-                            onChange={(event) =>
-                              setSearchQuery(event.target.value)
-                            }
-                          />
-                          {searchQuery && (
-                            <InputGroupAddon align="inline-end">
-                              <button
-                                type="button"
-                                aria-label="Clear search"
-                                onClick={() => setSearchQuery("")}
-                                className="flex size-5 items-center justify-center rounded hover:bg-muted"
-                              >
-                                <X className="size-3 text-muted-foreground" />
-                              </button>
-                            </InputGroupAddon>
-                          )}
-                        </InputGroup>
-                        <Button
-                          variant={
-                            activeFilterCount > 0 ? "secondary" : "outline"
-                          }
-                          size="sm"
-                          onClick={() => setIsFilterOpen(true)}
-                        >
-                          <Filter className="size-3.5" />
-                          <span className="hidden sm:inline">Filters</span>
-                          {activeFilterCount > 0 && (
-                            <Badge>{activeFilterCount}</Badge>
-                          )}
-                        </Button>
-                      </div>
-                      <div className="ml-auto flex shrink-0 items-center gap-2">
+                        )}
+                      </InputGroup>
+                      <Button
+                        variant={
+                          activeFilterCount > 0 ? "secondary" : "outline"
+                        }
+                        size="sm"
+                        aria-label={
+                          activeFilterCount > 0
+                            ? `${t("common.filter")} (${activeFilterCount})`
+                            : t("common.filter")
+                        }
+                        title={t("common.filter")}
+                        className="h-8 shrink-0"
+                        onClick={() => setIsFilterOpen(true)}
+                      >
+                        <Filter className="size-3.5" />
+                        <span className="hidden @sm:inline">
+                          {t("common.filter")}
+                        </span>
+                        {activeFilterCount > 0 && (
+                          <Badge>{activeFilterCount}</Badge>
+                        )}
+                      </Button>
+                      <div className="shrink-0">
                         <Link href="/erp/items/import">
-                          <Button variant="outline" size="sm">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            aria-label={t("common.import")}
+                            title={t("common.import")}
+                            className="h-8"
+                          >
                             <Download className="size-3.5" />
-                            <span className="hidden md:block">Import</span>
+                            <span className="hidden @xl:inline">
+                              {t("common.import")}
+                            </span>
                           </Button>
                         </Link>
                       </div>
                     </div>
                     {/* Category filter bar */}
-                    <div className="w-full min-w-0 border-b px-4 py-1.5 shrink-0 overflow-hidden">
+                    <div className="w-full min-w-0 border-b px-3 py-1.5 shrink-0 overflow-hidden @sm:px-4">
                       <div className="flex items-center gap-2 overflow-x-auto w-full pb-1">
                         <Filter className="size-3.5 text-muted-foreground shrink-0" />
                         <button
