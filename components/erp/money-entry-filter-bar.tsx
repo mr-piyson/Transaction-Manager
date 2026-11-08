@@ -106,7 +106,7 @@ export function MoneyEntryFilterBar({ kind }: MoneyEntryFilterBarProps) {
           {t("common.new")}
         </Button>
         <Separator orientation="vertical" className="h-5" />
-        <Drawer direction="right">
+        <Drawer swipeDirection="right">
           <DrawerTrigger
             render={
               <Button variant="outline" size="sm" className="relative gap-1.5">

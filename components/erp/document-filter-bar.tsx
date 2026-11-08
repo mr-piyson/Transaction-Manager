@@ -97,7 +97,7 @@ export function DocumentFilterTrigger({
   const { activeFilterCount } = useDocumentFilters(type);
 
   return (
-    <Drawer direction="right">
+    <Drawer swipeDirection="right">
       <DrawerTrigger
         render={
           <Button variant="ghost" size="sm" className="relative h-8 shrink-0">
