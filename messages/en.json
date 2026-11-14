@@ -203,6 +203,8 @@
       "cheque": "Cheque",
       "online": "Online",
       "credit": "Credit",
+      "creditNote": "Credit Note",
+      "benefitPay": "BenefitPay",
       "other": "Other"
     },
     "filterDescription": "Apply filters to narrow down results",
@@ -217,6 +219,26 @@
     "entryNumber": "Entry #",
     "add": "Add",
     "user": "User"
+  },
+  "payments": {
+    "recordPayment": "Record Payment",
+    "record": "Record",
+    "amount": "Amount",
+    "paymentMethod": "Payment method",
+    "date": "Date",
+    "reference": "Reference",
+    "notes": "Notes",
+    "outstanding": "Outstanding",
+    "otherMethods": "Other methods",
+    "enterDetails": "Enter payment details below.",
+    "amountRequired": "Amount must be greater than 0",
+    "dateRequired": "Date is required",
+    "amountExceeds": "Cannot exceed outstanding amount ({amount} {currency})",
+    "referencePlaceholder": "Transaction ID, etc.",
+    "referencePlaceholderCheque": "Cheque #",
+    "referencePlaceholderTransfer": "Transfer ref / IBAN",
+    "referencePlaceholderCard": "Last 4 digits / auth code",
+    "notesPlaceholder": "Optional notes..."
   },
   "clipboard": {
     "automationFailed": "Automatic copy is not available on this connection.",

@@ -37,6 +37,8 @@
       "cheque": "شيك",
       "other": "أخرى",
       "credit": "دائن",
+      "creditNote": "إشعار دائن",
+      "benefitPay": "بنفت باي",
       "bankTransfer": "تحويل بنكي"
     },
     "keep": "الاحتفاظ",
@@ -247,6 +249,26 @@
     "profile": "الملف الشخصي",
     "appName": "مدير المعاملات",
     "appTitle": "مدير المعاملات"
+  },
+  "payments": {
+    "recordPayment": "تسجيل الدفع",
+    "record": "تسجيل",
+    "amount": "المبلغ",
+    "paymentMethod": "طريقة الدفع",
+    "date": "التاريخ",
+    "reference": "المرجع",
+    "notes": "ملاحظات",
+    "outstanding": "المستحق",
+    "otherMethods": "طرق دفع أخرى",
+    "enterDetails": "أدخل تفاصيل الدفع أدناه.",
+    "amountRequired": "يجب أن يكون المبلغ أكبر من 0",
+    "dateRequired": "التاريخ مطلوب",
+    "amountExceeds": "لا يمكن أن يتجاوز المبلغ المستحق ({amount} {currency})",
+    "referencePlaceholder": "رقم المعاملة، إلخ.",
+    "referencePlaceholderCheque": "رقم الشيك",
+    "referencePlaceholderTransfer": "مرجع التحويل / IBAN",
+    "referencePlaceholderCard": "آخر 4 أرقام / رمز التحقق",
+    "notesPlaceholder": "ملاحظات اختيارية..."
   },
   "dashboard": {
     "title": "لوحة القيادة",
