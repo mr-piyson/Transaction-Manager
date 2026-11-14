@@ -646,7 +646,7 @@ export default function ItemDetailPage() {
                       {t("items.perWarehouse")}
                     </p>
                     {stockRows.length > 0 ? (
-                      <div className="grid gap-2 @lg:grid-cols-2">
+                      <div className="flex flex-col">
                         {stockRows.map((row) => {
                           const quantity = Number(row.quantity);
                           return (
