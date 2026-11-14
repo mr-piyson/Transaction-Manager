@@ -43,6 +43,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Spinner } from "@/components/ui/spinner";
 import { useHotkeyLabel } from "@/hooks/use-hotkey-label";
+import { useIsTablet } from "@/hooks/use-mobile";
 import { apps, getAppFromPath } from "@/lib/apps";
 import type { AppActions, AppSubjects } from "@/lib/permissions";
 import { cn } from "@/lib/utils";
@@ -164,6 +165,7 @@ export function AppSidebar({ ...props }: AppSidebarProps) {
   const locale = useLocale();
   const t = useTranslations();
   const isRtl = locale === "ar";
+  const isTablet = useIsTablet();
   const searchInputRef = useRef<HTMLInputElement>(null);
 
   const currentApp = getAppFromPath(currentPath);
@@ -375,6 +377,18 @@ export function AppSidebar({ ...props }: AppSidebarProps) {
       setOpenMobile(false);
     }
   }, [currentPath, setOpenMobile, loading]);
+
+  // On iPad-sized screens (up to 1024px) the sidebar opens by default on the
+  // dashboard and collapses automatically when navigating to another page.
+  const setOpenRef = useRef(setOpen);
+  setOpenRef.current = setOpen;
+
+  useEffect(() => {
+    if (!isTablet) return;
+    setOpenRef.current(
+      currentPath === "/erp" || currentPath === "/erp/dashboard",
+    );
+  }, [isTablet, currentPath]);
 
   useEffect(() => {
     if (searchQuery) return;
