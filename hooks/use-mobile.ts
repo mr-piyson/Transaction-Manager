@@ -1,7 +1,7 @@
 import * as React from "react";
 
-const MOBILE_BREAKPOINT = 770;
-const TABLET_MAX_WIDTH = 1024;
+const MOBILE_BREAKPOINT = 1032;
+const TABLET_MAX_WIDTH = 1376;
 
 function useMediaQuery(query: string) {
   const [matches, setMatches] = React.useState<boolean | undefined>(undefined);
