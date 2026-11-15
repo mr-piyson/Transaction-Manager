@@ -1352,7 +1352,31 @@
     "totalPOs": "Total POs",
     "totalInvoices": "Total Invoices",
     "poCount": "{count} POs",
-    "invoiceCount": "{count} invoices"
+    "invoiceCount": "{count} invoices",
+    "kpiHelp": {
+      "about": "How {title} is calculated",
+      "dataSource": "Data source",
+      "formula": "Formula",
+      "result": "Result",
+      "margin": "Gross margin",
+      "revenueSource": "Posted journal entries on revenue and contra-revenue accounts. The invoice count comes from issued invoices, excluding drafts, pending, approved, cancelled and deleted documents.",
+      "grossProfitSource": "Revenue comes from posted revenue accounts. Cost of goods sold comes from the cost totals of issued invoices, less credit notes.",
+      "netProfitSource": "Posted journal entries: revenue and contra-revenue accounts minus expense accounts. Expenses already include cost of goods sold.",
+      "outstandingSource": "Invoices with status Sent, Partially paid or Overdue, excluding deleted invoices. Each invoice's remaining amount due is summed.",
+      "expensesSource": "Posted journal entries on expense accounts, calculated as debit minus credit. Contra entries reduce the total.",
+      "collectedSource": "Amount already paid on invoices that are not cancelled or deleted, including part-paid invoices.",
+      "purchasesSource": "Purchase orders in Ordered, Partially received, Received, Invoiced or Closed status, excluding deleted orders.",
+      "inventorySource": "Active, non-deleted items across all warehouses. Low stock items are shown as additional context.",
+      "customersSource": "Active, non-deleted customers. The supplier count excludes system suppliers.",
+      "revenueFormula": "Σ (credit − debit) across posted revenue accounts",
+      "grossProfitFormula": "Revenue − Cost of goods sold",
+      "marginFormula": "(Gross profit ÷ Revenue) × 100",
+      "netProfitFormula": "Total revenue − Total expenses",
+      "outstandingFormula": "Σ amount due on open invoices",
+      "expensesFormula": "Σ (debit − credit) across posted expense accounts",
+      "collectedFormula": "Σ amount paid on non-cancelled invoices",
+      "purchasesFormula": "Σ totals of placed purchase orders"
+    }
   },
   "settings": {
     "title": "Settings",

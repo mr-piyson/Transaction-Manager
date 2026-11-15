@@ -34,9 +34,9 @@ import {
   ReportCard,
   ReportEmpty,
   ReportKpiCard,
+  type ReportKpiExplanation,
   ReportLayout,
   ReportLinkCard,
-  ReportPrintButton,
 } from "@/components/reports";
 import {
   ChartContainer,
@@ -113,19 +113,46 @@ export default function ReportsPage() {
   }, [summary]);
 
   const kpis = useMemo(() => {
+    const labels = (title: string): ReportKpiExplanation["labels"] => ({
+      about: t("reports.kpiHelp.about", { title }),
+      dataSource: t("reports.kpiHelp.dataSource"),
+      formula: t("reports.kpiHelp.formula"),
+      result: t("reports.kpiHelp.result"),
+    });
+
+    const revenue = summary ? format(summary.revenue.total) : "-";
+    const cogs = summary ? format(summary.costOfGoods) : "-";
+    const grossProfit = summary ? format(summary.grossProfit) : "-";
+    const expenses = summary ? format(summary.expenses) : "-";
+    const netProfit = summary ? format(summary.netProfit) : "-";
+    const outstanding = summary ? format(summary.outstanding.total) : "-";
+    const collected = summary ? format(summary.collected.total) : "-";
+    const purchases = summary ? format(summary.purchases.total) : "-";
+
     return [
       {
         title: t("reports.totalRevenue"),
-        value: summary ? format(summary.revenue.total) : "-",
+        value: revenue,
         sub: summary
           ? t("reports.invoiceCount", { count: summary.revenue.count })
           : undefined,
         icon: <TrendingUp className="size-4" />,
         variant: "default" as const,
+        explanation: {
+          description: t("reports.totalRevenueDesc"),
+          source: t("reports.kpiHelp.revenueSource"),
+          formulas: [
+            {
+              expression: t("reports.kpiHelp.revenueFormula"),
+              result: revenue,
+            },
+          ],
+          labels: labels(t("reports.totalRevenue")),
+        },
       },
       {
         title: t("reports.grossProfit"),
-        value: summary ? format(summary.grossProfit) : "-",
+        value: grossProfit,
         sub:
           marginPercent !== null
             ? t("reports.marginPercent", { percent: marginPercent })
@@ -139,12 +166,37 @@ export default function ReportsPage() {
               label: t("reports.beforeExpenses"),
             }
           : undefined,
+        explanation: {
+          description: t("reports.grossProfitDesc"),
+          source: t("reports.kpiHelp.grossProfitSource"),
+          formulas: [
+            {
+              label: t("reports.grossProfit"),
+              expression: t("reports.kpiHelp.grossProfitFormula"),
+              inputs: [
+                { label: t("reports.totalRevenue"), value: revenue },
+                { label: t("reports.cogs"), value: cogs },
+              ],
+              result: grossProfit,
+            },
+            {
+              label: t("reports.kpiHelp.margin"),
+              expression: t("reports.kpiHelp.marginFormula"),
+              inputs: [
+                { label: t("reports.grossProfit"), value: grossProfit },
+                { label: t("reports.totalRevenue"), value: revenue },
+              ],
+              result: marginPercent !== null ? `${marginPercent}%` : "-",
+            },
+          ],
+          labels: labels(t("reports.grossProfit")),
+        },
       },
       {
         title: t("reports.netProfit"),
-        value: summary ? format(summary.netProfit) : "-",
+        value: netProfit,
         sub: summary
-          ? t("reports.afterExpenses", { amount: format(summary.expenses) })
+          ? t("reports.afterExpenses", { amount: expenses })
           : undefined,
         icon: <DollarSign className="size-4" />,
         variant:
@@ -157,10 +209,26 @@ export default function ReportsPage() {
               label: t("reports.netResult"),
             }
           : undefined,
+        explanation: {
+          description: t("reports.netProfitDesc"),
+          source: t("reports.kpiHelp.netProfitSource"),
+          formulas: [
+            {
+              label: t("reports.netProfit"),
+              expression: t("reports.kpiHelp.netProfitFormula"),
+              inputs: [
+                { label: t("reports.totalRevenue"), value: revenue },
+                { label: t("reports.totalExpenses"), value: expenses },
+              ],
+              result: netProfit,
+            },
+          ],
+          labels: labels(t("reports.netProfit")),
+        },
       },
       {
         title: t("invoices.outstanding"),
-        value: summary ? format(summary.outstanding.total) : "-",
+        value: outstanding,
         sub: summary
           ? t("reports.openInvoiceCount", {
               count: summary.outstanding.count,
@@ -171,27 +239,83 @@ export default function ReportsPage() {
         trend: summary?.outstanding.total
           ? { dir: "down" as const, label: t("reports.needsCollection") }
           : undefined,
+        explanation: {
+          description: t("reports.outstandingDesc"),
+          source: t("reports.kpiHelp.outstandingSource"),
+          formulas: [
+            {
+              expression: t("reports.kpiHelp.outstandingFormula"),
+              inputs: [
+                {
+                  label: t("reports.outstandingInvoices"),
+                  value: summary ? String(summary.outstanding.count) : "-",
+                },
+              ],
+              result: outstanding,
+            },
+          ],
+          labels: labels(t("invoices.outstanding")),
+        },
       },
       {
         title: t("reports.totalExpenses"),
-        value: summary ? format(summary.expenses) : "-",
+        value: expenses,
         icon: <ShoppingCart className="size-4" />,
         variant: "danger" as const,
+        explanation: {
+          description: t("reports.totalExpensesDesc"),
+          source: t("reports.kpiHelp.expensesSource"),
+          formulas: [
+            {
+              expression: t("reports.kpiHelp.expensesFormula"),
+              result: expenses,
+            },
+          ],
+          labels: labels(t("reports.totalExpenses")),
+        },
       },
       {
         title: t("invoices.totalCollected"),
-        value: summary ? format(summary.collected.total) : "-",
+        value: collected,
         icon: <IndianRupee className="size-4" />,
         variant: "success" as const,
+        explanation: {
+          description: t("reports.totalCollectedDesc"),
+          source: t("reports.kpiHelp.collectedSource"),
+          formulas: [
+            {
+              expression: t("reports.kpiHelp.collectedFormula"),
+              result: collected,
+            },
+          ],
+          labels: labels(t("invoices.totalCollected")),
+        },
       },
       {
         title: t("reports.purchaseReport"),
-        value: summary ? format(summary.purchases.total) : "-",
+        value: purchases,
         sub: summary
           ? t("reports.orderCount", { count: summary.purchases.count })
           : undefined,
         icon: <Package className="size-4" />,
         variant: "info" as const,
+        explanation: {
+          description: t("reports.purchaseReportDesc"),
+          source: t("reports.kpiHelp.purchasesSource"),
+          formulas: [
+            {
+              expression: t("reports.kpiHelp.purchasesFormula"),
+              inputs: [
+                {
+                  label: t("reports.purchaseOrders"),
+                  value: summary ? String(summary.purchases.count) : "-",
+                },
+              ],
+              result: purchases,
+            },
+          ],
+          labels: labels(t("reports.purchaseReport")),
+        },
       },
       {
         title: t("layout.inventory"),
@@ -203,6 +327,12 @@ export default function ReportsPage() {
           : undefined,
         icon: <Box className="size-4" />,
         variant: "warning" as const,
+        explanation: {
+          description: t("reports.inventoryDesc"),
+          source: t("reports.kpiHelp.inventorySource"),
+          result: summary ? String(summary.inventory.itemCount) : "-",
+          labels: labels(t("layout.inventory")),
+        },
       },
       {
         title: t("reports.customerReport"),
@@ -214,6 +344,12 @@ export default function ReportsPage() {
           : undefined,
         icon: <Users className="size-4" />,
         variant: "info" as const,
+        explanation: {
+          description: t("reports.customerReportDesc"),
+          source: t("reports.kpiHelp.customersSource"),
+          result: summary ? String(summary.customers.activeCount) : "-",
+          labels: labels(t("reports.customerReport")),
+        },
       },
     ];
   }, [format, marginPercent, summary, t]);
@@ -331,7 +467,6 @@ export default function ReportsPage() {
       title={t("reports.title")}
       description={t("reports.hubDescription")}
       icon={<BarChart3 className="size-5" />}
-      actions={<ReportPrintButton showExport={false} />}
     >
       <section
         aria-label={t("reports.title")}
@@ -346,13 +481,14 @@ export default function ReportsPage() {
             trend={kpi.trend}
             icon={kpi.icon}
             variant={kpi.variant}
+            explanation={kpi.explanation}
             loading={summaryLoading}
           />
         ))}
       </section>
 
       <Tabs defaultValue="reports" className="flex flex-col gap-4">
-        <TabsList className="w-full justify-start overflow-x-auto sm:w-fit">
+        <TabsList className="w-full justify-start sm:w-fit">
           <TabsTrigger value="reports">
             <BarChart3 />
             {t("reports.title")}
