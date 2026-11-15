@@ -463,10 +463,10 @@ export default function ReportsPage() {
 
   const dailyChartConfig = useMemo(
     () => ({
-      income: { label: t("reports.income"), color: "hsl(var(--chart-1))" },
+      income: { label: t("reports.income"), color: "var(--success)" },
       expenses: {
         label: t("reports.expensesCategory"),
-        color: "hsl(var(--chart-5))",
+        color: "var(--destructive)",
       },
       balance: { label: t("reports.balance"), color: "hsl(var(--chart-2))" },
     }),
@@ -703,7 +703,7 @@ export default function ReportsPage() {
                     type="monotone"
                     dataKey="income"
                     name={t("reports.income")}
-                    stroke="hsl(var(--chart-1))"
+                    stroke="var(--success)"
                     strokeWidth={2}
                     dot={false}
                     activeDot={{ r: 3 }}
@@ -712,7 +712,7 @@ export default function ReportsPage() {
                     type="monotone"
                     dataKey="expenses"
                     name={t("reports.expensesCategory")}
-                    stroke="hsl(var(--chart-5))"
+                    stroke="var(--destructive)"
                     strokeWidth={2}
                     dot={false}
                     activeDot={{ r: 3 }}
