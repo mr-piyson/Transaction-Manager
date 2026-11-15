@@ -17,16 +17,19 @@ import {
   Users,
   Wallet,
 } from "lucide-react";
-import { useTranslations } from "next-intl";
-import { useMemo } from "react";
+import { useLocale, useTranslations } from "next-intl";
+import { useMemo, useState } from "react";
 import {
   Area,
   AreaChart,
   Bar,
   BarChart,
   Cell,
+  Line,
+  LineChart,
   Pie,
   PieChart,
+  ReferenceLine,
   XAxis,
   YAxis,
 } from "recharts";
@@ -47,6 +50,7 @@ import {
 } from "@/components/ui/chart";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { useCurrency } from "@/hooks/use-currency";
 import { trpc } from "@/lib/trpc/client";
 
@@ -75,7 +79,9 @@ function ChartSkeleton() {
 
 export default function ReportsPage() {
   const t = useTranslations();
+  const locale = useLocale();
   const { format } = useCurrency();
+  const [dailyDays, setDailyDays] = useState(30);
 
   const MONTH_LABELS: Record<string, string> = {
     "01": t("common.monthNames.0"),
@@ -96,6 +102,8 @@ export default function ReportsPage() {
     trpc.reports.summary.useQuery();
   const { data: monthlyRevenue, isLoading: monthlyLoading } =
     trpc.reports.monthlyRevenue.useQuery();
+  const { data: dailyCashFlow, isLoading: dailyLoading } =
+    trpc.reports.dailyCashFlow.useQuery({ days: dailyDays });
   const { data: invoiceStatusDist, isLoading: statusLoading } =
     trpc.reports.invoiceStatusDistribution.useQuery();
   const { data: arAging, isLoading: agingLoading } =
@@ -453,6 +461,45 @@ export default function ReportsPage() {
     [format],
   );
 
+  const dailyChartConfig = useMemo(
+    () => ({
+      income: { label: t("reports.income"), color: "hsl(var(--chart-1))" },
+      expenses: {
+        label: t("reports.expensesCategory"),
+        color: "hsl(var(--chart-5))",
+      },
+      balance: { label: t("reports.balance"), color: "hsl(var(--chart-2))" },
+    }),
+    [t],
+  );
+
+  const axisDayFormatter = useMemo(() => {
+    const formatter = new Intl.DateTimeFormat(locale, {
+      month: "short",
+      day: "numeric",
+      timeZone: "UTC",
+    });
+    return (key: string) => formatter.format(new Date(`${key}T00:00:00.000Z`));
+  }, [locale]);
+
+  const tooltipDayFormatter = useMemo(() => {
+    const formatter = new Intl.DateTimeFormat(locale, {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+      timeZone: "UTC",
+    });
+    return (key: string) => formatter.format(new Date(`${key}T00:00:00.000Z`));
+  }, [locale]);
+
+  const dailyData = dailyCashFlow?.points ?? [];
+  const dailyIsEmpty =
+    dailyData.length === 0 ||
+    dailyData.every(
+      (point) =>
+        point.income === 0 && point.expenses === 0 && point.balance === 0,
+    );
+
   const revenueIsEmpty =
     revenueData.length === 0 ||
     revenueData.every((month) => month.revenue === 0 && month.profit === 0);
@@ -558,6 +605,134 @@ export default function ReportsPage() {
         </TabsContent>
 
         <TabsContent value="overview" className="mt-0 flex flex-col gap-4">
+          <ReportCard
+            title={t("reports.dailyProgress")}
+            description={t("reports.dailyProgressDesc")}
+            icon={<TrendingUp className="size-4" />}
+            action={
+              <ToggleGroup
+                value={[String(dailyDays)]}
+                onValueChange={(values) => {
+                  const next = values[0];
+                  if (next) setDailyDays(Number(next));
+                }}
+                variant="outline"
+                size="sm"
+              >
+                <ToggleGroupItem value="30">
+                  {t("reports.range30d")}
+                </ToggleGroupItem>
+                <ToggleGroupItem value="90">
+                  {t("reports.range90d")}
+                </ToggleGroupItem>
+                <ToggleGroupItem value="365">
+                  {t("reports.range1y")}
+                </ToggleGroupItem>
+              </ToggleGroup>
+            }
+          >
+            {dailyLoading ? (
+              <ChartSkeleton />
+            ) : dailyIsEmpty ? (
+              <ReportEmpty
+                icon={<TrendingUp />}
+                title={t("reports.noData")}
+                description={t("reports.dailyProgressDesc")}
+              />
+            ) : (
+              <ChartContainer
+                config={dailyChartConfig}
+                className="aspect-auto h-[320px] w-full"
+              >
+                <LineChart
+                  data={dailyData}
+                  margin={{ top: 5, right: 10, left: 10, bottom: 0 }}
+                >
+                  <ReferenceLine
+                    y={0}
+                    stroke="hsl(var(--border))"
+                    strokeDasharray="3 3"
+                  />
+                  <ChartTooltip
+                    cursor={false}
+                    content={
+                      <ChartTooltipContent
+                        indicator="line"
+                        formatter={(value: any, name: any, item: any) => (
+                          <div className="flex w-full flex-1 items-center justify-between gap-3">
+                            <div className="flex items-center gap-2">
+                              <span
+                                className="h-0.5 w-3 shrink-0 rounded-full"
+                                style={{
+                                  backgroundColor:
+                                    item?.color ?? "currentColor",
+                                }}
+                              />
+                              <span className="text-muted-foreground">
+                                {name}:
+                              </span>
+                            </div>
+                            <span className="font-mono font-medium text-foreground tabular-nums">
+                              {format(Number(value))}
+                            </span>
+                          </div>
+                        )}
+                        labelFormatter={(value) =>
+                          typeof value === "string"
+                            ? tooltipDayFormatter(value)
+                            : value
+                        }
+                      />
+                    }
+                  />
+                  <XAxis
+                    dataKey="date"
+                    tickLine={false}
+                    axisLine={false}
+                    tickMargin={8}
+                    minTickGap={28}
+                    tickFormatter={axisDayFormatter}
+                  />
+                  <YAxis
+                    tickLine={false}
+                    axisLine={false}
+                    tickMargin={8}
+                    tickFormatter={tickFormat}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="income"
+                    name={t("reports.income")}
+                    stroke="hsl(var(--chart-1))"
+                    strokeWidth={2}
+                    dot={false}
+                    activeDot={{ r: 3 }}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="expenses"
+                    name={t("reports.expensesCategory")}
+                    stroke="hsl(var(--chart-5))"
+                    strokeWidth={2}
+                    dot={false}
+                    activeDot={{ r: 3 }}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="balance"
+                    name={t("reports.balance")}
+                    stroke="hsl(var(--chart-2))"
+                    strokeWidth={2}
+                    strokeDasharray="5 3"
+                    dot={false}
+                    activeDot={{ r: 3 }}
+                  />
+                  <ChartLegend content={<ChartLegendContent />} />
+                </LineChart>
+              </ChartContainer>
+            )}
+          </ReportCard>
+
           <ReportCard
             title={t("reports.revenueTrend")}
             description={t("reports.revenueTrendDesc")}

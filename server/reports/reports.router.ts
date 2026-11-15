@@ -2,6 +2,13 @@ import type { PrismaClient } from "@prisma/client";
 import { z } from "zod";
 import { orgProcedure, router } from "@/lib/trpc/context";
 import { countLowStockItems } from "../shared/low-stock";
+import {
+  addDaysToKey,
+  buildCumulativeCashFlow,
+  dateKeyInTimeZone,
+  dateKeysBetween,
+  resolveTimeZone,
+} from "./daily-cash-flow";
 
 // Document statuses that must never count as recognised revenue.
 const NON_REVENUE_STATUSES = [
@@ -291,6 +298,103 @@ export const reportsRouter = router({
       inventory: { itemCount, lowStockCount },
     };
   }),
+
+  dailyCashFlow: orgProcedure
+    .require("report:financial")
+    .input(
+      z.object({
+        days: z.number().int().min(7).max(365).default(30),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      const orgId = ctx.user.organizationId;
+      const timeZone = resolveTimeZone(ctx.user.timezone);
+      const now = new Date();
+      const to = dateKeyInTimeZone(now, timeZone);
+      const from = addDaysToKey(to, -(input.days - 1));
+      const days = dateKeysBetween(from, to);
+
+      // Two days of padding on each side covers every timezone offset; the
+      // cumulative builder filters rows to the exact local calendar days.
+      const date = {
+        gte: new Date(`${addDaysToKey(from, -2)}T00:00:00.000Z`),
+        lte: new Date(`${addDaysToKey(to, 2)}T23:59:59.999Z`),
+      };
+
+      const [payments, incomes, expenses, supplierPayments] = await Promise.all(
+        [
+          // Customer payments are cash actually received.
+          ctx.db.payment.findMany({
+            where: {
+              organizationId: orgId,
+              date,
+              invoice: { deletedAt: null },
+            },
+            select: { date: true, amount: true },
+          }),
+          // Manual incomes post cash. Invoice-sent rows also create Income
+          // records, but those are recognised revenue, not cash.
+          ctx.db.income.findMany({
+            where: {
+              organizationId: orgId,
+              date,
+              deletedAt: null,
+              OR: [{ invoiceId: null }, { journalEntryId: { not: null } }],
+            },
+            select: { date: true, amount: true },
+          }),
+          // Direct expenses and subscription renewals are paid in cash.
+          // PO receipt expenses sit on AP and are captured by the payment below.
+          ctx.db.expense.findMany({
+            where: {
+              organizationId: orgId,
+              date,
+              deletedAt: null,
+              purchaseOrderId: null,
+            },
+            select: { date: true, amount: true },
+          }),
+          ctx.db.purchasePayment.findMany({
+            where: {
+              organizationId: orgId,
+              date,
+              purchaseOrder: { deletedAt: null },
+            },
+            select: { date: true, amount: true },
+          }),
+        ],
+      );
+
+      const movements = [
+        ...payments.map((payment) => ({
+          date: payment.date,
+          amount: Number(payment.amount),
+          kind: "income" as const,
+        })),
+        ...incomes.map((income) => ({
+          date: income.date,
+          amount: Number(income.amount),
+          kind: "income" as const,
+        })),
+        ...expenses.map((expense) => ({
+          date: expense.date,
+          amount: Number(expense.amount),
+          kind: "expenses" as const,
+        })),
+        ...supplierPayments.map((payment) => ({
+          date: payment.date,
+          amount: Number(payment.amount),
+          kind: "expenses" as const,
+        })),
+      ];
+
+      return {
+        from,
+        to,
+        timeZone,
+        points: buildCumulativeCashFlow(movements, days, timeZone),
+      };
+    }),
 
   monthlyRevenue: orgProcedure
     .require("report:financial")
