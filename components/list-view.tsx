@@ -189,7 +189,7 @@ export function ListView<T extends object>({
                   })),
                 ]}
                 value={searchField}
-                onValueChange={setSearchField}
+                onValueChange={(v) => setSearchField(v ?? "__all__")}
               >
                 <SelectTrigger
                   size="sm"

@@ -199,7 +199,9 @@ export function PreviewStep({
                 })),
               ]}
               value={supplierId || "none"}
-              onValueChange={(v) => onSupplierChange?.(v === "none" ? "" : v)}
+              onValueChange={(v) =>
+                onSupplierChange?.(!v || v === "none" ? "" : v)
+              }
             >
               <SelectTrigger id="import-supplier" className="w-64">
                 <SelectValue placeholder="Select a supplier" />

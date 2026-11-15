@@ -145,7 +145,7 @@ export function POFormBody({
               }))}
               value={watch("warehouseId")}
               onValueChange={(v) =>
-                setValue("warehouseId", v, { shouldDirty: true })
+                setValue("warehouseId", v ?? "", { shouldDirty: true })
               }
             >
               <SelectTrigger className="w-full min-w-0">

@@ -362,7 +362,9 @@ export function InvoiceFormBody({
                   }))}
                   value={watch?.("customerId") || ""}
                   onValueChange={(v) =>
-                    setValue?.("customerId", v, { shouldDirty: true })
+                    setValue?.("customerId", v ?? undefined, {
+                      shouldDirty: true,
+                    })
                   }
                 >
                   <SelectTrigger
@@ -421,7 +423,9 @@ export function InvoiceFormBody({
                   }))}
                   value={watch?.("warehouseId") || ""}
                   onValueChange={(v) =>
-                    setValue?.("warehouseId", v, { shouldDirty: true })
+                    setValue?.("warehouseId", v ?? undefined, {
+                      shouldDirty: true,
+                    })
                   }
                 >
                   <SelectTrigger

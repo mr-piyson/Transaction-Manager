@@ -94,7 +94,7 @@ export default function AdjustmentsPage() {
             { value: "INCREASE", label: t("stock.adjustments.increases") },
           ]}
           value={direction}
-          onValueChange={setDirection}
+          onValueChange={(v) => setDirection(v ?? "all")}
         >
           <SelectTrigger className="w-36 shrink-0" aria-label="Direction">
             <SelectValue />
@@ -118,7 +118,7 @@ export default function AdjustmentsPage() {
             })),
           ]}
           value={reasonId}
-          onValueChange={setReasonId}
+          onValueChange={(v) => setReasonId(v ?? "all")}
         >
           <SelectTrigger className="w-40 shrink-0" aria-label="Reason">
             <SelectValue />
@@ -141,7 +141,7 @@ export default function AdjustmentsPage() {
             })),
           ]}
           value={warehouseId}
-          onValueChange={setWarehouseId}
+          onValueChange={(v) => setWarehouseId(v ?? "all")}
         >
           <SelectTrigger className="w-40 shrink-0" aria-label="Warehouse">
             <SelectValue />

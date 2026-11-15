@@ -105,7 +105,7 @@ export default function MovementsPage() {
             })),
           ]}
           value={type}
-          onValueChange={setType}
+          onValueChange={(v) => setType(v ?? "all")}
         >
           <SelectTrigger className="w-44 shrink-0" aria-label="Movement type">
             <SelectValue />
@@ -128,7 +128,7 @@ export default function MovementsPage() {
             })),
           ]}
           value={warehouseId}
-          onValueChange={setWarehouseId}
+          onValueChange={(v) => setWarehouseId(v ?? "all")}
         >
           <SelectTrigger className="w-44 shrink-0" aria-label="Warehouse">
             <SelectValue />

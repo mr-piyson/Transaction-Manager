@@ -533,7 +533,7 @@ export default function WarehouseDetailPage() {
                   label: `${s.item?.name ?? s.itemId} (${s.item?.sku ?? ""}) — ${s.quantity.toFixed(3)}`,
                 }))}
                 value={transferItemId}
-                onValueChange={setTransferItemId}
+                onValueChange={(v) => setTransferItemId(v ?? "")}
               >
                 <SelectTrigger id="transfer-item">
                   <SelectValue placeholder={t("warehouses.selectItem")} />
@@ -558,7 +558,7 @@ export default function WarehouseDetailPage() {
                   label: `${w.name}${w.isDefault ? ` (${t("common.default")})` : ""}${!w.isActive ? ` (${t("common.inactive")})` : ""}`,
                 }))}
                 value={transferToWarehouseId}
-                onValueChange={setTransferToWarehouseId}
+                onValueChange={(v) => setTransferToWarehouseId(v ?? "")}
               >
                 <SelectTrigger id="transfer-to">
                   <SelectValue placeholder={t("warehouses.selectWarehouse")} />
