@@ -7,8 +7,6 @@ import {
   Copy,
   Edit,
   FileText,
-  HandCoins,
-  History,
   Loader2,
   type LucideIcon,
   MoreHorizontal,
@@ -28,11 +26,12 @@ import { toast } from "sonner";
 import { DetailPageHeader } from "@/components/detail-page-header";
 import { useHardDeleteForm } from "@/components/dialogs/hardDeleteForm";
 import { usePaymentForm } from "@/components/dialogs/paymentForm";
-import { InvoiceFormBody } from "@/components/invoice/invoiceFormBody";
-import { InvoiceHistoryPanel } from "@/components/invoices/invoice-history-panel";
+import {
+  DocumentDetailTabs,
+  RecordPaymentButton,
+} from "@/components/documents/document-detail-tabs";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -55,25 +54,8 @@ import {
   EmptyTitle,
 } from "@/components/ui/empty";
 import { Label } from "@/components/ui/label";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-} from "@/components/ui/sheet";
-import { Spinner } from "@/components/ui/spinner";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { Textarea } from "@/components/ui/textarea";
 import { useAppAbility } from "@/hooks/use-app-ability";
-import { useDateFormat } from "@/hooks/use-date-format";
 import { trpc } from "@/lib/trpc/client";
 
 const STATUS_COLORS: Record<string, string> = {
@@ -93,6 +75,10 @@ const STATUS_COLORS: Record<string, string> = {
   DELETED: "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200",
 };
 
+/* ── Small primitives ─────────────────────────────────────────────────── */
+
+/* ── Page ─────────────────────────────────────────────────────────────── */
+
 export default function DocumentDetailPage({
   documentType,
 }: {
@@ -106,7 +92,6 @@ export default function DocumentDetailPage({
   const { openCreate: openPayment } = usePaymentForm();
   const { openDialog: openHardDelete } = useHardDeleteForm();
   const utils = trpc.useUtils();
-  const { formatDate, formatDateTime, formatShortDate } = useDateFormat();
   const { data: me } = trpc.auth.me.useQuery();
   const isSuperAdmin = me?.platformRole === "SUPER_ADMIN";
   const ability = useAppAbility();
@@ -120,7 +105,6 @@ export default function DocumentDetailPage({
   } = trpc.invoices.byId.useQuery({ id: params.id }, { enabled: !!params.id });
 
   const { data: orgData } = trpc.organizations.get.useQuery();
-
   const { data: stockMovements } = trpc.invoices.stockMovements.useQuery(
     { id: params.id },
     { enabled: !!params.id && isInvoice },
@@ -137,7 +121,6 @@ export default function DocumentDetailPage({
     title: string;
     description: string;
   }>({ open: false, action: "", title: "", description: "" });
-  const [historyOpen, setHistoryOpen] = React.useState(false);
 
   function invalidate() {
     utils.invoices.byId.invalidate({ id: params.id });
@@ -154,7 +137,6 @@ export default function DocumentDetailPage({
       onError: (e) => toast.error(e.message),
     },
   );
-
   const approveMutation = trpc.invoices.approve.useMutation({
     onSuccess: () => {
       invalidate();
@@ -162,7 +144,6 @@ export default function DocumentDetailPage({
     },
     onError: (e) => toast.error(e.message),
   });
-
   const rejectMutation = trpc.invoices.reject.useMutation({
     onSuccess: () => {
       setRejectOpen(false);
@@ -172,7 +153,6 @@ export default function DocumentDetailPage({
     },
     onError: (e) => toast.error(e.message),
   });
-
   const sendMutation = trpc.invoices.send.useMutation({
     onSuccess: () => {
       setSendOpen(false);
@@ -181,7 +161,6 @@ export default function DocumentDetailPage({
     },
     onError: (e) => toast.error(e.message),
   });
-
   const cancelMutation = trpc.invoices.cancel.useMutation({
     onSuccess: () => {
       setCancelOpen(false);
@@ -191,7 +170,6 @@ export default function DocumentDetailPage({
     },
     onError: (e) => toast.error(e.message),
   });
-
   const deleteMutation = trpc.invoices.delete.useMutation({
     onSuccess: () => {
       utils.invoices.list.invalidate();
@@ -200,7 +178,6 @@ export default function DocumentDetailPage({
     },
     onError: (e) => toast.error(e.message),
   });
-
   const deletePaymentMutation = trpc.invoices.deletePayment.useMutation({
     onSuccess: () => {
       invalidate();
@@ -208,7 +185,6 @@ export default function DocumentDetailPage({
     },
     onError: (e) => toast.error(e.message),
   });
-
   const convertQuoteMutation = trpc.invoices.convertQuote.useMutation({
     onSuccess: (result) => {
       invalidate();
@@ -231,7 +207,7 @@ export default function DocumentDetailPage({
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-[60vh]">
-        <Spinner className="size-8 text-primary" />
+        <Loader2 className="size-8 text-primary animate-spin" />
       </div>
     );
   }
@@ -268,7 +244,19 @@ export default function DocumentDetailPage({
   }
 
   const version = invoice.version ?? 0;
+  const status = invoice.status;
+  const invoiceType = invoice.type;
 
+  const openPaymentDialog = () =>
+    openPayment({
+      id: invoice.id,
+      serial: invoice.serial,
+      total: Number(invoice.total),
+      amountDue: Number((invoice as any).amountDue),
+      currency: invoice.currency,
+    });
+
+  /* ── Action handlers ─────────────────────────────────────────────────── */
   const handleConfirmAction = (action: string) => {
     switch (action) {
       case "submit":
@@ -300,15 +288,13 @@ export default function DocumentDetailPage({
     setConfirmDialog({ open: true, action, ...config });
   };
 
-  const handleEdit = () => {
+  const handleEdit = () =>
     router.push(`/erp/documents/${documentType}/${invoice.id}/edit`);
-  };
 
-  const handleDuplicate = () => {
+  const handleDuplicate = () =>
     router.push(
       `/erp/documents/${documentType}/new?source=${invoice.id}&sourceType=duplicate`,
     );
-  };
 
   const getTypeLabel = (type: string) => {
     switch (type) {
@@ -334,8 +320,6 @@ export default function DocumentDetailPage({
   };
 
   const actions: Action[] = [];
-  const status = invoice.status;
-  const invoiceType = invoice.type;
 
   if (ability?.can("invoice:create", "Invoice")) {
     actions.push({
@@ -346,110 +330,98 @@ export default function DocumentDetailPage({
     });
   }
 
-  actions.push({
-    label: t("common.print"),
-    key: "print",
-    icon: Printer,
-  });
+  actions.push({ label: t("common.print"), key: "print", icon: Printer });
 
   if (invoiceType === "QUOTE") {
     if (status === "DRAFT") {
-      actions.push({
-        label: t("common.edit"),
-        key: "edit",
-        icon: Edit,
-        variant: "outline",
-      });
-      actions.push({
-        label: t("invoices.sendQuote"),
-        key: "send",
-        icon: Send,
-        dialog: "send",
-      });
-      actions.push({
-        label: t("invoices.convertToInvoice"),
-        key: "convertQuote",
-        icon: Receipt,
-      });
-      actions.push({
-        label: t("common.delete"),
-        key: "delete",
-        icon: Trash,
-        variant: "destructive",
-      });
+      actions.push(
+        {
+          label: t("common.edit"),
+          key: "edit",
+          icon: Edit,
+          variant: "outline",
+        },
+        {
+          label: t("invoices.sendQuote"),
+          key: "send",
+          icon: Send,
+          dialog: "send",
+        },
+        {
+          label: t("invoices.convertToInvoice"),
+          key: "convertQuote",
+          icon: Receipt,
+        },
+        {
+          label: t("common.delete"),
+          key: "delete",
+          icon: Trash,
+          variant: "destructive",
+        },
+      );
     } else if (status === "SENT") {
-      actions.push({
-        label: t("invoices.convertToInvoice"),
-        key: "convertQuote",
-        icon: Receipt,
-      });
-      actions.push({
-        label: t("invoices.cancelQuote"),
-        key: "cancel",
-        icon: XCircle,
-        variant: "destructive",
-        dialog: "cancel",
-      });
+      actions.push(
+        {
+          label: t("invoices.convertToInvoice"),
+          key: "convertQuote",
+          icon: Receipt,
+        },
+        {
+          label: t("invoices.cancelQuote"),
+          key: "cancel",
+          icon: XCircle,
+          variant: "destructive",
+          dialog: "cancel",
+        },
+      );
     }
   } else if (invoiceType === "INVOICE") {
     if (status === "DRAFT") {
-      actions.push({
-        label: t("common.edit"),
-        key: "edit",
-        icon: Edit,
-        variant: "outline",
-      });
-      actions.push({
-        label: t("invoices.submitForApproval"),
-        key: "submit",
-        icon: Send,
-      });
-      actions.push({
-        label: t("common.send"),
-        key: "send",
-        icon: Send,
-        dialog: "send",
-      });
-      actions.push({
-        label: t("common.delete"),
-        key: "delete",
-        icon: Trash,
-        variant: "destructive",
-      });
+      actions.push(
+        {
+          label: t("common.edit"),
+          key: "edit",
+          icon: Edit,
+          variant: "outline",
+        },
+        { label: t("invoices.submitForApproval"), key: "submit", icon: Send },
+        { label: t("common.send"), key: "send", icon: Send, dialog: "send" },
+        {
+          label: t("common.delete"),
+          key: "delete",
+          icon: Trash,
+          variant: "destructive",
+        },
+      );
     } else if (status === "PENDING_APPROVAL") {
-      actions.push({
-        label: t("common.approve"),
-        key: "approve",
-        icon: CheckCircle,
-      });
-      actions.push({
-        label: t("common.reject"),
-        key: "reject",
-        icon: ThumbsDown,
-        variant: "destructive",
-        dialog: "reject",
-      });
-      actions.push({
-        label: t("common.cancel"),
-        key: "cancel",
-        icon: XCircle,
-        variant: "destructive",
-        dialog: "cancel",
-      });
+      actions.push(
+        { label: t("common.approve"), key: "approve", icon: CheckCircle },
+        {
+          label: t("common.reject"),
+          key: "reject",
+          icon: ThumbsDown,
+          variant: "destructive",
+          dialog: "reject",
+        },
+        {
+          label: t("common.cancel"),
+          key: "cancel",
+          icon: XCircle,
+          variant: "destructive",
+          dialog: "cancel",
+        },
+      );
     } else if (status === "APPROVED") {
-      actions.push({
-        label: t("common.send"),
-        key: "send",
-        icon: Send,
-        dialog: "send",
-      });
-      actions.push({
-        label: t("common.cancel"),
-        key: "cancel",
-        icon: XCircle,
-        variant: "destructive",
-        dialog: "cancel",
-      });
+      actions.push(
+        { label: t("common.send"), key: "send", icon: Send, dialog: "send" },
+        {
+          label: t("common.cancel"),
+          key: "cancel",
+          icon: XCircle,
+          variant: "destructive",
+          dialog: "cancel",
+        },
+      );
     } else if (["SENT", "PARTIAL", "PAID", "OVERDUE"].includes(status)) {
       if (status !== "PAID") {
         actions.push({
@@ -477,45 +449,39 @@ export default function DocumentDetailPage({
     }
   } else if (invoiceType === "CREDIT_NOTE") {
     if (status === "DRAFT") {
-      actions.push({
-        label: t("common.edit"),
-        key: "edit",
-        icon: Edit,
-        variant: "outline",
-      });
-      actions.push({
-        label: t("common.send"),
-        key: "send",
-        icon: Send,
-        dialog: "send",
-      });
-      actions.push({
-        label: t("common.delete"),
-        key: "delete",
-        icon: Trash,
-        variant: "destructive",
-      });
+      actions.push(
+        {
+          label: t("common.edit"),
+          key: "edit",
+          icon: Edit,
+          variant: "outline",
+        },
+        { label: t("common.send"), key: "send", icon: Send, dialog: "send" },
+        {
+          label: t("common.delete"),
+          key: "delete",
+          icon: Trash,
+          variant: "destructive",
+        },
+      );
     }
   } else {
     if (status === "DRAFT") {
-      actions.push({
-        label: t("common.edit"),
-        key: "edit",
-        icon: Edit,
-        variant: "outline",
-      });
-      actions.push({
-        label: t("common.send"),
-        key: "send",
-        icon: Send,
-        dialog: "send",
-      });
-      actions.push({
-        label: t("common.delete"),
-        key: "delete",
-        icon: Trash,
-        variant: "destructive",
-      });
+      actions.push(
+        {
+          label: t("common.edit"),
+          key: "edit",
+          icon: Edit,
+          variant: "outline",
+        },
+        { label: t("common.send"), key: "send", icon: Send, dialog: "send" },
+        {
+          label: t("common.delete"),
+          key: "delete",
+          icon: Trash,
+          variant: "destructive",
+        },
+      );
     } else if (status === "SENT") {
       actions.push({
         label: t("common.cancel"),
@@ -536,7 +502,8 @@ export default function DocumentDetailPage({
     });
   }
 
-  const showActions = actions.length > 0;
+  const canRecordPayment =
+    isInvoice && ["SENT", "PARTIAL", "OVERDUE"].includes(status);
 
   const handleActionClick = (action: Action) => {
     switch (action.key) {
@@ -593,19 +560,12 @@ export default function DocumentDetailPage({
             setCancelOpen(true);
             break;
           case "payment":
-            openPayment({
-              id: invoice.id,
-              serial: invoice.serial,
-              total: Number(invoice.total),
-              amountDue: Number((invoice as any).amountDue),
-              currency: invoice.currency,
-            });
+            openPaymentDialog();
             break;
         }
     }
   };
 
-  // ── Build badges for letterhead ──────────────────────────────────────────
   const badges = (
     <>
       <Badge className={STATUS_COLORS[invoice.status] ?? ""}>
@@ -617,32 +577,32 @@ export default function DocumentDetailPage({
     </>
   );
 
-  // ── Build header actions dropdown ────────────────────────────────────────
-  const headerActions = showActions ? (
-    <DropdownMenu>
-      <DropdownMenuTrigger
-        render={
-          <Button variant="ghost" size="icon" aria-label={t("common.more")}>
-            <MoreHorizontal className="size-4" />
-          </Button>
-        }
-      />
-      <DropdownMenuContent align="end">
-        {actions.map((action) => (
-          <DropdownMenuItem
-            key={action.key}
-            variant={
-              action.variant === "destructive" ? "destructive" : "default"
-            }
-            onClick={() => handleActionClick(action)}
-          >
-            <action.icon className="size-4" />
-            {action.label}
-          </DropdownMenuItem>
-        ))}
-      </DropdownMenuContent>
-    </DropdownMenu>
-  ) : undefined;
+  const headerActions =
+    actions.length > 0 ? (
+      <DropdownMenu>
+        <DropdownMenuTrigger
+          render={
+            <Button variant="ghost" size="icon" aria-label={t("common.more")}>
+              <MoreHorizontal className="size-4" />
+            </Button>
+          }
+        />
+        <DropdownMenuContent align="end">
+          {actions.map((action) => (
+            <DropdownMenuItem
+              key={action.key}
+              variant={
+                action.variant === "destructive" ? "destructive" : "default"
+              }
+              onClick={() => handleActionClick(action)}
+            >
+              <action.icon className="size-4" />
+              {action.label}
+            </DropdownMenuItem>
+          ))}
+        </DropdownMenuContent>
+      </DropdownMenu>
+    ) : undefined;
 
   return (
     <div className="h-full overflow-y-auto bg-muted/30">
@@ -652,255 +612,33 @@ export default function DocumentDetailPage({
         onBack={() => router.push(`/erp/documents/${type}`)}
         backLabel={t("common.back")}
         badges={badges}
-        actions={headerActions}
+        actions={
+          <>
+            {canRecordPayment && (
+              <RecordPaymentButton onClick={openPaymentDialog} />
+            )}
+            {headerActions}
+          </>
+        }
       />
-      <div className="mx-auto max-w-5xl py-6 px-4 sm:px-6">
-        {/* Paper layout */}
-        <InvoiceFormBody
-          readonly
-          serial={invoice.serial}
-          org={
-            orgData
-              ? {
-                  name: (orgData as any).name,
-                  logo: (orgData as any).logo,
-                  crNumber: (orgData as any).crNumber,
-                  taxId: (orgData as any).taxId,
-                  vatRegistered: (orgData as any).vatRegistered,
-                  phone: (orgData as any).phone,
-                  email: (orgData as any).email,
-                  website: (orgData as any).website,
-                }
-              : undefined
-          }
-          invoice={{
-            type: invoice.type,
-            serial: invoice.serial,
-            date: invoice.date,
-            dueDate: invoice.dueDate,
-            currency: invoice.currency,
-            isWalkIn: invoice.isWalkIn,
-            subtotal: Number(invoice.subtotal),
-            discountTotal: Number(invoice.discountTotal),
-            taxTotal: Number(invoice.taxTotal),
-            total: Number(invoice.total),
-            costTotal: Number(invoice.costTotal),
-            termsText: (invoice as any).termsText,
-            customer: invoice.customer
-              ? {
-                  name: invoice.customer.name,
-                  vatNumber: (invoice.customer as any).vatNumber,
-                  taxId: (invoice.customer as any).taxId,
-                }
-              : null,
-            warehouse: (invoice as any).warehouse
-              ? { name: (invoice as any).warehouse.name }
-              : null,
-            lines: invoice.lines?.map((l: any) => ({
-              id: l.id,
-              itemId: l.itemId,
-              description: l.description,
-              quantity: Number(l.quantity),
-              unitPrice: Number(l.unitPrice),
-              discountAmt: Number(l.discountAmt),
-              taxAmt: Number(l.taxAmt),
-              taxRateName: l.taxRateName,
-              taxRateSnapshot: l.taxRateSnapshot
-                ? Number(l.taxRateSnapshot)
-                : null,
-              total: Number(l.total),
-              item: l.item
-                ? { name: l.item.name, sku: l.item.sku, image: l.item.image }
-                : null,
-              unit: l.unit ? { code: l.unit.code, name: l.unit.name } : null,
-            })),
-          }}
-        />
 
-        {/* Stock movements */}
-        {isInvoice && stockMovements && stockMovements.length > 0 && (
-          <Card className="mt-4">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-semibold flex items-center gap-2">
-                <History className="size-4" /> {t("stock.movements")}
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="p-0">
-              <div className="hidden sm:block">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>{t("common.date")}</TableHead>
-                      <TableHead>{t("common.item")}</TableHead>
-                      <TableHead className="text-right">
-                        {t("common.quantity")}
-                      </TableHead>
-                      <TableHead>{t("common.warehouse")}</TableHead>
-                      <TableHead>{t("common.by")}</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {stockMovements.map((m: any) => {
-                      const qty = Number(m.quantity);
-                      const isIn = qty >= 0;
-                      return (
-                        <TableRow key={m.id}>
-                          <TableCell className="text-sm">
-                            {formatShortDate(m.createdAt)}
-                          </TableCell>
-                          <TableCell>
-                            <span className="font-medium">{m.item?.name}</span>
-                            {m.item?.sku && (
-                              <span className="text-xs text-muted-foreground ml-1">
-                                ({m.item.sku})
-                              </span>
-                            )}
-                          </TableCell>
-                          <TableCell
-                            className={`text-right font-medium tabular-nums ${isIn ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"}`}
-                          >
-                            {isIn ? "+" : ""}
-                            {qty.toFixed(3)}
-                          </TableCell>
-                          <TableCell>
-                            {m.toWarehouse?.name ??
-                              m.fromWarehouse?.name ??
-                              "—"}
-                          </TableCell>
-                          <TableCell className="text-sm text-muted-foreground">
-                            {m.user?.name ?? "—"}
-                          </TableCell>
-                        </TableRow>
-                      );
-                    })}
-                  </TableBody>
-                </Table>
-              </div>
-              <div className="sm:hidden divide-y">
-                {stockMovements.map((m: any) => {
-                  const qty = Number(m.quantity);
-                  const isIn = qty >= 0;
-                  return (
-                    <div
-                      key={m.id}
-                      className="px-4 py-3 flex items-center justify-between gap-2"
-                    >
-                      <div className="min-w-0">
-                        <div className="font-medium text-sm truncate">
-                          {m.item?.name}
-                        </div>
-                        <div className="text-xs text-muted-foreground">
-                          {formatShortDate(m.createdAt)} ·{" "}
-                          {m.toWarehouse?.name ?? m.fromWarehouse?.name ?? "—"}{" "}
-                          · {m.user?.name ?? "—"}
-                        </div>
-                      </div>
-                      <div
-                        className={`text-right shrink-0 text-sm font-medium tabular-nums ${isIn ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"}`}
-                      >
-                        {isIn ? "+" : ""}
-                        {qty.toFixed(3)}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </CardContent>
-          </Card>
-        )}
+      <DocumentDetailTabs
+        invoice={invoice}
+        orgData={orgData}
+        stockMovements={stockMovements}
+        isInvoice={isInvoice}
+        canRecordPayment={canRecordPayment}
+        onRecordPayment={openPaymentDialog}
+        onDeletePayment={(paymentId) =>
+          deletePaymentMutation.mutate({ paymentId })
+        }
+        deletePaymentPending={deletePaymentMutation.isPending}
+        isSuperAdmin={isSuperAdmin}
+        onNavigate={(path) => router.push(path)}
+      />
 
-        {/* Payments */}
-        {isInvoice && invoice.payments && invoice.payments.length > 0 && (
-          <Card className="mt-4">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-semibold flex items-center gap-2">
-                <Banknote className="size-4" /> {t("common.payments")}
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="p-0">
-              <div className="hidden sm:block">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>{t("common.date")}</TableHead>
-                      <TableHead>{t("common.method")}</TableHead>
-                      <TableHead className="text-right">
-                        {t("common.amount")}
-                      </TableHead>
-                      <TableHead>{t("common.reference")}</TableHead>
-                      <TableHead>{t("common.notes")}</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {invoice.payments.map((p: any) => (
-                      <TableRow key={p.id}>
-                        <TableCell className="text-sm">
-                          {formatShortDate(p.date)}
-                        </TableCell>
-                        <TableCell>
-                          <Badge variant="outline" className="text-xs">
-                            {p.method?.replace(/_/g, " ")}
-                          </Badge>
-                        </TableCell>
-                        <TableCell className="text-right font-medium font-mono tabular-nums">
-                          {Number(p.amount).toFixed(3)} {invoice.currency}
-                        </TableCell>
-                        <TableCell className="text-sm text-muted-foreground">
-                          {p.reference ?? "—"}
-                        </TableCell>
-                        <TableCell className="text-sm text-muted-foreground">
-                          {p.notes ?? "—"}
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
-              <div className="sm:hidden divide-y">
-                {invoice.payments.map((p: any) => (
-                  <div
-                    key={p.id}
-                    className="px-4 py-3 flex items-center justify-between gap-2"
-                  >
-                    <div className="min-w-0">
-                      <div className="font-medium text-sm font-mono tabular-nums">
-                        {Number(p.amount).toFixed(3)} {invoice.currency}
-                      </div>
-                      <div className="text-xs text-muted-foreground">
-                        {formatShortDate(p.date)} ·{" "}
-                        {p.method?.replace(/_/g, " ")}
-                        {p.reference && ` · ${p.reference}`}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        )}
+      {/* ── Dialogs (unchanged, kept for parity) ───────────────────── */}
 
-        {/* History sheet */}
-        <Sheet open={historyOpen} onOpenChange={setHistoryOpen}>
-          <SheetContent side="right" className="w-full p-0 sm:max-w-md">
-            <SheetHeader className="sr-only">
-              <SheetTitle>{t("invoices.history")}</SheetTitle>
-            </SheetHeader>
-            <ScrollArea className="h-dvh px-5 py-5 pr-12">
-              <InvoiceHistoryPanel
-                invoice={invoice}
-                formatDate={formatDate}
-                formatDateTime={formatDateTime}
-                onNavigate={(path) => {
-                  setHistoryOpen(false);
-                  router.push(path);
-                }}
-              />
-            </ScrollArea>
-          </SheetContent>
-        </Sheet>
-      </div>
-
-      {/* Send confirmation dialog */}
       <Dialog
         open={sendOpen}
         onOpenChange={(v) => !sendMutation.isPending && setSendOpen(v)}
@@ -941,12 +679,9 @@ export default function DocumentDetailPage({
         </DialogContent>
       </Dialog>
 
-      {/* Cancel dialog */}
       <Dialog
         open={cancelOpen}
-        onOpenChange={(v) => {
-          if (!cancelMutation.isPending) setCancelOpen(v);
-        }}
+        onOpenChange={(v) => !cancelMutation.isPending && setCancelOpen(v)}
       >
         <DialogContent>
           <DialogHeader>
@@ -1000,7 +735,6 @@ export default function DocumentDetailPage({
         </DialogContent>
       </Dialog>
 
-      {/* Confirm action dialog (submit for approval / approve) */}
       <Dialog
         open={confirmDialog.open}
         onOpenChange={(v) => {
@@ -1052,12 +786,9 @@ export default function DocumentDetailPage({
         </DialogContent>
       </Dialog>
 
-      {/* Reject dialog */}
       <Dialog
         open={rejectOpen}
-        onOpenChange={(v) => {
-          if (!rejectMutation.isPending) setRejectOpen(v);
-        }}
+        onOpenChange={(v) => !rejectMutation.isPending && setRejectOpen(v)}
       >
         <DialogContent>
           <DialogHeader>
