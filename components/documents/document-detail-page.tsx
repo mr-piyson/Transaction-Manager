@@ -8,6 +8,7 @@ import {
   Edit,
   FileText,
   HandCoins,
+  History,
   Loader2,
   type LucideIcon,
   MoreHorizontal,
@@ -31,6 +32,7 @@ import { InvoiceFormBody } from "@/components/invoice/invoiceFormBody";
 import { InvoiceHistoryPanel } from "@/components/invoices/invoice-history-panel";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -61,6 +63,14 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { Spinner } from "@/components/ui/spinner";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { Textarea } from "@/components/ui/textarea";
 import { useAppAbility } from "@/hooks/use-app-ability";
 import { useDateFormat } from "@/hooks/use-date-format";
@@ -96,7 +106,7 @@ export default function DocumentDetailPage({
   const { openCreate: openPayment } = usePaymentForm();
   const { openDialog: openHardDelete } = useHardDeleteForm();
   const utils = trpc.useUtils();
-  const { formatDate, formatDateTime } = useDateFormat();
+  const { formatDate, formatDateTime, formatShortDate } = useDateFormat();
   const { data: me } = trpc.auth.me.useQuery();
   const isSuperAdmin = me?.platformRole === "SUPER_ADMIN";
   const ability = useAppAbility();
@@ -110,6 +120,11 @@ export default function DocumentDetailPage({
   } = trpc.invoices.byId.useQuery({ id: params.id }, { enabled: !!params.id });
 
   const { data: orgData } = trpc.organizations.get.useQuery();
+
+  const { data: stockMovements } = trpc.invoices.stockMovements.useQuery(
+    { id: params.id },
+    { enabled: !!params.id && isInvoice },
+  );
 
   const [sendOpen, setSendOpen] = React.useState(false);
   const [cancelOpen, setCancelOpen] = React.useState(false);
@@ -127,6 +142,7 @@ export default function DocumentDetailPage({
   function invalidate() {
     utils.invoices.byId.invalidate({ id: params.id });
     utils.invoices.list.invalidate();
+    utils.invoices.stockMovements.invalidate({ id: params.id });
   }
 
   const submitForApprovalMutation = trpc.invoices.submitForApproval.useMutation(
@@ -700,6 +716,168 @@ export default function DocumentDetailPage({
             })),
           }}
         />
+
+        {/* Stock movements */}
+        {isInvoice && stockMovements && stockMovements.length > 0 && (
+          <Card className="mt-4">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-semibold flex items-center gap-2">
+                <History className="size-4" /> {t("stock.movements")}
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-0">
+              <div className="hidden sm:block">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>{t("common.date")}</TableHead>
+                      <TableHead>{t("common.item")}</TableHead>
+                      <TableHead className="text-right">
+                        {t("common.quantity")}
+                      </TableHead>
+                      <TableHead>{t("common.warehouse")}</TableHead>
+                      <TableHead>{t("common.by")}</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {stockMovements.map((m: any) => {
+                      const qty = Number(m.quantity);
+                      const isIn = qty >= 0;
+                      return (
+                        <TableRow key={m.id}>
+                          <TableCell className="text-sm">
+                            {formatShortDate(m.createdAt)}
+                          </TableCell>
+                          <TableCell>
+                            <span className="font-medium">{m.item?.name}</span>
+                            {m.item?.sku && (
+                              <span className="text-xs text-muted-foreground ml-1">
+                                ({m.item.sku})
+                              </span>
+                            )}
+                          </TableCell>
+                          <TableCell
+                            className={`text-right font-medium tabular-nums ${isIn ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"}`}
+                          >
+                            {isIn ? "+" : ""}
+                            {qty.toFixed(3)}
+                          </TableCell>
+                          <TableCell>
+                            {m.toWarehouse?.name ??
+                              m.fromWarehouse?.name ??
+                              "—"}
+                          </TableCell>
+                          <TableCell className="text-sm text-muted-foreground">
+                            {m.user?.name ?? "—"}
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
+                  </TableBody>
+                </Table>
+              </div>
+              <div className="sm:hidden divide-y">
+                {stockMovements.map((m: any) => {
+                  const qty = Number(m.quantity);
+                  const isIn = qty >= 0;
+                  return (
+                    <div
+                      key={m.id}
+                      className="px-4 py-3 flex items-center justify-between gap-2"
+                    >
+                      <div className="min-w-0">
+                        <div className="font-medium text-sm truncate">
+                          {m.item?.name}
+                        </div>
+                        <div className="text-xs text-muted-foreground">
+                          {formatShortDate(m.createdAt)} ·{" "}
+                          {m.toWarehouse?.name ?? m.fromWarehouse?.name ?? "—"}{" "}
+                          · {m.user?.name ?? "—"}
+                        </div>
+                      </div>
+                      <div
+                        className={`text-right shrink-0 text-sm font-medium tabular-nums ${isIn ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"}`}
+                      >
+                        {isIn ? "+" : ""}
+                        {qty.toFixed(3)}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Payments */}
+        {isInvoice && invoice.payments && invoice.payments.length > 0 && (
+          <Card className="mt-4">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-semibold flex items-center gap-2">
+                <Banknote className="size-4" /> {t("common.payments")}
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-0">
+              <div className="hidden sm:block">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>{t("common.date")}</TableHead>
+                      <TableHead>{t("common.method")}</TableHead>
+                      <TableHead className="text-right">
+                        {t("common.amount")}
+                      </TableHead>
+                      <TableHead>{t("common.reference")}</TableHead>
+                      <TableHead>{t("common.notes")}</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {invoice.payments.map((p: any) => (
+                      <TableRow key={p.id}>
+                        <TableCell className="text-sm">
+                          {formatShortDate(p.date)}
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant="outline" className="text-xs">
+                            {p.method?.replace(/_/g, " ")}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-right font-medium font-mono tabular-nums">
+                          {Number(p.amount).toFixed(3)} {invoice.currency}
+                        </TableCell>
+                        <TableCell className="text-sm text-muted-foreground">
+                          {p.reference ?? "—"}
+                        </TableCell>
+                        <TableCell className="text-sm text-muted-foreground">
+                          {p.notes ?? "—"}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+              <div className="sm:hidden divide-y">
+                {invoice.payments.map((p: any) => (
+                  <div
+                    key={p.id}
+                    className="px-4 py-3 flex items-center justify-between gap-2"
+                  >
+                    <div className="min-w-0">
+                      <div className="font-medium text-sm font-mono tabular-nums">
+                        {Number(p.amount).toFixed(3)} {invoice.currency}
+                      </div>
+                      <div className="text-xs text-muted-foreground">
+                        {formatShortDate(p.date)} ·{" "}
+                        {p.method?.replace(/_/g, " ")}
+                        {p.reference && ` · ${p.reference}`}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* History sheet */}
         <Sheet open={historyOpen} onOpenChange={setHistoryOpen}>

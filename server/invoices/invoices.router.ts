@@ -226,6 +226,27 @@ export const invoicesRouter = router({
       return { ...invoice, auditLogs };
     }),
 
+  // ── STOCK MOVEMENTS ───────────────────────────────────────────────────────
+  stockMovements: orgProcedure
+    .require("stock:read")
+    .input(z.object({ id: z.string() }))
+    .query(async ({ ctx, input }) => {
+      return ctx.db.stockMovement.findMany({
+        where: {
+          invoiceLine: { invoiceId: input.id },
+          organizationId: ctx.user.organizationId,
+        },
+        include: {
+          item: { select: { id: true, sku: true, name: true } },
+          fromWarehouse: { select: { id: true, name: true } },
+          toWarehouse: { select: { id: true, name: true } },
+          user: { select: { id: true, name: true } },
+        },
+        orderBy: { createdAt: "desc" },
+        take: 200,
+      });
+    }),
+
   // ── CREATE ────────────────────────────────────────────────────────────────
   create: orgProcedure
     .require("invoice:create")
